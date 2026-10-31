@@ -4,6 +4,7 @@
     <header class="theme-header">
         <BitText Typography="BitTypography.H5" Element="h1" Class="title">@Localizer[nameof(WorkbenchStrings.ThemeHeading)]</BitText>
         <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeSubtitle)]</BitText>
+        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeStatesNote)]</BitText>
     </header>
 
     <section>
@@ -33,7 +34,7 @@
             {
                 <div class="type-row">
                     <span class="type-name">@typography</span>
-                    <BitText Typography="typography" NoWrap Class="sample">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+                    <BitText Typography="typography" NoWrap Class="sample">@SampleText</BitText>
                 </div>
             }
         </div>
@@ -68,26 +69,361 @@
             {
                 <BitButton Size="size" IconName="@BitIconName.Add">@size</BitButton>
             }
-            <BitButton IsEnabled="false">@Localizer[nameof(WorkbenchStrings.ThemeDisabled)]</BitButton>
             <BitButton IconOnly IconName="@BitIconName.Settings" Title="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" />
         </div>
+
+        @foreach (var variant in Enum.GetValues<BitVariant>())
+        {
+            <ComponentStates Name="@($"BitButton · {variant}")">
+                @foreach (var (nameKey, force) in interactionStates)
+                {
+                    <StateSample NameKey="@nameKey" Force="@force">
+                        <BitButton Variant="variant" IconName="@BitIconName.Save">@SaveText</BitButton>
+                    </StateSample>
+                }
+                <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                    <BitButton Variant="variant" IconName="@BitIconName.Save" Disabled>@SaveText</BitButton>
+                </StateSample>
+                <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateLoading)">
+                    <BitButton Variant="variant" IconName="@BitIconName.Save" IsLoading>@SaveText</BitButton>
+                </StateSample>
+            </ComponentStates>
+        }
+
+        <ComponentStates Name="BitActionButton">
+            @foreach (var (nameKey, force) in interactionStates)
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitActionButton IconName="@BitIconName.Signin">@AppLocalizer[nameof(AppStrings.SignIn)]</BitActionButton>
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitActionButton IconName="@BitIconName.Signin" Disabled>@AppLocalizer[nameof(AppStrings.SignIn)]</BitActionButton>
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitToggleButton">
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOff)">
+                <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOn)">
+                <BitToggleButton IconName="@BitIconName.FavoriteStarFill" Text="@FavoriteText" DefaultIsChecked="true" />
+            </StateSample>
+            @foreach (var (nameKey, force) in interactionStates.Skip(1))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" />
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitToggleButton IconName="@BitIconName.FavoriteStar" Text="@FavoriteText" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitLink">
+            @foreach (var (nameKey, force) in interactionStates)
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitLink Href="#">@Localizer[nameof(WorkbenchStrings.ThemeLinkText)]</BitLink>
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitLink Href="#" Disabled>@Localizer[nameof(WorkbenchStrings.ThemeLinkText)]</BitLink>
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitMenuButton">
+            @foreach (var (nameKey, force) in interactionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitMenuButton Text="@ActionsText" Items="menuItems" />
+                </StateSample>
+            }
+        </ComponentStates>
     </section>
 
     <section>
         <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeInputs)]</BitText>
-        <div class="grid">
-            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeName)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeNamePlaceholder)]" />
-            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeDisabled)]" Value="@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]" IsEnabled="false" />
-            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@Localizer[nameof(WorkbenchStrings.ThemeChoice)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeChoicePlaceholder)]" />
-            <BitSearchBox Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeSearch)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeSearch)]" />
-            <BitSlider Label="@Localizer[nameof(WorkbenchStrings.ThemeAmount)]" Min="0" Max="100" DefaultValue="40" ShowValue />
-            <div class="column">
-                <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeOption), 1]" DefaultValue="true" />
-                <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeOption), 2]" />
-                <BitToggle Label="@Localizer[nameof(WorkbenchStrings.ThemeToggle)]" DefaultValue="true" />
-            </div>
-            <BitChoiceGroup Items="choices" Label="@Localizer[nameof(WorkbenchStrings.ThemeChoice)]" DefaultValue="@("1")" />
-        </div>
+
+        <ComponentStates Name="BitTextField" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+                <BitTextField Label="@NameLabel" Placeholder="@NamePlaceholder" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+                <BitTextField Label="@NameLabel" Value="@SampleName" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+                <BitTextField Label="@NameLabel" Placeholder="@NamePlaceholder" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitTextField Label="@NameLabel" Value="@SampleName" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+                <BitTextField Label="@NameLabel" Value="@("S")" ErrorMessage="@ErrorText" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateRequired)">
+                <BitTextField Label="@NameLabel" Placeholder="@NamePlaceholder" Required />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateReadOnly)">
+                <BitTextField Label="@NameLabel" Value="@SampleName" ReadOnly />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitTextField Label="@NameLabel" Value="@SampleName" Disabled />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePassword)">
+                <BitTextField Label="@AppLocalizer[nameof(AppStrings.Password)]" Type="BitInputType.Password" CanRevealPassword Value="@("correct-horse")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateMultiline)">
+                <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeNotes)]" Multiline Rows="3" Value="@SampleText" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitSearchBox" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+                <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+                <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Value="@("Amsterdam")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+                <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Value="@("Amsterdam")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitSearchBox Placeholder="@SearchText" AriaLabel="@SearchText" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitNumberField" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitNumberField TValue="int" Label="@QuantityLabel" Value="3" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitNumberField TValue="int" Label="@QuantityLabel" Value="3" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+                <BitNumberField TValue="int" Label="@QuantityLabel" Value="0" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeQuantityError)]" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitNumberField TValue="int" Label="@QuantityLabel" Value="3" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitOtpInput" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+                <BitOtpInput Length="6" Label="@CodeLabel" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+                <BitOtpInput Length="6" Label="@CodeLabel" Value="@("482916")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitOtpInput Length="6" Label="@CodeLabel" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+                <BitOtpInput Length="6" Label="@CodeLabel" Value="@("48291")" Invalid />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitOtpInput Length="6" Label="@CodeLabel" Value="@("482916")" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitPhoneInput" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+                <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+                <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" Value="@("+31201234567")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus" Index="2">
+                <BitPhoneInput Label="@PhoneLabel" Placeholder="@PhonePlaceholder" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitDatePicker" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateEmpty)">
+                <BitDatePicker Label="@BirthDateLabel" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFilled)">
+                <BitDatePicker Label="@BirthDateLabel" Value="sampleDate" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitDatePicker Label="@BirthDateLabel" Value="sampleDate" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+                <BitDatePicker Label="@BirthDateLabel" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeDateError)]" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitDatePicker Label="@BirthDateLabel" Value="sampleDate" Disabled />
+            </StateSample>
+        </ComponentStates>
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeSelection)]</BitText>
+
+        <ComponentStates Name="BitDropdown" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStatePlaceholder)">
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" Value="@("2")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" Value="@("2")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateError)">
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" ErrorMessage="@Localizer[nameof(WorkbenchStrings.ThemeChoiceError)]" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" Value="@("2")" Disabled />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateMultiple)">
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" MultiSelect Values="multipleValues" />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitCheckbox">
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateUnchecked)">
+                <BitCheckbox Label="@OptionLabel" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateChecked)">
+                <BitCheckbox Label="@OptionLabel" Value="true" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateIndeterminate)">
+                <BitCheckbox Label="@OptionLabel" Indeterminate="true" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+                <BitCheckbox Label="@OptionLabel" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitCheckbox Label="@OptionLabel" Value="true" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitCheckbox Label="@OptionLabel" Disabled />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDisabledChecked)">
+                <BitCheckbox Label="@OptionLabel" Value="true" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitToggle">
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOff)">
+                <BitToggle Label="@ToggleLabel" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateOn)">
+                <BitToggle Label="@ToggleLabel" Value="true" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover">
+                <BitToggle Label="@ToggleLabel" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitToggle Label="@ToggleLabel" Value="true" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitToggle Label="@ToggleLabel" Disabled />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDisabledOn)">
+                <BitToggle Label="@ToggleLabel" Value="true" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitChoiceGroup" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateSelected)">
+                <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)" Force="hover" Target="input[type=radio]" Index="2">
+                <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitChoiceGroup Items="choices" Label="@ChoiceLabel" DefaultValue="@("1")" Disabled />
+            </StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitSlider" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateDefault)">
+                <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateFocused)" Force="focus">
+                <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue />
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitSlider Label="@AmountLabel" Min="0" Max="100" DefaultValue="40" ShowValue Disabled />
+            </StateSample>
+        </ComponentStates>
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeNavigation)]</BitText>
+
+        <ComponentStates Name="BitPivot" Wide>
+            @foreach (var (nameKey, force) in interactionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force" Target="[role=tab]" Index="2">
+                    <BitPivot>
+                        <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 1]">
+                            <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                        </BitPivotItem>
+                        <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 2]">
+                            <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                        </BitPivotItem>
+                    </BitPivot>
+                </StateSample>
+            }
+        </ComponentStates>
+
+        <ComponentStates Name="BitNavBar" Wide>
+            @foreach (var (nameKey, force) in interactionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force" Index="2">
+                    <BitNavBar Items="navBarItems" Mode="BitNavMode.Manual" DefaultSelectedItem="navBarItems[0]" FullWidth
+                               AriaLabel="@($"BitNavBar, {Localizer[nameKey]}")" />
+                </StateSample>
+            }
+        </ComponentStates>
+
+        <ComponentStates Name="BitNav" Wide>
+            @foreach (var (nameKey, force) in interactionStates.Take(3))
+            {
+                <StateSample NameKey="@nameKey" Force="@force" Index="2">
+                    <BitNav Items="navItems" Mode="BitNavMode.Manual" DefaultSelectedItem="navItems[0]"
+                            AriaLabel="@($"BitNav, {Localizer[nameKey]}")" />
+                </StateSample>
+            }
+        </ComponentStates>
+
+        <ComponentStates Name="BitAccordion" Wide>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateCollapsed)">
+                <BitAccordion Title="@AppLocalizer[nameof(AppStrings.ProfileTitle)]">
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitAccordion>
+            </StateSample>
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateExpanded)">
+                <BitAccordion Title="@AppLocalizer[nameof(AppStrings.ProfileTitle)]" DefaultIsExpanded="true">
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitAccordion>
+            </StateSample>
+            @foreach (var (nameKey, force) in interactionStates.Skip(1).Take(2))
+            {
+                <StateSample NameKey="@nameKey" Force="@force">
+                    <BitAccordion Title="@AppLocalizer[nameof(AppStrings.ProfileTitle)]">
+                        <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                    </BitAccordion>
+                </StateSample>
+            }
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeDisabled)">
+                <BitAccordion Title="@AppLocalizer[nameof(AppStrings.ProfileTitle)]" Disabled>
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+                </BitAccordion>
+            </StateSample>
+        </ComponentStates>
     </section>
 
     <section>
@@ -104,17 +440,35 @@
                 <BitTag Text="@color.ToString()" Color="color" />
             }
         </div>
-        <div class="row">
+        <div class="row badges">
             @foreach (var color in buttonColors.Take(4))
             {
                 <BitBadge Content="@(12)" Color="color">
                     <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Ringer" IconOnly AriaLabel="@color.ToString()" />
                 </BitBadge>
             }
-            <BitRingLoading Size="BitSize.Small" />
         </div>
         <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgress)]" Percent="62" />
         <BitShimmer Height="2.5rem" />
+
+        <ComponentStates Name="@Localizer[nameof(WorkbenchStrings.ThemeLoaders)]">
+            <StateSample Name="BitRollingSquareLoading"><BitRollingSquareLoading Size="BitSize.Small" /></StateSample>
+            <StateSample Name="BitEllipsisLoading"><BitEllipsisLoading Size="BitSize.Small" /></StateSample>
+            <StateSample Name="BitRippleLoading"><BitRippleLoading Size="BitSize.Small" /></StateSample>
+            <StateSample Name="BitRingLoading"><BitRingLoading Size="BitSize.Small" /></StateSample>
+            <StateSample Name="BitBouncingDotsLoading"><BitBouncingDotsLoading Size="BitSize.Small" /></StateSample>
+            <StateSample Name="BitGridLoading"><BitGridLoading Size="BitSize.Small" /></StateSample>
+        </ComponentStates>
+
+        <ComponentStates Name="BitTooltip">
+            <StateSample NameKey="@nameof(WorkbenchStrings.ThemeStateHover)">
+                <div class="tooltip-stage">
+                    <BitTooltip Text="@Localizer[nameof(WorkbenchStrings.ThemeTooltipText)]" IsShown>
+                        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Info" IconOnly AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeTooltipText)]" />
+                    </BitTooltip>
+                </div>
+            </StateSample>
+        </ComponentStates>
     </section>
 
     <section>
@@ -122,18 +476,47 @@
         <div class="grid">
             <BitCard>
                 <div class="column">
-                    <BitPersona PrimaryText="Sarah Johnson" SecondaryText="@Localizer[nameof(WorkbenchStrings.RoleGlobalAdmin)]" />
-                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+                    <BitPersona PrimaryText="@Localizer[nameof(WorkbenchStrings.DemoUserSarah)]" SecondaryText="@Localizer[nameof(WorkbenchStrings.RoleGlobalAdmin)]" ImageUrl="@WorkbenchPhotos.Find(nameof(WorkbenchStrings.DemoUserSarah))" />
+                    <BitText Typography="BitTypography.Body2">@SampleText</BitText>
                 </div>
             </BitCard>
-            <BitPivot>
-                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 1]">
-                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
-                </BitPivotItem>
-                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 2]">
-                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
-                </BitPivotItem>
-            </BitPivot>
+        </div>
+
+        <ComponentStates Name="BitPersona" Wide>
+            @foreach (var (nameKey, presence) in people)
+            {
+                <StateSample Name="@presence.ToString()">
+                    <BitPersona PrimaryText="@Localizer[nameKey]" Presence="presence" Size="BitPersonaSize.Size48" ImageUrl="@(presence is BitPersonaPresence.Dnd ? null : WorkbenchPhotos.Find(nameKey))" />
+                </StateSample>
+            }
+        </ComponentStates>
+    </section>
+
+    <section @ref="overlaysSection">
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeOverlays)]</BitText>
+        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeOverlaysHint)]</BitText>
+        <div class="grid">
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@ChoiceLabel" Placeholder="@ChoicePlaceholder" @bind-IsOpen="isDropdownOpen" />
+            <BitDatePicker Label="@BirthDateLabel" Value="sampleDate" @bind-IsOpen="isDatePickerOpen" />
+        </div>
+        <div class="row">
+            <BitMenuButton Text="@ActionsText" Items="menuItems" @bind-IsOpen="isMenuOpen" />
+            <BitButton Variant="BitVariant.Outline" OnClick="() => isDialogOpen = true">@Localizer[nameof(WorkbenchStrings.ThemeOverlayDialog)]</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="() => isPanelOpen = true">@Localizer[nameof(WorkbenchStrings.ThemeOverlayPanel)]</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="ShowSnackBars">@Localizer[nameof(WorkbenchStrings.ThemeOverlaySnackBar)]</BitButton>
         </div>
     </section>
 </div>
+
+<BitDialog @bind-IsOpen="isDialogOpen"
+           Title="@Localizer[nameof(WorkbenchStrings.ThemeDialogTitle)]"
+           Message="@Localizer[nameof(WorkbenchStrings.ThemeDialogMessage)]"
+           OkText="@AppLocalizer[nameof(AppStrings.Delete)]"
+           CancelText="@AppLocalizer[nameof(AppStrings.Cancel)]" />
+
+<BitPanel @bind-IsOpen="isPanelOpen" HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeOverlayPanel)]" ShowCloseButton>
+    <div class="column">
+        <BitText Typography="BitTypography.Body2">@SampleText</BitText>
+        <BitTextField Label="@NameLabel" Placeholder="@NamePlaceholder" />
+    </div>
+</BitPanel>

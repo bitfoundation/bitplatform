@@ -93,6 +93,11 @@ what the user approves is how the real page will look.
 - A theme color mixed with white, black or the background counts as the theme's. A color that stands for data, like a
   category's, goes in a `--data-color` custom property (`style="--data-color:..."`, painted with `var(--data-color)`),
   which the check leaves alone.
+- The **Theme and components** page (`theme`) shows the theme's tokens and every bit component the app uses, each in
+  its states, with hover, focus and pressed drawn without touching the control, so they show on a phone too and no
+  keyboard opens. Its Open overlay switch opens a dropdown, a date picker, a menu, a dialog, a side panel or snack bars
+  for links and screenshots. When a page starts using a bit component the Theme page doesn't show, add it there in its
+  states.
 - The user can try another primary color, larger text, reduced motion and color blindness on
   a view. When they like a theme change, put the value into the app's theme: the Workbench changes only the view.
 - Read the browser console and the Workbench's console output while you look, as the run-app skill describes.

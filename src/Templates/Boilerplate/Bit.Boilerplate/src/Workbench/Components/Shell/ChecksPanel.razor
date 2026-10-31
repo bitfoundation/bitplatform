@@ -5,7 +5,7 @@
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ChecksTitle)]</BitText>
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ChecksHint)]</BitText>
         <div class="run">
-            <BitButton IconName="@BitIconName.TestBeakerSolid" IsEnabled="isRunning is false" OnClick="Run">@Localizer[nameof(WorkbenchStrings.RunChecks)]</BitButton>
+            <BitButton IconName="@BitIconName.TestBeakerSolid" Disabled="isRunning" OnClick="Run">@Localizer[nameof(WorkbenchStrings.RunChecks)]</BitButton>
             @if (isRunning)
             {
                 <BitRingLoading Size="BitSize.Small" />

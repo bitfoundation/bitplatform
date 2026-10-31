@@ -101,6 +101,17 @@ section {
     align-items: center;
 }
 
+.badges {
+    gap: 1rem;
+    padding-top: 0.75rem;
+}
+
+.tooltip-stage {
+    display: flex;
+    padding-top: 3rem;
+    justify-content: center;
+}
+
 .column {
     gap: 0.625rem;
     display: flex;

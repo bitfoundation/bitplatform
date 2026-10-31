@@ -53,6 +53,7 @@
                           ValueChanged="(string? name) => ReviewerNameChanged.InvokeAsync(name)"
                           MaxLength="WorkbenchReviewDocument.MaxNameLength" />
             <BitTextField @bind-Value="draft"
+                          Immediate
                           Multiline
                           Rows="4"
                           AutoFocus
@@ -60,7 +61,7 @@
                           AriaLabel="@Localizer[nameof(WorkbenchStrings.NewComment)]"
                           MaxLength="WorkbenchReviewDocument.MaxTextLength" />
             <div class="composer-actions">
-                <BitButton IconName="@BitIconName.Send" IsEnabled="string.IsNullOrWhiteSpace(draft) is false" OnClick="Send">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
+                <BitButton IconName="@BitIconName.Send" Disabled="string.IsNullOrWhiteSpace(draft)" OnClick="Send">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
                 <BitButton Variant="BitVariant.Text" OnClick="CancelPending">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
             </div>
         </section>
@@ -128,13 +129,14 @@
                 else if (isSelected)
                 {
                     <BitTextField @bind-Value="reply"
+                                  Immediate
                                   Multiline
                                   Rows="2"
                                   Placeholder="@Localizer[nameof(WorkbenchStrings.ReplyPlaceholder)]"
                                   AriaLabel="@Localizer[nameof(WorkbenchStrings.Reply)]"
                                   MaxLength="WorkbenchReviewDocument.MaxTextLength" />
                     <div class="thread-actions">
-                        <BitButton Size="BitSize.Small" IconName="@BitIconName.Send" IsEnabled="string.IsNullOrWhiteSpace(reply) is false" OnClick="() => Reply(thread)">@Localizer[nameof(WorkbenchStrings.Reply)]</BitButton>
+                        <BitButton Size="BitSize.Small" IconName="@BitIconName.Send" Disabled="string.IsNullOrWhiteSpace(reply)" OnClick="() => Reply(thread)">@Localizer[nameof(WorkbenchStrings.Reply)]</BitButton>
                         @if (thread.Status is WorkbenchReviewStatus.Done)
                         {
                             <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Undo" OnClick="() => session.SetStatus(thread.Id, WorkbenchReviewStatus.Open)">@Localizer[nameof(WorkbenchStrings.Reopen)]</BitButton>

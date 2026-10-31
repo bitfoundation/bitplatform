@@ -41,7 +41,7 @@
                               Placeholder="@Localizer[nameof(WorkbenchStrings.ArrowLabelPlaceholder)]"
                               MaxLength="120" />
             }
-            <BitButton IconName="@BitIconName.Add" IsEnabled="CanAdd" OnClick="Add">@Localizer[nameof(WorkbenchStrings.AddThisView)]</BitButton>
+            <BitButton IconName="@BitIconName.Add" Disabled="CanAdd is false" OnClick="Add">@Localizer[nameof(WorkbenchStrings.AddThisView)]</BitButton>
             @if (addedFlowId is { } added)
             {
                 <BitLink Href="@WorkbenchUrls.Flow(added)">@Localizer[nameof(WorkbenchStrings.OpenBoard)]</BitLink>

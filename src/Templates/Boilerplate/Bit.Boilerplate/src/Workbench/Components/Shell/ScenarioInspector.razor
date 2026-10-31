@@ -136,7 +136,7 @@
         <BitDropdown Items="userItems"
                      Value="Value.User"
                      ValueChanged="(int user) => Update(Value with { User = user })"
-                     IsEnabled="Value.Auth is not WorkbenchAuthState.SignedOut"
+                     Disabled="Value.Auth is WorkbenchAuthState.SignedOut"
                      AriaLabel="@Localizer[nameof(WorkbenchStrings.SignedInAs)]"
                      Responsive
                      FitWidth />

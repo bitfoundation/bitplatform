@@ -2158,7 +2158,7 @@
         <value>Thema en componenten</value>
     </data>
     <data name="ThemePageDescription" xml:space="preserve">
-        <value>De beeldtaal van de app op één pagina: de kleuren, typografie, hoeken en de belangrijkste componenten in elke variant, licht, donker en van rechts naar links.</value>
+        <value>De beeldtaal van de app op één pagina: kleuren, letters en hoeken, en de onderdelen die de app gebruikt in elke toestand, met de overlays één schakelaar verderop.</value>
     </data>
     <data name="ThemePageCaption" xml:space="preserve">
         <value>Eén uitstraling in de hele app</value>
@@ -2263,7 +2263,7 @@
         <value>Uploaden</value>
     </data>
     <data name="ThemeContainers" xml:space="preserve">
-        <value>Kaarten en tabbladen</value>
+        <value>Kaarten en mensen</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>Tabblad {0}</value>
@@ -2489,5 +2489,158 @@
     </data>
     <data name="AgentRepliedOn" xml:space="preserve">
         <value>{0} heeft gereageerd op {1}</value>
+    </data>
+    <data name="ThemeStatesNote" xml:space="preserve">
+        <value>Aanwijzen, Focus en Ingedrukt worden getekend zonder het element aan te raken, dus een telefoon toont ze ook en er gaat geen toetsenbord open.</value>
+    </data>
+    <data name="ThemeStateDefault" xml:space="preserve">
+        <value>Standaard</value>
+    </data>
+    <data name="ThemeStateHover" xml:space="preserve">
+        <value>Aanwijzen</value>
+    </data>
+    <data name="ThemeStateFocused" xml:space="preserve">
+        <value>Focus</value>
+    </data>
+    <data name="ThemeStatePressed" xml:space="preserve">
+        <value>Ingedrukt</value>
+    </data>
+    <data name="ThemeStateLoading" xml:space="preserve">
+        <value>Laden</value>
+    </data>
+    <data name="ThemeStatePlaceholder" xml:space="preserve">
+        <value>Voorbeeldtekst</value>
+    </data>
+    <data name="ThemeStateFilled" xml:space="preserve">
+        <value>Ingevuld</value>
+    </data>
+    <data name="ThemeStateError" xml:space="preserve">
+        <value>Fout</value>
+    </data>
+    <data name="ThemeStateRequired" xml:space="preserve">
+        <value>Verplicht</value>
+    </data>
+    <data name="ThemeStateReadOnly" xml:space="preserve">
+        <value>Alleen-lezen</value>
+    </data>
+    <data name="ThemeStatePassword" xml:space="preserve">
+        <value>Wachtwoord</value>
+    </data>
+    <data name="ThemeStateMultiline" xml:space="preserve">
+        <value>Meerdere regels</value>
+    </data>
+    <data name="ThemeStateEmpty" xml:space="preserve">
+        <value>Leeg</value>
+    </data>
+    <data name="ThemeStateSelected" xml:space="preserve">
+        <value>Geselecteerd</value>
+    </data>
+    <data name="ThemeStateMultiple" xml:space="preserve">
+        <value>Meerdere geselecteerd</value>
+    </data>
+    <data name="ThemeStateChecked" xml:space="preserve">
+        <value>Aangevinkt</value>
+    </data>
+    <data name="ThemeStateUnchecked" xml:space="preserve">
+        <value>Niet aangevinkt</value>
+    </data>
+    <data name="ThemeStateIndeterminate" xml:space="preserve">
+        <value>Deels aangevinkt</value>
+    </data>
+    <data name="ThemeStateOn" xml:space="preserve">
+        <value>Aan</value>
+    </data>
+    <data name="ThemeStateOff" xml:space="preserve">
+        <value>Uit</value>
+    </data>
+    <data name="ThemeStateDisabledOn" xml:space="preserve">
+        <value>Uitgeschakeld, aan</value>
+    </data>
+    <data name="ThemeStateDisabledChecked" xml:space="preserve">
+        <value>Uitgeschakeld, aangevinkt</value>
+    </data>
+    <data name="ThemeStateExpanded" xml:space="preserve">
+        <value>Uitgevouwen</value>
+    </data>
+    <data name="ThemeStateCollapsed" xml:space="preserve">
+        <value>Ingevouwen</value>
+    </data>
+    <data name="ThemeSelection" xml:space="preserve">
+        <value>Keuzes</value>
+    </data>
+    <data name="ThemeNavigation" xml:space="preserve">
+        <value>Navigatie</value>
+    </data>
+    <data name="ThemeLoaders" xml:space="preserve">
+        <value>Laadindicatoren</value>
+    </data>
+    <data name="ThemeOverlays" xml:space="preserve">
+        <value>Overlays</value>
+    </data>
+    <data name="ThemeOverlaysHint" xml:space="preserve">
+        <value>Open er hier een, of kies hem onder Overlay openen zodat links en screenshots hem open tonen.</value>
+    </data>
+    <data name="ThemeSwitchOverlay" xml:space="preserve">
+        <value>Overlay openen</value>
+    </data>
+    <data name="ThemeOverlayNone" xml:space="preserve">
+        <value>Geen</value>
+    </data>
+    <data name="ThemeOverlayDropdown" xml:space="preserve">
+        <value>Vervolgkeuzelijst</value>
+    </data>
+    <data name="ThemeOverlayDatePicker" xml:space="preserve">
+        <value>Datumkiezer</value>
+    </data>
+    <data name="ThemeOverlayMenu" xml:space="preserve">
+        <value>Menu</value>
+    </data>
+    <data name="ThemeOverlayDialog" xml:space="preserve">
+        <value>Dialoogvenster</value>
+    </data>
+    <data name="ThemeOverlayPanel" xml:space="preserve">
+        <value>Zijpaneel</value>
+    </data>
+    <data name="ThemeOverlaySnackBar" xml:space="preserve">
+        <value>Snackbars</value>
+    </data>
+    <data name="ThemeDialogTitle" xml:space="preserve">
+        <value>Dit gebouw verwijderen?</value>
+    </data>
+    <data name="ThemeDialogMessage" xml:space="preserve">
+        <value>Het verdwijnt voor iedereen uit de lijst en van de kaart.</value>
+    </data>
+    <data name="ThemeActions" xml:space="preserve">
+        <value>Acties</value>
+    </data>
+    <data name="ThemeNameError" xml:space="preserve">
+        <value>Typ minstens twee letters.</value>
+    </data>
+    <data name="ThemeQuantity" xml:space="preserve">
+        <value>Aantal</value>
+    </data>
+    <data name="ThemeQuantityError" xml:space="preserve">
+        <value>Bestel er minstens één.</value>
+    </data>
+    <data name="ThemeCode" xml:space="preserve">
+        <value>Verificatiecode</value>
+    </data>
+    <data name="ThemeNotes" xml:space="preserve">
+        <value>Notities</value>
+    </data>
+    <data name="ThemeDateError" xml:space="preserve">
+        <value>Kies een datum in het verleden.</value>
+    </data>
+    <data name="ThemeChoiceError" xml:space="preserve">
+        <value>Kies een van de opties.</value>
+    </data>
+    <data name="ThemeLinkText" xml:space="preserve">
+        <value>Voorwaarden lezen</value>
+    </data>
+    <data name="ThemeFavorite" xml:space="preserve">
+        <value>Favoriet</value>
+    </data>
+    <data name="ThemeTooltipText" xml:space="preserve">
+        <value>Een minuut geleden opgeslagen</value>
     </data>
 </root>

@@ -2158,7 +2158,7 @@
         <value>Thème et composants</value>
     </data>
     <data name="ThemePageDescription" xml:space="preserve">
-        <value>Le langage visuel de l’application sur une seule page : ses couleurs, sa typographie, ses coins et les principaux composants dans chaque variante, en clair, en sombre et de droite à gauche.</value>
+        <value>Le langage visuel de l’app sur une page : couleurs, typographie et coins, et les composants que l’app utilise dans chaque état, avec ses superpositions à un interrupteur près.</value>
     </data>
     <data name="ThemePageCaption" xml:space="preserve">
         <value>Un seul style dans toute l’application</value>
@@ -2263,7 +2263,7 @@
         <value>Envoi en cours</value>
     </data>
     <data name="ThemeContainers" xml:space="preserve">
-        <value>Cartes et onglets</value>
+        <value>Cartes et personnes</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>Onglet {0}</value>
@@ -2489,5 +2489,158 @@
     </data>
     <data name="AgentRepliedOn" xml:space="preserve">
         <value>{0} a répondu sur {1}</value>
+    </data>
+    <data name="ThemeStatesNote" xml:space="preserve">
+        <value>« Survol », « Focus » et « Appuyé » sont dessinés sans toucher le contrôle : un téléphone les montre aussi, et aucun clavier ne s’ouvre.</value>
+    </data>
+    <data name="ThemeStateDefault" xml:space="preserve">
+        <value>Par défaut</value>
+    </data>
+    <data name="ThemeStateHover" xml:space="preserve">
+        <value>Survol</value>
+    </data>
+    <data name="ThemeStateFocused" xml:space="preserve">
+        <value>Focus</value>
+    </data>
+    <data name="ThemeStatePressed" xml:space="preserve">
+        <value>Appuyé</value>
+    </data>
+    <data name="ThemeStateLoading" xml:space="preserve">
+        <value>Chargement</value>
+    </data>
+    <data name="ThemeStatePlaceholder" xml:space="preserve">
+        <value>Texte d’exemple</value>
+    </data>
+    <data name="ThemeStateFilled" xml:space="preserve">
+        <value>Rempli</value>
+    </data>
+    <data name="ThemeStateError" xml:space="preserve">
+        <value>Erreur</value>
+    </data>
+    <data name="ThemeStateRequired" xml:space="preserve">
+        <value>Obligatoire</value>
+    </data>
+    <data name="ThemeStateReadOnly" xml:space="preserve">
+        <value>Lecture seule</value>
+    </data>
+    <data name="ThemeStatePassword" xml:space="preserve">
+        <value>Mot de passe</value>
+    </data>
+    <data name="ThemeStateMultiline" xml:space="preserve">
+        <value>Plusieurs lignes</value>
+    </data>
+    <data name="ThemeStateEmpty" xml:space="preserve">
+        <value>Vide</value>
+    </data>
+    <data name="ThemeStateSelected" xml:space="preserve">
+        <value>Sélectionné</value>
+    </data>
+    <data name="ThemeStateMultiple" xml:space="preserve">
+        <value>Plusieurs sélectionnés</value>
+    </data>
+    <data name="ThemeStateChecked" xml:space="preserve">
+        <value>Coché</value>
+    </data>
+    <data name="ThemeStateUnchecked" xml:space="preserve">
+        <value>Non coché</value>
+    </data>
+    <data name="ThemeStateIndeterminate" xml:space="preserve">
+        <value>Coché en partie</value>
+    </data>
+    <data name="ThemeStateOn" xml:space="preserve">
+        <value>Allumé</value>
+    </data>
+    <data name="ThemeStateOff" xml:space="preserve">
+        <value>Éteint</value>
+    </data>
+    <data name="ThemeStateDisabledOn" xml:space="preserve">
+        <value>Désactivé, allumé</value>
+    </data>
+    <data name="ThemeStateDisabledChecked" xml:space="preserve">
+        <value>Désactivé, coché</value>
+    </data>
+    <data name="ThemeStateExpanded" xml:space="preserve">
+        <value>Déplié</value>
+    </data>
+    <data name="ThemeStateCollapsed" xml:space="preserve">
+        <value>Replié</value>
+    </data>
+    <data name="ThemeSelection" xml:space="preserve">
+        <value>Choix</value>
+    </data>
+    <data name="ThemeNavigation" xml:space="preserve">
+        <value>Navigation</value>
+    </data>
+    <data name="ThemeLoaders" xml:space="preserve">
+        <value>Indicateurs de chargement</value>
+    </data>
+    <data name="ThemeOverlays" xml:space="preserve">
+        <value>Superpositions</value>
+    </data>
+    <data name="ThemeOverlaysHint" xml:space="preserve">
+        <value>Ouvrez-en une ici, ou choisissez-la sous « Ouvrir une superposition » pour que les liens et les captures la montrent ouverte.</value>
+    </data>
+    <data name="ThemeSwitchOverlay" xml:space="preserve">
+        <value>Ouvrir une superposition</value>
+    </data>
+    <data name="ThemeOverlayNone" xml:space="preserve">
+        <value>Aucune</value>
+    </data>
+    <data name="ThemeOverlayDropdown" xml:space="preserve">
+        <value>Liste déroulante</value>
+    </data>
+    <data name="ThemeOverlayDatePicker" xml:space="preserve">
+        <value>Sélecteur de date</value>
+    </data>
+    <data name="ThemeOverlayMenu" xml:space="preserve">
+        <value>Menu</value>
+    </data>
+    <data name="ThemeOverlayDialog" xml:space="preserve">
+        <value>Boîte de dialogue</value>
+    </data>
+    <data name="ThemeOverlayPanel" xml:space="preserve">
+        <value>Panneau latéral</value>
+    </data>
+    <data name="ThemeOverlaySnackBar" xml:space="preserve">
+        <value>Messages flottants</value>
+    </data>
+    <data name="ThemeDialogTitle" xml:space="preserve">
+        <value>Supprimer ce bâtiment ?</value>
+    </data>
+    <data name="ThemeDialogMessage" xml:space="preserve">
+        <value>Il disparaît de la liste et de la carte pour tout le monde.</value>
+    </data>
+    <data name="ThemeActions" xml:space="preserve">
+        <value>Actions</value>
+    </data>
+    <data name="ThemeNameError" xml:space="preserve">
+        <value>Saisissez au moins deux lettres.</value>
+    </data>
+    <data name="ThemeQuantity" xml:space="preserve">
+        <value>Quantité</value>
+    </data>
+    <data name="ThemeQuantityError" xml:space="preserve">
+        <value>Commandez-en au moins un.</value>
+    </data>
+    <data name="ThemeCode" xml:space="preserve">
+        <value>Code de vérification</value>
+    </data>
+    <data name="ThemeNotes" xml:space="preserve">
+        <value>Notes</value>
+    </data>
+    <data name="ThemeDateError" xml:space="preserve">
+        <value>Choisissez une date passée.</value>
+    </data>
+    <data name="ThemeChoiceError" xml:space="preserve">
+        <value>Choisissez une des options.</value>
+    </data>
+    <data name="ThemeLinkText" xml:space="preserve">
+        <value>Lire les conditions</value>
+    </data>
+    <data name="ThemeFavorite" xml:space="preserve">
+        <value>Favori</value>
+    </data>
+    <data name="ThemeTooltipText" xml:space="preserve">
+        <value>Enregistré il y a une minute</value>
     </data>
 </root>

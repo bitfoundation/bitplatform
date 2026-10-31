@@ -42,6 +42,7 @@
                 <BitTextField Label="@translation.DisplayName"
                               Value="@values[translation.Culture]"
                               ValueChanged="(string? value) => values[translation.Culture] = value"
+                              Immediate
                               Multiline="(translation.Value?.Length ?? 0) > 60"
                               Rows="3"
                               Dir="@(CultureInfoManager.GetCultureInfo(translation.Culture)?.TextInfo.IsRightToLeft is true ? BitDir.Rtl : BitDir.Ltr)" />
@@ -49,11 +50,11 @@
             <div class="actions">
                 @if (CanSave)
                 {
-                    <BitButton IconName="@BitIconName.Save" IsEnabled="IsChanged && isSaving is false" OnClick="Save">@Localizer[nameof(WorkbenchStrings.SaveTranslations)]</BitButton>
+                    <BitButton IconName="@BitIconName.Save" Disabled="IsChanged is false || isSaving" OnClick="Save">@Localizer[nameof(WorkbenchStrings.SaveTranslations)]</BitButton>
                 }
                 @if (OnAskAgent.HasDelegate)
                 {
-                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Comment" IsEnabled="IsChanged" OnClick="Ask">@Localizer[nameof(WorkbenchStrings.AskTheAgent)]</BitButton>
+                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Comment" Disabled="IsChanged is false" OnClick="Ask">@Localizer[nameof(WorkbenchStrings.AskTheAgent)]</BitButton>
                 }
             </div>
             <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[CanSave ? nameof(WorkbenchStrings.SaveTranslationsHint) : nameof(WorkbenchStrings.SaveTranslationsRemoteHint)]</BitText>

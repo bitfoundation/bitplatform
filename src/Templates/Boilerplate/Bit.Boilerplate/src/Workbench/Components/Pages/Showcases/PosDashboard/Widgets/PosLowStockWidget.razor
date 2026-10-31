@@ -27,7 +27,7 @@
                     <span class="badge @(item.IsOut ? "out" : "low")">@Localizer[item.IsOut ? nameof(WorkbenchStrings.PosOutOfStock) : nameof(WorkbenchStrings.PosLowStockBadge)]</span>
                     @if (ordered.Contains(item.NameKey))
                     {
-                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Accept" IsEnabled="false">@Localizer[nameof(WorkbenchStrings.PosOrdered)]</BitButton>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Accept" Disabled>@Localizer[nameof(WorkbenchStrings.PosOrdered)]</BitButton>
                     }
                     else
                     {

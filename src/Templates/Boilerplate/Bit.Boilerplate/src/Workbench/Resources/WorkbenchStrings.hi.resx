@@ -2158,7 +2158,7 @@
         <value>थीम और कंपोनेंट</value>
     </data>
     <data name="ThemePageDescription" xml:space="preserve">
-        <value>ऐप की विज़ुअल भाषा एक पेज पर: उसके रंग, टाइपोग्राफ़ी, कोने और मुख्य कंपोनेंट अपने हर वैरिएंट में, लाइट, डार्क और दाएँ से बाएँ।</value>
+        <value>एक पेज पर ऐप की दृश्य भाषा: रंग, टाइप और कोने, और ऐप के कंपोनेंट हर स्थिति में, ओवरले बस एक स्विच दूर।</value>
     </data>
     <data name="ThemePageCaption" xml:space="preserve">
         <value>पूरे ऐप में एक जैसा लुक</value>
@@ -2263,7 +2263,7 @@
         <value>अपलोड हो रहा है</value>
     </data>
     <data name="ThemeContainers" xml:space="preserve">
-        <value>कार्ड और टैब</value>
+        <value>कार्ड और लोग</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>टैब {0}</value>
@@ -2489,5 +2489,158 @@
     </data>
     <data name="AgentRepliedOn" xml:space="preserve">
         <value>{0} ने {1} पर जवाब दिया</value>
+    </data>
+    <data name="ThemeStatesNote" xml:space="preserve">
+        <value>होवर, फ़ोकस और दबाया हुआ, कंट्रोल को छुए बिना बनाए जाते हैं, इसलिए फ़ोन पर भी दिखते हैं और कोई कीबोर्ड नहीं खुलता।</value>
+    </data>
+    <data name="ThemeStateDefault" xml:space="preserve">
+        <value>डिफ़ॉल्ट</value>
+    </data>
+    <data name="ThemeStateHover" xml:space="preserve">
+        <value>होवर</value>
+    </data>
+    <data name="ThemeStateFocused" xml:space="preserve">
+        <value>फ़ोकस</value>
+    </data>
+    <data name="ThemeStatePressed" xml:space="preserve">
+        <value>दबाया हुआ</value>
+    </data>
+    <data name="ThemeStateLoading" xml:space="preserve">
+        <value>लोड हो रहा है</value>
+    </data>
+    <data name="ThemeStatePlaceholder" xml:space="preserve">
+        <value>प्लेसहोल्डर</value>
+    </data>
+    <data name="ThemeStateFilled" xml:space="preserve">
+        <value>भरा हुआ</value>
+    </data>
+    <data name="ThemeStateError" xml:space="preserve">
+        <value>त्रुटि</value>
+    </data>
+    <data name="ThemeStateRequired" xml:space="preserve">
+        <value>ज़रूरी</value>
+    </data>
+    <data name="ThemeStateReadOnly" xml:space="preserve">
+        <value>केवल पढ़ने के लिए</value>
+    </data>
+    <data name="ThemeStatePassword" xml:space="preserve">
+        <value>पासवर्ड</value>
+    </data>
+    <data name="ThemeStateMultiline" xml:space="preserve">
+        <value>कई पंक्तियाँ</value>
+    </data>
+    <data name="ThemeStateEmpty" xml:space="preserve">
+        <value>खाली</value>
+    </data>
+    <data name="ThemeStateSelected" xml:space="preserve">
+        <value>चुना हुआ</value>
+    </data>
+    <data name="ThemeStateMultiple" xml:space="preserve">
+        <value>कई चुने हुए</value>
+    </data>
+    <data name="ThemeStateChecked" xml:space="preserve">
+        <value>चेक किया हुआ</value>
+    </data>
+    <data name="ThemeStateUnchecked" xml:space="preserve">
+        <value>बिना चेक</value>
+    </data>
+    <data name="ThemeStateIndeterminate" xml:space="preserve">
+        <value>आंशिक रूप से चेक</value>
+    </data>
+    <data name="ThemeStateOn" xml:space="preserve">
+        <value>चालू</value>
+    </data>
+    <data name="ThemeStateOff" xml:space="preserve">
+        <value>बंद</value>
+    </data>
+    <data name="ThemeStateDisabledOn" xml:space="preserve">
+        <value>अक्षम, चालू</value>
+    </data>
+    <data name="ThemeStateDisabledChecked" xml:space="preserve">
+        <value>अक्षम, चेक किया हुआ</value>
+    </data>
+    <data name="ThemeStateExpanded" xml:space="preserve">
+        <value>खुला हुआ</value>
+    </data>
+    <data name="ThemeStateCollapsed" xml:space="preserve">
+        <value>बंद किया हुआ</value>
+    </data>
+    <data name="ThemeSelection" xml:space="preserve">
+        <value>विकल्प</value>
+    </data>
+    <data name="ThemeNavigation" xml:space="preserve">
+        <value>नेविगेशन</value>
+    </data>
+    <data name="ThemeLoaders" xml:space="preserve">
+        <value>लोडिंग संकेतक</value>
+    </data>
+    <data name="ThemeOverlays" xml:space="preserve">
+        <value>ओवरले</value>
+    </data>
+    <data name="ThemeOverlaysHint" xml:space="preserve">
+        <value>यहाँ कोई एक खोलें, या उसे «ओवरले खोलें» में चुनें ताकि लिंक और स्क्रीनशॉट उसे खुला दिखाएँ।</value>
+    </data>
+    <data name="ThemeSwitchOverlay" xml:space="preserve">
+        <value>ओवरले खोलें</value>
+    </data>
+    <data name="ThemeOverlayNone" xml:space="preserve">
+        <value>कोई नहीं</value>
+    </data>
+    <data name="ThemeOverlayDropdown" xml:space="preserve">
+        <value>ड्रॉपडाउन सूची</value>
+    </data>
+    <data name="ThemeOverlayDatePicker" xml:space="preserve">
+        <value>तारीख चुनने वाला</value>
+    </data>
+    <data name="ThemeOverlayMenu" xml:space="preserve">
+        <value>मेन्यू</value>
+    </data>
+    <data name="ThemeOverlayDialog" xml:space="preserve">
+        <value>संवाद</value>
+    </data>
+    <data name="ThemeOverlayPanel" xml:space="preserve">
+        <value>साइड पैनल</value>
+    </data>
+    <data name="ThemeOverlaySnackBar" xml:space="preserve">
+        <value>स्नैकबार</value>
+    </data>
+    <data name="ThemeDialogTitle" xml:space="preserve">
+        <value>यह इमारत हटाएँ?</value>
+    </data>
+    <data name="ThemeDialogMessage" xml:space="preserve">
+        <value>यह सभी के लिए सूची और नक्शे से हट जाएगी।</value>
+    </data>
+    <data name="ThemeActions" xml:space="preserve">
+        <value>कार्रवाइयाँ</value>
+    </data>
+    <data name="ThemeNameError" xml:space="preserve">
+        <value>कम से कम दो अक्षर लिखें।</value>
+    </data>
+    <data name="ThemeQuantity" xml:space="preserve">
+        <value>मात्रा</value>
+    </data>
+    <data name="ThemeQuantityError" xml:space="preserve">
+        <value>कम से कम एक ऑर्डर करें।</value>
+    </data>
+    <data name="ThemeCode" xml:space="preserve">
+        <value>सत्यापन कोड</value>
+    </data>
+    <data name="ThemeNotes" xml:space="preserve">
+        <value>नोट्स</value>
+    </data>
+    <data name="ThemeDateError" xml:space="preserve">
+        <value>अतीत की कोई तारीख चुनें।</value>
+    </data>
+    <data name="ThemeChoiceError" xml:space="preserve">
+        <value>विकल्पों में से एक चुनें।</value>
+    </data>
+    <data name="ThemeLinkText" xml:space="preserve">
+        <value>शर्तें पढ़ें</value>
+    </data>
+    <data name="ThemeFavorite" xml:space="preserve">
+        <value>पसंदीदा</value>
+    </data>
+    <data name="ThemeTooltipText" xml:space="preserve">
+        <value>एक मिनट पहले सहेजा गया</value>
     </data>
 </root>

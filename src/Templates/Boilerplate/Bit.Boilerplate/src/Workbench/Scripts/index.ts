@@ -1,5 +1,6 @@
 import { highlight, runChecks } from './checks';
 import { cancelInlinePick, connectFrames, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+import { forceStates } from './states';
 
 const host = window as any;
 const isPreview = location.pathname.startsWith('/preview');
@@ -472,6 +473,10 @@ host.workbench = {
 
     runChecks() {
         return runChecks();
+    },
+
+    forceStates() {
+        forceStates();
     },
 
     findTexts(text: string) {

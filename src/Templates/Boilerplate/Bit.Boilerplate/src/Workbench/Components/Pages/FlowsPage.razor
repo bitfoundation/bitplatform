@@ -131,14 +131,14 @@
             {
                 var shown = flow.Screens[presentIndex];
                 <div class="presenter" role="toolbar" aria-label="@Localizer[nameof(WorkbenchStrings.Present)]">
-                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.ChevronLeft" IsEnabled="presentIndex > 0"
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.ChevronLeft" Disabled="presentIndex <= 0"
                                Title="@Localizer[nameof(WorkbenchStrings.PreviousScreen)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.PreviousScreen)]"
                                OnClick="() => Present(presentIndex - 1)" />
                     <span class="presenter-text">
                         <b>@Localizer[nameof(WorkbenchStrings.ScreenOf), presentIndex + 1, flow.Screens.Length]</b>
                         <span dir="auto">@(shown.Note ?? TitleOf(shown.PageKey))</span>
                     </span>
-                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.ChevronRight" IsEnabled="presentIndex < flow.Screens.Length - 1"
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.ChevronRight" Disabled="presentIndex >= flow.Screens.Length - 1"
                                Title="@Localizer[nameof(WorkbenchStrings.NextScreen)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.NextScreen)]"
                                OnClick="() => Present(presentIndex + 1)" />
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel"

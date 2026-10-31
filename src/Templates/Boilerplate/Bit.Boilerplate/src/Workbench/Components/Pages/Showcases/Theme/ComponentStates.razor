@@ -1,0 +1,8 @@
+@inherits WorkbenchComponentBase
+
+<div class="component">
+    <BitText Typography="BitTypography.Subtitle2" Element="h3">@Name</BitText>
+    <div class="states @(Wide ? "wide" : null)">
+        @ChildContent
+    </div>
+</div>

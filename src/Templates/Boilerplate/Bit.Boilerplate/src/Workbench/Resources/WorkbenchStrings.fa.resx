@@ -2158,7 +2158,7 @@
         <value>پوسته و کامپوننت‌ها</value>
     </data>
     <data name="ThemePageDescription" xml:space="preserve">
-        <value>زبان بصری برنامه در یک صفحه: رنگ‌ها، تایپوگرافی، گوشه‌ها و کامپوننت‌های اصلی با همه گونه‌هایشان، در حالت روشن، تیره و راست‌به‌چپ.</value>
+        <value>زبان دیداری برنامه در یک صفحه: رنگ‌ها، قلم‌ها و گوشه‌ها، و کامپوننت‌هایی که برنامه به کار می‌برد در همهٔ حالت‌ها، با پنجره‌های شناور به فاصلهٔ یک کلید.</value>
     </data>
     <data name="ThemePageCaption" xml:space="preserve">
         <value>یک ظاهر در کل برنامه</value>
@@ -2263,7 +2263,7 @@
         <value>در حال آپلود</value>
     </data>
     <data name="ThemeContainers" xml:space="preserve">
-        <value>کارت‌ها و زبانه‌ها</value>
+        <value>کارت‌ها و افراد</value>
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>زبانه {0}</value>
@@ -2489,5 +2489,158 @@
     </data>
     <data name="AgentRepliedOn" xml:space="preserve">
         <value>{0} در {1} جواب داد</value>
+    </data>
+    <data name="ThemeStatesNote" xml:space="preserve">
+        <value>حالت‌های «اشاره»، «فوکوس» و «فشرده» بی آن‌که به کنترل دست بزنیم کشیده می‌شوند؛ پس در گوشی هم دیده می‌شوند و صفحه‌کلید باز نمی‌شود.</value>
+    </data>
+    <data name="ThemeStateDefault" xml:space="preserve">
+        <value>پیش‌فرض</value>
+    </data>
+    <data name="ThemeStateHover" xml:space="preserve">
+        <value>اشاره</value>
+    </data>
+    <data name="ThemeStateFocused" xml:space="preserve">
+        <value>فوکوس</value>
+    </data>
+    <data name="ThemeStatePressed" xml:space="preserve">
+        <value>فشرده</value>
+    </data>
+    <data name="ThemeStateLoading" xml:space="preserve">
+        <value>در حال بارگذاری</value>
+    </data>
+    <data name="ThemeStatePlaceholder" xml:space="preserve">
+        <value>متن راهنما</value>
+    </data>
+    <data name="ThemeStateFilled" xml:space="preserve">
+        <value>پرشده</value>
+    </data>
+    <data name="ThemeStateError" xml:space="preserve">
+        <value>خطا</value>
+    </data>
+    <data name="ThemeStateRequired" xml:space="preserve">
+        <value>الزامی</value>
+    </data>
+    <data name="ThemeStateReadOnly" xml:space="preserve">
+        <value>فقط‌خواندنی</value>
+    </data>
+    <data name="ThemeStatePassword" xml:space="preserve">
+        <value>رمز عبور</value>
+    </data>
+    <data name="ThemeStateMultiline" xml:space="preserve">
+        <value>چندخطی</value>
+    </data>
+    <data name="ThemeStateEmpty" xml:space="preserve">
+        <value>خالی</value>
+    </data>
+    <data name="ThemeStateSelected" xml:space="preserve">
+        <value>انتخاب‌شده</value>
+    </data>
+    <data name="ThemeStateMultiple" xml:space="preserve">
+        <value>چند انتخاب</value>
+    </data>
+    <data name="ThemeStateChecked" xml:space="preserve">
+        <value>تیک‌خورده</value>
+    </data>
+    <data name="ThemeStateUnchecked" xml:space="preserve">
+        <value>بی‌تیک</value>
+    </data>
+    <data name="ThemeStateIndeterminate" xml:space="preserve">
+        <value>نیمه‌تیک‌خورده</value>
+    </data>
+    <data name="ThemeStateOn" xml:space="preserve">
+        <value>روشن</value>
+    </data>
+    <data name="ThemeStateOff" xml:space="preserve">
+        <value>خاموش</value>
+    </data>
+    <data name="ThemeStateDisabledOn" xml:space="preserve">
+        <value>غیرفعال، روشن</value>
+    </data>
+    <data name="ThemeStateDisabledChecked" xml:space="preserve">
+        <value>غیرفعال، تیک‌خورده</value>
+    </data>
+    <data name="ThemeStateExpanded" xml:space="preserve">
+        <value>باز</value>
+    </data>
+    <data name="ThemeStateCollapsed" xml:space="preserve">
+        <value>بسته</value>
+    </data>
+    <data name="ThemeSelection" xml:space="preserve">
+        <value>انتخاب‌ها</value>
+    </data>
+    <data name="ThemeNavigation" xml:space="preserve">
+        <value>پیمایش</value>
+    </data>
+    <data name="ThemeLoaders" xml:space="preserve">
+        <value>نشانگرهای بارگذاری</value>
+    </data>
+    <data name="ThemeOverlays" xml:space="preserve">
+        <value>پنجره‌های شناور</value>
+    </data>
+    <data name="ThemeOverlaysHint" xml:space="preserve">
+        <value>یکی را همین‌جا باز کنید، یا از «باز کردن پنجرهٔ شناور» انتخابش کنید تا پیوندها و تصویرها آن را باز نشان دهند.</value>
+    </data>
+    <data name="ThemeSwitchOverlay" xml:space="preserve">
+        <value>باز کردن پنجرهٔ شناور</value>
+    </data>
+    <data name="ThemeOverlayNone" xml:space="preserve">
+        <value>هیچ</value>
+    </data>
+    <data name="ThemeOverlayDropdown" xml:space="preserve">
+        <value>فهرست کشویی</value>
+    </data>
+    <data name="ThemeOverlayDatePicker" xml:space="preserve">
+        <value>انتخاب‌گر تاریخ</value>
+    </data>
+    <data name="ThemeOverlayMenu" xml:space="preserve">
+        <value>منو</value>
+    </data>
+    <data name="ThemeOverlayDialog" xml:space="preserve">
+        <value>پنجرهٔ گفت‌وگو</value>
+    </data>
+    <data name="ThemeOverlayPanel" xml:space="preserve">
+        <value>پنل کناری</value>
+    </data>
+    <data name="ThemeOverlaySnackBar" xml:space="preserve">
+        <value>پیام‌های پایین صفحه</value>
+    </data>
+    <data name="ThemeDialogTitle" xml:space="preserve">
+        <value>این ساختمان حذف شود؟</value>
+    </data>
+    <data name="ThemeDialogMessage" xml:space="preserve">
+        <value>برای همه از فهرست و نقشه پاک می‌شود.</value>
+    </data>
+    <data name="ThemeActions" xml:space="preserve">
+        <value>کارها</value>
+    </data>
+    <data name="ThemeNameError" xml:space="preserve">
+        <value>دست‌کم دو حرف بنویسید.</value>
+    </data>
+    <data name="ThemeQuantity" xml:space="preserve">
+        <value>تعداد</value>
+    </data>
+    <data name="ThemeQuantityError" xml:space="preserve">
+        <value>دست‌کم یکی سفارش دهید.</value>
+    </data>
+    <data name="ThemeCode" xml:space="preserve">
+        <value>کد تأیید</value>
+    </data>
+    <data name="ThemeNotes" xml:space="preserve">
+        <value>یادداشت‌ها</value>
+    </data>
+    <data name="ThemeDateError" xml:space="preserve">
+        <value>تاریخی در گذشته انتخاب کنید.</value>
+    </data>
+    <data name="ThemeChoiceError" xml:space="preserve">
+        <value>یکی از گزینه‌ها را انتخاب کنید.</value>
+    </data>
+    <data name="ThemeLinkText" xml:space="preserve">
+        <value>خواندن شرایط</value>
+    </data>
+    <data name="ThemeFavorite" xml:space="preserve">
+        <value>برگزیده</value>
+    </data>
+    <data name="ThemeTooltipText" xml:space="preserve">
+        <value>یک دقیقه پیش ذخیره شد</value>
     </data>
 </root>

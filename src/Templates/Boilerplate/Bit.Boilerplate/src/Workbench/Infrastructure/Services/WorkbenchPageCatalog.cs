@@ -14,8 +14,23 @@ public static class WorkbenchPageCatalog
             BitIconName.Color,
             typeof(ThemePage),
             nameof(WorkbenchStrings.CategoryDesignSystem),
-            ["BitButton", "BitTextField", "BitMessage", "BitPivot"],
-            nameof(WorkbenchStrings.ThemePageCaption)),
+            ["BitButton", "BitTextField", "BitDropdown", "BitNavBar", "BitDialog"],
+            nameof(WorkbenchStrings.ThemePageCaption))
+        {
+            Switches =
+            [
+                new("overlay", nameof(WorkbenchStrings.ThemeSwitchOverlay),
+                [
+                    new("none", nameof(WorkbenchStrings.ThemeOverlayNone)),
+                    new("dropdown", nameof(WorkbenchStrings.ThemeOverlayDropdown)),
+                    new("date", nameof(WorkbenchStrings.ThemeOverlayDatePicker)),
+                    new("menu", nameof(WorkbenchStrings.ThemeOverlayMenu)),
+                    new("dialog", nameof(WorkbenchStrings.ThemeOverlayDialog)),
+                    new("panel", nameof(WorkbenchStrings.ThemeOverlayPanel)),
+                    new("snackbar", nameof(WorkbenchStrings.ThemeOverlaySnackBar))
+                ])
+            ]
+        },
         new("pos-dashboard",
             nameof(WorkbenchStrings.PosDashboardTitle),
             nameof(WorkbenchStrings.PosDashboardDescription),

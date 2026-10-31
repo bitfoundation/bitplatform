@@ -13,7 +13,7 @@
                           Placeholder="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]"
                           AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]" />
             <AuthorizeView Policy="@WorkbenchPolicies.ManageBuildings">
-                <BitButton IconName="@BitIconName.Add" OnClick="OpenAdd" IsEnabled="status is PosWidgetStatus.Ready or PosWidgetStatus.Empty">
+                <BitButton IconName="@BitIconName.Add" OnClick="OpenAdd" Disabled="status is not (PosWidgetStatus.Ready or PosWidgetStatus.Empty)">
                     @Localizer[nameof(WorkbenchStrings.BuildingsAdd)]
                 </BitButton>
             </AuthorizeView>
