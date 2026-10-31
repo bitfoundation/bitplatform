@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Bit.Cli.Templates;
 
@@ -24,7 +25,17 @@ public sealed partial class ProjectContext
 
     public bool BuildsSolution => Templates.Platforms.BuildsSolution(Platforms);
 
-    public string BuildPath => Templates.Platforms.BuildPath(Name, Platforms);
+    public string WorkbenchDirectory => Path.Combine(Directory, "src", "Workbench");
+
+    public IReadOnlyList<string> ProjectsOutsideWebFilter
+    {
+        get
+        {
+            var built = ReadFilterProjects(WebSolutionFilter).Append(Templates.Platforms.WorkbenchProject(Name)).Select(FullProjectPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            return [.. ReadSolutionProjects(Solution).Where(project => built.Contains(FullProjectPath(project)) is false)];
+        }
+    }
 
     public string ServerApiDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Api");
 
@@ -123,6 +134,42 @@ public sealed partial class ProjectContext
         catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
         {
             return null;
+        }
+    }
+
+    private string FullProjectPath(string project) => Path.GetFullPath(Path.Combine(Directory, project));
+
+    private static IEnumerable<string> ReadSolutionProjects(string solution)
+    {
+        try
+        {
+            return File.Exists(solution)
+                ? [.. XDocument.Load(solution).Descendants().Where(e => e.Name.LocalName == "Project").Select(e => (string?)e.Attribute("Path")).OfType<string>().Select(path => path.Replace('\\', '/'))]
+                : [];
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException or System.Xml.XmlException)
+        {
+            return [];
+        }
+    }
+
+    private static IEnumerable<string> ReadFilterProjects(string filter)
+    {
+        try
+        {
+            if (File.Exists(filter) is false)
+                return [];
+
+            using var document = JsonDocument.Parse(File.ReadAllText(filter), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            return document.RootElement.ValueKind is JsonValueKind.Object && document.RootElement.TryGetProperty("solution", out var solution) && solution.ValueKind is JsonValueKind.Object
+                && solution.TryGetProperty("projects", out var projects) && projects.ValueKind is JsonValueKind.Array
+                ? [.. projects.EnumerateArray().Where(p => p.ValueKind is JsonValueKind.String).Select(p => p.GetString()!.Replace('\\', '/'))]
+                : [];
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return [];
         }
     }
 

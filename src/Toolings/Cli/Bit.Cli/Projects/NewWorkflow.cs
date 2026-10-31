@@ -85,9 +85,10 @@ public sealed partial class NewWorkflow(CliServices cli)
 
         var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, Template = selection, BuildProperties = request.Properties };
         var administrator = await AdministratorNeeds.FindAsync(cli, selectedTools, needs, request.NoSetup is false && request.NoWorkloads is false, cancellationToken);
+        var runMode = ProjectRun.Mode(cli, selection.Aspire, request.NoBuild, request.NoRun);
 
         TagTelemetry(selection, platforms, selectedTools, ide, request);
-        WritePlan(context, selection, selectedTools, ide, request, administrator);
+        WritePlan(context, selection, selectedTools, ide, request, administrator, runMode);
 
         if (request.DryRun)
         {
@@ -108,99 +109,107 @@ public sealed partial class NewWorkflow(CliServices cli)
         var stopwatch = Stopwatch.StartNew();
         var steps = new StepRunner(cli);
         var projectSteps = new ProjectSteps(cli, context);
-        bool sdkReady;
 
         await AdministratorNeeds.StartAsync(cli, administrator, cancellationToken);
 
         try
         {
-            if (selectedTools.Count > 0)
+            try
             {
-                await new ToolInstaller(cli, steps).InstallAsync(selectedTools, CreateToolContext(cli, needs), cancellationToken);
+                if (selectedTools.Count > 0)
+                {
+                    await new ToolInstaller(cli, steps).InstallAsync(selectedTools, CreateToolContext(cli, needs), cancellationToken);
+                }
+
+                await CreateAsync(steps, context, selection, request, cancellationToken);
+
+                if (request.NoCertificate is false)
+                {
+                    await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate and web push keys", projectSteps.AppCertificateAsync, cancellationToken);
+                }
+
+                if (request.NoGit is false)
+                {
+                    await RunProjectStepAsync(steps, context, "git", "Initializing git", projectSteps.GitAsync, cancellationToken);
+                }
+
+                var sdkReady = await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, request.NoBrowsers, runMode, cancellationToken);
+
+                if (sdkReady is false)
+                {
+                    steps.Add("format", StepResult.Skipped("Skipped the migration, the first start and dotnet format", "they need the project's .NET SDK"));
+                }
+
+                if (sdkReady && request.NoMigration is false && request.NoRestore && selection.Database is not "Other")
+                {
+                    steps.Add("migration", StepResult.Skipped("Skipped the initial migration", "bit setup adds it"));
+                }
+                else if (sdkReady && request.NoMigration is false)
+                {
+                    await RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
+                }
+
+                if (request.NoTrust is false)
+                {
+                    await RunProjectStepAsync(steps, context, "trust", "Trusting the folder", projectSteps.TrustAsync, cancellationToken);
+                }
+
+                if (ide is IdeLocator.VsCode)
+                {
+                    await RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
+                }
+
+                if (sdkReady && runMode is not ProjectRunMode.None)
+                {
+                    await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, selection.Aspire, cancellationToken);
+                }
+
+                if (sdkReady && request.NoFormat is false)
+                {
+                    await RunProjectStepAsync(steps, context, "format", "Formatting the code", projectSteps.FormatAsync, cancellationToken);
+                }
+
+                if (request.GitHubRepo)
+                {
+                    if (context.Exists && context.GitReady && await projectSteps.CanSignInToGitHubAsync(cancellationToken))
+                    {
+                        await steps.RunAsync("github-login", "Signing in to GitHub in your browser", projectSteps.GitHubSignInAsync, cancellationToken, needsTerminal: true);
+                    }
+
+                    await RunProjectStepAsync(steps, context, "github-repo", "Creating a private GitHub repo", projectSteps.GitHubRepositoryAsync, cancellationToken);
+                }
+
+                if (sdkReady)
+                {
+                    await RunNativeStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, cancellationToken);
+                }
+            }
+            finally
+            {
+                await AdministratorNeeds.EndAsync(cli);
             }
 
-            await CreateAsync(steps, context, selection, request, cancellationToken);
-
-            if (request.NoCertificate is false)
+            if (ide is not IdeLocator.None)
             {
-                await RunProjectStepAsync(steps, context, "certificate", "Creating a unique app certificate and web push keys", projectSteps.AppCertificateAsync, cancellationToken);
+                await RunProjectStepAsync(steps, context, "open", "Opening the IDE", (progress, ct) => projectSteps.OpenIdeAsync(ide, progress, ct), cancellationToken);
             }
 
-            if (request.NoGit is false)
-            {
-                await RunProjectStepAsync(steps, context, "git", "Initializing git", projectSteps.GitAsync, cancellationToken);
-            }
-
-            sdkReady = await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, request.NoBrowsers, cancellationToken);
+            WriteSummary(cli, steps, context, selection, stopwatch.Elapsed, request.NoSetup);
         }
-        finally
+        catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null)
         {
-            await AdministratorNeeds.EndAsync(cli);
+            await ProjectRun.StopAsync(projectSteps.Running, projectSteps.Workbench);
+            throw;
         }
 
-        if (sdkReady is false)
-        {
-            steps.Add("format", StepResult.Skipped("Skipped dotnet format, the migration and the first start", "they need the project's .NET SDK"));
-        }
-
-        if (sdkReady && request.NoFormat is false)
-        {
-            await RunProjectStepAsync(steps, context, "format", "Formatting the code", projectSteps.FormatAsync, cancellationToken);
-        }
-
-        if (sdkReady && request.NoMigration is false && request.NoRestore && selection.Database is not "Other")
-        {
-            steps.Add("migration", StepResult.Skipped("Skipped the initial migration", "bit setup adds it"));
-        }
-        else if (sdkReady && request.NoMigration is false)
-        {
-            await RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
-        }
-
-        if (request.GitHubRepo)
-        {
-            if (context.Exists && context.GitReady && await projectSteps.CanSignInToGitHubAsync(cancellationToken))
-            {
-                await steps.RunAsync("github-login", "Signing in to GitHub in your browser", projectSteps.GitHubSignInAsync, cancellationToken, needsTerminal: true);
-            }
-
-            await RunProjectStepAsync(steps, context, "github-repo", "Creating a private GitHub repo", projectSteps.GitHubRepositoryAsync, cancellationToken);
-        }
-
-        if (request.NoTrust is false)
-        {
-            await RunProjectStepAsync(steps, context, "trust", "Trusting the folder", projectSteps.TrustAsync, cancellationToken);
-        }
-
-        if (ide is IdeLocator.VsCode)
-        {
-            await RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
-        }
-
-        var runMode = ProjectRun.Mode(cli, selection.Aspire, request.NoBuild, request.NoRun);
-
-        if (sdkReady && runMode is not ProjectRunMode.None)
-        {
-            await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, selection.Aspire, cancellationToken);
-        }
-
-        if (ide is not IdeLocator.None)
-        {
-            await RunProjectStepAsync(steps, context, "open", "Opening the IDE", (progress, ct) => projectSteps.OpenIdeAsync(ide, progress, ct), cancellationToken);
-        }
-
-        WriteSummary(cli, steps, context, selection, stopwatch.Elapsed, request.NoSetup);
         var exitCode = steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
 
-        if (projectSteps.Running is { } running)
-        {
-            await ProjectRun.KeepRunningAsync(cli, running, cancellationToken);
-        }
+        await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, cancellationToken);
 
         return exitCode;
     }
 
-    public static async Task<bool> RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, CancellationToken cancellationToken)
+    public static async Task<bool> RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, ProjectRunMode runMode, CancellationToken cancellationToken)
     {
         await RunProjectStepAsync(steps, context, "sdk", "Checking the .NET SDK", projectSteps.SdkAsync, cancellationToken);
 
@@ -217,17 +226,26 @@ public sealed partial class NewWorkflow(CliServices cli)
 
         if (noWorkloads is false)
         {
-            await RunProjectStepAsync(steps, context, "workloads", $"Installing {Platforms.BuildSupport(context.Platforms)}", projectSteps.WorkloadsAsync, cancellationToken);
-
-            if (context.BuildsSolution)
-            {
-                await RunProjectStepAsync(steps, context, "android", "Installing the Android SDK and Java", projectSteps.AndroidDependenciesAsync, cancellationToken);
-            }
+            await RunProjectStepAsync(steps, context, "workloads", $"Installing {Platforms.BuildSupport([Platform.Web])}", projectSteps.WorkloadsAsync, cancellationToken);
         }
 
-        if (cli.Environment.IsMacOS && context.BuildsSolution)
+        if (noBuild is false)
         {
-            await RunProjectStepAsync(steps, context, "xcode", "Checking Xcode", projectSteps.XcodeAsync, cancellationToken);
+            await RunProjectStepAsync(steps, context, "workbench-build", "Building the Workbench", projectSteps.WorkbenchBuildAsync, cancellationToken);
+
+            if (runMode is ProjectRunMode.UntilClosed && steps.Reports.LastOrDefault() is { Id: "workbench-build", Result.Status: StepStatus.Failed })
+            {
+                steps.Add("workbench-run", StepResult.Skipped("Didn't start the Workbench", "its build failed"));
+            }
+            else if (runMode is ProjectRunMode.UntilClosed)
+            {
+                await RunProjectStepAsync(steps, context, "workbench-run", "Starting the Workbench", projectSteps.WorkbenchRunAsync, cancellationToken);
+
+                if (projectSteps.Workbench?.AppUrl is { } url)
+                {
+                    ProjectRun.OpenInBrowser(cli, url);
+                }
+            }
         }
 
         if (noRestore is false)
@@ -237,7 +255,7 @@ public sealed partial class NewWorkflow(CliServices cli)
 
         if (noBuild is false)
         {
-            await RunProjectStepAsync(steps, context, "build", context.BuildsSolution ? "Building the solution" : "Building the web app", projectSteps.BuildAsync, cancellationToken);
+            await RunProjectStepAsync(steps, context, "build", "Building the web app", projectSteps.BuildAsync, cancellationToken);
         }
 
         if (noBuild is false && noBrowsers is false)
@@ -246,6 +264,45 @@ public sealed partial class NewWorkflow(CliServices cli)
         }
 
         return true;
+    }
+
+    public static async Task RunNativeStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, CancellationToken cancellationToken)
+    {
+        if (context.BuildsSolution is false)
+            return;
+
+        if (noWorkloads is false)
+        {
+            await RunProjectStepAsync(steps, context, "native-workloads", $"Installing {Platforms.NativeBuildSupport(context.Platforms)}", projectSteps.NativeWorkloadsAsync, cancellationToken);
+            await RunProjectStepAsync(steps, context, "android", "Installing the Android SDK and Java", projectSteps.AndroidDependenciesAsync, cancellationToken);
+        }
+
+        if (cli.Environment.IsMacOS)
+        {
+            await RunProjectStepAsync(steps, context, "xcode", "Checking Xcode", projectSteps.XcodeAsync, cancellationToken);
+        }
+
+        if (noRestore is false)
+        {
+            await RunProjectStepAsync(steps, context, "native-restore", "Restoring the native apps' NuGet packages", projectSteps.NativeRestoreAsync, cancellationToken);
+        }
+
+        if (noBuild)
+            return;
+
+        var projects = context.ProjectsOutsideWebFilter;
+
+        if (projects.Count == 0)
+        {
+            steps.Add("native-build", context.Exists
+                ? StepResult.Skipped("Didn't build the native apps", $"{Path.GetFileName(context.Solution)} has no project that {Path.GetFileName(context.WebSolutionFilter)} leaves out")
+                : StepResult.Skipped("Building the native apps", "the project wasn't created"));
+        }
+
+        foreach (var project in projects)
+        {
+            await RunProjectStepAsync(steps, context, "native-build", $"Building {Path.GetFileNameWithoutExtension(project)}", (progress, ct) => projectSteps.BuildProjectAsync(project, progress, ct), cancellationToken);
+        }
     }
 
     public static async Task RunProjectStepAsync(StepRunner steps, ProjectContext context, string id, string title, Func<Action<string>, CancellationToken, Task<StepResult>> work, CancellationToken cancellationToken)
@@ -464,7 +521,7 @@ public sealed partial class NewWorkflow(CliServices cli)
         cli.Telemetry.SetTag(TelemetryFields.TemplateVersion, request.TemplatePackage is null ? request.TemplateVersion ?? BuildInfo.Version : "local");
     }
 
-    private void WritePlan(ProjectContext context, TemplateSelection selection, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request, IReadOnlyList<string> administrator)
+    private void WritePlan(ProjectContext context, TemplateSelection selection, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request, IReadOnlyList<string> administrator, ProjectRunMode runMode)
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(2)).AddColumn();
 
@@ -483,22 +540,26 @@ public sealed partial class NewWorkflow(CliServices cli)
             Row("Install", string.Join(", ", tools.Select(t => t.Tool.Name)));
         }
 
+        string RestoreAndBuild(string what) => $"{(request.NoRestore ? "build" : request.NoBuild ? "restore" : "restore and build")} {what}";
+
         var stepsList = new List<string> { "create" };
         if (request.NoCertificate is false) stepsList.Add("unique app certificate and web push keys");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
         stepsList.Add(".NET SDK check");
         if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");
-        if (request.NoWorkloads is false) stepsList.Add(Platforms.BuildSupport(context.Platforms));
-        if (cli.Environment.IsMacOS && context.BuildsSolution) stepsList.Add("Xcode check");
-        if (request.NoRestore is false) stepsList.Add("restore");
-        if (request.NoBuild is false) stepsList.Add("build");
+        if (request.NoWorkloads is false) stepsList.Add(Platforms.BuildSupport([Platform.Web]));
+        if (request.NoBuild is false) stepsList.Add(runMode is ProjectRunMode.UntilClosed ? "build and open the Workbench" : "build the Workbench");
+        if (request.NoRestore is false || request.NoBuild is false) stepsList.Add(RestoreAndBuild("the web app"));
         if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
-        if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && request.NoRestore is false && selection.Database is not "Other") stepsList.Add("initial migration");
-        if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
-        if (ProjectRun.Mode(cli, selection.Aspire, request.NoBuild, request.NoRun) is not ProjectRunMode.None and var runMode) stepsList.Add(ProjectRun.PlanText(runMode, selection.Aspire));
+        if (runMode is not ProjectRunMode.None) stepsList.Add(ProjectRun.PlanText(runMode, selection.Aspire));
+        if (request.NoFormat is false) stepsList.Add("dotnet format");
+        if (request.GitHubRepo) stepsList.Add("private GitHub repository");
+        if (context.BuildsSolution && request.NoWorkloads is false) stepsList.Add(Platforms.NativeBuildSupport(context.Platforms));
+        if (context.BuildsSolution && cli.Environment.IsMacOS) stepsList.Add("Xcode check");
+        if (context.BuildsSolution && (request.NoRestore is false || request.NoBuild is false)) stepsList.Add(RestoreAndBuild("the native apps"));
         if (ide is not IdeLocator.None) stepsList.Add($"open in {IdeLocator.Title(ide)}");
         Row("Then", string.Join(", ", stepsList));
 
