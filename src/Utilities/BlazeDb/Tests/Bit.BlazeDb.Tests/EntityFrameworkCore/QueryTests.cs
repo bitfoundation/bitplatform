@@ -310,6 +310,31 @@ public class QueryTests
         Assert.Contains("no navigations", error.Message);
     }
 
+    [TestMethod]
+    public void A_Model_With_A_Query_Filter_Is_Refused()
+    {
+        var options = new DbContextOptionsBuilder<FilteredPeopleContext>()
+            .UseBlazeDb("filtered-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        using var context = new FilteredPeopleContext(options);
+
+        var error = Assert.ThrowsExactly<NotSupportedException>(() => context.People.ToList());
+
+        Assert.Contains("HasQueryFilter", error.Message);
+    }
+
+    [TestMethod]
+    public void A_Model_With_A_Named_Query_Filter_Is_Refused()
+    {
+        var options = new DbContextOptionsBuilder<NamedFilterPeopleContext>()
+            .UseBlazeDb("named-filter-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        using var context = new NamedFilterPeopleContext(options);
+
+        var error = Assert.ThrowsExactly<NotSupportedException>(() => context.People.ToList());
+
+        Assert.Contains("HasQueryFilter", error.Message);
+    }
 
     [TestMethod]
     public void A_Subquery_Over_Another_Set_Runs_Over_That_Tables_Rows()

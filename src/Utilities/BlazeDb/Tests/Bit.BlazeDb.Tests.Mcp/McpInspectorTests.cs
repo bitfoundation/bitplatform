@@ -235,6 +235,30 @@ public class McpInspectorTests
         Assert.IsTrue(report.Notes.Any(note => note.StartsWith("INCOMPLETE ANALYSIS", StringComparison.Ordinal)));
     }
 
+    [TestMethod]
+    public async Task A_source_past_the_inspector_limits_is_refused()
+    {
+        var longName = new string('a', BlazeDbTableInspector.MaxNameLength + 1);
+        var deepNamespace = string.Join('.', Enumerable.Repeat("n", BlazeDbTableInspector.MaxNameLength / 2 + 1));
+        var half = new string('a', BlazeDbTableInspector.MaxNameLength / 2 + 1);
+        var indexes = string.Concat(Enumerable.Range(0, BlazeDbTableInspector.MaxAttributeTokens / 3 + 1).Select(i => $"[BlazeDbIndex] public int P{i} {{ get; set; }}\n"));
+
+        string[] sources =
+        [
+            $$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } public int {{longName}} { get; set; } }""",
+            $$"""namespace {{deepNamespace}} { [BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } } }""",
+            $$"""[BlazeDbTable("t")] public partial class T { const string Half = "{{half}}"; [BlazeDbKey] public int Id { get; set; } [BlazeDbIndex(Name = Half + Half)] public int Value { get; set; } }""",
+            $$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{indexes}} }"""
+        ];
+
+        foreach (var source in sources)
+        {
+            var result = await McpCall.RawAsync("InspectBlazeDbTable", new() { ["source"] = source });
+
+            Assert.IsTrue(result.IsError, source[..80]);
+        }
+    }
+
     private static InspectedItem FullItem() => new()
     {
         Id = Guid.NewGuid(),

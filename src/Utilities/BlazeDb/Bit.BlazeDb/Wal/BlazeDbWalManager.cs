@@ -787,7 +787,7 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     private int ScanRecords(byte[] walBytes, bool replay)
     {
         var offset = 0;
-        var lastLsn = _lastLsn;
+        var lastLsn = _snapshotLsn;
         while (walBytes.Length - offset >= RecordHeaderSize)
         {
             var record = walBytes.AsSpan(offset);
@@ -813,7 +813,12 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                 break;
             }
 
-            if (replay && lsn > _snapshotLsn)
+            if (lsn > lastLsn + 1)
+            {
+                break;
+            }
+
+            if (replay && lsn == lastLsn + 1)
             {
                 ReplayCommit(payload);
             }

@@ -223,6 +223,69 @@ public class EncryptionTests
     }
 
     [TestMethod]
+    public async Task A_Frame_Dropped_From_An_Encrypted_Wal_Stops_Replay_There()
+    {
+        var inner = new BlazeDbInMemoryStorage();
+        var options = () => new BlazeDbDatabaseOptions
+        {
+            Storage = Wrap(inner),
+            FlushInterval = TimeSpan.FromHours(1),
+        }.AddTable(PersonTable.Descriptor);
+
+        var db = await BlazeDbDatabase.OpenAsync(options());
+        var ends = new List<int>();
+        for (var id = 1; id <= 3; id++)
+        {
+            db.GetTable(PersonTable.Descriptor).Insert(new Person(id, "p" + id, id));
+            await db.FlushAsync();
+            ends.Add((await inner.ReadAsync("wal-1.blz"))!.Length);
+        }
+        await db.DisposeAsync();
+
+        var wal = (await inner.ReadAsync("wal-1.blz"))!;
+        await inner.WriteAtomicAsync("wal-1.blz", wal[..ends[0]].Concat(wal[ends[1]..]).ToArray());
+
+        var reopened = await BlazeDbDatabase.OpenAsync(options());
+        Assert.AreSequenceEqual([1], reopened.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id));
+        reopened.GetTable(PersonTable.Descriptor).Insert(new Person(4, "p4", 4));
+        await reopened.FlushAsync();
+        await reopened.DisposeAsync();
+
+        var third = await BlazeDbDatabase.OpenAsync(options());
+        await using var owned = third;
+        Assert.AreSequenceEqual([1, 4], third.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).Order());
+    }
+
+    [TestMethod]
+    public async Task A_Frame_Copied_Again_Into_An_Encrypted_Wal_Is_Not_Replayed_Twice()
+    {
+        var inner = new BlazeDbInMemoryStorage();
+        var options = () => new BlazeDbDatabaseOptions
+        {
+            Storage = Wrap(inner),
+            FlushInterval = TimeSpan.FromHours(1),
+        }.AddTable(PersonTable.Descriptor);
+
+        var db = await BlazeDbDatabase.OpenAsync(options());
+        var people = db.GetTable(PersonTable.Descriptor);
+        people.Insert(new Person(1, "one", 1));
+        await db.FlushAsync();
+        var first = (await inner.ReadAsync("wal-1.blz"))!.Length;
+        people.Update(new Person(1, "uno", 1));
+        people.Insert(new Person(2, "two", 2));
+        await db.FlushAsync();
+        await db.DisposeAsync();
+
+        var wal = (await inner.ReadAsync("wal-1.blz"))!;
+        await inner.WriteAtomicAsync("wal-1.blz", wal.Concat(wal[..first]).ToArray());
+
+        var reopened = await BlazeDbDatabase.OpenAsync(options());
+        await using var owned = reopened;
+        Assert.AreEqual(2, reopened.GetTable(PersonTable.Descriptor).Count);
+        Assert.AreEqual("uno", reopened.GetTable(PersonTable.Descriptor).Get(1)!.Name);
+    }
+
+    [TestMethod]
     public async Task A_Database_Round_Trips_Through_Encrypted_Storage()
     {
         var inner = new BlazeDbInMemoryStorage();
