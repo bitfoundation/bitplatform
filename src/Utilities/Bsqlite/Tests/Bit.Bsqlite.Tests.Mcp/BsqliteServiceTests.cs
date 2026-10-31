@@ -128,6 +128,28 @@ public partial class BsqliteServiceTests
     }
 
     [TestMethod]
+    public async Task An_oversized_list_is_refused_before_any_provider_is_built()
+    {
+        var names = string.Join(",", Enumerable.Range(0, 1_000).Select(i => $"p{i}"));
+        var seventeen = string.Join(",", Enumerable.Range(0, 17).Select(i => $"p{i}"));
+
+        var all = await BsqliteStorageLab.PlanAsync(names, names, names, names, false, null, null, null, null, TestContext.CancellationToken);
+        var registered = await BsqliteStorageLab.PlanAsync("indexeddb", seventeen, null, null, false, null, null, null, null, TestContext.CancellationToken);
+        var unavailable = await BsqliteStorageLab.PlanAsync("indexeddb", null, seventeen, null, false, null, null, null, null, TestContext.CancellationToken);
+        var nonPersistent = await BsqliteStorageLab.PlanAsync("indexeddb", null, null, seventeen, false, null, null, null, null, TestContext.CancellationToken);
+        var sixteen = string.Join(",", Enumerable.Range(1, 15).Select(i => $"p{i}").Prepend("indexeddb"));
+        var atLimit = await BsqliteStorageLab.PlanAsync("indexeddb", sixteen, null, null, false, null, null, null, null, TestContext.CancellationToken);
+
+        Assert.IsTrue(atLimit.Opens);
+        Assert.HasCount(16, atLimit.Candidates);
+        Assert.Contains("'candidates' names more than 16 backends", all.Error!);
+        Assert.Contains("'registered' names more than 16 backends", registered.Error!);
+        Assert.Contains("'unavailable' names more than 16 backends", unavailable.Error!);
+        Assert.Contains("'nonPersistent' names more than 16 backends", nonPersistent.Error!);
+        Assert.IsTrue(new[] { all, registered, unavailable, nonPersistent }.All(plan => plan.Opens is false && plan.Candidates.Length == 0 && plan.Configuration.Length == 0 && plan.Notes.Length == 0));
+    }
+
+    [TestMethod]
     public async Task The_planner_honours_the_database_name()
     {
         var plan = await BsqliteStorageLab.PlanAsync("indexeddb", null, "indexeddb", null, false, null, null, null, "orders.db", TestContext.CancellationToken);

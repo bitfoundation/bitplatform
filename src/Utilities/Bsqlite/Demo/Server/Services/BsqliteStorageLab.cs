@@ -62,19 +62,34 @@ public static class BsqliteStorageLab
     {
         var candidateNames = Names(candidates ?? DefaultCandidates);
         string[] registeredNames = registered is null ? [.. candidateNames.Distinct(StringComparer.OrdinalIgnoreCase)] : Names(registered);
-        var unavailableNames = Names(unavailable).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var nonPersistentNames = Names(nonPersistent).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var unavailableList = Names(unavailable);
+        var nonPersistentList = Names(nonPersistent);
+        var unavailableNames = unavailableList.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var nonPersistentNames = nonPersistentList.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var binding = string.IsNullOrWhiteSpace(existingBinding) ? null : existingBinding.Trim();
         var database = string.IsNullOrWhiteSpace(databaseName) ? DefaultDatabaseName : databaseName.Trim();
+
+        if (Validate(candidateNames, registeredNames, unavailableList, nonPersistentList, binding, database) is { } invalid)
+        {
+            return new BsqliteStoragePlanDto
+            {
+                Opens = false,
+                Candidates = [],
+                Error = invalid,
+                Configuration = string.Empty,
+                Log = [],
+                Notes = []
+            };
+        }
 
         var notes = new List<string>();
 
         var mode = BsqliteStorageMigrationMode.KeepExisting;
-        var configurationError = Validate(candidateNames, registeredNames, unavailableNames, nonPersistentNames, binding, database);
+        string? configurationError = null;
 
         // Parsed by name only: Enum.TryParse also takes "2" or "Manual, KeepExisting", neither of which is
         // something WithMigrationMode could be handed in code.
-        if (configurationError is null && string.IsNullOrWhiteSpace(migrationMode) is false)
+        if (string.IsNullOrWhiteSpace(migrationMode) is false)
         {
             var modeName = MigrationModes.FirstOrDefault(name => string.Equals(name, migrationMode.Trim(), StringComparison.OrdinalIgnoreCase));
 
@@ -458,11 +473,11 @@ public static class BsqliteStorageLab
             ? $"{known.TypeName}.ProviderName"
             : $"\"{name}\"";
 
-    private static string? Validate(string[] candidates, string[] registered, HashSet<string> unavailable, HashSet<string> nonPersistent, string? binding, string database)
+    private static string? Validate(string[] candidates, string[] registered, string[] unavailable, string[] nonPersistent, string? binding, string database)
     {
-        foreach (var (list, label) in new[] { (candidates, "candidates"), (registered, "registered"), (unavailable.ToArray(), "unavailable"), (nonPersistent.ToArray(), "nonPersistent") })
+        foreach (var (list, label) in new[] { (candidates, "candidates"), (registered, "registered"), (unavailable, "unavailable"), (nonPersistent, "nonPersistent") })
         {
-            if (list.Length > MaxNames) return $"'{label}' names {list.Length} backends; this tool plans for at most {MaxNames}.";
+            if (list.Length > MaxNames) return $"'{label}' names more than {MaxNames} backends; this tool plans for at most {MaxNames}.";
 
             if (list.FirstOrDefault(name => name.Length > MaxNameLength) is { } longName) return $"'{longName[..20]}...' is longer than a provider name can usefully be ({MaxNameLength} characters).";
         }
@@ -480,7 +495,7 @@ public static class BsqliteStorageLab
 
     /// <summary>A list of provider names as a caller writes one: "opfs, indexeddb", "opfs indexeddb" or "opfs;indexeddb".</summary>
     private static string[] Names(string? text)
-        => string.IsNullOrWhiteSpace(text) ? [] : text.Split([',', ';', ' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        => string.IsNullOrWhiteSpace(text) ? [] : text.Split([',', ';', ' ', '\t', '\r', '\n'], MaxNames + 1, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     /// <summary>A SQLite header followed by zeros: what the migrator checks and compares, and nothing an engine could open.</summary>
     private static byte[] StandInDatabase()
