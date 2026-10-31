@@ -1611,10 +1611,11 @@ Rendering happens on an offscreen canvas, so real fonts and every image format t
 included. This is the right choice for anything a user downloads.
 
 Before drawing, the export loads the images it shows: those in the exported region, on the layers it includes and,
-for a selection, in the selection. Together they may hold at most `MaxPixels` pixels, read from the header of an
-embedded PNG and taken from the natural size the document records for anything else. An image past that is not loaded, and
-is left out of the export unless the canvas already shows it. Unlike `BinkPngExporter`, the browser export has no
-report of what it left out.
+for a selection, in the selection. Together they may hold at most `MaxPixels` pixels. An embedded PNG is sized from
+its header before it is loaded; anything else is first judged by the natural size the document records, then by the
+size the browser reads from the image as it loads it, since a document can record any size at all. An image past
+the limit is not kept, and is left out of the export unless the canvas already shows it. Unlike `BinkPngExporter`,
+the browser export has no report of what it left out.
 
 The browser encodes JPEG and WebP too, which are far smaller for a drawing over a photo:
 
@@ -1686,7 +1687,9 @@ pixel row it spans, and every element is drawn across its bounds. A document bui
 of edges crossing every row or thousands of elements that each cover the page, can keep one export busy for
 minutes. A server that exports documents it did not write can cap that work with `MaxRasterWork`, counted in edge
 tests, sorted crossings and pixels touched: past it the export throws `InvalidOperationException`. There is no cap
-by default; a page of handwriting at screen size needs well under a hundred million.
+by default; a page of handwriting at screen size needs well under a hundred million. An embedded image is judged
+by the area it is drawn over before it is decoded, so one too costly to draw fails the export without being
+decompressed, even if its data would have turned out unreadable.
 
 `Scale` is independent of the display the drawing was made on. A signature captured on a phone and one captured
 on a desktop export at exactly the same resolution.

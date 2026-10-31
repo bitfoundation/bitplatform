@@ -319,18 +319,66 @@ public sealed class BrowserContractRegressionTests : BunitContext
     }
 
     [TestMethod]
-    public async Task A_long_text_arrives_as_a_stream_and_is_committed()
+    public async Task The_browser_export_counts_an_image_by_the_size_the_browser_reads_not_the_one_the_document_claims()
+    {
+        // A JPEG has no header the export reads, so it took the document's word: one that claimed a single pixel was
+        // loaded whatever its real size, and the images after it were given the whole limit as well.
+        BunitJSModuleInterop module = SetupAttachedModule();
+        module.Setup<IJSStreamReference>("renderToImage", _ => true).SetResult(new TestStreamReference([0x89, (byte)'P', (byte)'N', (byte)'G']));
+        var claimed = BinkImageSource.FromBytes([1, 2, 3], "image/jpeg", 1, 1);
+        var honest = BinkImageSource.FromBytes([4, 5, 6], "image/jpeg", 300, 300);
+        module.Setup<BinkImageMetrics>("loadImage", i => Equals(i.Arguments[1], claimed.Uri)).SetResult(new BinkImageMetrics { Width = 800, Height = 800 });
+        module.Setup<BinkImageMetrics>("loadImage", i => Equals(i.Arguments[1], honest.Uri)).SetResult(new BinkImageMetrics { Width = 300, Height = 300 });
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();
+        canvas.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "execute", module.Invocations));
+        await canvas.InvokeAsync(() =>
+        {
+            canvas.Instance.CurrentDocument.AddElement(new BinkImageElement(claimed, new BinkRect(0, 0, 100, 100)));
+            canvas.Instance.CurrentDocument.AddElement(new BinkImageElement(honest, new BinkRect(200, 0, 100, 100)));
+        });
+
+        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { MaxPixels = 1_000_000 }));
+
+        IReadOnlyList<JSRuntimeInvocation> loads = [.. module.Invocations.Where(i => i.Identifier == "loadImage")];
+        Assert.AreEqual(1_000_000L, loads.Single(i => Equals(i.Arguments[1], claimed.Uri)).Arguments[2], "The browser is told how many pixels are left.");
+        Assert.AreEqual(360_000L, loads.Single(i => Equals(i.Arguments[1], honest.Uri)).Arguments[2], "What the first image really holds is no longer left.");
+    }
+
+    [TestMethod]
+    public async Task A_long_text_arrives_in_parts_ahead_of_its_key_and_is_committed()
     {
         IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
         // Placing a box opens the editor, which is what a commit closes.
         Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
         canvas.WaitForAssertion(() => Assert.IsNotNull(canvas.Find("textarea")));
 
-        string text = new('x', 20_000);
+        string text = string.Concat(Enumerable.Range(0, 2_000).Select(i => $"line {i}\n"));
         var callbacks = new BinkInterop.InteropCallbacks(canvas.Instance);
-        await canvas.InvokeAsync(() => callbacks.OnTextEditorKeyStream("Enter", new TestStreamReference(System.Text.Encoding.UTF8.GetBytes(text))));
+        await canvas.InvokeAsync(() => SendEditorText(callbacks, "Enter", text));
 
         canvas.WaitForAssertion(() => Assert.AreEqual(text, canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text));
+    }
+
+    [TestMethod]
+    public async Task Parts_beyond_what_an_element_holds_are_refused_and_not_kept_for_the_next_commit()
+    {
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
+        Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
+        canvas.WaitForAssertion(() => Assert.IsNotNull(canvas.Find("textarea")));
+        var callbacks = new BinkInterop.InteropCallbacks(canvas.Instance);
+
+        // Only a client that ignores the editor's own limit sends this much.
+        await canvas.InvokeAsync(() =>
+        {
+            for (int i = 0; i < 30; i++) callbacks.OnTextEditorTextPart(new string('x', 4096));
+            callbacks.OnTextEditorKey("Enter", "tail");
+        });
+        Assert.IsNotNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId, "Nothing was committed; the editor stays open.");
+        Assert.AreEqual(string.Empty, canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text);
+
+        await canvas.InvokeAsync(() => callbacks.OnTextEditorKey("Enter", "short"));
+
+        canvas.WaitForAssertion(() => Assert.AreEqual("short", canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text));
     }
 
     [TestMethod]
@@ -343,8 +391,10 @@ public sealed class BrowserContractRegressionTests : BunitContext
     }
 
     [TestMethod]
-    public async Task A_long_text_still_arriving_goes_to_the_box_it_was_typed_in()
+    public async Task A_long_text_still_measured_goes_to_the_box_it_was_typed_in()
     {
+        BunitJSModuleInterop module = SetupAttachedModule();
+        var measure = module.Setup<BinkTextMetrics>("measureText", _ => true);
         IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
         var other = new BinkTextElement(new Vector2(400, 40), "Other") { Size = new Vector2(120, 30) };
         await canvas.InvokeAsync(() =>
@@ -353,24 +403,26 @@ public sealed class BrowserContractRegressionTests : BunitContext
             canvas.Instance.History.Clear();
         });
         Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
-        canvas.WaitForAssertion(() => Assert.IsNotNull(canvas.Find("textarea")));
+        canvas.WaitForAssertion(() => Assert.IsNotNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId));
         Guid typedIn = canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single(e => e.Id != other.Id).Id;
 
-        // The click on the other text blurs the editor, which sends the long text; while it is still being read, the
-        // click itself opens the editor on the other text.
+        // The click on the other text blurs the editor, which sends the long text; while it is still being measured,
+        // the click itself opens the editor on the other text.
         string text = new('x', 20_000);
-        var arrival = new TaskCompletionSource();
         var callbacks = new BinkInterop.InteropCallbacks(canvas.Instance);
-        Task commit = canvas.InvokeAsync(() => callbacks.OnTextEditorKeyStream("Enter", new TestStreamReference(System.Text.Encoding.UTF8.GetBytes(text)) { Arrival = arrival.Task }));
+        await canvas.InvokeAsync(() => SendEditorText(callbacks, "Enter", text));
         Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 420, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 420, 50));
         canvas.WaitForAssertion(() => Assert.AreEqual(other.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId));
-        arrival.SetResult();
-        await commit;
+        measure.SetResult(new BinkTextMetrics { Width = 600, Lines = 1 });
 
-        canvas.WaitForAssertion(() => Assert.AreEqual(text, ((BinkTextElement)canvas.Instance.CurrentDocument.GetElement(typedIn)).Text));
+        // Checked together: the commit runs on the dispatcher, and the text is in place before the undo step closes.
+        canvas.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(text, ((BinkTextElement)canvas.Instance.CurrentDocument.GetElement(typedIn)).Text);
+            Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one closed undo step.");
+        });
         Assert.AreEqual("Other", ((BinkTextElement)canvas.Instance.CurrentDocument.GetElement(other.Id)).Text);
         Assert.AreEqual(other.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId, "The editor now open is left alone.");
-        Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one closed undo step.");
     }
 
     [TestMethod]
@@ -386,6 +438,18 @@ public sealed class BrowserContractRegressionTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_long_text_typed_before_the_canvas_turns_read_only_is_kept()
+    {
+        // Read as a stream, a long text reached the canvas after the lock button's click, which had already cancelled
+        // the edit and removed the new box: neither the text nor the box survived.
+        string text = new('x', 20_000);
+        IRenderedComponent<BinkCanvas> canvas = await EndATextEditWhileItIsMeasuredAsync(c => c.Render(p => p.Add(x => x.ReadOnly, true)), text: text);
+
+        Assert.AreEqual(text, canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text);
+        Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one undo step.");
+    }
+
+    [TestMethod]
     public async Task Text_typed_before_switching_tools_is_kept()
     {
         IRenderedComponent<BinkCanvas> canvas = await EndATextEditWhileItIsMeasuredAsync(c => c.Render(p => p.Add(x => x.Tool, new BinkDrawTool())));
@@ -393,6 +457,28 @@ public sealed class BrowserContractRegressionTests : BunitContext
         Assert.AreEqual("typed", canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text);
         Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one undo step.");
         Assert.IsNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId);
+    }
+
+    [TestMethod]
+    public async Task Text_settled_without_its_measurement_is_not_left_with_the_size_of_the_old_text()
+    {
+        // The size an existing element keeps when none is given was measured for "Hi". Kept for a long sentence, hit
+        // testing, the selection box and export all used bounds a fraction of the text's.
+        BunitJSModuleInterop module = SetupAttachedModule();
+        module.Setup<BinkTextMetrics>("measureText", _ => true);
+        var existing = new BinkTextElement(new Vector2(40, 40), "Hi") { Size = new Vector2(20, 30) };
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
+        await canvas.InvokeAsync(() => canvas.Instance.CurrentDocument.AddElement(existing));
+        Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
+        canvas.WaitForAssertion(() => Assert.AreEqual(existing.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId));
+
+        const string sentence = "Hi there, this is a much longer sentence than before";
+        await canvas.InvokeAsync(() => new BinkInterop.InteropCallbacks(canvas.Instance).OnTextEditorKey("Enter", sentence));
+        canvas.Render(p => p.Add(c => c.Tool, new BinkSelectTool()));
+
+        var edited = (BinkTextElement)canvas.Instance.CurrentDocument.GetElement(existing.Id);
+        Assert.AreEqual(sentence, edited.Text);
+        Assert.AreEqual((edited with { Size = null }).EstimateSize(), edited.EffectiveSize);
     }
 
     [TestMethod]
@@ -410,28 +496,104 @@ public sealed class BrowserContractRegressionTests : BunitContext
         canvas.WaitForAssertion(() => Assert.AreEqual(existing.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId));
 
         canvas.Render(p => p.Add(c => c.ReadOnly, true));
-        // A long text read as a stream reaches the canvas only after the read, by which time it is read-only.
-        await canvas.InvokeAsync(() => ((IBinkInteropClient)canvas.Instance).OnTextEditorKey("Enter", "changed", existing.Id));
+        // Closing the editor blurs it, and the browser reports that blur after the canvas became read-only.
+        await canvas.InvokeAsync(() => ((IBinkInteropClient)canvas.Instance).OnTextEditorKey("Blur", "changed", existing.Id));
 
         Assert.IsNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId);
         Assert.AreEqual("Hello", ((BinkTextElement)canvas.Instance.CurrentDocument.GetElement(existing.Id)).Text);
         Assert.AreEqual(0, canvas.Instance.History.UndoCount);
     }
 
+    [TestMethod]
+    public async Task Text_typed_before_a_two_finger_gesture_is_kept()
+    {
+        // The first finger blurs the editor; the second one, arriving while the text is measured, starts a pan, which
+        // cancels whatever the tool was doing and with it removed the new box.
+        IRenderedComponent<BinkCanvas> canvas = await EndATextEditWhileItIsMeasuredAsync(
+            c => Send(c, Sample(2, BinkPointerKind.Touch, BinkPointerPhase.Down, 200, 200), Sample(3, BinkPointerKind.Touch, BinkPointerPhase.Down, 260, 200)),
+            touch: true);
+
+        Assert.AreEqual("typed", canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text);
+        Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one undo step.");
+    }
+
+    [TestMethod]
+    public async Task Text_typed_before_another_document_is_loaded_stays_in_its_document()
+    {
+        // A "next page" button blurs the editor, then loads the next page while the text is measured.
+        BinkDocument? first = null;
+        IRenderedComponent<BinkCanvas> canvas = await EndATextEditWhileItIsMeasuredAsync(c => c.InvokeAsync(() =>
+        {
+            first = c.Instance.CurrentDocument;
+            c.Instance.LoadDocument(new BinkDocument());
+        }).GetAwaiter().GetResult());
+
+        Assert.AreEqual("typed", first!.AllElements.OfType<BinkTextElement>().Single().Text);
+        Assert.IsEmpty(canvas.Instance.CurrentDocument.AllElements);
+    }
+
+    [TestMethod]
+    public async Task Text_typed_before_the_canvas_is_removed_stays_in_the_document()
+    {
+        // A navigation link blurs the editor, then removes the page while the text is measured. The document belongs
+        // to the application and outlives the canvas.
+        BinkDocument? document = null;
+        await EndATextEditWhileItIsMeasuredAsync(c => c.InvokeAsync(async () =>
+        {
+            document = c.Instance.CurrentDocument;
+            await c.Instance.DisposeAsync();
+        }).GetAwaiter().GetResult());
+
+        Assert.AreEqual("typed", document!.AllElements.OfType<BinkTextElement>().Single().Text);
+    }
+
+    [TestMethod]
+    public async Task A_commit_whose_measurement_failed_is_not_applied_later_over_newer_text()
+    {
+        BunitJSModuleInterop module = SetupAttachedModule();
+        var first = module.Setup<BinkTextMetrics>("measureText", i => Equals(i.Arguments[1], "first"));
+        var second = module.Setup<BinkTextMetrics>("measureText", i => Equals(i.Arguments[1], "second"));
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
+        Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
+        canvas.WaitForAssertion(() => Assert.IsNotNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId));
+        var callbacks = new BinkInterop.InteropCallbacks(canvas.Instance);
+
+        // The first measurement never comes back (the interop call times out); the editor stays open and the user
+        // commits again.
+        await canvas.InvokeAsync(() => callbacks.OnTextEditorKey("Enter", "first"));
+        first.SetCanceled();
+        await canvas.InvokeAsync(() => callbacks.OnTextEditorKey("Enter", "second"));
+        second.SetResult(new BinkTextMetrics { Width = 60, Lines = 1 });
+        canvas.WaitForAssertion(() => Assert.AreEqual("second", canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text));
+
+        canvas.Render(p => p.Add(c => c.Tool, new BinkDrawTool()));
+
+        Assert.AreEqual("second", canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text);
+    }
+
+    /// <summary>Sends the editor's value as the browser does: a long one in parts ahead of the key.</summary>
+    private static void SendEditorText(BinkInterop.InteropCallbacks callbacks, string key, string text)
+    {
+        const int partLength = 4096;
+        int start = 0;
+        for (; text.Length - start > partLength; start += partLength) callbacks.OnTextEditorTextPart(text.Substring(start, partLength));
+        callbacks.OnTextEditorKey(key, text[start..]);
+    }
+
     /// <summary>
     /// Places a text box and ends the edit with a blur, then runs <paramref name="interrupt"/> while the browser is
     /// still measuring the text, which is when the click that caused the blur arrives on Blazor Server.
     /// </summary>
-    private async Task<IRenderedComponent<BinkCanvas>> EndATextEditWhileItIsMeasuredAsync(Action<IRenderedComponent<BinkCanvas>> interrupt)
+    private async Task<IRenderedComponent<BinkCanvas>> EndATextEditWhileItIsMeasuredAsync(Action<IRenderedComponent<BinkCanvas>> interrupt, bool touch = false, string text = "typed")
     {
         BunitJSModuleInterop module = SetupAttachedModule();
         var measure = module.Setup<BinkTextMetrics>("measureText", _ => true);
-        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()).Add(c => c.EnableTouchGestures, touch));
         Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
         canvas.WaitForAssertion(() => Assert.IsNotNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId));
 
         var callbacks = new BinkInterop.InteropCallbacks(canvas.Instance);
-        await canvas.InvokeAsync(() => callbacks.OnTextEditorKey("Blur", "typed"));
+        await canvas.InvokeAsync(() => SendEditorText(callbacks, "Blur", text));
         interrupt(canvas);
 
         // The measurement returning afterwards must not apply the text a second time.

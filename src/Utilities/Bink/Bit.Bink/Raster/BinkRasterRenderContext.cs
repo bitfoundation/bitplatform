@@ -303,7 +303,9 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     /// <see cref="MaxImagePixels"/>, what is left of <see cref="ImagePixelBudget"/>, and, for an image beyond
     /// <see cref="SmallImagePixels"/>, a density sensible for where it is drawn. The size is read from the header
     /// first, so an image that is refused is never decompressed, and neither is one whose drawing, which costs
-    /// <paramref name="work"/>, would fail the export on <see cref="RasterWorkBudget"/> anyway.
+    /// <paramref name="work"/>, would fail the export on <see cref="RasterWorkBudget"/> anyway. Whether the data past
+    /// the header is readable is only known by decompressing it, so an image that would have been skipped as
+    /// undecodable fails the export too: a document is held to the work it asks for.
     /// </summary>
     private BinkPngCodec.DecodedImage? GetImage(BinkImageSource image, BinkRect destination, BinkRect deviceRect, long work)
     {
