@@ -1,6 +1,5 @@
 ﻿using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Bit.Bonboarding.Tests.Infrastructure;
 
@@ -8,20 +7,27 @@ namespace Bit.Bonboarding.Tests;
 
 /// <summary>
 /// Where the components take their services from. An app that lazy loads Bit.Bonboarding on WebAssembly cannot call
-/// AddBitBonboardingServices, so the components create their own and GetBonboardingService hands out the same
-/// service; an app that did register keeps exactly what it registered.
+/// AddBitBonboardingServices, so it turns the Bit.Bonboarding.LazyLoad switch on, the components create their own and
+/// GetBonboardingService hands out the same service; an app that did register keeps exactly what it registered, and one
+/// that did neither fails the way it always has.
 /// </summary>
 [TestClass]
 public sealed class LazyLoadingTests : BunitContext
 {
     public LazyLoadingTests()
     {
+        // What a lazy loading app's .csproj turns on. The switch is process-wide, so every test turns it off again.
+        AppContext.SetSwitch(BonboardingRuntime.LazyLoadSwitch, true);
+
         JSInterop.Mode = JSRuntimeMode.Loose;
         var module = JSInterop.SetupModule("./_content/Bit.Bonboarding/bit-bonboarding.js");
         module.Mode = JSRuntimeMode.Loose;
         module.Setup<BonboardingBrowserEnvironment>("initialize", _ => true).SetResult(new BonboardingBrowserEnvironment());
         module.Setup<BonboardingStepGeometry>("activateStep", _ => true).SetResult(BonboardingStepGeometry.Missing);
     }
+
+    [TestCleanup]
+    public void TurnTheSwitchOff() => AppContext.SetSwitch(BonboardingRuntime.LazyLoadSwitch, false);
 
     private static BonboardingTourDefinition Tour(string id, string title = "Welcome") => new()
     {
@@ -46,16 +52,38 @@ public sealed class LazyLoadingTests : BunitContext
         Assert.AreSame(services.GetRequiredService<IBonboardingInterop>(), runtime.Interop);
         Assert.AreSame(services.GetRequiredService<IBonboardingLocalizer>(), runtime.Localizer);
         Assert.AreSame(services.GetRequiredService<IBonboardingService>(), services.GetBonboardingService());
+
+        // One for the scope, rather than one for every component in it.
+        Assert.AreSame(runtime, BonboardingRuntime.Of(services));
     }
 
     [TestMethod]
-    public async Task A_registered_IBonboardingService_is_handed_out_even_without_the_rest_of_the_registration()
+    public async Task A_registered_IBonboardingService_is_the_one_both_the_components_and_app_code_use()
     {
-        // A test double or a decorator: only the interface is registered.
+        // A test double or a hand-wired service: only the interface and the clock are registered, which is all a
+        // BonboardingTour needs.
         await using var harness = new BonboardingHarness();
         Services.AddSingleton(harness.Service);
+        Services.AddSingleton(TimeProvider.System);
 
+        Render<BonboardingTour>(parameters => parameters
+            .Add(tour => tour.Id, "markup")
+            .AddChildContent<BonboardingStep>(step => step.Add(s => s.Title, "From the markup")));
+
+        Assert.IsNotNull(harness.Service.GetTour("markup"), "The tour in the markup registered with the registered service.");
         Assert.AreSame(harness.Service, Services.GetBonboardingService());
+    }
+
+    [TestMethod]
+    public void Without_the_registration_or_the_switch_bonboarding_fails_naming_both()
+    {
+        AppContext.SetSwitch(BonboardingRuntime.LazyLoadSwitch, false);
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => Services.GetBonboardingService());
+
+        Assert.Contains("AddBitBonboardingServices", error.Message);
+        Assert.Contains(BonboardingRuntime.LazyLoadSwitch, error.Message);
+        Assert.ThrowsExactly<InvalidOperationException>(() => Render<BonboardingRoot>());
     }
 
     [TestMethod]
@@ -76,7 +104,7 @@ public sealed class LazyLoadingTests : BunitContext
     }
 
     [TestMethod]
-    public async Task A_partial_registration_keeps_its_options_observers_and_services_but_never_mixes_in_its_own()
+    public async Task Without_the_registration_the_options_observers_and_services_the_app_registered_are_honoured()
     {
         var observer = new RecordingObserver();
         var marker = new object();
@@ -107,19 +135,47 @@ public sealed class LazyLoadingTests : BunitContext
     }
 
     [TestMethod]
-    public async Task Without_the_registration_bonboarding_warns_once_per_app_rather_than_once_per_connection()
+    public async Task Without_the_registration_a_store_and_a_localizer_the_app_registered_replace_the_defaults()
     {
-        var warnings = new List<string>();
-        var loggers = new SinkLoggerFactory(warnings);
-        await using var firstCircuit = new ServiceCollection().AddSingleton<IJSRuntime>(new PrerenderJSRuntime()).AddSingleton<ILoggerFactory>(loggers).BuildServiceProvider();
-        await using var secondCircuit = new ServiceCollection().AddSingleton<IJSRuntime>(new PrerenderJSRuntime()).AddSingleton<ILoggerFactory>(loggers).BuildServiceProvider();
+        var store = new BonboardingInMemoryStore();
+        var localizer = new FixedLocalizer();
+        await using var app = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(new PrerenderJSRuntime())
+            .AddSingleton<IBonboardingStore>(store)
+            .AddSingleton<IBonboardingLocalizer>(localizer)
+            .BuildServiceProvider();
 
-        firstCircuit.GetBonboardingService();
-        firstCircuit.GetBonboardingService();
-        secondCircuit.GetBonboardingService();
+        var runtime = BonboardingRuntime.Of(app);
+        await store.SetAsync(new BonboardingRecord { TourId = "kept" });
 
-        var warning = warnings.Single();
-        Assert.Contains("AddBitBonboardingServices", warning);
+        Assert.AreSame(localizer, runtime.Localizer);
+        Assert.IsNotNull(await runtime.Service.GetRecordAsync("kept"), "The record was read from the registered store, not the browser.");
+    }
+
+    [TestMethod]
+    public async Task A_scope_app_code_asked_from_first_gives_way_to_the_one_the_components_are_given()
+    {
+        // As on WebAssembly: one IJSRuntime for the whole app, the renderer's scope for the components, and a shorter one
+        // an OwningComponentBase's ScopedServices would be.
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new PrerenderJSRuntime()).AddScoped<ScopedMarker>().BuildServiceProvider();
+        await using var components = app.CreateAsyncScope();
+        var owned = app.CreateAsyncScope();
+
+        var service = owned.ServiceProvider.GetBonboardingService();
+        new BonboardingRuntime.Handle(typeof(BonboardingRoot), BonboardingRuntime.Needs.Service).Get(components.ServiceProvider);
+        await owned.DisposeAsync();
+
+        ScopedMarker? seen = null;
+        var tour = Tour("scoped");
+        tour.CanStart = context =>
+        {
+            seen = context.Services.GetRequiredService<ScopedMarker>();
+            return ValueTask.FromResult(true);
+        };
+
+        await service.StartAsync(tour);
+
+        Assert.AreSame(components.ServiceProvider.GetRequiredService<ScopedMarker>(), seen);
     }
 
     [TestMethod]
@@ -162,8 +218,9 @@ public sealed class LazyLoadingTests : BunitContext
     [TestMethod]
     public async Task A_component_that_failed_to_start_does_not_fail_again_when_disposed()
     {
-        // Half a registration: the host registry is there, the rest is not, so resolving the services throws.
-        Services.AddScoped<BonboardingHostRegistry>();
+        // The service alone is registered: the host and the list need more of the registration, so resolving fails.
+        await using var harness = new BonboardingHarness();
+        Services.AddSingleton(harness.Service);
 
         Assert.ThrowsExactly<InvalidOperationException>(() => Render<BonboardingRoot>());
         Assert.ThrowsExactly<InvalidOperationException>(() => Render<BonboardingTourList>());
@@ -171,6 +228,39 @@ public sealed class LazyLoadingTests : BunitContext
         // Disposing them must not resolve the services again, and throw a second time.
         await DisposeComponentsAsync();
         Assert.IsNull(Renderer.UnhandledException.IsCompleted ? await Renderer.UnhandledException : null);
+    }
+
+    [TestMethod]
+    public async Task A_failed_resolution_is_not_tried_again()
+    {
+        var attempts = 0;
+        await using var services = new ServiceCollection()
+            .AddScoped<IBonboardingService>(_ => throw new InvalidOperationException($"Attempt {++attempts}."))
+            .BuildServiceProvider();
+        var handle = new BonboardingRuntime.Handle(typeof(BonboardingTour), BonboardingRuntime.Needs.Service);
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => handle.Get(services));
+        var again = Assert.ThrowsExactly<InvalidOperationException>(() => handle.Get(services));
+
+        Assert.AreEqual("Attempt 1.", again.Message);
+        Assert.AreEqual(1, attempts);
+    }
+
+    [TestMethod]
+    public void A_disposed_component_resolves_nothing_more()
+    {
+        var unused = new BonboardingRuntime.Handle(typeof(BonboardingTour), BonboardingRuntime.Needs.Service);
+
+        Assert.IsNull(unused.Close());
+        var error = Assert.ThrowsExactly<ObjectDisposedException>(() => unused.Get(Services));
+        Assert.Contains(nameof(BonboardingTour), error.ObjectName);
+
+        // What it did resolve stays, for the members that still read it on the way out.
+        var used = new BonboardingRuntime.Handle(typeof(BonboardingTour), BonboardingRuntime.Needs.Service);
+        var runtime = used.Get(Services);
+
+        Assert.AreSame(runtime, used.Close());
+        Assert.AreSame(runtime, used.Get(Services));
     }
 
     /// <summary>A JS runtime as it is while prerendering: every call fails the way Blazor's does then.</summary>
@@ -183,21 +273,10 @@ public sealed class LazyLoadingTests : BunitContext
             => throw new InvalidOperationException("JavaScript interop calls cannot be issued at this time.");
     }
 
-    private sealed class SinkLoggerFactory(List<string> warnings) : ILoggerFactory
+    private sealed class FixedLocalizer : IBonboardingLocalizer
     {
-        public ILogger CreateLogger(string categoryName) => new SinkLogger(warnings);
-        public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
-        public void Dispose() { }
+        public BonboardingLabels GetLabels(BonboardingTourDefinition? tour) => new();
     }
 
-    private sealed class SinkLogger(List<string> warnings) : ILogger
-    {
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-        public bool IsEnabled(LogLevel logLevel) => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-        {
-            if (logLevel == LogLevel.Warning) warnings.Add(formatter(state, exception));
-        }
-    }
+    private sealed class ScopedMarker;
 }

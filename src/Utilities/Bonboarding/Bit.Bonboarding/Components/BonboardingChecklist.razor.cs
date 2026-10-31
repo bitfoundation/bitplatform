@@ -32,10 +32,10 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
 
     [Inject] private ILogger<BonboardingChecklist> Logger { get; set; } = default!;
 
-    // Resolved rather than injected, so the checklist also works when the app never called AddBitBonboardingServices.
-    // Null until first used: DisposeAsync leaves alone what was never resolved.
-    private BonboardingRuntime? _runtime;
-    private BonboardingRuntime Runtime => _runtime ??= BonboardingRuntime.Of(Services);
+    // Resolved rather than injected, so the checklist also works in an app that lazy loads Bit.Bonboarding.
+    private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingChecklist),
+        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Guidance | BonboardingRuntime.Needs.Localizer);
+    private BonboardingRuntime Runtime => _runtime.Get(Services);
     private IBonboardingService BonboardingService => Runtime.Service;
     private BonboardingGuidanceRegistry Guidance => Runtime.Guidance;
     private IBonboardingLocalizer Localizer => Runtime.Localizer;
@@ -264,7 +264,8 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
         _disposed = true;
 
         // Nothing was subscribed to or registered when the services were never reached - resolving them failed, say.
-        if (_runtime is null) return ValueTask.CompletedTask;
+        // Closed from here on: nothing is resolved for a component that is gone.
+        if (_runtime.Close() is null) return ValueTask.CompletedTask;
 
         BonboardingService.EventRaised -= OnTourEvent;
         Guidance.ChecklistChanged -= OnChecklistChanged;

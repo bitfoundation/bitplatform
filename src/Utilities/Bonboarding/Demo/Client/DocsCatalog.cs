@@ -91,7 +91,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register the services, link the stylesheet, host one BonboardingRoot, point a first tour at an element and let people replay it.",
-                "install setup nuget package AddBitBonboardingServices quick start program.cs stylesheet BonboardingRoot render mode prerendering anchor selector ElementReference target replay StartAsync by id lazy load lazyassemblyloader blazorwebassemblylazyload GetBonboardingService aot",
+                "install setup nuget package AddBitBonboardingServices quick start program.cs stylesheet BonboardingRoot render mode prerendering anchor selector ElementReference target replay StartAsync by id lazy load lazyassemblyloader blazorwebassemblylazyload Bit.Bonboarding.LazyLoad RuntimeHostConfigurationOption switch GetBonboardingService aot",
                 typeof(GettingStarted)),
         ]),
         new("Guides",

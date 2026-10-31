@@ -19,10 +19,10 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    // Resolved rather than injected, so the tour also registers when the app never called AddBitBonboardingServices.
-    // Null until first used: DisposeAsync leaves alone what was never resolved.
-    private BonboardingRuntime? _runtime;
-    private BonboardingRuntime Runtime => _runtime ??= BonboardingRuntime.Of(Services);
+    // Resolved rather than injected, so the tour also registers in an app that lazy loads Bit.Bonboarding.
+    private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingTour),
+        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Time);
+    private BonboardingRuntime Runtime => _runtime.Get(Services);
     private IBonboardingService BonboardingService => Runtime.Service;
     private TimeProvider Time => Runtime.Time;
 
@@ -311,7 +311,8 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
         _disposed = true;
 
         // Nothing was registered when the services were never reached - resolving them failed, say.
-        if (_runtime is null) return;
+        // Closed from here on: nothing is resolved for a component that is gone.
+        if (_runtime.Close() is null) return;
 
         // Leave a running session alone: the tour may legitimately outlive the markup that
         // declared it, for instance while navigating between the pages of a multi-page tour.

@@ -32,10 +32,10 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
 
     [Inject] private ILogger<BonboardingBeacon> Logger { get; set; } = default!;
 
-    // Resolved rather than injected, so the beacon also works when the app never called AddBitBonboardingServices.
-    // Null until first used: DisposeAsync leaves alone what was never resolved.
-    private BonboardingRuntime? _runtime;
-    private BonboardingRuntime Runtime => _runtime ??= BonboardingRuntime.Of(Services);
+    // Resolved rather than injected, so the beacon also works in an app that lazy loads Bit.Bonboarding.
+    private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingBeacon),
+        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Guidance | BonboardingRuntime.Needs.Interop | BonboardingRuntime.Needs.Localizer);
+    private BonboardingRuntime Runtime => _runtime.Get(Services);
     private IBonboardingService BonboardingService => Runtime.Service;
     private BonboardingGuidanceRegistry Guidance => Runtime.Guidance;
     private IBonboardingInterop Interop => Runtime.Interop;
@@ -375,7 +375,8 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
         _disposed = true;
 
         // Nothing was subscribed to or attached when the services were never reached - resolving them failed, say.
-        if (_runtime is null) return;
+        // Closed from here on: nothing is resolved for a component that is gone.
+        if (_runtime.Close() is null) return;
 
         BonboardingService.SessionsChanged -= OnSessionsChanged;
         BonboardingService.EventRaised -= OnTourEvent;

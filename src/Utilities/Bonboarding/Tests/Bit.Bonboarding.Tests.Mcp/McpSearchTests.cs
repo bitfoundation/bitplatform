@@ -48,8 +48,11 @@ public partial class McpSearchTests
         ("tour across several pages", ["Multi-page tours"]),
         // "3" names nothing: it is only the number of a numbered heading.
         ("show the hint 3 times", ["A one-step hint"]),
-        // A section a synonym names does not outrank the ones the word is the name of ("loading" is "load").
-        ("load", ["Surviving a full page load", "Lazy loading on WebAssembly"]),
+        // A section a synonym names does not outrank the one the word is the name of - nor does one whose heading merely
+        // says "loading".
+        ("load", ["Surviving a full page load"]),
+        ("lazy load", ["Lazy loading on WebAssembly"]),
+        ("lazy loading the assembly", ["Lazy loading on WebAssembly"]),
     ];
 
     [TestMethod]

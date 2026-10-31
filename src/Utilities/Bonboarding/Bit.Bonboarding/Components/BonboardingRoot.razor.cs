@@ -33,10 +33,10 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    // Resolved rather than injected, so the host also works when the app never called AddBitBonboardingServices. Null
-    // until first used: DisposeAsync leaves alone what was never resolved.
-    private BonboardingRuntime? _runtime;
-    private BonboardingRuntime Runtime => _runtime ??= BonboardingRuntime.Of(Services);
+    // Resolved rather than injected, so the host also works in an app that lazy loads Bit.Bonboarding.
+    private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingRoot),
+        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Localizer | BonboardingRuntime.Needs.Hosts);
+    private BonboardingRuntime Runtime => _runtime.Get(Services);
     private IBonboardingService BonboardingService => Runtime.Service;
     private IBonboardingLocalizer Localizer => Runtime.Localizer;
     private BonboardingHostRegistry Hosts => Runtime.Hosts;
@@ -419,7 +419,8 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
         _disposed = true;
 
         // Nothing was claimed or subscribed to when the services were never reached - resolving them failed, say.
-        if (_runtime is null) return ValueTask.CompletedTask;
+        // Closed from here on: nothing is resolved for a component that is gone.
+        if (_runtime.Close() is null) return ValueTask.CompletedTask;
 
         BonboardingService.SessionsChanged -= OnSessionsChanged;
         Hosts.Changed -= OnSessionsChanged;
