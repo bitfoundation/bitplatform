@@ -98,7 +98,7 @@
 
 @code {
     // Resolved rather than injected, so the editor also works when the app never called AddBitBmageServices.
-    private IServiceProvider EditorServices => field ??= BitBmage.GetEditorServices(Services);
+    private IServiceProvider EditorServices => field ??= BitBmageBlazor.GetEditorServices(Services);
     private ImageLoader Loader => field ??= EditorServices.GetRequiredService<ImageLoader>();
     private ImageExporter Exporter => field ??= EditorServices.GetRequiredService<ImageExporter>();
     private IImageCapabilityProvider Capabilities => field ??= EditorServices.GetRequiredService<IImageCapabilityProvider>();

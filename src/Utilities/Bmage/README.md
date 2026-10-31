@@ -87,15 +87,17 @@ Blazor-native image processing platform where the engine itself is C#.
 
 | Package | What it contains | Depends on |
 | --- | --- | --- |
-| `Bit.Bmage` | The engine, browser codecs, capabilities, loading and export, headless processing on a server, and the `BmageEditor` / `BmageDropZone` components | `Microsoft.AspNetCore.Components.Web` |
+| `Bit.Bmage` | The engine: pixel buffers, operations, pipelines, layers, masks, annotations, metadata, the managed codecs and headless processing on a server | `Microsoft.Extensions.DependencyInjection.Abstractions` |
+| `Bit.Bmage.Blazor` | The browser integration: browser codecs, capabilities, loading and export, and the `BmageEditor` / `BmageDropZone` components | `Bit.Bmage`, `Microsoft.AspNetCore.Components.Web` |
 
-Everything ships in the one package. The editor's stylesheet is opt-in, so an app that brings its own UI or only
-processes images headlessly never loads it.
+A browser app takes `Bit.Bmage.Blazor`, which brings `Bit.Bmage` along at exactly its own version. An ASP.NET Core
+API, a console tool or a worker that only processes images headlessly takes `Bit.Bmage` alone, without Blazor. The
+editor's stylesheet is opt-in, so an app that brings its own UI never loads it.
 
 ## Installation
 
 ```bash
-dotnet add package Bit.Bmage
+dotnet add package Bit.Bmage.Blazor
 ```
 
 Register the services in `Program.cs`:
@@ -106,15 +108,16 @@ using Bit.Bmage;
 builder.Services.AddBitBmageServices();
 ```
 
-For server-side or console use, without any browser integration, register `AddBitBmageHeadlessServices()` instead.
+For server-side or console use, without any browser integration, add `Bit.Bmage` alone and register
+`AddBitBmageHeadlessServices()` instead.
 
-A WebAssembly app whose only use of Bmage is `BmageEditor` can skip the registration and lazy load `Bit.Bmage.wasm`
-instead; see [lazy loading](docs/getting-started.md#lazy-loading-bmage-on-webassembly).
+A WebAssembly app whose only use of Bmage is `BmageEditor` can skip the registration and lazy load `Bit.Bmage.wasm` and
+`Bit.Bmage.Blazor.wasm` instead; see [lazy loading](docs/getting-started.md#lazy-loading-bmage-on-webassembly).
 
 Add the stylesheet if you use the editor:
 
 ```html
-<link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+<link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
 ```
 
 In the browser, consider AOT compilation in the project that runs on WebAssembly. Bmage is tuned for the default
@@ -224,7 +227,7 @@ median filter 8.5×. In the browser, decoding and encoding run in Web Workers, o
 | Blazor Web App, Interactive Server | Everything; images are coded on the server, AVIF exports and editor previews cross the circuit; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md) |
 | Blazor Hybrid (MAUI, WPF, Windows Forms) | Everything; as Interactive Server, but .NET runs in the app and reaches the WebView without a network; saving a file on Android and iOS is the app's job; see [docs/browser-support.md](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bmage/docs/browser-support.md#blazor-hybrid-maui-wpf-windows-forms) |
 | Prerendering | Managed codecs only, and capability detection reports `Prerendering`; call browser features from `OnAfterRenderAsync` |
-| ASP.NET Core, console, worker | Headless API with the managed codecs, no browser involved |
+| ASP.NET Core, console, worker | Headless API with the managed codecs, no browser involved; `Bit.Bmage` alone, without Blazor |
 
 [`Samples`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/) is the render-mode
 harness rather than the docs: one shared [Core](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Core/)

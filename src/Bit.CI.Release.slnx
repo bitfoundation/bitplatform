@@ -34,6 +34,7 @@
     <File Path="Utilities/Bmage/README.md" />
     <Project Path="Utilities/Bmage/Demo/Client/Bit.Bmage.Demo.Client.csproj" />
     <Project Path="Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+    <Project Path="Utilities/Bmage/Bit.Bmage.Blazor/Bit.Bmage.Blazor.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
   </Folder>

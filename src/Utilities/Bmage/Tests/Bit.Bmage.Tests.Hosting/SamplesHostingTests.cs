@@ -119,17 +119,17 @@ public class SamplesHostingTests
     }
 
     [TestMethod]
-    [DataRow("server", "_content/Bit.Bmage/bit-bmage.js", "text/javascript")]
-    [DataRow("server", "_content/Bit.Bmage/bit-bmage-worker.js", "text/javascript")]
-    [DataRow("server", "_content/Bit.Bmage/bit-bmage-editor.css", "text/css")]
+    [DataRow("server", "_content/Bit.Bmage.Blazor/bit-bmage.js", "text/javascript")]
+    [DataRow("server", "_content/Bit.Bmage.Blazor/bit-bmage-worker.js", "text/javascript")]
+    [DataRow("server", "_content/Bit.Bmage.Blazor/bit-bmage-editor.css", "text/css")]
     [DataRow("server", "_content/Bit.Bmage.Samples.Core/app.css", "text/css")]
-    [DataRow("wasm", "_content/Bit.Bmage/bit-bmage.js", "text/javascript")]
-    [DataRow("wasm", "_content/Bit.Bmage/bit-bmage-worker.js", "text/javascript")]
-    [DataRow("wasm", "_content/Bit.Bmage/bit-bmage-editor.css", "text/css")]
+    [DataRow("wasm", "_content/Bit.Bmage.Blazor/bit-bmage.js", "text/javascript")]
+    [DataRow("wasm", "_content/Bit.Bmage.Blazor/bit-bmage-worker.js", "text/javascript")]
+    [DataRow("wasm", "_content/Bit.Bmage.Blazor/bit-bmage-editor.css", "text/css")]
     [DataRow("wasm", "_content/Bit.Bmage.Samples.Core/app.css", "text/css")]
-    [DataRow("auto", "_content/Bit.Bmage/bit-bmage.js", "text/javascript")]
-    [DataRow("auto", "_content/Bit.Bmage/bit-bmage-worker.js", "text/javascript")]
-    [DataRow("auto", "_content/Bit.Bmage/bit-bmage-editor.css", "text/css")]
+    [DataRow("auto", "_content/Bit.Bmage.Blazor/bit-bmage.js", "text/javascript")]
+    [DataRow("auto", "_content/Bit.Bmage.Blazor/bit-bmage-worker.js", "text/javascript")]
+    [DataRow("auto", "_content/Bit.Bmage.Blazor/bit-bmage-editor.css", "text/css")]
     [DataRow("auto", "_content/Bit.Bmage.Samples.Core/app.css", "text/css")]
     public async Task The_library_and_sample_assets_are_served(string sample, string path, string mediaType)
     {

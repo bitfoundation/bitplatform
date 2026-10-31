@@ -34,5 +34,6 @@
     <Project Path="Tests/Bit.Bmage.Tests.Hosting/Bit.Bmage.Tests.Hosting.csproj" />
     <Project Path="Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
   </Folder>
+  <Project Path="Bit.Bmage.Blazor/Bit.Bmage.Blazor.csproj" />
   <Project Path="Bit.Bmage/Bit.Bmage.csproj" />
 </Solution>

@@ -20,11 +20,15 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install the package</h3>
     <p>
-        One package holds everything: the engine, the browser codecs, loading and export, headless
-        processing on a server, and the <code>BmageEditor</code> component. It depends only on
-        <code>Microsoft.AspNetCore.Components.Web</code>.
+        A browser app installs <code>Bit.Bmage.Blazor</code>: the browser codecs, loading and export,
+        and the <code>BmageEditor</code> component. It brings the engine, <code>Bit.Bmage</code>,
+        along, and otherwise depends only on <code>Microsoft.AspNetCore.Components.Web</code>.
     </p>
-    <CodeSnippet Code="dotnet add package Bit.Bmage" Language="Shell" Expanded="true" />
+    <CodeSnippet Code="dotnet add package Bit.Bmage.Blazor" Language="Shell" Expanded="true" />
+    <p>
+        A server, a console tool or a worker that only processes images installs
+        <code>Bit.Bmage</code> alone, which has no dependency on Blazor.
+    </p>
     <p>
         It targets .NET 10 and 11. Everything works on Blazor WebAssembly and on Interactive
         Auto once interactive; Interactive Server works too, with pixel data crossing the circuit,
@@ -222,7 +226,7 @@
         """;
 
     private const string StylesheetSnippet = """
-        <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+        <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
         """;
 
     private const string FirstImageSnippet = """

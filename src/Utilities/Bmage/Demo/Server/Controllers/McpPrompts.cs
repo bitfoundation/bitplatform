@@ -39,7 +39,8 @@ public static class McpPrompts
             2. Call `GetBmageRecipes` and look for a recipe that already covers the request. If one does, fetch it with
                `GetBmageRecipe` and follow its shape - including its Notes, which carry the caveat the code cannot show.
                If none fits, call `SearchBmage` with the request as written.
-            3. Call `GetBmageSetupGuide` with the hosting model if the app does not reference Bit.Bmage yet.
+            3. Call `GetBmageSetupGuide` with the hosting model if the app does not reference Bit.Bmage.Blazor (or, with no
+               browser, Bit.Bmage) yet.
             4. Call `GetBmageApiDetails` for every Bmage type you are about to use, and match its namespace, package,
                parameter names and defaults exactly. Do not carry over APIs from ImageSharp, SkiaSharp or a JavaScript
                library - several names are close enough to look right.
@@ -72,13 +73,14 @@ public static class McpPrompts
             1. If the hosting model is 'unknown', determine it from the project first: look for
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs, a separate .Client
                project, AddMauiBlazorWebView in MauiProgram.cs (hybrid), or no Blazor at all. Continue with what you find.
-            2. Call `GetBmageSetupGuide` with that hosting model and follow it: the package (Bit.Bmage, in the project that
-               runs in the browser), the registration, and the namespaces for _Imports.razor.
+            2. Call `GetBmageSetupGuide` with that hosting model and follow it: the package (Bit.Bmage.Blazor, in the project
+               that runs in the browser; Bit.Bmage alone with no browser), the registration, and the namespaces for
+               _Imports.razor.
             3. Register in the right containers. A Blazor Web App registers AddBitBmageServices in BOTH the server and the
                client project, through one shared extension method - the prerender pass needs it on the server. A Blazor
                Hybrid app registers it once, in MauiProgram.cs. A server, console app or worker registers
                AddBitBmageHeadlessServices instead.
-            4. If the editor is used, link `_content/Bit.Bmage/bit-bmage-editor.css` from App.razor or index.html,
+            4. If the editor is used, link `_content/Bit.Bmage.Blazor/bit-bmage-editor.css` from App.razor or index.html,
                and do not add a script tag for bit-bmage.js.
             5. If any project runs on WebAssembly, enable RunAOTCompilation for publishing in that project.
             6. Add the `thumbnail` recipe from `GetBmageRecipe` (or `headless-upload-endpoint` for a server) to prove the

@@ -18,7 +18,7 @@ public sealed class EditorServicesTests
     {
         await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).AddBitBmageServices().BuildServiceProvider();
 
-        Assert.AreSame(app, BitBmage.GetEditorServices(app));
+        Assert.AreSame(app, BitBmageBlazor.GetEditorServices(app));
     }
 
     [TestMethod]
@@ -29,12 +29,12 @@ public sealed class EditorServicesTests
         using var second = new ServiceCollection().AddSingleton<IJSRuntime>(jsRuntime).BuildServiceProvider();
         using var otherConnection = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).BuildServiceProvider();
 
-        var services = BitBmage.GetEditorServices(first);
+        var services = BitBmageBlazor.GetEditorServices(first);
 
         Assert.IsNotNull(services.GetService<ImageLoader>());
         Assert.AreSame(services.GetRequiredService<BrowserImageInterop>(), services.GetRequiredService<BrowserImageInterop>());
-        Assert.AreSame(services, BitBmage.GetEditorServices(second));
-        Assert.AreNotSame(services, BitBmage.GetEditorServices(otherConnection));
+        Assert.AreSame(services, BitBmageBlazor.GetEditorServices(second));
+        Assert.AreNotSame(services, BitBmageBlazor.GetEditorServices(otherConnection));
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public sealed class EditorServicesTests
             .AddBitBmageHeadlessServices(o => o.MaxSourceBytes = 1234)
             .BuildServiceProvider();
 
-        var services = BitBmage.GetEditorServices(app);
+        var services = BitBmageBlazor.GetEditorServices(app);
 
         Assert.AreNotSame(app, services);
         Assert.AreSame(app.GetRequiredService<BitBmageOptions>(), services.GetRequiredService<BitBmageOptions>());

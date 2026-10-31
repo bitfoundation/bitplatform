@@ -35,8 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The engine, the browser integration and the editor component: Bit.Bmage is the only package. -->
-    <ProjectReference Include="..\..\Bit.Bmage\Bit.Bmage.csproj" />
+    <!-- The browser integration and the editor component; it brings the Bit.Bmage engine along. -->
+    <ProjectReference Include="..\..\Bit.Bmage.Blazor\Bit.Bmage.Blazor.csproj" />
   </ItemGroup>
 
 </Project>

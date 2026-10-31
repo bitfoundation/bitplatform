@@ -88,15 +88,16 @@ public static class BmageSetupGuide
     private const string Install = """
         ## 1. Install
 
-        One package holds everything:
+        A browser app installs `Bit.Bmage.Blazor`, which brings the engine, `Bit.Bmage`, along:
 
-        | What you need | Namespace roots |
-        |---|---|
-        | The `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
-        | The engine, browser codecs, loading and export, your own UI | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, ... |
+        | What you need | Package | Namespace roots |
+        |---|---|---|
+        | The `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Blazor` | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
+        | Browser codecs, loading and export, your own UI | `Bit.Bmage.Blazor` | `Bit.Bmage`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, `Bit.Bmage.Capabilities`, ... |
+        | The engine: pipelines, codecs, layers, masks, metadata | `Bit.Bmage` | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Metadata`, ... |
 
         ```bash
-        dotnet add package Bit.Bmage
+        dotnet add package Bit.Bmage.Blazor
         ```
 
         Install it in the project that runs in the browser - in a Blazor Web App, the **.Client** project.
@@ -118,8 +119,8 @@ public static class BmageSetupGuide
         @using Bit.Bmage.Editor.Tools
         ```
 
-        The browser bridge (`_content/Bit.Bmage/bit-bmage.js`) is imported by the library on demand. Do not add
-        a `<script>` tag for it: it is an ES module, and loaded as a classic script it fails with a syntax error.
+        The browser bridge (`_content/Bit.Bmage.Blazor/bit-bmage.js`) is imported by the library on demand. Do not
+        add a `<script>` tag for it: it is an ES module, and loaded as a classic script it fails with a syntax error.
         """;
 
     private const string Stylesheet = """
@@ -130,7 +131,7 @@ public static class BmageSetupGuide
         ```razor
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
             <HeadOutlet @rendermode="InteractiveWebAssembly" />
         </head>
         ```
@@ -148,7 +149,7 @@ public static class BmageSetupGuide
         ```html
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
         </head>
         ```
 
@@ -631,6 +632,9 @@ public static class BmageSetupGuide
 
     private const string HeadlessInstall = """
         ## 1. Install
+
+        `Bit.Bmage` alone: the engine, with no dependency on Blazor. `Bit.Bmage.Blazor` is only for apps that run in a
+        browser.
 
         ```bash
         dotnet add package Bit.Bmage   # register AddBitBmageHeadlessServices, or construct ImageProcessor yourself

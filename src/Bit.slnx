@@ -80,6 +80,7 @@
   </Folder>
   <Folder Name="/Utilities/Bmage/">
     <File Path="Utilities/Bmage/README.md" />
+    <Project Path="Utilities/Bmage/Bit.Bmage.Blazor/Bit.Bmage.Blazor.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bmage/Demo/">

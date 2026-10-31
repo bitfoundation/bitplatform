@@ -46,7 +46,7 @@
     </p>
     <h4>The client project</h4>
     <p>
-        Reference <code>Bit.Bmage</code> from the client, which is the project that runs in the
+        Reference <code>Bit.Bmage.Blazor</code> from the client, which is the project that runs in the
         browser.
     </p>
     <CodeSnippet Code="@ClientServicesSnippet" Language="C#" Expanded="true" />
@@ -151,13 +151,13 @@
         <code>BmageEditor</code> also works without the registration, so a WebAssembly app can download
         Bmage only when someone opens the editor. When <code>ImageLoader</code> is not registered, the
         editor builds every service it needs itself, once per browser connection, with the
-        <code>BitBmageOptions</code> the app registered or the defaults. Mark the assembly as lazy
-        loaded, and load it before the editor first renders:
+        <code>BitBmageOptions</code> the app registered or the defaults. Mark both assemblies as lazy
+        loaded, and load them before the editor first renders:
     </p>
     <CodeSnippet Code="@LazyProjectSnippet" Language="XML" Expanded="true" />
     <CodeSnippet Code="@LazyLoadSnippet" Language="Razor" Expanded="true" />
     <ul class="bb-detail-list">
-        <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assembly is there.</li>
+        <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assemblies are there.</li>
         <li>Code of your own that injects <code>ImageLoader</code> or <code>ImageExporter</code> needs the registration, so lazy loading suits an app whose only use of Bmage is the editor.</li>
         <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
     </ul>
@@ -167,8 +167,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Web Workers and a Content Security Policy</h3>
     <p>
         In the browser, decoding, encoding and building the editor's working copy run in a small pool of
-        Web Workers loaded from <code>_content/Bit.Bmage/bit-bmage-worker.js</code>, so the page's thread -
-        which on WebAssembly is also .NET's - keeps painting while a photo decodes. A Content Security
+        Web Workers loaded from <code>_content/Bit.Bmage.Blazor/bit-bmage-worker.js</code>, so the page's
+        thread - which on WebAssembly is also .NET's - keeps painting while a photo decodes. A Content Security
         Policy that lists sources explicitly has to allow them, with <code>worker-src 'self'</code> or a
         <code>script-src 'self'</code> it falls back to; Blob URLs are never used for workers.
     </p>
@@ -280,7 +280,7 @@
     private const string AppRazorSnippet = """
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
             <HeadOutlet @rendermode="InteractiveWebAssembly" />
         </head>
 
@@ -332,7 +332,7 @@
         <!-- wwwroot/index.html -->
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
         </head>
         """;
 
@@ -369,6 +369,7 @@
         <!-- The browser project's .csproj -->
         <ItemGroup>
           <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+          <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Blazor.wasm" />
         </ItemGroup>
         """;
 
@@ -386,7 +387,7 @@
             {
                 // The page with the editor on it: fetch Bmage before it renders.
                 if (context.Path == "edit")
-                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm", "Bit.Bmage.Blazor.wasm"]);
             }
         }
         """;

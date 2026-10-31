@@ -31,6 +31,12 @@ full-resolution original.
 
 ## On a server, with no browser at all
 
+A server, a console tool or a worker takes the `Bit.Bmage` package alone, which has no dependency on Blazor:
+
+```bash
+dotnet add package Bit.Bmage
+```
+
 ```csharp
 using Bit.Bmage;   // AddBitBmageHeadlessServices lives here
 

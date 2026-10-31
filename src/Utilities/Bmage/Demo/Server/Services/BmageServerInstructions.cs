@@ -28,15 +28,17 @@ public static class BmageServerInstructions
 
     public static readonly string Text = $"""
         Bit.Bmage is image processing for Blazor, written in C#: load, crop, resize, adjust, filter, mask, layer, draw,
-        annotate, redact and export images on the user's device, or headlessly on a server. One package, Bit.Bmage:
+        annotate, redact and export images on the user's device, or headlessly on a server. Two packages. Bit.Bmage is
         the engine (pixels, pipelines, masks, layers, managed PNG/JPEG/BMP/GIF/WebP codecs and AVIF decoder, metadata,
-        drawing, JSON edits), the browser integration (ImageLoader, ImageExporter, the browser's codecs in Web Workers,
-        AVIF encoding among them, capability probing) and the BmageEditor component (namespace Bit.Bmage.Editor.Components, styled by the opt-in
-        _content/Bit.Bmage/bit-bmage-editor.css).
+        drawing, JSON edits) with no dependency on Blazor - all a server, console app or worker installs.
+        Bit.Bmage.Blazor, which brings Bit.Bmage along, is what a browser app installs: the browser integration
+        (ImageLoader, ImageExporter, the browser's codecs in Web Workers, AVIF encoding among them, capability probing)
+        and the BmageEditor component (namespace Bit.Bmage.Editor.Components, styled by the opt-in
+        _content/Bit.Bmage.Blazor/bit-bmage-editor.css). Namespaces do not follow the packages: both use Bit.Bmage.*.
 
-        Every answer here is read out of Bit.Bmage {BmageVersion} as loaded in this server - the XML documentation of the
-        assembly, the README and docs/ guides, the demo's sources - or measured by running its engine. Where what
-        you remember and what these tools say disagree, the tools describe the build in front of you.
+        Every answer here is read out of Bit.Bmage and Bit.Bmage.Blazor {BmageVersion} as loaded in this server - the XML
+        documentation of the assemblies, the README and docs/ guides, the demo's sources - or measured by running its
+        engine. Where what you remember and what these tools say disagree, the tools describe the build in front of you.
 
         Working rules:
 

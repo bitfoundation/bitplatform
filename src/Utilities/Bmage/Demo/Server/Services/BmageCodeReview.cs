@@ -36,9 +36,9 @@ public static partial class BmageCodeReview
         new() { Id = "editor-owns-loaded-buffer", Severity = "Error", Source = "troubleshooting",
                 Catches = "A buffer handed to BmageEditor.LoadImageAsync (which takes ownership by default) that is also disposed by the caller." },
         new() { Id = "editor-stylesheet-missing", Severity = "Warning", Source = "getting-started",
-                Catches = "A page head with the editor in use but no _content/Bit.Bmage/bit-bmage-editor.css link: the editor renders unstyled." },
+                Catches = "A page head with the editor in use but no _content/Bit.Bmage.Blazor/bit-bmage-editor.css link: the editor renders unstyled." },
         new() { Id = "editor-stylesheet-wrong-path", Severity = "Error", Source = "getting-started",
-                Catches = "A Bmage stylesheet link whose path is not _content/Bit.Bmage/bit-bmage-editor.css - a 404 and an unstyled editor." },
+                Catches = "A Bmage stylesheet link whose path is not _content/Bit.Bmage.Blazor/bit-bmage-editor.css - a 404 and an unstyled editor." },
         new() { Id = "bridge-script-tag", Severity = "Warning", Source = "getting-started",
                 Catches = "A <script> tag for bit-bmage.js: the library imports its ES module on demand, and as a classic script it is a syntax error." },
         new() { Id = "editor-without-height", Severity = "Suggestion", Source = "troubleshooting",
@@ -51,6 +51,8 @@ public static partial class BmageCodeReview
                 Catches = "AddBitBmageHeadlessServices in a WebAssembly host: no browser codecs, no ImageLoader, no ImageExporter." },
         new() { Id = "services-not-registered", Severity = "Warning", Source = "browser-support",
                 Catches = "A Blazor host Program.cs that never registers Bmage - in a Web App the prerender pass needs it in the server container too." },
+        new() { Id = "blazor-package-missing", Severity = "Error", Source = "getting-started",
+                Catches = "A browser project that references Bit.Bmage alone: AddBitBmageServices, ImageLoader, ImageExporter and BmageEditor ship in Bit.Bmage.Blazor." },
         new() { Id = "aot-not-enabled", Severity = "Warning", Source = "performance",
                 Catches = "A Blazor WebAssembly project using Bmage without RunAOTCompilation: pixel loops run 10 to 35 times slower." },
         new() { Id = "format-without-capability-check", Severity = "Warning", Source = "formats",
@@ -117,6 +119,7 @@ public static partial class BmageCodeReview
         CheckProcessorInjection(text, lines, findings);
         CheckHeadlessRegistration(text, lines, findings);
         CheckServicesRegistered(text, lines, findings);
+        CheckBlazorPackage(text, findings);
         CheckAot(text, lines, findings);
         CheckFormats(text, lines, findings);
         CheckMetadataPolicy(text, lines, findings);
@@ -350,7 +353,7 @@ public static partial class BmageCodeReview
                 var href = match.Groups["href"].Value.TrimStart('~', '/');
                 if (href.StartsWith("./", StringComparison.Ordinal)) href = href[2..];
 
-                if (href == "_content/Bit.Bmage/bit-bmage-editor.css") continue;
+                if (href == "_content/Bit.Bmage.Blazor/bit-bmage-editor.css") continue;
 
                 findings.Add(new BmageReviewFindingDto
                 {
@@ -359,8 +362,8 @@ public static partial class BmageCodeReview
                     Line = i + 1,
                     Message = $"'{match.Groups["href"].Value}' is not where the editor's stylesheet is served. The request 404s, and " +
                               "the editor renders unstyled with nothing in the build to say so.",
-                    Fix = "<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" /> - the package is " +
-                          "Bit.Bmage and the file is bit-bmage-editor.css."
+                    Fix = "<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Blazor/bit-bmage-editor.css\" /> - the package is " +
+                          "Bit.Bmage.Blazor and the file is bit-bmage-editor.css."
                 });
             }
         }
@@ -380,7 +383,7 @@ public static partial class BmageCodeReview
             Line = head + 1,
             Message = "The editor is used, and this page head does not link its stylesheet. The component renders anyway - as a " +
                       "toolbar of bare buttons with no canvas frame - and nothing in the build or the console says why.",
-            Fix = "Add <link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" /> to the head of App.razor " +
+            Fix = "Add <link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Blazor/bit-bmage-editor.css\" /> to the head of App.razor " +
                   "(Blazor Web App) or wwwroot/index.html (standalone WebAssembly)."
         });
     }
@@ -466,8 +469,8 @@ public static partial class BmageCodeReview
                 Message = "AddBitBmageHeadlessServices in a WebAssembly host registers only the managed engine: no ImageLoader, no " +
                           "ImageExporter, no ImageProcessorFactory, no browser codecs - so no AVIF export, no clipboard, no " +
                           "downloads, and the editor cannot be resolved.",
-                Fix = "builder.Services.AddBitBmageServices() in the browser project. The headless registration is for servers, " +
-                      "console apps and workers."
+                Fix = "builder.Services.AddBitBmageServices() in the browser project, from the Bit.Bmage.Blazor package. The " +
+                      "headless registration is for servers, console apps and workers."
             });
 
             return;
@@ -486,8 +489,8 @@ public static partial class BmageCodeReview
             Message = $"{browserUse.Groups["service"].Value} is a browser service, and the only registration here is " +
                       "AddBitBmageHeadlessServices, which registers ImageProcessor, a managed capability provider and " +
                       "FontTextRasterizer - nothing else. Resolving it throws a missing-service exception.",
-            Fix = "Components that talk to a browser need AddBitBmageServices (in every container they run in). On the server, " +
-                  "inject ImageProcessor and work with bytes instead."
+            Fix = "Components that talk to a browser need AddBitBmageServices from the Bit.Bmage.Blazor package (in every " +
+                  "container they run in). On the server, inject ImageProcessor and work with bytes instead."
         });
     }
 
@@ -523,8 +526,38 @@ public static partial class BmageCodeReview
                   "IImageCapabilityProvider in its components throws a missing-service exception when the page renders."
                 : "This Blazor Web App host never registers Bmage. Its prerender pass instantiates the client's components in " +
                   "this container, so any component that injects a Bmage service fails at prerender - in production, not at build.",
-            Fix = "Call builder.Services.AddBitBmageServices() here - in a Web App, through one shared extension method that both " +
-                  "the server's and the client's Program.cs call, so the two containers cannot drift. GetBmageSetupGuide has the files."
+            Fix = "Call builder.Services.AddBitBmageServices(), from the Bit.Bmage.Blazor package, here - in a Web App, through one " +
+                  "shared extension method that both the server's and the client's Program.cs call, so the two containers cannot " +
+                  "drift. GetBmageSetupGuide has the files."
+        });
+    }
+
+    /// <summary>A browser project that installs the engine's package and not the browser integration's.</summary>
+    private static void CheckBlazorPackage(string text, List<BmageReviewFindingDto> findings)
+    {
+        var engine = BmageEngineReferenceRegex().Match(text);
+        if (engine.Success is false || BmageBlazorReferenceRegex().IsMatch(text)) return;
+
+        // Another project referenced here may bring Bit.Bmage.Blazor along, and this review cannot see inside it.
+        if (OtherProjectReferenceRegex().IsMatch(text)) return;
+
+        // Only what the code uses makes it a browser project: the engine alone runs in WebAssembly too, on the managed codecs.
+        var browser = BrowserCallRegex().IsMatch(text) || BrowserServiceUseRegex().IsMatch(text);
+
+        if (browser is false) return;
+
+        findings.Add(new BmageReviewFindingDto
+        {
+            Severity = "Error",
+            Rule = "blazor-package-missing",
+            Line = LineOf(text, engine.Index),
+            Message = "This browser project references Bit.Bmage alone, which is the headless engine. AddBitBmageServices, " +
+                      "ImageLoader, ImageExporter, ImageProcessorFactory, the browser codecs and BmageEditor ship in Bit.Bmage.Blazor: " +
+                      "without it the build fails with CS1061 ('IServiceCollection' does not contain a definition for " +
+                      "'AddBitBmageServices') or CS0246 for the browser types.",
+            Fix = "<PackageReference Include=\"Bit.Bmage.Blazor\" /> in place of Bit.Bmage, which it brings along at the matching " +
+                  "version. The editor's stylesheet is then _content/Bit.Bmage.Blazor/bit-bmage-editor.css, and a WebAssembly app " +
+                  "that lazy loads Bit.Bmage.wasm lazy loads Bit.Bmage.Blazor.wasm with it."
         });
     }
 
@@ -971,9 +1004,10 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"\bLoadImageAsync\s*\(\s*(?<name>\w+)\s*(?:\)|,\s*(?:takeOwnership\s*:\s*)?true\s*\))")]
     private static partial Regex LoadImageRegex();
 
-    // A stylesheet meant to be Bmage's: one in the package's _content folder (or the Bit.Bmage.Editor one people guess),
-    // or one named after it. Not any _content/Bit.Bmage.* folder: an app's own project can be called Bit.Bmage.Something.
-    [GeneratedRegex(@"href\s*=\s*""(?<href>[^""]*(?:_content/Bit\.Bmage(?:\.Editor)?/[^""]*|bit-bmage[^""/]*)\.css)""", RegexOptions.IgnoreCase)]
+    // A stylesheet meant to be Bmage's: one in the Bit.Bmage.Blazor package's _content folder (or the Bit.Bmage one, where it
+    // was before the browser integration moved out of the engine's package, or the Bit.Bmage.Editor one people guess), or
+    // one named after it. Not any _content/Bit.Bmage.* folder: an app's own project can be called Bit.Bmage.Something.
+    [GeneratedRegex(@"href\s*=\s*""(?<href>[^""]*(?:_content/Bit\.Bmage(?:\.Blazor|\.Editor)?/[^""]*|bit-bmage[^""/]*)\.css)""", RegexOptions.IgnoreCase)]
     private static partial Regex BmageStylesheetRegex();
 
     [GeneratedRegex(@"<head\b", RegexOptions.IgnoreCase)]
@@ -996,8 +1030,20 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"\b[Ss]ervices\s*\.\s*(?<name>Add\w+)\s*\(")]
     private static partial Regex ServiceAddRegex();
 
-    [GeneratedRegex(@"Include\s*=\s*""Bit\.Bmage""|Bit\.Bmage\.csproj")]
+    [GeneratedRegex(@"Include\s*=\s*""Bit\.Bmage(?:\.Blazor)?""|Bit\.Bmage(?:\.Blazor)?\.csproj")]
     private static partial Regex BmageReferenceRegex();
+
+    // References only: a <TrimmerRootAssembly Include="Bit.Bmage" /> or a <Using Include="Bit.Bmage" /> installs nothing.
+    // The Include may follow other attributes (a Condition, a Version); a tag holds no '<', so the search stops at the next one.
+    [GeneratedRegex(@"<PackageReference\b[^<>]*?\bInclude\s*=\s*""Bit\.Bmage""|[\\/""]Bit\.Bmage\.csproj""")]
+    private static partial Regex BmageEngineReferenceRegex();
+
+    [GeneratedRegex(@"<PackageReference\b[^<>]*?\bInclude\s*=\s*""Bit\.Bmage\.Blazor""|[\\/""]Bit\.Bmage\.Blazor\.csproj""")]
+    private static partial Regex BmageBlazorReferenceRegex();
+
+    // A project reference to anything but the engine's own project, which does not bring the browser integration along.
+    [GeneratedRegex(@"<ProjectReference\b[^<>]*?\bInclude\s*=\s*""(?!(?:[^""<>]*[\\/])?Bit\.Bmage\.csproj"")[^""<>]+""")]
+    private static partial Regex OtherProjectReferenceRegex();
 
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]
     private static partial Regex AotDisabledRegex();

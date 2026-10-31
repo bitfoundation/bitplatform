@@ -192,24 +192,27 @@ public class CodeReviewTests
     [TestMethod]
     public void Stylesheet_TheRightLink_IsFine_AndAWrongPathIsAnError()
     {
-        None(Review("<head>\n<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" />\n</head>\n<BmageEditor />"), "editor-stylesheet-missing");
-        None(Review("<link rel=\"stylesheet\" href=\"/_content/Bit.Bmage/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
+        None(Review("<head>\n<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Blazor/bit-bmage-editor.css\" />\n</head>\n<BmageEditor />"), "editor-stylesheet-missing");
+        None(Review("<link rel=\"stylesheet\" href=\"/_content/Bit.Bmage.Blazor/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
 
         // The demo's own stylesheets are not the editor's, and must not be mistaken for a wrong path to it.
         None(Review("<link rel=\"stylesheet\" href=\"css/bmage-samples.css\" />"), "editor-stylesheet-wrong-path");
         // Nor are those of an app project that happens to be called Bit.Bmage.Something, like the samples' shared pages.
         None(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Samples.Core/app.css\" />"), "editor-stylesheet-wrong-path");
 
-        // The editor ships inside Bit.Bmage: there is no Bit.Bmage.Editor package, so no _content folder of that name.
+        // The editor ships inside Bit.Bmage.Blazor: there is no Bit.Bmage.Editor package, so no _content folder of that name.
         Assert.AreEqual("Error", Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path").Severity);
-        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage.css\" />"), "editor-stylesheet-wrong-path");
+        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Blazor/bit-bmage.css\" />"), "editor-stylesheet-wrong-path");
+        // Nor in Bit.Bmage, the engine's package, which has no static web assets: a link left from before the browser
+        // integration moved to Bit.Bmage.Blazor.
+        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
         Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/editor.css\" />"), "editor-stylesheet-wrong-path");
     }
 
     [TestMethod]
     public void Script_ATagForTheBridge_IsReported()
     {
-        Single(Review("<script src=\"_content/Bit.Bmage/bit-bmage.js\"></script>"), "bridge-script-tag");
+        Single(Review("<script src=\"_content/Bit.Bmage.Blazor/bit-bmage.js\"></script>"), "bridge-script-tag");
 
         None(Review("<script src=\"_framework/blazor.web.js\"></script>"), "bridge-script-tag");
     }
@@ -295,6 +298,51 @@ public class CodeReviewTests
         None(BmageCodeReview.Review(BmageSourceCatalog.GetSourceFile("Demo/Server/Program.cs")), "services-not-registered");
     }
 
+    [TestMethod]
+    public void Package_ABrowserProjectWithTheEngineAlone_IsAnError()
+    {
+        var review = Review("""
+            <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+              <ItemGroup>
+                <PackageReference Include="Bit.Bmage" />
+              </ItemGroup>
+            </Project>
+            builder.Services.AddBitBmageServices();
+            """);
+
+        var finding = Single(review, "blazor-package-missing");
+        Assert.AreEqual("Error", finding.Severity);
+        Assert.AreEqual(3, finding.Line);
+        StringAssert.Contains(finding.Fix, "Bit.Bmage.Blazor");
+
+        // A project is a browser project by what it uses: the editor, or the browser registration.
+        Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.Razor\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>\n<BmageEditor />"), "blazor-package-missing");
+        Single(Review("<ProjectReference Include=\"..\\Bit.Bmage\\Bit.Bmage.csproj\" />\nbuilder.Services.AddBitBmageServices();"), "blazor-package-missing");
+
+        // The Include does not have to come first.
+        Single(Review("<PackageReference Condition=\"'$(TargetFramework)' == 'net10.0'\" Include=\"Bit.Bmage\" />\n<BmageEditor />"), "blazor-package-missing");
+        None(Review("<PackageReference Include=\"Bit.Bmage\" />\n<PackageReference Version=\"10.0.0\" Include=\"Bit.Bmage.Blazor\" />\n<BmageEditor />"), "blazor-package-missing");
+    }
+
+    [TestMethod]
+    public void Package_TheBlazorPackage_OrAHeadlessProject_IsFine()
+    {
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage.Blazor\" />"), "blazor-package-missing");
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage\" />\n<PackageReference Include=\"Bit.Bmage.Blazor\" />"), "blazor-package-missing");
+        None(Review("<ProjectReference Include=\"..\\Bit.Bmage.Blazor\\Bit.Bmage.Blazor.csproj\" />\n<BmageEditor />"), "blazor-package-missing");
+
+        // The engine alone is what a server, a console app or a worker installs - and it runs in WebAssembly too, on the
+        // managed codecs.
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>\nbuilder.Services.AddBitBmageHeadlessServices();"), "blazor-package-missing");
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>"), "blazor-package-missing");
+
+        // A referenced project may bring Bit.Bmage.Blazor along.
+        None(Review("<PackageReference Include=\"Bit.Bmage\" />\n<ProjectReference Include=\"..\\Shared\\Shared.csproj\" />\n<BmageEditor />"), "blazor-package-missing");
+
+        // Naming the assembly is not installing it.
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<TrimmerRootAssembly Include=\"Bit.Bmage\" />"), "blazor-package-missing");
+    }
+
     // -- aot ----------------------------------------------------------------------------------
 
     [TestMethod]
@@ -311,6 +359,7 @@ public class CodeReviewTests
         Assert.AreEqual(1, Single(review, "aot-not-enabled").Line);
 
         Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage\" />\n<RunAOTCompilation>false</RunAOTCompilation>"), "aot-not-enabled");
+        Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage.Blazor\" />"), "aot-not-enabled");
     }
 
     [TestMethod]
