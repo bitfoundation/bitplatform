@@ -41,7 +41,7 @@ public static class BmotionMotionLab
     /// ring for a long time; past this the answer is "it does not settle", which is the useful
     /// finding, and there is no reason to spend the frames proving it further.
     /// </summary>
-    private const double MaxSeconds = 20;
+    internal const double MaxSeconds = 20;
 
     /// <summary>How many evenly spaced samples come back, regardless of how long the motion ran.</summary>
     private const int SampleCount = 24;
@@ -169,9 +169,11 @@ public static class BmotionMotionLab
             ? $" Ignored, because Bm.To has no such argument: {string.Join(", ", unknown)}."
             : string.Empty;
 
+        var unknownNames = unknown.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         // The verdict is about the properties that were actually animated, as BuildTarget read them.
         var known = properties.Select(BmotionPropertyCatalog.Normalize)
-                              .Where(property => unknown.Contains(property, StringComparer.OrdinalIgnoreCase) is false)
+                              .Where(property => unknownNames.Contains(property) is false)
                               .Distinct(StringComparer.OrdinalIgnoreCase)
                               .ToArray();
 
