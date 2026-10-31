@@ -98,6 +98,19 @@ public class PublicApiTests
     }
 
     [TestMethod]
+    public void AFrameLargerThanItsPixelsIsRejectedBeforeAnythingIsAllocated()
+    {
+        using var decoder = new BbBarcodeDecoder();
+        var pixels = new byte[64 * 64];
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, 8000, 8000, BbPixelFormat.Gray8));
+        Assert.ThrowsExactly<ArgumentException>(() => decoder.DecodeAll(pixels, 64, 64, BbPixelFormat.Rgba32));
+
+        Assert.IsLessThan(1_000_000L, GC.GetAllocatedBytesForCurrentThread() - before);
+    }
+
+    [TestMethod]
     public void TheDuplicateWindowCanBeChangedWhileRunning()
     {
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions

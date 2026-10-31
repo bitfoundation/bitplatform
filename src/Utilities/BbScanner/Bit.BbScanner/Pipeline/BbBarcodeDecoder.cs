@@ -268,6 +268,11 @@ public sealed class BbBarcodeDecoder : IDisposable
         (cropX, cropY, var cropWidth, var cropHeight) = _options.Region.ToPixels(width, height);
 
         var bpp = BbPixelConverter.BytesPerPixel(format);
+        if (pixels.Length < (long)width * height * bpp)
+        {
+            throw new ArgumentException("The pixels are fewer than the frame holds.", nameof(pixels));
+        }
+
         var stride = width * bpp;
         return PrepareRegion(pixels[((cropY * stride) + (cropX * bpp))..], cropWidth, cropHeight, stride, format, out step);
     }
