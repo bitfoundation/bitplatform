@@ -1167,7 +1167,7 @@ class Surface {
         count = Math.min(count, commands.length);
 
         try {
-            this.replay(rootContext, commands, count, strings);
+            this.replay(rootContext, commands, count, strings, layer !== 'export');
         } catch (error) {
             // An export has a caller waiting for its result, which should hear about the failure.
             if (layer === 'export') throw error;
@@ -1186,7 +1186,7 @@ class Surface {
         if (!this.disposed && this.callback && this.callback.resourcesLost) this.callback.resourcesLost();
     }
 
-    replay(rootContext: CanvasRenderingContext2D, commands: ArrayLike<number>, count: number, strings: string[]): void {
+    replay(rootContext: CanvasRenderingContext2D, commands: ArrayLike<number>, count: number, strings: string[], fetchImages: boolean): void {
         let ctx: CanvasRenderingContext2D = rootContext;
         const groups: IsolatedGroup[] = [];
         let i = 0;
@@ -1375,7 +1375,7 @@ class Surface {
                         this.images.set(uri, image);
                         this.imagesUsedThisFrame.add(uri);
                     }
-                    else this.requestImage(uri);
+                    else if (fetchImages) this.requestImage(uri);
                     if (image && image.complete && image.naturalWidth > 0) {
                         ctx.globalAlpha = alpha;
                         if (hasCrop) ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
@@ -1464,7 +1464,7 @@ class Surface {
         if (lost) this.reportResourcesLost();
     }
 
-    async loadImage(uri: string): Promise<BinkImageMetrics> {
+    async loadImage(uri: string, keep = false): Promise<BinkImageMetrics> {
         if (this.images.has(uri)) {
             const existing = this.images.get(uri) as HTMLImageElement;
             if (existing.complete && existing.naturalWidth > 0) return { width: existing.naturalWidth, height: existing.naturalHeight };
@@ -1481,6 +1481,7 @@ class Surface {
         if (this.disposed) return { width: image.naturalWidth, height: image.naturalHeight };
         this.images.delete(uri);
         this.images.set(uri, image);
+        if (keep) this.imagesUsedThisFrame.add(uri);
         this.evictImages();
         return { width: image.naturalWidth, height: image.naturalHeight };
     }
@@ -1491,10 +1492,10 @@ class Surface {
     requestImage(uri: string): void {
         if (this.disposed || !uri || this.pendingImages.has(uri) || this.failedImages.has(uri)) return;
         this.pendingImages.add(uri);
-        this.loadImage(uri).then(
+        this.loadImage(uri, true).then(
             () => {
                 this.pendingImages.delete(uri);
-                this.requestRedraw();
+                if (this.images.has(uri)) this.requestRedraw();
             },
             () => {
                 this.pendingImages.delete(uri);
