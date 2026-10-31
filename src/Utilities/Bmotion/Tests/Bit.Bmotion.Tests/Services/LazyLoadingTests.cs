@@ -1,4 +1,5 @@
-﻿using Bit.Bmotion.Tests.TestInfra;
+﻿using System.Runtime.CompilerServices;
+using Bit.Bmotion.Tests.TestInfra;
 using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
@@ -11,13 +12,15 @@ namespace Bit.Bmotion.Tests.Services;
 
 /// <summary>
 /// Where the components take their services from. An app that lazy loads Bit.Bmotion on WebAssembly cannot call
-/// AddBitBmotionServices, so the components create their own and GetBmotionService hands out the same ones; an app that
-/// did register keeps exactly what it registered, and everywhere but WebAssembly the registration stays required.
+/// AddBitBmotionServices, so it creates the services with ConfigureBmotionServices and GetBmotionService hands them out;
+/// an app that did register keeps exactly what it registered, and a missing registration fails everywhere else.
 /// </summary>
 [TestClass]
 public sealed class LazyLoadingTests
 {
     private const string ModulePath = "./_content/Bit.Bmotion/bit-bmotion.js";
+
+    private Func<IServiceProvider, object?> _webAssemblyRuntimeOf = null!;
 
     private static RenderFragment Div => b =>
     {
@@ -25,6 +28,20 @@ public sealed class LazyLoadingTests
         b.AddAttribute(1, "class", "box");
         b.CloseElement();
     };
+
+    /// <summary>
+    /// The tests run on .NET, not in a browser, so they stand in for WebAssembly: a container whose JS runtime is
+    /// in-process, as WebAssembly's is, belongs to the runtime that JS runtime stands for.
+    /// </summary>
+    [TestInitialize]
+    public void StandInForWebAssembly()
+    {
+        _webAssemblyRuntimeOf = BitBmotion.WebAssemblyRuntimeOf;
+        BitBmotion.WebAssemblyRuntimeOf = services => services.GetService<IJSRuntime>() as IJSInProcessRuntime;
+    }
+
+    [TestCleanup]
+    public void LeaveWebAssembly() => BitBmotion.WebAssemblyRuntimeOf = _webAssemblyRuntimeOf;
 
     /// <summary>
     /// A bUnit context with no Bmotion registration, as an app that lazy loads Bit.Bmotion has: its JS runtime is
@@ -61,22 +78,71 @@ public sealed class LazyLoadingTests
     }
 
     [TestMethod]
-    public async Task WithoutTheRegistrationBmotionCreatesItsServicesOncePerWebAssemblyRuntime()
+    public async Task ARootThatValidatesScopesIsAskedWhetherBmotionIsRegisteredWithoutResolvingIt()
+    {
+        // The default of WebAssemblyHostBuilder and of ASP.NET Core in Development: a scoped service resolved from the
+        // root throws. Bmotion's engine is scoped, so telling whether it is registered must not resolve it.
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime())
+            .AddBitBmotionServices(o => o.Prerender = BmPrerenderMode.Final)
+            .BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+
+        app.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Final);
+
+        Assert.AreEqual(BmPrerenderMode.Final, app.GetBmotionService<BitBmotionOptions>().Prerender);
+    }
+
+    [TestMethod]
+    public async Task ConfiguringCreatesTheServicesOncePerWebAssemblyRuntime()
     {
         var jsRuntime = new WebAssemblyJSRuntime();
         await using var first = new ServiceCollection().AddSingleton<IJSRuntime>(jsRuntime).BuildServiceProvider();
         await using var second = new ServiceCollection().AddSingleton<IJSRuntime>(jsRuntime).BuildServiceProvider();
         await using var otherRuntime = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime()).BuildServiceProvider();
 
+        first.ConfigureBmotionServices(_ => { });
+        otherRuntime.ConfigureBmotionServices(_ => { });
         var engine = first.GetBmotionService<BmotionAnimationEngine>();
 
         Assert.AreSame(engine, first.GetBmotionService<BmotionAnimationEngine>());
+        // the same runtime, so the same services, configured or not
         Assert.AreSame(engine, second.GetBmotionService<BmotionAnimationEngine>());
         Assert.AreSame(first.GetBmotionService<BmotionAnimateService>(), second.GetBmotionService<BmotionAnimateService>());
         Assert.AreNotSame(engine, otherRuntime.GetBmotionService<BmotionAnimationEngine>());
         // a transient service is a new one on every call, as it is on every injection
         Assert.AreNotSame(first.GetBmotionService<BmotionScrollTracker>(), first.GetBmotionService<BmotionScrollTracker>());
         Assert.IsTrue(first.GetBmotionService<BmotionCapabilities>().SupportsFrameLoop);
+    }
+
+    [TestMethod]
+    public async Task AScrollTrackerOfTheServicesBmotionCreatedIsNotHeldOnTo()
+    {
+        // Bmotion's own container lives as long as the tab and is never disposed: a tracker it held on to would stay
+        // in memory after its component disposed it, one more on every visit to the page.
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime()).BuildServiceProvider();
+        app.ConfigureBmotionServices(_ => { });
+
+        var tracker = TakeTracker(app);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.IsFalse(tracker.IsAlive);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference TakeTracker(IServiceProvider services) => new(services.GetBmotionService<BmotionScrollTracker>());
+
+    [TestMethod]
+    public async Task OnWebAssemblyTheServicesAreNotThereUntilConfigured()
+    {
+        // What keeps the client project of a Blazor Web App that forgot the registration failing as it renders, instead
+        // of running on options it never set.
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime()).BuildServiceProvider();
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => app.GetBmotionService<BmotionAnimateService>());
+
+        Assert.StartsWith("Bit.Bmotion's services are not registered", error.Message, StringComparison.Ordinal);
+        Assert.Contains("ConfigureBmotionServices", error.Message, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -97,9 +163,21 @@ public sealed class LazyLoadingTests
     }
 
     [TestMethod]
+    public void OffTheBrowserAnInProcessRuntimeIsNotWebAssembly()
+    {
+        // bUnit's JS runtime is in-process, as WebAssembly's is: the tests of a Blazor Server app that forgot the
+        // registration must fail as the app does, not pass on services created for a WebAssembly runtime.
+        BitBmotion.WebAssemblyRuntimeOf = _webAssemblyRuntimeOf;
+        using var ctx = CreateUnregisteredContext();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => ctx.Services.ConfigureBmotionServices(_ => { }));
+        Assert.ThrowsExactly<InvalidOperationException>(() => RenderFadeUp(ctx));
+    }
+
+    [TestMethod]
     public void OutsideWebAssemblyAnElementWithoutTheRegistrationNamesIt()
     {
-        // the README's troubleshooting table quotes this message
+        // README.md, the MCP setup guide and the MCP prompts quote the start of this message
         using var ctx = new BunitContext();
         ctx.JSInterop.Mode = JSRuntimeMode.Loose;
         ctx.Services.AddSingleton<IJSRuntime>(new ServerJSRuntime());
@@ -118,28 +196,53 @@ public sealed class LazyLoadingTests
     }
 
     [TestMethod]
-    public async Task ConfiguringSetsTheOptionsOfTheServicesBmotionCreatesAndLeavesRegisteredOnesAlone()
+    public async Task TheOptionsAreSetOnceAndEveryCallAfterMustAgree()
     {
         await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime()).BuildServiceProvider();
         await using var registered = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime())
             .AddBitBmotionServices(o => o.Prerender = BmPrerenderMode.Animate).BuildServiceProvider();
 
         app.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
-        registered.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Final);
+        // the same options again - every layout that holds animated elements calls it
+        app.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+        registered.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Animate);
 
+        // a settings page that changes them, or a browser that disagrees with its prerendering server, fails the same
+        // way whether the services were created here or registered
+        var changed = Assert.ThrowsExactly<InvalidOperationException>(() => app.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.Always));
+        var disagreed = Assert.ThrowsExactly<InvalidOperationException>(() => registered.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Final));
+
+        Assert.Contains("sets ReducedMotion differently", changed.Message, StringComparison.Ordinal);
+        Assert.Contains("sets Prerender differently", disagreed.Message, StringComparison.Ordinal);
         Assert.AreEqual(BmReducedMotionMode.User, app.GetBmotionService<BitBmotionOptions>().ReducedMotion);
-        // the options AddBitBmotionServices was given win, wherever it was called
         Assert.AreEqual(BmPrerenderMode.Animate, registered.GetBmotionService<BitBmotionOptions>().Prerender);
     }
 
     [TestMethod]
-    public async Task WithoutTheRegistrationTheServicesLogToTheApplicationsLog()
+    public void EveryOptionIsComparedWhenTheyMustAgree()
+    {
+        // An option left out of the comparison could be set one way on the server and another in the browser unnoticed.
+        foreach (var property in typeof(BitBmotionOptions).GetProperties())
+        {
+            var other = new BitBmotionOptions();
+            var value = property.GetValue(other)!;
+            property.SetValue(other, value is bool flag
+                ? !flag
+                : Enum.GetValues(property.PropertyType).Cast<object>().First(candidate => candidate.Equals(value) is false));
+
+            CollectionAssert.AreEqual(new[] { property.Name }, new BitBmotionOptions().DifferencesFrom(other).ToArray(), property.Name);
+        }
+    }
+
+    [TestMethod]
+    public async Task TheServicesBmotionCreatesLogToTheApplicationsLog()
     {
         var log = new ListLogger<object>();
         await using var app = new ServiceCollection()
             .AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime())
             .AddLogging(logging => logging.AddProvider(new ListLoggerProvider(log)))
             .BuildServiceProvider();
+        app.ConfigureBmotionServices(_ => { });
 
         // what the engine and the scroll tracker log through
         app.GetBmotionService<ILogger<BmotionAnimationEngine>>().LogWarning("from the engine");
@@ -148,38 +251,32 @@ public sealed class LazyLoadingTests
     }
 
     [TestMethod]
-    public void AnElementThatCreatesTheServicesWarnsOnceThatTheyAreNotRegistered()
+    public void OnWebAssemblyEveryComponentWithoutTheRegistrationOrTheConfigurationFailsAsItIsCreated()
     {
-        // What tells the client project of a Blazor Web App that forgot the registration why its options are ignored.
+        // What tells the client project of a Blazor Web App that forgot the registration that it did - from whichever
+        // component comes first.
         using var ctx = CreateUnregisteredContext();
-        var log = new ListLogger<object>();
-        ctx.Services.AddLogging(logging => logging.AddProvider(new ListLoggerProvider(log)));
 
-        RenderFadeUp(ctx);
-        ctx.Render<Bmotion>(ps => ps.Add(p => p.Id, "other").Add(p => p.Animate, Bm.To(opacity: 1)).Add(p => p.ChildContent, Div));
+        var errors = new[]
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() => RenderFadeUp(ctx)),
+            Assert.ThrowsExactly<InvalidOperationException>(() => ctx.Render<BmotionReorderGroup<string>>(ps => ps.Add(p => p.Items, ["one"]))),
+            Assert.ThrowsExactly<InvalidOperationException>(() => ctx.Render<BmotionInspector>()),
+        };
 
-        var warning = log.Warnings.Single(message => message.Contains("not registered", StringComparison.Ordinal));
-        Assert.Contains("AddBitBmotionServices", warning, StringComparison.Ordinal);
-        Assert.Contains("ConfigureBmotionServices", warning, StringComparison.Ordinal);
+        foreach (var error in errors)
+        {
+            Assert.StartsWith("Bit.Bmotion's services are not registered", error.Message, StringComparison.Ordinal);
+            Assert.Contains("AddBitBmotionServices", error.Message, StringComparison.Ordinal);
+            Assert.Contains("ConfigureBmotionServices", error.Message, StringComparison.Ordinal);
+        }
     }
 
     [TestMethod]
-    public void AnAppThatConfiguresTheServicesItLazyLoadsIsNotWarned()
+    public void AnElementAnimatesWithTheServicesBmotionCreated()
     {
         using var ctx = CreateUnregisteredContext();
-        var log = new ListLogger<object>();
-        ctx.Services.AddLogging(logging => logging.AddProvider(new ListLoggerProvider(log)));
-
-        ctx.Services.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
-        RenderFadeUp(ctx);
-
-        Assert.IsFalse(log.Warnings.Any(message => message.Contains("not registered", StringComparison.Ordinal)), string.Join(Environment.NewLine, log.Warnings));
-    }
-
-    [TestMethod]
-    public void AnElementAnimatesWithoutTheRegistration()
-    {
-        using var ctx = CreateUnregisteredContext();
+        ctx.Services.ConfigureBmotionServices(_ => { });
 
         RenderFadeUp(ctx);
 
@@ -190,9 +287,10 @@ public sealed class LazyLoadingTests
     }
 
     [TestMethod]
-    public void TheReorderGroupAndTheInspectorWorkWithoutTheRegistration()
+    public void TheReorderGroupAndTheInspectorWorkWithTheServicesBmotionCreated()
     {
         using var ctx = CreateUnregisteredContext();
+        ctx.Services.ConfigureBmotionServices(_ => { });
 
         var list = ctx.Render<BmotionReorderGroup<string>>(ps => ps
             .Add(p => p.Items, ["one", "two"])
