@@ -40,7 +40,7 @@
     <HeadOutlet @rendermode="RenderMode" />
 </head>
 
-<body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main @(isPreview ? "wb-preview-body" : "wb-body")">
+<body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main @(isPreview ? "wb-preview-body" : "wb-body") @(scenario is { Backdrop: null } && scenario.DevicePreset.IsHandheld ? "bit-blazor-hybrid wb-touch" : null)">
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />

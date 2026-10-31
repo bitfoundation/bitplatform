@@ -349,16 +349,16 @@
         <value>Cold brew</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>Emma de Jong</value>
+        <value>Emma</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>Lucas Bakker</value>
+        <value>Lucas</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>Mila Janssen</value>
+        <value>Mila</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>Sem Smit</value>
+        <value>Sem</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>Tarjeta</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>Nada aquí se comunica con tu API ni con tu base de datos, así que probar una idea nueva nunca rompe tu app ni tus datos.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Ponte de acuerdo antes de construir</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Envía a tu equipo o cliente un enlace a una página en un estado concreto y cierra el diseño antes de que nadie escriba código de backend.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>Cómo encaja en tu flujo de trabajo</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Diséñala aquí</value>
+        <value>Pídesela a tu IA</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Crea la página en el banco de trabajo con datos de ejemplo que cargan como los reales.</value>
+        <value>Pide la página a Claude, Codex, GitHub Copilot, Gemini o Junie, y la creará aquí con datos de ejemplo que cargan como los reales.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Revisa cada estado</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>Empieza con estas y luego agrega tus propias páginas junto a ellas.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Hecho con bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>El banco de trabajo forma parte de todo proyecto bit Boilerplate. Solo se ejecuta en tu equipo, a menos que decidas publicarlo.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Cada venta, en vivo, en una sola pantalla</value>
+        <value>Cada venta, en vivo</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>Todos tus edificios en un solo mapa</value>
+        <value>Tus edificios, un mapa</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>Fondo</value>
@@ -991,7 +982,7 @@
         <value>Un chat que responde con texto, gráficos y acciones, que se muestran a medida que se escriben, con historial, detener y reintentar.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Pregunta lo que quieras sobre tus sucursales</value>
+        <value>Solo pregunta</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>IA</value>
@@ -1144,7 +1135,7 @@ Así fue cada día:</value>
         <value>El propio tablero de administración de la app, incorporado con datos de demostración, para que sus estados y capturas estén a un clic.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Tus cifras de un vistazo</value>
+        <value>Cifras de un vistazo</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>Configuración</value>
@@ -1567,7 +1558,7 @@ Así fue cada día:</value>
         <value>Recurso</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Recurso</value>
+        <value>Equipo</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>Sin asignar</value>
@@ -1579,10 +1570,10 @@ Así fue cada día:</value>
         <value>No hay recursos para mostrar.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>Noah</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>Julia</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>Planificación</value>
@@ -1594,7 +1585,7 @@ Así fue cada día:</value>
         <value>El horario semanal del personal de una cafetería: mueve los turnos de cada persona y ajusta su duración, dentro del horario de apertura, respetando el tiempo libre y sin turnos superpuestos.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Planifica toda la semana en minutos</value>
+        <value>La semana, en minutos</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>Horario del personal</value>
@@ -1635,27 +1626,6 @@ Así fue cada día:</value>
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>Tiempo libre</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>Las mismas bibliotecas de código abierto con las que está hecha tu app, cada una con documentación interactiva que tu agente de IA también puede leer.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Componentes nativos de Blazor con temas, escritura de derecha a izquierda y accesibilidad integrados.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>Un estado que sobrevive a las recargas y se refleja en cada captura que se toma aquí.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>Listas y cuadrículas que se reordenan arrastrando, como los widgets del tablero.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Animaciones elásticas, apariciones y efectos al pasar el cursor, como los de esta página.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>Funciones del navegador desde C#, del portapapeles a IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>La plantilla de proyecto en la que vive este banco de trabajo, de la base de datos a las tiendas de apps.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>Tu próxima página empieza aquí</value>
     </data>
@@ -1691,5 +1661,65 @@ Así fue cada día:</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>Código fuente en GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Ejemplos</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>Nuevo turno</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Editar turno</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Miembro del equipo</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Turno</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>Por ejemplo, Apertura</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Rol</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Día</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Empieza</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Termina</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>Un turno tiene que terminar después de empezar.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} ya tiene un turno a esa hora.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Turno guardado</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Turno eliminado</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>Todo el equipo</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>Todos los roles</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Personalízalo con IA</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>El banco de trabajo también forma parte de tu app. Pide a tu agente de IA que cambie sus funciones o que añada las herramientas, los dispositivos y los estados que tu equipo necesita.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>Nadie</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>Ningún rol</value>
     </data>
 </root>

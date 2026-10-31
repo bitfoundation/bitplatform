@@ -35,7 +35,7 @@
                             <td class="muted">@FormatAge(order.Time)</td>
                             <td>
                                 <span class="cashier">
-                                    <BitPersona Size="BitPersonaSize.Size24" PrimaryText="@Localizer[order.CashierKey]" HidePersonaDetails />
+                                    <BitPersona Size="BitPersonaSize.Size24" ImageUrl="@WorkbenchPhotos.Find(order.CashierKey)" PrimaryText="@Localizer[order.CashierKey]" HidePersonaDetails />
                                     @Localizer[order.CashierKey]
                                 </span>
                             </td>

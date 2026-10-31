@@ -349,16 +349,16 @@
         <value>کلد برو</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>الهام جعفری</value>
+        <value>الهام</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>لیلا بهرامی</value>
+        <value>آرش</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>میلاد جهانی</value>
+        <value>مینا</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>سامان صدری</value>
+        <value>سامان</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>کارت</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>هیچ‌چیز این‌جا با API یا پایگاه داده شما حرف نمی‌زند، پس آزمودن یک ایده تازه هیچ‌وقت برنامه یا داده‌تان را خراب نمی‌کند.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>قبل از ساخت توافق کنید</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>پیوند یک صفحه در حالت دلخواه را برای تیم یا مشتری بفرستید و پیش از نوشتن کد بک‌اند، سر طراحی به توافق برسید.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>چطور در روند کار شما جا می‌افتد</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>این‌جا طراحی کنید</value>
+        <value>از هوش مصنوعی بخواهید</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>صفحه را در میز کار با داده نمونه‌ای بسازید که مثل داده واقعی بارگذاری می‌شود.</value>
+        <value>صفحه را از Claude، Codex، GitHub Copilot، Gemini یا Junie بخواهید تا آن را این‌جا با داده نمونه‌ای بسازد که مثل داده واقعی بارگذاری می‌شود.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>همه حالت‌ها را بازبینی کنید</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>از این‌ها شروع کنید و بعد صفحه‌های خودتان را کنارشان بگذارید.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>ساخته‌شده با bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>میز کار بخشی از هر پروژه bit Boilerplate است و فقط روی سیستم شما اجرا می‌شود، مگر خودتان بخواهید منتشرش کنید.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>همه فروش‌ها، زنده، در یک صفحه</value>
+        <value>همه فروش‌ها، زنده</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>همه ساختمان‌هایتان روی یک نقشه</value>
+        <value>ساختمان‌ها، روی یک نقشه</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>پس‌زمینه</value>
@@ -991,7 +982,7 @@
         <value>گفتگویی که با متن، نمودار و اقدام پاسخ می‌دهد و پاسخ را هم‌زمان با نوشته‌شدن نشان می‌دهد، با تاریخچه، توقف و تلاش دوباره.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>هر سؤالی از فروشگاه‌هایتان بپرسید</value>
+        <value>فقط بپرسید</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>هوش مصنوعی</value>
@@ -1144,7 +1135,7 @@
         <value>داشبورد مدیریت خود برنامه که با داده نمایشی به این‌جا آمده، تا حالت‌ها و اسکرین‌شات‌هایش فقط یک کلیک فاصله داشته باشند.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>آمار شما در یک نگاه</value>
+        <value>آمار در یک نگاه</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>تنظیمات</value>
@@ -1567,7 +1558,7 @@
         <value>منبع</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>منبع</value>
+        <value>کارکنان</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>تخصیص‌نیافته</value>
@@ -1579,10 +1570,10 @@
         <value>منبعی برای نمایش نیست.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>نوید سلطانی</value>
+        <value>نوید</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>ژیلا ملکی</value>
+        <value>ژیلا</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>برنامه‌ریزی</value>
@@ -1594,7 +1585,7 @@
         <value>برنامه هفتگی کارکنان یک کافه: شیفت هر نفر را جابه‌جا و کوتاه و بلند کنید، در ساعت‌های کاری کافه، با در نظر گرفتن مرخصی‌ها و بدون تداخل.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>کل هفته را در چند دقیقه برنامه‌ریزی کنید</value>
+        <value>برنامه هفته در چند دقیقه</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>برنامه کاری کارکنان</value>
@@ -1635,27 +1626,6 @@
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>مرخصی</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>همان کتابخانه‌های متن‌بازی که برنامه شما روی آن‌ها ساخته شده، هرکدام با مستندات زنده‌ای که عامل هوش مصنوعی شما هم می‌تواند بخواند.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>کامپوننت‌های بومی Blazor با پشتیبانی داخلی از پوسته، راست‌به‌چپ و دسترس‌پذیری.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>وضعیتی که با بارگذاری دوباره از دست نمی‌رود و به هر اسکرین‌شاتی که این‌جا گرفته شود هم می‌رسد.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>فهرست‌ها و شبکه‌هایی که با کشیدن مرتب می‌شوند، مثل ویجت‌های داشبورد.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>حرکت‌های فنری، جلوه‌های ظاهرشدن و هاور، مثل همین‌هایی که در این صفحه می‌بینید.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>قابلیت‌های مرورگر از داخل C#‎، از کلیپ‌بورد تا IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>قالب پروژه‌ای که این میز کار درون آن است، از پایگاه داده تا فروشگاه‌های برنامه.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>صفحه بعدی شما از این‌جا شروع می‌شود</value>
     </data>
@@ -1691,5 +1661,65 @@
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>کد منبع در GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>نمونه‌ها</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>شیفت جدید</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>ویرایش شیفت</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>عضو تیم</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>شیفت</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>مثلاً شروع روز</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>نقش</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>روز</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>شروع</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>پایان</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>شیفت باید بعد از شروعش تمام شود.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} در این ساعت شیفت دیگری دارد.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>شیفت ذخیره شد</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>شیفت حذف شد</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>همه کارکنان</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>همه نقش‌ها</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>با هوش مصنوعی شخصی‌اش کنید</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>خود میز کار هم بخشی از اپ شماست. از عامل هوش مصنوعی‌تان بخواهید امکاناتش را تغییر دهد یا ابزارها، دستگاه‌ها و حالت‌هایی را که تیمتان لازم دارد اضافه کند.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>هیچ‌کس</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>هیچ نقشی</value>
     </data>
 </root>

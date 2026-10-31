@@ -30,7 +30,7 @@ public partial class ChangePhoneNumberTab
 
         if (sendModel.PhoneNumber == Page.Profile?.PhoneNumber)
         {
-            await Page.SnackBar!.Error(AppLocalizer[nameof(AppStrings.SamePhoneNumberErrorMessage)]);
+            SnackBarService.Error(AppLocalizer[nameof(AppStrings.SamePhoneNumberErrorMessage)]);
             return;
         }
 
@@ -43,7 +43,7 @@ public partial class ChangePhoneNumberTab
             changeModel.PhoneNumber = sendModel.PhoneNumber;
             store.RequestPhoneNumberChange(sendModel.PhoneNumber);
 
-            await Page.SnackBar!.Success(AppLocalizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)]);
+            SnackBarService.Success(AppLocalizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)]);
         }
         finally
         {
@@ -67,7 +67,7 @@ public partial class ChangePhoneNumberTab
                 Page.UpdateProfile(profile with { PhoneNumber = phoneNumber });
             }
 
-            await Page.SnackBar!.Warning(AppLocalizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
+            SnackBarService.Warning(AppLocalizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
 
             store.RequestPhoneNumberChange(null);
             sendModel.PhoneNumber = changeModel.PhoneNumber = changeModel.Token = null;

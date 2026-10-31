@@ -40,6 +40,12 @@ what the user approves is how the real page will look.
   view and hands them to every screenshot, so an image shows exactly what was on the screen when it was taken, and a
   reload or a restart comes back to the same place. A value that only lives in a component's field is lost on reload and
   missing from the screenshot.
+- That saved state outlives your changes. Blex drops what no longer reads, like a value of another type, and a field
+  with nothing saved starts from its default. It can't tell when saved state still reads but no longer fits: a field that
+  now means something else, a record in the store that gained a field, or sample data the store keeps an edited copy of,
+  whose old copy would hide your new data. When a change does that, raise the store's `Version` in its `[BlexStore]`
+  (start at 1), and state saved under another version is dropped. Don't write a migration: dropping it only puts the
+  page back to its defaults.
 - Add it to `WorkbenchPageCatalog`: its key, title, description, icon, category, the components it shows off and the
   caption its store screenshots carry.
 - Follow `AGENTS.md` section 5 as for any page of the app: bit BlazorUI components as they are, styled through their
@@ -53,9 +59,9 @@ what the user approves is how the real page will look.
 ## 3. A page the app already has
 
 - When the user wants screenshots or design changes of a page that already exists in the app, bring a copy of it into
-  `src/Workbench/Components/Pages/AppPages`, the way the Settings page (and the Dashboard, with the Admin module) is
-  there: the same markup, styles, strings and validation, with the server calls replaced by sample data and a store, and
-  the same template conditions as the original. Both copies start with a `[mirror]` comment that names the other.
+  `src/Workbench/Components/Pages/AppPages`, the way the Settings page is there: the same markup, styles, strings and
+  validation, with the server calls replaced by sample data and a store, and the same template conditions as the
+  original. Both copies start with a `[mirror]` comment that names the other.
 
 ## 4. Look at it the way the user will
 
@@ -82,6 +88,18 @@ what the user approves is how the real page will look.
 
 ## 6. Share a link
 
+<!--#if (aspire == true && cloudflare == true)-->
+- A link to the user's `localhost` works only on their machine. When they want to send the page to someone else (a
+  teammate, a client), start the app host's `workbench` resource. Its Cloudflare quick tunnel,
+  `cloudflare-tunnel-workbench`, starts with it and gets an `https://….trycloudflare.com` address: read it from the
+  Aspire dashboard or the Aspire MCP `list_resources` tool. A Workbench already running outside the app host holds the
+  same port, so stop that one first.
+- Tell the user plainly: the link works only while their laptop is on and the app host keeps running; the address
+  changes whenever the tunnel restarts; anyone who has the link can open it. Screenshots taken through the link are
+  rendered on the user's machine.
+- Open the link yourself before you hand it over, and stop the `workbench` resource and its tunnel when the user is
+  done.
+<!--#else-->
 - A link to the user's `localhost` works only on their machine. When they want to send the page to someone else (a
   teammate, a client), publish the Workbench in Release to a folder outside the repository and run it from there on a
   free port, so it keeps running while they go on working in the repository.
@@ -91,6 +109,7 @@ what the user approves is how the real page will look.
   running; every new tunnel gets a new address; anyone who has the link can open it. Screenshots taken through the link
   are rendered on the user's machine.
 - Open the link yourself before you hand it over, and stop the tunnel and the published copy when the user is done.
+<!--#endif-->
 
 ## 7. Settle it with the user
 

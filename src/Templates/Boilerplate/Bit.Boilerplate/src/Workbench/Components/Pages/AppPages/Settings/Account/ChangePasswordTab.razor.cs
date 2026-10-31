@@ -22,7 +22,7 @@ public partial class ChangePasswordTab
 
             model.OldPassword = model.NewPassword = model.ConfirmPassword = null;
 
-            await Page.SnackBar!.Success(AppLocalizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)]);
+            SnackBarService.Success(AppLocalizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)]);
         }
         finally
         {

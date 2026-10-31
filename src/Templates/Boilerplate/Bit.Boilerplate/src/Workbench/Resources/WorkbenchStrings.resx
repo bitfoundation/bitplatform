@@ -349,16 +349,16 @@
         <value>Cold brew</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>Emma de Jong</value>
+        <value>Emma</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>Lucas Bakker</value>
+        <value>Lucas</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>Mila Janssen</value>
+        <value>Mila</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>Sem Smit</value>
+        <value>Sem</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>Card</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>Nothing here talks to your API or database, so trying a new idea never breaks your app or your data.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Agree before you build</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Send a link to a page in a given state to your team or client, and settle the design before anyone writes backend code.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>How it fits your workflow</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Design it here</value>
+        <value>Prompt your AI</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Build the page in the workbench with sample data that loads like the real thing.</value>
+        <value>Ask Claude, Codex, GitHub Copilot, Gemini or Junie for the page, and it builds it here on sample data that loads like the real thing.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Review every state</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>Start from these, then add your own pages next to them.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Built with bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>The workbench is part of every bit Boilerplate project. It runs only on your machine unless you choose to publish it.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Every sale, live, on one screen</value>
+        <value>Every sale, live</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>All your buildings on one map</value>
+        <value>Your buildings, one map</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>Background</value>
@@ -991,7 +982,7 @@
         <value>A chat that answers with text, charts and actions, streamed as it is written, with history, stop and retry.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Ask your stores anything</value>
+        <value>Just ask</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>AI</value>
@@ -1144,7 +1135,7 @@ Here is each day:</value>
         <value>The app's own admin dashboard, brought in with demo data, so its states and screenshots are a click away.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Your numbers at a glance</value>
+        <value>Numbers at a glance</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>Settings</value>
@@ -1567,7 +1558,7 @@ Here is each day:</value>
         <value>Resource</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Resource</value>
+        <value>Staff</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>Unassigned</value>
@@ -1579,10 +1570,10 @@ Here is each day:</value>
         <value>No resources to display.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>Noah</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>Julia</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>Planning</value>
@@ -1594,7 +1585,7 @@ Here is each day:</value>
         <value>The week's staff schedule for a café: move and resize shifts per person, within opening hours, around time off and without double-booking.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Plan the whole week in minutes</value>
+        <value>A week planned in minutes</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>Staff schedule</value>
@@ -1635,27 +1626,6 @@ Here is each day:</value>
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>Time off</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>The same open-source libraries your app is built on, each with live docs your AI agent can read too.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor components with theming, right-to-left and accessibility built in.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>State that survives reloads and travels into every screenshot taken here.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>Drag-to-reorder lists and grids, like the dashboard's widgets.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Springs, reveals and hover effects, like the ones on this page.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>Browser features from C#, from the clipboard to IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>The project template this workbench lives in, from database to app stores.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>Your next page starts here</value>
     </data>
@@ -1691,5 +1661,65 @@ Here is each day:</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>Source on GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Showcases</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>New shift</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Edit shift</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Team member</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Shift</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>For example, Opening</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Role</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Day</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Starts</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Ends</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>A shift has to end after it starts.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} already has a shift at that time.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Shift saved</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Shift deleted</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>All staff</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>All roles</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Customize it with AI</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>The workbench is part of your app too. Ask your AI agent to change its features, or to add the tools, devices and states your team needs.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>No one</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>No roles</value>
     </data>
 </root>

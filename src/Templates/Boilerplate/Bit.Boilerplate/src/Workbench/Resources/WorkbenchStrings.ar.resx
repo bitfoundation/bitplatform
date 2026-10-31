@@ -349,16 +349,16 @@
         <value>كولد برو</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>إيما دي يونغ</value>
+        <value>إيما</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>لوكاس باكر</value>
+        <value>لوكاس</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>ميلا يانسن</value>
+        <value>ميلا</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>سيم سميت</value>
+        <value>سيم</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>بطاقة</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>لا شيء هنا يتصل بواجهة API أو بقاعدة البيانات الخاصة بك، لذا فإن تجربة فكرة جديدة لا تُعطّل تطبيقك أو بياناتك أبدًا.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>اتفقوا قبل البناء</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>أرسل إلى فريقك أو عميلك رابطًا لصفحة في حالة معينة، واتفقوا على التصميم قبل أن يكتب أحد أي كود للواجهة الخلفية.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>كيف تنسجم مع سير عملك</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>صمّمها هنا</value>
+        <value>اطلبها من الذكاء الاصطناعي</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>ابنِ الصفحة في منضدة العمل ببيانات نموذجية تُحمَّل مثل البيانات الحقيقية.</value>
+        <value>اطلب الصفحة من Claude أو Codex أو GitHub Copilot أو Gemini أو Junie، فيبنيها هنا ببيانات نموذجية تُحمَّل مثل البيانات الحقيقية.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>راجع كل حالة</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>ابدأ بهذه الصفحات، ثم أضف صفحاتك بجانبها.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>مبني باستخدام bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>منضدة العمل جزء من كل مشروع bit Boilerplate. وهي لا تعمل إلا على جهازك ما لم تختر نشرها.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>كل عملية بيع، مباشرةً، على شاشة واحدة</value>
+        <value>كل بيع، مباشرةً</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>كل مبانيك على خريطة واحدة</value>
+        <value>مبانيك على خريطة</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>الخلفية</value>
@@ -991,7 +982,7 @@
         <value>محادثة تجيب بالنص والرسوم البيانية والإجراءات، وتظهر الإجابة أثناء كتابتها، مع السجل والإيقاف وإعادة المحاولة.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>اسأل عن فروعك ما تشاء</value>
+        <value>فقط اسأل</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>الذكاء الاصطناعي</value>
@@ -1567,7 +1558,7 @@
         <value>المورد</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>المورد</value>
+        <value>الفريق</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>غير مُعيَّن</value>
@@ -1579,10 +1570,10 @@
         <value>لا توجد موارد لعرضها.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>نوا سميت</value>
+        <value>نوا</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>يوليا مولدر</value>
+        <value>يوليا</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>التخطيط</value>
@@ -1594,7 +1585,7 @@
         <value>جدول عمل الموظفين الأسبوعي لمقهى: انقل المناوبات وغيّر مددها لكل شخص، ضمن ساعات العمل، مع مراعاة الإجازات ودون حجز مزدوج.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>خطّط للأسبوع كله في دقائق</value>
+        <value>أسبوعك في دقائق</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>جدول الموظفين</value>
@@ -1635,27 +1626,6 @@
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>إجازة</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>المكتبات مفتوحة المصدر نفسها التي بُني عليها تطبيقك، ولكل منها توثيق حي يستطيع وكيل الذكاء الاصطناعي الخاص بك قراءته أيضًا.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>مكونات Blazor أصلية مع دعم مدمج للمظاهر والكتابة من اليمين إلى اليسار وإمكانية الوصول.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>حالة تصمد بعد إعادة التحميل وتنتقل إلى كل لقطة شاشة تُلتقط هنا.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>قوائم وشبكات يُعاد ترتيبها بالسحب، مثل أدوات لوحة التحكم.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>حركات نابضية وتأثيرات ظهور وتأثيرات عند مرور المؤشر، مثل تلك التي في هذه الصفحة.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>ميزات المتصفح من C#‎، من الحافظة إلى IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>قالب المشروع الذي تقيم فيه منضدة العمل هذه، من قاعدة البيانات إلى متاجر التطبيقات.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>صفحتك التالية تبدأ من هنا</value>
     </data>
@@ -1691,5 +1661,65 @@
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>الكود المصدري على GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>نماذج</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>مناوبة جديدة</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>تعديل المناوبة</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>عضو الفريق</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>المناوبة</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>مثلاً: الافتتاح</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>الدور</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>اليوم</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>تبدأ</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>تنتهي</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>يجب أن تنتهي المناوبة بعد أن تبدأ.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>لدى {0} مناوبة في هذا الوقت بالفعل.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>تم حفظ المناوبة</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>تم حذف المناوبة</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>كل الفريق</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>كل الأدوار</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>خصّصها بالذكاء الاصطناعي</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>منضدة العمل جزء من تطبيقك أيضاً. اطلب من وكيل الذكاء الاصطناعي تغيير ميزاتها أو إضافة الأدوات والأجهزة والحالات التي يحتاجها فريقك.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>لا أحد</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>لا أدوار</value>
     </data>
 </root>

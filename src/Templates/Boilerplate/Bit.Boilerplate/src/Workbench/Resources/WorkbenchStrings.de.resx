@@ -349,16 +349,16 @@
         <value>Cold Brew</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>Emma de Jong</value>
+        <value>Emma</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>Lucas Bakker</value>
+        <value>Lucas</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>Mila Janssen</value>
+        <value>Mila</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>Sem Smit</value>
+        <value>Sem</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>Karte</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>Nichts hier spricht mit Ihrer API oder Datenbank, daher kann eine neue Idee nie Ihre App oder Ihre Daten beschädigen.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Erst abstimmen, dann bauen</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Senden Sie Ihrem Team oder Kunden einen Link zu einer Seite in einem bestimmten Zustand und klären Sie das Design, bevor jemand Backend-Code schreibt.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>Wie sie in Ihren Arbeitsablauf passt</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Hier entwerfen</value>
+        <value>Ihre KI fragen</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Bauen Sie die Seite auf der Werkbank mit Beispieldaten, die wie echte geladen werden.</value>
+        <value>Bitten Sie Claude, Codex, GitHub Copilot, Gemini oder Junie um die Seite. Sie entsteht hier mit Beispieldaten, die wie echte geladen werden.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Jeden Zustand prüfen</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>Beginnen Sie mit diesen und fügen Sie dann Ihre eigenen Seiten daneben hinzu.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Gebaut mit bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>Die Werkbank gehört zu jedem bit Boilerplate-Projekt. Sie läuft nur auf Ihrem Rechner, sofern Sie sie nicht veröffentlichen.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Jeder Verkauf, live, auf einem Bildschirm</value>
+        <value>Jeder Verkauf, live</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>Alle Ihre Gebäude auf einer Karte</value>
+        <value>Alle Gebäude, eine Karte</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>Hintergrund</value>
@@ -991,7 +982,7 @@
         <value>Ein Chat, der mit Text, Diagrammen und Aktionen antwortet und die Antwort schon beim Schreiben zeigt, mit Verlauf, Stopp und erneutem Versuch.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Fragen Sie alles über Ihre Filialen</value>
+        <value>Einfach fragen</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>KI</value>
@@ -1144,7 +1135,7 @@ So sah jeder Tag aus:</value>
         <value>Das eigene Admin-Dashboard der App, hier mit Demodaten eingebunden, damit seine Zustände und Screenshots nur einen Klick entfernt sind.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Ihre Zahlen auf einen Blick</value>
+        <value>Zahlen auf einen Blick</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>Einstellungen</value>
@@ -1153,7 +1144,7 @@ So sah jeder Tag aus:</value>
         <value>Die eigene Einstellungsseite der App mit Profil, Konto, Anmeldung in zwei Schritten, Sitzungen und Datenschutz, die mit Demodaten statt mit dem Server läuft.</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>Ihr Konto, ganz nach Ihren Wünschen</value>
+        <value>Ihr Konto, Ihr Stil</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Tag</value>
@@ -1567,7 +1558,7 @@ So sah jeder Tag aus:</value>
         <value>Ressource</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Ressource</value>
+        <value>Team</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>Nicht zugewiesen</value>
@@ -1579,10 +1570,10 @@ So sah jeder Tag aus:</value>
         <value>Keine Ressourcen zum Anzeigen.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>Noah</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>Julia</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>Planung</value>
@@ -1594,7 +1585,7 @@ So sah jeder Tag aus:</value>
         <value>Der Wochendienstplan eines Cafés: Schichten pro Person verschieben und in der Länge ändern, innerhalb der Öffnungszeiten, um freie Tage herum und ohne Doppelbuchungen.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Die ganze Woche in wenigen Minuten planen</value>
+        <value>Die Woche in Minuten geplant</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>Dienstplan</value>
@@ -1635,27 +1626,6 @@ So sah jeder Tag aus:</value>
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>Frei</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>Dieselben Open-Source-Bibliotheken, auf denen Ihre App aufbaut, jede mit Live-Dokumentation, die auch Ihr KI-Agent lesen kann.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor-Komponenten mit eingebauter Unterstützung für Designs, Rechts-nach-links-Sprachen und Barrierefreiheit.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>Zustand, der das Neuladen übersteht und in jeden hier aufgenommenen Screenshot mitwandert.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>Listen und Raster, die sich per Ziehen neu ordnen lassen, wie die Widgets des Dashboards.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Federanimationen, Einblendungen und Hover-Effekte, wie die auf dieser Seite.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>Browserfunktionen aus C#, von der Zwischenablage bis zu IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>Die Projektvorlage, in der diese Werkbank steckt, von der Datenbank bis in die App-Stores.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>Ihre nächste Seite beginnt hier</value>
     </data>
@@ -1691,5 +1661,65 @@ So sah jeder Tag aus:</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>Quellcode auf GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Beispielseiten</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>Neue Schicht</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Schicht bearbeiten</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Teammitglied</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Schicht</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>Zum Beispiel Frühschicht</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Rolle</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Tag</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Beginn</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Ende</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>Eine Schicht muss nach ihrem Beginn enden.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} hat zu dieser Zeit schon eine Schicht.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Schicht gespeichert</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Schicht gelöscht</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>Alle Mitarbeitenden</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>Alle Rollen</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Mit KI anpassen</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>Die Werkbank gehört auch zu Ihrer App. Bitten Sie Ihren KI-Agenten, ihre Funktionen zu ändern oder die Werkzeuge, Geräte und Zustände hinzuzufügen, die Ihr Team braucht.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>Niemand</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>Keine Rollen</value>
     </data>
 </root>

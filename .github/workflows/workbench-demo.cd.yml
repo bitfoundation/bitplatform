@@ -51,11 +51,11 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new WorkbenchDemo --framework net10.0 --module Admin --sample --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new Bit.Boilerplate --framework net10.0 --module Admin --sample --multitenant --appInsights --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
     - name: Publish
-      working-directory: WorkbenchDemo
-      run: dotnet publish src/Workbench/WorkbenchDemo.Workbench.csproj -c Release -o ../server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
+      working-directory: Bit.Boilerplate
+      run: dotnet publish src/Workbench/Bit.Boilerplate.Workbench.csproj -c Release -o ../server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
     - name: Point screenshots at the shared browser folder
       shell: pwsh
@@ -113,7 +113,7 @@ jobs:
         artifact-name: Workbench
         app-pool: Workbench
         site-path: C:\inetpub\Workbench
-        sentinel-file: WorkbenchDemo.Workbench.dll
+        sentinel-file: Bit.Boilerplate.Workbench.dll
         health-check-url: 'https://workbench.bitplatform.dev/'
         cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}

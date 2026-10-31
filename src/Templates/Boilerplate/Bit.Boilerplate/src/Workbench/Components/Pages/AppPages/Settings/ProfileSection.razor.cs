@@ -64,7 +64,7 @@ public partial class ProfileSection
             seededProfile = Page.Profile with { FullName = editUserDto.FullName ?? string.Empty, BirthDate = editUserDto.BirthDate, Gender = editUserDto.Gender };
             Page.UpdateProfile(seededProfile);
 
-            await Page.SnackBar!.Success(AppLocalizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)]);
+            SnackBarService.Success(AppLocalizer[nameof(AppStrings.ProfileUpdatedSuccessfullyMessage)]);
         }
         finally
         {

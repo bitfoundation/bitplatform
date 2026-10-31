@@ -15,6 +15,7 @@
             {
                 <BitText Class="menu-displayname">@Localizer[Shell.ActiveUser.NameKey]</BitText>
                 <BitPersona Class="persona"
+                            ImageUrl="@WorkbenchPhotos.Find(Shell.ActiveUser.NameKey)"
                             Size="BitPersonaSize.Size32"
                             PrimaryText="@Localizer[Shell.ActiveUser.NameKey]"
                             Presence="BitPersonaPresence.Online"
@@ -84,6 +85,7 @@
                         @if (Shell.IsSignedIn)
                         {
                             <BitPersona Class="persona"
+                                        ImageUrl="@WorkbenchPhotos.Find(Shell.ActiveUser.NameKey)"
                                         Size="BitPersonaSize.Size48"
                                         PrimaryText="@Localizer[Shell.ActiveUser.NameKey]"
                                         SecondaryText="@Shell.ActiveUser.Email"
@@ -94,6 +96,7 @@
                             {
                                 <BitActionButton FullWidth Class="account-button" OnClick="() => { Shell.SwitchAccount(account); chromeStore.OpenMenu(false); }">
                                     <BitPersona Size="BitPersonaSize.Size32"
+                                                ImageUrl="@WorkbenchPhotos.Find(account.NameKey)"
                                                 PrimaryText="@Localizer[account.NameKey]"
                                                 SecondaryText="@account.Email" />
                                 </BitActionButton>

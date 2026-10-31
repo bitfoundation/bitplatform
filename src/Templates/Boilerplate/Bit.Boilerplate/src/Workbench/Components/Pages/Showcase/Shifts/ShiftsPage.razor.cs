@@ -4,6 +4,10 @@ public partial class ShiftsPage
 {
     private static readonly BitFullCalendarView[] views = [BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month, BitFullCalendarView.Agenda];
 
+    private static readonly string[] allStaffKeys = [.. ShiftsService.Staff.Select(member => member.NameKey)];
+
+    private static readonly ShiftRole[] allRoles = Enum.GetValues<ShiftRole>();
+
     private static readonly Dictionary<ShiftRole, string> roleColors = new()
     {
         [ShiftRole.Lead] = "#8b5cf6",
@@ -12,16 +16,22 @@ public partial class ShiftsPage
         [ShiftRole.Cashier] = "#22a06b"
     };
 
+    private bool isPhone;
+    private ShiftEditor? editor;
+    private BitFullCalendar? calendar;
     private bool isLoading = true;
     private bool isFailed;
     private Shift[] shifts = [];
     private List<BitFullCalendarEvent> events = [];
     private IReadOnlyList<BitFullCalendarResource> resources = [];
     private IReadOnlyList<BitFullCalendarColorOption> roles = [];
+    private List<BitDropdownItem<string>> staffFilterItems = [];
+    private List<BitDropdownItem<ShiftRole>> roleFilterItems = [];
     private BitFullCalendarTexts texts = new();
     private readonly BitFullCalendarSettings settings = new()
     {
         AllowEventOverlap = false,
+        BusinessDays = Enum.GetValues<DayOfWeek>(),
         HighlightBusinessHours = true,
         RestrictToBusinessHours = true,
         BusinessStartHour = ShiftsService.OpeningHour,
@@ -44,6 +54,8 @@ public partial class ShiftsPage
         }
     }
 
+    private BitFullCalendarView DefaultView => isPhone ? BitFullCalendarView.Day : BitFullCalendarView.Month;
+
     private int WeekShiftCount => WeekShifts.Count();
 
     private double WeekHours => WeekShifts.Sum(s => (s.End - s.Start).TotalHours);
@@ -52,7 +64,9 @@ public partial class ShiftsPage
     {
         texts = CreateTexts();
         roles = [.. Enum.GetValues<ShiftRole>().Select(role => new BitFullCalendarColorOption { Id = ToColorId(role), Title = Localizer[$"ShiftsRole{role}"], Value = roleColors[role] })];
-        resources = [.. ShiftsService.Staff.Select(member => new BitFullCalendarResource { Id = member.NameKey, Title = Localizer[member.NameKey], Subtitle = Localizer[$"ShiftsRole{member.Role}"] })];
+        staffFilterItems = [.. ShiftsService.Staff.Select(member => new BitDropdownItem<string> { Value = member.NameKey, Text = Localizer[member.NameKey] })];
+        roleFilterItems = [.. Enum.GetValues<ShiftRole>().Select(role => new BitDropdownItem<ShiftRole> { Value = role, Text = Localizer[$"ShiftsRole{role}"] })];
+        resources = CreateResources();
 
         Subscribe(store);
 
@@ -60,6 +74,7 @@ public partial class ShiftsPage
             return;
 
         await WhenStateRestored();
+        resources = CreateResources();
         await Reload();
     }
 
@@ -86,9 +101,37 @@ public partial class ShiftsPage
         isLoading = false;
     }
 
+    private bool IsShown(string staffKey) => store.StaffFilter is not { } staff || staff.Contains(staffKey);
+
+    private bool IsShown(ShiftRole role) => store.RoleFilter is not { } filter || filter.Contains(role);
+
+    private string StaffFilterText => store.StaffFilter is not { } keys || keys.Length == allStaffKeys.Length
+        ? Localizer[nameof(WorkbenchStrings.ShiftsAllStaff)]
+        : string.Join(", ", keys.Select(key => Localizer[key].Value));
+
+    private string RoleFilterText => store.RoleFilter is not { } filter || filter.Length == allRoles.Length
+        ? Localizer[nameof(WorkbenchStrings.ShiftsAllRoles)]
+        : string.Join(", ", filter.Select(role => Localizer[$"ShiftsRole{role}"].Value));
+
+    private List<BitFullCalendarResource> CreateResources() =>
+        [.. ShiftsService.Staff.Where(member => IsShown(member.NameKey)).Select(member => new BitFullCalendarResource { Id = member.NameKey, Title = Localizer[member.NameKey], Subtitle = Localizer[$"ShiftsRole{member.Role}"] })];
+
+    private void FilterStaff(IEnumerable<string?> keys)
+    {
+        store.FilterStaff([.. keys.OfType<string>()]);
+        resources = CreateResources();
+        events = CreateEvents();
+    }
+
+    private void FilterRoles(IEnumerable<ShiftRole> filter)
+    {
+        store.FilterRoles([.. filter]);
+        events = CreateEvents();
+    }
+
     private List<BitFullCalendarEvent> CreateEvents()
     {
-        List<BitFullCalendarEvent> result = [.. shifts.Select(ToEvent)];
+        List<BitFullCalendarEvent> result = [.. shifts.Where(shift => IsShown(shift.StaffKey) && IsShown(shift.Role)).Select(ToEvent)];
 
         if (shifts.Length == 0)
             return result;
@@ -106,6 +149,9 @@ public partial class ShiftsPage
             IsBackground = true,
             IsBlocking = true
         });
+
+        if (IsShown(staffKey) is false)
+            return result;
 
         result.Add(new()
         {
@@ -180,6 +226,69 @@ public partial class ShiftsPage
 
         return calendarTexts;
     }
+
+    private void OnPhoneChanged(bool phone)
+    {
+        isPhone = phone;
+    }
+
+    private Task OpenNew(BitFullCalendarEvent? slot)
+    {
+        var staff = ShiftsService.Staff.FirstOrDefault(member => member.NameKey == slot?.Resource) ?? ShiftsService.Staff[0];
+        var start = slot?.StartDate ?? (store.Date ?? DateTime.Today).Date;
+
+        if (start.TimeOfDay < TimeSpan.FromHours(ShiftsService.OpeningHour))
+        {
+            start = start.Date.AddHours(ShiftsService.OpeningHour);
+        }
+
+        var end = slot is { IsAllDay: false } && slot.EndDate.Date == start.Date && slot.EndDate - start >= TimeSpan.FromHours(1) ? slot.EndDate : start.AddHours(4);
+        var closing = start.Date.AddHours(ShiftsService.ClosingHour);
+
+        return editor!.Open(new(Guid.NewGuid().ToString("N"), staff.NameKey, staff.Role, start, end > closing ? closing : end), isNew: true);
+    }
+
+    private Task OpenExisting(BitFullCalendarEvent calendarEvent)
+    {
+        if (isFailed || calendarEvent.IsBackground || shifts.FirstOrDefault(s => s.Id == calendarEvent.Id) is not { } shift)
+            return Task.CompletedTask;
+
+        return editor!.Open(shift, isNew: false);
+    }
+
+    private string? ValidateShift(Shift shift)
+    {
+        return (calendar?.State.ValidateRange(shift.Id, shift.Start, shift.End, shift.StaffKey) ?? BitFullCalendarChangeRefusal.None) switch
+        {
+            BitFullCalendarChangeRefusal.None => null,
+            BitFullCalendarChangeRefusal.OutsideBusinessHours => texts.OutsideBusinessHoursMessage,
+            BitFullCalendarChangeRefusal.Overlap => texts.EventOverlapMessage,
+            BitFullCalendarChangeRefusal.OutOfRange => texts.OutOfRangeMessage,
+            _ => texts.BlockedMessage
+        };
+    }
+
+    private async Task OnEditorSaved(Shift shift)
+    {
+        shifts = [.. shifts.Where(s => s.Id != shift.Id), shift];
+        events = CreateEvents();
+
+        await shiftsService.Save(shifts, CurrentCancellationToken);
+
+        SnackBarService.Success(Localizer[nameof(WorkbenchStrings.ShiftsSaved)]);
+    }
+
+    private async Task OnEditorDeleted(Shift shift)
+    {
+        shifts = [.. shifts.Where(s => s.Id != shift.Id)];
+        events = CreateEvents();
+
+        await shiftsService.Save(shifts, CurrentCancellationToken);
+
+        SnackBarService.Info(Localizer[nameof(WorkbenchStrings.ShiftsDeleted)]);
+    }
+
+    public static string RoleColor(ShiftRole role) => roleColors[role];
 
     private static string ToColorId(ShiftRole role) => role.ToString().ToLowerInvariant();
 }

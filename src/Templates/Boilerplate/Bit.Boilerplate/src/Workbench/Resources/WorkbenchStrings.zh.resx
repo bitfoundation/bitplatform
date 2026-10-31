@@ -349,16 +349,16 @@
         <value>冷萃咖啡</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>艾玛·德容</value>
+        <value>艾玛</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>卢卡斯·巴克</value>
+        <value>卢卡斯</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>米拉·扬森</value>
+        <value>米拉</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>塞姆·斯米特</value>
+        <value>塞姆</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>银行卡</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>这里的一切都不会连接您的 API 或数据库，因此尝试新想法永远不会破坏您的应用或数据。</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>先达成一致，再动手开发</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>把某个页面在特定状态下的链接发给团队或客户，在任何人编写后端代码之前就把设计定下来。</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>如何融入您的工作流程</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>在这里设计</value>
+        <value>交给你的 AI</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>在工作台中用示例数据构建页面，这些数据会像真实数据一样加载。</value>
+        <value>让 Claude、Codex、GitHub Copilot、Gemini 或 Junie 来做这个页面，它会在这里用示例数据把页面搭出来，数据像真实数据一样加载。</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>检查每种状态</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>从这些页面开始，然后在旁边添加您自己的页面。</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>基于 bit 构建</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>工作台是每个 bit Boilerplate 项目的一部分。除非您选择发布，否则它只会在您的电脑上运行。</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>每一笔销售，实时尽在一屏</value>
+        <value>每笔销售，实时可见</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>所有建筑，尽在一张地图</value>
+        <value>建筑一图尽览</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>背景</value>
@@ -991,7 +982,7 @@
         <value>一个用文字、图表和操作来回答的聊天界面，回答边生成边显示，并支持历史记录、停止和重试。</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>门店的事，尽管问</value>
+        <value>尽管问</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>AI</value>
@@ -1144,7 +1135,7 @@
         <value>应用自带的管理仪表板，配上演示数据引入工作台，一键即可查看其各种状态并截图。</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>关键数据，一目了然</value>
+        <value>数据一目了然</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>设置</value>
@@ -1153,7 +1144,7 @@
         <value>应用自带的设置页面，包含个人资料、账户、两步验证、会话和隐私，使用演示数据运行，而不连接服务器。</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>您的账户，由您做主</value>
+        <value>账户由你做主</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>日</value>
@@ -1567,7 +1558,7 @@
         <value>资源</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>资源</value>
+        <value>员工</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>未分配</value>
@@ -1579,10 +1570,10 @@
         <value>没有可显示的资源。</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>诺亚·斯米特</value>
+        <value>诺亚</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>尤利娅·穆尔德</value>
+        <value>尤利娅</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>规划</value>
@@ -1594,7 +1585,7 @@
         <value>一家咖啡馆的每周员工排班：可按人员移动班次、调整时长，限定在营业时间内，避开休假，也不会重复排班。</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>几分钟排好一整周</value>
+        <value>几分钟排好一周</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>员工排班</value>
@@ -1635,27 +1626,6 @@
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>休假</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>与您的应用所基于的开源库完全相同，每个库都配有在线文档，您的 AI 智能体也能阅读。</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>原生 Blazor 组件，内置主题、从右到左布局和无障碍支持。</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>重新加载后依然保留的状态，还会带入在这里截取的每一张截图。</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>可拖动排序的列表和网格，就像仪表板上的小组件。</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>弹簧动画、渐显效果和悬停效果，就像本页上的这些。</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>在 C# 中使用浏览器功能，从剪贴板到 IndexedDB。</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>此工作台所在的项目模板，从数据库到应用商店，一应俱全。</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>您的下一个页面，从这里开始</value>
     </data>
@@ -1691,5 +1661,65 @@
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>GitHub 上的源代码</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>示例</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>新建班次</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>编辑班次</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>团队成员</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>班次</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>例如：开店班</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>角色</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>日期</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>开始</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>结束</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>班次的结束时间必须晚于开始时间。</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} 在这个时间已经有班次了。</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>班次已保存</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>班次已删除</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>全部员工</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>全部角色</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>用 AI 定制它</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>工作台本身也是你应用的一部分。让你的 AI 智能体修改它的功能，或者添加团队需要的工具、设备和状态。</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>无人</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>无角色</value>
     </data>
 </root>

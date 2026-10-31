@@ -349,16 +349,16 @@
         <value>कोल्ड ब्रू</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>एम्मा डी जोंग</value>
+        <value>एम्मा</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>लुकास बक्कर</value>
+        <value>लुकास</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>मिला जैनसेन</value>
+        <value>मिला</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>सेम स्मिट</value>
+        <value>सेम</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>कार्ड</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>यहाँ कुछ भी आपके API या डेटाबेस से बात नहीं करता, इसलिए कोई नया आइडिया आज़माने से आपका ऐप या डेटा कभी नहीं बिगड़ता।</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>बनाने से पहले सहमति बना लें</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>किसी खास स्थिति में किसी पेज का लिंक अपनी टीम या क्लाइंट को भेजें, और किसी के बैकएंड कोड लिखने से पहले ही डिज़ाइन तय कर लें।</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>यह आपके वर्कफ़्लो में कैसे फ़िट होती है</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>यहाँ डिज़ाइन करें</value>
+        <value>अपने AI से कहें</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>वर्कबेंच में पेज को ऐसे सैंपल डेटा के साथ बनाएँ जो असली डेटा की तरह लोड होता है।</value>
+        <value>Claude, Codex, GitHub Copilot, Gemini या Junie से पेज बनाने को कहें, वह उसे यहाँ ऐसे सैंपल डेटा के साथ बनाता है जो असली डेटा की तरह लोड होता है।</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>हर स्थिति जाँचें</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>इन्हीं से शुरू करें, फिर इनके साथ अपने पेज जोड़ें।</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>bit से बना</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>वर्कबेंच हर bit Boilerplate प्रोजेक्ट का हिस्सा है। यह सिर्फ़ आपकी मशीन पर चलती है, जब तक आप इसे पब्लिश करने का फ़ैसला न करें।</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>हर बिक्री, लाइव, एक ही स्क्रीन पर</value>
+        <value>हर बिक्री, लाइव</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>आपकी सभी इमारतें एक ही मैप पर</value>
+        <value>सारी इमारतें, एक मैप</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>बैकग्राउंड</value>
@@ -991,7 +982,7 @@
         <value>एक चैट जो टेक्स्ट, चार्ट और ऐक्शन के साथ जवाब देती है और जवाब लिखते-लिखते दिखाती है, साथ में हिस्ट्री, रोकने और फिर से कोशिश करने की सुविधा।</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>अपने स्टोरों के बारे में कुछ भी पूछें</value>
+        <value>बस पूछिए</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>AI</value>
@@ -1144,7 +1135,7 @@
         <value>ऐप का अपना एडमिन डैशबोर्ड, डेमो डेटा के साथ यहाँ लाया गया, ताकि उसकी स्थितियाँ और स्क्रीनशॉट बस एक क्लिक दूर हों।</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>आपके आँकड़े एक नज़र में</value>
+        <value>आँकड़े एक नज़र में</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>सेटिंग्स</value>
@@ -1153,7 +1144,7 @@
         <value>ऐप का अपना सेटिंग्स पेज, जिसमें प्रोफ़ाइल, खाता, दो-चरणीय साइन इन, सत्र और गोपनीयता हैं, और जो सर्वर के बजाय डेमो डेटा पर चलता है।</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>आपका खाता, आपके तरीके से</value>
+        <value>आपका खाता, आपका तरीका</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>दिन</value>
@@ -1567,7 +1558,7 @@
         <value>रिसोर्स</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>रिसोर्स</value>
+        <value>स्टाफ़</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>असाइन नहीं</value>
@@ -1579,10 +1570,10 @@
         <value>दिखाने के लिए कोई रिसोर्स नहीं है।</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>नोआ स्मिट</value>
+        <value>नोआ</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>जूलिया मुल्डर</value>
+        <value>जूलिया</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>प्लानिंग</value>
@@ -1594,7 +1585,7 @@
         <value>एक कैफ़े के स्टाफ़ का हफ़्ते भर का शेड्यूल: हर व्यक्ति की शिफ़्ट खिसकाएँ और छोटी-बड़ी करें, खुले रहने के घंटों के भीतर, छुट्टियों का ध्यान रखते हुए और बिना डबल-बुकिंग के।</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>पूरे हफ़्ते की योजना मिनटों में बनाएँ</value>
+        <value>हफ़्ते की योजना मिनटों में</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>स्टाफ़ शेड्यूल</value>
@@ -1635,27 +1626,6 @@
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>छुट्टी</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>वही ओपन-सोर्स लाइब्रेरी जिन पर आपका ऐप बना है, और हर एक के साथ लाइव डॉक्स, जिन्हें आपका AI एजेंट भी पढ़ सकता है।</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>नेटिव Blazor कंपोनेंट, जिनमें थीमिंग, दाएँ से बाएँ और एक्सेसिबिलिटी पहले से शामिल हैं।</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>ऐसी स्टेट जो रीलोड के बाद भी बनी रहती है और यहाँ लिए गए हर स्क्रीनशॉट तक पहुँचती है।</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>खींचकर नए क्रम में लगाई जा सकने वाली सूचियाँ और ग्रिड, जैसे डैशबोर्ड के विजेट।</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>स्प्रिंग ऐनिमेशन, रिवील और होवर इफ़ेक्ट, जैसे इस पेज पर हैं।</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>C# से ब्राउज़र की सुविधाएँ, क्लिपबोर्ड से लेकर IndexedDB तक।</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>वह प्रोजेक्ट टेम्पलेट जिसमें यह वर्कबेंच रहती है, डेटाबेस से लेकर ऐप स्टोर तक।</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>आपका अगला पेज यहीं से शुरू होता है</value>
     </data>
@@ -1691,5 +1661,65 @@
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>GitHub पर सोर्स कोड</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>शोकेस</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>नई शिफ़्ट</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>शिफ़्ट बदलें</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>टीम सदस्य</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>शिफ़्ट</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>जैसे, ओपनिंग</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>भूमिका</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>दिन</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>शुरू</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>ख़त्म</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>शिफ़्ट शुरू होने के बाद ही ख़त्म हो सकती है।</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} की इस समय पहले से एक शिफ़्ट है।</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>शिफ़्ट सहेजी गई</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>शिफ़्ट हटाई गई</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>पूरा स्टाफ़</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>सभी भूमिकाएँ</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>AI से इसे अपने हिसाब से बदलें</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>वर्कबेंच भी आपके ऐप का हिस्सा है। अपने AI एजेंट से इसकी सुविधाएँ बदलने या वे टूल, डिवाइस और स्थितियाँ जोड़ने को कहें जिनकी आपकी टीम को ज़रूरत है।</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>कोई नहीं</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>कोई भूमिका नहीं</value>
     </data>
 </root>

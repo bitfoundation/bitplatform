@@ -6,8 +6,8 @@ dark, in every language the app speaks and in every state the data can be in. It
 Store, Google Play and the Microsoft Store ask for.
 
 It starts with pages made by the bit platform team, such as a point-of-sale dashboard, a buildings map, an AI assistant
-and a shift planner, next to copies of this app's own Settings page (and its Dashboard, with the Admin module), and fills
-up with this project's own pages as they are designed.
+and a shift planner, next to a copy of this app's own Settings page, and fills up with this project's own pages as they
+are designed.
 
 ## Run it
 

@@ -349,16 +349,16 @@
         <value>Cold brew</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>Emma de Jong</value>
+        <value>Emma</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>Lucas Bakker</value>
+        <value>Lucas</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>Mila Janssen</value>
+        <value>Mila</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>Sem Smit</value>
+        <value>Sem</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>Carte</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>Rien ici ne communique avec votre API ni votre base de données, donc tester une nouvelle idée ne casse jamais votre application ni vos données.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Mettez-vous d’accord avant de développer</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Envoyez à votre équipe ou à votre client un lien vers une page dans un état donné, et arrêtez le design avant que quiconque n’écrive du code backend.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>Sa place dans votre façon de travailler</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Concevez-la ici</value>
+        <value>Demandez-la à votre IA</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Construisez la page sur l’établi avec des données d’exemple qui se chargent comme les vraies.</value>
+        <value>Demandez la page à Claude, Codex, GitHub Copilot, Gemini ou Junie, qui la construit ici avec des données d’exemple qui se chargent comme les vraies.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Vérifiez chaque état</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>Partez de celles-ci, puis ajoutez vos propres pages à côté.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Conçu avec bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>L’établi fait partie de chaque projet bit Boilerplate. Il ne s’exécute que sur votre machine, sauf si vous choisissez de le publier.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Chaque vente, en direct, sur un seul écran</value>
+        <value>Chaque vente, en direct</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>Tous vos bâtiments sur une seule carte</value>
+        <value>Vos bâtiments, une carte</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>Arrière-plan</value>
@@ -991,7 +982,7 @@
         <value>Un chat qui répond par du texte, des graphiques et des actions, affichés au fil de l’écriture, avec historique, arrêt et nouvel essai.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Posez toutes vos questions sur vos magasins</value>
+        <value>Demandez, tout simplement</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>IA</value>
@@ -1144,7 +1135,7 @@ Voici le détail jour par jour :</value>
         <value>Le tableau de bord d’administration de l’application elle-même, importé avec des données de démo, pour que ses états et ses captures soient à un clic.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Vos chiffres en un coup d’œil</value>
+        <value>Vos chiffres d’un coup d’œil</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>Paramètres</value>
@@ -1567,7 +1558,7 @@ Voici le détail jour par jour :</value>
         <value>Ressource</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Ressource</value>
+        <value>Équipe</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>Non attribué</value>
@@ -1579,10 +1570,10 @@ Voici le détail jour par jour :</value>
         <value>Aucune ressource à afficher.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>Noah</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>Julia</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>Planification</value>
@@ -1594,7 +1585,7 @@ Voici le détail jour par jour :</value>
         <value>Le planning de la semaine du personnel d’un café : déplacez les créneaux de chacun et ajustez leur durée, dans les heures d’ouverture, en tenant compte des congés et sans chevauchement.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Planifiez toute la semaine en quelques minutes</value>
+        <value>La semaine en quelques minutes</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>Planning du personnel</value>
@@ -1635,27 +1626,6 @@ Voici le détail jour par jour :</value>
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>Congé</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>Les mêmes bibliothèques open source que celles sur lesquelles repose votre application, chacune avec une documentation interactive que votre agent IA peut aussi consulter.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Des composants Blazor natifs, avec thèmes, écriture de droite à gauche et accessibilité intégrés.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>Un état qui survit aux rechargements et se retrouve dans chaque capture prise ici.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>Des listes et des grilles réorganisables par glisser-déposer, comme les widgets du tableau de bord.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Des animations à ressort, des apparitions et des effets de survol, comme ceux de cette page.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>Les fonctionnalités du navigateur depuis C#, du presse-papiers à IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>Le modèle de projet qui héberge cet établi, de la base de données aux boutiques d’applications.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>Votre prochaine page commence ici</value>
     </data>
@@ -1691,5 +1661,65 @@ Voici le détail jour par jour :</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>Code source sur GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Vitrines</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>Nouveau créneau</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Modifier le créneau</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Membre de l’équipe</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Créneau</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>Par exemple, Ouverture</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Rôle</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Jour</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Début</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Fin</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>Un créneau doit se terminer après son début.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} a déjà un créneau à ce moment-là.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Créneau enregistré</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Créneau supprimé</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>Toute l’équipe</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>Tous les rôles</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Personnalisez-le avec l’IA</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>L’établi fait aussi partie de votre application. Demandez à votre agent IA de changer ses fonctions ou d’ajouter les outils, appareils et états dont votre équipe a besoin.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>Personne</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>Aucun rôle</value>
     </data>
 </root>

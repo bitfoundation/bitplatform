@@ -349,16 +349,16 @@
         <value>Cold brew</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>Emma de Jong</value>
+        <value>Emma</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>Lucas Bakker</value>
+        <value>Lucas</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>Mila Janssen</value>
+        <value>Mila</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>Sem Smit</value>
+        <value>Sem</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>Kort</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>Inget här pratar med ditt API eller din databas, så att testa en ny idé förstör aldrig din app eller dina data.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Kom överens innan ni bygger</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Skicka en länk till en sida i ett visst läge till ditt team eller din kund, och spika designen innan någon skriver backendkod.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>Så passar den in i ditt arbetsflöde</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Designa sidan här</value>
+        <value>Fråga din AI</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Bygg sidan på arbetsbänken med exempeldata som laddas precis som riktiga data.</value>
+        <value>Be Claude, Codex, GitHub Copilot, Gemini eller Junie om sidan, så byggs den här med exempeldata som laddas precis som riktiga data.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Granska varje läge</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>Börja med de här och lägg sedan till dina egna sidor bredvid dem.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Byggt med bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>Arbetsbänken ingår i varje bit Boilerplate-projekt. Den körs bara på din dator, om du inte väljer att publicera den.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Varje försäljning, live, på en skärm</value>
+        <value>Varje köp, live</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>Alla dina byggnader på en karta</value>
+        <value>Dina byggnader, en karta</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>Bakgrund</value>
@@ -991,7 +982,7 @@
         <value>En chatt som svarar med text, diagram och åtgärder som strömmas fram medan de skrivs, med historik, stopp och nytt försök.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Fråga dina butiker vad som helst</value>
+        <value>Fråga bara</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>AI</value>
@@ -1144,7 +1135,7 @@ Så här gick varje dag:</value>
         <value>Appens egen adminöversikt, här med demodata, så att dess lägen och skärmbilder bara är ett klick bort.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Dina siffror med ett ögonkast</value>
+        <value>Siffror i en blick</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>Inställningar</value>
@@ -1153,7 +1144,7 @@ Så här gick varje dag:</value>
         <value>Appens egen inställningssida med profil, konto, tvåstegsinloggning, sessioner och integritet, som körs med demodata i stället för mot servern.</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>Ditt konto, på ditt sätt</value>
+        <value>Ditt konto, ditt sätt</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Dag</value>
@@ -1567,7 +1558,7 @@ Så här gick varje dag:</value>
         <value>Resurs</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Resurs</value>
+        <value>Personal</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>Ej tilldelad</value>
@@ -1579,10 +1570,10 @@ Så här gick varje dag:</value>
         <value>Inga resurser att visa.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>Noah</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>Julia</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>Planering</value>
@@ -1594,7 +1585,7 @@ Så här gick varje dag:</value>
         <value>Veckans personalschema för ett kafé: flytta pass och ändra deras längd per person, inom öppettiderna, runt ledigheter och utan dubbelbokningar.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Planera hela veckan på några minuter</value>
+        <value>Veckan planerad på minuter</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>Personalschema</value>
@@ -1635,27 +1626,6 @@ Så här gick varje dag:</value>
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>Ledig</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>Samma bibliotek med öppen källkod som din app bygger på, vart och ett med live-dokumentation som även din AI-agent kan läsa.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor-komponenter med inbyggt stöd för teman, höger-till-vänster-språk och tillgänglighet.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>Tillstånd som överlever omladdningar och följer med in i varje skärmbild som tas här.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>Listor och rutnät som ordnas om genom att dra, precis som widgetarna på översikten.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Fjäderanimationer, intoningar och hovringseffekter, precis som de på den här sidan.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>Webbläsarfunktioner från C#, från urklipp till IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>Projektmallen som den här arbetsbänken ingår i, från databas till appbutiker.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>Din nästa sida börjar här</value>
     </data>
@@ -1691,5 +1661,65 @@ Så här gick varje dag:</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>Källkod på GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Exempelsidor</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>Nytt pass</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Redigera pass</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Teammedlem</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Pass</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>Till exempel Öppning</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Roll</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Dag</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Börjar</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Slutar</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>Ett pass måste sluta efter att det har börjat.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} har redan ett pass vid den tiden.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Passet har sparats</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Passet har tagits bort</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>All personal</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>Alla roller</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Anpassa den med AI</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>Arbetsbänken är också en del av din app. Be din AI-agent att ändra dess funktioner eller lägga till de verktyg, enheter och tillstånd som ditt team behöver.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>Ingen</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>Inga roller</value>
     </data>
 </root>

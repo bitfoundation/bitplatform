@@ -6,7 +6,7 @@ public static class SettingsDemoData
 {
     private const string OsImagesUrl = "_content/Boilerplate.Client.Core/images/os";
 
-    public const string ProfilePhotoUrl = "images/profile-photo.svg";
+    public static string? ProfilePhotoUrl => WorkbenchPhotos.Find(WorkbenchDemoUsers.All[0].NameKey);
 
     public const string QrCodeUrl = "images/two-factor-qr.svg";
 
@@ -19,7 +19,7 @@ public static class SettingsDemoData
                                                                                          "+31 6 4821 7735",
                                                                                          new DateTimeOffset(1991, 4, 18, 0, 0, 0, TimeSpan.Zero),
                                                                                          Gender.Female,
-                                                                                         HasPicture: false);
+                                                                                         HasPicture: true);
 
     public static SettingsProfile CreateEmptyProfile(string email) => new(string.Empty, email, null, null, null, HasPicture: false);
 

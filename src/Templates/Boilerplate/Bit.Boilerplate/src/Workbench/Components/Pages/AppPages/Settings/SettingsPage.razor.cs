@@ -4,8 +4,6 @@ public partial class SettingsPage
 {
     [AutoInject] private SettingsStore store = default!;
 
-    public BitSnackBar? SnackBar { get; private set; }
-
     public SettingsProfile? Profile { get; private set; }
 
     public bool IsProfileLoading { get; private set; } = true;

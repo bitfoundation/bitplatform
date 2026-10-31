@@ -349,16 +349,16 @@
         <value>Cold brew</value>
     </data>
     <data name="PosStaffEmma" xml:space="preserve">
-        <value>Emma de Jong</value>
+        <value>Emma</value>
     </data>
     <data name="PosStaffLucas" xml:space="preserve">
-        <value>Lucas Bakker</value>
+        <value>Lucas</value>
     </data>
     <data name="PosStaffMila" xml:space="preserve">
-        <value>Mila Janssen</value>
+        <value>Mila</value>
     </data>
     <data name="PosStaffSem" xml:space="preserve">
-        <value>Sem Smit</value>
+        <value>Sem</value>
     </data>
     <data name="PosPaymentCard" xml:space="preserve">
         <value>Pinpas</value>
@@ -900,20 +900,14 @@
     <data name="HomeWhySafeText" xml:space="preserve">
         <value>Niets hier praat met je API of database, dus een nieuw idee uitproberen maakt nooit je app of je gegevens kapot.</value>
     </data>
-    <data name="HomeWhyShareTitle" xml:space="preserve">
-        <value>Eerst afspreken, dan bouwen</value>
-    </data>
-    <data name="HomeWhyShareText" xml:space="preserve">
-        <value>Stuur je team of klant een link naar een pagina in een bepaalde toestand en spreek het ontwerp af voordat iemand backendcode schrijft.</value>
-    </data>
     <data name="HomeHowTitle" xml:space="preserve">
         <value>Hoe het in je werkwijze past</value>
     </data>
     <data name="HomeHowStep1Title" xml:space="preserve">
-        <value>Ontwerp het hier</value>
+        <value>Vraag het aan je AI</value>
     </data>
     <data name="HomeHowStep1Text" xml:space="preserve">
-        <value>Bouw de pagina op de werkbank met voorbeeldgegevens die laden zoals de echte.</value>
+        <value>Vraag Claude, Codex, GitHub Copilot, Gemini of Junie om de pagina. Die bouwt hem hier met voorbeeldgegevens die laden zoals de echte.</value>
     </data>
     <data name="HomeHowStep2Title" xml:space="preserve">
         <value>Beoordeel elke toestand</value>
@@ -933,17 +927,14 @@
     <data name="HomePagesSubtitle" xml:space="preserve">
         <value>Begin hiermee en zet je eigen pagina's ernaast.</value>
     </data>
-    <data name="HomeBuiltWithTitle" xml:space="preserve">
-        <value>Gebouwd met bit</value>
-    </data>
     <data name="HomeFooter" xml:space="preserve">
         <value>De werkbank hoort bij elk bit Boilerplate-project. Hij draait alleen op je eigen computer, tenzij je hem publiceert.</value>
     </data>
     <data name="PosDashboardCaption" xml:space="preserve">
-        <value>Elke verkoop live op één scherm</value>
+        <value>Elke verkoop, live</value>
     </data>
     <data name="BuildingsCaption" xml:space="preserve">
-        <value>Al je gebouwen op één kaart</value>
+        <value>Je gebouwen, één kaart</value>
     </data>
     <data name="Backdrop" xml:space="preserve">
         <value>Achtergrond</value>
@@ -991,7 +982,7 @@
         <value>Een chat die antwoordt met tekst, grafieken en acties, live geschreven, met geschiedenis, stoppen en opnieuw proberen.</value>
     </data>
     <data name="AssistantCaption" xml:space="preserve">
-        <value>Vraag je winkels alles</value>
+        <value>Vraag het gewoon</value>
     </data>
     <data name="CategoryAi" xml:space="preserve">
         <value>AI</value>
@@ -1144,7 +1135,7 @@ Zo verliep elke dag:</value>
         <value>Het eigen beheerdashboard van de app, hier met demogegevens, zodat de toestanden en schermafbeeldingen ervan één klik verwijderd zijn.</value>
     </data>
     <data name="AppDashboardCaption" xml:space="preserve">
-        <value>Je cijfers in één oogopslag</value>
+        <value>Cijfers in één oogopslag</value>
     </data>
     <data name="SettingsTitle" xml:space="preserve">
         <value>Instellingen</value>
@@ -1153,7 +1144,7 @@ Zo verliep elke dag:</value>
         <value>De eigen instellingenpagina van de app, met profiel, account, aanmelden in twee stappen, sessies en privacy, draaiend op demogegevens in plaats van de server.</value>
     </data>
     <data name="SettingsCaption" xml:space="preserve">
-        <value>Je account, op jouw manier</value>
+        <value>Je account, jouw manier</value>
     </data>
     <data name="CalendarViewDay" xml:space="preserve">
         <value>Dag</value>
@@ -1567,7 +1558,7 @@ Zo verliep elke dag:</value>
         <value>Resource</value>
     </data>
     <data name="CalendarResourceColumnHeader" xml:space="preserve">
-        <value>Resource</value>
+        <value>Team</value>
     </data>
     <data name="CalendarNoResourceLabel" xml:space="preserve">
         <value>Niet toegewezen</value>
@@ -1579,10 +1570,10 @@ Zo verliep elke dag:</value>
         <value>Geen resources om weer te geven.</value>
     </data>
     <data name="PosStaffNoah" xml:space="preserve">
-        <value>Noah Smit</value>
+        <value>Noah</value>
     </data>
     <data name="PosStaffJulia" xml:space="preserve">
-        <value>Julia Mulder</value>
+        <value>Julia</value>
     </data>
     <data name="CategoryPlanning" xml:space="preserve">
         <value>Planning</value>
@@ -1594,7 +1585,7 @@ Zo verliep elke dag:</value>
         <value>Het weekrooster van een café: verschuif diensten per persoon en pas hun duur aan, binnen de openingstijden, rond vrije dagen en zonder dubbele boekingen.</value>
     </data>
     <data name="ShiftsCaption" xml:space="preserve">
-        <value>Plan de hele week in een paar minuten</value>
+        <value>De week in minuten gepland</value>
     </data>
     <data name="ShiftsHeading" xml:space="preserve">
         <value>Personeelsrooster</value>
@@ -1635,27 +1626,6 @@ Zo verliep elke dag:</value>
     <data name="ShiftsTimeOff" xml:space="preserve">
         <value>Vrij</value>
     </data>
-    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
-        <value>Dezelfde opensourcebibliotheken waarop je app is gebouwd, elk met live documentatie die ook je AI-agent kan lezen.</value>
-    </data>
-    <data name="HomeProductBlazorUI" xml:space="preserve">
-        <value>Native Blazor-componenten met ingebouwde thema's, toegankelijkheid en ondersteuning voor talen van rechts naar links.</value>
-    </data>
-    <data name="HomeProductBlex" xml:space="preserve">
-        <value>Toestand die herladen overleeft en meegaat in elke schermafbeelding die hier wordt gemaakt.</value>
-    </data>
-    <data name="HomeProductBortable" xml:space="preserve">
-        <value>Lijsten en rasters die je door slepen herschikt, zoals de widgets van het dashboard.</value>
-    </data>
-    <data name="HomeProductBmotion" xml:space="preserve">
-        <value>Veeranimaties, verschijneffecten en hovereffecten, zoals die op deze pagina.</value>
-    </data>
-    <data name="HomeProductButil" xml:space="preserve">
-        <value>Browserfuncties vanuit C#, van het klembord tot IndexedDB.</value>
-    </data>
-    <data name="HomeProductBoilerplate" xml:space="preserve">
-        <value>Het projectsjabloon waarin deze werkbank zit, van database tot appstores.</value>
-    </data>
     <data name="HomeCtaTitle" xml:space="preserve">
         <value>Je volgende pagina begint hier</value>
     </data>
@@ -1691,5 +1661,65 @@ Zo verliep elke dag:</value>
     </data>
     <data name="HomeFooterSource" xml:space="preserve">
         <value>Broncode op GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Voorbeelden</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>Nieuwe dienst</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Dienst bewerken</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Teamlid</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Dienst</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>Bijvoorbeeld Openingsdienst</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Rol</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Dag</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Begint</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Eindigt</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>Een dienst moet eindigen nadat hij begint.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} heeft op dat moment al een dienst.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Dienst opgeslagen</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Dienst verwijderd</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>Iedereen</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>Alle rollen</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Pas hem aan met AI</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>De werkbank hoort ook bij je app. Vraag je AI-agent om de functies te veranderen of de tools, apparaten en toestanden toe te voegen die je team nodig heeft.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>Niemand</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>Geen rollen</value>
     </data>
 </root>

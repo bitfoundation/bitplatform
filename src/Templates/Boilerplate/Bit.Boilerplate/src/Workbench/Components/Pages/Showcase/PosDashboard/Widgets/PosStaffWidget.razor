@@ -22,6 +22,7 @@
                 <li>
                     <BitPersona Size="BitPersonaSize.Size40"
                                 Class="member"
+                                ImageUrl="@WorkbenchPhotos.Find(member.NameKey)"
                                 PrimaryText="@Localizer[member.NameKey]"
                                 SecondaryText="@Localizer[nameof(WorkbenchStrings.PosOrdersCount), PosFormat.Number(member.Orders)]"
                                 Presence="@(rank <= 3 ? BitPersonaPresence.Online : BitPersonaPresence.Away)" />

@@ -253,15 +253,15 @@
 }
 
 .reason-icon {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     display: flex;
-    font-size: 18px;
+    font-size: 20px;
     border-radius: 12px;
     align-items: center;
     justify-content: center;
-    color: var(--accent);
-    background-color: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
 }
 
 .steps {
@@ -389,74 +389,6 @@
     border-radius: 999px;
     color: $bit-color-foreground-secondary;
     background-color: $bit-color-background-secondary;
-}
-
-.products {
-    gap: 1rem;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-
-    @include lt-lg {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    @include lt-sm {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-.product {
-    gap: 1rem;
-    height: 100%;
-    display: flex;
-    padding: 1.25rem;
-    border-radius: 18px;
-    align-items: flex-start;
-    text-decoration: none;
-    box-sizing: border-box;
-    color: $bit-color-foreground-primary;
-    background-color: $bit-color-background-primary;
-    border: 1px solid $bit-color-border-tertiary;
-    transition: border-color 0.15s ease;
-
-    &:hover {
-        border-color: $bit-color-primary;
-    }
-
-    ::deep .product-out {
-        color: $bit-color-foreground-tertiary;
-    }
-}
-
-.product-icon {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    flex-shrink: 0;
-    font-size: 20px;
-    border-radius: 12px;
-    align-items: center;
-    justify-content: center;
-    color: $bit-color-primary;
-    background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
-}
-
-.product-text {
-    gap: 0.25rem;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.product-name {
-    font-size: 1.0625rem;
-    font-weight: 700;
-}
-
-.product-description {
-    font-size: 14px;
-    line-height: 1.55;
-    color: $bit-color-foreground-secondary;
 }
 
 .cta {

@@ -77,7 +77,7 @@
             {
                 <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -4)">
                     <article class="reason">
-                        <span class="reason-icon" style="--accent:@reason.Color"><BitIcon IconName="@reason.IconName" /></span>
+                        <span class="reason-icon"><BitIcon IconName="@reason.IconName" /></span>
                         <h3>@Localizer[reason.TitleKey]</h3>
                         <p>@Localizer[reason.TextKey]</p>
                     </article>
@@ -131,28 +131,6 @@
                                 }
                             </span>
                         </span>
-                    </a>
-                </Bmotion>
-            }
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="section-head">
-            <h2>@Localizer[nameof(WorkbenchStrings.HomeBuiltWithTitle)]</h2>
-            <p>@Localizer[nameof(WorkbenchStrings.HomeBuiltWithSubtitle)]</p>
-        </div>
-        <div class="products">
-            @foreach (var product in products)
-            {
-                <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -4)">
-                    <a class="product" href="@product.Url" target="_blank" rel="noopener">
-                        <span class="product-icon"><BitIcon IconName="@product.IconName" /></span>
-                        <span class="product-text">
-                            <span class="product-name">@product.Name</span>
-                            <span class="product-description">@Localizer[product.TextKey]</span>
-                        </span>
-                        <BitIcon IconName="@BitIconName.OpenInNewWindow" Size="BitSize.Small" Class="product-out" />
                     </a>
                 </Bmotion>
             }

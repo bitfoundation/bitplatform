@@ -9,6 +9,7 @@ public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposabl
     [AutoInject] protected BlexStatePersistor Persistor = default!;
     [AutoInject] protected WorkbenchStore WorkbenchStore = default!;
     [AutoInject] protected IJSRuntime JSRuntime = default!;
+    [AutoInject] protected SnackBarService SnackBarService = default!;
 
     private CancellationTokenSource? cancellationTokenSource = new();
 

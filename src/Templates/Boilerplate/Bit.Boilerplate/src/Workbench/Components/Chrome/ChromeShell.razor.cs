@@ -80,12 +80,18 @@ public partial class ChromeShell
             }
         ];
 
-        navPanelItems.AddRange(WorkbenchPageCatalog.Pages.Where(page => page.CategoryKey != nameof(WorkbenchStrings.CategoryAppPages)).Select(page => new BitNavItem
+        navPanelItems.Add(new()
         {
-            Text = Localizer[page.TitleKey],
-            IconName = page.IconName,
-            Url = PageUrl(page.Key, page.Key)
-        }));
+            Text = Localizer[nameof(WorkbenchStrings.NavShowcases)],
+            IconName = BitIconName.Tiles,
+            IsExpanded = true,
+            ChildItems = [.. WorkbenchPageCatalog.Pages.Where(page => page.CategoryKey != nameof(WorkbenchStrings.CategoryAppPages)).Select(page => new BitNavItem
+            {
+                Text = Localizer[page.TitleKey],
+                IconName = page.IconName,
+                Url = PageUrl(page.Key, page.Key)
+            })]
+        });
 
         //#if (module == "Admin")
         if (IsSignedIn)

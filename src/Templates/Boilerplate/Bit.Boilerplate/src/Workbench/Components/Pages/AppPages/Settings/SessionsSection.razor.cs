@@ -70,7 +70,7 @@ public partial class SessionsSection
 
             store.RevokeSession(session.Id);
 
-            await Page.SnackBar!.Success(AppLocalizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
+            SnackBarService.Success(AppLocalizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
             await LoadSessions();
         }
         finally

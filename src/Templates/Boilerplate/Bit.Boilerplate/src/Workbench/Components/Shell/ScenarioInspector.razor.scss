@@ -70,25 +70,25 @@ section {
 }
 
 .backdrop-brand {
-    background: linear-gradient(160deg, color-mix(in srgb, #{$bit-color-primary} 82%, #fff), color-mix(in srgb, #{$bit-color-primary} 70%, #000));
+    background: linear-gradient(165deg, color-mix(in srgb, #{$bit-color-primary} 72%, #fff), #{$bit-color-primary} 52%, color-mix(in srgb, #{$bit-color-primary} 45%, #000));
 }
 
 .backdrop-midnight {
-    background: linear-gradient(180deg, #312e81, #111827);
+    background: linear-gradient(165deg, #1e1b4b, #0f172a 52%, #020617);
 }
 
 .backdrop-sunset {
-    background: linear-gradient(160deg, #ff9a62 0%, #f0567a 50%, #8b5cf6 100%);
+    background: linear-gradient(165deg, #fb923c, #e11d48 52%, #5b21b6);
 }
 
 .backdrop-ocean {
-    background: linear-gradient(160deg, #38bdf8 0%, #3b82f6 45%, #4338ca 100%);
+    background: linear-gradient(165deg, #22d3ee, #2563eb 52%, #1e1b4b);
 }
 
 .backdrop-forest {
-    background: linear-gradient(160deg, #34d399 0%, #059669 50%, #064e3b 100%);
+    background: linear-gradient(165deg, #6ee7b7, #059669 52%, #022c22);
 }
 
 .backdrop-paper {
-    background: linear-gradient(180deg, #f8fafc, #dfe5ee);
+    background: linear-gradient(165deg, #ffffff, #f1f5f9 52%, #dbe3ee);
 }

@@ -47,7 +47,7 @@ public partial class TwoFactorSection
     {
         if (string.IsNullOrWhiteSpace(verificationCode))
         {
-            await Page.SnackBar!.Error(AppLocalizer[nameof(AppStrings.TfaVerificationCodeRequiredMessage)]);
+            SnackBarService.Error(AppLocalizer[nameof(AppStrings.TfaVerificationCodeRequiredMessage)]);
             return;
         }
 
@@ -57,7 +57,7 @@ public partial class TwoFactorSection
         store.SetTwoFactor(true, SettingsDemoData.CreateRecoveryCodes());
         verificationCode = null;
 
-        await Page.SnackBar!.Success(AppLocalizer[nameof(AppStrings.TwoFactorAuthenticationEnabled)]);
+        SnackBarService.Success(AppLocalizer[nameof(AppStrings.TwoFactorAuthenticationEnabled)]);
     }
 
     private async Task DisableTwoFactorAuth()
@@ -67,7 +67,7 @@ public partial class TwoFactorSection
 
         store.SetTwoFactor(false, null);
 
-        await Page.SnackBar!.Success(AppLocalizer[nameof(AppStrings.TwoFactorAuthenticationDisabled)]);
+        SnackBarService.Success(AppLocalizer[nameof(AppStrings.TwoFactorAuthenticationDisabled)]);
     }
 
     private async Task GenerateRecoveryCode()
@@ -82,7 +82,7 @@ public partial class TwoFactorSection
     {
         if (await Send())
         {
-            await Page.SnackBar!.Warning(AppLocalizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
+            SnackBarService.Warning(AppLocalizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
         }
     }
 

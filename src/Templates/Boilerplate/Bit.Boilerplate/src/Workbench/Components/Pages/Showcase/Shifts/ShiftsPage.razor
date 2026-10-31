@@ -1,5 +1,7 @@
 @inherits WorkbenchComponentBase
 
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="OnPhoneChanged" />
+
 <div class="shifts">
     <div class="shifts-header">
         <div class="titles">
@@ -16,6 +18,27 @@
         </div>
     </div>
 
+    <div class="filters">
+        <BitDropdown Items="staffFilterItems" MultiSelect Responsive
+                     Placeholder="@Localizer[nameof(WorkbenchStrings.ShiftsNoStaff)]"
+                     Values="store.StaffFilter ?? allStaffKeys"
+                     ValuesChanged="(IEnumerable<string?> keys) => FilterStaff(keys)">
+            <TextTemplate>@StaffFilterText</TextTemplate>
+            <ItemTemplate Context="item">
+                <BitPersona Size="BitPersonaSize.Size24" ImageUrl="@WorkbenchPhotos.Find(item.Value!)" PrimaryText="@item.Text" />
+            </ItemTemplate>
+        </BitDropdown>
+        <BitDropdown Items="roleFilterItems" MultiSelect Responsive
+                     Placeholder="@Localizer[nameof(WorkbenchStrings.ShiftsNoRoles)]"
+                     Values="store.RoleFilter ?? allRoles"
+                     ValuesChanged="(IEnumerable<ShiftRole> roles) => FilterRoles(roles)">
+            <TextTemplate>@RoleFilterText</TextTemplate>
+            <ItemTemplate Context="item">
+                <span class="role-item"><span class="role-dot" style="background-color:@RoleColor(item.Value)"></span>@item.Text</span>
+            </ItemTemplate>
+        </BitDropdown>
+    </div>
+
     @if (isFailed)
     {
         <BitMessage Color="BitColor.Warning" Multiline Title="@Localizer[nameof(WorkbenchStrings.LoadFailed)]">
@@ -29,12 +52,13 @@
         <BitMessage Color="BitColor.Info" Multiline>@Localizer[nameof(WorkbenchStrings.ShiftsEmpty)]</BitMessage>
     }
 
-    <BitFullCalendar Events="events"
+    <BitFullCalendar @ref="calendar"
+                     Events="events"
                      Resources="resources"
                      EventColorOptions="roles"
                      Settings="settings"
                      Texts="texts"
-                     View="store.View"
+                     View="@(store.View ?? DefaultView)"
                      ViewChanged="store.Show"
                      Mode="store.Mode"
                      ModeChanged="store.SwitchMode"
@@ -43,6 +67,22 @@
                      Views="views"
                      IsLoading="isLoading"
                      ReadOnly="isFailed"
+                     HideFilters
+                     HideSettings
                      OnChange="OnChange"
-                     Class="calendar" />
+                     OnAddClick="OpenNew"
+                     OnEventClick="OpenExisting"
+                     Class="calendar">
+        <ResourceTemplate Context="resource">
+            <span class="staff">
+                <BitPersona Size="BitPersonaSize.Size32" ImageUrl="@WorkbenchPhotos.Find(resource.Id)" PrimaryText="@resource.Title" HidePersonaDetails />
+                <span class="staff-text">
+                    <span class="staff-name">@resource.Title</span>
+                    <span class="staff-role">@resource.Subtitle</span>
+                </span>
+            </span>
+        </ResourceTemplate>
+    </BitFullCalendar>
+
+    <ShiftEditor @ref="editor" Shifts="shifts" Validate="ValidateShift" OnSaved="OnEditorSaved" OnDeleted="OnEditorDeleted" />
 </div>

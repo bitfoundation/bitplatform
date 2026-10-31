@@ -30,7 +30,7 @@ public partial class ChangeEmailTab
 
         if (sendModel.Email == Page.Profile?.Email)
         {
-            await Page.SnackBar!.Error(AppLocalizer[nameof(AppStrings.SameEmailErrorMessage)]);
+            SnackBarService.Error(AppLocalizer[nameof(AppStrings.SameEmailErrorMessage)]);
             return;
         }
 
@@ -43,7 +43,7 @@ public partial class ChangeEmailTab
             changeModel.Email = sendModel.Email;
             store.RequestEmailChange(sendModel.Email);
 
-            await Page.SnackBar!.Success(AppLocalizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)]);
+            SnackBarService.Success(AppLocalizer[nameof(AppStrings.SuccessfulSendChangeEmailTokenMessage)]);
         }
         finally
         {
@@ -67,7 +67,7 @@ public partial class ChangeEmailTab
                 Page.UpdateProfile(profile with { Email = email });
             }
 
-            await Page.SnackBar!.Warning(AppLocalizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
+            SnackBarService.Warning(AppLocalizer[nameof(AppStrings.SignOutOfAllDevicesWarningMessage)]);
 
             store.RequestEmailChange(null);
             sendModel.Email = changeModel.Email = changeModel.Token = null;

@@ -8,6 +8,8 @@ const resizeObserver = new ResizeObserver(entries => entries.forEach(entry => fi
 
 let shellReference: any = null;
 let previewReference: any = null;
+let isScreenReady = false;
+let isReadyPending = false;
 
 function fitStage(stage: HTMLElement) {
     const scaler = stage.querySelector<HTMLElement>('.pane-scaler');
@@ -71,8 +73,173 @@ function frameOf(source: MessageEventSource | null) {
     return Array.from(document.querySelectorAll('iframe')).find(frame => frame.contentWindow === source);
 }
 
+function screenOf() {
+    return document.querySelector<HTMLIFrameElement>('iframe.screen-frame')?.contentWindow as any;
+}
+
 function withTimeout<T>(promise: Promise<T>, milliseconds: number) {
     return Promise.race([promise, new Promise<null>(resolve => setTimeout(() => resolve(null), milliseconds))]);
+}
+
+function ownsDrag(target: Element) {
+    if (target.closest('input, textarea, select, [contenteditable="true"], [draggable="true"]')) return true;
+
+    for (let element: Element | null = target; element; element = element.parentElement) {
+        const touchAction = getComputedStyle(element).touchAction;
+        if (touchAction === 'none' || touchAction === 'pinch-zoom') return true;
+    }
+
+    return false;
+}
+
+function isOnScrollbar(target: Element, event: PointerEvent) {
+    if (target === document.documentElement) return event.clientX >= target.clientWidth || event.clientY >= target.clientHeight;
+
+    const rect = target.getBoundingClientRect();
+    const x = event.clientX - rect.left - target.clientLeft;
+    const y = event.clientY - rect.top - target.clientTop;
+
+    return (target.clientWidth > 0 && (x < 0 || x > target.clientWidth)) || (target.clientHeight > 0 && y > target.clientHeight);
+}
+
+function canScroll(element: Element, axis: 'x' | 'y', delta: number): boolean {
+    if (delta === 0) return canScroll(element, axis, 1) || canScroll(element, axis, -1);
+
+    const style = getComputedStyle(element);
+    const overflow = axis === 'x' ? style.overflowX : style.overflowY;
+    const isRoot = element === document.scrollingElement;
+    if (isRoot ? overflow === 'hidden' || overflow === 'clip' : overflow !== 'auto' && overflow !== 'scroll' && overflow !== 'overlay') return false;
+
+    if (axis === 'y') return delta > 0 ? element.scrollTop < element.scrollHeight - element.clientHeight - 0.5 : element.scrollTop > 0.5;
+
+    const isRtl = style.direction === 'rtl';
+    const start = isRtl ? element.clientWidth - element.scrollWidth : 0;
+    const end = isRtl ? 0 : element.scrollWidth - element.clientWidth;
+
+    return delta > 0 ? element.scrollLeft < end - 0.5 : element.scrollLeft > start + 0.5;
+}
+
+function findScroller(target: Element, axis: 'x' | 'y', delta: number) {
+    for (let element: Element | null = target; element; element = element.parentElement) {
+        if (canScroll(element, axis, delta)) return element;
+    }
+
+    return null;
+}
+
+function emulateTouch() {
+    let drag: { x: number; y: number; target: Element; pointerId: number; moved: boolean; scrollerX: Element | null; scrollerY: Element | null; samples: { x: number; y: number; time: number }[] } | null = null;
+    let glideFrame = 0;
+    let swallowClick = false;
+
+    const scroll = (scrollerX: Element | null, scrollerY: Element | null, left: number, top: number) => {
+        if (scrollerX && scrollerX === scrollerY) {
+            scrollerX.scrollBy({ left, top, behavior: 'instant' });
+            return;
+        }
+
+        scrollerX?.scrollBy({ left, behavior: 'instant' });
+        scrollerY?.scrollBy({ top, behavior: 'instant' });
+    };
+
+    const end = () => {
+        if (!drag) return;
+
+        const { moved, pointerId, scrollerX, scrollerY, samples } = drag;
+        drag = null;
+        document.documentElement.classList.remove('wb-dragging');
+        if (document.documentElement.hasPointerCapture(pointerId)) document.documentElement.releasePointerCapture(pointerId);
+
+        if (!moved) return;
+
+        swallowClick = true;
+        setTimeout(() => swallowClick = false);
+
+        const now = performance.now();
+        const recent = samples.filter(sample => now - sample.time < 100);
+        if (recent.length < 2) return;
+
+        const first = recent[0];
+        const last = recent[recent.length - 1];
+        const elapsed = last.time - first.time;
+        if (elapsed <= 0) return;
+
+        let velocityX = (first.x - last.x) / elapsed;
+        let velocityY = (first.y - last.y) / elapsed;
+        let previous = now;
+
+        const step = (time: number) => {
+            const frame = Math.max(0, time - previous);
+            previous = time;
+            const decay = Math.pow(0.95, frame / 16);
+            velocityX *= decay;
+            velocityY *= decay;
+
+            if (Math.abs(velocityX) < 0.02 && Math.abs(velocityY) < 0.02) return;
+
+            scroll(scrollerX, scrollerY, velocityX * frame, velocityY * frame);
+            glideFrame = requestAnimationFrame(step);
+        };
+
+        glideFrame = requestAnimationFrame(step);
+    };
+
+    window.addEventListener('pointerdown', event => {
+        cancelAnimationFrame(glideFrame);
+
+        const target = event.target instanceof Element ? event.target : null;
+        if (event.pointerType !== 'mouse' || event.button !== 0 || event.defaultPrevented || !target) return;
+        if (ownsDrag(target) || isOnScrollbar(target, event)) return;
+
+        drag = { x: event.clientX, y: event.clientY, target, pointerId: event.pointerId, moved: false, scrollerX: null, scrollerY: null, samples: [] };
+    });
+
+    window.addEventListener('pointermove', event => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+
+        if ((event.buttons & 1) === 0) {
+            end();
+            return;
+        }
+
+        const left = drag.x - event.clientX;
+        const top = drag.y - event.clientY;
+
+        if (!drag.moved) {
+            if (Math.hypot(left, top) < 6) return;
+
+            drag.moved = true;
+            drag.scrollerX = findScroller(drag.target, 'x', left);
+            drag.scrollerY = findScroller(drag.target, 'y', top);
+            document.documentElement.classList.add('wb-dragging');
+            document.documentElement.setPointerCapture(event.pointerId);
+            getSelection()?.removeAllRanges();
+        }
+
+        scroll(drag.scrollerX, drag.scrollerY, left, top);
+        drag.x = event.clientX;
+        drag.y = event.clientY;
+        drag.samples = [...drag.samples.filter(sample => event.timeStamp - sample.time < 100), { x: event.clientX, y: event.clientY, time: event.timeStamp }];
+    });
+
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+    window.addEventListener('blur', end);
+    window.addEventListener('wheel', () => cancelAnimationFrame(glideFrame), { passive: true });
+
+    window.addEventListener('click', event => {
+        if (!swallowClick) return;
+
+        swallowClick = false;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }, true);
+
+    window.addEventListener('dragstart', event => {
+        if (event.target instanceof Element && event.target.closest('[draggable="true"]') === null) {
+            event.preventDefault();
+        }
+    }, true);
 }
 
 if (!isPreview) {
@@ -103,8 +270,43 @@ if (!isPreview) {
     });
 }
 
+if (isPreview && document.body.classList.contains('wb-touch')) {
+    emulateTouch();
+}
+
+if (isPreview) {
+    window.addEventListener('message', event => {
+        const screen = screenOf();
+        if (event.origin !== location.origin || !screen || event.source !== screen) return;
+
+        if (event.data?.type === 'workbench-ready') {
+            isScreenReady = true;
+            if (isReadyPending) host.workbench.markReady();
+            return;
+        }
+
+        if (window.parent === window) return;
+
+        if (event.data?.type === 'workbench-scenario') {
+            const query = new URLSearchParams(String(event.data.query ?? ''));
+            const own = new URLSearchParams(location.search);
+            ['backdrop', 'caption'].forEach(key => own.has(key) && query.set(key, own.get(key)!));
+            window.parent.postMessage({ type: 'workbench-scenario', query: `?${query}` }, location.origin);
+        }
+
+        if (event.data?.type === 'workbench-page') {
+            window.parent.postMessage(event.data, location.origin);
+        }
+    });
+}
+
 host.workbench = {
     markReady() {
+        if (screenOf() && isScreenReady === false) {
+            isReadyPending = true;
+            return;
+        }
+
         host.__workbenchReady = true;
         document.documentElement.setAttribute('data-workbench-ready', '');
 
@@ -149,10 +351,16 @@ host.workbench = {
     },
 
     captureState(): Promise<string | null> {
+        const screen = screenOf();
+        if (screen?.workbench) return screen.workbench.captureState();
+
         return previewReference ? previewReference.invokeMethodAsync('CaptureState') : Promise.resolve(null);
     },
 
     resetState() {
+        const screen = screenOf();
+        if (screen?.workbench) return screen.workbench.resetState();
+
         return previewReference?.invokeMethodAsync('ResetState');
     },
 

@@ -24,7 +24,6 @@ public partial class BuildingsPage
     private BitMap<BitLeafletMapProvider>? map;
     private BitDataGrid<Building>? grid;
     private BuildingEditor? editor;
-    private BitSnackBar? snackBar;
 
     private List<Building> buildings = [];
     private List<BitMapMarker> markers = [];
@@ -146,7 +145,7 @@ public partial class BuildingsPage
 
         if (NetherlandsBoundary.Contains(position.Latitude, position.Longitude) is false)
         {
-            await ShowOutsideWarning();
+            ShowOutsideWarning();
             return;
         }
 
@@ -233,7 +232,7 @@ public partial class BuildingsPage
 
         status = PosWidgetStatus.Ready;
         await Select(building, flyTo: true);
-        await snackBar!.Success(Localizer[nameof(WorkbenchStrings.BuildingsSaved), building.Name]);
+        SnackBarService.Success(Localizer[nameof(WorkbenchStrings.BuildingsSaved), building.Name]);
     }
 
     private async Task ConfirmDelete(Building building)
@@ -256,10 +255,10 @@ public partial class BuildingsPage
         }
 
         BuildMarkers();
-        await snackBar!.Info(Localizer[nameof(WorkbenchStrings.BuildingsDeleted), building.Name]);
+        SnackBarService.Info(Localizer[nameof(WorkbenchStrings.BuildingsDeleted), building.Name]);
     }
 
-    private Task ShowOutsideWarning() => snackBar!.Warning(Localizer[nameof(WorkbenchStrings.BuildingsOutsideTitle)], Localizer[nameof(WorkbenchStrings.BuildingsOutsideBody)]);
+    private void ShowOutsideWarning() => SnackBarService.Warning(Localizer[nameof(WorkbenchStrings.BuildingsOutsideTitle)], Localizer[nameof(WorkbenchStrings.BuildingsOutsideBody)]);
 
     private object? SortByProvince(Building building) => Localizer[$"Province{building.Province}"].Value;
 

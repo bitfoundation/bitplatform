@@ -6,7 +6,7 @@ public partial class ScenarioInspector
 
     private List<BitDropdownItem<string>> deviceItems = [];
     private List<BitDropdownItem<string>> cultureItems = [];
-    private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Brand;
+    private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Paper;
 
     [Parameter] public WorkbenchScenario Value { get; set; } = new();
 
