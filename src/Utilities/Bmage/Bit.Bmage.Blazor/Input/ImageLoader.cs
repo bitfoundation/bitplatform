@@ -106,7 +106,10 @@ public sealed class ImageLoader
         var processor = await _processors.GetAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("readClipboardImage", cancellationToken).ConfigureAwait(false);
+            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("readClipboardImage", cancellationToken, MaxSourceBytes).ConfigureAwait(false);
+            // An image past the limit is refused by its size, before the browser reads it.
+            if (result.Info is { TooLarge: true } refused)
+                throw new ImageLimitExceededException($"The image on the clipboard is {refused.Size:N0} bytes, larger than the {MaxSourceBytes:N0} bytes allowed.");
             if (!result.HasValue || result.Bytes.Length == 0) return null;
             return await processor.DecodeAsync(result.Bytes.Memory, options ?? new DecodeOptions { Limits = processor.Limits }, cancellationToken).ConfigureAwait(false);
         }
@@ -208,8 +211,10 @@ public sealed class ImageLoader
             throw new ArgumentException($"The scheme '{uri.Scheme}' is not allowed for image URLs. Use http, https, blob or data.", nameof(url));
         try
         {
-            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("fetchImage", cancellationToken, url, withCredentials).ConfigureAwait(false);
-            if (!result.HasValue || result.Bytes.Length == 0)
+            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("fetchImage", cancellationToken, url, withCredentials, MaxSourceBytes).ConfigureAwait(false);
+            if (!result.HasValue)
+                throw new ImageLimitExceededException($"'{url}' exceeds the {MaxSourceBytes} byte limit for a single image.");
+            if (result.Bytes.Length == 0)
                 throw new ImageDecodeException($"Fetching '{url}' returned no data.");
             return await processor.DecodeAsync(result.Bytes.Memory, options, cancellationToken).ConfigureAwait(false);
         }
@@ -224,6 +229,10 @@ public sealed class ImageLoader
     {
         [JsonPropertyName("mimeType")] public string? MimeType { get; set; }
         [JsonPropertyName("byteLength")] public long ByteLength { get; set; }
+
+        /// <summary>Set when the clipboard's image was past the source limit and left unread; <see cref="Size"/> is then its length.</summary>
+        [JsonPropertyName("tooLarge")] public bool TooLarge { get; set; }
+        [JsonPropertyName("size")] public long Size { get; set; }
     }
 }
 
@@ -276,7 +285,7 @@ public sealed class ImageProcessorFactory
     /// for AVIF, signals wide gamut or HDR colours without one. The managed decoders read the stored values as sRGB, so
     /// those colours need the browser's colour management.
     /// </summary>
-    private static bool HasWideGamutProfile(ImageFormat format, ReadOnlyMemory<byte> data)
+    internal static bool HasWideGamutProfile(ImageFormat format, ReadOnlyMemory<byte> data)
     {
         try
         {
@@ -296,6 +305,8 @@ public sealed class ImageProcessorFactory
                     _ => null,
                 };
                 profile = metadata?.IccProfile ?? default;
+                // A PNG profile too large or too broken to inflate reads as none, yet it is no sRGB profile either.
+                if (format == ImageFormat.Png && profile.IsEmpty && HasIccChunk(data.Span)) return true;
             }
             // Anything not recognised as sRGB goes to the browser, which costs bandwidth but never colour.
             return !profile.IsEmpty && !IsSrgbProfile(profile.Span);
@@ -304,6 +315,17 @@ public sealed class ImageProcessorFactory
         {
             return false;
         }
+    }
+
+    /// <summary>True when a PNG has an iCCP chunk before its image data, whether or not the profile in it could be read.</summary>
+    private static bool HasIccChunk(ReadOnlySpan<byte> png)
+    {
+        foreach (var chunk in PngContainer.EnumerateChunks(png))
+        {
+            if (chunk.Type == PngContainer.MakeType("iCCP")) return true;
+            if (chunk.Type == PngContainer.MakeType("IDAT")) break;
+        }
+        return false;
     }
 
     /// <summary>

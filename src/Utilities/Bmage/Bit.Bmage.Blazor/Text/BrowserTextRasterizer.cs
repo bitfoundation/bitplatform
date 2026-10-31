@@ -25,14 +25,40 @@ namespace Bit.Bmage.Text;
 /// </remarks>
 public sealed class BrowserTextRasterizer : IDisposable
 {
+    /// <summary>
+    /// The pixel bytes the cache may hold. Each bitmap is bounded only by <see cref="Limits"/>, so without this a few
+    /// dozen large texts could keep gigabytes alive; past it the oldest entries go, and the newest always stays.
+    /// </summary>
+    private const long CacheByteLimit = 64L * 1024 * 1024;
+
     private readonly BrowserImageInterop _interop;
-    private readonly Dictionary<CacheKey, CachedText> _cache = [];
+    // Ordered by insertion, so the first entry is always the oldest; a plain dictionary reuses a removed entry's slot.
+    private readonly OrderedDictionary<CacheKey, CachedText> _cache = [];
     private readonly int _cacheLimit;
+    private long _cachedBytes;
+    private ImageLimits _limits = ImageLimits.Default;
 
     public BrowserTextRasterizer(BrowserImageInterop interop, int cacheLimit = 64)
     {
         _interop = interop ?? throw new ArgumentNullException(nameof(interop));
         _cacheLimit = Math.Max(1, cacheLimit);
+    }
+
+    /// <summary>
+    /// Limits the bitmap of rendered text is held to. The browser checks the size before it allocates a canvas, so text
+    /// that would need a larger one fails with an <see cref="ImageLimitExceededException"/> instead. Changing them
+    /// empties the cache, so a bitmap rendered under looser limits is not handed out under tighter ones.
+    /// </summary>
+    public ImageLimits Limits
+    {
+        get => _limits;
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            if (value == _limits) return;
+            _limits = value;
+            ClearCache();
+        }
     }
 
     private readonly record struct CacheKey(string Text, string Font, string Color, float MaxWidth, float LetterSpacing, float LineHeight, string Align);
@@ -41,6 +67,7 @@ public sealed class BrowserTextRasterizer : IDisposable
     {
         public required ImageBuffer Pixels { get; init; }
         public required TextRenderInfo Info { get; init; }
+        public long ByteCount => (long)Pixels.Width * Pixels.Height * 4;
         public void Dispose() => Pixels.Dispose();
     }
 
@@ -89,12 +116,19 @@ public sealed class BrowserTextRasterizer : IDisposable
         ImageBuffer buffer;
         try
         {
+            var limits = Limits;
             using var result = await _interop.InvokeForBytesAsync<TextRenderInfo>(
-                "renderText", cancellationToken, text, font, color, style.MaxWidth, style.LetterSpacing, style.LineHeight, align).ConfigureAwait(false);
+                "renderText", cancellationToken, text, font, color, style.MaxWidth, style.LetterSpacing, style.LineHeight, align,
+                limits.MaxPixels, limits.MaxWidth, limits.MaxHeight).ConfigureAwait(false);
+            // Text past the limits comes back as its size alone, with no canvas ever made for it.
+            if (result.Info is { TooLarge: true } refused)
+                throw new ImageLimitExceededException($"The text needs a {refused.Width}x{refused.Height} bitmap, more than the configured limits allow (max {limits.MaxWidth}x{limits.MaxHeight}, {limits.MaxPixels} pixels).");
             if (!result.HasValue || result.Info is not { Width: > 0, Height: > 0 } rendered)
                 throw new ImageException("The browser produced no pixels for this text.");
             info = rendered;
-            buffer = ImageBuffer.Create(info.Width, info.Height, clear: false);
+            // Held to the limits as they are now, in case they were tightened while the browser rendered: the cache
+            // never holds a bitmap they would refuse.
+            buffer = ImageBuffer.Create(info.Width, info.Height, clear: false, limits: Limits);
             try
             {
                 result.Bytes.Span.CopyTo(buffer.Bytes);
@@ -111,14 +145,22 @@ public sealed class BrowserTextRasterizer : IDisposable
         }
 
         var entry = new CachedText { Pixels = buffer, Info = info };
-        if (_cache.Count >= _cacheLimit)
+        // Two renders of the same text in flight at once: the later one replaces the earlier.
+        if (_cache.Remove(key, out var replaced))
         {
-            // Simple bounded cache: drop the oldest entry rather than growing without limit.
-            var oldest = _cache.Keys.First();
-            _cache[oldest].Dispose();
-            _cache.Remove(oldest);
+            _cachedBytes -= replaced.ByteCount;
+            replaced.Dispose();
+        }
+        // Bounded by entries and by bytes, dropping the oldest first rather than growing without limit.
+        while (_cache.Count > 0 && (_cache.Count >= _cacheLimit || _cachedBytes + entry.ByteCount > CacheByteLimit))
+        {
+            var evicted = _cache.GetAt(0).Value;
+            _cachedBytes -= evicted.ByteCount;
+            evicted.Dispose();
+            _cache.RemoveAt(0);
         }
         _cache[key] = entry;
+        _cachedBytes += entry.ByteCount;
         return entry;
     }
 
@@ -137,6 +179,7 @@ public sealed class BrowserTextRasterizer : IDisposable
     {
         foreach (var entry in _cache.Values) entry.Dispose();
         _cache.Clear();
+        _cachedBytes = 0;
     }
 
     public void Dispose() => ClearCache();
@@ -153,5 +196,8 @@ public sealed class BrowserTextRasterizer : IDisposable
         [JsonPropertyName("ascent")] public double Ascent { get; set; }
         [JsonPropertyName("descent")] public double Descent { get; set; }
         [JsonPropertyName("byteLength")] public long ByteLength { get; set; }
+
+        /// <summary>Set when the text was refused for needing a bitmap past the limits; only the size is filled in then.</summary>
+        [JsonPropertyName("tooLarge")] public bool TooLarge { get; set; }
     }
 }

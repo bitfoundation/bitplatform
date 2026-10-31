@@ -18,6 +18,8 @@
         sourceHeight?: number;
         maxPixels?: number;
         autoOrient?: boolean;
+        /** Decoded whole, the image would be far past the pixel limit; .NET let it through only to be decoded smaller. */
+        resizeRequired?: boolean;
     }
 
     /** What the page asks for. The input buffer is transferred in and, when the work fails, transferred back. */
@@ -56,7 +58,9 @@
         let bitmap: ImageBitmap;
         try {
             bitmap = await createImageBitmap(blob, init);
-        } catch {
+        } catch (e) {
+            // Retried bare, the image is decoded whole.
+            if (options.resizeRequired) throw e;
             // Some browsers reject the options bag; a failure here too is reported, and the page decodes instead.
             bitmap = await createImageBitmap(blob);
         }

@@ -36,8 +36,22 @@ public static class JpegContainer
         return new ImageMetadata(exif, profile, xmp, ImageFormat.Jpeg, fileName);
     }
 
-    /// <summary>Reads only the EXIF orientation from a JPEG, stopping at the first SOS marker.</summary>
-    public static Geometry.Orientation ReadOrientation(ReadOnlySpan<byte> jpeg) => ReadMetadata(jpeg).Orientation;
+    /// <summary>
+    /// Reads only the EXIF orientation from a JPEG, stopping at the first SOS marker. Nothing is copied out, so it costs
+    /// far less than <see cref="ReadMetadata"/>, which copies the EXIF values, the ICC profile and the XMP.
+    /// </summary>
+    public static Geometry.Orientation ReadOrientation(ReadOnlySpan<byte> jpeg)
+    {
+        foreach (var seg in EnumerateSegments(jpeg))
+        {
+            if (seg.Marker == 0xDA) break;
+            var payload = jpeg.Slice(seg.PayloadOffset, seg.PayloadLength);
+            // The first EXIF segment is the one ReadMetadata keeps.
+            if (seg.Marker == 0xE1 && payload.StartsWith(ExifHeader))
+                return ExifReader.ReadPrimaryNumber(payload[6..], ExifTag.Orientation) is uint v and >= 1 and <= 8 ? (Geometry.Orientation)v : Geometry.Orientation.Normal;
+        }
+        return Geometry.Orientation.Normal;
+    }
 
     /// <summary>
     /// Returns a copy of <paramref name="jpeg"/> with all existing APP1 (EXIF/XMP) and APP2 ICC segments removed and the
@@ -138,7 +152,9 @@ public static class JpegContainer
             if (jpeg[pos] != 0xFF) { pos++; continue; }
             var marker = jpeg[pos + 1];
             if (marker == 0xFF) { pos++; continue; }
-            if (marker is 0xD8 or 0x01 or (>= 0xD0 and <= 0xD7)) { pos += 2; continue; }
+            // FF00 is a stuffed byte, not a marker. Reading a length after it would jump over whatever segment follows,
+            // the frame header included, where the decoders, this library's and the browsers', skip it.
+            if (marker is 0x00 or 0xD8 or 0x01 or (>= 0xD0 and <= 0xD7)) { pos += 2; continue; }
             if (marker == 0xD9) break;
             var len = BinaryPrimitives.ReadUInt16BigEndian(jpeg[(pos + 2)..]);
             if (len < 2 || pos + 2 + len > jpeg.Length) break;
@@ -157,6 +173,8 @@ public static class JpegContainer
 /// <summary>Reads and writes metadata chunks (eXIf, iCCP, iTXt XMP) in PNG files.</summary>
 public static class PngContainer
 {
+    private const int MaxIccProfileBytes = 4 * 1024 * 1024;
+
     private static ReadOnlySpan<byte> Signature => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     public readonly record struct Chunk(uint Type, int Offset, int DataOffset, int DataLength)
@@ -188,12 +206,17 @@ public static class PngContainer
     {
         ExifData? exif = null;
         ReadOnlyMemory<byte> icc = default, xmp = default;
+        // Only the first iCCP is read, whatever comes of it: the standard allows one, and an oversized or corrupt profile
+        // leaves icc empty, so testing that instead would inflate every further iCCP up to the limit again.
+        var iccSeen = false;
         foreach (var c in EnumerateChunks(png))
         {
             var data = png.Slice(c.DataOffset, c.DataLength);
             if (c.Type == MakeType("eXIf") && exif is null) exif = ExifReader.Read(data);
-            else if (c.Type == MakeType("iCCP") && icc.IsEmpty)
+            else if (c.Type == MakeType("iCCP"))
             {
+                if (iccSeen) continue;
+                iccSeen = true;
                 var nul = data.IndexOf((byte)0);
                 if (nul > 0 && nul + 2 < data.Length && data[nul + 1] == 0)
                 {
@@ -201,8 +224,10 @@ public static class PngContainer
                     {
                         using var zs = new System.IO.Compression.ZLibStream(new MemoryStream(data[(nul + 2)..].ToArray()), System.IO.Compression.CompressionMode.Decompress);
                         var ms = new MemoryStream();
-                        zs.CopyTo(ms);
-                        icc = ms.ToArray();
+                        var block = new byte[81920];
+                        int read;
+                        while ((read = zs.Read(block)) > 0 && ms.Length + read <= MaxIccProfileBytes) ms.Write(block, 0, read);
+                        if (read == 0) icc = ms.ToArray();
                     }
                     catch (Exception) { /* corrupt profile: ignore */ }
                 }

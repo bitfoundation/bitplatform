@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Drawing;
 using System.Numerics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Bit.Bmage.Codecs;
 using Bit.Bmage.Drawing;
 using Bit.Bmage.Geometry;
@@ -282,6 +284,157 @@ public sealed class ReviewFindingsTests
     }
 
     [TestMethod]
+    public async Task AUrlServingMoreThanTheSourceLimitIsRefused()
+    {
+        object? passed = null;
+        var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "fetchImage") passed = args?[2]; });
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
+
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg")));
+        Assert.AreEqual(123_456L, passed);
+    }
+
+    [TestMethod]
+    public async Task AUrlServingNoMoreThanTheSourceLimitIsDecoded()
+    {
+        using var image = TestImages.Gradient(12, 9);
+        var png = Codecs.Png.PngEncoder.Encode(image).Data;
+        var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "fetchImage"
+            ? new FakeHandle(new JsonObject { ["mimeType"] = "image/png", ["byteLength"] = png.Length }, png)
+            : null);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
+
+        using var loaded = await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/small.png"));
+
+        Assert.AreEqual(image.Size, loaded.Size);
+        Assert.AreEqual(0, TestImages.MaxChannelDifference(image, loaded));
+    }
+
+    [TestMethod]
+    public async Task TheBrowserTextRasterizerHoldsTheBrowsersCanvasToItsLimits()
+    {
+        object?[]? passed = null;
+        var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "renderText") passed = args; },
+            (identifier, _) => identifier == "renderText" ? new FakeHandle(new Text.BrowserTextRasterizer.TextRenderInfo { Width = 20_000, Height = 9_000, TooLarge = true }, []) : null);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        using var rasterizer = new Text.BrowserTextRasterizer(interop) { Limits = ImageLimits.Default with { MaxPixels = 1_000_000, MaxWidth = 4_000, MaxHeight = 3_000 } };
+
+        var error = await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await rasterizer.MeasureAsync("Hello", new TextStyle()));
+        StringAssert.Contains(error.Message, "20000x9000");
+        Assert.AreEqual(1_000_000L, passed?[7]);
+        Assert.AreEqual(4_000, passed?[8]);
+        Assert.AreEqual(3_000, passed?[9]);
+    }
+
+    [TestMethod]
+    public async Task TheBrowserTextRasterizersCacheIsBoundedInBytesAndEmptiedWhenItsLimitsChange()
+    {
+        const int side = 2048; // 16 MB a bitmap, so four fill the cache's 64 MB
+        var rendered = new List<string>();
+        var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "renderText") rendered.Add((string)args![0]!); },
+            (identifier, _) => identifier == "renderText" ? new FakeHandle(new Text.BrowserTextRasterizer.TextRenderInfo { Width = side, Height = side, LineCount = 1 }, new byte[side * side * 4]) : null);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        using var rasterizer = new Text.BrowserTextRasterizer(interop);
+        var style = new TextStyle();
+
+        await rasterizer.MeasureAsync("a", style);
+        await rasterizer.MeasureAsync("a", style);
+        CollectionAssert.AreEqual(new[] { "a" }, rendered);
+
+        // A bitmap cached under looser limits is not handed out under tighter ones.
+        rasterizer.Limits = rasterizer.Limits with { MaxPixels = 32_000_000 };
+        await rasterizer.MeasureAsync("a", style);
+        CollectionAssert.AreEqual(new[] { "a", "a" }, rendered);
+
+        // Past 64 MB the oldest goes first, however few the entries.
+        foreach (var text in new[] { "b", "c", "d", "e" }) await rasterizer.MeasureAsync(text, style);
+        rendered.Clear();
+        foreach (var text in new[] { "b", "c", "d", "e", "a" }) await rasterizer.MeasureAsync(text, style);
+        CollectionAssert.AreEqual(new[] { "a" }, rendered);
+    }
+
+    [TestMethod]
+    public async Task TheBrowserDecoderChecksTheSizeTheBrowserDecodesAt()
+    {
+        var called = new List<string>();
+        var module = new FakeModule(called.Add);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+
+        // Browsers grow a GIF's canvas to take in a first frame larger than its logical screen of one pixel.
+        byte[] gif =
+        [
+            .. "GIF89a"u8, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+            0x2C, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3B,
+        ];
+        Assert.AreEqual(1, decoder.Identify(gif)!.Width);
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(gif, DecodeOptions.Default, PooledPixelAllocator.Shared));
+
+        // A file whose size cannot be read is refused, rather than handed to a browser that may read a larger one in it.
+        byte[] noFrame = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, .. "JFIF\0"u8, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9];
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, DecodeOptions.Default, PooledPixelAllocator.Shared));
+        CollectionAssert.DoesNotContain(called, "decode");
+
+        // Unlimited, there is nothing to check the size against.
+        var unlimited = DecodeOptions.Default with { Limits = ImageLimits.Unrestricted };
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, unlimited, PooledPixelAllocator.Shared));
+        Assert.AreEqual(1, called.Count(identifier => identifier == "decode"));
+    }
+
+    /// <summary>
+    /// With a MaxSize the browser decodes straight to the smaller size, so a 48 megapixel photo held to 8 megapixels
+    /// still loads when it is asked for at 2048 pixels, as it did before the size was checked.
+    /// </summary>
+    [TestMethod]
+    public async Task TheBrowserDecodersSizeCheckAllowsForTheResizeItAsksTheBrowserFor()
+    {
+        using var small = TestImages.Gradient(8, 8);
+        var png = Codecs.Png.PngEncoder.Encode(small).Data;
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), 8_000);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), 6_000);
+        var called = new List<string>();
+        var module = new FakeModule(called.Add);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        var options = DecodeOptions.Default with { Limits = ImageLimits.Default with { MaxPixels = 8_000_000 } };
+
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(20_000, 20_000) }, PooledPixelAllocator.Shared));
+        CollectionAssert.DoesNotContain(called, "decode");
+
+        // These reach the browser, which the fake answers with nothing.
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 2_048) }, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 0) }, PooledPixelAllocator.Shared));
+        Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
+    }
+
+    [TestMethod]
+    public async Task TheBrowserDecoderRefusesAHeaderItCouldNotScaleIntoTheLimitsBeforeDecoding()
+    {
+        using var small = TestImages.Gradient(8, 8);
+        byte[] Png(int width, int height)
+        {
+            var png = Codecs.Png.PngEncoder.Encode(small).Data;
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), (uint)width);
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), (uint)height);
+            return png;
+        }
+        var called = new List<string>();
+        var module = new FakeModule(called.Add);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(Png(20_000, 20_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
+        CollectionAssert.DoesNotContain(called, "decode");
+
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(12_000, 9_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(20_000, 1_000), DecodeOptions.Default with { MaxSize = new Size(1_000, 1_000) }, PooledPixelAllocator.Shared));
+        Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
+    }
+
+    [TestMethod]
     public void ADocumentNestingMasksDeeplyIsRefused_AChainBuiltAStepAtATimeIsNot()
     {
         Mask nested = Mask.All();
@@ -492,20 +645,44 @@ public sealed class ReviewFindingsTests
         }
     }
 
-    private sealed class FakeModule(Action<string> invoke) : IJSObjectReference
+    private sealed class FakeModule(Action<string> invoke, Action<string, object?[]?>? inspect = null, Func<string, object?[]?, object?>? respond = null) : IJSObjectReference
     {
         public bool Disposed { get; private set; }
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
             invoke(identifier);
-            return ValueTask.FromResult(default(TValue)!);
+            inspect?.Invoke(identifier, args);
+            return ValueTask.FromResult(respond?.Invoke(identifier, args) is TValue value ? value : default(TValue)!);
         }
         public ValueTask DisposeAsync()
         {
             Disposed = true;
             return ValueTask.CompletedTask;
         }
+    }
+
+    /// <summary>
+    /// A byte result as the module's functions return one: a descriptor from info() and a payload from bytes(). A
+    /// descriptor of another type reaches the caller through JSON, as the browser's does.
+    /// </summary>
+    private sealed class FakeHandle(object info, byte[] bytes) : IJSObjectReference
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => identifier switch
+        {
+            "info" => ValueTask.FromResult(info is TValue typed ? typed : JsonSerializer.Deserialize<TValue>(JsonSerializer.Serialize(info))!),
+            "bytes" => ValueTask.FromResult((TValue)(object)new FakeStream(bytes)),
+            _ => ValueTask.FromResult(default(TValue)!),
+        };
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class FakeStream(byte[] bytes) : IJSStreamReference
+    {
+        public long Length => bytes.Length;
+        public ValueTask<Stream> OpenReadStreamAsync(long maxAllowedSize = 512000, CancellationToken cancellationToken = default) => ValueTask.FromResult<Stream>(new MemoryStream(bytes));
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
     private sealed class ImportingJSRuntime(IJSObjectReference module) : IJSRuntime

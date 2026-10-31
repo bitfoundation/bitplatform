@@ -184,6 +184,112 @@ public class JsModuleContractTests : DemoTest
     }
 
     /// <summary>
+    /// A fetched image is held to the source limit .NET passes, which reads a null result as the limit exceeded. A blob
+    /// URL's response declares its length, so it is refused before the body is read; a data URL's does not, so its body
+    /// is counted as it arrives.
+    /// </summary>
+    [TestMethod]
+    public async Task FetchingAnImageStopsAtTheSourceLimit()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, $$"""
+            {{MakePng}}
+            const bytes = await makePng(64, 64);
+            const blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+            const dataUrl = 'data:image/png;base64,' + btoa(String.fromCharCode(...bytes));
+            const fetched = async (url, maxBytes) => {
+                const handle = await m.fetchImage(url, false, maxBytes);
+                if (!handle) return -1;
+                const length = handle.info().byteLength;
+                handle.dispose();
+                return length;
+            };
+            try {
+                return {
+                    size: bytes.length,
+                    blobAtTheLimit: await fetched(blobUrl, bytes.length),
+                    blobPastIt: await fetched(blobUrl, bytes.length - 1),
+                    dataAtTheLimit: await fetched(dataUrl, bytes.length),
+                    dataPastIt: await fetched(dataUrl, bytes.length - 1),
+                    unlimited: await fetched(dataUrl, 0),
+                };
+            } finally {
+                URL.revokeObjectURL(blobUrl);
+            }
+            """);
+
+        var size = result.GetProperty("size").GetInt32();
+        Assert.AreEqual(size, result.GetProperty("blobAtTheLimit").GetInt32());
+        Assert.AreEqual(-1, result.GetProperty("blobPastIt").GetInt32());
+        Assert.AreEqual(size, result.GetProperty("dataAtTheLimit").GetInt32());
+        Assert.AreEqual(-1, result.GetProperty("dataPastIt").GetInt32());
+        Assert.AreEqual(size, result.GetProperty("unlimited").GetInt32());
+    }
+
+    /// <summary>
+    /// Text whose bitmap would pass the pixel, width or height limit is refused before its canvas is made: the result
+    /// carries only its size, flagged tooLarge, which .NET turns into an ImageLimitExceededException. Every canvas the
+    /// module draws on during a call is recorded as it takes its context, and none is past the limits of that call.
+    /// </summary>
+    [TestMethod]
+    public async Task RenderingTextPastTheLimitsIsRefusedBeforeDrawing()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, """
+            const canvases = [];
+            const kinds = [HTMLCanvasElement, ...(typeof OffscreenCanvas !== 'undefined' ? [OffscreenCanvas] : [])];
+            const originals = kinds.map(kind => kind.prototype.getContext);
+            kinds.forEach((kind, i) => {
+                kind.prototype.getContext = function (...args) {
+                    canvases.push([this.width, this.height]);
+                    return originals[i].apply(this, args);
+                };
+            });
+            const render = (maxPixels, maxWidth, maxHeight) => {
+                canvases.length = 0;
+                let outcome;
+                try {
+                    const handle = m.renderText('Hello, world', '48px sans-serif', '#000', null, 0, 1.2, 'left', maxPixels, maxWidth, maxHeight);
+                    const info = handle.info();
+                    handle.dispose();
+                    outcome = info.tooLarge ? `refused:${info.width}x${info.height}:${info.byteLength}` : `${info.width}x${info.height}`;
+                } catch (e) {
+                    outcome = 'error:' + String(e.message || e);
+                }
+                const oversized = canvases
+                    .filter(([w, h]) => (maxPixels && w * h > maxPixels) || (maxWidth && w > maxWidth) || (maxHeight && h > maxHeight))
+                    .map(([w, h]) => `${w}x${h}`);
+                return { outcome, oversized, seen: canvases.map(([w, h]) => `${w}x${h}`) };
+            };
+            try {
+                return {
+                    within: render(10000000, 16384, 16384),
+                    pastPixels: render(100),
+                    pastWidth: render(10000000, 50, 0),
+                    pastHeight: render(10000000, 0, 10),
+                };
+            } finally {
+                kinds.forEach((kind, i) => { kind.prototype.getContext = originals[i]; });
+            }
+            """);
+
+        var within = result.GetProperty("within");
+        var size = within.GetProperty("outcome").GetString()!;
+        Assert.MatchesRegex(@"^\d+x\d+$", size);
+        // The text's own canvas was seen, so the recording watches the canvases the module draws on.
+        Assert.Contains(size, within.GetProperty("seen").EnumerateArray().Select(e => e.GetString()!).ToList());
+        foreach (var name in new[] { "within", "pastPixels", "pastWidth", "pastHeight" })
+        {
+            var call = result.GetProperty(name);
+            if (name != "within") Assert.MatchesRegex(@"^refused:\d+x\d+:0$", call.GetProperty("outcome").GetString()!, name);
+            var oversized = call.GetProperty("oversized").EnumerateArray().Select(e => e.GetString()).ToList();
+            Assert.IsEmpty(oversized, $"{name} made a canvas past its limits: {string.Join(", ", oversized)}");
+        }
+    }
+
+    /// <summary>
     /// Decoding, encoding and resizing go to the codec workers wherever the browser can run them there, and give the
     /// pixels the page's own thread gives. Turned off, everything runs on the page; turned on again, workers return.
     /// </summary>

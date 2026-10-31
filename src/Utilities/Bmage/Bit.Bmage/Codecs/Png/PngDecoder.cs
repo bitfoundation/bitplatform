@@ -26,7 +26,12 @@ public sealed class PngDecoder : IImageDecoder
         var orientation = Orientation.Normal;
         foreach (var c in chunks)
         {
-            if (c.TypeName == "eXIf") { orientation = ExifReader.Read(data.Slice(c.DataOffset, c.DataLength))?.Orientation ?? Orientation.Normal; break; }
+            if (c.TypeName == "eXIf")
+            {
+                // Only the orientation is wanted, so none of the block, which can run to megabytes, is copied out.
+                if (ExifReader.ReadPrimaryNumber(data.Slice(c.DataOffset, c.DataLength), ExifTag.Orientation) is uint v and >= 1 and <= 8) orientation = (Orientation)v;
+                break;
+            }
             if (c.TypeName == "IDAT") break;
         }
         return w <= 0 || h <= 0 ? null : new ImageInfo(w, h, ImageFormat.Png, orientation, hasAlpha);

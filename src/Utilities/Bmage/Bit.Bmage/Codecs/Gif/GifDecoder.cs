@@ -18,6 +18,33 @@ public sealed class GifDecoder : IImageDecoder
         return w == 0 || h == 0 ? null : new ImageInfo(w, h, ImageFormat.Gif, HasAlpha: null);
     }
 
+    /// <summary>
+    /// The size browsers decode the image at: the logical screen, grown to take in a first frame that overhangs it, where
+    /// this decoder clips the frame instead. Null when neither gives a size.
+    /// </summary>
+    internal static (int Width, int Height)? BrowserCanvasSize(ReadOnlySpan<byte> data)
+    {
+        if (ImageFormats.Detect(data) != ImageFormat.Gif || data.Length < 13) return null;
+        int width = BinaryPrimitives.ReadUInt16LittleEndian(data[6..]);
+        int height = BinaryPrimitives.ReadUInt16LittleEndian(data[8..]);
+        var pos = 13;
+        if ((data[10] & 0x80) != 0) pos += 3 * (1 << ((data[10] & 7) + 1));
+        while (pos < data.Length)
+        {
+            var block = data[pos++];
+            if (block == 0x21)
+            {
+                pos = SkipSubBlocks(data, pos + 1);
+                continue;
+            }
+            if (block != 0x2C || pos + 9 > data.Length) break;
+            width = Math.Max(width, BinaryPrimitives.ReadUInt16LittleEndian(data[pos..]) + BinaryPrimitives.ReadUInt16LittleEndian(data[(pos + 4)..]));
+            height = Math.Max(height, BinaryPrimitives.ReadUInt16LittleEndian(data[(pos + 2)..]) + BinaryPrimitives.ReadUInt16LittleEndian(data[(pos + 6)..]));
+            break;
+        }
+        return width == 0 || height == 0 ? null : (width, height);
+    }
+
     public ValueTask<ImageBuffer> DecodeAsync(ReadOnlyMemory<byte> data, DecodeOptions options, IPixelAllocator allocator, CancellationToken cancellationToken = default)
         => new(Decode(data.Span, options, allocator, cancellationToken));
 
@@ -72,6 +99,9 @@ public sealed class GifDecoder : IImageDecoder
                 int fh = BinaryPrimitives.ReadUInt16LittleEndian(data[(pos + 6)..]);
                 var iflags = data[pos + 8];
                 pos += 9;
+                // A frame may overhang the logical screen. Browsers draw such files, so the overhang is clipped below
+                // rather than the file refused; the frame's own size is still held to the limits, which bound the
+                // work of decoding it, and it is decoded a row at a time, so the overhang is never stored.
                 var palette = globalPalette;
                 if ((iflags & 0x80) != 0)
                 {
@@ -86,13 +116,17 @@ public sealed class GifDecoder : IImageDecoder
                 var minCodeSize = data[pos++];
                 if (minCodeSize is < 2 or > 11) throw new ImageDecodeException("Invalid GIF LZW code size.");
                 var lzwData = ReadSubBlocks(data, ref pos);
-                if ((long)fw * fh > options.Limits.MaxPixels) throw new ImageLimitExceededException("GIF frame too large.");
-                var indices = new byte[fw * fh];
-                Lzw.Decode(lzwData, minCodeSize, indices);
+                if (fw > 0 && fh > 0) options.Limits.Validate(fw, fh);
+                var lzw = new Lzw(lzwData, minCodeSize);
+                var indices = new byte[fw];
 
                 // Composite frame into the canvas.
                 for (var fy = 0; fy < fh; fy++)
                 {
+                    // Rows arrive top to bottom unless interlaced, so once one falls below the screen the rest do too.
+                    if (!interlaced && top + fy >= height) break;
+                    // A stream that ends early leaves the rest of the frame at index 0.
+                    indices.AsSpan(lzw.Read(indices)).Clear();
                     var y = top + (interlaced ? Deinterlace(fy, fh) : fy);
                     if (y < 0 || y >= height) continue;
                     var dst = image.GetRow(y);
@@ -100,7 +134,7 @@ public sealed class GifDecoder : IImageDecoder
                     {
                         var x = left + fx;
                         if (x < 0 || x >= width) continue;
-                        int idx = indices[fy * fw + fx];
+                        int idx = indices[fx];
                         if (idx == transparentIndex) continue;
                         var pi = idx * 3;
                         if (pi + 2 >= palette.Length) continue;
@@ -156,79 +190,94 @@ public sealed class GifDecoder : IImageDecoder
         return ms.ToArray();
     }
 
-    private static class Lzw
+    /// <summary>An LZW decoder that hands out its indices a row at a time, so a frame never needs a buffer of its own.</summary>
+    private sealed class Lzw
     {
-        public static void Decode(ReadOnlySpan<byte> input, int minCodeSize, Span<byte> output)
+        private readonly byte[] _input;
+        private readonly int _minCodeSize, _clearCode, _endCode;
+        private readonly int[] _prefix = new int[4096];
+        private readonly byte[] _suffix = new byte[4096];
+        private readonly byte[] _stack = new byte[4097];
+        private int _sp, _codeSize, _nextCode, _prev = -1, _inPos, _bitCount;
+        private uint _bitBuf;
+        private byte _first;
+        private bool _ended;
+
+        public Lzw(byte[] input, int minCodeSize)
         {
-            var clearCode = 1 << minCodeSize;
-            var endCode = clearCode + 1;
-            var codeSize = minCodeSize + 1;
-            var nextCode = endCode + 1;
-            var prefix = new int[4096];
-            var suffix = new byte[4096];
-            var stack = new byte[4097];
-            for (var i = 0; i < clearCode; i++) { prefix[i] = -1; suffix[i] = (byte)i; }
+            _input = input;
+            _minCodeSize = minCodeSize;
+            _clearCode = 1 << minCodeSize;
+            _endCode = _clearCode + 1;
+            _codeSize = minCodeSize + 1;
+            _nextCode = _endCode + 1;
+            for (var i = 0; i < _clearCode; i++) { _prefix[i] = -1; _suffix[i] = (byte)i; }
+        }
+
+        /// <summary>Fills <paramref name="output"/> with the next indices; fewer come back only once the stream has ended.</summary>
+        public int Read(Span<byte> output)
+        {
             var outPos = 0;
-            var prev = -1;
-            uint bitBuf = 0; var bitCount = 0; var inPos = 0;
-            var first = (byte)0;
-            while (outPos < output.Length)
+            // What is left of a code that did not fit the previous row.
+            while (_sp > 0 && outPos < output.Length) output[outPos++] = _stack[--_sp];
+            while (outPos < output.Length && !_ended)
             {
-                while (bitCount < codeSize)
+                while (_bitCount < _codeSize)
                 {
-                    if (inPos >= input.Length) return; // truncated: leave the remainder as-is
-                    bitBuf |= (uint)input[inPos++] << bitCount;
-                    bitCount += 8;
+                    // Truncated: the caller leaves the remainder as-is.
+                    if (_inPos >= _input.Length) { _ended = true; return outPos; }
+                    _bitBuf |= (uint)_input[_inPos++] << _bitCount;
+                    _bitCount += 8;
                 }
-                var code = (int)(bitBuf & ((1u << codeSize) - 1));
-                bitBuf >>= codeSize;
-                bitCount -= codeSize;
-                if (code == clearCode)
+                var code = (int)(_bitBuf & ((1u << _codeSize) - 1));
+                _bitBuf >>= _codeSize;
+                _bitCount -= _codeSize;
+                if (code == _clearCode)
                 {
-                    codeSize = minCodeSize + 1;
-                    nextCode = endCode + 1;
-                    prev = -1;
+                    _codeSize = _minCodeSize + 1;
+                    _nextCode = _endCode + 1;
+                    _prev = -1;
                     continue;
                 }
-                if (code == endCode) return;
+                if (code == _endCode) { _ended = true; break; }
                 int c;
-                var sp = 0;
-                if (prev == -1)
+                if (_prev == -1)
                 {
-                    if (code >= clearCode) throw new ImageDecodeException("Corrupt GIF LZW stream.");
-                    output[outPos++] = suffix[code];
-                    prev = code; first = suffix[code];
+                    if (code >= _clearCode) throw new ImageDecodeException("Corrupt GIF LZW stream.");
+                    output[outPos++] = _suffix[code];
+                    _prev = code; _first = _suffix[code];
                     continue;
                 }
-                if (code < nextCode)
+                if (code < _nextCode)
                 {
                     c = code;
                 }
-                else if (code == nextCode)
+                else if (code == _nextCode)
                 {
                     // KwKwK case
-                    c = prev;
-                    stack[sp++] = first;
+                    c = _prev;
+                    _stack[_sp++] = _first;
                 }
                 else throw new ImageDecodeException("Corrupt GIF LZW stream.");
-                while (c >= clearCode)
+                while (c >= _clearCode)
                 {
-                    stack[sp++] = suffix[c];
-                    c = prefix[c];
-                    if (sp >= stack.Length) throw new ImageDecodeException("Corrupt GIF LZW stream.");
+                    _stack[_sp++] = _suffix[c];
+                    c = _prefix[c];
+                    if (_sp >= _stack.Length) throw new ImageDecodeException("Corrupt GIF LZW stream.");
                 }
-                first = suffix[c];
-                stack[sp++] = first;
-                while (sp > 0 && outPos < output.Length) output[outPos++] = stack[--sp];
-                if (nextCode < 4096)
+                _first = _suffix[c];
+                _stack[_sp++] = _first;
+                while (_sp > 0 && outPos < output.Length) output[outPos++] = _stack[--_sp];
+                if (_nextCode < 4096)
                 {
-                    prefix[nextCode] = prev;
-                    suffix[nextCode] = first;
-                    nextCode++;
-                    if (nextCode == (1 << codeSize) && codeSize < 12) codeSize++;
+                    _prefix[_nextCode] = _prev;
+                    _suffix[_nextCode] = _first;
+                    _nextCode++;
+                    if (_nextCode == (1 << _codeSize) && _codeSize < 12) _codeSize++;
                 }
-                prev = code;
+                _prev = code;
             }
+            return outPos;
         }
     }
 }
