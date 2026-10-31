@@ -706,7 +706,7 @@
         <value>हटाएँ</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>इमारत जोड़ने के लिए नीदरलैंड के अंदर डबल-क्लिक करें। किसी इमारत को हटाने के लिए उसे चुनें और Delete दबाएँ।</value>
+        <value>इमारत जोड़ने के लिए नीदरलैंड के अंदर डबल-क्लिक या डबल-टैप करें। किसी इमारत को हटाने के लिए उसे चुनें और Delete दबाएँ, या सूची में उसका हटाने वाला बटन इस्तेमाल करें।</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} को सहेज लिया गया</value>
@@ -2170,7 +2170,7 @@
         <value>थीम और कंपोनेंट</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>यहाँ सब कुछ ऐप की अपनी थीम से आता है। इसे बदलते देखने के लिए दाईं ओर के विकल्प आज़माएँ।</value>
+        <value>यहाँ सब कुछ ऐप की अपनी थीम से आता है। इसे बदलते देखने के लिए वर्कबेंच के थीम विकल्प आज़माएँ।</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>रंग</value>
@@ -2470,9 +2470,15 @@
         <value>{1} में से {0}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>स्क्रीन को खिसकाने के लिए उसे खींचें। तीर बनाने के लिए किसी स्क्रीन के दाएँ किनारे वाले बिंदु से दूसरी स्क्रीन तक खींचें, तीर का नाम रखने के लिए उस पर डबल-क्लिक करें, और चुनी हुई चीज़ हटाने के लिए Delete दबाएँ।</value>
+        <value>स्क्रीन को खिसकाने के लिए उसे खींचें और आज़माने के लिए उस पर डबल-क्लिक करें। तीर बनाने के लिए किसी स्क्रीन के दाएँ किनारे वाले बिंदु से दूसरी स्क्रीन तक खींचें, और तीर का नाम रखने या उसे हटाने के लिए उस पर डबल-क्लिक करें।</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>यह फ़्लो हटाएँ?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>यह स्क्रीन हटाएँ</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>तीर हटाएँ</value>
     </data>
 </root>

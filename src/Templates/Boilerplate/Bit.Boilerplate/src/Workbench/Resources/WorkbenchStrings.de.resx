@@ -706,7 +706,7 @@
         <value>Löschen</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Doppelklicken Sie innerhalb der Niederlande, um ein Gebäude hinzuzufügen. Wählen Sie eines aus und drücken Sie Entf, um es zu entfernen.</value>
+        <value>Doppelklicken oder doppeltippen Sie innerhalb der Niederlande, um ein Gebäude hinzuzufügen. Zum Entfernen wählen Sie es aus und drücken Entf oder nutzen seine Schaltfläche zum Löschen in der Liste.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} wurde gespeichert</value>
@@ -2170,7 +2170,7 @@
         <value>Design und Komponenten</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>Alles hier stammt aus dem Design der App. Probieren Sie die Optionen rechts aus, um zu sehen, wie es sich ändert.</value>
+        <value>Alles hier stammt aus dem Design der App. Probieren Sie die Designoptionen der Werkbank aus, um zu sehen, wie es sich ändert.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>Farben</value>
@@ -2470,9 +2470,15 @@
         <value>{0} von {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Ziehen Sie einen Bildschirm, um ihn zu verschieben. Ziehen Sie vom Punkt am rechten Rand eines Bildschirms zu einem anderen, um einen Pfeil zu zeichnen, doppelklicken Sie auf einen Pfeil, um ihn zu benennen, und drücken Sie Entf, um die Auswahl zu entfernen.</value>
+        <value>Ziehen Sie einen Bildschirm, um ihn zu verschieben, und doppelklicken Sie darauf, um ihn auszuprobieren. Ziehen Sie vom Punkt am rechten Rand eines Bildschirms zu einem anderen, um einen Pfeil zu zeichnen, und doppelklicken Sie auf einen Pfeil, um ihn zu benennen oder zu löschen.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Diesen Ablauf löschen?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Diesen Bildschirm entfernen</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Pfeil löschen</value>
     </data>
 </root>

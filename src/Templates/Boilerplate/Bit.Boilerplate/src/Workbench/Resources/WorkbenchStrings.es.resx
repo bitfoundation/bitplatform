@@ -706,7 +706,7 @@
         <value>Eliminar</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Haz doble clic dentro de los Países Bajos para agregar un edificio. Selecciona uno y presiona Supr para eliminarlo.</value>
+        <value>Haz doble clic o toca dos veces dentro de los Países Bajos para agregar un edificio. Para eliminar uno, selecciónalo y presiona Supr, o usa su botón de eliminar en la lista.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>Se guardó {0}</value>
@@ -2170,7 +2170,7 @@
         <value>Tema y componentes</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>Todo lo que ves aquí viene del propio tema de la app. Prueba las opciones de la derecha para ver cómo cambia.</value>
+        <value>Todo lo que ves aquí viene del propio tema de la app. Prueba las opciones de tema del banco de trabajo para ver cómo cambia.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>Colores</value>
@@ -2470,9 +2470,15 @@
         <value>{0} de {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Arrastra una pantalla para moverla. Arrastra desde el punto del borde derecho de una pantalla hasta otra para dibujar una flecha, haz doble clic en una flecha para ponerle nombre y pulsa Supr para quitar lo que hayas seleccionado.</value>
+        <value>Arrastra una pantalla para moverla y haz doble clic en ella para probarla. Arrastra desde el punto del borde derecho de una pantalla hasta otra para dibujar una flecha, y haz doble clic en una flecha para ponerle nombre o eliminarla.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>¿Eliminar este flujo?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Quitar esta pantalla</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Eliminar flecha</value>
     </data>
 </root>

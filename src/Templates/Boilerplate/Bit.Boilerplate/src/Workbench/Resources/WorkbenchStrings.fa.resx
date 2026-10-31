@@ -706,7 +706,7 @@
         <value>حذف</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>برای افزودن ساختمان داخل هلند دوبار کلیک کنید. یکی را انتخاب کنید و Delete بزنید تا حذف شود.</value>
+        <value>برای افزودن ساختمان داخل هلند دوبار کلیک کنید یا دوبار بزنید. برای حذف، یکی را انتخاب کنید و Delete بزنید، یا از دکمهٔ حذفش در فهرست استفاده کنید.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} ذخیره شد</value>
@@ -2170,7 +2170,7 @@
         <value>پوسته و کامپوننت‌ها</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>همه‌چیز این‌جا از پوسته خود برنامه می‌آید. گزینه‌های پنل کناری را امتحان کنید تا تغییرش را ببینید.</value>
+        <value>همه‌چیز این‌جا از پوسته خود برنامه می‌آید. گزینه‌های پوستهٔ میز کار را امتحان کنید تا تغییرش را ببینید.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>رنگ‌ها</value>
@@ -2470,9 +2470,15 @@
         <value>{0} از {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>برای جابه‌جا کردن یک صفحه آن را بکشید. برای کشیدن فلش، از نقطهٔ لبهٔ راست یک صفحه تا صفحهٔ دیگر بکشید، برای نام‌گذاری فلش روی آن دوبار کلیک کنید و برای حذف آنچه انتخاب کرده‌اید Delete را بزنید.</value>
+        <value>برای جابه‌جا کردن یک صفحه آن را بکشید و برای امتحانش روی آن دوبار کلیک کنید. برای کشیدن فلش، از نقطهٔ لبهٔ راست یک صفحه تا صفحهٔ دیگر بکشید، و برای نام‌گذاری یا حذف فلش روی آن دوبار کلیک کنید.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>این مسیر حذف شود؟</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>حذف این صفحه</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>حذف فلش</value>
     </data>
 </root>

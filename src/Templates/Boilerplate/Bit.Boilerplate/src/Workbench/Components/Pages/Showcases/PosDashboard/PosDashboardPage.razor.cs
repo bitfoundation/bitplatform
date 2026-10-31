@@ -54,7 +54,7 @@ public partial class PosDashboardPage
         isLayoutLoaded = true;
     }
 
-    private void SetRange(BitButtonGroupItem item) => SetFilter(Filter with { Days = int.Parse(item.Key!, CultureInfo.InvariantCulture) });
+    private void SetRange(string? key) => SetFilter(Filter with { Days = int.Parse(key!, CultureInfo.InvariantCulture) });
 
     public async Task Move(PosWidgetLayout widget, int delta)
     {

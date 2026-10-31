@@ -706,7 +706,7 @@
         <value>Supprimer</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Double-cliquez à l’intérieur des Pays-Bas pour ajouter un bâtiment. Sélectionnez-en un et appuyez sur Suppr pour le supprimer.</value>
+        <value>Double-cliquez ou touchez deux fois à l’intérieur des Pays-Bas pour ajouter un bâtiment. Pour en supprimer un, sélectionnez-le et appuyez sur Suppr, ou utilisez son bouton de suppression dans la liste.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} est enregistré</value>
@@ -2170,7 +2170,7 @@
         <value>Thème et composants</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>Tout ici provient du thème de l’application. Essayez les réglages à droite pour le voir changer.</value>
+        <value>Tout ici provient du thème de l’application. Essayez les réglages de thème de l’établi pour le voir changer.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>Couleurs</value>
@@ -2470,9 +2470,15 @@
         <value>{0} sur {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Faites glisser un écran pour le déplacer. Tirez depuis le point du bord droit d’un écran jusqu’à un autre pour tracer une flèche, double-cliquez sur une flèche pour la nommer et appuyez sur Suppr pour retirer ce que vous avez sélectionné.</value>
+        <value>Faites glisser un écran pour le déplacer et double-cliquez dessus pour l’essayer. Tirez depuis le point du bord droit d’un écran jusqu’à un autre pour tracer une flèche, et double-cliquez sur une flèche pour la nommer ou la supprimer.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Supprimer ce parcours ?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Retirer cet écran</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Supprimer la flèche</value>
     </data>
 </root>

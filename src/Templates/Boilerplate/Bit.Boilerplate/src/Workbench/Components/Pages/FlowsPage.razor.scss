@@ -157,14 +157,27 @@
     text-overflow: ellipsis;
 }
 
-.screen-open {
+.screen-open,
+.screen-remove {
+    padding: 0;
+    border: none;
     display: flex;
     font-size: 28px;
+    cursor: pointer;
+    background: none;
     color: $bit-color-foreground-secondary;
 
     &:hover {
         color: $bit-color-primary;
     }
+}
+
+.screen-remove:hover {
+    color: $bit-color-error;
+}
+
+.screen-card:not(.current) iframe {
+    pointer-events: none;
 }
 
 .screen-card.current ::deep .device {

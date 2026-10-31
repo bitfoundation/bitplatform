@@ -200,7 +200,7 @@ public partial class BuildingsPage
         selectedItems = [building];
         BuildMarkers();
 
-        if (flyTo && map is not null)
+        if (flyTo && map is not null && (isNarrow is false || store.IsMapShown))
         {
             await map.FlyTo(new(building.Latitude, building.Longitude), 13);
         }

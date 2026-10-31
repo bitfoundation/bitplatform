@@ -9,7 +9,7 @@
                 <span class="editor-icon"><BitIcon IconName="@(isNew ? BitIconName.Add : BitIconName.Edit)" /></span>
                 <BitText Typography="BitTypography.H6">@Localizer[isNew ? nameof(WorkbenchStrings.BuildingsAddTitle) : nameof(WorkbenchStrings.BuildingsEditTitle)]</BitText>
                 <BitSpacer />
-                <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="Close"
+                <BitButton IconOnly Variant="BitVariant.Text" ButtonType="BitButtonType.Button" IconName="@BitIconName.Cancel" OnClick="Close"
                            Title="@Localizer[nameof(WorkbenchStrings.Close)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" />
             </header>
 
@@ -54,7 +54,7 @@
             </div>
 
             <footer class="editor-footer">
-                <BitButton Variant="BitVariant.Text" OnClick="Close">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                <BitButton Variant="BitVariant.Text" ButtonType="BitButtonType.Button" OnClick="Close">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
                 <BitButton ButtonType="BitButtonType.Submit" IconName="@BitIconName.Save" IsLoading="isSaving">@Localizer[nameof(WorkbenchStrings.Save)]</BitButton>
             </footer>
         </EditForm>

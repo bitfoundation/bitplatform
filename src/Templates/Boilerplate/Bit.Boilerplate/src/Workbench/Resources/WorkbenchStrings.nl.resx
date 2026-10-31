@@ -706,7 +706,7 @@
         <value>Verwijderen</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Dubbelklik binnen Nederland om een gebouw toe te voegen. Selecteer er een en druk op Delete om het te verwijderen.</value>
+        <value>Dubbelklik of dubbeltik binnen Nederland om een gebouw toe te voegen. Om er een te verwijderen, selecteer je het en druk je op Delete, of gebruik je de verwijderknop in de lijst.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} is opgeslagen</value>
@@ -2170,7 +2170,7 @@
         <value>Thema en componenten</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>Alles hier komt uit het eigen thema van de app. Probeer de opties rechts om het te zien veranderen.</value>
+        <value>Alles hier komt uit het eigen thema van de app. Probeer de thema-opties van de werkbank om het te zien veranderen.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>Kleuren</value>
@@ -2470,9 +2470,15 @@
         <value>{0} van {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Sleep een scherm om het te verplaatsen. Sleep vanaf de stip aan de rechterrand van een scherm naar een ander scherm om een pijl te tekenen, dubbelklik op een pijl om hem een naam te geven en druk op Delete om te verwijderen wat je hebt geselecteerd.</value>
+        <value>Sleep een scherm om het te verplaatsen en dubbelklik erop om het uit te proberen. Sleep vanaf de stip aan de rechterrand van een scherm naar een ander scherm om een pijl te tekenen, en dubbelklik op een pijl om hem een naam te geven of te verwijderen.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Deze flow verwijderen?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Dit scherm verwijderen</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Pijl verwijderen</value>
     </data>
 </root>

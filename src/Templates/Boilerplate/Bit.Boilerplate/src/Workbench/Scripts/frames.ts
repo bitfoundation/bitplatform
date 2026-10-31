@@ -19,7 +19,9 @@ html[data-wb-mode="inspect"], html[data-wb-mode="inspect"] *, html[data-wb-mode=
 html[data-wb-mode] .wb-pin { cursor: pointer !important; }
 `;
 
-const blockedEvents = ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'dblclick', 'contextmenu', 'submit', 'keydown'];
+const blockedEvents = ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'dblclick', 'contextmenu', 'submit', 'keydown'];
+
+const shieldedEvents = ['touchstart', 'touchend'];
 
 const preparedDocuments = new WeakSet<Document>();
 const themeColors = new WeakMap<Document, Map<string, string>>();
@@ -110,7 +112,14 @@ export function prepareFrame(frame: HTMLIFrameElement) {
             event.stopImmediatePropagation();
         };
 
+        const shield = (event: Event) => {
+            if (!isPicking() || (event.target as Element | null)?.closest?.('.wb-pin')) return;
+
+            event.stopImmediatePropagation();
+        };
+
         blockedEvents.forEach(type => win.addEventListener(type, block, true));
+        shieldedEvents.forEach(type => win.addEventListener(type, shield, { capture: true, passive: true }));
         win.addEventListener('click', event => onClick(frame, event), true);
         win.addEventListener('mousemove', event => onHover(frame, event), true);
         doc.documentElement.addEventListener('mouseleave', () => hideHover(doc));
@@ -145,6 +154,11 @@ function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
 
     if (pin?.dataset.id) {
         host?.invoke('OpenThread', pin.dataset.id);
+        return;
+    }
+
+    if (mode === 'inspect') {
+        onHover(frame, event);
         return;
     }
 

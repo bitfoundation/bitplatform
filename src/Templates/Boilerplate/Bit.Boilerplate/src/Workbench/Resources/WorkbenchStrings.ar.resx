@@ -706,7 +706,7 @@
         <value>حذف</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>انقر نقرًا مزدوجًا داخل هولندا لإضافة مبنى. حدد مبنى واضغط Delete لإزالته.</value>
+        <value>انقر نقرًا مزدوجًا أو المس مرتين داخل هولندا لإضافة مبنى. لإزالة مبنى، حدده واضغط Delete، أو استخدم زر الحذف الخاص به في القائمة.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>تم حفظ {0}</value>
@@ -2170,7 +2170,7 @@
         <value>المظهر والمكونات</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>كل ما هنا يأتي من مظهر التطبيق نفسه. جرّب الخيارات في اللوحة الجانبية لترى كيف يتغير.</value>
+        <value>كل ما هنا يأتي من مظهر التطبيق نفسه. جرّب خيارات المظهر في منضدة العمل لترى كيف يتغير.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>الألوان</value>
@@ -2470,9 +2470,15 @@
         <value>{0} من {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>اسحب شاشة لتحريكها. اسحب من النقطة على الحافة اليمنى للشاشة إلى شاشة أخرى لرسم سهم، وانقر نقرًا مزدوجًا على سهم لتسميته، واضغط Delete لحذف ما حددته.</value>
+        <value>اسحب شاشة لتحريكها وانقر عليها نقرًا مزدوجًا لتجربتها. اسحب من النقطة على الحافة اليمنى للشاشة إلى شاشة أخرى لرسم سهم، وانقر نقرًا مزدوجًا على سهم لتسميته أو حذفه.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>حذف هذا المسار؟</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>إزالة هذه الشاشة</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>حذف السهم</value>
     </data>
 </root>

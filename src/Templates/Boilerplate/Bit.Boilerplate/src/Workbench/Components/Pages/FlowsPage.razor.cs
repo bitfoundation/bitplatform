@@ -199,6 +199,31 @@ public partial class FlowsPage
         labelDraft = link.Label;
     }
 
+    private Task PresentScreen(BlowNodeMouseEvent args)
+    {
+        return Flow is { } flow && Array.FindIndex(flow.Screens, s => s.Id == args.Node.Id) is var index and >= 0
+            ? Present(index)
+            : Task.CompletedTask;
+    }
+
+    private void RemoveScreen(string screenId)
+    {
+        if (FlowId is not null)
+        {
+            reviewSession.RemoveScreen(FlowId, screenId);
+        }
+    }
+
+    private void DeleteLink()
+    {
+        if (FlowId is not null && editingLinkId is not null)
+        {
+            reviewSession.RemoveLink(FlowId, editingLinkId);
+        }
+
+        editingLinkId = null;
+    }
+
     private void SaveLabel()
     {
         if (FlowId is not null && editingLinkId is not null)

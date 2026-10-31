@@ -706,7 +706,7 @@
         <value>Delete</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Double-click inside the Netherlands to add a building. Select one and press Delete to remove it.</value>
+        <value>Double-click or double-tap inside the Netherlands to add a building. To remove one, select it and press Delete, or use its delete button in the list.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} is saved</value>
@@ -2272,7 +2272,7 @@
         <value>Theme and components</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>Everything here comes from the app's own theme. Try the switches on the right to see it change.</value>
+        <value>Everything here comes from the app's own theme. Try the Workbench's theme options to see it change.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>Colors</value>
@@ -2470,9 +2470,15 @@
         <value>{0} of {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Drag a screen to move it. Drag from the dot on a screen's right edge to another screen to draw an arrow, double-click an arrow to name it, and press Delete to remove what you selected.</value>
+        <value>Drag a screen to move it and double-click it to try it. Drag from the dot on a screen's right edge to another screen to draw an arrow, and double-click an arrow to name or delete it.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Delete this flow?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Remove this screen</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Delete arrow</value>
     </data>
 </root>

@@ -14,60 +14,63 @@
 }
 else if (isSmallScreen)
 {
-    <div class="inline-surface">
-        @if (isRestored)
-        {
-            <PreviewSurface @key="store.SelectedPane.Scenario" Page="pageInfo" />
-        }
-    </div>
-
-    @if (isPickingInline)
-    {
-        <div class="pick-banner" role="status">
-            <span>@Localizer[nameof(WorkbenchStrings.TapToComment)]</span>
-            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="CancelInlinePick">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
-        </div>
-    }
-
-    <BitButton Float Rounded Draggable
-               FloatOffset="1.25rem"
-               FloatPosition="BitPosition.BottomEnd"
-               Class="tools-button"
-               IconName="@BitIconName.Design"
-               OnClick="() => isToolsOpen = true"
-               Title="@Localizer[nameof(WorkbenchStrings.Tools)]"
-               AriaLabel="@Localizer[nameof(WorkbenchStrings.Tools)]" />
-
-    <BitPanel @bind-IsOpen="isToolsOpen" ModeFull Placement="BitPlacement.End" Class="tools-panel">
-        <Header>
-            <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="tools-header">
-                <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="24" height="24" />
-                <BitText Typography="BitTypography.H6">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</BitText>
-                <BitSpacer />
-                <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Camera" OnClick="() => DownloadScreenshot(store.SelectedPane)"
-                           Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" />
-                <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="() => isToolsOpen = false"
-                           Title="@Localizer[nameof(WorkbenchStrings.Close)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" />
-            </BitStack>
-        </Header>
-        <Body>
-            @if (pendingComment is null)
+    <div class="phone-layout">
+        <div class="inline-surface">
+            @if (isRestored)
             {
-                <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
+                <PreviewSurface @key="store.SelectedPane.Scenario" Page="pageInfo" />
             }
-            <ReviewPanel Page="pageInfo"
-                         PendingAnchor="pendingComment?.Anchor"
-                         SelectedThreadId="@selectedThreadId"
-                         ReviewerName="@ReviewerName"
-                         ReviewerNameChanged="store.NameReviewer"
-                         OnSelect="SelectThread"
-                         OnShow="ShowThread"
-                         OnSend="SendComment"
-                         OnCancel="CancelComment"
-                         OnPin="PinInline" />
-            <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
-        </Body>
-    </BitPanel>
+        </div>
+
+        @if (isPickingInline)
+        {
+            <div class="pick-banner" role="status">
+                <span>@Localizer[nameof(WorkbenchStrings.TapToComment)]</span>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="CancelInlinePick">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+            </div>
+        }
+
+        <BitButton Float Rounded Draggable
+                   FloatOffset="1.25rem"
+                   FloatPosition="BitPosition.BottomEnd"
+                   Class="tools-button"
+                   IconName="@BitIconName.Design"
+                   OnClick="() => isToolsOpen = true"
+                   Title="@Localizer[nameof(WorkbenchStrings.Tools)]"
+                   AriaLabel="@Localizer[nameof(WorkbenchStrings.Tools)]" />
+
+        <BitPanel @bind-IsOpen="isToolsOpen" ModeFull Placement="BitPlacement.End" Class="tools-panel">
+            <Header>
+                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="tools-header">
+                    <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="24" height="24" />
+                    <BitText Typography="BitTypography.H6">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</BitText>
+                    <BitSpacer />
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Camera" OnClick="() => DownloadScreenshot(store.SelectedPane)"
+                               Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" />
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="() => isToolsOpen = false"
+                               Title="@Localizer[nameof(WorkbenchStrings.Close)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" />
+                </BitStack>
+            </Header>
+            <Body>
+                @if (pendingComment is null)
+                {
+                    <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
+                }
+                <ReviewPanel Page="pageInfo"
+                             PendingAnchor="pendingComment?.Anchor"
+                             SelectedThreadId="@selectedThreadId"
+                             ReviewerName="@ReviewerName"
+                             ReviewerNameChanged="store.NameReviewer"
+                             OnSelect="SelectThread"
+                             OnShow="ShowThread"
+                             OnSend="SendComment"
+                             OnCancel="CancelComment"
+                             OnPin="PinInline" />
+                <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
+                <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
+            </Body>
+        </BitPanel>
+    </div>
 }
 else
 {

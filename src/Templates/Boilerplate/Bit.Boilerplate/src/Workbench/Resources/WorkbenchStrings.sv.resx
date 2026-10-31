@@ -706,7 +706,7 @@
         <value>Ta bort</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>Dubbelklicka i Nederländerna för att lägga till en byggnad. Markera en och tryck på Delete för att ta bort den.</value>
+        <value>Dubbelklicka eller dubbeltryck i Nederländerna för att lägga till en byggnad. Ta bort en genom att markera den och trycka på Delete, eller använd dess borttagningsknapp i listan.</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} har sparats</value>
@@ -2170,7 +2170,7 @@
         <value>Tema och komponenter</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>Allt här kommer från appens eget tema. Prova alternativen till höger och se hur det ändras.</value>
+        <value>Allt här kommer från appens eget tema. Prova arbetsbänkens temaalternativ och se hur det ändras.</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>Färger</value>
@@ -2470,9 +2470,15 @@
         <value>{0} av {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Dra en skärm för att flytta den. Dra från punkten på en skärms högra kant till en annan skärm för att rita en pil, dubbelklicka på en pil för att namnge den och tryck på Delete för att ta bort det du har markerat.</value>
+        <value>Dra en skärm för att flytta den och dubbelklicka på den för att prova den. Dra från punkten på en skärms högra kant till en annan skärm för att rita en pil, och dubbelklicka på en pil för att namnge eller ta bort den.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Ta bort det här flödet?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Ta bort den här skärmen</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Ta bort pilen</value>
     </data>
 </root>

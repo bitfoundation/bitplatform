@@ -70,6 +70,7 @@
                         OnNodesDelete="RemoveScreens"
                         OnEdgesDelete="RemoveLinks"
                         OnEdgeDoubleClick="EditLabel"
+                        OnNodeDoubleClick="PresentScreen"
                         AriaLabel="@flow.Name">
                 <NodeTemplate Context="node">
                     @if (node.Data is WorkbenchFlowScreen screen)
@@ -83,6 +84,13 @@
                                    title="@Localizer[nameof(WorkbenchStrings.OpenInWorkbench)]" aria-label="@Localizer[nameof(WorkbenchStrings.OpenInWorkbench)]">
                                     <BitIcon IconName="@BitIconName.OpenInNewWindow" />
                                 </a>
+                                @if (reviewSession.CanWrite)
+                                {
+                                    <button type="button" class="screen-remove nodrag" @onclick="() => RemoveScreen(screen.Id)"
+                                            title="@Localizer[nameof(WorkbenchStrings.RemoveScreen)]" aria-label="@Localizer[nameof(WorkbenchStrings.RemoveScreen)]">
+                                        <BitIcon IconName="@BitIconName.Delete" />
+                                    </button>
+                                }
                             </div>
                             <DeviceFrame Device="screen.Scenario.DevicePreset" Rotated="screen.Scenario.Rotated">
                                 @if (sources.GetValueOrDefault(screen.Id) is { } source)
@@ -150,6 +158,8 @@
                     <div class="label-actions">
                         <BitButton OnClick="SaveLabel">@Localizer[nameof(WorkbenchStrings.Save)]</BitButton>
                         <BitButton Variant="BitVariant.Text" OnClick="() => editingLinkId = null">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                        <BitSpacer />
+                        <BitButton Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete" OnClick="DeleteLink">@Localizer[nameof(WorkbenchStrings.DeleteArrow)]</BitButton>
                     </div>
                 </div>
             }

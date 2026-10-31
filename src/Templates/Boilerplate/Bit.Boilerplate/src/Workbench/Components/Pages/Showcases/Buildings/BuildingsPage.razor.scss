@@ -119,6 +119,8 @@
 
 .name-cell {
     gap: 0.625rem;
+    min-width: 0;
+    max-width: 100%;
     display: inline-flex;
     align-items: center;
 }
@@ -129,7 +131,10 @@
     flex-direction: column;
 
     .name {
+        overflow: hidden;
         font-weight: 600;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .city {

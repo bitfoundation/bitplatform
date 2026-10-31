@@ -169,15 +169,16 @@
 }
 
 .inline-surface {
-    min-height: 100dvh;
+    height: 100dvh;
+    overflow-y: auto;
 }
 
-::deep .tools-button {
-    z-index: 900;
+.phone-layout ::deep .tools-button {
+    bottom: calc(#{$bit-env-inset-bottom} + 4.5rem);
     box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.45);
 }
 
-::deep .tools-header {
+.phone-layout ::deep .tools-header {
     width: 100%;
 }
 

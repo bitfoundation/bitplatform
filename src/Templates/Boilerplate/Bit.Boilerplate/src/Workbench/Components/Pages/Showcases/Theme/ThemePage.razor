@@ -80,11 +80,11 @@
             <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeDisabled)]" Value="@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]" IsEnabled="false" />
             <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@Localizer[nameof(WorkbenchStrings.ThemeChoice)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeChoicePlaceholder)]" />
             <BitSearchBox Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeSearch)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeSearch)]" />
-            <BitSlider Label="@Localizer[nameof(WorkbenchStrings.ThemeAmount)]" Min="0" Max="100" Value="40" ShowValue />
+            <BitSlider Label="@Localizer[nameof(WorkbenchStrings.ThemeAmount)]" Min="0" Max="100" DefaultValue="40" ShowValue />
             <div class="column">
-                <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeOption), 1]" Value="true" />
+                <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeOption), 1]" DefaultValue="true" />
                 <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeOption), 2]" />
-                <BitToggle Label="@Localizer[nameof(WorkbenchStrings.ThemeToggle)]" Value="true" />
+                <BitToggle Label="@Localizer[nameof(WorkbenchStrings.ThemeToggle)]" DefaultValue="true" />
             </div>
             <BitChoiceGroup Items="choices" Label="@Localizer[nameof(WorkbenchStrings.ThemeChoice)]" DefaultValue="@("1")" />
         </div>

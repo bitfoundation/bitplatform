@@ -706,7 +706,7 @@
         <value>删除</value>
     </data>
     <data name="BuildingsMapHint" xml:space="preserve">
-        <value>在荷兰境内双击即可添加建筑。选中一座建筑后按 Delete 键即可删除。</value>
+        <value>在荷兰境内双击或轻点两下即可添加建筑。要删除建筑，请选中它后按 Delete 键，或使用列表中的删除按钮。</value>
     </data>
     <data name="BuildingsSaved" xml:space="preserve">
         <value>{0} 已保存</value>
@@ -2170,7 +2170,7 @@
         <value>主题与组件</value>
     </data>
     <data name="ThemeSubtitle" xml:space="preserve">
-        <value>这里的一切都来自应用自己的主题。试试右侧的选项，看看它如何变化。</value>
+        <value>这里的一切都来自应用自己的主题。试试工作台的主题选项，看看它如何变化。</value>
     </data>
     <data name="ThemeColors" xml:space="preserve">
         <value>颜色</value>
@@ -2470,9 +2470,15 @@
         <value>第 {0} 个，共 {1} 个</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>拖动屏幕即可移动它。从屏幕右边缘的圆点拖到另一个屏幕即可画出箭头，双击箭头可为其命名，按 Delete 键可删除所选内容。</value>
+        <value>拖动屏幕即可移动它，双击屏幕即可试用。从屏幕右边缘的圆点拖到另一个屏幕即可画出箭头，双击箭头可为其命名或将其删除。</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>删除此流程？</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>移除此屏幕</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>删除箭头</value>
     </data>
 </root>
