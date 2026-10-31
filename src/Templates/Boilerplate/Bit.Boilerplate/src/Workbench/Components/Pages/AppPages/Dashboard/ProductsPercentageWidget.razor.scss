@@ -1,11 +1,6 @@
-@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
 @import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
 
 section {
-    width: calc(50% - 0.75rem);
+    width: 100%;
     --bit-Chart-surface-color: #{$bit-color-background-secondary};
-
-    @include lt-md {
-        width: 100%;
-    }
 }

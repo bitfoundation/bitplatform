@@ -1,5 +1,8 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+//#if (module == "Admin")
+using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
+//#endif
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
@@ -37,6 +40,9 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddBitBlexStore<AssistantStore>();
             services.AddBitBlexStore<ShiftsStore>();
             services.AddBitBlexStore<SettingsStore>();
+            //#if (module == "Admin")
+            services.AddBitBlexStore<DashboardStore>();
+            //#endif
             services.AddScoped<IBlexStorage, WorkbenchStateStorage>();
             services.AddBitBlexPersistence();
             services.AddScoped<IBitAccentColorStore, ChromeAccentStore>();
