@@ -361,6 +361,11 @@ interface DecodeOptions {
     sourceHeight?: number;
     maxPixels?: number;
     autoOrient?: boolean;
+    /**
+     * .NET let the image through only because it is decoded smaller: decoded whole, it would be far past the pixel
+     * limit, so a browser that cannot resize while decoding refuses it instead.
+     */
+    resizeRequired?: boolean;
 }
 
 /** Decodes bytes into an ImageBitmap, preferring createImageBitmap and falling back to an <img> element. */
@@ -376,10 +381,13 @@ async function decodeToBitmap(blob: Blob, options?: DecodeOptions): Promise<Imag
             }
             return await createImageBitmap(blob, init);
         } catch (e) {
+            // Retried bare, or through an <img>, the image is decoded whole.
+            if (options?.resizeRequired) throw e;
             // Some browsers reject the options bag; retry bare before falling back.
             try { return await createImageBitmap(blob); } catch { /* fall through */ }
         }
     }
+    if (options?.resizeRequired) throw new Error('This browser cannot decode the image at a smaller size, and it is too large to decode whole.');
     const url = URL.createObjectURL(blob);
     try {
         const img = new Image();
@@ -650,14 +658,18 @@ function probeMaxCanvasArea() {
     }
 }
 
-/** Reads the first image on the clipboard, or null when there is none. */
-export async function readClipboardImage() {
+/**
+ * Reads the first image on the clipboard, or null when there is none. One larger than maxBytes is not read at all: the
+ * result carries only its size, flagged tooLarge.
+ */
+export async function readClipboardImage(maxBytes?: number) {
     if (!navigator.clipboard || !navigator.clipboard.read) throw new Error('This browser does not support reading images from the clipboard.');
     const items = await navigator.clipboard.read();
     for (const item of items) {
         const type = item.types.find((t) => t.startsWith('image/'));
         if (!type) continue;
         const blob = await item.getType(type);
+        if (maxBytes && blob.size > maxBytes) return new ByteResult(new Uint8Array(0), { mimeType: type, tooLarge: true, size: blob.size });
         return new ByteResult(new Uint8Array(await blobToArrayBuffer(blob)), { mimeType: type });
     }
     return null;
@@ -714,7 +726,7 @@ export async function fetchImage(url: string, withCredentials: boolean, maxBytes
         await response.body?.cancel();
         return null;
     }
-    const chunks: BlobPart[] = [];
+    const chunks: Uint8Array[] = [];
     let total = 0;
     const reader = response.body?.getReader();
     while (reader) {
@@ -727,8 +739,14 @@ export async function fetchImage(url: string, withCredentials: boolean, maxBytes
         }
         chunks.push(value);
     }
-    const blob = new Blob(chunks, { type: response.headers.get('Content-Type') ?? '' });
-    return new ByteResult(new Uint8Array(await blobToArrayBuffer(blob)), { mimeType: blob.type });
+    // Copied once into a buffer of the counted size, rather than into a Blob and out of it again.
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.byteLength;
+    }
+    return new ByteResult(bytes, { mimeType: (response.headers.get('Content-Type') ?? '').toLowerCase() });
 }
 
 /** Triggers a browser download of the given bytes. */
@@ -812,7 +830,8 @@ export function measureText(text: string, font: string, letterSpacing?: number) 
  * Renders text to RGBA pixels using the platform text engine. Used by the browser text rasteriser so
  * system fonts, emoji and complex scripts render correctly without shipping a font.
  */
-export function renderText(text: string, font: string, color: string, maxWidth: number, letterSpacing: number, lineHeight: number, align?: CanvasTextAlign, maxPixels?: number) {
+export function renderText(text: string, font: string, color: string, maxWidth: number, letterSpacing: number, lineHeight: number, align?: CanvasTextAlign,
+    maxPixels?: number, maxBitmapWidth?: number, maxBitmapHeight?: number) {
     const probe = rentCanvas(1, 1);
     let metrics: ReturnType<typeof measureLines>;
     try {
@@ -827,8 +846,9 @@ export function renderText(text: string, font: string, color: string, maxWidth: 
     const pad = Math.ceil(metrics.fontSize * 0.35) + 2;
     const width = Math.max(1, Math.ceil(metrics.width) + pad * 2);
     const height = Math.max(1, Math.ceil(metrics.lines.length * metrics.lineHeight) + pad * 2);
-    // Refused before the canvas exists; .NET turns the marker into an ImageLimitExceededException.
-    if (maxPixels && width * height > maxPixels) throw new Error(`text-too-large:${width}x${height}`);
+    // Refused before the canvas exists, with the size alone; .NET turns that into an ImageLimitExceededException.
+    if ((maxPixels && width * height > maxPixels) || (maxBitmapWidth && width > maxBitmapWidth) || (maxBitmapHeight && height > maxBitmapHeight))
+        return new ByteResult(new Uint8Array(0), { width, height, tooLarge: true });
     const canvas = rentCanvas(width, height);
     try {
         const ctx = get2d(canvas);
@@ -1143,7 +1163,8 @@ const pixelTransport = {
     },
 
     /** Decodes a staged file into pixels, with the same options and limits as decode(). */
-    async decode(id: number, mimeType: string, autoOrient: boolean, maxWidth: number, maxHeight: number, maxPixels: number, sourceWidth: number, sourceHeight: number) {
+    async decode(id: number, mimeType: string, autoOrient: boolean, maxWidth: number, maxHeight: number, maxPixels: number, sourceWidth: number, sourceHeight: number,
+        resizeRequired: boolean) {
         const entry = stagedEntry(id);
         const options: DecodeOptions = { mimeType, autoOrient };
         if (maxWidth > 0) options.maxWidth = maxWidth;
@@ -1151,6 +1172,7 @@ const pixelTransport = {
         if (maxPixels > 0) options.maxPixels = maxPixels;
         if (sourceWidth > 0) options.sourceWidth = sourceWidth;
         if (sourceHeight > 0) options.sourceHeight = sourceHeight;
+        if (resizeRequired) options.resizeRequired = true;
         const { data, width, height } = await decodePixels(entry.data as Uint8Array, options, true);
         Object.assign(entry, { data, width, height });
     },

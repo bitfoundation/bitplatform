@@ -484,6 +484,72 @@ public sealed class AdversarialMetadataTests
         CollectionAssert.AreEqual(profile, PngContainer.ReadMetadata(real).IccProfile.ToArray());
     }
 
+    /// <summary>
+    /// The standard allows one iCCP chunk. A dropped profile leaves none read, so going by that, every further copy of a
+    /// bomb would be inflated up to the cap in turn; only the first chunk is ever inflated.
+    /// </summary>
+    [TestMethod]
+    public void OnlyTheFirstIccProfileIsRead()
+    {
+        using var img = AdversarialGeometryTests.Noise(8, 8, 3);
+        var png = Codecs.Png.PngEncoder.Encode(img).Data;
+        var bomb = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+        var profile = new byte[1024];
+        new Random(9).NextBytes(profile);
+        var real = PngContainer.WriteMetadata(png, new ImageMetadata(null, profile, default, ImageFormat.Png));
+        var bombChunk = PngContainer.EnumerateChunks(bomb).Single(c => c.TypeName == "iCCP");
+        var realChunk = PngContainer.EnumerateChunks(real).Single(c => c.TypeName == "iCCP");
+
+        // The bomb, repeated a thousand times, then a valid profile, all before the image data.
+        var ihdrEnd = 8 + 25;
+        var repeated = png[..ihdrEnd]
+            .Concat(Enumerable.Repeat(bomb.AsSpan(bombChunk.Offset, bombChunk.TotalLength).ToArray(), 1000).SelectMany(c => c))
+            .Concat(real.AsSpan(realChunk.Offset, realChunk.TotalLength).ToArray())
+            .Concat(png[ihdrEnd..])
+            .ToArray();
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var metadata = PngContainer.ReadMetadata(repeated);
+        Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"Reading took {watch.ElapsedMilliseconds} ms.");
+        Assert.IsTrue(metadata.IccProfile.IsEmpty);
+
+        var first = png[..ihdrEnd].Concat(real.AsSpan(realChunk.Offset, realChunk.TotalLength).ToArray())
+            .Concat(bomb.AsSpan(bombChunk.Offset, bombChunk.TotalLength).ToArray()).Concat(png[ihdrEnd..]).ToArray();
+        CollectionAssert.AreEqual(profile, PngContainer.ReadMetadata(first).IccProfile.ToArray());
+    }
+
+    /// <summary>
+    /// The reader keeps a tag in whichever directory a file put it, and the writer puts it back there, so the sensitive
+    /// tags are stripped from every directory, not only the one the standard names.
+    /// </summary>
+    [TestMethod]
+    public async Task StripSensitiveRemovesASensitiveTagFromWhicheverDirectoryHoldsIt()
+    {
+        var primary = new ExifDirectory()
+            .With(ExifTag.Make, ExifValue.FromString("TestCam"))
+            .With(ExifTag.OwnerName, ExifValue.FromString("Owner In Ifd0"))
+            .With(ExifTag.BodySerialNumber, ExifValue.FromString("SN-IFD0-123"));
+        var exifDirectory = new ExifDirectory()
+            .With(ExifTag.Iso, ExifValue.FromShort(100))
+            .With(ExifTag.Artist, ExifValue.FromString("Artist In ExifIfd"))
+            .With(ExifTag.WindowsAuthor, ExifValue.FromString("Author In ExifIfd"));
+        var exif = new ExifData(primary, exifDirectory, null, null, default);
+
+        var stripped = exif.StripSensitive();
+        foreach (var directory in new[] { stripped.Primary, stripped.Exif, stripped.Interop })
+            foreach (var tag in new[] { ExifTag.OwnerName, ExifTag.BodySerialNumber, ExifTag.Artist, ExifTag.WindowsAuthor })
+                Assert.IsFalse(directory.Contains(tag), $"tag 0x{tag:X4} survived StripSensitive");
+        Assert.AreEqual("TestCam", stripped.Make);
+        Assert.IsTrue(stripped.Exif.Contains(ExifTag.Iso));
+
+        var processor = new ImageProcessor();
+        using var img = AdversarialGeometryTests.Noise(16, 16, 23);
+        img.Metadata = new ImageMetadata(exif, sourceFormat: ImageFormat.Jpeg);
+        var encoded = await processor.EncodeAsync(img, new ImageExportOptions { Format = ImageFormat.Jpeg, Metadata = MetadataPolicy.StripSensitive });
+        foreach (var secret in new[] { "Owner In Ifd0", "SN-IFD0-123", "Artist In ExifIfd", "Author In ExifIfd" })
+            Assert.AreEqual(-1, encoded.Data.AsSpan().IndexOf(System.Text.Encoding.ASCII.GetBytes(secret)), $"kept {secret}");
+    }
+
     [TestMethod]
     public async Task PreservePolicyKeepsDescriptiveMetadataThroughAJpegRoundTrip()
     {

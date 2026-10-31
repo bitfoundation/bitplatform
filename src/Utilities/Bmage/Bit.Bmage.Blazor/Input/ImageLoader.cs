@@ -106,7 +106,10 @@ public sealed class ImageLoader
         var processor = await _processors.GetAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("readClipboardImage", cancellationToken).ConfigureAwait(false);
+            using var result = await _interop.InvokeForBytesAsync<ClipboardInfo>("readClipboardImage", cancellationToken, MaxSourceBytes).ConfigureAwait(false);
+            // An image past the limit is refused by its size, before the browser reads it.
+            if (result.Info is { TooLarge: true } refused)
+                throw new ImageLimitExceededException($"The image on the clipboard is {refused.Size:N0} bytes, larger than the {MaxSourceBytes:N0} bytes allowed.");
             if (!result.HasValue || result.Bytes.Length == 0) return null;
             return await processor.DecodeAsync(result.Bytes.Memory, options ?? new DecodeOptions { Limits = processor.Limits }, cancellationToken).ConfigureAwait(false);
         }
@@ -226,6 +229,10 @@ public sealed class ImageLoader
     {
         [JsonPropertyName("mimeType")] public string? MimeType { get; set; }
         [JsonPropertyName("byteLength")] public long ByteLength { get; set; }
+
+        /// <summary>Set when the clipboard's image was past the source limit and left unread; <see cref="Size"/> is then its length.</summary>
+        [JsonPropertyName("tooLarge")] public bool TooLarge { get; set; }
+        [JsonPropertyName("size")] public long Size { get; set; }
     }
 }
 

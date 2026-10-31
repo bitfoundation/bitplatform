@@ -166,7 +166,8 @@ internal sealed class JpegDecoderCore
         if (d.Length < 4 || d[0] != 0xFF || d[1] != 0xD8) throw new ImageDecodeException("Not a JPEG file.");
         _pos = 2;
         var scans = 0;
-        while (_pos < d.Length)
+        var complete = false;
+        while (!complete && _pos < d.Length)
         {
             _ct.ThrowIfCancellationRequested();
             // Find next marker.
@@ -199,7 +200,14 @@ internal sealed class JpegDecoderCore
                     break;
                 case 0xDA:
                     if (!_frameSeen) throw new ImageDecodeException("JPEG scan before frame header.");
-                    if (scans == (_progressive ? MaxProgressiveScans : _components.Length)) throw new ImageDecodeException("JPEG has more scans than its frame allows.");
+                    // Each scan costs a pass over the whole image, so decoding stops at as many as the frame allows.
+                    // A scan past them, repeated by a faulty encoder or left over after the image, adds nothing, so the
+                    // image decoded so far is kept rather than refused.
+                    if (scans == (_progressive ? MaxProgressiveScans : _components.Length))
+                    {
+                        complete = true;
+                        continue;
+                    }
                     _pos = segEnd;
                     ReadScan(seg);
                     scans++;

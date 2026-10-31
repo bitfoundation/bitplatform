@@ -20,7 +20,8 @@ new ImageExportOptions { Metadata = MetadataPolicy.Preserve }
 | `Preserve` | everything the target format can carry | the embedded thumbnail, which would be stale |
 
 The names and comments go from whichever field holds them, including the author and comment that Windows Explorer writes
-into fields of its own. The copyright notice stays: it is there to be published.
+into fields of its own, and every sensitive field goes from whichever EXIF directory a file put it in, not only the one
+the standard names. The copyright notice stays: it is there to be published.
 
 `StripSensitive` drops XMP entirely. XMP can carry location and device identifiers of its own, and there is no reliable
 way to filter it field by field, so it is safer to drop it than to pass through something unexamined.

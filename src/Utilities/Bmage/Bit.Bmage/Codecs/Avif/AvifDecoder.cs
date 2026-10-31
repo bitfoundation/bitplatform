@@ -23,6 +23,16 @@ public sealed class AvifDecoder : IImageDecoder
     private static readonly string[] AlphaUrns = ["urn:mpeg:mpegB:cicp:systems:auxiliary:alpha", "urn:mpeg:hevc:2015:auxid:1"];
 
     public ImageInfo? Identify(ReadOnlySpan<byte> data)
+        => ReadSize(data, cropped: true) is { } size ? new ImageInfo(size.Width, size.Height, ImageFormat.Avif, Orientation.Normal, size.HasAlpha) : null;
+
+    /// <summary>
+    /// The upright size a decoder allocates for the image: the whole coded image, before its clean aperture crops it to
+    /// the size <see cref="Identify"/> reports.
+    /// </summary>
+    internal static (int Width, int Height)? UncroppedSize(ReadOnlySpan<byte> data)
+        => ReadSize(data, cropped: false) is { } size ? (size.Width, size.Height) : null;
+
+    private static (int Width, int Height, bool HasAlpha)? ReadSize(ReadOnlySpan<byte> data, bool cropped)
     {
         if (ImageFormats.Detect(data) != ImageFormat.Avif) return null;
         try
@@ -33,7 +43,7 @@ public sealed class AvifDecoder : IImageDecoder
             {
                 if (file.TrackAv1C is null) return null;
                 var (trackWidth, trackHeight) = file.TrackSize;
-                return trackWidth > 0 && trackHeight > 0 ? new ImageInfo(trackWidth, trackHeight, ImageFormat.Avif, Orientation.Normal, false) : null;
+                return trackWidth > 0 && trackHeight > 0 ? (trackWidth, trackHeight, false) : null;
             }
             if (file.FindProperty(primary, AvifContainer.Ispe) is not { Length: >= 12 } ispe) return null;
             var p = file.PropertyData(ispe);
@@ -41,8 +51,9 @@ public sealed class AvifDecoder : IImageDecoder
             var height = (int)Math.Min(BinaryPrimitives.ReadUInt32BigEndian(p[8..]), int.MaxValue);
             if (width <= 0 || height <= 0) return null;
             var (crop, orientation) = Transforms(file, primary, width, height);
-            (width, height) = orientation.SwapsDimensions() ? (crop.Height, crop.Width) : (crop.Width, crop.Height);
-            return new ImageInfo(width, height, ImageFormat.Avif, Orientation.Normal, FindAlpha(file, primary) is not null);
+            if (cropped) (width, height) = (crop.Width, crop.Height);
+            if (orientation.SwapsDimensions()) (width, height) = (height, width);
+            return (width, height, FindAlpha(file, primary) is not null);
         }
         catch (Exception ex) when (ex is ImageException or ArgumentException or IndexOutOfRangeException or OverflowException)
         {

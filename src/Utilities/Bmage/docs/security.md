@@ -55,15 +55,18 @@ IFD references and absurd component counts are ignored, and parsing continues. T
 different lengths and corrupt its offsets, asserting only that nothing escapes. The values copied out of one EXIF block,
 its thumbnail included, share a 4 MB budget: a PNG or WebP can carry a far larger block than a JPEG's 64 KB segment, and
 hundreds of entries pointing at one large value would otherwise each copy it. A PNG's colour profile is inflated only up
-to 4 MB and dropped past that, so a small compressed profile cannot unpack into gigabytes.
+to 4 MB and dropped past that, so a small compressed profile cannot unpack into gigabytes. Only the first profile is
+read, as the PNG standard allows only one, so a file repeating it cannot have each copy inflated in turn.
 
 The GIF LZW decoder bounds its code table and dictionary explicitly, because the classic GIF attack is a stream that
-drives the decoder past the end of its tables. A frame overhanging the logical screen is clipped to it, as browsers do,
-and its own size is checked against `ImageLimits` before its pixels are allocated.
+drives the decoder past the end of its tables. A frame overhanging the logical screen is clipped to it, its own size is
+checked against `ImageLimits` before it is decoded, and it is decoded a row at a time, so the part outside the screen is
+never stored.
 
 The JPEG decoder walks the whole image once per scan, however little the scan holds, so a few bytes repeating a scan
-header would each cost a full pass. A baseline image may have no more scans than components, as the standard requires,
-and a progressive one at most 500.
+header would each cost a full pass. It decodes no more scans than a baseline image has components, as the standard
+requires, and no more than 500 of a progressive one; any scans past those are ignored, and the image decoded so far is
+kept.
 
 The WebP decoder checks the canvas and every frame against `ImageLimits` before allocating, validates every prefix code
 it builds as complete, bounds every back reference by the pixels already decoded, and rejects a lossless stream that
@@ -90,7 +93,8 @@ validated as any JSON document is, anything malformed, a damaged archive include
 `ImageDocumentFormatException`, and a project that fails to load returns every buffer it had decoded.
 
 A document's operations are as untrusted as its images. A blur, sharpen or high-pass costs the same whatever its radius,
-a resize fused with a crop is checked against `ImageLimits` at the full resized size, as the two steps apart would be,
+a radius or amount that is infinite or not a number is refused, a redaction's strength is clamped to a finite one, a
+resize fused with a crop is checked against `ImageLimits` at the full resized size, as the two steps apart would be,
 and shaping text with a long run of combining marks takes time in proportion to its length.
 
 ## SVG is refused
@@ -121,7 +125,8 @@ Credentials are not sent unless you opt in with `ImageSource.FromUrl(url, withCr
 
 The download is held to `BitBmageOptions.MaxSourceBytes`, as an upload is. A response declaring more is refused before
 its body is read, and one sending more is cut off at the limit; either way the load fails with an
-`ImageLimitExceededException`.
+`ImageLimitExceededException`. An image read from the clipboard is held to the same limit, and refused by its size
+before the browser reads it.
 
 If your application accepts a URL from a user, validate it against your own allowlist first. The library cannot know
 which hosts you consider acceptable, and a URL fetched by the browser can be used to probe your users' network.
@@ -137,10 +142,15 @@ defences are structural:
 - Batch concurrency is bounded and defaults to 2.
 - `ImageCapabilities.SuggestedMaxWorkingDimension` reports a device-appropriate cap based on reported memory.
 - `MaxCanvasDimension` is probed, because exceeding a browser's canvas limit silently produces a blank image.
-- The browser decodes an image at full size before it can be shrunk to `ImageLimits.MaxPixels`, so a header declaring
-  more than four times that is refused before the browser sees the file.
+- The browser decodes an image at full size before it can be shrunk to `ImageLimits.MaxPixels`, so an image it would
+  decode at more than four times that is refused before the browser sees the file. The size is the one the browser
+  decodes at, which can be larger than the header's: a GIF's first frame grows the canvas past its logical screen, and
+  an AVIF is decoded whole before its clean aperture crops it. With `DecodeOptions.MaxSize` the browser decodes straight
+  to the smaller size, so that is the size checked; an image allowed only on the strength of that resize is refused,
+  rather than retried at full size, when the browser rejects the resize. A file whose size cannot be read is refused too.
 - `BrowserTextRasterizer` refuses text whose bitmap would exceed its `Limits`, which the services take from
-  `BitBmageOptions.Limits`, before the browser allocates a canvas for it.
+  `BitBmageOptions.Limits`, before the browser allocates a canvas for it. Its cache holds at most 64 MB of bitmaps
+  besides the newest, and is emptied when the limits change.
 
 `ImageLimits` refuses absurd dimensions; a `BudgetedPixelAllocator` refuses absurd totals. Give each request on a server,
 or each editor session in a browser, its own budget, and an image that would need more than its share fails with

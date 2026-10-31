@@ -194,6 +194,8 @@ public sealed class AdversarialFilterTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.NaN));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.PositiveInfinity));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(-1f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(float.PositiveInfinity));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, 0f));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.NaN));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.PositiveInfinity));

@@ -54,8 +54,19 @@ public sealed class BrowserImageDecoder : IImageDecoder
             ImageFormat.Gif => new Gif.GifDecoder().Identify(data),
             ImageFormat.WebP => new WebP.WebPDecoder().Identify(data),
             ImageFormat.Avif => new Avif.AvifDecoder().Identify(data),
+            ImageFormat.Tiff => IdentifyTiff(data),
             _ => null,
         };
+    }
+
+    /// <summary>The size and orientation of a TIFF's first image, the one the browsers that read TIFF show.</summary>
+    private static ImageInfo? IdentifyTiff(ReadOnlySpan<byte> data)
+    {
+        var width = ExifReader.ReadPrimaryNumber(data, ExifTag.ImageWidth);
+        var height = ExifReader.ReadPrimaryNumber(data, ExifTag.ImageLength);
+        if (width is not (> 0 and <= int.MaxValue) || height is not (> 0 and <= int.MaxValue)) return null;
+        var orientation = ExifReader.ReadPrimaryNumber(data, ExifTag.Orientation) is uint o and >= 1 and <= 8 ? (Orientation)o : Orientation.Normal;
+        return new ImageInfo((int)width.Value, (int)height.Value, ImageFormat.Tiff, orientation);
     }
 
     /// <summary>Reads the dimensions using the browser, for a format passed to the constructor that no managed header reader covers.</summary>
@@ -90,14 +101,11 @@ public sealed class BrowserImageDecoder : IImageDecoder
 
         // The browser can decode straight to a smaller bitmap, which is what keeps a 48 megapixel phone photo from
         // ever existing at full size on a memory constrained device. It only preserves the aspect ratio when told a
-        // single axis, so pass the header dimensions along and let the browser side pick the constraining one.
+        // single axis, so pass the header dimensions along and let the browser side pick the constraining one. Reading
+        // them is cheap: no format's header reader copies its metadata out.
         var header = Identify(data.Span);
-        // Shrinking to the pixel limit happens only once the browser has decoded at full size, so a header far past the
-        // limit is refused before the browser sees it; four times the limit still leaves a large photo room to shrink.
-        var scalable = options.Limits.MaxPixels > long.MaxValue / 4 ? long.MaxValue : options.Limits.MaxPixels * 4;
-        if (header is { Width: > 0, Height: > 0 } && (long)header.Width * header.Height > scalable)
-            throw new ImageLimitExceededException($"Image dimensions {header.Width}x{header.Height} exceed four times the configured limit of {options.Limits.MaxPixels} pixels.");
         var maxPixels = options.Limits.MaxPixels < long.MaxValue ? options.Limits.MaxPixels : (long?)null;
+        var resizeRequired = maxPixels is not null && CheckDecodedSize(data.Span, format, header, options);
         if (OperatingSystem.IsBrowser())
         {
             ImageBuffer decoded;
@@ -105,7 +113,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
             {
                 decoded = await BrowserPixels.DecodeAsync(_interop, data, format.GetMimeType(), options.AutoOrient,
                     options.MaxSize?.Width ?? 0, options.MaxSize?.Height ?? 0, maxPixels ?? 0,
-                    header?.DisplaySize.Width ?? 0, header?.DisplaySize.Height ?? 0, options.Limits, allocator, cancellationToken).ConfigureAwait(false);
+                    header?.DisplaySize.Width ?? 0, header?.DisplaySize.Height ?? 0, resizeRequired, options.Limits, allocator, cancellationToken).ConfigureAwait(false);
             }
             catch (JSException ex)
             {
@@ -132,6 +140,7 @@ public sealed class BrowserImageDecoder : IImageDecoder
             MaxPixels = maxPixels,
             SourceWidth = header?.DisplaySize.Width,
             SourceHeight = header?.DisplaySize.Height,
+            ResizeRequired = resizeRequired,
         };
 
         BrowserBytes<BrowserImageInfo> result;
@@ -166,6 +175,55 @@ public sealed class BrowserImageDecoder : IImageDecoder
                 throw;
             }
         }
+    }
+
+    /// <summary>
+    /// Refuses an image the browser would decode far past the pixel limit. Shrinking to the limit happens only once the
+    /// browser has decoded, so this is decided from the file before the browser sees it; four times the limit still
+    /// leaves a large photo room to shrink. The size is the one the browser decodes at: a GIF's first frame can grow it
+    /// past the logical screen, and an AVIF is decoded whole before its clean aperture crops it. A file whose size cannot
+    /// be read is refused as well, since the browser's own reader might find a far larger one in it.
+    /// </summary>
+    /// <returns>
+    /// True when the image passes only because the browser is to decode it smaller: decoded whole, it would be past
+    /// four times the limit.
+    /// </returns>
+    private static bool CheckDecodedSize(ReadOnlySpan<byte> data, ImageFormat format, ImageInfo? header, DecodeOptions options)
+    {
+        var decoded = format switch
+        {
+            ImageFormat.Gif => Gif.GifDecoder.BrowserCanvasSize(data),
+            ImageFormat.Avif => Avif.AvifDecoder.UncroppedSize(data),
+            _ => header is { Width: > 0, Height: > 0 } ? (header.DisplaySize.Width, header.DisplaySize.Height) : null,
+        };
+        if (decoded is not { } size)
+            throw new ImageDecodeException($"The dimensions of this {format} image could not be read, so it cannot be checked against the pixel limit before the browser decodes it.");
+        var scalable = options.Limits.MaxPixels > long.MaxValue / 4 ? long.MaxValue : options.Limits.MaxPixels * 4;
+        if (DecodedPixels(size, header, options) > scalable)
+            throw new ImageLimitExceededException($"Image dimensions {size.Width}x{size.Height} exceed four times the configured limit of {options.Limits.MaxPixels} pixels.");
+        return (double)size.Width * size.Height > scalable;
+    }
+
+    /// <summary>
+    /// The pixels the browser decodes an image of the given upright size to. As resizeHint in bit-bmage.ts decides, told
+    /// one axis of <see cref="DecodeOptions.MaxSize"/> it decodes straight to that; told both, it needs the header's
+    /// size to pick the axis that constrains, and gets no hint when that already fits. Otherwise it decodes at full size.
+    /// </summary>
+    private static double DecodedPixels((int Width, int Height) size, ImageInfo? header, DecodeOptions options)
+    {
+        int maxWidth = options.MaxSize?.Width ?? 0, maxHeight = options.MaxSize?.Height ?? 0;
+        double scale;
+        if (maxWidth > 0 && maxHeight > 0)
+        {
+            if (header is not { Width: > 0, Height: > 0 }) return (double)size.Width * size.Height;
+            var source = header.DisplaySize;
+            if (source.Width <= maxWidth && source.Height <= maxHeight) return (double)size.Width * size.Height;
+            scale = (double)maxWidth / source.Width <= (double)maxHeight / source.Height ? (double)maxWidth / size.Width : (double)maxHeight / size.Height;
+        }
+        else if (maxWidth > 0) scale = (double)maxWidth / size.Width;
+        else if (maxHeight > 0) scale = (double)maxHeight / size.Height;
+        else return (double)size.Width * size.Height;
+        return Math.Ceiling(size.Width * scale) * Math.Ceiling(size.Height * scale);
     }
 
     private static ImageDecodeException DecodeFailed(ImageFormat format, JSException ex)
@@ -212,6 +270,12 @@ public sealed class BrowserImageDecoder : IImageDecoder
         /// </summary>
         [JsonPropertyName("sourceWidth")] public int? SourceWidth { get; set; }
         [JsonPropertyName("sourceHeight")] public int? SourceHeight { get; set; }
+
+        /// <summary>
+        /// The image passed the size check only because the browser is to decode it smaller, so a browser that cannot
+        /// resize while decoding refuses it rather than decoding it whole.
+        /// </summary>
+        [JsonPropertyName("resizeRequired")] public bool ResizeRequired { get; set; }
     }
 }
 

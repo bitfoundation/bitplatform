@@ -397,7 +397,7 @@ public sealed class SharpenFilter : RegionOperation
 {
     public SharpenFilter(float amount = 0.5f, float radius = 1f, float threshold = 0f, Rectangle? region = null) : base(region)
     {
-        if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
+        if (amount < 0 || !float.IsFinite(amount)) throw new ArgumentOutOfRangeException(nameof(amount));
         if (radius <= 0 || !float.IsFinite(radius)) throw new ArgumentOutOfRangeException(nameof(radius));
         Amount = amount; Radius = radius; Threshold = Math.Clamp(threshold, 0f, 1f);
     }

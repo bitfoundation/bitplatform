@@ -228,30 +228,36 @@ public class JsModuleContractTests : DemoTest
     }
 
     /// <summary>
-    /// Text whose bitmap would pass the pixel limit is refused before its canvas is made, with the marker .NET turns
-    /// into an ImageLimitExceededException.
+    /// Text whose bitmap would pass the pixel, width or height limit is refused before its canvas is made: the result
+    /// carries only its size, flagged tooLarge, which .NET turns into an ImageLimitExceededException.
     /// </summary>
     [TestMethod]
-    public async Task RenderingTextPastThePixelLimitIsRefusedBeforeDrawing()
+    public async Task RenderingTextPastTheLimitsIsRefusedBeforeDrawing()
     {
         var page = await OpenAsync("capabilities");
 
         var result = await EvaluateAgainstModuleAsync(page, """
-            const render = (maxPixels) => {
+            const render = (maxPixels, maxWidth, maxHeight) => {
                 try {
-                    const handle = m.renderText('Hello, world', '48px sans-serif', '#000', null, 0, 1.2, 'left', maxPixels);
+                    const handle = m.renderText('Hello, world', '48px sans-serif', '#000', null, 0, 1.2, 'left', maxPixels, maxWidth, maxHeight);
                     const info = handle.info();
                     handle.dispose();
-                    return `${info.width}x${info.height}`;
+                    return info.tooLarge ? `refused:${info.width}x${info.height}:${info.byteLength}` : `${info.width}x${info.height}`;
                 } catch (e) {
                     return 'error:' + String(e.message || e);
                 }
             };
-            return { within: render(10000000), past: render(100) };
+            return {
+                within: render(10000000, 16384, 16384),
+                pastPixels: render(100),
+                pastWidth: render(10000000, 50, 0),
+                pastHeight: render(10000000, 0, 10),
+            };
             """);
 
         Assert.MatchesRegex(@"^\d+x\d+$", result.GetProperty("within").GetString()!);
-        Assert.StartsWith("error:text-too-large:", result.GetProperty("past").GetString()!, StringComparison.Ordinal);
+        foreach (var refused in new[] { "pastPixels", "pastWidth", "pastHeight" })
+            Assert.MatchesRegex(@"^refused:\d+x\d+:0$", result.GetProperty(refused).GetString()!, refused);
     }
 
     /// <summary>

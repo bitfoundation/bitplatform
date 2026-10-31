@@ -365,15 +365,21 @@ public sealed class ExifData
     public ExifData WithoutLocation() => Gps.Count == 0 ? this : new ExifData(Primary, Exif, new ExifDirectory(), Interop, Thumbnail);
 
     /// <summary>
+    /// The tags <see cref="StripSensitive"/> removes. They go from every directory, not only the one the standard puts
+    /// them in: the reader keeps a tag in whichever directory a file put it, and the writer puts it back there.
+    /// </summary>
+    private static readonly ushort[] SensitiveTags =
+    [
+        ExifTag.GpsIfdPointer, ExifTag.Artist, ExifTag.WindowsAuthor, ExifTag.WindowsComment, ExifTag.MakerNote, ExifTag.UserComment,
+        ExifTag.ImageUniqueId, ExifTag.OwnerName, ExifTag.BodySerialNumber, ExifTag.LensSerialNumber,
+    ];
+
+    /// <summary>
     /// Removes privacy-sensitive fields: GPS, serial numbers, the owner's and the artist's names (Windows' author
     /// included), user comments (Windows' comment included), maker note, unique id and thumbnail.
     /// </summary>
     public ExifData StripSensitive()
-    {
-        var exif = Exif.Without(ExifTag.MakerNote, ExifTag.UserComment, ExifTag.ImageUniqueId, ExifTag.OwnerName, ExifTag.BodySerialNumber, ExifTag.LensSerialNumber);
-        var primary = Primary.Without(ExifTag.GpsIfdPointer, ExifTag.Artist, ExifTag.WindowsAuthor, ExifTag.WindowsComment);
-        return new ExifData(primary, exif, new ExifDirectory(), Interop, default);
-    }
+        => new(Primary.Without(SensitiveTags), Exif.Without(SensitiveTags), new ExifDirectory(), Interop.Without(SensitiveTags), default);
 
     /// <summary>Creates a minimal EXIF block with the given orientation.</summary>
     public static ExifData FromOrientation(Orientation orientation) => new ExifData().WithOrientation(orientation);

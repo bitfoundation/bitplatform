@@ -50,6 +50,38 @@ public static class ExifReader
         return new ExifData(primary, exif, gps, interop, thumbnail);
     }
 
+    /// <summary>
+    /// Reads one whole-number tag of the first directory without copying any value out, for a caller that needs only a
+    /// JPEG's orientation or a TIFF's size. Null when the tag is missing or holds something else.
+    /// </summary>
+    internal static uint? ReadPrimaryNumber(ReadOnlySpan<byte> data, ushort tag)
+    {
+        if (data.StartsWith("Exif\0\0"u8)) data = data[6..];
+        if (data.Length < 8) return null;
+        bool be;
+        if (data[0] == 'I' && data[1] == 'I' && data[2] == 0x2A && data[3] == 0) be = false;
+        else if (data[0] == 'M' && data[1] == 'M' && data[2] == 0 && data[3] == 0x2A) be = true;
+        else return null;
+
+        var offset = ReadU32(data, 4, be);
+        if (offset > (uint)data.Length - 2) return null;
+        var count = Math.Min((int)ReadU16(data, (int)offset, be), MaxEntries);
+        uint? value = null;
+        for (int i = 0, pos = (int)offset + 2; i < count && pos + 12 <= data.Length; i++, pos += 12)
+        {
+            if (ReadU16(data, pos, be) != tag || ReadU32(data, pos + 4, be) == 0) continue;
+            // A tag listed twice keeps its last readable value, as Read does.
+            value = (ExifType)ReadU16(data, pos + 2, be) switch
+            {
+                ExifType.Byte => data[pos + 8],
+                ExifType.Short => ReadU16(data, pos + 8, be),
+                ExifType.Long => ReadU32(data, pos + 8, be),
+                _ => value,
+            };
+        }
+        return value;
+    }
+
     private static ExifDirectory? ReadIfd(ReadOnlySpan<byte> data, uint offset, bool be, HashSet<uint> visited, ref int budget, out uint nextIfd)
     {
         nextIfd = 0;

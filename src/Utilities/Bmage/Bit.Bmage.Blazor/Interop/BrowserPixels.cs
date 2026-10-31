@@ -66,7 +66,7 @@ internal static partial class BrowserPixels
     /// of bit-bmage.js's decode options; zero means not set.
     /// </summary>
     public static async ValueTask<ImageBuffer> DecodeAsync(BrowserImageInterop interop, ReadOnlyMemory<byte> data, string mimeType, bool autoOrient,
-        int maxWidth, int maxHeight, long maxPixels, int sourceWidth, int sourceHeight, ImageLimits limits, IPixelAllocator allocator, CancellationToken cancellationToken)
+        int maxWidth, int maxHeight, long maxPixels, int sourceWidth, int sourceHeight, bool resizeRequired, ImageLimits limits, IPixelAllocator allocator, CancellationToken cancellationToken)
     {
         await interop.GetModuleAsync(cancellationToken).ConfigureAwait(false);
         var id = 0;
@@ -75,7 +75,7 @@ internal static partial class BrowserPixels
             // Staging copies the file into the browser, which fails like any other call into it (out of memory, or an
             // outdated cached module without these functions), so it is converted the same way.
             id = Stage(MemoryMarshal.AsMemory(data).Span, 0, 0);
-            await Decode(id, mimeType, autoOrient, maxWidth, maxHeight, maxPixels, sourceWidth, sourceHeight).ConfigureAwait(false);
+            await Decode(id, mimeType, autoOrient, maxWidth, maxHeight, maxPixels, sourceWidth, sourceHeight, resizeRequired).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             int width = Width(id), height = Height(id);
             if (width <= 0 || height <= 0) throw new ImageDecodeException("The browser returned no image data.");
@@ -151,7 +151,7 @@ internal static partial class BrowserPixels
     private static partial Task Scale(int id, int width, int height);
 
     [JSImport("globalThis.BitBmagePixels.decode")]
-    private static partial Task Decode(int id, string mimeType, bool autoOrient, int maxWidth, int maxHeight, [JSMarshalAs<JSType.Number>] long maxPixels, int sourceWidth, int sourceHeight);
+    private static partial Task Decode(int id, string mimeType, bool autoOrient, int maxWidth, int maxHeight, [JSMarshalAs<JSType.Number>] long maxPixels, int sourceWidth, int sourceHeight, bool resizeRequired);
 
     [JSImport("globalThis.BitBmagePixels.encode")]
     private static partial Task Encode(int id, string mimeType, double quality, string? background);
