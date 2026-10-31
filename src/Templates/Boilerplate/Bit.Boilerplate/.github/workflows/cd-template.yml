@@ -100,6 +100,7 @@ jobs:
             aspire-output/docker-compose.yaml
             aspire-output/.env
           include-hidden-files: true # Required for .env, the list of values the deploy job has to supply
+          retention-days: 1
 
       # In a public repository, also find each pushed image's digest, attest it with actions/attest-build-provenance, and push the attestation to GHCR.
 
@@ -344,6 +345,7 @@ jobs:
         with:
           name: win-exe-bundle
           path: src\Client\Boilerplate.Client.Windows\Releases
+          retention-days: 1
 
       - name: Attest artifact
         if: github.event.repository.visibility == 'public'
@@ -407,6 +409,7 @@ jobs:
         with:
           name: android-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/Release/net11.0-android/*-Signed.*
+          retention-days: 1
 
       - name: Attest artifact
         if: github.event.repository.visibility == 'public'
@@ -482,6 +485,7 @@ jobs:
         with:
           name: iOS-bundle
           path: src/Client/Boilerplate.Client.Maui/bin/release/net11.0-ios/ios-arm64/publish/*.ipa
+          retention-days: 1
 
       - name: Attest artifact
         if: github.event.repository.visibility == 'public'
