@@ -222,7 +222,7 @@ public static class BlazeDbTableInspector
         {
             if (item.AsNode() is { } node)
             {
-                if (node is MemberDeclarationSyntax && ++members > MaxMembers) return $"it declares more than {MaxMembers} members";
+                if (node is MemberDeclarationSyntax) members++;
 
                 switch (node)
                 {
@@ -248,10 +248,20 @@ public static class BlazeDbTableInspector
             if (token.SpanStart < attributeEnd && ++attributeTokens > MaxAttributeTokens) return $"its attributes run to more than {MaxAttributeTokens} tokens";
         }
 
+        // A table type and the declarations around it hold its members rather than add to them, so a table of
+        // MaxMembers members is within the limit wherever it is declared; anything else declared counts.
+        var holders = new HashSet<SyntaxNode>();
+
         foreach (var type in types)
         {
-            if (model.GetDeclaredSymbol(type, cancellationToken)?.ToDisplayString().Length > MaxNameLength) return $"a type's full name is longer than {MaxNameLength} characters";
+            if (model.GetDeclaredSymbol(type, cancellationToken) is not { } symbol) continue;
+
+            if (symbol.ToDisplayString().Length > MaxNameLength) return $"a type's full name is longer than {MaxNameLength} characters";
+
+            if (symbol.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == TableAttribute)) holders.UnionWith(type.AncestorsAndSelf().OfType<MemberDeclarationSyntax>());
         }
+
+        if (members - holders.Count > MaxMembers) return $"it declares more than {MaxMembers} members";
 
         foreach (var argument in arguments)
         {

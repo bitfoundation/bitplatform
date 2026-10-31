@@ -264,6 +264,24 @@ public class McpInspectorTests
     }
 
     [TestMethod]
+    public async Task A_table_of_exactly_the_member_limit_is_inspected_and_one_member_more_is_refused()
+    {
+        // The table and the namespace around it hold the members; they are not members of their own.
+        static string Table(int members) =>
+            $$"""namespace Models { [BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{string.Concat(Enumerable.Range(1, members - 1).Select(i => $"public int P{i} {{ get; set; }}\n"))}} } }""";
+
+        var report = await InspectAsync(Table(BlazeDbTableInspector.MaxMembers));
+
+        Assert.IsTrue(report.IsValid);
+        Assert.HasCount(BlazeDbTableInspector.MaxMembers, report.Tables.Single().Fields);
+
+        var result = await McpCall.RawAsync("InspectBlazeDbTable", new() { ["source"] = Table(BlazeDbTableInspector.MaxMembers + 1) });
+
+        Assert.IsTrue(result.IsError);
+        Assert.Contains($"more than {BlazeDbTableInspector.MaxMembers} members", string.Join('\n', result.Content.OfType<TextContentBlock>().Select(content => content.Text)));
+    }
+
+    [TestMethod]
     public async Task A_source_that_needs_more_memory_than_the_inspector_has_is_refused()
     {
         // Each constant names the one before twice: a thousand characters of source that fold to a gigabyte,

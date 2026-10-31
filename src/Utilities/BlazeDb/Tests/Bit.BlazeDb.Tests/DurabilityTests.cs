@@ -217,10 +217,25 @@ public class DurabilityTests
         Assert.AreEqual(written + record + 10, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
         // Simulated crash: the instance is abandoned before a later flush repairs the log.
 
-        await using var reopened = await OpenAsync(storage);
-        var recovered = reopened.GetTable(PersonTable.Descriptor);
-        Assert.AreEqual(new Person(1, "Ivy", 38), recovered.Get(1));
-        Assert.AreEqual(new Person(2, "Bob", 40), recovered.Get(2));
+        await using (var reopened = await OpenAsync(storage))
+        {
+            var recovered = reopened.GetTable(PersonTable.Descriptor);
+            Assert.AreEqual(new Person(1, "Ivy", 38), recovered.Get(1));
+            Assert.AreEqual(new Person(2, "Bob", 40), recovered.Get(2));
+            // Recovery cuts the torn B away; the second A is intact, so it stays, skipped as a commit already seen.
+            Assert.AreEqual(written + record, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
+
+            // The log goes on from where recovery left it.
+
+            storage.FailAfterBytes = null;
+            recovered.Insert(new Person(3, "Cy", 41));
+            await reopened.FlushAsync();
+        }
+
+        await using var final = await OpenAsync(storage);
+        var last = final.GetTable(PersonTable.Descriptor);
+        Assert.AreEqual(new Person(1, "Ivy", 38), last.Get(1));
+        Assert.AreEqual(new Person(3, "Cy", 41), last.Get(3));
     }
 
     /// <summary>An in-memory backend whose appends can be made to write a prefix, or all of it, and then fail.</summary>
