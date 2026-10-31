@@ -8,6 +8,14 @@ public static class WorkbenchPageCatalog
 {
     public static IReadOnlyList<WorkbenchPageInfo> Pages { get; } =
     [
+        new("theme",
+            nameof(WorkbenchStrings.ThemePageTitle),
+            nameof(WorkbenchStrings.ThemePageDescription),
+            BitIconName.Color,
+            typeof(ThemePage),
+            nameof(WorkbenchStrings.CategoryDesignSystem),
+            ["BitButton", "BitTextField", "BitMessage", "BitPivot"],
+            nameof(WorkbenchStrings.ThemePageCaption)),
         new("pos-dashboard",
             nameof(WorkbenchStrings.PosDashboardTitle),
             nameof(WorkbenchStrings.PosDashboardDescription),

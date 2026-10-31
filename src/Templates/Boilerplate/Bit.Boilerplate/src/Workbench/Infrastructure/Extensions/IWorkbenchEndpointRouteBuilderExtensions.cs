@@ -1,5 +1,7 @@
+using System.Text;
 using System.IO.Compression;
 using Bit.Bcrdt.Server;
+using Microsoft.Extensions.Localization;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
@@ -68,6 +70,34 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                 return Results.File(png, "image/png");
             });
 
+            endpoints.MapGet("api/review-sheet/{pageKey}", async (string pageKey,
+                                                                 string? shots,
+                                                                 string? format,
+                                                                 IConfiguration configuration,
+                                                                 WorkbenchReviewAgent agent,
+                                                                 WorkbenchScreenshotService screenshotService,
+                                                                 IStringLocalizer<WorkbenchStrings> localizer,
+                                                                 CancellationToken cancellationToken) =>
+            {
+                var page = WorkbenchPageCatalog.Find(pageKey);
+                var entries = WorkbenchUrls.DecodeShots(shots).Where(entry => entry.PageKey == page?.Key).ToArray();
+
+                if (page is null || entries.Length is 0 or > MaxScreenshotsPerArchive)
+                    return Results.BadRequest();
+
+                var views = await Task.WhenAll(entries.Select(async entry => (WorkbenchScenario.Parse(entry.Query), (await screenshotService.CapturePage(page, entry.Query, cancellationToken)).Png)));
+
+                var hasReviews = configuration.GetValue("Reviews:Enabled", true);
+                var threads = hasReviews ? [.. (await agent.GetThreads(cancellationToken)).Where(t => t.PageKey == page.Key)] : new List<WorkbenchReviewThread>();
+                var review = hasReviews ? (await agent.GetPages(cancellationToken)).GetValueOrDefault(page.Key) : null;
+
+                var html = WorkbenchReviewSheet.Build(page, views, threads, review, localizer);
+
+                return format is "pdf"
+                    ? Results.File(await screenshotService.RenderPdf(html, cancellationToken), "application/pdf", $"{page.Key}-review.pdf")
+                    : Results.File(Encoding.UTF8.GetBytes(html), "text/html", $"{page.Key}-review.html");
+            }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
+
             endpoints.MapGet("api/checks/{pageKey}", async (string pageKey, HttpContext context, WorkbenchScreenshotService screenshotService, CancellationToken cancellationToken) =>
             {
                 var page = WorkbenchPageCatalog.Find(pageKey);
@@ -98,8 +128,9 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
             {
                 var threads = await agent.GetThreads(cancellationToken);
                 var pages = await agent.GetPages(cancellationToken);
+                var flows = await agent.GetFlows(cancellationToken);
 
-                return Results.Json(WorkbenchReviewJson.Describe(threads.Where(t => includeDone is true || t.Status is not WorkbenchReviewStatus.Done), pages, threads.Select(t => t.Sequence).DefaultIfEmpty(0).Max()));
+                return Results.Json(WorkbenchReviewJson.Describe(threads.Where(t => includeDone is true || t.Status is not WorkbenchReviewStatus.Done), pages, threads.Select(t => t.Sequence).DefaultIfEmpty(0).Max(), flows));
             });
 
             review.MapGet("wait", async (long? cursor, string? agent, WorkbenchReviewAgent reviewAgent, CancellationToken cancellationToken) =>
@@ -136,6 +167,13 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                     return Results.BadRequest();
 
                 return await agent.SetPageStatus(AgentName(request.Agent), pageKey, status, cancellationToken) ? Results.NoContent() : Results.NotFound();
+            });
+
+            review.MapPost("flows", async (WorkbenchFlowRequest request, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            {
+                var id = await agent.SaveFlow(AgentName(request.Agent), request.Name, (request.Steps ?? []).Select(step => (step.Page, step.Query, step.Note)), cancellationToken);
+
+                return id is null ? Results.BadRequest() : Results.Ok(new { Id = id });
             });
 
             review.MapGet("{id}/screenshot", async (string id, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>

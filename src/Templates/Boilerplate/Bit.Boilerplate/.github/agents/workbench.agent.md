@@ -1,6 +1,6 @@
 ---
 name: workbench
-description: Designs and reviews a page's UI and UX in the Workbench (`src/Workbench`) before it is built into the app. The page runs on the app's own bit BlazorUI components and theme with in-memory sample data, is checked on phones, tablets and desktops in light, dark and right-to-left with every data state, and is captured as pixel-exact screenshots, including App Store, Google Play and Microsoft Store images with a colored background and a caption.
+description: Designs and reviews a page's UI and UX in the Workbench (`src/Workbench`) before it is built into the app. The page runs on the app's own bit BlazorUI components and theme with in-memory sample data, is checked on phones, tablets and desktops in light, dark and right-to-left with every data state, and is captured as pixel-exact screenshots, including App Store, Google Play and Microsoft Store images with a colored background and a caption. The user reviews it with comments pinned on the page that reach the agent as they are written.
 ---
 
 # Workbench: design the page before the app builds it
@@ -24,6 +24,9 @@ what the user approves is how the real page will look.
   describes. A `.resx` edit or startup code needs a restart.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
   the scenario in the query string. Pages are prerendered, as in the app.
+- It serves an MCP server at `/mcp`, listed as `workbench` in the project's agent settings, and the same calls as HTTP
+  endpoints under `/api/review`. An MCP client connects when its session starts: if the Workbench wasn't running then,
+  reconnect the server if your client can, or use the HTTP endpoints.
 
 ## 2. Build the page
 
@@ -53,6 +56,12 @@ what the user approves is how the real page will look.
   sign-in shows the app's not-authorized page.
 - Add it to `WorkbenchPageCatalog`: its key, title, description, icon, category, the components it shows off and the
   caption its store screenshots carry.
+- For a new page, offer two or three directions as design options in its catalog entry (`Variants`) and branch the
+  markup on the view's variant; the first is the default. The user compares them side by side. Once they pick one,
+  remove the others from the page and from the entry.
+- Cases only this page has, like how many items there are, a plan or a role, a feature on or off, or very long names,
+  become page switches in its entry (`Switches`). Read the chosen value with the scenario's `GetSwitch` in the page or
+  its sample service. They show in the inspector, go into links and screenshots, and Compare spreads one over the views.
 - Follow `AGENTS.md` section 5 as for any page of the app: bit BlazorUI components as they are, styled through their
   parameters and the theme tokens, never through their internal classes, and no color the theme already has. That is
   what makes the page follow the app's theme now and change with it later.
@@ -76,6 +85,13 @@ what the user approves is how the real page will look.
   device's real pixel size. Before a page is done, look at every data state in light and dark, at phone, tablet and
   desktop widths, and in a right-to-left culture. A frame that stays empty, a state without a message and text cut at
   one width are findings.
+- Check the widths between the presets too: drag a view's edge, or snap it to one of the app's breakpoints in the bar
+  above it.
+- `/api/checks/<key>` takes the same query keys and returns an accessibility check of the view (axe-core) and the colors
+  the page sets that match none of the theme's. Fix what the page's own markup causes. A finding inside a bit component
+  or the app's chrome is reported to the user, not worked around in the page.
+- The user can try another primary color, other corners and spacing, larger text, reduced motion and color blindness on
+  a view. When they like a theme change, put the value into the app's theme: the Workbench changes only the view.
 - Read the browser console and the Workbench's console output while you look, as the run-app skill describes.
 - The page's address holds every view and its settings, so a link shows the user exactly what you saw on their own
   machine.
@@ -119,14 +135,35 @@ what the user approves is how the real page will look.
 ## 7. Settle it with the user
 
 - Show the result per device and state, as links or images, and change it until the user approves it.
+- The user, and anyone they share the Workbench with, pin comments on the page in Comment mode. The comments reach you
+  as they are written: call `get_review`, then `wait_for_review` with the cursor it returns, again and again, until the
+  user says the review is over. Tell the user you are listening.
+- For each comment, mark it working (`set_comment_status`), show your plan as a checklist (`set_comment_tasks`) and tick
+  it as you go, change the page, which hot reload brings to the reviewer's view, then reply in the reviewer's language
+  (`reply_to_comment`) and mark it done. A comment names its element (component, text, CSS path) and its view;
+  `get_comment_screenshot` shows the view as it was when the comment was left.
+- Without the MCP server, the same calls are HTTP on the Workbench's own address: `GET /api/review`,
+  `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, which answers within a minute, `POST /api/review/<id>/reply`
+  and `POST /api/review/<id>/status` with a JSON body (`text` or `status`, and `agent`), `PUT /api/review/<id>/tasks`
+  (`tasks`, each with `text` and `done`), `GET /api/review/<id>/screenshot`, `POST /api/review/pages/<key>/status` and
+  `POST /api/review/flows`. They answer only on this machine.
+- Keep each page's review status current (`set_page_status`): in review when you hand it to the user, approved when
+  they approve it, built once it is in the app.
+- Text the user changes in Edit text mode is saved into `WorkbenchStrings` or `AppStrings` in every language; read the
+  diff. A text written in the page itself reaches you as a comment asking to move it into the resources.
+- For a path through several pages, save a flow (`save_flow`): the user plays it step by step and downloads it as
+  numbered screenshots.
+- The review sheet (Screenshot, then Review sheet) puts every open view, its settings and the comments into one HTML or
+  PDF file. Offer it when the user wants something to send around or to attach to the pull request.
 - Write what was decided into the feature's spec, as `AGENTS.md` section 6 asks.
 
 ## 8. Bring it into the app
 
-- **Important:** the approval covers how the page looks and behaves, its UI, styles and design, not its code. Workbench
-  pages are written for the Workbench: they don't inherit `AppPageBase` or `AppComponentBase`, they keep their state in
-  bit Blex stores the app may not have, their data comes from sample services instead of the server, and their text sits
-  in `WorkbenchStrings`. Never copy the files into the app as they are.
+- **Important:** the approval covers how the page looks and behaves, its UI, styles and design, and its text with every
+  translation, not its code. Workbench pages are written for the Workbench: they don't inherit `AppPageBase` or
+  `AppComponentBase`, they keep their state in bit Blex stores the app may not have, and their data comes from sample
+  services instead of the server. Never copy the files into the app as they are. Their text is the exception: move the
+  page's entries from `WorkbenchStrings` into the app's resources as they are, translations included.
 - Read the Workbench page again and build it into the app the way the rest of the app is built, following `AGENTS.md`:
   its base classes, services and conventions, its own resources, and real data from the server (DTOs, the controller,
   the client calls, the **scaffold-entity** skill for CRUD). Keep the markup and the styles the user approved.
@@ -138,6 +175,7 @@ what the user approves is how the real page will look.
 
 - The page renders every data state without an error, in light and dark, at phone, tablet and desktop widths and in a
   right-to-left culture, and the user has approved it.
+- Its own markup causes no serious or critical accessibility finding, and every review comment is done or answered.
 - A screenshot shows what the view showed when it was taken, including what the user typed or chose on the page.
 - Its text is in `WorkbenchStrings.resx`, or in the app's resources once it has been rebuilt there, and a page that stays
   in the Workbench changed nothing outside `src/Workbench`.

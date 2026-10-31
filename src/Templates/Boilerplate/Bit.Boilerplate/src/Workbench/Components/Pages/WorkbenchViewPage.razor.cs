@@ -48,6 +48,8 @@ public partial class WorkbenchViewPage
         [
             new() { Key = "view", Text = Localizer[nameof(WorkbenchStrings.ScreenshotThisView)], IconName = BitIconName.Camera, OnClick = item => _ = DownloadScreenshot(store.SelectedPane) },
             new() { Key = "all", Text = Localizer[nameof(WorkbenchStrings.ScreenshotAllViews)], IconName = BitIconName.PhotoCollection, OnClick = item => _ = DownloadAll() },
+            new() { Key = "sheet-html", Text = Localizer[nameof(WorkbenchStrings.ReviewSheetHtml)], IconName = BitIconName.FileHTML, OnClick = item => _ = DownloadSheet("html") },
+            new() { Key = "sheet-pdf", Text = Localizer[nameof(WorkbenchStrings.ReviewSheetPdf)], IconName = BitIconName.PDF, OnClick = item => _ = DownloadSheet("pdf") },
         ];
 
         Subscribe(store);
@@ -237,6 +239,60 @@ public partial class WorkbenchViewPage
         isToolsOpen = false;
     }
 
+    private void PickFlow(string? flowId)
+    {
+        if (flowId is not null && flowId != store.FlowId)
+        {
+            store.PickFlow(flowId);
+        }
+    }
+
+    private async Task AddStep(string? note)
+    {
+        if (pageInfo is null || store.FlowId is not { } flowId)
+            return;
+
+        var pane = store.SelectedPane;
+        var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", pane.Id);
+
+        await reviewSession.AddStep(flowId, pageInfo.Key, pane.Scenario.ToQueryString(), note, state);
+    }
+
+    private async Task PlayStep(int index)
+    {
+        if (reviewSession.Flows.FirstOrDefault(f => f.Id == store.FlowId) is not { } flow || index < 0 || index >= flow.Steps.Length)
+            return;
+
+        var step = flow.Steps[index];
+        var pane = store.SelectedPane;
+        var snapshotId = step.HasState ? snapshots.Add(await attachments.ReadState($"{flow.Id}{step.Id}")) : null;
+
+        store.PlayStep(index);
+        store.ChangeScenario(step.Scenario);
+
+        if (snapshotId is not null)
+        {
+            pendingFrameUrl = (pane.Id, WorkbenchUrls.Preview(step.PageKey, step.Scenario, pane.Id, snapshotId));
+        }
+
+        if (step.PageKey != pageInfo?.Key)
+        {
+            NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(step.PageKey)}{store.QueryString}");
+        }
+    }
+
+    private async Task DownloadFlow(WorkbenchFlow flow)
+    {
+        List<(string, WorkbenchScenario, string?)> shots = [];
+
+        foreach (var step in flow.Steps)
+        {
+            shots.Add((step.PageKey, step.Scenario, step.HasState ? snapshots.Add(await attachments.ReadState($"{flow.Id}{step.Id}")) : null));
+        }
+
+        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ScreenshotArchive(shots));
+    }
+
     private void OnReviewChanged() => InvokeAsync(StateHasChanged);
 
     [JSInvokable]
@@ -364,6 +420,21 @@ public partial class WorkbenchViewPage
         }
 
         await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ScreenshotArchive(shots));
+    }
+
+    private async Task DownloadSheet(string format)
+    {
+        if (pageInfo is null)
+            return;
+
+        List<(string, WorkbenchScenario, string?)> shots = [];
+
+        foreach (var pane in store.Panes)
+        {
+            shots.Add((pageInfo.Key, pane.Scenario, await CaptureState(pane)));
+        }
+
+        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ReviewSheet(pageInfo.Key, shots, format));
     }
 
     private async Task CopyLink()

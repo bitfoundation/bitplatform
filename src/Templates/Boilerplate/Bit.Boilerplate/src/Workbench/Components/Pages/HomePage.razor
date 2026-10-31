@@ -130,6 +130,19 @@
                                     <span class="tag">@tag</span>
                                 }
                             </span>
+                            @if (reviewSession.PageOf(entry.Key) is { } pageReview || OpenCount(entry.Key) > 0)
+                            {
+                                <span class="page-review">
+                                    @if (reviewSession.PageOf(entry.Key) is { } status)
+                                    {
+                                        <span class="review-status status-@status.Status.ToString().ToLowerInvariant()">@Localizer[$"PageStatus{status.Status}"]</span>
+                                    }
+                                    @if (OpenCount(entry.Key) is > 0 and var open)
+                                    {
+                                        <span class="review-count"><BitIcon IconName="@BitIconName.Comment" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.OpenCommentsCount), open]</span>
+                                    }
+                                </span>
+                            }
                         </span>
                     </a>
                 </Bmotion>

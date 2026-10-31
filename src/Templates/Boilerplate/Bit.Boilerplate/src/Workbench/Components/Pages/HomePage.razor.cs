@@ -31,6 +31,33 @@ public partial class HomePage
 
     private bool isPromptCopied;
 
+    [AutoInject] private WorkbenchReviewSession reviewSession = default!;
+
+    private int OpenCount(string pageKey) => reviewSession.ThreadsOf(pageKey).Count(t => t.Status is not WorkbenchReviewStatus.Done);
+
+    protected override void OnInitialized()
+    {
+        reviewSession.Changed += OnReviewChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await reviewSession.Open(Localizer[nameof(WorkbenchStrings.Reviewer)]);
+            StateHasChanged();
+        }
+    }
+
+    private void OnReviewChanged() => InvokeAsync(StateHasChanged);
+
+    public override async ValueTask DisposeAsync()
+    {
+        reviewSession.Changed -= OnReviewChanged;
+
+        await base.DisposeAsync();
+    }
+
     private static BmTransition Enter(int index) => Bm.Spring(stiffness: 120, damping: 20).WithDelay(index * 0.07);
 
     private async Task CopyPrompt()

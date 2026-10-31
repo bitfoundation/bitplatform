@@ -2,13 +2,19 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 public static class WorkbenchReviewJson
 {
-    public static object Describe(IEnumerable<WorkbenchReviewThread> threads, Dictionary<string, WorkbenchPageReview>? pages, long cursor)
+    public static object Describe(IEnumerable<WorkbenchReviewThread> threads, Dictionary<string, WorkbenchPageReview>? pages, long cursor, IEnumerable<WorkbenchFlow>? flows = null)
     {
         return new
         {
             Cursor = cursor,
             Comments = threads.Select(Describe).ToArray(),
-            Pages = pages?.Values.Select(page => new { Page = page.PageKey, Status = page.Status.ToString().ToLowerInvariant(), page.By, page.At }).ToArray()
+            Pages = pages?.Values.Select(page => new { Page = page.PageKey, Status = page.Status.ToString().ToLowerInvariant(), page.By, page.At }).ToArray(),
+            Flows = flows?.Select(flow => new
+            {
+                flow.Id,
+                flow.Name,
+                Steps = flow.Steps.Select(step => new { Page = step.PageKey, step.Query, step.Note, Workbench = $"{WorkbenchUrls.Workbench(step.PageKey)}{step.Query}" }).ToArray()
+            }).ToArray()
         };
     }
 

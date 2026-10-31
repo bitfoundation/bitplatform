@@ -18,8 +18,9 @@ public sealed partial class WorkbenchReviewTools
     {
         var threads = await agent.GetThreads(cancellationToken);
         var pages = await agent.GetPages(cancellationToken);
+        var flows = await agent.GetFlows(cancellationToken);
 
-        return JsonSerializer.Serialize(WorkbenchReviewJson.Describe(threads.Where(t => includeDone || t.Status is not WorkbenchReviewStatus.Done), pages, threads.Select(t => t.Sequence).DefaultIfEmpty(0).Max()), jsonOptions);
+        return JsonSerializer.Serialize(WorkbenchReviewJson.Describe(threads.Where(t => includeDone || t.Status is not WorkbenchReviewStatus.Done), pages, threads.Select(t => t.Sequence).DefaultIfEmpty(0).Max(), flows), jsonOptions);
     }
 
     [McpServerTool(Name = "wait_for_review", ReadOnly = true)]
@@ -71,6 +72,20 @@ public sealed partial class WorkbenchReviewTools
             return "The status is draft, inreview, approved or built.";
 
         return await agent.SetPageStatus(AgentName(server), page, parsed, cancellationToken) ? "Done." : "There is no page with that key.";
+    }
+
+    [McpServerTool(Name = "save_flow")]
+    [Description("Saves a flow: a named walk through one or more pages, step by step, that the user plays in the Workbench and turns into numbered screenshots. Use it to show the user a path through the pages you built, like signing in, finding an item and editing it.")]
+    public async Task<string> SaveFlow(McpServer server,
+                                       [Description("The flow's name, in the user's language.")] string name,
+                                       [Description("The pages, in order: each a page key as in /workbench/<key>.")] string[] pages,
+                                       [Description("For each page, the view's query string as in a Workbench link (device, theme, culture, data, auth and so on), or an empty string.")] string[] queries,
+                                       [Description("For each page, a short note on what the step shows, in the user's language.")] string[] notes,
+                                       CancellationToken cancellationToken = default)
+    {
+        var steps = pages.Select((page, index) => (page, queries.ElementAtOrDefault(index), notes.ElementAtOrDefault(index)));
+
+        return await agent.SaveFlow(AgentName(server), name, steps, cancellationToken) is { } id ? $"Saved the flow {id}." : "Nothing was saved: give a name and at least one known page.";
     }
 
     [McpServerTool(Name = "get_comment_screenshot", ReadOnly = true)]

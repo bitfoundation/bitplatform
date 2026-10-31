@@ -63,17 +63,17 @@
     border-radius: 999px;
 
     &.status-paid {
-        color: $bit-color-success;
-        background-color: color-mix(in srgb, #{$bit-color-success} 14%, transparent);
+        color: $bit-color-success-text;
+        background-color: $bit-color-success;
     }
 
     &.status-refunded {
-        color: $bit-color-error;
-        background-color: color-mix(in srgb, #{$bit-color-error} 14%, transparent);
+        color: $bit-color-error-text;
+        background-color: $bit-color-error;
     }
 
     &.status-pending {
-        color: $bit-color-warning;
-        background-color: color-mix(in srgb, #{$bit-color-warning} 16%, transparent);
+        color: $bit-color-warning-text;
+        background-color: $bit-color-warning;
     }
 }

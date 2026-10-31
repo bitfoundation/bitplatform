@@ -2238,4 +2238,184 @@
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Change the text {0} · {1}:</value>
     </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} open comments</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>Flows</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>A flow walks through pages step by step, like signing in, finding an item and editing it. Play it here or download every step as a numbered screenshot. Your agent can prepare one for you too.</value>
+    </data>
+    <data name="PickFlow" xml:space="preserve">
+        <value>Pick a flow</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>New flow's name</value>
+    </data>
+    <data name="CreateFlow" xml:space="preserve">
+        <value>Create</value>
+    </data>
+    <data name="NoSteps" xml:space="preserve">
+        <value>No steps yet. Set up the selected view the way the step should look, then add it.</value>
+    </data>
+    <data name="RemoveStep" xml:space="preserve">
+        <value>Remove step</value>
+    </data>
+    <data name="StepNote" xml:space="preserve">
+        <value>What this step shows (optional)</value>
+    </data>
+    <data name="AddStep" xml:space="preserve">
+        <value>Add the selected view as a step</value>
+    </data>
+    <data name="PreviousStep" xml:space="preserve">
+        <value>Previous step</value>
+    </data>
+    <data name="NextStep" xml:space="preserve">
+        <value>Next step</value>
+    </data>
+    <data name="StepOf" xml:space="preserve">
+        <value>Step {0} of {1}</value>
+    </data>
+    <data name="FlowScreenshots" xml:space="preserve">
+        <value>Numbered screenshots</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>Delete flow</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>Review sheet</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>Review sheet (HTML)</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>Review sheet (PDF)</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>Views</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>Comments</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>No comments.</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>Made in the Workbench, {0}</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>Theme and components</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>The app's visual language on one page: its colors, type, corners and the main components in every variant, in light, dark and right-to-left.</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>One look across the whole app</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>Design system</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>Theme and components</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>Everything here comes from the app's own theme. Try the switches on the right to see it change.</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>Colors</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>Primary</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>Secondary</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>Tertiary</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>Info</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>Success</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>Warning</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>Severe warning</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>Text</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>Backgrounds</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>Borders</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>Type</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>The quick brown fox jumps over the lazy dog</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>Corners</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>Buttons</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>Disabled</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>Settings</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>Inputs</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>Type a name</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>Choice</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>Pick one</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>Search</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>Amount</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>Option {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>Notifications</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>Messages and status</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>A {0} message, the way the app shows it.</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>Uploading</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>Cards and tabs</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>Tab {0}</value>
+    </data>
 </root>

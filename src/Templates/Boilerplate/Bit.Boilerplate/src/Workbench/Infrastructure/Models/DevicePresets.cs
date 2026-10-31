@@ -2,7 +2,7 @@ namespace Boilerplate.Workbench.Infrastructure.Models;
 
 public static class DevicePresets
 {
-    public const string DefaultKey = "iphone-17-pro";
+    public const string DefaultKey = "iphone-18-pro";
 
     public const string CustomKey = "custom";
 
@@ -14,14 +14,17 @@ public static class DevicePresets
 
     public static IReadOnlyList<DevicePreset> All { get; } =
     [
-        new("iphone-17-pro-max", "iPhone 17 Pro Max", DeviceKind.Phone, 440, 956, 3, 62, 34, 55, DeviceCutout.Island),
-        new("iphone-17-pro", "iPhone 17 Pro", DeviceKind.Phone, 402, 874, 3, 62, 34, 55, DeviceCutout.Island),
+        new("iphone-18-pro-max", "iPhone 18 Pro Max", DeviceKind.Phone, 440, 956, 3, 62, 34, 55, DeviceCutout.Island),
+        new("iphone-18-pro", "iPhone 18 Pro", DeviceKind.Phone, 402, 874, 3, 62, 34, 55, DeviceCutout.Island),
         new("iphone-air", "iPhone Air", DeviceKind.Phone, 420, 912, 3, 68, 34, 55, DeviceCutout.Island),
         new("iphone-16", "iPhone 16", DeviceKind.Phone, 393, 852, 3, 59, 34, 55, DeviceCutout.Island),
         new("iphone-se", "iPhone SE", DeviceKind.Phone, 375, 667, 2, 20, 0, 0, DeviceCutout.HomeButton),
         new("pixel-10-pro", "Pixel 10 Pro", DeviceKind.Phone, 427, 952, 3, 48, 24, 44, DeviceCutout.PunchHole, IsAndroid: true),
         new("pixel-10", "Pixel 10", DeviceKind.Phone, 412, 924, 2.625, 48, 24, 44, DeviceCutout.PunchHole, IsAndroid: true),
-        new("galaxy-s25-ultra", "Galaxy S25 Ultra", DeviceKind.Phone, 412, 891, 3.5, 40, 24, 20, DeviceCutout.PunchHole, IsAndroid: true),
+        new("galaxy-s26-ultra", "Galaxy S26 Ultra", DeviceKind.Phone, 412, 891, 3.5, 40, 24, 20, DeviceCutout.PunchHole, IsAndroid: true),
+        new("galaxy-s26", "Galaxy S26", DeviceKind.Phone, 360, 780, 3, 40, 24, 20, DeviceCutout.PunchHole, IsAndroid: true),
+        new("iphone-duo", "iPhone Duo", DeviceKind.Phone, 466, 678, 3, 0, 34, 59),
+        new("iphone-duo-open", "iPhone Duo (open)", DeviceKind.Foldable, 951, 669, 3, 0, 0, 55),
         new("galaxy-z-fold7", "Galaxy Z Fold7", DeviceKind.Foldable, 984, 1092, 2, 32, 24, 24, DeviceCutout.PunchHole, IsAndroid: true),
         new("ipad-pro-13", "iPad Pro 13\"", DeviceKind.Tablet, 1032, 1376, 2, 24, 20, 18),
         new("ipad-pro-11", "iPad Pro 11\"", DeviceKind.Tablet, 834, 1210, 2, 24, 20, 18),

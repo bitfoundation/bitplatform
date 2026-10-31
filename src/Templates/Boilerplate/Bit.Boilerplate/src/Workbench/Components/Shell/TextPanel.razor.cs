@@ -16,6 +16,8 @@ public partial class TextPanel
 
     [Parameter] public bool CanSave { get; set; }
 
+    [Parameter] public string? Culture { get; set; }
+
     [Parameter] public EventCallback OnSaved { get; set; }
 
     [Parameter] public EventCallback<string> OnAskAgent { get; set; }
@@ -37,7 +39,7 @@ public partial class TextPanel
     private void Select(string? id)
     {
         selected = Matches.FirstOrDefault(m => $"{m.Resource}/{m.Key}" == id);
-        translations = selected is null ? [] : [.. edits.Translations(selected.Resource, selected.Key).OrderBy(t => t.Culture == CultureInfo.CurrentUICulture.Name ? 0 : 1)];
+        translations = selected is null ? [] : [.. edits.Translations(selected.Resource, selected.Key).OrderBy(t => t.Culture == (Culture ?? CultureInfoManager.DefaultCulture.Name) ? 0 : 1)];
         values = translations.ToDictionary(t => t.Culture, t => t.Value);
     }
 

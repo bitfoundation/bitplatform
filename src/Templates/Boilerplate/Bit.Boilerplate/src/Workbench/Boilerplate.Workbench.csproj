@@ -50,6 +50,7 @@
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Data" />
         <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Widgets" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Theme" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Models" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Services" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Extensions" />

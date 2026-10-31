@@ -167,7 +167,7 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 | `scaffold-entity` | Scaffolding a CRUD entity whose fields, rules and screens are already settled, usually as a task of an `ai-dlc` plan. A request for a new feature or section starts with `ai-dlc` | `.github/agents/scaffold-entity.agent.md` |
 | `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx`, or the changes are about to be pushed | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
-| `workbench` | Designing or reviewing a page's UI and UX on sample data before the app builds it, comparing it across devices, themes, languages and data states, or making store screenshots, usually as part of an `ai-dlc` design phase | `.github/agents/workbench.agent.md` |
+| `workbench` | Designing or reviewing a page's UI and UX on sample data before the app builds it, comparing it across devices, themes, languages and data states, answering review comments left on it in the Workbench, or making store screenshots, usually as part of an `ai-dlc` design phase | `.github/agents/workbench.agent.md` |
 | `review` | Reviewing a diff or PR against this project's conventions | `.github/agents/review.agent.md` |
 | `rebrand` | Re-skinning the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood) | `.github/agents/rebrand.agent.md` |
 | `port` | Bringing an existing app or system's functionality into this project - from its code in any language, the running app, or only its screens and manuals. It runs the `ai-dlc` lifecycle itself | `.github/agents/port.agent.md` |

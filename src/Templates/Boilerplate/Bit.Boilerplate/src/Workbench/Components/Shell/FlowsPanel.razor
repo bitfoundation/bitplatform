@@ -1,0 +1,79 @@
+@inherits WorkbenchComponentBase
+
+<div class="flows">
+    <section>
+        <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Flows)]</BitText>
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsHint)]</BitText>
+        @if (session.Flows.Count > 0)
+        {
+            <BitDropdown Items="flowItems"
+                         Value="@SelectedFlowId"
+                         ValueChanged="(string? id) => OnSelectFlow.InvokeAsync(id)"
+                         Placeholder="@Localizer[nameof(WorkbenchStrings.PickFlow)]"
+                         AriaLabel="@Localizer[nameof(WorkbenchStrings.Flows)]"
+                         Responsive
+                         FitWidth />
+        }
+        <div class="row">
+            <BitTextField @bind-Value="newFlowName"
+                          Placeholder="@Localizer[nameof(WorkbenchStrings.NewFlowName)]"
+                          AriaLabel="@Localizer[nameof(WorkbenchStrings.NewFlowName)]"
+                          MaxLength="80"
+                          Class="grow" />
+            <BitButton IconName="@BitIconName.Add" IsEnabled="string.IsNullOrWhiteSpace(newFlowName) is false" OnClick="Create">@Localizer[nameof(WorkbenchStrings.CreateFlow)]</BitButton>
+        </div>
+    </section>
+
+    @if (Flow is { } flow)
+    {
+        <section>
+            <BitText Typography="BitTypography.Subtitle2" Class="section-title">@flow.Name</BitText>
+            @if (flow.Steps.Length == 0)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.NoSteps)]</BitText>
+            }
+            <ol class="steps">
+                @for (var index = 0; index < flow.Steps.Length; index++)
+                {
+                    var step = flow.Steps[index];
+                    var number = index;
+                    <li @key="step.Id" class="@(number == PlayingIndex ? "playing" : null)">
+                        <button type="button" class="step" @onclick="() => OnPlay.InvokeAsync(number)">
+                            <span class="index">@(number + 1)</span>
+                            <span class="step-text">
+                                <span class="step-page">@(WorkbenchPageCatalog.Find(step.PageKey) is { } stepPage ? Localizer[stepPage.TitleKey].Value : step.PageKey)</span>
+                                <span class="step-view">@DescribeView(step.Scenario)</span>
+                                @if (string.IsNullOrWhiteSpace(step.Note) is false)
+                                {
+                                    <span class="step-note">@step.Note</span>
+                                }
+                            </span>
+                        </button>
+                        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Delete"
+                                   Title="@Localizer[nameof(WorkbenchStrings.RemoveStep)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.RemoveStep)]"
+                                   OnClick="() => session.RemoveStep(flow.Id, step.Id)" />
+                    </li>
+                }
+            </ol>
+            <BitTextField @bind-Value="stepNote"
+                          Placeholder="@Localizer[nameof(WorkbenchStrings.StepNote)]"
+                          AriaLabel="@Localizer[nameof(WorkbenchStrings.StepNote)]"
+                          MaxLength="300" />
+            <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Add" IsEnabled="flow.Steps.Length < WorkbenchReviewDocument.MaxSteps" OnClick="AddStep">@Localizer[nameof(WorkbenchStrings.AddStep)]</BitButton>
+            @if (flow.Steps.Length > 0)
+            {
+                <div class="player">
+                    <BitButton IconOnly Variant="BitVariant.Outline" IconName="@BitIconName.ChevronLeft" IsEnabled="PlayingIndex > 0"
+                               Title="@Localizer[nameof(WorkbenchStrings.PreviousStep)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.PreviousStep)]"
+                               OnClick="() => OnPlay.InvokeAsync(PlayingIndex - 1)" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.StepOf), Math.Max(PlayingIndex, 0) + 1, flow.Steps.Length]</BitText>
+                    <BitButton IconOnly Variant="BitVariant.Outline" IconName="@BitIconName.ChevronRight" IsEnabled="PlayingIndex < flow.Steps.Length - 1"
+                               Title="@Localizer[nameof(WorkbenchStrings.NextStep)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.NextStep)]"
+                               OnClick="() => OnPlay.InvokeAsync(PlayingIndex + 1)" />
+                </div>
+                <BitButton IconName="@BitIconName.PhotoCollection" OnClick="() => OnScreenshots.InvokeAsync(flow)">@Localizer[nameof(WorkbenchStrings.FlowScreenshots)]</BitButton>
+            }
+            <BitButton Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete" OnClick="() => session.DeleteFlow(flow.Id)">@Localizer[nameof(WorkbenchStrings.DeleteFlow)]</BitButton>
+        </section>
+    }
+</div>

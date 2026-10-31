@@ -167,18 +167,33 @@ else
                 }
                 <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ChecksColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ChecksColumn ? "true" : "false")"
                         @onclick="() => store.ShowColumn(WorkbenchModes.ChecksColumn)">@Localizer[nameof(WorkbenchStrings.ChecksTab)]</button>
+                @if (reviewSession.IsEnabled)
+                {
+                    <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.FlowsColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.FlowsColumn ? "true" : "false")"
+                            @onclick="() => store.ShowColumn(WorkbenchModes.FlowsColumn)">@Localizer[nameof(WorkbenchStrings.Flows)]</button>
+                }
             </div>
             @if (store.Mode == WorkbenchModes.Text)
             {
                 <TextPanel Text="@pickedText?.Text"
                            Matches="@(pickedText?.Matches ?? [])"
                            CanSave="isLocal && textEdits.CanWriteFiles"
+                           Culture="@store.SelectedPane.Scenario.Culture"
                            OnSaved="OnTextSaved"
                            OnAskAgent="AskAgentCallback" />
             }
             else if (store.Column == WorkbenchModes.ChecksColumn)
             {
                 <ChecksPanel PaneId="@store.SelectedPane.Id" />
+            }
+            else if (reviewSession.IsEnabled && store.Column == WorkbenchModes.FlowsColumn)
+            {
+                <FlowsPanel SelectedFlowId="@store.FlowId"
+                            PlayingIndex="store.FlowStep"
+                            OnSelectFlow="PickFlow"
+                            OnPlay="PlayStep"
+                            OnAddStep="AddStep"
+                            OnScreenshots="DownloadFlow" />
             }
             else if (reviewSession.IsEnabled && store.Column == WorkbenchModes.ReviewColumn)
             {

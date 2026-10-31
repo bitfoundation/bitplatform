@@ -22,6 +22,41 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public WorkbenchReviewAgentInfo? Agent { get; private set; }
 
+    public IReadOnlyList<WorkbenchFlow> Flows { get; private set; } = [];
+
+    public string? CreateFlow(string name)
+    {
+        if (document is null || string.IsNullOrWhiteSpace(name))
+            return null;
+
+        var id = Guid.NewGuid().ToString("N")[..16];
+
+        document.Transact(_ => WorkbenchReviewDocument.AddFlow(document.GetMap("flows"), id, name, []), null);
+
+        return id;
+    }
+
+    public async Task AddStep(string flowId, string pageKey, string query, string? note, string? state)
+    {
+        if (document is null)
+            return;
+
+        var stepId = Guid.NewGuid().ToString("N")[..16];
+        var hasState = await attachments.SaveState($"{flowId}{stepId}", state);
+
+        document.Transact(_ => WorkbenchReviewDocument.AddStep(document.GetMap("flows"), flowId, new(stepId, pageKey, query, note, hasState)), null);
+    }
+
+    public void RemoveStep(string flowId, string stepId)
+    {
+        document?.Transact(_ => WorkbenchReviewDocument.RemoveStep(document.GetMap("flows"), flowId, stepId), null);
+    }
+
+    public void DeleteFlow(string flowId)
+    {
+        document?.Transact(_ => document.GetMap("flows").Delete(flowId), null);
+    }
+
     public async Task Open(string reviewerName)
     {
         if (document is not null || IsEnabled is false)
@@ -89,6 +124,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         Threads = WorkbenchReviewDocument.ReadThreads(document.GetMap("threads"));
         Pages = WorkbenchReviewDocument.ReadPages(document.GetMap("pages"));
         Agent = WorkbenchReviewDocument.ReadAgent(document.GetMap("agent"));
+        Flows = WorkbenchReviewDocument.ReadFlows(document.GetMap("flows"));
     }
 
     public async ValueTask DisposeAsync()

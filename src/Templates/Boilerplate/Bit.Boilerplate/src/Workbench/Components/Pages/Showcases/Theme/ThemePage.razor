@@ -1,0 +1,139 @@
+@inherits WorkbenchComponentBase
+
+<div class="theme">
+    <header class="theme-header">
+        <BitText Typography="BitTypography.H5" Element="h1" Class="title">@Localizer[nameof(WorkbenchStrings.ThemeHeading)]</BitText>
+        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeSubtitle)]</BitText>
+    </header>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeColors)]</BitText>
+        @foreach (var family in families)
+        {
+            <div class="family">
+                <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[family.NameKey]</BitText>
+                <div class="swatches">
+                    @foreach (var token in family.Tokens)
+                    {
+                        <div class="swatch-cell">
+                            <span class="swatch" style="--wb-token:var(@token)"></span>
+                            <span class="token">@token</span>
+                            <span class="value">@values.GetValueOrDefault(token)</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeTypography)]</BitText>
+        <div class="type-scale">
+            @foreach (var typography in typographies)
+            {
+                <div class="type-row">
+                    <span class="type-name">@typography</span>
+                    <BitText Typography="typography" NoWrap Class="sample">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeShape)]</BitText>
+        <div class="radii">
+            @foreach (var radius in radii)
+            {
+                <div class="radius-cell">
+                    <span class="radius-box" style="--wb-radius:var(--bit-shp-radius-@radius)"></span>
+                    <span class="token">@radius</span>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeButtons)]</BitText>
+        @foreach (var variant in Enum.GetValues<BitVariant>())
+        {
+            <div class="row">
+                @foreach (var color in buttonColors)
+                {
+                    <BitButton Variant="variant" Color="color">@color</BitButton>
+                }
+            </div>
+        }
+        <div class="row">
+            @foreach (var size in Enum.GetValues<BitSize>())
+            {
+                <BitButton Size="size" IconName="@BitIconName.Add">@size</BitButton>
+            }
+            <BitButton IsEnabled="false">@Localizer[nameof(WorkbenchStrings.ThemeDisabled)]</BitButton>
+            <BitButton IconOnly IconName="@BitIconName.Settings" Title="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" />
+        </div>
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeInputs)]</BitText>
+        <div class="grid">
+            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeName)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeNamePlaceholder)]" />
+            <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ThemeDisabled)]" Value="@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]" IsEnabled="false" />
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="options" Label="@Localizer[nameof(WorkbenchStrings.ThemeChoice)]" Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeChoicePlaceholder)]" />
+            <BitSearchBox Placeholder="@Localizer[nameof(WorkbenchStrings.ThemeSearch)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeSearch)]" />
+            <BitSlider Label="@Localizer[nameof(WorkbenchStrings.ThemeAmount)]" Min="0" Max="100" Value="40" ShowValue />
+            <div class="column">
+                <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeOption), 1]" Value="true" />
+                <BitCheckbox Label="@Localizer[nameof(WorkbenchStrings.ThemeOption), 2]" />
+                <BitToggle Label="@Localizer[nameof(WorkbenchStrings.ThemeToggle)]" Value="true" />
+            </div>
+            <BitChoiceGroup Items="choices" Label="@Localizer[nameof(WorkbenchStrings.ThemeChoice)]" DefaultValue="@("1")" />
+        </div>
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeFeedback)]</BitText>
+        <div class="column">
+            @foreach (var color in messageColors)
+            {
+                <BitMessage Color="color">@Localizer[nameof(WorkbenchStrings.ThemeMessage), color]</BitMessage>
+            }
+        </div>
+        <div class="row">
+            @foreach (var color in buttonColors)
+            {
+                <BitTag Text="@color.ToString()" Color="color" />
+            }
+        </div>
+        <div class="row">
+            @foreach (var color in buttonColors.Take(4))
+            {
+                <BitBadge Content="@(12)" Color="color">
+                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Ringer" IconOnly AriaLabel="@color.ToString()" />
+                </BitBadge>
+            }
+            <BitRingLoading Size="BitSize.Small" />
+        </div>
+        <BitProgress Label="@Localizer[nameof(WorkbenchStrings.ThemeProgress)]" Percent="62" />
+        <BitShimmer Height="2.5rem" />
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeContainers)]</BitText>
+        <div class="grid">
+            <BitCard>
+                <div class="column">
+                    <BitPersona PrimaryText="Sarah Johnson" SecondaryText="@Localizer[nameof(WorkbenchStrings.RoleGlobalAdmin)]" />
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+                </div>
+            </BitCard>
+            <BitPivot>
+                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 1]">
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+                </BitPivotItem>
+                <BitPivotItem HeaderText="@Localizer[nameof(WorkbenchStrings.ThemeTab), 2]">
+                    <BitText Typography="BitTypography.Body2">@Localizer[nameof(WorkbenchStrings.ThemeSampleText)]</BitText>
+                </BitPivotItem>
+            </BitPivot>
+        </div>
+    </section>
+</div>

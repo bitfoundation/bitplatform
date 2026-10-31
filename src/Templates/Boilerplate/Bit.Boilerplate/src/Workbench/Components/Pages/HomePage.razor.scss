@@ -365,6 +365,41 @@
     color: $bit-color-primary;
 }
 
+.page-review {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 12px;
+    align-items: center;
+    margin-top: 0.25rem;
+}
+
+.review-status {
+    padding: 1px 8px;
+    font-weight: 600;
+    border-radius: 999px;
+    color: $bit-color-foreground-secondary;
+    border: 1px solid $bit-color-border-secondary;
+
+    &.status-inreview {
+        color: $bit-color-warning;
+        border-color: color-mix(in srgb, #{$bit-color-warning} 45%, transparent);
+    }
+
+    &.status-approved,
+    &.status-built {
+        color: $bit-color-success;
+        border-color: color-mix(in srgb, #{$bit-color-success} 45%, transparent);
+    }
+}
+
+.review-count {
+    gap: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    color: $bit-color-primary;
+}
+
 .page-title {
     font-size: 1.25rem;
     font-weight: 700;

@@ -46,6 +46,27 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
                     cancellationToken);
     }
 
+    public async Task<byte[]> RenderPdf(string html, CancellationToken cancellationToken)
+    {
+        await (captureSlots ??= new(configuration.GetValue("Screenshots:MaxConcurrentCaptures", 2))).WaitAsync(cancellationToken);
+
+        try
+        {
+            var browser = await GetBrowser();
+
+            await using var context = await browser.NewContextAsync();
+            var page = await context.NewPageAsync();
+
+            await page.SetContentAsync(html, new() { WaitUntil = WaitUntilState.Load, Timeout = 30_000 });
+
+            return await page.PdfAsync(new() { Format = "A4", PrintBackground = true, Margin = new() { Top = "12mm", Bottom = "12mm", Left = "12mm", Right = "12mm" } });
+        }
+        finally
+        {
+            captureSlots.Release();
+        }
+    }
+
     private async Task<T> Open<T>(string relativeUrl, int width, int height, double pixelRatio, bool isMobile, WorkbenchThemeMode theme, string? culture, Func<IPage, Task<T>> use, CancellationToken cancellationToken)
     {
         captureSlots ??= new(configuration.GetValue("Screenshots:MaxConcurrentCaptures", 2));

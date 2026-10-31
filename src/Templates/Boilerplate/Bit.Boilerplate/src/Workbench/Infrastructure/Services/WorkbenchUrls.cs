@@ -46,6 +46,14 @@ public static class WorkbenchUrls
         return QueryHelpers.AddQueryString("/api/screenshots/zip", "shots", Encode(entries));
     }
 
+    public static string ReviewSheet(string pageKey, IEnumerable<(string PageKey, WorkbenchScenario Scenario, string? SnapshotId)> shots, string format)
+    {
+        var archive = ScreenshotArchive(shots);
+        var query = archive[archive.IndexOf('?')..];
+
+        return QueryHelpers.AddQueryString($"/api/review-sheet/{pageKey}{query}", "format", format);
+    }
+
     public static (string PageKey, string Query)[] DecodeShots(string? value)
     {
         return [.. Decode(value).Select(entry =>

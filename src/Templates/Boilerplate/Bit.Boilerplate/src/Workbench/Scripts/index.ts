@@ -511,6 +511,26 @@ host.workbench = {
         showPins(pins);
     },
 
+    readTokens(names: string[]) {
+        const probe = document.createElement('span');
+        probe.style.display = 'none';
+        document.body.appendChild(probe);
+
+        const values: Record<string, string> = {};
+
+        names.forEach(name => {
+            probe.style.color = '';
+            probe.style.color = `var(${name})`;
+            const parts = getComputedStyle(probe).color.match(/[\d.]+/g)?.map(Number) ?? [];
+            const hex = parts.slice(0, 3).map(part => Math.round(part).toString(16).padStart(2, '0')).join('');
+            values[name] = parts.length >= 3 ? `#${hex}${parts.length === 4 && parts[3] < 1 ? ` · ${Math.round(parts[3] * 100)}%` : ''}` : '';
+        });
+
+        probe.remove();
+
+        return values;
+    },
+
     readBreakpoints() {
         const style = getComputedStyle(document.documentElement);
 

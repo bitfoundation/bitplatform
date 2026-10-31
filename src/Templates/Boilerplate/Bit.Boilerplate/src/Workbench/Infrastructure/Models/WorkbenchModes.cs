@@ -15,4 +15,6 @@ public static class WorkbenchModes
     public const string ReviewColumn = "review";
 
     public const string ChecksColumn = "checks";
+
+    public const string FlowsColumn = "flows";
 }

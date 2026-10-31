@@ -82,6 +82,31 @@ public sealed partial class WorkbenchReviewAgent
         return true;
     }
 
+    public async Task<List<WorkbenchFlow>> GetFlows(CancellationToken cancellationToken)
+    {
+        return await Host.ReadAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.ReadFlows(document.GetMap("flows")), cancellationToken);
+    }
+
+    public async Task<string?> SaveFlow(string agentName, string name, IEnumerable<(string PageKey, string? Query, string? Note)> steps, CancellationToken cancellationToken)
+    {
+        var list = steps.Where(step => WorkbenchPageCatalog.Find(step.PageKey) is not null)
+                        .Select(step => new WorkbenchFlowStep(Guid.NewGuid().ToString("N")[..16], WorkbenchPageCatalog.Find(step.PageKey)!.Key, WorkbenchScenario.Parse(step.Query).ToQueryString(), step.Note, false))
+                        .ToArray();
+
+        if (string.IsNullOrWhiteSpace(name) || list.Length == 0)
+            return null;
+
+        var id = Guid.NewGuid().ToString("N")[..16];
+
+        await Host.EditAsync(WorkbenchReviewDocument.Id, document =>
+        {
+            WorkbenchReviewDocument.AddFlow(document.GetMap("flows"), id, name, list);
+            WorkbenchReviewDocument.SetAgent(document.GetMap("agent"), agentName, null);
+        }, cancellationToken);
+
+        return id;
+    }
+
     public async Task<(byte[] Png, string FileName)?> Screenshot(string threadId, CancellationToken cancellationToken)
     {
         var thread = (await GetThreads(cancellationToken)).FirstOrDefault(t => t.Id == threadId);

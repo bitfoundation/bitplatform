@@ -13,6 +13,8 @@ public static class WorkbenchReviewDocument
 
     public const int MaxTasks = 20;
 
+    public const int MaxSteps = 24;
+
     private static long lastSequence;
 
     public static long NextSequence()
@@ -77,6 +79,85 @@ public static class WorkbenchReviewDocument
         }
 
         return result;
+    }
+
+    public static List<WorkbenchFlow> ReadFlows(BcrdtMap flows)
+    {
+        List<WorkbenchFlow> result = [];
+
+        foreach (var id in flows.Keys.ToArray())
+        {
+            if (flows.GetMap(id) is not { } flow)
+                continue;
+
+            result.Add(new(id,
+                           ReadString(flow, "name") ?? id,
+                           [.. ReadMaps(flow.GetArray("steps")).Select(step => new WorkbenchFlowStep(ReadString(step, "id") ?? string.Empty,
+                                                                                                     ReadString(step, "page") ?? string.Empty,
+                                                                                                     ReadString(step, "query") ?? string.Empty,
+                                                                                                     ReadString(step, "note"),
+                                                                                                     ReadBool(step, "state")))],
+                           ReadTime(flow, "createdAt") ?? DateTimeOffset.MinValue));
+        }
+
+        return [.. result.OrderBy(f => f.CreatedAt)];
+    }
+
+    public static void AddFlow(BcrdtMap flows, string id, string name, IEnumerable<WorkbenchFlowStep> steps)
+    {
+        var flow = new BcrdtMap();
+        var list = new BcrdtArray();
+
+        flow.Set("name", Trim(name, 80));
+        flow.Set("createdAt", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        flow.Set("steps", list);
+
+        foreach (var step in steps.Take(MaxSteps))
+        {
+            list.Push(NewStep(step));
+        }
+
+        flows.Set(id, flow);
+    }
+
+    public static bool AddStep(BcrdtMap flows, string flowId, WorkbenchFlowStep step)
+    {
+        if (flows.GetMap(flowId)?.GetArray("steps") is not { } steps || steps.Count >= MaxSteps)
+            return false;
+
+        steps.Push(NewStep(step));
+
+        return true;
+    }
+
+    public static bool RemoveStep(BcrdtMap flows, string flowId, string stepId)
+    {
+        if (flows.GetMap(flowId)?.GetArray("steps") is not { } steps)
+            return false;
+
+        for (var index = 0; index < steps.Count; index++)
+        {
+            if (steps.GetMap(index) is { } step && ReadString(step, "id") == stepId)
+            {
+                steps.Delete(index, 1);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static BcrdtMap NewStep(WorkbenchFlowStep step)
+    {
+        var map = new BcrdtMap();
+
+        map.Set("id", step.Id);
+        map.Set("page", step.PageKey);
+        map.Set("query", step.Query);
+        map.Set("note", Trim(step.Note, 300));
+        map.Set("state", step.HasState);
+
+        return map;
     }
 
     public static WorkbenchReviewAgentInfo? ReadAgent(BcrdtMap agent)
