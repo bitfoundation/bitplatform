@@ -15,6 +15,9 @@ public static class BitBonboarding
     /// Blazor Server and per-application on WebAssembly. In a Blazor Web App, call it in both the
     /// server and the client project:
     /// <code>builder.Services.AddBitBonboardingServices();</code>
+    /// A WebAssembly app that lazy loads Bit.Bonboarding leaves it out: the components then create these services
+    /// themselves, with the default options, and log one warning saying so; <see cref="GetBonboardingService"/> hands
+    /// out the same <see cref="IBonboardingService"/>.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Optional global defaults.</param>
@@ -95,9 +98,29 @@ public static class BitBonboarding
         return new Dictionary<string, object>(1) { [BonboardingStepTarget.AnchorAttribute] = name };
     }
 
+    /// <summary>
+    /// The <see cref="IBonboardingService"/> the components of this circuit or WebAssembly runtime use: the one
+    /// <see cref="AddBitBonboardingServices"/> registered, otherwise the one Bonboarding creates itself. Inject
+    /// <see cref="IBonboardingService"/> instead wherever the services are registered; this is for an app that lazy
+    /// loads Bit.Bonboarding on WebAssembly and so cannot register them:
+    /// <code>
+    /// @inject IServiceProvider Services
+    ///
+    /// await Services.GetBonboardingService().StartAsync("welcome");
+    /// </code>
+    /// </summary>
+    /// <param name="services">The services of the component asking, as injected through <see cref="IServiceProvider"/>.</param>
+    public static IBonboardingService GetBonboardingService(this IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        // A registered IBonboardingService wins even without the rest of the registration behind it - a test double.
+        return services.GetService<IBonboardingService>() ?? BonboardingRuntime.Of(services).Service;
+    }
+
     // Roots the public properties and constructors of every type (de)serialized across JS interop,
     // so the trimmer keeps them. The attributes take effect because this method is reachable from
-    // AddBitBonboardingServices.
+    // AddBitBonboardingServices, and from BonboardingRuntime for an app that never calls it.
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingStepActivation))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingBeaconActivation))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingTargetDescriptor))]
@@ -108,5 +131,5 @@ public static class BitBonboarding
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingSize))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingInterop.KeyPayload))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingInterop.InitializeOptions))]
-    private static void PreserveInteropContracts() { }
+    internal static void PreserveInteropContracts() { }
 }

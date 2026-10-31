@@ -28,15 +28,18 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
     private bool _focusTargetOnClose;
     private bool _disposed;
 
-    [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
-
-    [Inject] private BonboardingGuidanceRegistry Guidance { get; set; } = default!;
-
-    [Inject] private IBonboardingInterop Interop { get; set; } = default!;
-
-    [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     [Inject] private ILogger<BonboardingBeacon> Logger { get; set; } = default!;
+
+    // Resolved rather than injected, so the beacon also works when the app never called AddBitBonboardingServices.
+    // Null until first used: DisposeAsync leaves alone what was never resolved.
+    private BonboardingRuntime? _runtime;
+    private BonboardingRuntime Runtime => _runtime ??= BonboardingRuntime.Of(Services);
+    private IBonboardingService BonboardingService => Runtime.Service;
+    private BonboardingGuidanceRegistry Guidance => Runtime.Guidance;
+    private IBonboardingInterop Interop => Runtime.Interop;
+    private IBonboardingLocalizer Localizer => Runtime.Localizer;
 
     /// <summary>
     /// Makes the beacon remember that its hint was read: once the user closes the hint, the beacon does not come
@@ -370,6 +373,9 @@ public sealed partial class BonboardingBeacon : ComponentBase, IAsyncDisposable
     {
         if (_disposed) return;
         _disposed = true;
+
+        // Nothing was subscribed to or attached when the services were never reached - resolving them failed, say.
+        if (_runtime is null) return;
 
         BonboardingService.SessionsChanged -= OnSessionsChanged;
         BonboardingService.EventRaised -= OnTourEvent;

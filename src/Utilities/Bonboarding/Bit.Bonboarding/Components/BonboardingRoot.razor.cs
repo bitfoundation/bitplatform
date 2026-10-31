@@ -31,11 +31,15 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     private string? _claimedSessionId;
     private bool _disposed;
 
-    [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
-
-    [Inject] private BonboardingHostRegistry Hosts { get; set; } = default!;
+    // Resolved rather than injected, so the host also works when the app never called AddBitBonboardingServices. Null
+    // until first used: DisposeAsync leaves alone what was never resolved.
+    private BonboardingRuntime? _runtime;
+    private BonboardingRuntime Runtime => _runtime ??= BonboardingRuntime.Of(Services);
+    private IBonboardingService BonboardingService => Runtime.Service;
+    private IBonboardingLocalizer Localizer => Runtime.Localizer;
+    private BonboardingHostRegistry Hosts => Runtime.Hosts;
 
     /// <summary>
     /// Render this session instead of whichever one is active. Doing so also claims it, so the
@@ -413,6 +417,9 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     {
         if (_disposed) return ValueTask.CompletedTask;
         _disposed = true;
+
+        // Nothing was claimed or subscribed to when the services were never reached - resolving them failed, say.
+        if (_runtime is null) return ValueTask.CompletedTask;
 
         BonboardingService.SessionsChanged -= OnSessionsChanged;
         Hosts.Changed -= OnSessionsChanged;

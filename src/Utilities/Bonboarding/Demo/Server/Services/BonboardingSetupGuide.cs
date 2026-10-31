@@ -8,8 +8,9 @@ namespace Bit.Bonboarding.Demo.Server.Services;
 /// where the demo is that render mode.
 /// <para>
 /// Four things have to be in place before the first tour shows, and each one fails quietly when it
-/// is missing: the services in every DI container that renders a tour (a missing one surfaces during
-/// prerendering, not at compile time), the stylesheet (a tour without it renders unstyled at the
+/// is missing: the services in every DI container that renders a tour (without them the components run
+/// on the default options and log a warning, and code injecting IBonboardingService fails during
+/// prerendering - nothing at compile time), the stylesheet (a tour without it renders unstyled at the
 /// bottom of the page), one <c>BonboardingRoot</c> host (without it a started tour renders nothing at
 /// all) and the namespace import. Handing over a known-good project instead of prose removes the
 /// guesswork about which project each of them belongs in.
@@ -235,8 +236,12 @@ public static partial class BonboardingSetupGuide
 
         1. `dotnet add package Bit.Bonboarding`.
         2. Call `AddBitBonboardingServices(...)` in EVERY DI container that renders a tour - a Blazor Web App with an
-           interactive client has two of them, and a missing registration surfaces as a failure to resolve
-           `IBonboardingService` during prerendering. Give both the same options.
+           interactive client has two of them. Where it is missing, the components still render but on the default
+           options - the placement, labels and storage prefix set in `Program.cs` are gone once the page turns
+           interactive - and log a warning that the services are not registered; a component that injects
+           `IBonboardingService` fails to resolve it during prerendering. Give both the same options. (Only a
+           WebAssembly app that lazy loads Bit.Bonboarding leaves the registration out - see
+           `GetBonboardingGuideSection(heading: "Lazy loading on WebAssembly")`.)
         3. Reference `_content/Bit.Bonboarding/bit-bonboarding.css` from the host page, before your own stylesheet so
            your overrides of its `--bit-bonboarding-*` variables win.
         4. Render exactly one `<BonboardingRoot />`, normally in the main layout. It hosts every tour the app starts;

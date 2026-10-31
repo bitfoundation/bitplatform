@@ -34,8 +34,12 @@ public static class McpPrompts
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs and for a separate
                .Client project, then continue with what you find.
             2. Call `GetBonboardingSetupGuide` with that render mode and follow it. Registering the services in only one
-               of a Blazor Web App's two DI containers is the most common setup bug - it fails during prerendering, not
-               at compile time. Give both registrations the same options.
+               of a Blazor Web App's two DI containers is the most common setup bug, and nothing catches it at compile
+               time: the components in the other one run on the default options and log a warning that the services
+               are not registered, and code injecting `IBonboardingService` there fails during prerendering. Give both
+               registrations the same options. Only a WebAssembly app that lazy loads Bit.Bonboarding leaves the
+               registration out, and reaches the service through `Services.GetBonboardingService()` - see
+               `GetBonboardingGuideSection(heading: "Lazy loading on WebAssembly")`.
             3. Reference `_content/Bit.Bonboarding/bit-bonboarding.css` from the host page, before the app's own stylesheet.
             4. Render exactly one `<BonboardingRoot />`, in the main layout. Without it a started tour draws nothing.
             5. Add `@using Bit.Bonboarding` to the `_Imports.razor` of every project that declares tours.
