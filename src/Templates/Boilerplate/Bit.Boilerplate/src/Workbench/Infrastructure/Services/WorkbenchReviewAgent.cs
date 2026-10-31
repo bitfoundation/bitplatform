@@ -87,24 +87,75 @@ public sealed partial class WorkbenchReviewAgent
         return await Host.ReadAsync(WorkbenchReviewDocument.Id, document => WorkbenchReviewDocument.ReadFlows(document.GetMap("flows")), cancellationToken);
     }
 
-    public async Task<string?> SaveFlow(string agentName, string name, IEnumerable<(string PageKey, string? Query, string? Note)> steps, CancellationToken cancellationToken)
+    public async Task<(string? Id, string? Problem)> SaveFlow(string agentName, WorkbenchFlowRequest request, CancellationToken cancellationToken)
     {
-        var list = steps.Where(step => WorkbenchPageCatalog.Find(step.PageKey) is not null)
-                        .Select(step => new WorkbenchFlowStep(Guid.NewGuid().ToString("N")[..16], WorkbenchPageCatalog.Find(step.PageKey)!.Key, WorkbenchScenario.Parse(step.Query).ToQueryString(), step.Note, false))
-                        .ToArray();
+        var requests = request.Screens ?? [];
+        var linkRequests = request.Links ?? [];
 
-        if (string.IsNullOrWhiteSpace(name) || list.Length == 0)
-            return null;
+        if (string.IsNullOrWhiteSpace(request.Name) || requests.Length == 0)
+            return (null, "Give the flow a name and at least one screen.");
 
-        var id = Guid.NewGuid().ToString("N")[..16];
+        if (requests.Length > WorkbenchReviewDocument.MaxScreens || linkRequests.Length > WorkbenchReviewDocument.MaxLinks)
+            return (null, $"A flow holds up to {WorkbenchReviewDocument.MaxScreens} screens and {WorkbenchReviewDocument.MaxLinks} links.");
+
+        if (requests.FirstOrDefault(screen => WorkbenchPageCatalog.Find(screen.Page) is null) is { } unknown)
+            return (null, $"There is no page with the key \"{unknown.Page}\".");
+
+        var keys = requests.Select(screen => screen.Key).ToArray();
+
+        if (keys.Any(string.IsNullOrWhiteSpace) || keys.Distinct(StringComparer.Ordinal).Count() != keys.Length)
+            return (null, "Give every screen a key of its own.");
+
+        if (linkRequests.FirstOrDefault(link => keys.Contains(link.From) is false || keys.Contains(link.To) is false) is { } stray)
+            return (null, $"The link from \"{stray.From}\" to \"{stray.To}\" names a screen that is not in the flow.");
+
+        var flowId = request.Id is { Length: > 0 } existingId && (await GetFlows(cancellationToken)).Any(f => f.Id == existingId) ? existingId : Guid.NewGuid().ToString("N")[..16];
+        var screenIds = keys.ToDictionary(key => key, _ => Guid.NewGuid().ToString("N")[..16]);
+        var spots = new Dictionary<WorkbenchFlowLinkRequest, WorkbenchFlowSpot?>();
+        var states = new Dictionary<string, bool>();
+
+        foreach (var screen in requests)
+        {
+            var page = WorkbenchPageCatalog.Find(screen.Page)!;
+            var taps = screen.Taps?.Where(tap => string.IsNullOrWhiteSpace(tap) is false).ToArray() ?? [];
+            var outgoing = linkRequests.Where(link => link.From == screen.Key && string.IsNullOrWhiteSpace(link.Tap) is false).ToArray();
+
+            if (taps.Length == 0 && outgoing.Length == 0)
+                continue;
+
+            var capture = await screenshotService.CaptureFlowScreen(page, WorkbenchScenario.Parse(screen.Query), taps, [.. outgoing.Select(link => link.Tap!)], cancellationToken);
+
+            if (capture.MissingTap is { } missing)
+                return (null, $"Nothing to tap reads \"{missing}\" on the screen \"{screen.Key}\".");
+
+            states[screen.Key] = await attachments.SaveState($"{flowId}{screenIds[screen.Key]}", capture.State);
+
+            for (var index = 0; index < outgoing.Length; index++)
+            {
+                spots[outgoing[index]] = capture.Spots.ElementAtOrDefault(index);
+            }
+        }
+
+        var positions = WorkbenchFlowLayout.Arrange([.. requests.Select(screen => (screen.Key, WorkbenchScenario.Parse(screen.Query)))],
+                                                    [.. linkRequests.Select(link => (link.From, link.To))]);
+
+        var screens = requests.Select(screen => new WorkbenchFlowScreen(screenIds[screen.Key],
+                                                                        WorkbenchPageCatalog.Find(screen.Page)!.Key,
+                                                                        WorkbenchScenario.Parse(screen.Query).ToQueryString(),
+                                                                        screen.Note,
+                                                                        states.GetValueOrDefault(screen.Key),
+                                                                        positions[screen.Key].X,
+                                                                        positions[screen.Key].Y));
+
+        var links = linkRequests.Select(link => new WorkbenchFlowLink(Guid.NewGuid().ToString("N")[..16], screenIds[link.From], screenIds[link.To], link.Label, spots.GetValueOrDefault(link)));
 
         await Host.EditAsync(WorkbenchReviewDocument.Id, document =>
         {
-            WorkbenchReviewDocument.AddFlow(document.GetMap("flows"), id, name, list);
+            WorkbenchReviewDocument.SaveFlow(document.GetMap("flows"), flowId, request.Name, screens, links);
             WorkbenchReviewDocument.SetAgent(document.GetMap("agent"), agentName, null);
         }, cancellationToken);
 
-        return id;
+        return (flowId, null);
     }
 
     public async Task<(byte[] Png, string FileName)?> Screenshot(string threadId, CancellationToken cancellationToken)

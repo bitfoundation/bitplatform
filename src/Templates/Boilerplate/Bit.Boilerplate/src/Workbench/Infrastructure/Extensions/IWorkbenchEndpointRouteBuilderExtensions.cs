@@ -166,9 +166,9 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
             review.MapPost("flows", async (WorkbenchFlowRequest request, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
             {
-                var id = await agent.SaveFlow(AgentName(request.Agent), request.Name, (request.Steps ?? []).Select(step => (step.Page, step.Query, step.Note)), cancellationToken);
+                var (id, problem) = await agent.SaveFlow(AgentName(request.Agent), request, cancellationToken);
 
-                return id is null ? Results.BadRequest() : Results.Ok(new { Id = id });
+                return id is null ? Results.BadRequest(problem) : Results.Ok(new { Id = id, Board = WorkbenchUrls.Flow(id) });
             });
 
             review.MapGet("{id}/screenshot", async (string id, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>

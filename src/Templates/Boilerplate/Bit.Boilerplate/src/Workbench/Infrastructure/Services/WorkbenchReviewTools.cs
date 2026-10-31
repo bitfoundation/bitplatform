@@ -75,17 +75,17 @@ public sealed partial class WorkbenchReviewTools
     }
 
     [McpServerTool(Name = "save_flow")]
-    [Description("Saves a flow: a named walk through one or more pages, step by step, that the user plays in the Workbench and turns into numbered screenshots. Use it to show the user a path through the pages you built, like signing in, finding an item and editing it.")]
+    [Description("Draws a flow on a board in the Workbench: the screens of a task side by side, each a page in the state that matters, like a list and then the dialog its button opens, with arrows for how the user gets from one to the next. The user opens it to understand the app and to talk it through in a meeting. Give the id of a flow you saved before to draw it again.")]
     public async Task<string> SaveFlow(McpServer server,
                                        [Description("The flow's name, in the user's language.")] string name,
-                                       [Description("The pages, in order: each a page key as in /workbench/<key>.")] string[] pages,
-                                       [Description("For each page, the view's query string as in a Workbench link (device, theme, culture, data, auth and so on), or an empty string.")] string[] queries,
-                                       [Description("For each page, a short note on what the step shows, in the user's language.")] string[] notes,
+                                       [Description("The screens, in the order the user meets them.")] WorkbenchFlowScreenRequest[] screens,
+                                       [Description("The arrows between the screens.")] WorkbenchFlowLinkRequest[]? links = null,
+                                       [Description("The id of a flow to draw again, or empty for a new one.")] string? flowId = null,
                                        CancellationToken cancellationToken = default)
     {
-        var steps = pages.Select((page, index) => (page, queries.ElementAtOrDefault(index), notes.ElementAtOrDefault(index)));
+        var (id, problem) = await agent.SaveFlow(AgentName(server), new(name, screens, links, flowId, null), cancellationToken);
 
-        return await agent.SaveFlow(AgentName(server), name, steps, cancellationToken) is { } id ? $"Saved the flow {id}." : "Nothing was saved: give a name and at least one known page.";
+        return id is null ? $"Nothing was saved: {problem}" : $"Saved the flow {id}. The user sees it at {WorkbenchUrls.Flow(id)}.";
     }
 
     [McpServerTool(Name = "get_comment_screenshot", ReadOnly = true)]

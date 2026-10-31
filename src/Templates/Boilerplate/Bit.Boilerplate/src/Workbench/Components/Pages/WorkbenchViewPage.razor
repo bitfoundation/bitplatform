@@ -21,6 +21,14 @@ else if (isSmallScreen)
         }
     </div>
 
+    @if (isPickingInline)
+    {
+        <div class="pick-banner" role="status">
+            <span>@Localizer[nameof(WorkbenchStrings.TapToComment)]</span>
+            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="CancelInlinePick">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+        </div>
+    }
+
     <BitButton Float Rounded Draggable
                FloatOffset="1.25rem"
                FloatPosition="BitPosition.BottomEnd"
@@ -43,13 +51,20 @@ else if (isSmallScreen)
             </BitStack>
         </Header>
         <Body>
-            <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
+            @if (pendingComment is null)
+            {
+                <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
+            }
             <ReviewPanel Page="pageInfo"
+                         PendingAnchor="pendingComment?.Anchor"
                          SelectedThreadId="@selectedThreadId"
                          ReviewerName="@ReviewerName"
                          ReviewerNameChanged="store.NameReviewer"
                          OnSelect="SelectThread"
-                         OnShow="ShowThread" />
+                         OnShow="ShowThread"
+                         OnSend="SendComment"
+                         OnCancel="CancelComment"
+                         OnPin="PinInline" />
             <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
         </Body>
     </BitPanel>
@@ -176,12 +191,7 @@ else
             }
             else if (store.Column == WorkbenchModes.FlowsColumn)
             {
-                <FlowsPanel SelectedFlowId="@store.FlowId"
-                            PlayingIndex="store.FlowStep"
-                            OnSelectFlow="PickFlow"
-                            OnPlay="PlayStep"
-                            OnAddStep="AddStep"
-                            OnScreenshots="DownloadFlow" />
+                <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
             }
             else if (store.Column == WorkbenchModes.ReviewColumn)
             {

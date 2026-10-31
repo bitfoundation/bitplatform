@@ -323,6 +323,50 @@
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 }
 
+.flow-cards {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.flow-card {
+    gap: 0.4rem;
+    display: flex;
+    padding: 1.1rem 1.25rem;
+    border-radius: 18px;
+    text-decoration: none;
+    flex-direction: column;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+    transition: border-color 0.15s ease;
+
+    &:hover {
+        border-color: $bit-color-primary;
+    }
+
+    &.all-flows {
+        border-style: dashed;
+    }
+}
+
+.flow-card-name {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 1.05rem;
+    font-weight: 700;
+    align-items: center;
+
+    ::deep .bit-icn {
+        color: $bit-color-primary;
+    }
+}
+
+.flow-card-meta {
+    font-size: 0.875rem;
+    color: $bit-color-foreground-secondary;
+}
+
 .page-card {
     height: 100%;
     display: flex;

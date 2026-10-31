@@ -14,7 +14,11 @@ public static class WorkbenchUrls
 
     public const string SnapshotQueryKey = "snapshot";
 
+    public const string Flows = "/flows";
+
     public static string Workbench(string pageKey) => $"/workbench/{pageKey}";
+
+    public static string Flow(string flowId) => $"{Flows}/{flowId}";
 
     public static string Preview(string pageKey, WorkbenchScenario scenario, string? paneId = null, string? snapshotId = null)
     {

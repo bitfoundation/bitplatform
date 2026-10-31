@@ -90,7 +90,7 @@ what the user approves is how the real page will look.
 - `/api/checks/<key>` takes the same query keys and returns an accessibility check of the view (axe-core) and the colors
   the page sets that match none of the theme's. Fix what the page's own markup causes. A finding inside a bit component
   or the app's chrome is reported to the user, not worked around in the page.
-- The user can try another primary color, other corners and spacing, larger text, reduced motion and color blindness on
+- The user can try another primary color, larger text, reduced motion and color blindness on
   a view. When they like a theme change, put the value into the app's theme: the Workbench changes only the view.
 - Read the browser console and the Workbench's console output while you look, as the run-app skill describes.
 - The page's address holds every view and its settings, so a link shows the user exactly what you saw on their own
@@ -151,8 +151,10 @@ what the user approves is how the real page will look.
   they approve it, built once it is in the app.
 - Text the user changes in Edit text mode is saved into `WorkbenchStrings` or `AppStrings` in every language; read the
   diff. A text written in the page itself reaches you as a comment asking to move it into the resources.
-- For a path through several pages, save a flow (`save_flow`): the user plays it step by step and downloads it as
-  numbered screenshots.
+- To explain a task that crosses screens, draw a flow (`save_flow`): each screen is a page in a state, reached by the
+  taps you list (like the dialog that "Add building" opens), and each link is an arrow that starts at the element its
+  tap names. The user opens it at `/flows/<id>` to understand the app or to present it in a meeting. Draw it again with
+  the same id when the pages change.
 - The review sheet (Screenshot, then Review sheet) puts every open view, its settings and the comments into one HTML or
   PDF file. Offer it when the user wants something to send around or to attach to the pull request.
 - Write what was decided into the feature's spec, as `AGENTS.md` section 6 asks.

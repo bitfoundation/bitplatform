@@ -30,6 +30,7 @@ let componentNames: Record<string, string> = {};
 let notFromThemeLabel = '';
 let pinsByPane: Record<string, Pin[]> = {};
 let pinFrame = 0;
+let inlinePick: ((event: MouseEvent) => void) | null = null;
 
 const isPicking = () => mode === 'comment' || mode === 'inspect' || mode === 'text';
 
@@ -56,6 +57,30 @@ export function setMode(next: string) {
 export function showPins(pins: Record<string, unknown[]>) {
     pinsByPane = (pins ?? {}) as Record<string, Pin[]>;
     paneFrames().forEach(prepareFrame);
+}
+
+export function pickInline(onPick: (anchor: ReturnType<typeof anchorOf>) => void) {
+    cancelInlinePick();
+
+    inlinePick = event => {
+        const target = event.target as Element | null;
+        if (!target?.closest('.inline-surface')) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        cancelInlinePick();
+        onPick(anchorOf(target, event.clientX, event.clientY));
+    };
+
+    window.addEventListener('click', inlinePick, true);
+}
+
+export function cancelInlinePick() {
+    if (!inlinePick) return;
+
+    window.removeEventListener('click', inlinePick, true);
+    inlinePick = null;
 }
 
 export function prepareFrame(frame: HTMLIFrameElement) {

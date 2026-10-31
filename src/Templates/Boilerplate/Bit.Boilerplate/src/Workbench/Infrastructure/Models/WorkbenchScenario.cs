@@ -45,10 +45,6 @@ public sealed partial record WorkbenchScenario
 
     public string? Accent { get; init; }
 
-    public WorkbenchRadius? Radius { get; init; }
-
-    public WorkbenchDensity? Density { get; init; }
-
     public int TextScale { get; init; } = 100;
 
     public bool ReducedMotion { get; init; }
@@ -116,8 +112,6 @@ public sealed partial record WorkbenchScenario
             Variant = Read("variant") is { } variant && TokenRegex().IsMatch(variant) ? variant : null,
             Switches = WriteSwitches(switches),
             Accent = ReadAccent(Read("accent")),
-            Radius = Enum.TryParse<WorkbenchRadius>(Read("radius"), ignoreCase: true, out var radius) ? radius : null,
-            Density = Enum.TryParse<WorkbenchDensity>(Read("density"), ignoreCase: true, out var density) ? density : null,
             TextScale = int.TryParse(Read("text"), NumberStyles.None, CultureInfo.InvariantCulture, out var text) && TextScales.Contains(text) ? text : defaults.TextScale,
             ReducedMotion = Read("motion") is "reduce",
             Vision = Enum.TryParse<WorkbenchVision>(Read("vision"), ignoreCase: true, out var vision) ? vision : null
@@ -151,8 +145,6 @@ public sealed partial record WorkbenchScenario
         }
 
         if (Accent is not null) values["accent"] = Accent.TrimStart('#');
-        if (Radius is not null) values["radius"] = Radius.Value.ToString().ToLowerInvariant();
-        if (Density is not null) values["density"] = Density.Value.ToString().ToLowerInvariant();
         if (TextScale != defaults.TextScale) values["text"] = TextScale.ToString(CultureInfo.InvariantCulture);
         if (ReducedMotion) values["motion"] = "reduce";
         if (Vision is not null) values["vision"] = Vision.Value.ToString().ToLowerInvariant();

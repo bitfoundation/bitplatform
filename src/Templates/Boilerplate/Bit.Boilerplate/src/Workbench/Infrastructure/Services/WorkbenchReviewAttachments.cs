@@ -5,9 +5,7 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 public sealed partial class WorkbenchReviewAttachments
 {
-    [AutoInject] private IHostEnvironment environment = default!;
-
-    private string Folder => Path.Combine(environment.ContentRootPath, "App_Data", "Reviews", "States");
+    private static string Folder => Path.Combine(WorkbenchFolders.Reviews, "States");
 
     public async Task<bool> SaveState(string threadId, string? state)
     {

@@ -2,26 +2,32 @@ namespace Boilerplate.Workbench.Components.Shell;
 
 public partial class FlowsPanel
 {
+    private const string NewFlowValue = "+";
+
+    private string? targetFlowId;
     private string? newFlowName;
-    private string? stepNote;
+    private string? note;
+    private string? linkLabel;
+    private string? addedFlowId;
+    private bool isAdding;
     private List<BitDropdownItem<string>> flowItems = [];
     private string? flowsSignature;
 
     [AutoInject] private WorkbenchReviewSession session = default!;
 
-    [Parameter] public string? SelectedFlowId { get; set; }
+    [Parameter] public string PageKey { get; set; } = default!;
 
-    [Parameter] public int PlayingIndex { get; set; } = -1;
+    [Parameter] public string Query { get; set; } = string.Empty;
 
-    [Parameter] public EventCallback<string?> OnSelectFlow { get; set; }
+    [Parameter] public Func<Task<string?>>? CaptureState { get; set; }
 
-    [Parameter] public EventCallback<int> OnPlay { get; set; }
+    private string TargetFlowId => targetFlowId is { } id && (id == NewFlowValue || session.Flows.Any(f => f.Id == id)) ? id : session.Flows.LastOrDefault()?.Id ?? NewFlowValue;
 
-    [Parameter] public EventCallback<string?> OnAddStep { get; set; }
+    private WorkbenchFlow? TargetFlow => session.Flows.FirstOrDefault(f => f.Id == TargetFlowId);
 
-    [Parameter] public EventCallback<WorkbenchFlow> OnScreenshots { get; set; }
-
-    private WorkbenchFlow? Flow => session.Flows.FirstOrDefault(f => f.Id == SelectedFlowId);
+    private bool CanAdd => isAdding is false
+                           && (TargetFlowId != NewFlowValue || string.IsNullOrWhiteSpace(newFlowName) is false)
+                           && (TargetFlow?.Screens.Length ?? 0) < WorkbenchReviewDocument.MaxScreens;
 
     protected override void OnInitialized()
     {
@@ -41,37 +47,35 @@ public partial class FlowsPanel
             return;
 
         flowsSignature = signature;
-        flowItems = [.. session.Flows.Select(f => new BitDropdownItem<string> { Value = f.Id, Text = f.Name })];
+        flowItems = [.. session.Flows.Select(f => new BitDropdownItem<string> { Value = f.Id, Text = f.Name }),
+                     new() { Value = NewFlowValue, Text = Localizer[nameof(WorkbenchStrings.NewFlow)] }];
     }
 
-    private async Task Create()
+    private async Task Add()
     {
-        if (session.CreateFlow(newFlowName ?? string.Empty) is not { } id)
-            return;
+        isAdding = true;
 
-        newFlowName = null;
+        try
+        {
+            var flowId = TargetFlowId == NewFlowValue ? session.CreateFlow(newFlowName ?? string.Empty) : TargetFlowId;
 
-        await OnSelectFlow.InvokeAsync(id);
-    }
+            if (flowId is null)
+                return;
 
-    private async Task AddStep()
-    {
-        var note = stepNote;
-        stepNote = null;
+            var state = CaptureState is null ? null : await CaptureState();
 
-        await OnAddStep.InvokeAsync(note);
-    }
+            await session.AddScreen(flowId, PageKey, Query, note, state, linkLabel);
 
-    private string DescribeView(WorkbenchScenario scenario)
-    {
-        var device = scenario.DevicePreset;
-        var parts = new List<string> { device.Key == DevicePresets.CustomKey ? FormattableString.Invariant($"{device.Width}×{device.Height}") : device.Name };
-
-        if (scenario.Theme is not WorkbenchThemeMode.Light) parts.Add(Localizer[$"Theme{scenario.Theme}"]);
-        if (scenario.Culture is not null) parts.Add(scenario.Culture);
-        if (scenario.Data is not WorkbenchDataState.Live) parts.Add(Localizer[$"Data{scenario.Data}"]);
-
-        return string.Join(" · ", parts);
+            targetFlowId = flowId;
+            addedFlowId = flowId;
+            newFlowName = null;
+            note = null;
+            linkLabel = null;
+        }
+        finally
+        {
+            isAdding = false;
+        }
     }
 
     private void OnSessionChanged()

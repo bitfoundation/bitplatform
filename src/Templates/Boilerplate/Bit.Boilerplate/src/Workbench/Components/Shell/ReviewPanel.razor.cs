@@ -22,6 +22,8 @@ public partial class ReviewPanel
 
     [Parameter] public EventCallback OnCancel { get; set; }
 
+    [Parameter] public EventCallback OnPin { get; set; }
+
     [Parameter] public string ReviewerName { get; set; } = string.Empty;
 
     [Parameter] public EventCallback<string?> ReviewerNameChanged { get; set; }

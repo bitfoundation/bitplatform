@@ -1981,40 +1981,10 @@
         <value>مسیرها</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>مسیر، صفحه‌ها را مرحله‌به‌مرحله طی می‌کند، مثل ورود، پیدا کردن یک مورد و ویرایش آن. همین‌جا پخشش کنید یا هر مرحله را به‌صورت اسکرین‌شات شماره‌دار دانلود کنید. عاملتان هم می‌تواند یکی برایتان آماده کند.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>یک مسیر انتخاب کنید</value>
+        <value>مسیر صفحه‌های یک کار را کنار هم می‌چیند، هر کدام در حالتی که مهم است، مثلاً یک فهرست و پنجره‌ای که دکمه‌اش باز می‌کند، با فلش‌هایی که نشان می‌دهند چطور از یکی به بعدی می‌رسید. یکی را باز کنید تا اپ را بفهمید یا در جلسه درباره‌اش حرف بزنید.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>نام مسیر جدید</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>ایجاد</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>هنوز مرحله‌ای نیست. نمای انتخاب‌شده را همان‌طور که این مرحله باید باشد تنظیم کنید و بعد اضافه‌اش کنید.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>حذف مرحله</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>این مرحله چه چیزی را نشان می‌دهد (اختیاری)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>افزودن نمای انتخاب‌شده به‌عنوان مرحله</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>مرحله قبلی</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>مرحله بعدی</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>مرحله {0} از {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>اسکرین‌شات‌های شماره‌دار</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>حذف مسیر</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>رنگ دلخواه</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>گوشه‌ها</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>تیز</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>گردتر</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>فاصله‌گذاری</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>فشرده</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>جادار</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>فقط همین نما تغییر می‌کند. هرکدام را پسندیدید، از عاملتان بخواهید آن را در پوسته برنامه بگذارد.</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>هنوز نظری نیست.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>مسیرها روی سیستمی ساخته می‌شوند که میز کار را اجرا می‌کند. این‌جا می‌توانید پخششان کنید و اسکرین‌شات‌هایشان را دانلود کنید.</value>
+        <value>مسیرها روی سیستمی کشیده می‌شوند که میز کار را اجرا می‌کند. این‌جا می‌توانید بازشان کنید و مرورشان کنید.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>بازبینی زنده با عامل هوش مصنوعی‌تان</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>بازبینی زنده با هوش مصنوعی</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>نظر دادن روی صفحه</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>جایی را که می‌خواهید درباره‌اش نظر بدهید لمس کنید</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>هنوز مسیری نیست. از عاملتان بخواهید یکی بکشد، مثلاً «نشان بده ساختمان چطور اضافه می‌شود»، یا از زبانهٔ «مسیرها» در هر صفحه نماها را به یک مسیر اضافه کنید.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>مسیری با این پیوند نیست. شاید حذف شده باشد.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>این مسیر هنوز صفحه‌ای ندارد. از زبانهٔ «مسیرها» در هر صفحه نما به آن اضافه کنید، یا از عاملتان بخواهید.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>صفحه‌ها: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>همهٔ مسیرها</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>صفحه‌های یک کار کنار هم، با فلش به هم وصل</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>افزودن این نما به یک مسیر</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>مسیر نما را همان‌طور که الان هست می‌گیرد: دستگاهش، تنظیماتش و هر چه روی صفحه باز است.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>مسیر</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>مسیر جدید</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>این صفحه چه نشان می‌دهد (اختیاری)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>از صفحهٔ قبلی چطور به این‌جا می‌رسید (اختیاری)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>کاری که کاربر می‌کند</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>زدن «افزودن ساختمان»</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>افزودن این نما</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>باز کردن تابلو</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>باز کردن در میز کار</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>نمایش همهٔ صفحه‌ها</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>ارائه</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>صفحهٔ قبلی</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>صفحهٔ بعدی</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>پایان ارائه</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} از {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>برای جابه‌جا کردن یک صفحه آن را بکشید. برای کشیدن فلش، از نقطهٔ لبهٔ راست یک صفحه تا صفحهٔ دیگر بکشید، برای نام‌گذاری فلش روی آن دوبار کلیک کنید و برای حذف آنچه انتخاب کرده‌اید Delete را بزنید.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>این مسیر حذف شود؟</value>
     </data>
 </root>

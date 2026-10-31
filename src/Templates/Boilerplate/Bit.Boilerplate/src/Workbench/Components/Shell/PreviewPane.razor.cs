@@ -120,12 +120,6 @@ public partial class PreviewPane
         if (scenario.Accent is not null)
             yield return Localizer[nameof(WorkbenchStrings.AccentColor)];
 
-        if (scenario.Radius is { } radius)
-            yield return Localizer[$"Radius{radius}"];
-
-        if (scenario.Density is { } density)
-            yield return Localizer[$"Density{density}"];
-
         if (scenario.TextScale != 100)
             yield return FormattableString.Invariant($"{Localizer[nameof(WorkbenchStrings.TextSize)]} {scenario.TextScale}%");
 

@@ -1981,40 +1981,10 @@
         <value>Flows</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>Een flow loopt stap voor stap door pagina's, zoals aanmelden, een item zoeken en het bewerken. Speel hem hier af of download elke stap als genummerde schermafbeelding. Je agent kan er ook een voor je klaarzetten.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>Kies een flow</value>
+        <value>Een flow zet de schermen van een taak naast elkaar, elk in de toestand die ertoe doet, zoals een lijst en het dialoogvenster dat de knop ervan opent, met pijlen die laten zien hoe je van het ene naar het volgende komt. Open er een om de app te begrijpen of om hem in een overleg door te nemen.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>Naam van de nieuwe flow</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>Maken</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>Nog geen stappen. Stel de geselecteerde weergave in zoals de stap eruit moet zien en voeg hem dan toe.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>Stap verwijderen</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>Wat deze stap laat zien (optioneel)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>Geselecteerde weergave als stap toevoegen</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>Vorige stap</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>Volgende stap</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>Stap {0} van {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>Genummerde schermafbeeldingen</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>Flow verwijderen</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>Eigen kleur</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>Hoeken</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>Hoekig</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>Ronder</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>Ruimte</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>Compact</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>Ruim</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>Alleen deze weergave verandert. Vind je er een goed, vraag je agent dan om die in het thema van de app te zetten.</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>Nog geen opmerkingen.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows worden gemaakt op de computer waarop de werkbank draait. Hier kun je ze afspelen en hun schermafbeeldingen downloaden.</value>
+        <value>Flows worden getekend op de computer waarop de werkbank draait. Hier kun je ze openen en doorlopen.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live beoordelen met je AI-agent</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live beoordelen met AI</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Opmerking vastpinnen</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Tik op de plek waar je een opmerking over wilt maken</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>Nog geen flows. Vraag je agent er een te tekenen, zoals ‘laat zien hoe je een gebouw toevoegt’, of voeg weergaven aan een flow toe vanuit het tabblad Flows van een pagina.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>Er staat geen flow op deze link. Misschien is hij verwijderd.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>Deze flow heeft nog geen schermen. Voeg weergaven toe vanuit het tabblad Flows van een pagina, of vraag het je agent.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Schermen: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>Alle flows</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>De schermen van een taak naast elkaar, verbonden met pijlen</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Deze weergave aan een flow toevoegen</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>De flow krijgt de weergave zoals hij nu is: het apparaat, de instellingen en wat er op de pagina openstaat.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Flow</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>Nieuwe flow</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>Wat dit scherm laat zien (optioneel)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>Hoe je hier komt vanaf het vorige scherm (optioneel)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>Wat de gebruiker doet</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Tik op ‘Gebouw toevoegen’</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Deze weergave toevoegen</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Het bord openen</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>Openen in de werkbank</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Alle schermen tonen</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Presenteren</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Vorig scherm</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Volgend scherm</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Stoppen met presenteren</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} van {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Sleep een scherm om het te verplaatsen. Sleep vanaf de stip aan de rechterrand van een scherm naar een ander scherm om een pijl te tekenen, dubbelklik op een pijl om hem een naam te geven en druk op Delete om te verwijderen wat je hebt geselecteerd.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>Deze flow verwijderen?</value>
     </data>
 </root>

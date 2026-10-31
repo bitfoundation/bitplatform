@@ -1,5 +1,5 @@
 import { highlight, runChecks } from './checks';
-import { connectFrames, customProperties, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+import { cancelInlinePick, connectFrames, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
 
 const host = window as any;
 const isPreview = location.pathname.startsWith('/preview');
@@ -511,6 +511,14 @@ host.workbench = {
         showPins(pins);
     },
 
+    pickInline() {
+        pickInline(anchor => shellReference?.invokeMethodAsync('BeginInlineComment', anchor));
+    },
+
+    cancelInlinePick() {
+        cancelInlinePick();
+    },
+
     readTokens(names: string[]) {
         const probe = document.createElement('span');
         probe.style.display = 'none';
@@ -537,16 +545,6 @@ host.workbench = {
         return ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
             .map(name => ({ name, min: parseFloat(style.getPropertyValue(`--bit-bp-${name}`)) }))
             .filter(breakpoint => Number.isFinite(breakpoint.min));
-    },
-
-    scaleRadius(factor: number) {
-        const root = document.documentElement;
-        const names = customProperties(document, name => name.startsWith('--bit-shp-') && name.includes('radius') && !name.endsWith('-none') && !name.endsWith('-full'));
-        const computed = getComputedStyle(root);
-        names.forEach(name => {
-            const value = computed.getPropertyValue(name).trim();
-            if (value) root.style.setProperty(name, factor === 0 ? '0px' : `calc((${value}) * ${factor})`);
-        });
     },
 
     setCulture(name: string) {

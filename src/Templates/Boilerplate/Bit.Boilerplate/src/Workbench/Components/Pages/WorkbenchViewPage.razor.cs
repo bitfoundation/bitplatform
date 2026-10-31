@@ -7,6 +7,7 @@ public partial class WorkbenchViewPage
     private bool isRestored;
     private bool isSmallScreen;
     private bool isToolsOpen;
+    private bool isPickingInline;
     private bool isLinkCopied;
     private List<BitMenuButtonItem> compareItems = [];
     private List<BitMenuButtonItem> screenshotItems = [];
@@ -160,6 +161,36 @@ public partial class WorkbenchViewPage
         StateHasChanged();
     }
 
+    private async Task PinInline()
+    {
+        isToolsOpen = false;
+        isPickingInline = true;
+
+        await JSRuntime.InvokeVoidAsync("workbench.pickInline");
+    }
+
+    [JSInvokable]
+    public void BeginInlineComment(WorkbenchReviewAnchor anchor)
+    {
+        isPickingInline = false;
+
+        if (reviewSession.CanWrite is false)
+            return;
+
+        pendingComment = (store.SelectedPane.Id, anchor, blexManager.CaptureGlobalState().ToJsonString());
+        selectedThreadId = null;
+        isToolsOpen = true;
+
+        StateHasChanged();
+    }
+
+    private async Task CancelInlinePick()
+    {
+        isPickingInline = false;
+
+        await JSRuntime.InvokeVoidAsync("workbench.cancelInlinePick");
+    }
+
     [JSInvokable]
     public void BeginTextEdit(string paneId, string text, WorkbenchTextMatch[] matches, WorkbenchReviewAnchor anchor)
     {
@@ -241,58 +272,11 @@ public partial class WorkbenchViewPage
         isToolsOpen = false;
     }
 
-    private void PickFlow(string? flowId)
+    private async Task<string?> CaptureSelectedState()
     {
-        if (flowId is not null && flowId != store.FlowId)
-        {
-            store.PickFlow(flowId);
-        }
-    }
-
-    private async Task AddStep(string? note)
-    {
-        if (pageInfo is null || store.FlowId is not { } flowId)
-            return;
-
-        var pane = store.SelectedPane;
-        var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", pane.Id);
-
-        await reviewSession.AddStep(flowId, pageInfo.Key, pane.Scenario.ToQueryString(), note, state);
-    }
-
-    private async Task PlayStep(int index)
-    {
-        if (reviewSession.Flows.FirstOrDefault(f => f.Id == store.FlowId) is not { } flow || index < 0 || index >= flow.Steps.Length)
-            return;
-
-        var step = flow.Steps[index];
-        var pane = store.SelectedPane;
-        var snapshotId = step.HasState ? snapshots.Add(await attachments.ReadState($"{flow.Id}{step.Id}")) : null;
-
-        store.PlayStep(index);
-        store.ChangeScenario(step.Scenario);
-
-        if (snapshotId is not null)
-        {
-            pendingFrameUrl = (pane.Id, WorkbenchUrls.Preview(step.PageKey, step.Scenario, pane.Id, snapshotId));
-        }
-
-        if (step.PageKey != pageInfo?.Key)
-        {
-            NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(step.PageKey)}{store.QueryString}");
-        }
-    }
-
-    private async Task DownloadFlow(WorkbenchFlow flow)
-    {
-        List<(string, WorkbenchScenario, string?)> shots = [];
-
-        foreach (var step in flow.Steps)
-        {
-            shots.Add((step.PageKey, step.Scenario, step.HasState ? snapshots.Add(await attachments.ReadState($"{flow.Id}{step.Id}")) : null));
-        }
-
-        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ScreenshotArchive(shots));
+        return isSmallScreen
+            ? blexManager.CaptureGlobalState().ToJsonString()
+            : await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", store.SelectedPane.Id);
     }
 
     private void OnReviewChanged() => InvokeAsync(StateHasChanged);

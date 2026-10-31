@@ -13,7 +13,9 @@ public static class WorkbenchReviewDocument
 
     public const int MaxTasks = 20;
 
-    public const int MaxSteps = 24;
+    public const int MaxScreens = 24;
+
+    public const int MaxLinks = 48;
 
     private static long lastSequence;
 
@@ -92,72 +94,187 @@ public static class WorkbenchReviewDocument
 
             result.Add(new(id,
                            ReadString(flow, "name") ?? id,
-                           [.. ReadMaps(flow.GetArray("steps")).Select(step => new WorkbenchFlowStep(ReadString(step, "id") ?? string.Empty,
-                                                                                                     ReadString(step, "page") ?? string.Empty,
-                                                                                                     ReadString(step, "query") ?? string.Empty,
-                                                                                                     ReadString(step, "note"),
-                                                                                                     ReadBool(step, "state")))],
+                           [.. ReadMaps(flow.GetArray("screens")).Select(ReadScreen)],
+                           [.. ReadMaps(flow.GetArray("links")).Select(ReadLink)],
                            ReadTime(flow, "createdAt") ?? DateTimeOffset.MinValue));
         }
 
         return [.. result.OrderBy(f => f.CreatedAt)];
     }
 
-    public static void AddFlow(BcrdtMap flows, string id, string name, IEnumerable<WorkbenchFlowStep> steps)
+    public static void SaveFlow(BcrdtMap flows, string id, string name, IEnumerable<WorkbenchFlowScreen> screens, IEnumerable<WorkbenchFlowLink> links)
     {
         var flow = new BcrdtMap();
-        var list = new BcrdtArray();
+        var screenList = new BcrdtArray();
+        var linkList = new BcrdtArray();
 
         flow.Set("name", Trim(name, 80));
-        flow.Set("createdAt", DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-        flow.Set("steps", list);
+        flow.Set("createdAt", (flows.GetMap(id) is { } existing ? ReadString(existing, "createdAt") : null) ?? DateTimeOffset.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        flow.Set("screens", screenList);
+        flow.Set("links", linkList);
 
-        foreach (var step in steps.Take(MaxSteps))
+        foreach (var screen in screens.Take(MaxScreens))
         {
-            list.Push(NewStep(step));
+            screenList.Push(NewScreen(screen));
+        }
+
+        foreach (var link in links.Take(MaxLinks))
+        {
+            linkList.Push(NewLink(link));
         }
 
         flows.Set(id, flow);
     }
 
-    public static bool AddStep(BcrdtMap flows, string flowId, WorkbenchFlowStep step)
+    public static bool RenameFlow(BcrdtMap flows, string flowId, string name)
     {
-        if (flows.GetMap(flowId)?.GetArray("steps") is not { } steps || steps.Count >= MaxSteps)
+        if (flows.GetMap(flowId) is not { } flow)
             return false;
 
-        steps.Push(NewStep(step));
+        flow.Set("name", Trim(name, 80));
 
         return true;
     }
 
-    public static bool RemoveStep(BcrdtMap flows, string flowId, string stepId)
+    public static bool AddScreen(BcrdtMap flows, string flowId, WorkbenchFlowScreen screen, WorkbenchFlowLink? link)
     {
-        if (flows.GetMap(flowId)?.GetArray("steps") is not { } steps)
+        if (flows.GetMap(flowId) is not { } flow || flow.GetArray("screens") is not { } screens || screens.Count >= MaxScreens)
             return false;
 
-        for (var index = 0; index < steps.Count; index++)
+        screens.Push(NewScreen(screen));
+
+        if (link is not null && flow.GetArray("links") is { } links && links.Count < MaxLinks)
         {
-            if (steps.GetMap(index) is { } step && ReadString(step, "id") == stepId)
+            links.Push(NewLink(link));
+        }
+
+        return true;
+    }
+
+    public static bool MoveScreen(BcrdtMap flows, string flowId, string screenId, double x, double y)
+    {
+        if (FindItem(flows.GetMap(flowId)?.GetArray("screens"), screenId) is not { } screen)
+            return false;
+
+        screen.Set("x", Math.Round(x));
+        screen.Set("y", Math.Round(y));
+
+        return true;
+    }
+
+    public static bool RemoveScreen(BcrdtMap flows, string flowId, string screenId)
+    {
+        if (flows.GetMap(flowId) is not { } flow || RemoveItem(flow.GetArray("screens"), screenId) is false)
+            return false;
+
+        if (flow.GetArray("links") is { } links)
+        {
+            for (var index = links.Count - 1; index >= 0; index--)
             {
-                steps.Delete(index, 1);
+                if (links.GetMap(index) is { } link && (ReadString(link, "from") == screenId || ReadString(link, "to") == screenId))
+                {
+                    links.Delete(index, 1);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static bool AddLink(BcrdtMap flows, string flowId, WorkbenchFlowLink link)
+    {
+        if (flows.GetMap(flowId)?.GetArray("links") is not { } links || links.Count >= MaxLinks)
+            return false;
+
+        links.Push(NewLink(link));
+
+        return true;
+    }
+
+    public static bool SetLinkLabel(BcrdtMap flows, string flowId, string linkId, string? label)
+    {
+        if (FindItem(flows.GetMap(flowId)?.GetArray("links"), linkId) is not { } link)
+            return false;
+
+        link.Set("label", string.IsNullOrWhiteSpace(label) ? null : Trim(label, 120));
+
+        return true;
+    }
+
+    public static bool RemoveLink(BcrdtMap flows, string flowId, string linkId) => RemoveItem(flows.GetMap(flowId)?.GetArray("links"), linkId);
+
+    private static WorkbenchFlowScreen ReadScreen(BcrdtMap screen)
+    {
+        return new(ReadString(screen, "id") ?? string.Empty,
+                   ReadString(screen, "page") ?? string.Empty,
+                   ReadString(screen, "query") ?? string.Empty,
+                   ReadString(screen, "note"),
+                   ReadBool(screen, "state"),
+                   ReadDouble(screen, "x"),
+                   ReadDouble(screen, "y"));
+    }
+
+    private static WorkbenchFlowLink ReadLink(BcrdtMap link)
+    {
+        return new(ReadString(link, "id") ?? string.Empty,
+                   ReadString(link, "from") ?? string.Empty,
+                   ReadString(link, "to") ?? string.Empty,
+                   ReadString(link, "label"),
+                   link.Get("spotWidth") is null ? null : new(ReadDouble(link, "spotX"), ReadDouble(link, "spotY"), ReadDouble(link, "spotWidth"), ReadDouble(link, "spotHeight")));
+    }
+
+    private static BcrdtMap NewScreen(WorkbenchFlowScreen screen)
+    {
+        var map = new BcrdtMap();
+
+        map.Set("id", screen.Id);
+        map.Set("page", screen.PageKey);
+        map.Set("query", screen.Query);
+        map.Set("note", Trim(screen.Note, 300));
+        map.Set("state", screen.HasState);
+        map.Set("x", Math.Round(screen.X));
+        map.Set("y", Math.Round(screen.Y));
+
+        return map;
+    }
+
+    private static BcrdtMap NewLink(WorkbenchFlowLink link)
+    {
+        var map = new BcrdtMap();
+
+        map.Set("id", link.Id);
+        map.Set("from", link.From);
+        map.Set("to", link.To);
+        map.Set("label", string.IsNullOrWhiteSpace(link.Label) ? null : Trim(link.Label, 120));
+
+        if (link.Spot is { } spot)
+        {
+            map.Set("spotX", Math.Round(spot.X, 4));
+            map.Set("spotY", Math.Round(spot.Y, 4));
+            map.Set("spotWidth", Math.Round(spot.Width, 4));
+            map.Set("spotHeight", Math.Round(spot.Height, 4));
+        }
+
+        return map;
+    }
+
+    private static BcrdtMap? FindItem(BcrdtArray? array, string id) => ReadMaps(array).FirstOrDefault(item => ReadString(item, "id") == id);
+
+    private static bool RemoveItem(BcrdtArray? array, string id)
+    {
+        if (array is null)
+            return false;
+
+        for (var index = 0; index < array.Count; index++)
+        {
+            if (array.GetMap(index) is { } item && ReadString(item, "id") == id)
+            {
+                array.Delete(index, 1);
                 return true;
             }
         }
 
         return false;
-    }
-
-    private static BcrdtMap NewStep(WorkbenchFlowStep step)
-    {
-        var map = new BcrdtMap();
-
-        map.Set("id", step.Id);
-        map.Set("page", step.PageKey);
-        map.Set("query", step.Query);
-        map.Set("note", Trim(step.Note, 300));
-        map.Set("state", step.HasState);
-
-        return map;
     }
 
     public static WorkbenchReviewAgentInfo? ReadAgent(BcrdtMap agent)

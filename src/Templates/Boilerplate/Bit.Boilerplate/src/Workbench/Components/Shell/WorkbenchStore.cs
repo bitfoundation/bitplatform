@@ -5,7 +5,7 @@ namespace Boilerplate.Workbench.Components.Shell;
 [BlexStore(Name = "workbench", Persist = true)]
 public partial class WorkbenchStore
 {
-    private static readonly string[] scenarioKeys = ["data", "theme", "culture", "chrome", "auth", "user", "device", "size", "rotated", "frame", "backdrop", "caption", "variant", "accent", "radius", "density", "text", "motion", "vision", "panes"];
+    private static readonly string[] scenarioKeys = ["data", "theme", "culture", "chrome", "auth", "user", "device", "size", "rotated", "frame", "backdrop", "caption", "variant", "accent", "text", "motion", "vision", "panes"];
 
     [BlexState] private WorkbenchPane[] _panes = [new("1", new())];
     [BlexState] private string _selectedPaneId = "1";
@@ -14,8 +14,6 @@ public partial class WorkbenchStore
     [BlexState(Persist = false)] private string _mode = WorkbenchModes.Browse;
     [BlexState] private string _column = WorkbenchModes.ViewColumn;
     [BlexState] private string? _reviewerName;
-    [BlexState] private string? _flowId;
-    [BlexState] private int _flowStep = -1;
 
     public WorkbenchPane SelectedPane => Panes.FirstOrDefault(p => p.Id == SelectedPaneId) ?? Panes[0];
 
@@ -61,15 +59,6 @@ public partial class WorkbenchStore
     [BlexAction] private void OnShowColumn(string column) => Column = column;
 
     [BlexAction] private void OnNameReviewer(string? name) => ReviewerName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
-
-    [BlexAction]
-    private void OnPickFlow(string? flowId)
-    {
-        FlowId = flowId;
-        FlowStep = -1;
-    }
-
-    [BlexAction] private void OnPlayStep(int step) => FlowStep = step;
 
     [BlexAction]
     private void OnChangeScenario(WorkbenchScenario scenario)
@@ -194,8 +183,6 @@ public partial class WorkbenchStore
             Variant = previous.Variant != current.Variant ? current.Variant : target.Variant,
             Switches = previous.Switches != current.Switches ? current.Switches : target.Switches,
             Accent = previous.Accent != current.Accent ? current.Accent : target.Accent,
-            Radius = previous.Radius != current.Radius ? current.Radius : target.Radius,
-            Density = previous.Density != current.Density ? current.Density : target.Density,
             TextScale = previous.TextScale != current.TextScale ? current.TextScale : target.TextScale,
             ReducedMotion = previous.ReducedMotion != current.ReducedMotion ? current.ReducedMotion : target.ReducedMotion,
             Vision = previous.Vision != current.Vision ? current.Vision : target.Vision

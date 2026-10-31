@@ -1981,40 +1981,10 @@
         <value>流程</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>流程会逐步走过多个页面，例如登录、找到某个条目并编辑它。您可以在这里播放，也可以把每一步下载为带编号的截图。您的智能体也可以为您准备一个。</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>选择流程</value>
+        <value>流程把一项任务的各个屏幕并排展示，每个屏幕都处于关键状态，比如一个列表和它的按钮打开的对话框，并用箭头标出如何从一个屏幕到下一个。打开一个流程，即可理解应用，或在会议上讲解它。</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>新流程的名称</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>创建</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>还没有步骤。先把所选视图设置成该步骤应有的样子，然后添加。</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>移除步骤</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>此步骤展示的内容（可选）</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>将所选视图添加为步骤</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>上一步</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>下一步</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>第 {0} 步，共 {1} 步</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>带编号的截图</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>删除流程</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>自定义颜色</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>圆角</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>方角</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>更圆</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>间距</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>紧凑</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>宽松</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>只有此视图会改变。看到满意的效果后，请让您的智能体把它写进应用的主题。</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>还没有评论。</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>流程需要在运行工作台的电脑上创建。在这里，您可以播放流程并下载其截图。</value>
+        <value>流程需要在运行工作台的电脑上绘制。在这里，您可以打开并浏览它们。</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>与您的 AI 智能体实时评审</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>AI 实时评审</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>在页面上添加评论</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>点按要评论的位置</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>还没有流程。请让您的智能体画一个，比如“展示如何添加一栋建筑”，或在页面的“流程”选项卡中把视图添加到流程。</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>此链接下没有流程，它可能已被删除。</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>此流程还没有屏幕。请在页面的“流程”选项卡中添加视图，或让您的智能体来做。</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>屏幕：{0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>全部流程</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>一项任务的各个屏幕并排展示，用箭头相连</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>将此视图添加到流程</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>流程会按视图当前的样子保存它：设备、设置以及页面上打开的一切。</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>流程</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>新流程</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>此屏幕展示的内容（可选）</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>如何从上一个屏幕来到这里（可选）</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>用户执行的操作</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>点按“添加建筑”</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>添加此视图</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>打开画板</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>在工作台中打开</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>显示所有屏幕</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>演示</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>上一个屏幕</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>下一个屏幕</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>停止演示</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>第 {0} 个，共 {1} 个</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>拖动屏幕即可移动它。从屏幕右边缘的圆点拖到另一个屏幕即可画出箭头，双击箭头可为其命名，按 Delete 键可删除所选内容。</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>删除此流程？</value>
     </data>
 </root>

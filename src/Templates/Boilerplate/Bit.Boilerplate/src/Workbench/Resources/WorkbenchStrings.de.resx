@@ -1981,40 +1981,10 @@
         <value>Abläufe</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>Ein Ablauf führt Schritt für Schritt durch Seiten, etwa anmelden, einen Eintrag finden und ihn bearbeiten. Spielen Sie ihn hier ab oder laden Sie jeden Schritt als nummerierten Screenshot herunter. Ihr Agent kann auch einen für Sie vorbereiten.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>Ablauf auswählen</value>
+        <value>Ein Ablauf zeigt die Bildschirme einer Aufgabe nebeneinander, jeden im entscheidenden Zustand, etwa eine Liste und den Dialog, den ihre Schaltfläche öffnet, mit Pfeilen dafür, wie man von einem zum nächsten kommt. Öffnen Sie einen, um die App zu verstehen oder sie in einem Meeting durchzugehen.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>Name des neuen Ablaufs</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>Erstellen</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>Noch keine Schritte. Richten Sie die ausgewählte Ansicht so ein, wie der Schritt aussehen soll, und fügen Sie sie dann hinzu.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>Schritt entfernen</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>Was dieser Schritt zeigt (optional)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>Ausgewählte Ansicht als Schritt hinzufügen</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>Vorheriger Schritt</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>Nächster Schritt</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>Schritt {0} von {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>Nummerierte Screenshots</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>Ablauf löschen</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>Eigene Farbe</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>Ecken</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>Eckig</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>Runder</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>Abstände</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>Kompakt</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>Großzügig</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>Nur diese Ansicht ändert sich. Wenn Ihnen etwas gefällt, bitten Sie Ihren Agenten, es ins Design der App zu übernehmen.</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>Noch keine Kommentare.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Abläufe werden auf dem Rechner erstellt, auf dem die Werkbank läuft. Hier können Sie sie abspielen und ihre Screenshots herunterladen.</value>
+        <value>Abläufe werden auf dem Rechner gezeichnet, auf dem die Werkbank läuft. Hier können Sie sie öffnen und durchgehen.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live mit Ihrem KI-Agenten prüfen</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live-Review mit KI</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Kommentar anheften</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Tippen Sie auf die Stelle, die Sie kommentieren möchten</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>Noch keine Abläufe. Bitten Sie Ihren Agenten, einen zu zeichnen, etwa „Zeig, wie ein Gebäude hinzugefügt wird“, oder fügen Sie Ansichten über den Tab „Abläufe“ einer Seite hinzu.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>Unter diesem Link gibt es keinen Ablauf. Vielleicht wurde er gelöscht.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>Dieser Ablauf hat noch keine Bildschirme. Fügen Sie über den Tab „Abläufe“ einer Seite Ansichten hinzu oder bitten Sie Ihren Agenten darum.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Bildschirme: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>Alle Abläufe</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>Die Bildschirme einer Aufgabe nebeneinander, mit Pfeilen verbunden</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Diese Ansicht zu einem Ablauf hinzufügen</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>Der Ablauf übernimmt die Ansicht so, wie sie gerade ist: ihr Gerät, ihre Einstellungen und alles, was auf der Seite geöffnet ist.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Ablauf</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>Neuer Ablauf</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>Was dieser Bildschirm zeigt (optional)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>Wie man vom letzten Bildschirm hierher kommt (optional)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>Was der Nutzer tut</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Auf „Gebäude hinzufügen“ tippen</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Diese Ansicht hinzufügen</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Board öffnen</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>In der Werkbank öffnen</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Alle Bildschirme zeigen</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Präsentieren</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Vorheriger Bildschirm</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Nächster Bildschirm</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Präsentation beenden</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} von {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Ziehen Sie einen Bildschirm, um ihn zu verschieben. Ziehen Sie vom Punkt am rechten Rand eines Bildschirms zu einem anderen, um einen Pfeil zu zeichnen, doppelklicken Sie auf einen Pfeil, um ihn zu benennen, und drücken Sie Entf, um die Auswahl zu entfernen.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>Diesen Ablauf löschen?</value>
     </data>
 </root>

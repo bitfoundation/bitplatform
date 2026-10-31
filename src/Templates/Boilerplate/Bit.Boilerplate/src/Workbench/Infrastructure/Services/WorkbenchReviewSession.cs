@@ -32,36 +32,68 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
         var id = Guid.NewGuid().ToString("N")[..16];
 
-        document.Transact(_ => WorkbenchReviewDocument.AddFlow(document.GetMap("flows"), id, name, []), null);
+        document.Transact(_ => WorkbenchReviewDocument.SaveFlow(document.GetMap("flows"), id, name, [], []), null);
 
         return id;
     }
 
-    public async Task AddStep(string flowId, string pageKey, string query, string? note, string? state)
+    public async Task AddScreen(string flowId, string pageKey, string query, string? note, string? state, string? linkLabel)
     {
-        if (document is null || CanWrite is false)
+        if (document is null || CanWrite is false || WorkbenchReviewDocument.ReadFlows(document.GetMap("flows")).FirstOrDefault(f => f.Id == flowId) is not { } flow)
             return;
 
-        var stepId = Guid.NewGuid().ToString("N")[..16];
-        var hasState = await attachments.SaveState($"{flowId}{stepId}", state);
+        var screenId = Guid.NewGuid().ToString("N")[..16];
+        var hasState = await attachments.SaveState($"{flowId}{screenId}", state);
+        var (x, y) = WorkbenchFlowLayout.Next(flow);
+        var link = flow.Screens.LastOrDefault() is { } last ? new WorkbenchFlowLink(Guid.NewGuid().ToString("N")[..16], last.Id, screenId, linkLabel, null) : null;
 
-        document.Transact(_ => WorkbenchReviewDocument.AddStep(document.GetMap("flows"), flowId, new(stepId, pageKey, query, note, hasState)), null);
+        document.Transact(_ => WorkbenchReviewDocument.AddScreen(document.GetMap("flows"), flowId, new(screenId, pageKey, query, note, hasState, x, y), link), null);
     }
 
-    public void RemoveStep(string flowId, string stepId)
+    public void MoveScreen(string flowId, string screenId, double x, double y)
     {
-        if (CanWrite is false)
+        EditFlows(flows => WorkbenchReviewDocument.MoveScreen(flows, flowId, screenId, x, y));
+    }
+
+    public void RemoveScreen(string flowId, string screenId)
+    {
+        EditFlows(flows => WorkbenchReviewDocument.RemoveScreen(flows, flowId, screenId));
+    }
+
+    public void AddLink(string flowId, string from, string to)
+    {
+        EditFlows(flows => WorkbenchReviewDocument.AddLink(flows, flowId, new(Guid.NewGuid().ToString("N")[..16], from, to, null, null)));
+    }
+
+    public void SetLinkLabel(string flowId, string linkId, string? label)
+    {
+        EditFlows(flows => WorkbenchReviewDocument.SetLinkLabel(flows, flowId, linkId, label));
+    }
+
+    public void RemoveLink(string flowId, string linkId)
+    {
+        EditFlows(flows => WorkbenchReviewDocument.RemoveLink(flows, flowId, linkId));
+    }
+
+    public void RenameFlow(string flowId, string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
             return;
 
-        document?.Transact(_ => WorkbenchReviewDocument.RemoveStep(document.GetMap("flows"), flowId, stepId), null);
+        EditFlows(flows => WorkbenchReviewDocument.RenameFlow(flows, flowId, name));
     }
 
     public void DeleteFlow(string flowId)
     {
+        EditFlows(flows => flows.Delete(flowId));
+    }
+
+    private void EditFlows(Action<BcrdtMap> edit)
+    {
         if (CanWrite is false)
             return;
 
-        document?.Transact(_ => document.GetMap("flows").Delete(flowId), null);
+        document?.Transact(_ => edit(document.GetMap("flows")), null);
     }
 
     public async Task Open(string reviewerName)

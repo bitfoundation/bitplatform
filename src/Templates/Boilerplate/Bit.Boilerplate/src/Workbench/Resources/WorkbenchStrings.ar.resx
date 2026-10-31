@@ -1981,40 +1981,10 @@
         <value>المسارات</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>يمرّ المسار على الصفحات خطوة بخطوة، مثل تسجيل الدخول والعثور على عنصر وتعديله. شغّله هنا أو نزّل كل خطوة كلقطة شاشة مرقّمة. ويمكن لوكيلك أيضًا أن يجهّز لك واحدًا.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>اختر مسارًا</value>
+        <value>يعرض المسار شاشات مهمة واحدة جنبًا إلى جنب، كلٌّ منها في الحالة المهمة، مثل قائمة والنافذة التي يفتحها زرها، مع أسهم تبيّن كيف تنتقل من شاشة إلى التالية. افتح أحدها لفهم التطبيق أو لمناقشته في اجتماع.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>اسم المسار الجديد</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>إنشاء</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>لا توجد خطوات بعد. اضبط العرض المحدد بالشكل الذي يجب أن تبدو عليه الخطوة، ثم أضفه.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>إزالة الخطوة</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>ما الذي تعرضه هذه الخطوة (اختياري)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>إضافة العرض المحدد كخطوة</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>الخطوة السابقة</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>الخطوة التالية</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>الخطوة {0} من {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>لقطات شاشة مرقّمة</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>حذف المسار</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>لونك الخاص</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>الزوايا</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>حادة</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>أكثر استدارة</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>التباعد</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>مضغوط</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>واسع</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>يتغير هذا العرض فقط. وعندما يعجبك خيار، اطلب من وكيلك إضافته إلى مظهر التطبيق.</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>لا توجد تعليقات بعد.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>تُنشأ المسارات على الحاسوب الذي يشغّل منضدة العمل. وهنا يمكنك تشغيلها وتنزيل لقطات الشاشة الخاصة بها.</value>
+        <value>تُرسم المسارات على الحاسوب الذي يشغّل منضدة العمل. وهنا يمكنك فتحها والمرور بها.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>راجع مباشرةً مع وكيل الذكاء الاصطناعي الخاص بك</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>مراجعة مباشرة مع الذكاء الاصطناعي</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>أضف تعليقًا على الصفحة</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>المس المكان الذي تريد التعليق عليه</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>لا توجد مسارات بعد. اطلب من وكيلك أن يرسم واحدًا، مثل «اعرض كيف يُضاف مبنى»، أو أضف عروضًا إلى مسار من تبويب «المسارات» في أي صفحة.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>لا يوجد مسار على هذا الرابط. ربما حُذف.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>لا توجد شاشات في هذا المسار بعد. أضف إليه عروضًا من تبويب «المسارات» في أي صفحة، أو اطلب ذلك من وكيلك.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>الشاشات: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>كل المسارات</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>شاشات مهمة جنبًا إلى جنب، تصل بينها أسهم</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>إضافة هذا العرض إلى مسار</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>يأخذ المسار العرض كما هو الآن: جهازه وإعداداته وكل ما هو مفتوح في الصفحة.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>المسار</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>مسار جديد</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>ما تعرضه هذه الشاشة (اختياري)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>كيف تصل إلى هنا من الشاشة السابقة (اختياري)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>ما يفعله المستخدم</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>المس «إضافة مبنى»</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>أضف هذا العرض</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>افتح اللوحة</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>افتح في منضدة العمل</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>إظهار كل الشاشات</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>عرض تقديمي</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>الشاشة السابقة</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>الشاشة التالية</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>إيقاف العرض التقديمي</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} من {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>اسحب شاشة لتحريكها. اسحب من النقطة على الحافة اليمنى للشاشة إلى شاشة أخرى لرسم سهم، وانقر نقرًا مزدوجًا على سهم لتسميته، واضغط Delete لحذف ما حددته.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>حذف هذا المسار؟</value>
     </data>
 </root>

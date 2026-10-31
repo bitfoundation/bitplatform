@@ -1981,40 +1981,10 @@
         <value>Parcours</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>Un parcours enchaîne des pages étape par étape, comme se connecter, trouver un élément et le modifier. Lancez-le ici ou téléchargez chaque étape sous forme de capture numérotée. Votre agent peut aussi en préparer un pour vous.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>Choisissez un parcours</value>
+        <value>Un parcours présente côte à côte les écrans d’une tâche, chacun dans l’état qui compte, comme une liste et la boîte de dialogue que son bouton ouvre, avec des flèches qui montrent comment passer de l’un au suivant. Ouvrez-en un pour comprendre l’application ou pour la présenter en réunion.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>Nom du nouveau parcours</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>Créer</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>Aucune étape pour l’instant. Réglez la vue sélectionnée comme l’étape doit apparaître, puis ajoutez-la.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>Retirer l’étape</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>Ce que montre cette étape (facultatif)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>Ajouter la vue sélectionnée comme étape</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>Étape précédente</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>Étape suivante</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>Étape {0} sur {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>Captures numérotées</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>Supprimer le parcours</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>Votre propre couleur</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>Coins</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>Carrés</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>Plus arrondis</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>Espacement</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>Compact</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>Aéré</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>Seule cette vue change. Quand un réglage vous plaît, demandez à votre agent de l’intégrer au thème de l’application.</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>Aucun commentaire pour l’instant.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Les parcours se créent sur la machine qui exécute l’établi. Ici, vous pouvez les lancer et télécharger leurs captures.</value>
+        <value>Les parcours se dessinent sur la machine qui exécute l’établi. Ici, vous pouvez les ouvrir et les parcourir.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Révisez en direct avec votre agent IA</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Révision en direct avec l’IA</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Épingler un commentaire</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Touchez l’endroit que vous voulez commenter</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>Aucun parcours pour l’instant. Demandez à votre agent d’en dessiner un, comme « montre comment on ajoute un bâtiment », ou ajoutez des vues à un parcours depuis l’onglet Parcours d’une page.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>Aucun parcours à ce lien. Il a peut-être été supprimé.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>Ce parcours n’a pas encore d’écran. Ajoutez-y des vues depuis l’onglet Parcours d’une page, ou demandez à votre agent.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Écrans : {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>Tous les parcours</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>Les écrans d’une tâche côte à côte, reliés par des flèches</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Ajouter cette vue à un parcours</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>Le parcours reçoit la vue telle qu’elle est : son appareil, ses réglages et tout ce qui est ouvert sur la page.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Parcours</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>Nouveau parcours</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>Ce que montre cet écran (facultatif)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>Comment on arrive ici depuis le dernier écran (facultatif)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>Ce que fait l’utilisateur</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Toucher « Ajouter un bâtiment »</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Ajouter cette vue</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Ouvrir le tableau</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>Ouvrir dans l’établi</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Afficher tous les écrans</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Présenter</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Écran précédent</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Écran suivant</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Arrêter la présentation</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} sur {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Faites glisser un écran pour le déplacer. Tirez depuis le point du bord droit d’un écran jusqu’à un autre pour tracer une flèche, double-cliquez sur une flèche pour la nommer et appuyez sur Suppr pour retirer ce que vous avez sélectionné.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>Supprimer ce parcours ?</value>
     </data>
 </root>

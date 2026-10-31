@@ -1981,40 +1981,10 @@
         <value>फ़्लो</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>फ़्लो पेजों से चरण-दर-चरण गुज़रता है, जैसे साइन इन करना, कोई आइटम ढूँढना और उसे बदलना। इसे यहीं चलाएँ या हर चरण को क्रमांकित स्क्रीनशॉट के रूप में डाउनलोड करें। आपका एजेंट भी आपके लिए एक फ़्लो तैयार कर सकता है।</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>कोई फ़्लो चुनें</value>
+        <value>फ़्लो किसी काम की स्क्रीनों को साथ-साथ दिखाता है, हर एक उस हालत में जो मायने रखती है, जैसे एक सूची और वह डायलॉग जो उसका बटन खोलता है, और तीर बताते हैं कि एक से अगली तक कैसे पहुँचते हैं। ऐप को समझने या मीटिंग में उस पर बात करने के लिए कोई फ़्लो खोलें।</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>नए फ़्लो का नाम</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>बनाएँ</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>अभी कोई चरण नहीं। चुने गए व्यू को वैसा सेट करें जैसा चरण को दिखना चाहिए, फिर उसे जोड़ें।</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>चरण हटाएँ</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>यह चरण क्या दिखाता है (वैकल्पिक)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>चुने गए व्यू को चरण के रूप में जोड़ें</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>पिछला चरण</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>अगला चरण</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>{1} में से चरण {0}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>क्रमांकित स्क्रीनशॉट</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>फ़्लो हटाएँ</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>अपना रंग</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>कोने</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>नुकीले</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>ज़्यादा गोल</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>स्पेसिंग</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>कॉम्पैक्ट</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>खुला-खुला</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>सिर्फ़ यह व्यू बदलता है। जो पसंद आए, उसे ऐप की थीम में डालने के लिए अपने एजेंट से कहें।</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>अभी कोई टिप्पणी नहीं।</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>फ़्लो उस मशीन पर बनते हैं जिस पर वर्कबेंच चल रही है। यहाँ आप उन्हें चला सकते हैं और उनके स्क्रीनशॉट डाउनलोड कर सकते हैं।</value>
+        <value>फ़्लो उस मशीन पर बनाए जाते हैं जिस पर वर्कबेंच चल रही है। यहाँ आप उन्हें खोलकर देख सकते हैं।</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>अपने AI एजेंट के साथ लाइव रिव्यू करें</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>AI के साथ लाइव रिव्यू</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>पेज पर टिप्पणी करें</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>जिस जगह पर टिप्पणी करनी है, उसे टैप करें</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>अभी कोई फ़्लो नहीं। अपने एजेंट से एक बनाने को कहें, जैसे “दिखाओ कि इमारत कैसे जोड़ी जाती है”, या किसी पेज के फ़्लो टैब से व्यू को फ़्लो में जोड़ें।</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>इस लिंक पर कोई फ़्लो नहीं है। शायद उसे हटा दिया गया है।</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>इस फ़्लो में अभी कोई स्क्रीन नहीं है। किसी पेज के फ़्लो टैब से इसमें व्यू जोड़ें, या अपने एजेंट से कहें।</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>स्क्रीनें: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>सभी फ़्लो</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>किसी काम की स्क्रीनें साथ-साथ, तीरों से जुड़ी</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>यह व्यू किसी फ़्लो में जोड़ें</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>फ़्लो व्यू को वैसे ही लेता है जैसा वह अभी है: उसका डिवाइस, उसकी सेटिंग्स और पेज पर जो भी खुला है।</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>फ़्लो</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>नया फ़्लो</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>यह स्क्रीन क्या दिखाती है (वैकल्पिक)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>पिछली स्क्रीन से यहाँ कैसे पहुँचते हैं (वैकल्पिक)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>उपयोगकर्ता क्या करता है</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>“इमारत जोड़ें” पर टैप करें</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>यह व्यू जोड़ें</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>बोर्ड खोलें</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>वर्कबेंच में खोलें</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>सभी स्क्रीनें दिखाएँ</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>प्रस्तुत करें</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>पिछली स्क्रीन</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>अगली स्क्रीन</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>प्रस्तुति रोकें</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{1} में से {0}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>स्क्रीन को खिसकाने के लिए उसे खींचें। तीर बनाने के लिए किसी स्क्रीन के दाएँ किनारे वाले बिंदु से दूसरी स्क्रीन तक खींचें, तीर का नाम रखने के लिए उस पर डबल-क्लिक करें, और चुनी हुई चीज़ हटाने के लिए Delete दबाएँ।</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>यह फ़्लो हटाएँ?</value>
     </data>
 </root>

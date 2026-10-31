@@ -46,11 +46,6 @@ public partial class PreviewPage
         await WhenStateRestored();
         await accentColorService.InitializeAsync();
 
-        if (Scenario.Radius is { } radius)
-        {
-            await JSRuntime.InvokeVoidAsync("workbench.scaleRadius", radius is WorkbenchRadius.Square ? 0 : 2);
-        }
-
         ScenarioState.Touch();
         _ = WaitUntilReady();
     }

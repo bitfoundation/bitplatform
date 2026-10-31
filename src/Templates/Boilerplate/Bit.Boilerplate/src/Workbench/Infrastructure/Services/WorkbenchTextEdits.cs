@@ -15,18 +15,7 @@ public sealed partial class WorkbenchTextEdits
 
     private readonly ConcurrentDictionary<(string Resource, string Culture, string Key), string> edited = [];
 
-    private readonly Lazy<string?> projectFolder = new(() =>
-    {
-        for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder is not null; folder = folder.Parent)
-        {
-            if (File.Exists(Path.Combine(folder.FullName, "Boilerplate.Workbench.csproj")))
-                return folder.FullName;
-        }
-
-        return null;
-    });
-
-    public bool CanWriteFiles => projectFolder.Value is not null;
+    public bool CanWriteFiles => WorkbenchFolders.Project is not null;
 
     public string? Find(string resource, string key)
     {
@@ -50,7 +39,7 @@ public sealed partial class WorkbenchTextEdits
 
     public async Task<bool> Save(string resource, string key, string culture, string value)
     {
-        if (projectFolder.Value is not { } folder || ResxFile(folder, resource, culture) is not { } path || File.Exists(path) is false)
+        if (WorkbenchFolders.Project is not { } folder || ResxFile(folder, resource, culture) is not { } path || File.Exists(path) is false)
             return false;
 
         var raw = await File.ReadAllBytesAsync(path);

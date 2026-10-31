@@ -150,6 +150,26 @@
         </div>
     </section>
 
+    <section id="flows" class="section">
+        <div class="section-head">
+            <h2>@Localizer[nameof(WorkbenchStrings.Flows)]</h2>
+            <p>@Localizer[nameof(WorkbenchStrings.FlowsHint)]</p>
+        </div>
+        <div class="flow-cards">
+            @foreach (var flow in reviewSession.Flows)
+            {
+                <a class="flow-card" href="@WorkbenchUrls.Flow(flow.Id)">
+                    <span class="flow-card-name" dir="auto"><BitIcon IconName="@BitIconName.Flow" Size="BitSize.Small" /> @flow.Name</span>
+                    <span class="flow-card-meta">@Localizer[nameof(WorkbenchStrings.ScreenCount), flow.Screens.Length]</span>
+                </a>
+            }
+            <a class="flow-card all-flows" href="@WorkbenchUrls.Flows">
+                <span class="flow-card-name">@Localizer[nameof(WorkbenchStrings.AllFlows)]</span>
+                <span class="flow-card-meta">@Localizer[reviewSession.Flows.Count == 0 ? nameof(WorkbenchStrings.FlowsEmpty) : nameof(WorkbenchStrings.AllFlowsHint)]</span>
+            </a>
+        </div>
+    </section>
+
     <section class="section">
         <Bmotion Preset="BmPresets.Reveal(distance: 24)">
             <div class="cta">

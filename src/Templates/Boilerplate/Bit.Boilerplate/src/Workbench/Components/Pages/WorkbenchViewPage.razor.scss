@@ -181,6 +181,24 @@
     width: 100%;
 }
 
+.pick-banner {
+    top: 0.75rem;
+    left: 50%;
+    gap: 0.5rem;
+    display: flex;
+    position: fixed;
+    z-index: $bit-zindex-modal;
+    align-items: center;
+    border-radius: 999px;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.25rem 0.25rem 1rem;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-secondary;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.45);
+}
+
 .not-found {
     gap: 1rem;
     display: flex;

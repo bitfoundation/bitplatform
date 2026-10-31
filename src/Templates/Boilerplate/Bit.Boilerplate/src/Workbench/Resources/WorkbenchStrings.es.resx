@@ -1981,40 +1981,10 @@
         <value>Flujos</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>Un flujo recorre páginas paso a paso, como iniciar sesión, encontrar un elemento y editarlo. Reprodúcelo aquí o descarga cada paso como una captura numerada. Tu agente también puede prepararte uno.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>Elige un flujo</value>
+        <value>Un flujo muestra las pantallas de una tarea una al lado de otra, cada una en el estado que importa, como una lista y el diálogo que abre su botón, con flechas que indican cómo pasar de una a la siguiente. Abre uno para entender la app o para repasarla en una reunión.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>Nombre del nuevo flujo</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>Crear</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>Aún no hay pasos. Prepara la vista seleccionada como debe verse el paso y luego agrégala.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>Quitar paso</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>Qué muestra este paso (opcional)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>Agregar la vista seleccionada como paso</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>Paso anterior</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>Paso siguiente</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>Paso {0} de {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>Capturas numeradas</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>Eliminar flujo</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>Tu propio color</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>Esquinas</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>Rectas</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>Más redondeadas</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>Espaciado</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>Compacto</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>Amplio</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>Solo cambia esta vista. Cuando te guste una opción, pide a tu agente que la lleve al tema de la app.</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>Aún no hay comentarios.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Los flujos se crean en el equipo donde se ejecuta el banco de trabajo. Aquí puedes reproducirlos y descargar sus capturas.</value>
+        <value>Los flujos se dibujan en el equipo donde se ejecuta el banco de trabajo. Aquí puedes abrirlos y recorrerlos.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Revisa en vivo con tu agente de IA</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Revisión en vivo con IA</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Fijar un comentario</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Toca el punto que quieres comentar</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>Aún no hay flujos. Pide a tu agente que dibuje uno, como «muestra cómo se añade un edificio», o añade vistas a un flujo desde la pestaña Flujos de una página.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>No hay ningún flujo en este enlace. Puede que se haya eliminado.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>Este flujo aún no tiene pantallas. Añádele vistas desde la pestaña Flujos de una página o pídeselo a tu agente.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Pantallas: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>Todos los flujos</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>Las pantallas de una tarea una junto a otra, unidas por flechas</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Añadir esta vista a un flujo</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>El flujo recibe la vista tal como está ahora: su dispositivo, sus ajustes y lo que esté abierto en la página.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Flujo</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>Nuevo flujo</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>Qué muestra esta pantalla (opcional)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>Cómo se llega aquí desde la última pantalla (opcional)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>Qué hace el usuario</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Tocar «Añadir edificio»</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Añadir esta vista</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Abrir el tablero</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>Abrir en el banco de trabajo</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Mostrar todas las pantallas</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Presentar</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Pantalla anterior</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Pantalla siguiente</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Dejar de presentar</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} de {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Arrastra una pantalla para moverla. Arrastra desde el punto del borde derecho de una pantalla hasta otra para dibujar una flecha, haz doble clic en una flecha para ponerle nombre y pulsa Supr para quitar lo que hayas seleccionado.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>¿Eliminar este flujo?</value>
     </data>
 </root>

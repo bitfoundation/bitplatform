@@ -184,18 +184,6 @@
                       ValueChanged="(string? accent) => Update(Value with { Accent = WorkbenchScenario.ReadAccent(accent) })"
                       Placeholder="#2f6fde"
                       MaxLength="7" />
-        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.CornerRadius)]</BitText>
-        <div class="segments three">
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Radius is WorkbenchRadius.Square)" OnClick="() => Update(Value with { Radius = WorkbenchRadius.Square })">@Localizer[nameof(WorkbenchStrings.RadiusSquare)]</BitButton>
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Radius is null)" OnClick="() => Update(Value with { Radius = null })">@Localizer[nameof(WorkbenchStrings.ThemeDefault)]</BitButton>
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Radius is WorkbenchRadius.Round)" OnClick="() => Update(Value with { Radius = WorkbenchRadius.Round })">@Localizer[nameof(WorkbenchStrings.RadiusRound)]</BitButton>
-        </div>
-        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.Density)]</BitText>
-        <div class="segments three">
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Density is WorkbenchDensity.Compact)" OnClick="() => Update(Value with { Density = WorkbenchDensity.Compact })">@Localizer[nameof(WorkbenchStrings.DensityCompact)]</BitButton>
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Density is null)" OnClick="() => Update(Value with { Density = null })">@Localizer[nameof(WorkbenchStrings.ThemeDefault)]</BitButton>
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Density is WorkbenchDensity.Comfortable)" OnClick="() => Update(Value with { Density = WorkbenchDensity.Comfortable })">@Localizer[nameof(WorkbenchStrings.DensityComfortable)]</BitButton>
-        </div>
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeTweaksHint)]</BitText>
     </section>
 

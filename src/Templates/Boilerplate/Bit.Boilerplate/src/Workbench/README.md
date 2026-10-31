@@ -30,7 +30,7 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
   breakpoints, the same ones its styles and components switch at, and snaps the view to one of them.
 - **This page**: a page can offer design options to compare (a table or cards, say) and switches for its own cases, like
   how many items there are or how long the names are.
-- **Try the theme**: another primary color, rounder or square corners and tighter or roomier spacing, on this view only.
+- **Try the theme**: another primary color on this view only.
   Text size, reduced motion and color blindness are a switch away too.
 - **Modes**: Comment pins a note on any spot of the page, Inspect names the component under the pointer with its size,
   spacing, font and the theme colors it uses, and Edit text changes a text in every language, straight into the
@@ -39,7 +39,9 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
   agent answers on each comment, shows its plan as a checklist and ticks it as it goes.
 - **Checks**: an accessibility check of the selected view (axe-core) and a search for colors that don't come from the
   theme.
-- **Flows**: a named walk through pages, step by step, to play here or download as numbered screenshots.
+- **Flows**: the screens of a task side by side on a board at `/flows`, each a page in the state that matters, like a
+  list and the dialog its button opens, with arrows for how you get from one to the next. Present one screen by screen
+  in a meeting. Your agent draws them, or you add the selected view to a flow from the Flows tab.
 - **Review sheet**: every view, its settings and the comments in one HTML or PDF file to send around.
 - **`/preview/<page>`**: the page alone, with its settings in the query string. This is what each view shows.
 
@@ -67,11 +69,13 @@ first when it plans one. It can also bring one of the app's existing pages in, f
 
 ## Review with your agent
 
-The comments live in a bit Bcrdt document the Workbench keeps in `App_Data`: every browser that has the page open holds
-a copy and sees changes as they happen, whether they come from you or from your agent. The agent reaches the same
-document through the Workbench's MCP server (`/mcp`, listed as `workbench` in the project's agent settings) or its HTTP
-endpoints under `/api/review`. Once you ask it to go through the review, it keeps listening: a new comment reaches it as
-you send it, it changes the page, hot reload shows the change in your view, and it replies and ticks the comment.
+The comments, page statuses and flows live in a bit Bcrdt document the Workbench keeps in `App_Data/Reviews` in its
+project folder. Git ignores that folder, so the review outlives rebuilds and stays on your machine; the review sheet is
+the way to send it around. Every browser that has the page open holds a copy and sees changes as they happen, whether
+they come from you or from your agent. The agent reaches the same document through the Workbench's MCP server (`/mcp`,
+listed as `workbench` in the project's agent settings) or its HTTP endpoints under `/api/review`. Once you ask it to go
+through the review, it keeps listening: a new comment reaches it as you send it, it changes the page, hot reload shows
+the change in your view, and it replies and ticks the comment.
 
 Only this machine can talk to the agent. The MCP server and the review endpoints answer only local requests, and opened
 from anywhere else, through a shared link or a public address, the review is read-only: comments, replies and statuses
@@ -91,6 +95,6 @@ computer.
 
 The Workbench is not deployed with the app. To show a page to someone else for a while, publish it to a folder, run it
 from there and put it online with a Cloudflare quick tunnel: the link works while your machine, the Workbench and the
-tunnel keep running. Whoever has the link sees the review but can't add to it. To keep it online, publish it like any ASP.NET Core app to a server that has a Chromium-based
-browser for the screenshots. The `Screenshots` section of `appsettings.json` caps how many captures run at once and how
-many each client may ask for per minute.
+tunnel keep running. Whoever has the link sees the review but can't add to it. To keep it online, publish it like any
+ASP.NET Core app to a server that has a Chromium-based browser for the screenshots. The `Screenshots` section of
+`appsettings.json` caps how many captures run at once and how many each client may ask for per minute.

@@ -19,4 +19,16 @@
             </a>
         }
     }
+
+    @if (string.IsNullOrWhiteSpace(searchText))
+    {
+        <div class="group-title">@Localizer[nameof(WorkbenchStrings.Flows)]</div>
+        <a class="page-link" href="@WorkbenchUrls.Flows" @onclick="OnNavigate">
+            <BitIcon IconName="@BitIconName.Flow" Size="BitSize.Medium" Class="page-icon" />
+            <span class="page-text">
+                <span class="page-title">@Localizer[nameof(WorkbenchStrings.AllFlows)]</span>
+                <span class="page-description">@Localizer[nameof(WorkbenchStrings.AllFlowsHint)]</span>
+            </span>
+        </a>
+    }
 </nav>

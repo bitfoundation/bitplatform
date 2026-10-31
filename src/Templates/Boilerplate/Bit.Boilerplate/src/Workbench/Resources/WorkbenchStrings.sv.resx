@@ -1981,40 +1981,10 @@
         <value>Flöden</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>Ett flöde går igenom sidor steg för steg, till exempel att logga in, hitta ett objekt och redigera det. Spela upp det här eller ladda ned varje steg som en numrerad skärmbild. Din agent kan också förbereda ett åt dig.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>Välj ett flöde</value>
+        <value>Ett flöde visar en uppgifts skärmar sida vid sida, var och en i det läge som spelar roll, som en lista och dialogen som dess knapp öppnar, med pilar för hur du tar dig från en till nästa. Öppna ett för att förstå appen eller gå igenom den på ett möte.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>Namn på det nya flödet</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>Skapa</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>Inga steg än. Ställ in den valda vyn så som steget ska se ut och lägg sedan till den.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>Ta bort steg</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>Vad det här steget visar (valfritt)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>Lägg till den valda vyn som ett steg</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>Föregående steg</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>Nästa steg</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>Steg {0} av {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>Numrerade skärmbilder</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>Ta bort flöde</value>
@@ -2355,24 +2325,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>Egen färg</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>Hörn</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>Skarpa</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>Rundare</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>Avstånd</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>Kompakt</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>Luftigt</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>Bara den här vyn ändras. När du gillar något, be din agent att lägga in det i appens tema.</value>
     </data>
@@ -2431,7 +2383,7 @@
         <value>Inga kommentarer än.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flöden skapas på datorn som kör arbetsbänken. Här kan du spela upp dem och ladda ned deras skärmbilder.</value>
+        <value>Flöden ritas på datorn som kör arbetsbänken. Här kan du öppna dem och gå igenom dem.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Granska live med din AI-agent</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Livegranskning med AI</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Fäst en kommentar</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Tryck på stället du vill kommentera</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>Inga flöden än. Be din agent rita ett, som ”visa hur man lägger till en byggnad”, eller lägg till vyer i ett flöde från fliken Flöden på en sida.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>Det finns inget flöde på den här länken. Det kan ha tagits bort.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>Det här flödet har inga skärmar än. Lägg till vyer från fliken Flöden på en sida, eller be din agent.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Skärmar: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>Alla flöden</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>En uppgifts skärmar sida vid sida, sammankopplade med pilar</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Lägg till den här vyn i ett flöde</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>Flödet får vyn som den är nu: dess enhet, dess inställningar och det som är öppet på sidan.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Flöde</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>Nytt flöde</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>Vad den här skärmen visar (valfritt)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>Hur du kommer hit från den förra skärmen (valfritt)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>Vad användaren gör</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Tryck på ”Lägg till byggnad”</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Lägg till den här vyn</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Öppna tavlan</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>Öppna i arbetsbänken</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Visa alla skärmar</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Presentera</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Föregående skärm</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Nästa skärm</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Sluta presentera</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} av {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Dra en skärm för att flytta den. Dra från punkten på en skärms högra kant till en annan skärm för att rita en pil, dubbelklicka på en pil för att namnge den och tryck på Delete för att ta bort det du har markerat.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>Ta bort det här flödet?</value>
     </data>
 </root>

@@ -62,7 +62,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddBitBcrdtServices(collaboration => collaboration.UseTransport<WorkbenchReviewRelay>().UseInMemoryStore());
             services.AddBitBcrdtDocumentHost(sp => new()
             {
-                Store = new BcrdtFileSystemDocumentStore(Path.Combine(sp.GetRequiredService<IHostEnvironment>().ContentRootPath, "App_Data", "Reviews")),
+                Store = new BcrdtFileSystemDocumentStore(WorkbenchFolders.Reviews),
                 ValidateUpdate = context =>
                 {
                     sp.GetRequiredService<WorkbenchReviewAgent>().Pulse();

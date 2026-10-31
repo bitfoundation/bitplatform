@@ -1989,24 +1989,6 @@
     <data name="CustomColor" xml:space="preserve">
         <value>Your own color</value>
     </data>
-    <data name="CornerRadius" xml:space="preserve">
-        <value>Corners</value>
-    </data>
-    <data name="RadiusSquare" xml:space="preserve">
-        <value>Square</value>
-    </data>
-    <data name="RadiusRound" xml:space="preserve">
-        <value>Rounder</value>
-    </data>
-    <data name="Density" xml:space="preserve">
-        <value>Spacing</value>
-    </data>
-    <data name="DensityCompact" xml:space="preserve">
-        <value>Compact</value>
-    </data>
-    <data name="DensityComfortable" xml:space="preserve">
-        <value>Roomy</value>
-    </data>
     <data name="ThemeTweaksHint" xml:space="preserve">
         <value>Only this view changes. When you like one, ask your agent to put it in the app's theme.</value>
     </data>
@@ -2245,40 +2227,10 @@
         <value>Flows</value>
     </data>
     <data name="FlowsHint" xml:space="preserve">
-        <value>A flow walks through pages step by step, like signing in, finding an item and editing it. Play it here or download every step as a numbered screenshot. Your agent can prepare one for you too.</value>
-    </data>
-    <data name="PickFlow" xml:space="preserve">
-        <value>Pick a flow</value>
+        <value>A flow lays out the screens of a task side by side, each in the state that matters, like a list and the dialog its button opens, with arrows for how you get from one to the next. Open one to understand the app or to talk it through in a meeting.</value>
     </data>
     <data name="NewFlowName" xml:space="preserve">
         <value>New flow's name</value>
-    </data>
-    <data name="CreateFlow" xml:space="preserve">
-        <value>Create</value>
-    </data>
-    <data name="NoSteps" xml:space="preserve">
-        <value>No steps yet. Set up the selected view the way the step should look, then add it.</value>
-    </data>
-    <data name="RemoveStep" xml:space="preserve">
-        <value>Remove step</value>
-    </data>
-    <data name="StepNote" xml:space="preserve">
-        <value>What this step shows (optional)</value>
-    </data>
-    <data name="AddStep" xml:space="preserve">
-        <value>Add the selected view as a step</value>
-    </data>
-    <data name="PreviousStep" xml:space="preserve">
-        <value>Previous step</value>
-    </data>
-    <data name="NextStep" xml:space="preserve">
-        <value>Next step</value>
-    </data>
-    <data name="StepOf" xml:space="preserve">
-        <value>Step {0} of {1}</value>
-    </data>
-    <data name="FlowScreenshots" xml:space="preserve">
-        <value>Numbered screenshots</value>
     </data>
     <data name="DeleteFlow" xml:space="preserve">
         <value>Delete flow</value>
@@ -2431,7 +2383,7 @@
         <value>No comments yet.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows are made on the computer that runs the Workbench. Here you can play them and download their screenshots.</value>
+        <value>Flows are drawn on the computer that runs the Workbench. Here you can open them and walk through them.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Review live with your AI agent</value>
@@ -2441,5 +2393,86 @@
     </data>
     <data name="HomeChipLive" xml:space="preserve">
         <value>Live review with AI</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Pin a comment</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Tap the spot you want to comment on</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>No flows yet. Ask your agent to draw one, like “show how a building is added”, or add views to a flow from a page's Flows tab.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>There is no flow at this link. It may have been deleted.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>This flow has no screens yet. Add views to it from a page's Flows tab, or ask your agent.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Screens: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>All flows</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>A task's screens side by side, joined by arrows</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Add this view to a flow</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>The flow gets the view as it is now: its device, its settings and whatever is open on the page.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Flow</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>New flow</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>What this screen shows (optional)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>How you get here from the last screen (optional)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>What the user does</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Tap Add building</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Add this view</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Open the board</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>Open in the Workbench</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Show all screens</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Present</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Previous screen</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Next screen</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Stop presenting</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} of {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Drag a screen to move it. Drag from the dot on a screen's right edge to another screen to draw an arrow, double-click an arrow to name it, and press Delete to remove what you selected.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>Delete this flow?</value>
     </data>
 </root>

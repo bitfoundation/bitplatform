@@ -13,7 +13,9 @@ public static class WorkbenchReviewJson
             {
                 flow.Id,
                 flow.Name,
-                Steps = flow.Steps.Select(step => new { Page = step.PageKey, step.Query, step.Note, Workbench = $"{WorkbenchUrls.Workbench(step.PageKey)}{step.Query}" }).ToArray()
+                Board = WorkbenchUrls.Flow(flow.Id),
+                Screens = flow.Screens.Select(screen => new { screen.Id, Page = screen.PageKey, screen.Query, screen.Note, State = screen.HasState }).ToArray(),
+                Links = flow.Links.Select(link => new { link.From, link.To, link.Label }).ToArray()
             }).ToArray()
         };
     }
