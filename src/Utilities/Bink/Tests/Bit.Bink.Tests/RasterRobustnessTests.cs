@@ -194,6 +194,20 @@ public class RasterRobustnessTests
     }
 
     [TestMethod]
+    public void An_image_too_costly_to_draw_is_not_decoded_before_the_export_fails()
+    {
+        byte[] png = CreatePng(4000, 4000, colorType: 6, rows: CompressRows(4000, 4000, 4));
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 500, Height = 500 });
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(png, "image/png", 4000, 4000), new BinkRect(0, 0, 500, 500)));
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkPngExporter.Render(document, new BinkPngExportOptions { MaxRasterWork = 1_000_000 }, out _, out _));
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.IsLessThan(16L * 1024 * 1024, allocated, $"{allocated} bytes were allocated for an export that failed on its work limit");
+    }
+
+    [TestMethod]
     public void A_drawing_within_the_raster_work_limit_renders_exactly_as_without_one()
     {
         byte[] png = TestData.CreatePng(40, 30, (x, y) => new BinkColor((byte)(x * 6), (byte)(y * 8), 90));
