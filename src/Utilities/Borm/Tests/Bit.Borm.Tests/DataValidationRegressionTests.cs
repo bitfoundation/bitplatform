@@ -41,6 +41,7 @@ public class DvAddress { public string? City { get; set; } }
 public class DvCustomer { public DvAddress Address { get; set; } = new(); }
 public class DvLine { public string? Product { get; set; } }
 public class DvOrder { public List<DvLine> Lines { get; set; } = []; }
+public class DvTags { public List<string> Tags { get; set; } = ["a"]; }
 public class DvOuter
 {
     public DvCustomer Customer { get; set; } = new();
@@ -845,6 +846,27 @@ public class DataValidationRegressionTests
         var codes = Assert.IsExactInstanceOfType<string[]>(data["codes"]);
         Assert.HasCount(1, codes);
         Assert.AreEqual("a", codes[0]);
+    }
+
+    [TestMethod]
+    public void Writing_far_past_the_end_of_a_model_list_is_refused_rather_than_padded()
+    {
+        var model = new DvOrder();
+        var tags = new DvTags();
+
+        var store = new BormModelDataAccessor(tags);
+        store.SetValue("Tags[100000000]", "x");
+        Assert.IsTrue(store.LastWriteFailed);
+        // A row below the end is materialised on the way, so it is refused there too.
+        new BormModelDataAccessor(model).SetValue("Lines[100000000].Product", "x");
+
+        Assert.AreSequenceEqual(["a"], tags.Tags);
+        Assert.IsEmpty(model.Lines);
+        // A short gap is still padded, as it always was.
+        store.SetValue("Tags[3]", "x");
+        Assert.IsFalse(store.LastWriteFailed);
+        Assert.HasCount(4, tags.Tags);
+        Assert.AreEqual("x", tags.Tags[3]);
     }
 
     [TestMethod]

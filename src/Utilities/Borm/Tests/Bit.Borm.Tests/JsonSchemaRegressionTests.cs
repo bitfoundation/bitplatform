@@ -1127,6 +1127,119 @@ public class JsonSchemaRegressionTests
         }
     }
 
+    [TestMethod]
+    public void A_labelled_choice_counts_once_against_the_choice_budget_however_often_it_is_looked_at()
+    {
+        // Charged as each pass asked whether the union was an enum, 100,000 labelled choices came to 300,000.
+        var json = new StringBuilder("""{"type":"object","properties":{"f":{"oneOf":[""");
+        for (var i = 0; i < 100_000; i++) json.Append($"{{\"const\":\"v{i}\",\"title\":\"V{i}\"}},");
+        json.Length--;
+        json.Append("]}}}");
+
+        Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
+        Assert.HasCount(100_000, form.Fields[0].Options);
+    }
+
+    [TestMethod]
+    public void A_shared_labelled_union_behind_many_tag_lists_runs_out_of_branches()
+    {
+        // A tag list reads its items' rules and never makes options of them, so the choice budget never saw
+        // the union every one of them walked.
+        var json = new StringBuilder("""{"$defs":{"U":{"oneOf":[""");
+        for (var i = 0; i < 50_000; i++) json.Append($"{{\"const\":\"v{i}\"}},");
+        json.Length--;
+        json.Append("]}},\"type\":\"object\",\"properties\":{");
+        for (var f = 0; f < 2000; f++) json.Append($"\"f{f}\":{{\"type\":\"array\",\"x-widget\":\"tags\",\"items\":{{\"$ref\":\"#/$defs/U\"}}}},");
+        json.Length--;
+        json.Append("}}");
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
+
+        Assert.Contains("branches", error!, StringComparison.Ordinal);
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+    }
+
+    [TestMethod]
+    public void A_shared_union_padded_with_null_branches_runs_out_of_branches()
+    {
+        // Null branches are skipped past on the way to the ones that say something, and every field that
+        // used the union skipped past all of them again.
+        var json = new StringBuilder("""{"$defs":{"U":{"anyOf":[""");
+        for (var i = 0; i < 50_000; i++) json.Append("{\"type\":\"null\"},");
+        json.Append("{\"type\":\"string\"},{\"type\":\"number\"}]}},\"type\":\"object\",\"properties\":{");
+        for (var f = 0; f < 5000; f++) json.Append($"\"f{f}\":{{\"$ref\":\"#/$defs/U\"}},");
+        json.Length--;
+        json.Append("}}");
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
+
+        Assert.Contains("branches", error!, StringComparison.Ordinal);
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+    }
+
+    [TestMethod]
+    public void A_shared_bag_of_attributes_used_by_many_fields_runs_out_of_schema_text()
+    {
+        var bag = new StringBuilder();
+        for (var i = 0; i < 20_000; i++) bag.Append($"\"a{i}\":1,");
+        bag.Length--;
+        var json = new StringBuilder("{\"$defs\":{\"E\":{\"type\":\"string\",\"x-attributes\":{" + bag + "}}},\"type\":\"object\",\"properties\":{");
+        for (var f = 0; f < 2000; f++) json.Append($"\"f{f}\":{{\"$ref\":\"#/$defs/E\"}},");
+        json.Length--;
+        json.Append("}}");
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
+
+        Assert.Contains("characters of it", error!, StringComparison.Ordinal);
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+    }
+
+    [TestMethod]
+    public void A_shared_description_used_by_many_fields_runs_out_of_schema_text()
+    {
+        var json = new StringBuilder("{\"$defs\":{\"E\":{\"type\":\"string\",\"description\":\"" + new string('d', 200_000) + "\"}},\"type\":\"object\",\"properties\":{");
+        for (var f = 0; f < 2000; f++) json.Append($"\"f{f}\":{{\"$ref\":\"#/$defs/E\"}},");
+        json.Length--;
+        json.Append("}}");
+
+        Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
+        Assert.Contains("characters of it", error!, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void A_shared_definition_wide_with_unknown_keywords_runs_out_of_schema_text()
+    {
+        // Every keyword a field looks up walks past every keyword the schema has, known or not.
+        var json = new StringBuilder("""{"$defs":{"E":{"type":"string",""");
+        for (var i = 0; i < 100_000; i++) json.Append("\"properties\":{},");
+        json.Length--;
+        json.Append("}},\"type\":\"object\",\"properties\":{");
+        for (var f = 0; f < 5000; f++) json.Append($"\"f{f}\":{{\"$ref\":\"#/$defs/E\"}},");
+        json.Length--;
+        json.Append("}}");
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        Assert.IsFalse(BormJsonSchemaImporter.TryImport(json.ToString(), out _, out var error));
+
+        Assert.Contains("characters of it", error!, StringComparison.Ordinal);
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(3), $"took {clock.Elapsed}");
+    }
+
+    [TestMethod]
+    public void A_definition_shared_by_ordinary_fields_stays_inside_the_schema_text_budget()
+    {
+        var json = new StringBuilder("""{"$defs":{"Name":{"type":"string","title":"Name","description":"Given and family name, as on the passport.","maxLength":200,"x-attributes":{"autocapitalize":"words"}}},"type":"object","properties":{""");
+        for (var f = 0; f < 5000; f++) json.Append($"\"f{f}\":{{\"$ref\":\"#/$defs/Name\"}},");
+        json.Length--;
+        json.Append("}}");
+
+        Assert.IsTrue(BormJsonSchemaImporter.TryImport(json.ToString(), out var form, out var error), error);
+        Assert.HasCount(5000, form.Fields);
+    }
+
     // ---------------------------------------------------------------- review: typed choices
 
     [TestMethod]

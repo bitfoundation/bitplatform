@@ -4021,16 +4021,25 @@ public sealed class BormState : IDisposable
     /// <remarks>
     /// Opt-in, not automatic: on an edit form loaded from storage, "this record has no lines" can be
     /// the truth, and inventing one would be the library editing the user's data on their behalf.
+    /// <para>
+    /// At most <see cref="BormDraft.MaxRows"/> rows are seeded, all the repeaters together, as a draft
+    /// restores at most that many: an imported schema says <c>"minItems": 100000000</c> in a few bytes,
+    /// and the form never finished opening. The rows of each list are added together and the form
+    /// settled once, where a row at a time settled it once per row.
+    /// </para>
     /// </remarks>
     private void SeedRequiredArrayItems()
     {
+        var budget = BormDraft.MaxRows;
         foreach (var (field, path) in EnumerateFieldPaths().ToList())
         {
             if (field.Type != BormFieldType.Array || field.MinItems is not { } min || min <= 0) continue;
             if (!field.Attributes.TryGetValue("seedMinItems", out var seed) || seed is not true) continue;
 
-            for (var i = ArrayCount(path); i < min; i++)
-                if (InsertArrayItem(field, path, int.MaxValue) < 0) break;
+            var current = ArrayCount(path);
+            var target = Math.Min(min, current + budget);
+            if (target <= current) continue;
+            budget -= WithRows(path, () => SetRowCount(field, path, target)) - current;
         }
     }
 

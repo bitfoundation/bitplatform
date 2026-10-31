@@ -17,6 +17,13 @@ public sealed class BormModelDataAccessor : IBormDataAccessor
 {
     private const BindingFlags Flags = BindingFlags.Public | BindingFlags.Instance;
 
+    /// <summary>
+    /// How far past a list's end a write may land, the gap filled with empty items. The bound the
+    /// dictionary accessor keeps: <c>Tags[100000000]</c> is a few bytes of path and was a hundred million
+    /// items of list.
+    /// </summary>
+    private const int MaxPadding = 1_000;
+
     // Property lookup sits on the hot path of every keystroke; reflection results are cached per type.
     private static readonly ConcurrentDictionary<(Type Type, string Name), PropertyInfo?> PropertyCache = new();
 
@@ -243,7 +250,7 @@ public sealed class BormModelDataAccessor : IBormDataAccessor
     {
         if (seg.IsIndex)
         {
-            if (target is not IList list) { LastWriteFailed = true; return; }
+            if (target is not IList list || seg.Index - list.Count > MaxPadding) { LastWriteFailed = true; return; }
 
             var elementType = BormFieldTypeResolver.GetEnumerableElementType(target.GetType()) ?? typeof(object);
             if (!BormValueConverter.TryCoerce(value, elementType, out var converted))

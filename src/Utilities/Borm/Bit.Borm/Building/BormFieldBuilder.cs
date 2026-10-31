@@ -653,7 +653,7 @@ public sealed class BormFieldBuilder
     /// <remarks>
     /// Opt-in rather than implied by <see cref="Items"/>: on an edit form loaded from storage, "this
     /// record has no lines" can be the truth, and inventing one would be the library editing the user's
-    /// data on their behalf.
+    /// data on their behalf. A form seeds at most <see cref="BormDraft.MaxRows"/> rows, all its lists together.
     /// </remarks>
     public BormFieldBuilder SeedMinItems(bool value = true)
     {

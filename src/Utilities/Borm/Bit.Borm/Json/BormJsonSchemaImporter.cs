@@ -72,9 +72,29 @@ public static class BormJsonSchemaImporter
     /// <summary>How many rounds of union-collapsing and allOf-folding one subschema may take.</summary>
     private const int MaxPreparePasses = 8;
 
+    /// <summary>
+    /// How many choices and suggestions one document may give its fields, all of them together. A shared
+    /// enum is copied into every field that refers to it, so a few kilobytes of references can ask for
+    /// millions of options.
+    /// </summary>
     private const int MaxChoices = 250_000;
 
+    /// <summary>How many characters those choices and suggestions may come to, all of them together.</summary>
     private const int MaxChoiceText = 10_000_000;
+
+    /// <summary>
+    /// How many characters of schema the fields may be built from, all of them together: each field reads
+    /// its own keywords — a title, a description, a bag of attributes — and keeps what it reads, so a
+    /// definition shared by every field is read, and kept, once for each of them.
+    /// </summary>
+    private const int MaxFieldText = 10_000_000;
+
+    /// <summary>
+    /// How many union branches one document may have looked at, each time a field asks what its
+    /// <c>anyOf</c>/<c>oneOf</c> is — an enum with labels, a discriminated union, an optional value. The
+    /// answer is asked again for every field that refers to the union, and a few times for each.
+    /// </summary>
+    private const int MaxUnionBranches = MaxChoices * 4;
 
     /// <summary>
     /// The pattern that stands in for <c>"format": "uuid"</c> as the browser's own <c>pattern</c>
@@ -207,6 +227,7 @@ public static class BormJsonSchemaImporter
         // Anything else that is not an object — `true`, or a malformed value — constrains nothing.
         if (schema.ValueKind != JsonValueKind.Object) schema = ImportContext.EmptySchema;
 
+        ctx.ChargeSchema(schema);
         ctx.Enter(identity, countsAsField: true);
         try
         {
@@ -394,6 +415,7 @@ public static class BormJsonSchemaImporter
         if (field.Type == BormFieldType.MultiSelect && field.Options.Count == 0 && hasItems)
         {
             var itemSchema = ctx.Prepare(items, out _, out _);
+            ctx.ChargeSchema(itemSchema);
             if (itemSchema.ValueKind == JsonValueKind.Object)
                 valueKind = ReadChoices(ctx, ctx.ConstBranches(itemSchema), itemSchema, field.Options, ReadTypeName(itemSchema));
         }
@@ -403,6 +425,7 @@ public static class BormJsonSchemaImporter
         if (field.Type == BormFieldType.Tags && hasItems)
         {
             var itemSchema = ctx.Prepare(items, out _, out _);
+            ctx.ChargeSchema(itemSchema);
             if (itemSchema.ValueKind == JsonValueKind.Object)
             {
                 if (field.MinLength is null && TryReadInt(itemSchema, "minLength", out var minLen))
@@ -1265,6 +1288,8 @@ public static class BormJsonSchemaImporter
         private int _allOfDepth;
         private long _choices;
         private long _choiceText;
+        private long _fieldText;
+        private long _unionBranches;
 
         /// <summary>Set when an <c>allOf</c> branch had to be dropped because it names a definition seen too often.</summary>
         private bool _recursionHit;
@@ -1371,6 +1396,36 @@ public static class BormJsonSchemaImporter
             if (_choices > MaxChoices || _choiceText > MaxChoiceText)
                 throw new FormatException(
                     $"The schema's choices and suggestions come to more than {MaxChoices} values or {MaxChoiceText} characters across its fields; it is refused rather than built.");
+        }
+
+        /// <summary>
+        /// Charges a field's schema against <see cref="MaxFieldText"/>: every keyword's name, and its value
+        /// unless it is the <c>properties</c> or <c>items</c> built as fields of their own and charged as
+        /// those, or an <c>anyOf</c>/<c>oneOf</c>, whose branches are charged as they are looked at (see
+        /// <see cref="ChargeBranch"/>). A name is charged even then, since every keyword is something
+        /// each lookup on the schema walks past.
+        /// </summary>
+        public void ChargeSchema(JsonElement schema)
+        {
+            if (schema.ValueKind != JsonValueKind.Object) return;
+            foreach (var keyword in schema.EnumerateObject())
+            {
+                _fieldText += Encoding.UTF8.GetCharCount(JsonMarshal.GetRawUtf8PropertyName(keyword));
+                if (!keyword.NameEquals("properties") && !keyword.NameEquals("items")
+                    && !keyword.NameEquals("anyOf") && !keyword.NameEquals("oneOf"))
+                    _fieldText += Encoding.UTF8.GetCharCount(JsonMarshal.GetRawUtf8Value(keyword.Value));
+                if (_fieldText > MaxFieldText)
+                    throw new FormatException(
+                        $"The schema's fields are built from more than {MaxFieldText} characters of it; it is refused rather than built.");
+            }
+        }
+
+        /// <summary>Charges one union branch looked at against <see cref="MaxUnionBranches"/>.</summary>
+        private void ChargeBranch()
+        {
+            if (++_unionBranches > MaxUnionBranches)
+                throw new FormatException(
+                    $"The schema's unions have more than {MaxUnionBranches} branches to look at across its fields; it is refused rather than built.");
         }
 
         /// <summary>Follows a chain of local <c>$ref</c>s to the schema they ultimately name.</summary>
@@ -1515,6 +1570,7 @@ public static class BormJsonSchemaImporter
             JsonElement? chosen = null;
             foreach (var raw in union.Branches.EnumerateArray())
             {
+                ChargeBranch();
                 var target = Resolve(raw, followed: null, keepSiblings: false);
                 if (target.ValueKind == JsonValueKind.False || DeclaresOnlyNull(target)) continue;
                 if (chosen is not null) return schema;
@@ -1573,6 +1629,7 @@ public static class BormJsonSchemaImporter
             var outline = new List<(JsonElement Raw, JsonElement Target)>();
             foreach (var raw in union.Branches.EnumerateArray())
             {
+                ChargeBranch();
                 var target = Resolve(raw, followed: null, keepSiblings: false);
                 if (target.ValueKind == JsonValueKind.False || DeclaresOnlyNull(target)) continue;
                 if (target.ValueKind == JsonValueKind.Object && target.TryGetProperty("allOf", out _))
@@ -2036,16 +2093,15 @@ public static class BormJsonSchemaImporter
             List<ConstChoice>? choices = null;
             foreach (var raw in union.Branches.EnumerateArray())
             {
+                // Charged as a branch looked at, not as a choice: this is asked of the same union by every
+                // pass that wants to know whether it is an enum, and only ReadChoices makes options of it.
+                ChargeBranch();
                 var target = Resolve(raw, followed: null, keepSiblings: false);
                 if (DeclaresOnlyNull(target)) continue;
 
                 // The branch's own keywords win over the definition it refers to, as they do anywhere.
                 if (TryGet(raw, "const", out var value) || TryGet(target, "const", out value))
-                {
-                    var title = ReadString(raw, "title") ?? ReadString(target, "title");
-                    ChargeChoices(1, title?.Length ?? 0);
-                    (choices ??= []).Add(new ConstChoice(value, title));
-                }
+                    (choices ??= []).Add(new ConstChoice(value, ReadString(raw, "title") ?? ReadString(target, "title")));
                 else
                     return null;
             }
