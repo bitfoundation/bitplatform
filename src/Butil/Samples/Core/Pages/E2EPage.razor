@@ -44,6 +44,9 @@
 @inject Bit.Butil.ShadowDom shadowDom
 @inject Bit.Butil.DataTransfer dataTransfer
 @inject Bit.Butil.WebRtc webRtc
+@inject Bit.Butil.Compression compression
+@inject Bit.Butil.TrustedTypes trustedTypes
+@inject Bit.Butil.Sanitizer sanitizer
 @inject NavigationManager navManager
 
 @*
@@ -250,6 +253,19 @@
     <button id="stream-roundtrip" @onclick="StreamRoundTrip">gzip, then gunzip</button>
     <button id="stream-write" @onclick="StreamWrite">write into a sink</button>
     <button id="stream-missing" @onclick="StreamMissing">a 404 has no stream</button>
+</section>
+
+<section>
+    <h3>Compression</h3>
+    <button id="compression-limit" @onclick="CompressionOutputLimit">decompress up to a limit</button>
+</section>
+
+<section>
+    @* Rows mean nothing inside a div, so a table shows which context markup was parsed in. *@
+    <h3>Trusted Types</h3>
+    <table @ref="_trustedTypesTable" id="tt-table"></table>
+    <button id="tt-set-html" @onclick="TrustedTypesSetHtml">SetHtml into a table</button>
+    <button id="tt-create-html" @onclick="TrustedTypesCreateHtml">CreateHtml for a sink</button>
 </section>
 
 <section>
@@ -1476,6 +1492,62 @@
         var response = await streams.FromResponse(new FetchRequest { Url = "/data/does-not-exist.bin" });
         Set($"stream:missing:{response.Status}");
         if (response.Stream is not null) await response.Stream.Cancel();
+    }
+
+    // ─── Compression ────────────────────────────────────────────────────────────
+    private async Task CompressionOutputLimit()
+    {
+        if (await compression.IsSupported() is false) { Set("compression:limit:unsupported"); return; }
+
+        // Zeros pack into almost nothing - the shape of a decompression bomb, at a size small enough to carry
+        // back across interop. Exactly the limit comes back whole; one byte less is refused, not cut short.
+        var zeros = new byte[16 * 1024];
+        var packed = await compression.Compress(zeros);
+        if (packed is null) { Set("compression:limit:no-output"); return; }
+
+        var exact = await compression.Decompress(packed, maxLength: zeros.Length);
+        var over = await compression.Decompress(packed, maxLength: zeros.Length - 1);
+        Set($"compression:limit:{packed.Length < 1024}/{exact?.Length ?? -1}/{exact.AsSpan().SequenceEqual(zeros)}/{over is null}");
+    }
+
+    // ─── Trusted Types ──────────────────────────────────────────────────────────
+    // With no CSP on the page nothing is enforced and every policy name is allowed, so the policies below can
+    // be created on any load of the page. Each is created once per load, which is all a test needs.
+    private ElementReference _trustedTypesTable;
+
+    private async Task TrustedTypesSetHtml()
+    {
+        if (await trustedTypes.IsSupported() is false || await sanitizer.IsSetHtmlSupported() is false) { Set("tt:set:unsupported"); return; }
+
+        const string policy = "butil-e2e-in-context";
+        if (await trustedTypes.CreatePolicy(policy) is false) { Set("tt:set:no-policy"); return; }
+
+        // Sanitized in a div first, the rows would be dropped and only "x" left to write into the table. Parsed
+        // in the table's own context they survive - with the handler and the script still removed, so
+        // sanitizing happened in that same pass.
+        var written = await trustedTypes.SetHtml(_trustedTypesTable, policy, "<tr><td onclick=\"alert(1)\">x</td></tr><script>alert(2)</script>");
+        Set($"tt:set:{written}");
+    }
+
+    private async Task TrustedTypesCreateHtml()
+    {
+        if (await trustedTypes.IsSupported() is false || await sanitizer.IsSupported() is false) { Set("tt:create:unsupported"); return; }
+
+        // A string a policy hands back is parsed again by whatever sink it is written to, so it is sanitized in
+        // a template's context - which keeps rows a div would drop.
+        const string defaults = "butil-e2e-for-sink";
+        if (await trustedTypes.CreatePolicy(defaults) is false) { Set("tt:create:no-policy"); return; }
+        var rows = await trustedTypes.CreateHtml(defaults, "<tr><td onclick=\"alert(1)\">x</td></tr>");
+
+        // A style element's text is written back out unescaped, and inside an SVG element the same text is
+        // markup: a '<' left in it is refused, while a style sheet without one passes.
+        await using var allowsStyle = await sanitizer.Create(new SanitizerConfig { Elements = ["style", "p"] });
+        const string styled = "butil-e2e-for-sink-styled";
+        if (allowsStyle is null || await trustedTypes.CreatePolicy(styled, sanitizer: allowsStyle) is false) { Set("tt:create:no-styled-policy"); return; }
+        var smuggled = await trustedTypes.CreateHtml(styled, "<style><img src=x onerror=alert(1)></style><p>ok</p>");
+        var sheet = await trustedTypes.CreateHtml(styled, "<style>p > b { color: red }</style><p>ok</p>");
+
+        Set($"tt:create:{rows}|{smuggled ?? "null"}|{sheet}");
     }
 
     // ─── WindowMessaging ────────────────────────────────────────────────────────

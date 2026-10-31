@@ -37,8 +37,11 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function subscribe(dotNetRef: any, listenerId: string, channelName: string) {
         if (!('BroadcastChannel' in window)) return;
         const entry = getChannel(channelName);
+        // Bounded like every other structured-clone channel (see utils.boundMessage): any tab, frame
+        // or worker of this origin can post here, and Blazor's interop writes the JSON of whatever it
+        // is handed with no cap of its own.
         const onMessage = (e: MessageEvent) => {
-            butil.utils.dispatch(dotNetRef, 'InvokeBroadcastChannelMessage', listenerId, e.data ?? null);
+            butil.utils.dispatch(dotNetRef, 'InvokeBroadcastChannelMessage', listenerId, butil.utils.boundMessage(e.data) ?? null);
         };
         const onError = () => {
             butil.utils.dispatch(dotNetRef, 'InvokeBroadcastChannelError', listenerId);

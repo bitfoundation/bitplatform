@@ -76,7 +76,9 @@ public class TrustedTypes(IJSRuntime js) : IAsyncDisposable
     /// The policy's name. It has to be listed in the CSP's <c>trusted-types</c> directive, and a name
     /// can only be created once per document. <c>"default"</c> is special: the browser falls back to
     /// it for any string assigned to a sink without a policy, which is the way to make existing code
-    /// keep working under enforcement.
+    /// keep working under enforcement. A sanitizing <c>"default"</c> policy sanitizes every such string
+    /// without knowing which element it is for, as <see cref="TrustedTypePolicyOptions.SanitizeHtml"/>
+    /// describes - so markup this app writes itself is better written through <see cref="SetHtml"/>.
     /// </param>
     /// <param name="options">What the policy allows. Defaults to sanitizing HTML and refusing every script URL.</param>
     /// <param name="sanitizer">
@@ -115,7 +117,21 @@ public class TrustedTypes(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Writes markup into an element through a policy - which is the point of having one: under
     /// enforcement this succeeds where assigning a string to <c>innerHTML</c> throws.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setHTML">https://developer.mozilla.org/en-US/docs/Web/API/Element/setHTML</see>
     /// </summary>
+    /// <remarks>
+    /// A policy that sanitizes HTML (see <see cref="TrustedTypePolicyOptions.SanitizeHtml"/>) writes
+    /// with <c>Element.setHTML</c> on <paramref name="element"/> itself, so the markup is sanitized as
+    /// it is parsed in that element's own context. Sanitizing to a string first and then parsing that
+    /// string into the element would parse it twice, in two contexts, and markup can mean something
+    /// different the second time - the shape of a mutation XSS. <see cref="CreateHtml"/> has no element
+    /// to parse into, so its text is for display, not for writing into the page some other way.
+    /// <br/>
+    /// A sink the browser hands to the policy itself - any string under a <c>"default"</c> policy - has
+    /// no element to offer either; see <see cref="TrustedTypePolicyOptions.SanitizeHtml"/> for how that
+    /// markup is kept from changing meaning.
+    /// </remarks>
     /// <returns>False when there is no such policy or the policy refused the markup; the element is left alone.</returns>
     public ValueTask<bool> SetHtml(ElementReference element, string policyName, string html)
         => js.Invoke<bool>("BitButil.trustedTypes.setHtml", element, policyName, html ?? string.Empty);

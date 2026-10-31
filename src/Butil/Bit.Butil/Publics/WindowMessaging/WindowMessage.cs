@@ -16,7 +16,10 @@ namespace Bit.Butil;
 /// Which of the two payloads carries this message. Branch on this rather than on a null check -
 /// <c>null</c> is a message a sender can legitimately post, arriving as the JSON text <c>"null"</c>.
 /// </param>
-/// <param name="Json">The message as JSON, or null for a binary one. Always valid JSON, so a payload that was a plain string arrives quoted.</param>
+/// <param name="Json">
+/// The message as JSON, or null for a binary one. Always valid JSON, so a payload that was a plain string arrives quoted.
+/// Capped at 32 MB, as described on <see cref="ButilMessage"/>: a larger message arrives as just its type name.
+/// </param>
 /// <param name="Data">The message's bytes, or null for a JSON one.</param>
 /// <param name="Ports">
 /// Ports the sender transferred along with the message, or an empty array. They belong to this

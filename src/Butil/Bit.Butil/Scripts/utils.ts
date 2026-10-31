@@ -8,6 +8,8 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         throttle,
         handleRegistry,
         encodeMessage,
+        messageJson,
+        boundMessage,
         randomUUID,
         pick
     };
@@ -174,25 +176,202 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // here, in one place, and stated in the C# docs: binary payloads stay binary, and everything
     // else becomes JSON. Non-binary data is ALWAYS stringified, including a plain string, so that
     // the .NET side can deserialize any message without first asking what shape it is.
+    //
+    // The JSON is capped, because a structured clone keeps shared references and JSON cannot: a
+    // message of a few kilobytes built as x = [x, x], forty times over, spells out to 2^40 leaves
+    // here. See jsonFits for how the cap is counted.
+    const MESSAGE_JSON_LIMIT = 32 * 1024 * 1024;
+    const TOO_LARGE = {};
+
     function encodeMessage(data: any): [boolean, string | null, Uint8Array | null] {
         if (data instanceof ArrayBuffer) return [true, null, new Uint8Array(data)];
         if (ArrayBuffer.isView(data)) {
             const view = data as ArrayBufferView;
             return [true, null, new Uint8Array(view.buffer, view.byteOffset, view.byteLength)];
         }
+        return [false, messageJson(data), null];
+    }
+
+    // The JSON of a message, capped. Never throws: a message JSON cannot write at all arrives as
+    // its type name rather than not at all.
+    function messageJson(data: any): string {
+        try {
+            return JSON.stringify(boundMessage(data) ?? null);
+        } catch {
+            return JSON.stringify(typeName(data));
+        }
+    }
+
+    // The message itself when its JSON stays within the cap, and its type name in its place when it
+    // does not. On its own, this is for the channels whose data .NET receives as a JsonElement,
+    // where Blazor's interop writes the JSON rather than this file.
+    function boundMessage(data: any): any {
+        let fits: boolean;
+        try {
+            fits = jsonFits(data);
+        } catch {
+            // A cyclic graph, or a value JSON cannot represent (a BigInt). Losing the message entirely
+            // would be worse than losing its shape.
+            return typeName(data);
+        }
+        if (fits) return data;
+
+        // The message can no longer say why it arrived empty, so the console does.
+        console.warn(`BitButil: a message whose JSON passes ${MESSAGE_JSON_LIMIT / 1024 / 1024} MB was delivered as its type name only.`);
+        return typeName(data);
+    }
+
+    // "[object Object]", "[object Array]" and so on. Not String(data), which calls the message's own
+    // toString - and a cloned object can carry a property of that name that is no function at all.
+    function typeName(data: any) {
+        return Object.prototype.toString.call(data);
+    }
+
+    // Whether data's JSON stays within the cap, counted the way JSON.stringify writes it but without
+    // writing any of it. Throws where JSON.stringify would: on a cycle, and on a BigInt.
+    //
+    // Counting is kept apart from writing so that it costs what the message cost to clone, and no
+    // more. An object is counted once and remembered, so one that is shared a million times costs a
+    // million lookups rather than a million walks - which a replacer passed to JSON.stringify cannot
+    // do, since it sees every reference and can skip none. And the count stops as soon as it passes
+    // the cap, so an array that is long but holds nothing is refused before it is walked.
+    //
+    // A number that is not a whole one is first counted at its longest: its exact length is that of
+    // the string it turns into, and making that string per number would make counting cost as much as
+    // writing. Only a message which that puts over the cap is counted again, exactly.
+    function jsonFits(data: any) {
+        return (countJson(data, false) ?? countJson(data, true)) === true;
+    }
+
+    // "-0.0000012345678901234567": no number is written longer.
+    const LONGEST_NUMBER = 25;
+
+    // JSON.stringify escapes a quote, a backslash and a control character, and a surrogate that is
+    // not half of a pair.
+    const ESCAPED = /["\\\u0000-\u001f\ud800-\udfff]/;
+
+    // One count for jsonFits: true when the JSON fits, false when it does not, and null when it only
+    // might - when the count passed the cap after taking a number at its longest.
+    function countJson(data: any, exact: boolean): boolean | null {
+        let budget = MESSAGE_JSON_LIMIT;
+        let estimated = false;
+        const sizes = new Map<object, number>();
+        const open = new Set<object>();
+
+        const spend = (length: number) => {
+            if ((budget -= length) < 0) throw TOO_LARGE;
+        };
+
+        const numberLength = (value: number) => {
+            if (!isFinite(value)) return 4;   // NaN and the infinities are written as null
+            const magnitude = Math.abs(value);
+            if (magnitude < 1e21 && Math.floor(magnitude) === magnitude) {
+                let digits = 1;
+                for (let power = 10; power <= magnitude; power *= 10) digits++;
+                return value < 0 ? digits + 1 : digits;
+            }
+            if (exact) return String(value).length;
+            estimated = true;
+            return LONGEST_NUMBER;
+        };
+
+        // Spends what one value adds to the JSON - not the key or the comma before it - and returns
+        // false for a value JSON leaves out.
+        function write(value: any, key: string | number): boolean {
+            const isObject = typeof value === 'object' && value !== null;
+            if (isObject) {
+                const known = sizes.get(value);
+                if (known !== undefined) {
+                    spend(known);
+                    return true;
+                }
+            }
+
+            const start = budget;
+            let json = value;
+            if ((isObject || typeof json === 'bigint') && typeof json.toJSON === 'function') json = json.toJSON(String(key));
+            switch (typeof json) {
+                case 'string': spend(quotedLength(json)); break;
+                case 'number': spend(numberLength(json)); break;
+                case 'boolean': spend(json ? 4 : 5); break;
+                case 'bigint': throw new TypeError('BigInt');
+                case 'object':
+                    if (json === null) spend(4);
+                    // A Number, String or Boolean object is written as the primitive it wraps.
+                    else if (json instanceof Number) spend(numberLength(Number(json)));
+                    else if (json instanceof String) spend(quotedLength(String(json)));
+                    else if (json instanceof Boolean) spend(json.valueOf() ? 4 : 5);
+                    else if (json instanceof BigInt) throw new TypeError('BigInt');
+                    else writeMembers(json);
+                    break;
+                default: return false;   // undefined, a function or a symbol
+            }
+
+            if (isObject) sizes.set(value, start - budget);
+            return true;
+        }
+
+        function writeMembers(value: any) {
+            if (open.has(value)) throw new TypeError('cyclic');
+            open.add(value);
+
+            if (Array.isArray(value)) {
+                // The brackets and the commas, up front: an array that is long but holds nothing - a
+                // sparse one - is refused here, not after a walk through its holes.
+                const length = value.length;
+                spend(length ? length + 1 : 2);
+                for (let i = 0; i < length; i++) {
+                    if (!write(value[i], i)) spend(4);   // written as null
+                }
+            } else if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+                // A typed array is written as an object keyed by index - {"0":1,"1":2} - and listing
+                // those keys would cost more than the JSON they make. So they are counted instead: the
+                // braces, and per element two quotes, a colon and a comma, up front, then the digits.
+                const typed = value as any;
+                const length = typed.length;
+                spend(length ? length * 4 + 1 : 2);
+                for (let i = 0; i < length; i++) {
+                    spend(numberLength(i));
+                    write(typed[i], i);
+                }
+            } else {
+                spend(2);
+                let first = true;
+                for (const key of Object.keys(value)) {
+                    if (!write(value[key], key)) continue;
+                    // The key, quoted, with its colon - and the comma before it.
+                    spend(quotedLength(key) + (first ? 1 : 2));
+                    first = false;
+                }
+            }
+
+            open.delete(value);
+        }
 
         try {
-            let budget = 32 * 1024 * 1024;
-            return [false, JSON.stringify(data ?? null, (key, value) => {
-                budget -= key.length + (typeof value === 'string' ? value.length : 8);
-                if (budget < 0) throw new RangeError();
-                return value;
-            }), null];
-        } catch {
-            // A cyclic graph, or a value JSON cannot represent (a function, a BigInt). Losing the
-            // message entirely would be worse than losing its shape.
-            return [false, JSON.stringify(Array.isArray(data) ? '[object Array]' : String(data)), null];
+            write(data ?? null, '');
+            return true;
+        } catch (e) {
+            if (e !== TOO_LARGE) throw e;
+            return estimated ? null : false;
         }
+    }
+
+    function quotedLength(text: string) {
+        let length = text.length + 2;
+        const first = text.search(ESCAPED);
+        if (first < 0) return length;
+
+        for (let i = first; i < text.length; i++) {
+            const c = text.charCodeAt(i);
+            if (c === 0x22 || c === 0x5c) length += 1;   // \" and \\
+            else if (c < 0x20) length += c === 0x08 || c === 0x09 || c === 0x0a || c === 0x0c || c === 0x0d ? 1 : 5;   // \n, or \u0001
+            else if (c >= 0xd800 && c <= 0xdfff) {
+                if (c <= 0xdbff && (text.charCodeAt(i + 1) & 0xfc00) === 0xdc00) i++;   // a pair, written as it is
+                else length += 5;
+            }
+        }
+        return length;
     }
 
     // Fire-and-forget dispatch into a .NET [JSInvokable] callback. The returned promise is not
