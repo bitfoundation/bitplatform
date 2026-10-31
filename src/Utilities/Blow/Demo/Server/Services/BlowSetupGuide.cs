@@ -77,8 +77,10 @@ public static partial class BlowSetupGuide
                 first frame from your Nodes and Edges and comes alive once WebAssembly starts. Reference `Bit.Blow` from
                 the .Client project (the server gets it transitively), and link the stylesheet from the server's
                 `App.razor`, which is the host page. The demo's `AddDemoServices` registers nothing - Blow has no services.
-                A client that lazy loads Bit.Blow gives `Routes` the InteractiveWebAssembly render mode and registers
-                `LazyAssemblyLoader` on the server - see `GetBlowGuideSection(heading: "Lazy loading on WebAssembly")`.
+                A client that lazy loads Bit.Blow gives `Routes` the InteractiveWebAssembly render mode - a page with its
+                own render mode never runs the router's `OnNavigateAsync` in the browser and has to load the assembly
+                itself - and registers `LazyAssemblyLoader` on the server - see
+                `GetBlowGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Install", "Blazor Web App", "Blazor WebAssembly", "Prerendering", "Content security policy"],
                 null,
@@ -120,7 +122,10 @@ public static partial class BlowSetupGuide
                 """
                 The canvas runs in-process and renders into the embedded WebView, so its pointer events cross a local
                 bridge rather than a network. The host page is the app's `wwwroot/index.html`, so that is where the
-                stylesheet link goes.
+                stylesheet link goes. A host that shares its `Routes.razor` with a WebAssembly app that lazy loads
+                Bit.Blow registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because the
+                router injects it there too, though the switch leaves it unused - see
+                `GetBlowGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Install", "Blazor Hybrid"],
                 HybridFiles,

@@ -85,7 +85,7 @@ public static class McpPrompts
     }
 
     [McpServerPrompt(Name = "debug-blow-flow", Title = "Debug a canvas or flow")]
-    [Description("Diagnoses a Bit.Blow problem - a canvas that shows nothing, nodes piled up unstyled, nodes that cannot be dragged or connected, edges that attach to the wrong place or vanish, a page that does not update after an edit, a saved flow that does not restore.")]
+    [Description("Diagnoses a Bit.Blow problem - a canvas that shows nothing, nodes piled up unstyled, nodes that cannot be dragged or connected, edges that attach to the wrong place or vanish, a page that does not update after an edit, a saved flow that does not restore, an app that lazy loads Bit.Blow and fails with Could not load file or assembly 'Bit.Blow'.")]
     public static string DebugBlowFlow(
         [Description("What goes wrong, with the page, the nodes or the flow involved if you know them.")] string symptom)
     {
@@ -98,7 +98,9 @@ public static class McpPrompts
                the stylesheet `_content/Bit.Blow/bit-blow.css` linked from the host page (without it nodes pile up
                unstyled), a container with a height around the canvas (without one it is zero pixels tall and shows
                nothing), and an interactively rendered page (on a static one nothing can be dragged, connected or
-               measured). No invented service registration.
+               measured). Blow has no services, so do not invent a registration of its own; the one registration
+               lazy loading adds is the framework's `LazyAssemblyLoader`, on every host but standalone WebAssembly
+               that renders a component injecting it.
             2. Bind `OnError` on the canvas, or pass the flow (`JsonSerializer.Serialize(canvas.ToObject())`) to
                `InspectBlowFlow`: it renders it through the real canvas and reports duplicate node, edge and handle ids,
                edges to missing nodes, missing parents and parent cycles, and edges naming a handle the node lacks.

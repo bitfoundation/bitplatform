@@ -29,7 +29,9 @@
         WebAssembly is the one to choose for editing, since every pointer move of a drag is handled in C# without a
         network hop; <code>InteractiveAuto</code> works too, and so does Blazor Server, with each move a round trip
         over the circuit. On WebAssembly, outside AOT builds, the library can also be
-        <a href="getting-started#lazy-loading">lazy loaded</a>.
+        <a href="getting-started#lazy-loading">lazy loaded</a> - but not by a page with its own render mode, like the
+        one below, as it stands: give <code>Routes</code> the render mode instead, or have the page load the assembly
+        itself.
     </p>
     <CodeBlock Code="@RenderModeCode" />
 </div>
@@ -131,10 +133,11 @@
         canvas imports its script module the first time it renders.
     </p>
     <ul class="bb-detail-list">
-        <li>Only what renders after the assembly has loaded may use Blow's types - the pages it is loaded for and a layout only they use, not <code>App.razor</code>, <code>Routes.razor</code>, a layout every page shares or <code>Program.cs</code>. Nor may the method that calls <code>LoadAssembliesAsync</code>: WebAssembly resolves what a method refers to when the method first runs, which is before the load, and does not retry.</li>
-        <li>No public type in an assembly the router reads when the app starts in the browser - the app's own assembly first of all, the client project's in a Blazor Web App - may derive from or implement one of Blow's, or a generic type closed over one: no public <code>IBlowEdgeRouter</code>, <code>IBlowLayout</code>, <code>BlowLayoutOptions</code> or <code>IBlowValidationRule</code>, no public <code>BlowNode</code> or <code>BlowEdge</code> subclass and no component that <code>@@inherits</code> one of Blow's. On WebAssembly such a type fails to load before Bit.Blow is there, and the app fails as it starts. An <code>internal</code> class, or a <code>private</code> one nested in a page, is fine; a public one goes in a library of your own, lazy loaded together with Bit.Blow.</li>
-        <li>In a Blazor Web App only the browser lazy loads, so give <code>Routes</code> a render mode in <code>App.razor</code> that brings the router - and its <code>OnNavigateAsync</code> - to the browser, as this demo's <code>&lt;Routes @@rendermode="InteractiveWebAssembly" /&gt;</code> does. Under <code>InteractiveAuto</code> the first visit runs over a server circuit and the browser downloads Blow on a later one. With per-page render modes the router renders statically on the server and never loads the assembly in the browser.</li>
-        <li>The server project registers <code>LazyAssemblyLoader</code>, which <code>Routes.razor</code> injects whenever it runs there - while it is prerendered, and over the circuit under <code>InteractiveAuto</code>: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>. Outside the browser it downloads nothing, but loads each assembly the call names from the ones the server references and throws if one is missing.</li>
+        <li>Only what renders after the assembly has loaded may use Blow's types - the pages it is loaded for and a layout only they use, not <code>App.razor</code>, <code>Routes.razor</code>, a layout every page shares or <code>Program.cs</code>. Those pages can hold the canvas and fields of Blow's types, structs such as <code>BlowViewport</code> included. The method that calls <code>LoadAssembliesAsync</code> cannot: WebAssembly resolves what a method refers to when the method first runs, which is before the load, and does not retry.</li>
+        <li>No public type in an assembly the router reads in the browser - the app's own assembly first of all, the client project's in a Blazor Web App - may derive from or implement one of Blow's, close a generic type over one or constrain a type parameter to one: no public <code>IBlowEdgeRouter</code>, <code>IBlowLayout</code>, <code>BlowLayoutOptions</code> or <code>IBlowValidationRule</code>, no public <code>BlowNode</code> or <code>BlowEdge</code> subclass, no component that <code>@@inherits</code> one of Blow's and none with <code>@@typeparam TNode where TNode : BlowNode</code>. The router reads those types when it first builds its route table, after the first navigation's <code>OnNavigateAsync</code>, so such a type fails the app on its first page only when the app is opened away from a canvas: try it from a page without one. An <code>internal</code> class, or a <code>private</code> one nested in a page, is fine; a public one goes in a library of your own, lazy loaded together with Bit.Blow.</li>
+        <li>In a Blazor Web App only the browser lazy loads, so give <code>Routes</code> a render mode in <code>App.razor</code> that brings the router - and its <code>OnNavigateAsync</code> - to the browser, as this demo's <code>&lt;Routes @@rendermode="InteractiveWebAssembly" /&gt;</code> does. Under <code>InteractiveAuto</code> the first visit runs over a server circuit and the browser downloads Blow on a later one.</li>
+        <li>With per-page render modes the router renders statically on the server and never loads the assembly in the browser, so a page that renders a canvas fails there with <code>Could not load file or assembly 'Bit.Blow'</code> once it is interactive. Such a page loads Blow itself: it names none of Blow's types, awaits <code>LoadAssembliesAsync</code> in <code>OnInitializedAsync</code>, and only then renders a component of yours that holds the canvas.</li>
+        <li>Every host other than standalone WebAssembly registers <code>LazyAssemblyLoader</code> itself when something it renders injects it - the server project, where <code>Routes.razor</code> runs while it is prerendered and over the circuit under <code>InteractiveAuto</code>, and a Hybrid host that shares the router's file: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>. Outside the browser it downloads nothing, but loads each assembly the call names from the ones the app references and throws if one is missing.</li>
         <li>The condition leaves AOT builds out. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup. The switch is set only where the mark is, so an AOT build skips <code>LoadAssembliesAsync</code> as well: loading an assembly that is not marked throws.</li>
     </ul>
 </div>
@@ -175,8 +178,9 @@
         await _flow.RestoreAsync(snapshot);
         """;
 
+    // The guide's own snippets, as written there: Bit.Blow.Tests.Mcp fails when they drift apart.
     private const string LazyProjectCode = """
-        <!-- The browser project's .csproj. AOT builds are left out. -->
+        <!-- AOT builds are left out: see below. -->
         <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
           <BlazorWebAssemblyLazyLoad Include="Bit.Blow.wasm" />
           <RuntimeHostConfigurationOption Include="MyApp.LazyLoadsBlow" Value="true" Trim="true" />
@@ -204,8 +208,8 @@
                     await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Blow.wasm"]);
             }
 
-            // /workflows and the routes beneath it (routes match regardless of case), but not /workflows-archive.
-            // The path keeps any query and fragment.
+            // /workflows and the routes beneath it, such as /Workflows/42 (routes match regardless of case), but not
+            // /workflows-archive. Add every other route that renders Blow. The path keeps any query and fragment.
             private static bool IsEditorPage(string path)
             {
                 path = path.Split('?', '#')[0];

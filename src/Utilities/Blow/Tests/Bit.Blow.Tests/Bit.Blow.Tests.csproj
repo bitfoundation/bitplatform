@@ -22,4 +22,9 @@
         <ProjectReference Include="..\..\Bit.Blow\Bit.Blow.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The checks that keep a library lazy loadable, which every utility whose guide says so shares. -->
+        <Compile Include="..\..\..\Shared\Tests\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
 </Project>

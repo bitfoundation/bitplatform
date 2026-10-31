@@ -309,6 +309,23 @@ public partial class McpOracleTests
     }
 
     [TestMethod]
+    public void The_getting_started_page_shows_the_lazy_loading_code_the_guide_shows()
+    {
+        // The page shows a copy, since it cannot quote the README, and neither copy is compiled.
+        var blocks = FencedBlockRegex().Matches(BlowSourceCatalog.Readme.Replace("\r\n", "\n", StringComparison.Ordinal))
+            .Select(match => match.Groups["code"].Value)
+            .ToArray();
+
+        foreach (var name in (string[])["LazyProjectCode", "LazyRouterCode"])
+        {
+            var code = typeof(Bit.Blow.Demo.Client.Pages.GettingStarted).GetField(name, BindingFlags.NonPublic | BindingFlags.Static)?.GetRawConstantValue() as string;
+
+            Assert.IsNotNull(code, $"GettingStarted.{name} has been renamed or removed; there is nothing left to compare.");
+            Assert.Contains(code.Replace("\r\n", "\n", StringComparison.Ordinal), blocks, $"GettingStarted.{name} is no longer a code block of the README's \"Lazy loading on WebAssembly\": copy the README's block over it.");
+        }
+    }
+
+    [TestMethod]
     public void Every_example_of_the_gallery_has_its_page()
     {
         foreach (var example in Bit.Blow.Demo.Client.Examples.ExampleCatalog.All)
@@ -362,6 +379,9 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"\.bit-blow-[a-z0-9-]+")]
     private static partial Regex ClassRegex();
+
+    [GeneratedRegex(@"^```[a-z]*\n(?<code>.*?)\n```$", RegexOptions.Multiline | RegexOptions.Singleline)]
+    private static partial Regex FencedBlockRegex();
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();
