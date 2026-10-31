@@ -213,6 +213,34 @@ public sealed class LazyLoadingTests
         Assert.DoesNotContain("BsqliteDatabase", error.Message);
     }
 
+    [TestMethod]
+    public async Task Registered_WithoutAKeyedServiceConfigureRegisters_IsExplained()
+    {
+        await using var app = BuildApp(Register);
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => app.GetBitBsqliteServices(services =>
+        {
+            Register(services);
+            services.AddKeyedScoped<KeyedNotes>("main");
+        }));
+
+        Assert.Contains("KeyedNotes with the key 'main'", error.Message);
+    }
+
+    [TestMethod]
+    public async Task Registered_WithoutAnOpenGenericConfigureRegisters_IsExplained()
+    {
+        await using var app = BuildApp(Register);
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => app.GetBitBsqliteServices(services =>
+        {
+            Register(services);
+            services.AddScoped(typeof(Repository<>));
+        }));
+
+        Assert.Contains("Repository<>", error.Message);
+    }
+
     /// <summary>
     /// What the configure registers is built as if <c>Program.cs</c> had registered it: the app's services are there
     /// for its steps, for a context's constructor and for the app's own services registered next to Bsqlite's, and the
@@ -336,6 +364,95 @@ public sealed class LazyLoadingTests
         Assert.AreSame(repository, services.GetRequiredService<Repository<Category>>());
     }
 
+    [TestMethod]
+    public async Task AKeyedOpenGenericOfConfigures_ReachesTheApplicationsServices()
+    {
+        await using var app = BuildApp(services => services.AddLogging());
+        var services = app.GetBitBsqliteServices(services =>
+        {
+            Configure(services);
+            services.AddKeyedScoped(typeof(Repository<>), "main");
+        });
+
+        var repository = services.GetRequiredKeyedService<Repository<Category>>("main");
+
+        Assert.IsNotNull(repository.Logger);
+        Assert.AreSame(repository, services.GetRequiredKeyedService<Repository<Category>>("main"));
+    }
+
+    /// <summary>
+    /// Every closing of an open generic of configure's in an IEnumerable takes from both containers too, next to the
+    /// closed services configure registers, in the order it registers them.
+    /// </summary>
+    [TestMethod]
+    public async Task AnEnumerableOfAnOpenGenericOfConfigures_ReachesTheApplicationsServices()
+    {
+        await using var app = BuildApp(services => services.AddLogging());
+        var services = app.GetBitBsqliteServices(services =>
+        {
+            Configure(services);
+            services.AddScoped(typeof(Repository<>));
+            services.AddScoped(_ => new Repository<Category>(null!, null!));
+        });
+
+        var repositories = services.GetServices<Repository<Category>>().ToArray();
+
+        Assert.HasCount(2, repositories);
+        Assert.IsNotNull(repositories[0].Logger);
+        Assert.IsNull(repositories[1].Logger);
+        Assert.AreSame(repositories[1], services.GetRequiredService<Repository<Category>>());
+    }
+
+    /// <summary>
+    /// A constructor that leads back to itself is refused, as the container would refuse it, rather than overflow the
+    /// stack - here through closings of open generics, which the provider builds without the container.
+    /// </summary>
+    [TestMethod]
+    public async Task ACircularDependency_IsRefused()
+    {
+        await using var app = BuildApp();
+        var services = app.GetBitBsqliteServices(services =>
+        {
+            Configure(services);
+            services.AddScoped(typeof(Chicken<>));
+            services.AddScoped(typeof(Egg<>));
+        });
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => services.GetRequiredService<Chicken<Category>>());
+
+        Assert.Contains("circular dependency", error.Message);
+        Assert.Contains($"{typeof(Chicken<Category>)} -> {typeof(Egg<Category>)} -> {typeof(Chicken<Category>)}", error.Message);
+    }
+
+    [TestMethod]
+    public async Task DisposingAScope_DisposesTheApplicationsScope_EvenWhenAServiceOfItThrows()
+    {
+        await using var app = BuildApp(services => services.AddScoped<AppSession>());
+        var services = app.GetBitBsqliteServices(services =>
+        {
+            Configure(services);
+            services.AddScoped(typeof(Fragile<>));
+        });
+
+        var scope = services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<Fragile<Category>>();
+        var session = scope.ServiceProvider.GetRequiredService<AppSession>();
+
+        Assert.ThrowsExactly<InvalidOperationException>(scope.Dispose);
+        Assert.IsTrue(session.Disposed);
+    }
+
+    /// <summary>Not every container can tell what it has; one that cannot is asked by resolving.</summary>
+    [TestMethod]
+    public async Task AnApplicationContainerThatCannotTellWhatItHas_IsAskedByResolving()
+    {
+        await using var app = BuildApp(services => services.AddSingleton(new Tenant("contoso")));
+
+        var services = new Untelling(app).GetBitBsqliteServices(RegisterWithNotes);
+
+        Assert.AreEqual("contoso", services.GetRequiredService<TenantNotes>().Tenant.Name);
+    }
+
     /// <summary>
     /// Logging, options and what builds on them are open generics the app's container has too; a second set of them would
     /// answer for the app's, losing its logging and its options.
@@ -456,6 +573,39 @@ public sealed class LazyLoadingTests
         public BsqliteDatabase Database { get; } = database;
 
         public ILogger<Repository<T>> Logger { get; } = logger;
+    }
+
+    private sealed class Chicken<T>(Egg<T> egg)
+    {
+        public Egg<T> Egg { get; } = egg;
+    }
+
+    private sealed class Egg<T>(Chicken<T> chicken)
+    {
+        public Chicken<T> Chicken { get; } = chicken;
+    }
+
+    private sealed class Fragile<T> : IDisposable
+    {
+        public void Dispose() => throw new InvalidOperationException($"{typeof(T).Name} broke.");
+    }
+
+    /// <summary>An application container without <see cref="IServiceProviderIsService"/>, nor its scopes.</summary>
+    private sealed class Untelling(IServiceProvider services) : IServiceProvider, IServiceScopeFactory
+    {
+        public object? GetService(Type serviceType)
+            => serviceType == typeof(IServiceProviderIsService) || serviceType == typeof(IServiceProviderIsKeyedService) ? null
+                : serviceType == typeof(IServiceScopeFactory) ? this
+                : services.GetService(serviceType);
+
+        public IServiceScope CreateScope() => new Scope(services.CreateScope());
+
+        private sealed class Scope(IServiceScope scope) : IServiceScope
+        {
+            public IServiceProvider ServiceProvider { get; } = new Untelling(scope.ServiceProvider);
+
+            public void Dispose() => scope.Dispose();
+        }
     }
 
     /// <summary>A context whose constructor takes a service of the app's.</summary>

@@ -179,7 +179,10 @@ internal static class AppDatabase
     {
         services.AddBitBsqliteServices(sqlite => sqlite
             .AddStorageProvider<BsqliteOpfsStorageProvider>()
-            .UseStorage(s => s.Prefer(BsqliteOpfsStorageProvider.ProviderName))
+            .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+            .UseStorage(s => s
+                .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
             .AddDatabase("app.db"));
 
         services.AddBitBsqliteDbContext<AppDbContext>();

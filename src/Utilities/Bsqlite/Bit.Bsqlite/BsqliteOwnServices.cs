@@ -51,10 +51,15 @@ internal sealed class BsqliteOwnServices
     private readonly ScopeServices _root;
 
     // The open generics configure registered, which a provider closes itself, and the closed services it registered,
-    // which win over them as they would in any container.
-    private readonly Dictionary<Type, ServiceDescriptor> _openGenerics = [];
-    private readonly HashSet<Type> _closed = [];
-    private readonly ConcurrentDictionary<Type, Closing?> _closings = new();
+    // which win over them as they would in any container - each with its key, null for a service without one.
+    private readonly Dictionary<(Type Type, object? Key), ServiceDescriptor> _openGenerics = [];
+    private readonly HashSet<(Type Type, object? Key)> _closed = [];
+    private readonly ConcurrentDictionary<(Type Type, ServiceDescriptor Open), Closing?> _closings = new();
+
+    // What an IEnumerable of a closing holds, in the order configure registered it: the open generics without a key,
+    // which the container is not given - it would answer such an IEnumerable with closings built from itself alone - and
+    // the closed generic services it builds.
+    private readonly List<ServiceDescriptor> _enumerated = [];
 
     private BsqliteOwnServices(IServiceProvider application, MethodInfo configure, ServiceCollection registered)
     {
@@ -64,16 +69,24 @@ internal sealed class BsqliteOwnServices
         IServiceCollection own = new ServiceCollection();
         foreach (var service in registered)
         {
-            if (!service.IsKeyedService)
+            var identity = (service.ServiceType, service.IsKeyedService ? service.ServiceKey : null);
+            if (!service.ServiceType.IsGenericTypeDefinition)
             {
-                if (service.ServiceType.IsGenericTypeDefinition)
+                _closed.Add(identity);
+            }
+            else if (IsClosable(service))
+            {
+                _openGenerics[identity] = service;
+                if (!service.IsKeyedService)
                 {
-                    _openGenerics[service.ServiceType] = service;
+                    _enumerated.Add(service);
+                    continue;
                 }
-                else
-                {
-                    _closed.Add(service.ServiceType);
-                }
+            }
+
+            if (!service.IsKeyedService && service.ServiceType.IsConstructedGenericType)
+            {
+                _enumerated.Add(service);
             }
 
             own.Add(InFront(service));
@@ -175,9 +188,11 @@ internal sealed class BsqliteOwnServices
 
         var isKeyedService = services.GetService<IServiceProviderIsKeyedService>();
         var missing = registered
-            .Where(service => !service.ServiceType.IsGenericTypeDefinition && (service.IsKeyedService
-                ? isKeyedService?.IsKeyedService(service.ServiceType, service.ServiceKey) is false
-                : !isService.IsService(service.ServiceType)))
+            .Where(service => service.IsKeyedService
+                ? !service.ServiceType.IsGenericTypeDefinition && isKeyedService?.IsKeyedService(service.ServiceType, service.ServiceKey) is false
+                // An open generic is asked for closed over object, which a container answers from the definition.
+                : (service.ServiceType.IsGenericTypeDefinition ? ClosedOverObject(service.ServiceType) : service.ServiceType) is { } type
+                    && !isService.IsService(type))
             .Select(Describe)
             .Distinct()
             .ToArray();
@@ -291,20 +306,34 @@ internal sealed class BsqliteOwnServices
     }
 
     /// <summary>
-    /// How to build <paramref name="serviceType"/> when it closes an open generic <c>configure</c> registered without
-    /// registering the closed type itself; otherwise - or when the implementation's constraints rule the closing out,
+    /// How to build <paramref name="serviceType"/>, asked for with <paramref name="key"/>, when it closes an open
+    /// generic <c>configure</c> registered without registering the closed type itself - with that key, or with
+    /// <see cref="KeyedService.AnyKey"/>; otherwise - or when the implementation's constraints rule the closing out,
     /// which a container passes over too - null.
     /// </summary>
-    private Closing? ClosingOf(Type serviceType)
+    private Closing? ClosingOf(Type serviceType, object? key)
     {
-        if (_openGenerics.Count == 0 || !serviceType.IsConstructedGenericType || _closed.Contains(serviceType)
-            || !_openGenerics.TryGetValue(serviceType.GetGenericTypeDefinition(), out var open))
+        if (_openGenerics.Count == 0 || !serviceType.IsConstructedGenericType || _closed.Contains((serviceType, key))
+            || key is not null && _closed.Contains((serviceType, KeyedService.AnyKey)))
         {
             return null;
         }
 
-        return _closings.GetOrAdd(serviceType, static (closed, open) => Close(open, closed), open);
+        var definition = serviceType.GetGenericTypeDefinition();
+        return _openGenerics.TryGetValue((definition, key), out var open)
+            || key is not null && _openGenerics.TryGetValue((definition, KeyedService.AnyKey), out open)
+            ? ClosingBy(serviceType, open)
+            : null;
     }
+
+    private Closing? ClosingBy(Type serviceType, ServiceDescriptor open)
+        => _closings.GetOrAdd((serviceType, open), static closing => Close(closing.Open, closing.Type));
+
+    // What a container would close: an open generic implementation, with as many type parameters, that it can construct.
+    // The container is given any other, and refuses it as it is built.
+    private static bool IsClosable(ServiceDescriptor open)
+        => (open.IsKeyedService ? open.KeyedImplementationType : open.ImplementationType) is { IsGenericTypeDefinition: true, IsAbstract: false } type
+            && type.GetGenericArguments().Length == open.ServiceType.GetGenericArguments().Length;
 
     // The implementation type kept its public constructors when it was registered - ServiceDescriptor asks for them -
     // and closing it keeps them; and Blazor WebAssembly, the only host this runs in, keeps the interpreter for code it
@@ -315,7 +344,8 @@ internal sealed class BsqliteOwnServices
     {
         try
         {
-            return new(new Activation(open.ImplementationType!.MakeGenericType(serviceType.GenericTypeArguments)), open.Lifetime);
+            var implementation = open.IsKeyedService ? open.KeyedImplementationType! : open.ImplementationType!;
+            return new(new Activation(implementation.MakeGenericType(serviceType.GenericTypeArguments)), open.Lifetime);
         }
         catch (ArgumentException)
         {
@@ -385,7 +415,9 @@ internal sealed class BsqliteOwnServices
             }
 
             // The container closes an open generic too, but would build what it takes from itself alone.
-            var own = Connection.ClosingOf(serviceType) is { } closing ? Build(serviceType, closing) : _own.GetService(serviceType);
+            var own = Connection.ClosingOf(serviceType, null) is { } closing
+                ? Build(null, closing)
+                : All(serviceType) ?? _own.GetService(serviceType);
 
             // A service the container lacks, or an IEnumerable<T> it has none of - which it answers with an empty array.
             return own is null or Array { Length: 0 } ? _application.GetService(serviceType) : own;
@@ -400,7 +432,9 @@ internal sealed class BsqliteOwnServices
                 return GetService(serviceType);
             }
 
-            var own = ((IKeyedServiceProvider)_own).GetKeyedService(serviceType, serviceKey);
+            var own = Connection.ClosingOf(serviceType, serviceKey) is { } closing
+                ? Build(serviceKey, closing)
+                : ((IKeyedServiceProvider)_own).GetKeyedService(serviceType, serviceKey);
             return own is null or Array { Length: 0 }
                 ? (_application as IKeyedServiceProvider)?.GetKeyedService(serviceType, serviceKey)
                 : own;
@@ -410,11 +444,15 @@ internal sealed class BsqliteOwnServices
             => GetKeyedService(serviceType, serviceKey)
                 ?? throw new InvalidOperationException($"No service for type '{serviceType}' has been registered with the key '{serviceKey}'.");
 
-        // What an activation asks to pick the constructor it can fill.
+        // What an activation asks to pick the constructor it can fill. An application container that cannot tell is
+        // asked by resolving, as ActivatorUtilities asks one.
         public bool IsService(Type serviceType)
             => serviceType == typeof(IKeyedServiceProvider)
                 || _ownIsService.IsService(serviceType)
-                || _applicationIsService?.IsService(serviceType) is true;
+                || Connection.ClosingOf(serviceType, null) is not null
+                || (_applicationIsService is { } applicationIsService
+                    ? applicationIsService.IsService(serviceType)
+                    : _application.GetService(serviceType) is not null);
 
         public bool IsKeyedService(Type serviceType, object? serviceKey)
             => serviceKey is null
@@ -429,12 +467,51 @@ internal sealed class BsqliteOwnServices
             return new Scope(own, Of(own.ServiceProvider));
         }
 
-        private object Build(Type serviceType, Closing closing) => closing.Lifetime switch
+        private object Build(object? key, Closing closing) => closing.Lifetime switch
         {
-            ServiceLifetime.Singleton => Connection._root.Keep(serviceType, closing.Activation),
-            ServiceLifetime.Scoped => _scope.Keep(serviceType, closing.Activation),
-            _ => _scope.Track(closing.Activation.Create(this, null)),
+            ServiceLifetime.Singleton => Connection._root.Keep(closing.Activation, key),
+            ServiceLifetime.Scoped => _scope.Keep(closing.Activation, key),
+            _ => _scope.Track(closing.Activation.Create(this, key)),
         };
+
+        /// <summary>
+        /// <paramref name="serviceType"/>, when it is an IEnumerable of a closing of an open generic <c>configure</c>
+        /// registered without a key: the closed services the container builds and the closings this provider builds, in
+        /// the order <c>configure</c> registered them, as the container would; otherwise null.
+        /// </summary>
+        private Array? All(Type serviceType)
+        {
+            if (!serviceType.IsConstructedGenericType || serviceType.GetGenericTypeDefinition() != typeof(IEnumerable<>)
+                || serviceType.GenericTypeArguments[0] is not { IsConstructedGenericType: true } itemType
+                || !Connection._openGenerics.ContainsKey((itemType.GetGenericTypeDefinition(), null)))
+            {
+                return null;
+            }
+
+            var closed = (Array)_own.GetService(serviceType)!;
+            var definition = itemType.GetGenericTypeDefinition();
+            var items = new List<object>();
+            var next = 0;
+            foreach (var service in Connection._enumerated)
+            {
+                if (service.ServiceType == itemType)
+                {
+                    items.Add(closed.GetValue(next++)!);
+                }
+                else if (service.ServiceType == definition && Connection.ClosingBy(itemType, service) is { } closing)
+                {
+                    items.Add(Build(null, closing));
+                }
+            }
+
+            var all = Array.CreateInstanceFromArrayType(closed.GetType(), items.Count);
+            for (var i = 0; i < items.Count; i++)
+            {
+                all.SetValue(items[i], i);
+            }
+
+            return all;
+        }
     }
 
     /// <summary>
@@ -446,7 +523,7 @@ internal sealed class BsqliteOwnServices
     {
         private readonly AsyncServiceScope _application;
         private readonly Lock _lock = new();
-        private readonly Dictionary<Type, object> _kept = [];
+        private readonly Dictionary<(Activation Activation, object? Key), object> _kept = [];
         private readonly List<object> _disposables = [];
 
         public ScopeServices(BsqliteOwnServices connection, IServiceProvider own)
@@ -457,13 +534,13 @@ internal sealed class BsqliteOwnServices
 
         public Provider Provider { get; }
 
-        public object Keep(Type serviceType, Activation activation)
+        public object Keep(Activation activation, object? key)
         {
             lock (_lock)
             {
-                if (!_kept.TryGetValue(serviceType, out var kept))
+                if (!_kept.TryGetValue((activation, key), out var kept))
                 {
-                    _kept.Add(serviceType, kept = Track(activation.Create(Provider, null)));
+                    _kept.Add((activation, key), kept = Track(activation.Create(Provider, key)));
                 }
 
                 return kept;
@@ -483,36 +560,47 @@ internal sealed class BsqliteOwnServices
             return service;
         }
 
+        // The application's scope is disposed even when a service of this one throws.
         public void Dispose()
         {
-            foreach (var service in TakeDisposables())
+            try
             {
-                if (service is not IDisposable disposable)
+                foreach (var service in TakeDisposables())
                 {
-                    throw new InvalidOperationException($"'{service.GetType()}' type only implements IAsyncDisposable. Use DisposeAsync to dispose the container.");
+                    if (service is not IDisposable disposable)
+                    {
+                        throw new InvalidOperationException($"'{service.GetType()}' type only implements IAsyncDisposable. Use DisposeAsync to dispose the container.");
+                    }
+
+                    disposable.Dispose();
                 }
-
-                disposable.Dispose();
             }
-
-            _application.Dispose();
+            finally
+            {
+                _application.Dispose();
+            }
         }
 
         public async ValueTask DisposeAsync()
         {
-            foreach (var service in TakeDisposables())
+            try
             {
-                if (service is IAsyncDisposable asyncDisposable)
+                foreach (var service in TakeDisposables())
                 {
-                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-                }
-                else
-                {
-                    ((IDisposable)service).Dispose();
+                    if (service is IAsyncDisposable asyncDisposable)
+                    {
+                        await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        ((IDisposable)service).Dispose();
+                    }
                 }
             }
-
-            await _application.DisposeAsync().ConfigureAwait(false);
+            finally
+            {
+                await _application.DisposeAsync().ConfigureAwait(false);
+            }
         }
 
         // Last built, first disposed, as a container does.
@@ -547,6 +635,12 @@ internal sealed class BsqliteOwnServices
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
         private readonly Type _type = type;
 
+        // The types this thread is constructing, the innermost last. The container sees only factories, so a constructor
+        // that leads back to one of them would recurse until the stack overflows, rather than be refused as a container
+        // refuses it.
+        [ThreadStatic]
+        private static List<(Type Type, object? Key)>? _constructing;
+
         private Plan? _plan;
         private ConcurrentDictionary<object, Plan>? _keyedPlans;
 
@@ -556,26 +650,42 @@ internal sealed class BsqliteOwnServices
 
         public object Create(Provider services, object? key)
         {
-            var plan = key is null
-                ? _plan ??= Choose(services, null)
-                : (_keyedPlans ??= new()).GetOrAdd(key, static (key, state) => state.Activation.Choose(state.Services, key), (Activation: this, Services: services));
-
-            var arguments = new object?[plan.Arguments.Length];
-            for (var i = 0; i < arguments.Length; i++)
+            var constructing = _constructing ??= [];
+            if (constructing.IndexOf((_type, key)) is var cycle and >= 0)
             {
-                var argument = plan.Arguments[i];
-                arguments[i] = argument.Source switch
-                {
-                    Source.ServiceKey => key,
-                    Source.Default => argument.Default,
-                    _ => (argument.Key is null ? services.GetService(argument.Type) : services.GetKeyedService(argument.Type, argument.Key))
-                        ?? (argument.Source is Source.ServiceOrDefault
-                            ? argument.Default
-                            : throw new InvalidOperationException($"Unable to resolve service for type '{argument.Type}' while attempting to activate '{_type}'.")),
-                };
+                throw new InvalidOperationException(
+                    $"A circular dependency was detected for the service of type '{_type}'.{Environment.NewLine}"
+                    + string.Join(" -> ", constructing.Skip(cycle).Select(entry => entry.Type).Append(_type)));
             }
 
-            return plan.Constructor.Invoke(arguments);
+            constructing.Add((_type, key));
+            try
+            {
+                var plan = key is null
+                    ? _plan ??= Choose(services, null)
+                    : (_keyedPlans ??= new()).GetOrAdd(key, static (key, state) => state.Activation.Choose(state.Services, key), (Activation: this, Services: services));
+
+                var arguments = new object?[plan.Arguments.Length];
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    var argument = plan.Arguments[i];
+                    arguments[i] = argument.Source switch
+                    {
+                        Source.ServiceKey => key,
+                        Source.Default => argument.Default,
+                        _ => (argument.Key is null ? services.GetService(argument.Type) : services.GetKeyedService(argument.Type, argument.Key))
+                            ?? (argument.Source is Source.ServiceOrDefault
+                                ? argument.Default
+                                : throw new InvalidOperationException($"Unable to resolve service for type '{argument.Type}' while attempting to activate '{_type}'.")),
+                    };
+                }
+
+                return plan.Constructor.Invoke(arguments);
+            }
+            finally
+            {
+                constructing.RemoveAt(constructing.Count - 1);
+            }
         }
 
         private Plan Choose(Provider services, object? key)
