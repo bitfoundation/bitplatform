@@ -1251,7 +1251,11 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return true;
     }
 
-    /// <summary>Trades the dragged item's slot with the highlighted swap target.</summary>
+    /// <summary>
+    /// Trades the dragged item's slot with the highlighted swap target. The list the item leaves is the one it is in:
+    /// the source, unless a keyboard drag carried it into another list, which then changes too (see
+    /// <see cref="ReportAsync"/>).
+    /// </summary>
     private static void CommitSwap(BortableDragContext ctx)
     {
         var fromZone = ctx.CurrentZone;
@@ -1563,7 +1567,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             }
         }
 
-        await ReportAsync(outcome);
+        // A handler that throws while the drag is reported does not lose what was kept to pass on: both are raised.
+        try
+        {
+            await ReportAsync(outcome);
+        }
+        catch (Exception exception) when (outcome.Context.Failure is not null)
+        {
+            throw new AggregateException(exception, outcome.Context.TakeFailure()!);
+        }
         return outcome;
     }
 
@@ -1671,6 +1683,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             await info.To.RaiseEventAsync(BortableEventType.Add, info);
             if (outcome.SourceChanged) await from.RaiseEventAsync(BortableEventType.Sort, info);
             await info.To.RaiseEventAsync(BortableEventType.Sort, info);
+        }
+
+        // A list that is neither - one a keyboard drag carried the item into, which a swap then traded it away from - was
+        // changed by the drag too (CommitSwap).
+        if (!info.Canceled)
+        {
+            foreach (var zone in outcome.ChangedZones)
+                if (!ReferenceEquals(zone, from) && !ReferenceEquals(zone, info.To))
+                    await zone.RaiseEventAsync(BortableEventType.Sort, info);
         }
         await from.RaiseEventAsync(BortableEventType.End, info);
     }

@@ -270,6 +270,8 @@ public class LifecycleTests : BortableTestContext
         Assert.IsFalse(asked);
         Assert.AreSequenceEqual(["x"], words);
         Assert.AreSequenceEqual(["a", "b"], source);
+        // W's bound list held the item, and a page may have rendered it so: ItemsChanged tells it the item is gone.
+        Assert.ContainsSingle(log.Where(r => r is { Name: "ItemsChanged", List: "W" }));
         Assert.IsTrue(Single(log, "End", "S").Canceled);
         Assert.IsNull(Coordinator.Context);
     }

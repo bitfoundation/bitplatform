@@ -100,7 +100,9 @@ internal sealed class BortableDragContext
     /// What the app's code threw while this drag was decided - <c>CanDrop</c> inside the gate, <c>ConfirmDrop</c> - or,
     /// for a move made by code, while it was reported. It was taken as a refusal there, so the drag stays whole and is
     /// still reported; the call that met it passes it on once it is done (see <see cref="TakeFailure"/>). The first
-    /// one is kept.
+    /// one is kept. Should reporting the drag throw as well, neither is lost: the reporting exception is wrapped with
+    /// this one in an <see cref="AggregateException"/> - the reporting exception first - which is thrown in place of
+    /// either.
     /// </summary>
     public Exception? Failure { get; private set; }
 

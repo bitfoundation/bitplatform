@@ -244,6 +244,40 @@ public class SwapTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task AKeyboardSwapTradesWithTheListTheItemWasCarriedInto()
+    {
+        // The item carried into W trades places with Z's "y", which W does not hold: W gets "y", Z the item.
+        List<string> source = ["a", "b"], words = ["x"], swap = ["y"];
+        var log = new List<Raised<string>>();
+        var s = RenderList(source, "S", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "S", log);
+        });
+        RenderList(words, "W", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "W", log);
+        });
+        var z = RenderSwapList(swap, "Z", log);
+
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync(KeyOf(s, "a"), "pick", null, -1));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "W", 0));
+        var over = await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "Z", 0));
+        Assert.AreEqual(KeyOf(z, "y"), over.Target);
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "drop", null, -1));
+
+        Assert.AreSequenceEqual(["b"], source);
+        Assert.AreSequenceEqual(["y", "x"], words);
+        Assert.AreSequenceEqual(["a"], swap);
+        Assert.AreEqual("", LabelsWithClass(z, Highlight));
+        // W is neither where the drag started nor where the item ended up, but the swap changed it too.
+        Assert.AreEqual(
+            "Start:S Change:W ItemsChanged:S ItemsChanged:W ItemsChanged:Z Remove:S Add:Z Sort:S Sort:Z Sort:W End:S",
+            Sequence(log));
+    }
+
+    [TestMethod]
     public async Task SwappingAcrossListsOfAGroup()
     {
         List<string> left = ["A", "B", "C"], right = ["X", "Y"];

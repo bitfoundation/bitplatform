@@ -255,6 +255,24 @@ public class OperationTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task AHandlerThatThrowsWhileAFailedMoveIsReportedThrowsBothToTheCaller()
+    {
+        List<string> items = ["A", "B", "C"];
+        var list = RenderList(items, "L1", p =>
+        {
+            p.Add(c => c.CanDrop, e => e.NewIndex == 0 ? throw new InvalidOperationException("offline") : true);
+            p.Add(c => c.OnEnd, (BortableEventArgs<string> _) => throw new InvalidOperationException("boom"));
+        });
+
+        var error = await Assert.ThrowsExactlyAsync<AggregateException>(() => list.InvokeAsync(() => list.Instance.MoveAsync("C", 0)));
+
+        // The handler's exception first, then what CanDrop threw: neither is lost.
+        Assert.AreSequenceEqual(["boom", "offline"], error.InnerExceptions.Select(e => e.Message));
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
     public async Task ARefusedPositionKeepsThePreviewWhereItWas()
     {
         List<string> left = ["A"], right = ["X", "Y", "Z"];

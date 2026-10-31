@@ -375,6 +375,36 @@ public class MultiDragTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task ACanDropThatThrowsWhereTheSelectionGathersInAnotherListPutsItBack()
+    {
+        List<string> left = ["A", "B", "C", "D"], right = ["X", "Y"];
+        var log = new List<Raised<string>>();
+        var l1 = RenderMultiList(left, "L1", log);
+        var l2 = RenderList(right, "L2", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "L2", log);
+            // The placeholder at 1 is allowed; C lands at 2 once A gathers in front of it.
+            p.Add(c => c.CanDrop, e => e.NewIndex == 2 ? throw new InvalidOperationException("offline") : true);
+        });
+        await ClickAsync(l1, "A");
+        await ClickAsync(l1, "C");
+
+        await DragStartAsync(l1, "C");
+        await DragOverAsync(l2, 1);
+        var announced = await Renderer.Dispatcher.InvokeAsync(() => Zone(l2).EndAsync("drop"));
+
+        Assert.AreEqual("offline", (await PassedOnAsync()).Message);
+        StringAssert.StartsWith(announced, "Cancelled.");
+        Assert.AreSequenceEqual(["A", "B", "C", "D"], left);
+        Assert.AreSequenceEqual(["X", "Y"], right);
+        Assert.AreEqual("Start:L1 Change:L2 End:L1", Sequence(log));
+        Assert.IsTrue(Single(log, "End", "L1").Canceled);
+        Assert.AreEqual("A,C", LabelsWithClass(l1, Selected));
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
     public async Task ATargetThatCannotTakeEverySelectedItemRefusesTheWholeBlock()
     {
         List<string> left = ["A", "B", "C"], right = ["X", "B"];
