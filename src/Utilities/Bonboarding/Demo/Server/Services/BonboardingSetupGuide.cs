@@ -236,11 +236,12 @@ public static partial class BonboardingSetupGuide
 
         1. `dotnet add package Bit.Bonboarding`.
         2. Call `AddBitBonboardingServices(...)` in EVERY DI container that renders a tour - a Blazor Web App with an
-           interactive client has two of them. Where it is missing, the first Bonboarding component - or component
-           injecting `IBonboardingService` - to render in that container fails with an error that names
-           `AddBitBonboardingServices`. Not necessarily while prerendering: prerendering runs on the server, so a
-           registration missing in the client project shows only once the page turns interactive on WebAssembly.
-           Give both the same options. (Only a WebAssembly app that lazy loads Bit.Bonboarding leaves the
+           interactive client has two of them. Where it is missing, the first Bonboarding component to render in that
+           container fails with an error that names `AddBitBonboardingServices`, and a component injecting
+           `IBonboardingService` with Blazor's own "no registered service" error. Prerendering runs on the server, so a
+           registration missing in the server project fails the page while it prerenders, and one missing in the client
+           project only once the page turns interactive on WebAssembly. Prerendering uses the server project's options
+           and an interactive WebAssembly component the client project's, so give both the same options. (Only a WebAssembly app that lazy loads Bit.Bonboarding leaves the
            registration out, and turns the `Bit.Bonboarding.LazyLoad` runtime switch on instead - see
            `GetBonboardingGuideSection(heading: "Lazy loading on WebAssembly")`.)
         3. Reference `_content/Bit.Bonboarding/bit-bonboarding.css` from the host page, before your own stylesheet so

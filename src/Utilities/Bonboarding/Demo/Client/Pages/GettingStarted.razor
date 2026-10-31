@@ -34,10 +34,12 @@ builder.Services.AddBitBonboardingServices(options =>
 });</pre>
     <div class="bb-note bb-note-warn">
         A Blazor Web App has two projects and two DI containers: register in <strong>both</strong>, with the same
-        options. Where the registration is missing, the first Bonboarding component - or the first component that injects
-        <code>IBonboardingService</code> - to render in that project fails with an error that names
-        <code>AddBitBonboardingServices</code>. Not necessarily while prerendering: prerendering runs on the server, so a
-        registration missing in the client project shows only once the page turns interactive on WebAssembly. This site
+        options. While a page prerenders, every component runs on the server, on the server project's registration and
+        options; once the page turns interactive, an <code>InteractiveWebAssembly</code> component switches to the client
+        project's. So a registration missing in the server project fails the page while it prerenders, and one missing in
+        the client project only once the page turns interactive on WebAssembly - a Bonboarding component with an error
+        that names <code>AddBitBonboardingServices</code>, a component that injects <code>IBonboardingService</code> with
+        Blazor's own "no registered service" error. This site
         does it through one extension method both <code>Program.cs</code> files call. Only a WebAssembly app that
         <a href="getting-started#lazy-loading">lazy loads</a> the library leaves it out.
     </div>
@@ -368,8 +370,9 @@ builder.Services.AddBitBonboardingServices(options =>
             private async Task OnNavigateAsync(NavigationContext context)
             {
                 // The pages with tours: fetch Bonboarding before they render. A second call loads nothing again. Routes
-                // match regardless of case, so /Admin/users is one of them too.
-                if (context.Path.StartsWith("admin", StringComparison.OrdinalIgnoreCase))
+                // match regardless of case, so /Admin/users is one of them too, and /administrators is not.
+                var path = context.Path.Split('?', '#')[0]; // the path keeps the query string and the fragment
+                if (path.Equals("admin", StringComparison.OrdinalIgnoreCase) || path.StartsWith("admin/", StringComparison.OrdinalIgnoreCase))
                     await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bonboarding.wasm"]);
             }
         }

@@ -203,16 +203,30 @@ public sealed class LazyLoadingTests : BunitContext
             .Add(tour => tour.Title, "Declared in markup")
             .AddChildContent<BonboardingStep>(step => step.Add(s => s.Title, "From the markup")));
         var list = Render<BonboardingTourList>();
+        var beacon = Render<BonboardingBeacon>(parameters => parameters
+            .Add(b => b.Anchor, "export")
+            .Add(b => b.Title, "Exports moved"));
+        var checklist = Render<BonboardingChecklist>(parameters => parameters.Add(c => c.Checklist, new BonboardingChecklistDefinition
+        {
+            Id = "getting-started",
+            Title = "Get started",
+            Items = [new BonboardingChecklistItem { Id = "profile", Title = "Fill in your profile" }],
+        }));
 
         // What app code reaches through GetBonboardingService is the service the components work with.
         var service = Services.GetBonboardingService();
         Assert.IsNotNull(service.GetTour("markup"));
         list.WaitForAssertion(() => Assert.Contains("Declared in markup", list.Markup));
+        Assert.AreEqual("Exports moved", beacon.Find("button.bit-bonboarding-beacon").GetAttribute("aria-label"));
+        checklist.WaitForAssertion(() => Assert.AreEqual("0 of 1 done", checklist.Find(".bit-bonboarding-checklist-count").TextContent));
 
         await root.InvokeAsync(() => service.StartAsync(Tour("welcome")));
 
         root.WaitForAssertion(() => Assert.AreEqual("Welcome, step one", root.Find(".bit-bonboarding-title").TextContent));
         Assert.AreEqual("welcome", service.Active?.Tour.Id);
+
+        // The beacon steps aside for a tour started through that same service.
+        beacon.WaitForAssertion(() => Assert.IsEmpty(beacon.FindAll("button.bit-bonboarding-beacon")));
     }
 
     [TestMethod]

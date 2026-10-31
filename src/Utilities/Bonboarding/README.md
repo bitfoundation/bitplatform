@@ -420,14 +420,28 @@ builder.Services.AddBitBonboardingServices(ConfigureOnboarding);
 builder.Services.AddBitBonboardingServices(ConfigureOnboarding);
 ```
 
-If your tours only ever run inside components with one render mode, registering in that project
-alone is enough.
+If your tours only ever run inside `InteractiveServer` components, registering in the server project
+alone is enough. `InteractiveWebAssembly` components need both unless their prerendering is off.
 
-Where the registration is missing, the first Bonboarding component - or the first component that injects
-`IBonboardingService` - to render in that project fails with an error that names `AddBitBonboardingServices`. Not
-necessarily while prerendering: prerendering runs on the server, against the server project's registration, so a
-missing one in the client project shows only once the page turns interactive on WebAssembly. Call
-`AddBitBonboardingServices` in both projects, through one shared method.
+While a page prerenders, every component on it runs on the server, whatever its render mode, so it gets the
+server project's registration and the options configured there. Once the page turns interactive, an
+`InteractiveServer` component keeps those, while an `InteractiveWebAssembly` component switches to the client
+project's registration and options - and an `InteractiveAuto` one uses the project it ends up running in. If the two
+configurations differ, the placement, labels and storage prefix change under the user as the page turns interactive.
+
+A missing registration therefore fails at different moments:
+
+- **Missing in the server project:** the page fails while it prerenders, and an `InteractiveServer` component fails
+  whether it prerenders or not. A Bonboarding component fails with an error that names `AddBitBonboardingServices`;
+  a component that injects `IBonboardingService` fails with Blazor's own "There is no registered service of type
+  'Bit.Bonboarding.IBonboardingService'". Only components that never run on the server - `InteractiveWebAssembly`
+  with prerendering off - are unaffected.
+- **Missing in the client project:** prerendering succeeds, on the server project's registration, and the same two
+  errors appear only once the page turns interactive on WebAssembly. The `Bit.Bonboarding.LazyLoad` switch the
+  error mentions is not the fix: it is for [lazy loading](#lazy-loading-on-webassembly), and an injected
+  `IBonboardingService` fails with it on too.
+
+Call `AddBitBonboardingServices` in both projects, through one shared method.
 
 ### 2. Reference the stylesheet
 
@@ -540,8 +554,9 @@ the assembly before the first page that uses it renders:
     private async Task OnNavigateAsync(NavigationContext context)
     {
         // The pages with tours: fetch Bonboarding before they render. A second call loads nothing again. Routes
-        // match regardless of case, so /Admin/users is one of them too.
-        if (context.Path.StartsWith("admin", StringComparison.OrdinalIgnoreCase))
+        // match regardless of case, so /Admin/users is one of them too, and /administrators is not.
+        var path = context.Path.Split('?', '#')[0]; // the path keeps the query string and the fragment
+        if (path.Equals("admin", StringComparison.OrdinalIgnoreCase) || path.StartsWith("admin/", StringComparison.OrdinalIgnoreCase))
             await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bonboarding.wasm"]);
     }
 }
