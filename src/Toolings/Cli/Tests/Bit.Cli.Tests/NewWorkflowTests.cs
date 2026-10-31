@@ -65,7 +65,7 @@ public class NewWorkflowTests
 
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
 
-        var order = new[] { "new install", "new bit-bp", "workload list", "restore", "build Contoso.Web.slnf", "format Contoso", "dnx dotnet-ef" };
+        var order = new[] { "new install", "new bit-bp", "workload list", "restore", "build Contoso.Web.slnf", "dnx dotnet-ef", "format Contoso" };
         var dotnetCalls = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
         var positions = order.Select(step => dotnetCalls.FindIndex(call => call.Contains(step, StringComparison.Ordinal))).ToArray();
 
@@ -74,6 +74,84 @@ public class NewWorkflowTests
         StringAssert.Contains(host.Output, "NU1301");
         StringAssert.Contains(host.Output, "dotnet restore Contoso.Web.slnf");
         StringAssert.Contains(host.Output, "Contoso is ready");
+    }
+
+    [TestMethod]
+    public async Task WithoutARun_TheWorkbenchAndTheWebApp_Should_StillBeBuiltBeforeTheNativeApps()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var package = FakeTemplatePackage(host, workbench: true);
+        GeneratesProjects(host, workbench: true);
+
+        var exitCode = await host.RunAsync("new", "Contoso", "--template-package", package, "--yes", "--no-git", "--no-trust", "--no-tools", "--no-run", "--platforms", "android");
+
+        Assert.AreEqual(0, exitCode, host.Output);
+        AssertInOrder(host, [
+            "workload install wasm-tools",
+            "build src/Workbench/Contoso.Workbench.csproj",
+            "restore Contoso.Web.slnf",
+            "build Contoso.Web.slnf",
+            "dnx dotnet-ef",
+            "format Contoso.slnx",
+            "workload install maui-android",
+            "build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj -t:InstallAndroidDependencies",
+            "restore Contoso.slnx",
+            "build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj",
+            "build src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj"
+        ]);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run" || c.FileName is "aspire"), Calls(host));
+        Assert.IsFalse(host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) is "build Contoso.slnx"), "The whole solution isn't built again: " + Calls(host));
+        Assert.IsEmpty(host.Runner.Detached);
+        StringAssert.Contains(host.FlatOutput, "WebAssembly build support, build the Workbench, restore and build the web app, Chromium for UI tests, initial migration, dotnet format, Android build support, restore and build the native apps");
+    }
+
+    [TestMethod]
+    public async Task Setup_Should_StartTheProjectBeforeItSetsUpTheNativeApps()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var directory = Path.Combine(host.WorkingDirectory, "Contoso");
+        WriteProject(directory, "Contoso", workbench: true);
+        var appHost = Directory.CreateDirectory(Path.Combine(directory, "src", "Server", "Contoso.Server.AppHost")).FullName;
+        File.WriteAllText(Path.Combine(appHost, "Program.cs"), "builder.AddProject(\"serverweb\", \"../Contoso.Server.Web.csproj\");");
+
+        Assert.AreEqual(0, await host.RunAsync("setup", directory, "--yes", "--no-tools", "--no-browsers", "--platforms", "android"), host.Output);
+
+        AssertInOrder(host, [
+            "workload install wasm-tools",
+            "build src/Workbench/Contoso.Workbench.csproj",
+            "restore Contoso.Web.slnf",
+            "build Contoso.Web.slnf",
+            "start --apphost",
+            "stop --apphost",
+            "workload install maui-android",
+            "restore Contoso.slnx",
+            "build src/Client/Contoso.Client.Maui/Contoso.Client.Maui.csproj",
+            "build src/Client/Contoso.Client.Windows/Contoso.Client.Windows.csproj"
+        ]);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run"), "Without a terminal the Workbench is only built: " + Calls(host));
+        StringAssert.Contains(host.FlatOutput, "Started and stopped the project with Aspire");
+        StringAssert.Contains(host.FlatOutput, "Contoso is ready");
+    }
+
+    [TestMethod]
+    public async Task ThePlan_Should_OpenTheWorkbenchFirstAndSetUpTheNativeAppsLast()
+    {
+        using var host = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
+        host.AllToolsInstalled();
+
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host, workbench: true), "--platforms", "android", "--dry-run", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, ".NET SDK check, container runtime for Aspire, WebAssembly build support, build and open the Workbench, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code");
+
+        using var withoutWorkbench = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
+        withoutWorkbench.AllToolsInstalled();
+
+        Assert.AreEqual(0, await withoutWorkbench.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(withoutWorkbench), "--dry-run", "--yes"), withoutWorkbench.Output);
+
+        StringAssert.Contains(withoutWorkbench.FlatOutput, "WebAssembly build support, restore and build the web app, Chromium for UI tests");
+        Assert.IsFalse(withoutWorkbench.Output.Contains("Workbench", StringComparison.Ordinal), withoutWorkbench.Output);
+        Assert.IsFalse(withoutWorkbench.Output.Contains("native apps", StringComparison.Ordinal), withoutWorkbench.Output);
     }
 
     [TestMethod]
@@ -217,7 +295,7 @@ public class NewWorkflowTests
         StringAssert.Contains(TemplateSource.ReadEntry(folder, "Bit.Boilerplate/global.json"), "10.0.300");
     }
 
-    private static string FakeTemplatePackage(TestHost host)
+    private static string FakeTemplatePackage(TestHost host, bool workbench = false)
     {
         var path = Path.Combine(host.Root, "Bit.Boilerplate.0.0.0.nupkg");
 
@@ -234,10 +312,16 @@ public class NewWorkflowTests
             resource.CopyTo(templateJson);
         }
 
+        if (workbench)
+        {
+            using var project = new StreamWriter(archive.CreateEntry("content/Bit.Boilerplate/src/Workbench/Boilerplate.Workbench.csproj").Open());
+            project.Write("<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
+        }
+
         return path;
     }
 
-    private static void GeneratesProjects(TestHost host)
+    private static void GeneratesProjects(TestHost host, bool workbench = false)
     {
         host.Runner.On("dotnet", "new bit-bp", spec =>
         {
@@ -245,20 +329,50 @@ public class NewWorkflowTests
             var name = arguments[arguments.IndexOf("--name") + 1];
             var directory = Directory.CreateDirectory(arguments[arguments.IndexOf("--output") + 1]).FullName;
 
-            File.WriteAllText(Path.Combine(directory, $"{name}.slnx"), "<Solution />");
+            WriteProject(directory, name, workbench);
             File.WriteAllText(Path.Combine(directory, $"{name}.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
-            File.WriteAllText(Path.Combine(directory, $"{name}.Web.slnf"), "{}");
-            Directory.CreateDirectory(Path.Combine(directory, "src", "Server", $"{name}.Server.Api"));
-            File.WriteAllText(Path.Combine(directory, "src", "Directory.Packages.props"), """
-                <Project>
-                  <ItemGroup>
-                    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
-                  </ItemGroup>
-                </Project>
-                """);
 
             return new ProcessResult { ExitCode = 0, Output = "The template \"bit Boilerplate\" was created successfully." };
         });
+    }
+
+    private static void WriteProject(string directory, string name, bool workbench)
+    {
+        string[] web = [$"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", $"src/Client/{name}.Client.Web/{name}.Client.Web.csproj", $"src/Server/{name}.Server.Api/{name}.Server.Api.csproj", $"src/Server/{name}.Server.Web/{name}.Server.Web.csproj", $"src/Tests/{name}.Tests.csproj", .. workbench ? [Platforms.WorkbenchProject(name)] : Array.Empty<string>()];
+        string[] solution = [.. web, Platforms.MauiProject(name), Platforms.WindowsProject(name)];
+
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, $"{name}.slnx"), $"<Solution>{string.Concat(solution.Select(p => $"<Project Path=\"{p}\" />"))}</Solution>");
+        File.WriteAllText(Path.Combine(directory, $"{name}.Web.slnf"), System.Text.Json.JsonSerializer.Serialize(new { solution = new { path = $"{name}.slnx", projects = web.Select(p => p.Replace('/', '\\')) } }));
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(directory, "src", "Client", $"{name}.Client.Core")).FullName, $"{name}.Client.Core.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk.Razor\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        Directory.CreateDirectory(Path.Combine(directory, "src", "Server", $"{name}.Server.Api"));
+        File.WriteAllText(Path.Combine(directory, "src", "Directory.Packages.props"), """
+            <Project>
+              <ItemGroup>
+                <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        if (workbench)
+        {
+            var properties = Directory.CreateDirectory(Path.Combine(directory, "src", "Workbench", "Properties")).FullName;
+            File.WriteAllText(Path.Combine(directory, Platforms.WorkbenchProject(name)), "<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
+            File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""{ "profiles": { "{{name}}.Workbench": { "commandName": "Project", "applicationUrl": "http://localhost:6030" } } }""");
+        }
+    }
+
+    private static void AssertInOrder(TestHost host, string[] expected)
+    {
+        var calls = host.Runner.Calls.Select(c => string.Join(' ', c.Arguments)).ToList();
+        var next = 0;
+
+        foreach (var step in expected)
+        {
+            var found = calls.FindIndex(next, call => call.StartsWith(step, StringComparison.Ordinal));
+            Assert.AreNotEqual(-1, found, $"'{step}' didn't run after the steps before it:{Environment.NewLine}{string.Join(Environment.NewLine, calls)}");
+            next = found + 1;
+        }
     }
 
     private static string Calls(TestHost host) => string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine));

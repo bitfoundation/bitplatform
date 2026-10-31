@@ -200,6 +200,10 @@ public class TemplateTests
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Ios], HostOs.MacOS).ToArray());
+
+        Assert.IsEmpty(Platforms.NativeWorkloads([Platform.Web], HostOs.Windows));
+        CollectionAssert.AreEqual(new[] { "maui-android" }, Platforms.NativeWorkloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
+        CollectionAssert.AreEqual(new[] { "maui" }, Platforms.NativeWorkloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
     }
 
     [TestMethod]
@@ -208,6 +212,9 @@ public class TemplateTests
         Assert.AreEqual("WebAssembly build support", Platforms.BuildSupport([Platform.Web]));
         Assert.AreEqual("WebAssembly and Android build support", Platforms.BuildSupport([Platform.Android, Platform.Web]));
         Assert.AreEqual("WebAssembly, Android, iOS and Windows build support", Platforms.BuildSupport([Platform.Windows, Platform.Web, Platform.Ios, Platform.Android]));
+
+        Assert.AreEqual("Android build support", Platforms.NativeBuildSupport([Platform.Android, Platform.Web]));
+        Assert.AreEqual("Android, iOS and Windows build support", Platforms.NativeBuildSupport([Platform.Windows, Platform.Web, Platform.Ios, Platform.Android]));
     }
 
     [TestMethod]
@@ -224,12 +231,34 @@ public class TemplateTests
     }
 
     [TestMethod]
-    public void TheBuild_Should_CoverTheWholeSolutionOnceANativeAppIsPicked()
+    public void TheTemplate_Should_SayWhetherItHasAWorkbench()
     {
-        Assert.AreEqual("Contoso.Web.slnf", Platforms.BuildPath("Contoso", [Platform.Web]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Android]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Windows]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Ios]));
+        var template = Path.GetDirectoryName(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "global.json"))!;
+
+        Assert.AreEqual(File.Exists(Path.Combine(template, "src", "Workbench", "Boilerplate.Workbench.csproj")), TemplateRequirements.Embedded.Workbench);
+
+        using var host = new TestHost();
+        var package = Path.Combine(host.Root, "Bit.Boilerplate.0.0.0.nupkg");
+
+        using (var archive = ZipFile.Open(package, ZipArchiveMode.Create))
+        {
+            archive.CreateEntry("content/Bit.Boilerplate/global.json");
+        }
+
+        Assert.IsFalse(TemplateRequirements.FromPackage(package).Workbench);
+
+        using (var archive = ZipFile.Open(package, ZipArchiveMode.Update))
+        {
+            archive.CreateEntry("content/Bit.Boilerplate/src/Workbench/Boilerplate.Workbench.csproj");
+        }
+
+        Assert.IsTrue(TemplateRequirements.FromPackage(package).Workbench);
+
+        var project = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Contoso")).FullName;
+        Assert.IsFalse(TemplateRequirements.FromProject(project, "Contoso").Workbench);
+
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(project, "src", "Workbench")).FullName, "Contoso.Workbench.csproj"), "<Project />");
+        Assert.IsTrue(TemplateRequirements.FromProject(project, "Contoso").Workbench);
     }
 
     [TestMethod]
