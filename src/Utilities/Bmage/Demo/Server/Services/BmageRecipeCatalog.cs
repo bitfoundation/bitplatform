@@ -236,7 +236,7 @@ public static class BmageRecipeCatalog
                             Format = ImageFormat.Jpeg,
                             Quality = 0.88,
                             // Keeps camera, lens, exposure, dates, copyright and the ICC profile; drops GPS,
-                            // serial numbers, owner name, user comments, maker notes, unique ids, the
+                            // serial numbers, owner and artist names, user comments, maker notes, unique ids, the
                             // embedded thumbnail and all of XMP.
                             Metadata = MetadataPolicy.StripSensitive,
                         });

@@ -35,6 +35,12 @@ public sealed class BrowserTextRasterizer : IDisposable
         _cacheLimit = Math.Max(1, cacheLimit);
     }
 
+    /// <summary>
+    /// Limits the bitmap of rendered text is held to. The browser checks the pixel count before it allocates a canvas,
+    /// so text that would need a larger one fails with an <see cref="ImageLimitExceededException"/> instead.
+    /// </summary>
+    public ImageLimits Limits { get; set; } = ImageLimits.Default;
+
     private readonly record struct CacheKey(string Text, string Font, string Color, float MaxWidth, float LetterSpacing, float LineHeight, string Align);
 
     private sealed class CachedText : IDisposable
@@ -90,11 +96,11 @@ public sealed class BrowserTextRasterizer : IDisposable
         try
         {
             using var result = await _interop.InvokeForBytesAsync<TextRenderInfo>(
-                "renderText", cancellationToken, text, font, color, style.MaxWidth, style.LetterSpacing, style.LineHeight, align).ConfigureAwait(false);
+                "renderText", cancellationToken, text, font, color, style.MaxWidth, style.LetterSpacing, style.LineHeight, align, Limits.MaxPixels).ConfigureAwait(false);
             if (!result.HasValue || result.Info is not { Width: > 0, Height: > 0 } rendered)
                 throw new ImageException("The browser produced no pixels for this text.");
             info = rendered;
-            buffer = ImageBuffer.Create(info.Width, info.Height, clear: false);
+            buffer = ImageBuffer.Create(info.Width, info.Height, clear: false, limits: Limits);
             try
             {
                 result.Bytes.Span.CopyTo(buffer.Bytes);
@@ -104,6 +110,13 @@ public sealed class BrowserTextRasterizer : IDisposable
                 buffer.Dispose();
                 throw;
             }
+        }
+        catch (JSException ex) when (ex.Message.Contains("text-too-large:", StringComparison.Ordinal))
+        {
+            // The message is "text-too-large:<width>x<height>", possibly followed by a JavaScript stack trace.
+            var marker = ex.Message[ex.Message.IndexOf("text-too-large:", StringComparison.Ordinal)..];
+            var size = marker.Split('\n', 2)[0]["text-too-large:".Length..].Trim();
+            throw new ImageLimitExceededException($"The text needs a {size} bitmap, more than the configured limit of {Limits.MaxPixels} pixels.");
         }
         catch (JSException ex)
         {

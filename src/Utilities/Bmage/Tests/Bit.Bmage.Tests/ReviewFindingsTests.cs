@@ -282,6 +282,60 @@ public sealed class ReviewFindingsTests
     }
 
     [TestMethod]
+    public async Task AUrlServingMoreThanTheSourceLimitIsRefused()
+    {
+        object? passed = null;
+        var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "fetchImage") passed = args?[2]; });
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
+
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg")));
+        Assert.AreEqual(123_456L, passed);
+    }
+
+    [TestMethod]
+    public async Task TheBrowserTextRasterizerHoldsTheBrowsersCanvasToItsLimits()
+    {
+        object? passed = null;
+        var module = new FakeModule(_ => { }, (identifier, args) =>
+        {
+            if (identifier != "renderText") return;
+            passed = args?[7];
+            throw new JSException("text-too-large:20000x9000\n    at renderText (bit-bmage.js:1:1)");
+        });
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        using var rasterizer = new Text.BrowserTextRasterizer(interop) { Limits = ImageLimits.Default with { MaxPixels = 1_000_000 } };
+
+        var error = await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await rasterizer.MeasureAsync("Hello", new TextStyle()));
+        StringAssert.Contains(error.Message, "20000x9000");
+        Assert.AreEqual(1_000_000L, passed);
+    }
+
+    [TestMethod]
+    public async Task TheBrowserDecoderRefusesAHeaderItCouldNotScaleIntoTheLimitsBeforeDecoding()
+    {
+        using var small = TestImages.Gradient(8, 8);
+        byte[] Png(int width, int height)
+        {
+            var png = Codecs.Png.PngEncoder.Encode(small).Data;
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), (uint)width);
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), (uint)height);
+            return png;
+        }
+        var called = new List<string>();
+        var module = new FakeModule(called.Add);
+        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
+        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+
+        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(Png(20_000, 20_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
+        CollectionAssert.DoesNotContain(called, "decode");
+
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(12_000, 9_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(20_000, 1_000), DecodeOptions.Default with { MaxSize = new Size(1_000, 1_000) }, PooledPixelAllocator.Shared));
+        Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
+    }
+
+    [TestMethod]
     public void ADocumentNestingMasksDeeplyIsRefused_AChainBuiltAStepAtATimeIsNot()
     {
         Mask nested = Mask.All();
@@ -492,13 +546,14 @@ public sealed class ReviewFindingsTests
         }
     }
 
-    private sealed class FakeModule(Action<string> invoke) : IJSObjectReference
+    private sealed class FakeModule(Action<string> invoke, Action<string, object?[]?>? inspect = null) : IJSObjectReference
     {
         public bool Disposed { get; private set; }
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
             invoke(identifier);
+            inspect?.Invoke(identifier, args);
             return ValueTask.FromResult(default(TValue)!);
         }
         public ValueTask DisposeAsync()

@@ -23,16 +23,17 @@ public static class ExifReader
         if (ifd0Offset >= (uint)data.Length) return null;
 
         var visited = new HashSet<uint>();
-        var primary = ReadIfd(data, ifd0Offset, bigEndian, visited, out var nextIfd);
+        var budget = MaxValueBytes;
+        var primary = ReadIfd(data, ifd0Offset, bigEndian, visited, ref budget, out var nextIfd);
         if (primary is null) return null;
 
         ExifDirectory? exif = null, gps = null, interop = null;
         if (primary.Get(ExifTag.ExifIfdPointer)?.GetDouble() is { } exifOff && exifOff < data.Length)
-            exif = ReadIfd(data, (uint)exifOff, bigEndian, visited, out _);
+            exif = ReadIfd(data, (uint)exifOff, bigEndian, visited, ref budget, out _);
         if (primary.Get(ExifTag.GpsIfdPointer)?.GetDouble() is { } gpsOff && gpsOff < data.Length)
-            gps = ReadIfd(data, (uint)gpsOff, bigEndian, visited, out _);
+            gps = ReadIfd(data, (uint)gpsOff, bigEndian, visited, ref budget, out _);
         if (exif?.Get(ExifTag.InteropIfdPointer)?.GetDouble() is { } iopOff && iopOff < data.Length)
-            interop = ReadIfd(data, (uint)iopOff, bigEndian, visited, out _);
+            interop = ReadIfd(data, (uint)iopOff, bigEndian, visited, ref budget, out _);
 
         // Pointers are re-created on write; drop them from the directories.
         primary = primary.Without(ExifTag.ExifIfdPointer, ExifTag.GpsIfdPointer, ExifTag.InteropIfdPointer);
@@ -41,15 +42,15 @@ public static class ExifReader
         ReadOnlyMemory<byte> thumbnail = default;
         if (nextIfd != 0 && nextIfd < data.Length)
         {
-            var ifd1 = ReadIfd(data, nextIfd, bigEndian, visited, out _);
-            if (ifd1?.Get(0x0201)?.GetDouble() is { } thOff && ifd1.Get(0x0202)?.GetDouble() is { } thLen && thOff >= 0 && thLen > 0 && thOff + thLen <= data.Length && thLen < MaxValueBytes)
+            var ifd1 = ReadIfd(data, nextIfd, bigEndian, visited, ref budget, out _);
+            if (ifd1?.Get(0x0201)?.GetDouble() is { } thOff && ifd1.Get(0x0202)?.GetDouble() is { } thLen && thOff >= 0 && thLen > 0 && thOff + thLen <= data.Length && thLen < MaxValueBytes && thLen <= budget)
                 thumbnail = data.Slice((int)thOff, (int)thLen).ToArray();
         }
 
         return new ExifData(primary, exif, gps, interop, thumbnail);
     }
 
-    private static ExifDirectory? ReadIfd(ReadOnlySpan<byte> data, uint offset, bool be, HashSet<uint> visited, out uint nextIfd)
+    private static ExifDirectory? ReadIfd(ReadOnlySpan<byte> data, uint offset, bool be, HashSet<uint> visited, ref int budget, out uint nextIfd)
     {
         nextIfd = 0;
         // Written without addition so an offset near uint.MaxValue cannot wrap into the valid range.
@@ -67,6 +68,7 @@ public static class ExifReader
             var size = ExifValue.SizeOf(type);
             if (!Enum.IsDefined(type) || n > MaxValueBytes / (uint)size) continue;
             var byteLen = (int)(n * (uint)size);
+            if (byteLen > budget) continue;
             ReadOnlySpan<byte> raw;
             if (byteLen <= 4)
             {
@@ -79,6 +81,7 @@ public static class ExifReader
                 if (valueOffset > (uint)data.Length || byteLen > data.Length - (int)valueOffset) continue;
                 raw = data.Slice((int)valueOffset, byteLen);
             }
+            budget -= byteLen;
             dir[tag] = new ExifValue(type, (int)n, Normalise(raw, type, be));
         }
         if (pos + 4 <= data.Length) nextIfd = ReadU32(data, pos, be);

@@ -40,7 +40,7 @@ public sealed class BlurFilter : RegionOperation
 {
     public BlurFilter(float radius, Rectangle? region = null) : base(region)
     {
-        if (radius < 0 || float.IsNaN(radius)) throw new ArgumentOutOfRangeException(nameof(radius));
+        if (radius < 0 || !float.IsFinite(radius)) throw new ArgumentOutOfRangeException(nameof(radius));
         Radius = radius;
     }
 
@@ -71,6 +71,12 @@ internal static class BoxBlur
     /// these radii from jumping in strength.
     /// </summary>
     private const float SampledGaussianLimit = 2f;
+
+    /// <summary>
+    /// Boxes this wide already reach far past any image, so a larger deviation blurs no differently; past about ten
+    /// times this their integer radii overflowed, and the blur did nothing at all.
+    /// </summary>
+    private const float MaxSigma = 1e8f;
 
     /// <summary>The standard deviation three box passes of these radii actually blur by.</summary>
     private static double BoxSigma(int[] radii)
@@ -109,6 +115,7 @@ internal static class BoxBlur
     public static void Gaussian(ImageBuffer buffer, Rectangle region, float sigma, OperationContext context, BlurredRow? consume)
     {
         if (region.Width <= 0 || region.Height <= 0) return;
+        sigma = Math.Min(sigma, MaxSigma);
         var stages = new List<IRowStage>();
         var boxes = BoxesForGauss(sigma, 3);
         if (sigma < SampledGaussianLimit && Math.Abs(BoxSigma(boxes) - sigma) > 0.1 * sigma)
@@ -204,6 +211,8 @@ internal static class BoxBlur
     /// </summary>
     private sealed class BoxPass : IRowStage
     {
+        private const int MaxEdgeRepeats = 1024;
+
         private readonly int _r, _w, _h;
         private readonly float _iarr;
         private readonly Vector4[][] _ring;
@@ -235,7 +244,10 @@ internal static class BoxBlur
             var fv = src[0];
             var lv = src[w - 1];
             var val = (r + 1) * fv;
-            for (var j = 0; j < r; j++) val += src[Math.Min(j, w - 1)];
+            var inside = Math.Min(r, w);
+            for (var j = 0; j < inside; j++) val += src[j];
+            if (r - inside > MaxEdgeRepeats) val += (r - inside) * lv;
+            else for (var j = inside; j < r; j++) val += lv;
             for (var x = 0; x < w; x++)
             {
                 var add = x + r < w ? src[x + r] : lv;
@@ -255,11 +267,14 @@ internal static class BoxBlur
                 // The sum starts as (r + 1) copies of the first row plus rows 0 to r - 1, clamped to the last row.
                 if (_received < Math.Min(r, _h) || _received == 0) return;
                 var first = Row(0);
+                var inside = Math.Min(r, _h);
                 var sum = _sum.AsSpan(0, _w);
                 for (var x = 0; x < _w; x++)
                 {
                     var v = (r + 1) * first[x];
-                    for (var j = 0; j < r; j++) v += Row(Math.Min(j, _h - 1))[x];
+                    for (var j = 0; j < inside; j++) v += Row(j)[x];
+                    if (r - inside > MaxEdgeRepeats) v += (r - inside) * Row(_h - 1)[x];
+                    else for (var j = inside; j < r; j++) v += Row(_h - 1)[x];
                     sum[x] = v;
                 }
                 _started = true;
@@ -383,7 +398,7 @@ public sealed class SharpenFilter : RegionOperation
     public SharpenFilter(float amount = 0.5f, float radius = 1f, float threshold = 0f, Rectangle? region = null) : base(region)
     {
         if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
-        if (radius <= 0) throw new ArgumentOutOfRangeException(nameof(radius));
+        if (radius <= 0 || !float.IsFinite(radius)) throw new ArgumentOutOfRangeException(nameof(radius));
         Amount = amount; Radius = radius; Threshold = Math.Clamp(threshold, 0f, 1f);
     }
 

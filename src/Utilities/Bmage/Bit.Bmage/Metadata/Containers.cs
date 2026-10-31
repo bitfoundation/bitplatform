@@ -157,6 +157,8 @@ public static class JpegContainer
 /// <summary>Reads and writes metadata chunks (eXIf, iCCP, iTXt XMP) in PNG files.</summary>
 public static class PngContainer
 {
+    private const int MaxIccProfileBytes = 4 * 1024 * 1024;
+
     private static ReadOnlySpan<byte> Signature => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     public readonly record struct Chunk(uint Type, int Offset, int DataOffset, int DataLength)
@@ -201,8 +203,10 @@ public static class PngContainer
                     {
                         using var zs = new System.IO.Compression.ZLibStream(new MemoryStream(data[(nul + 2)..].ToArray()), System.IO.Compression.CompressionMode.Decompress);
                         var ms = new MemoryStream();
-                        zs.CopyTo(ms);
-                        icc = ms.ToArray();
+                        var block = new byte[81920];
+                        int read;
+                        while ((read = zs.Read(block)) > 0 && ms.Length + read <= MaxIccProfileBytes) ms.Write(block, 0, read);
+                        if (read == 0) icc = ms.ToArray();
                     }
                     catch (Exception) { /* corrupt profile: ignore */ }
                 }

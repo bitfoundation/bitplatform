@@ -68,7 +68,10 @@ public static class BitBmageBlazor
             return loader;
         });
         services.TryAddScoped<ImageExporter>();
-        services.TryAddScoped<BrowserTextRasterizer>();
+        services.TryAddScoped(sp => new BrowserTextRasterizer(sp.GetRequiredService<BrowserImageInterop>())
+        {
+            Limits = sp.GetRequiredService<BitBmageOptions>().Limits,
+        });
         services.TryAddScoped<FontTextRasterizer>();
         return services;
     }

@@ -72,6 +72,8 @@ public sealed class GifDecoder : IImageDecoder
                 int fh = BinaryPrimitives.ReadUInt16LittleEndian(data[(pos + 6)..]);
                 var iflags = data[pos + 8];
                 pos += 9;
+                // A frame may overhang the logical screen. Browsers draw such files, so the overhang is clipped below
+                // rather than the file refused; the frame's own size is still bounded by the pixel limit.
                 var palette = globalPalette;
                 if ((iflags & 0x80) != 0)
                 {

@@ -54,6 +54,15 @@ public sealed class EditorServicesTests
     }
 
     [TestMethod]
+    public async Task TheBrowserTextRasterizerIsHeldToTheConfiguredLimits()
+    {
+        var limits = ImageLimits.Default with { MaxPixels = 2_000_000 };
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).AddBitBmageServices(o => o.Limits = limits).BuildServiceProvider();
+
+        Assert.AreSame(limits, app.GetRequiredService<Text.BrowserTextRasterizer>().Limits);
+    }
+
+    [TestMethod]
     public async Task OverAServerCircuitTheServersCodecsHandleEveryFormatTheyCan()
     {
         var all = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.WebP, ImageFormat.Avif };

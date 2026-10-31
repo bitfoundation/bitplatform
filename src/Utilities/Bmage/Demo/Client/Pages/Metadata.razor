@@ -115,11 +115,15 @@
             </thead>
             <tbody>
                 <tr><th scope="row"><code>Remove</code></th><td>nothing</td><td>EXIF, XMP, ICC profile, thumbnail</td></tr>
-                <tr><th scope="row"><code>StripSensitive</code></th><td>camera, lens, exposure, dates, copyright, description, ICC profile</td><td>GPS, serial numbers, owner name, user comments, maker notes, unique IDs, embedded thumbnail, XMP</td></tr>
+                <tr><th scope="row"><code>StripSensitive</code></th><td>camera, lens, exposure, dates, copyright, description, ICC profile</td><td>GPS, serial numbers, owner and artist names, user comments, maker notes, unique IDs, embedded thumbnail, XMP</td></tr>
                 <tr><th scope="row"><code>Preserve</code></th><td>everything the target format can carry</td><td>the embedded thumbnail, which would be stale</td></tr>
             </tbody>
         </table>
     </div>
+    <p>
+        The names and comments go from whichever field holds them, including the author and comment that
+        Windows Explorer writes into fields of its own. The copyright notice stays: it is there to be published.
+    </p>
     <p>
         <code>StripSensitive</code> drops XMP entirely: XMP can carry location and device identifiers of
         its own, and there is no reliable way to filter it field by field. All three policies reset the

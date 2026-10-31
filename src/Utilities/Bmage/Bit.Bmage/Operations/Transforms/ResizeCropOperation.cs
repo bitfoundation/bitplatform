@@ -70,6 +70,7 @@ public sealed class ResizeCropOperation : ImageOperation, IGeometricOperation
     {
         var (plan, rect) = Resolve(source.Size);
         if (rect.IsEmptyArea()) throw new ArgumentException("The crop rectangle does not intersect the resized image.");
+        if (!plan.IsIdentity(source.Size)) context.Limits.Validate(plan.CanvasSize.Width, plan.CanvasSize.Height);
         var output = context.Allocate(rect.Width, rect.Height, clear: false);
         output.Metadata = source.Metadata;
         try
