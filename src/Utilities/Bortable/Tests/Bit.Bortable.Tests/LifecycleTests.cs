@@ -275,6 +275,34 @@ public class LifecycleTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task ARemovedListLeavesTheBrowserLayerEvenWhenAHandlerOfItsDragThrows()
+    {
+        List<string> items = ["A", "B", "C"];
+        var host = Render<Toggle>(p => p.AddChildContent<Bortable<string>>(l =>
+        {
+            l.Add(c => c.Id, "L1");
+            l.Add(c => c.Items, items);
+            l.Add(c => c.ItemTemplate, i => $"<span>{i}</span>");
+            l.Add(c => c.ConfirmDrop, _ => Task.FromResult(true));
+            l.Add(c => c.OnEnd, (BortableEventArgs<string> _) => throw new InvalidOperationException("boom"));
+        }));
+        var l1 = host.FindComponent<Bortable<string>>();
+        var bridge = (DotNetObjectReference<BortableBridge>)Module.Invocations["register"].Single().Arguments[1]!;
+
+        await DragStartAsync(l1, "A");
+        await DragOverAsync(l1, 3);
+
+        // The renderer reports what the handler threw as the list's disposal failing.
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => host.Render(p => p.Add(t => t.Show, false)));
+
+        Assert.AreEqual("boom", error.Message);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+        Assert.ContainsSingle(Module.Invocations["unregister"]);
+        Assert.ThrowsExactly<ObjectDisposedException>(() => bridge.Value);
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
     public async Task RemovingTheSourceListClearsASwapHighlightInAnotherList()
     {
         var host = Render<Toggle>(p => p.AddChildContent<Bortable<string>>(l => l

@@ -557,8 +557,12 @@ In swap mode it is asked about the dragged item alone - not the rest of a multi-
 index of the item under the pointer, whose place it would take; a swap across lists also asks the list the dragged
 item is in about the item that would come back to it, so `Item` is then that item and `FromId` the list it leaves. A
 multi-drag asks once more on the drop, with the index the dragged item has once the rest of the selection is gathered
-next to it: a refusal puts every selected item back where it was, and `OnEnd` reports `Canceled`. A `CanDrop` that
-throws there is taken as a refusal, and the exception is passed on once the drag is reported.
+next to it: a refusal puts every selected item back where it was, and `OnEnd` reports `Canceled`.
+
+A `CanDrop` that throws refuses the position it was asked about, and the exception is passed on once that step of
+the drag is done - on the drop, once the drag is put back and reported: it is thrown to the code that called
+`MoveAsync` or `MoveToAsync`, and, during a drag the user makes, raised as the list's own, which the nearest
+`ErrorBoundary` handles, as it would an exception thrown by an event handler.
 
 It runs while the pointer moves, so keep it fast and free of side effects.
 
@@ -595,7 +599,7 @@ before the drag.
 It is asked on the list the item lands in, with the move as committed: `NewIndex` is where the item is now. No other
 drag starts until it answers, and the lists must not be changed meanwhile - a refusal puts back what they held
 before the drag. A `ConfirmDrop` that throws puts the lists back too, raises `OnEnd` with `Canceled`, and the
-exception is passed on.
+exception is passed on as one `CanDrop` throws is.
 
 ## Cancelling a drag
 
@@ -742,7 +746,7 @@ public static readonly BortableMessages German = new()
 | `Moved` | A keyboard drag, or a move made by code, moves the item. |
 | `SwapTarget` | In swap mode, the item the dragged one will trade places with changes. |
 | `Dropped` | The drag ends with a drop. |
-| `Canceled` | The drag is cancelled, or `ConfirmDrop` refuses it. |
+| `Canceled` | The drag is cancelled, or its drop refused: by `ConfirmDrop`, or, for a multi-drag's gathering, by `CanDrop`. |
 | `Refused` | A position the keyboard asked for is refused. |
 | `Locked` | A locked (`Filter`) item is asked to be picked up. |
 | `SelectionInstructions` | Added to `Instructions` in a `MultiDrag` list. |
@@ -801,7 +805,7 @@ All events are `EventCallback<BortableEventArgs<TItem>>`:
 | `CrossedLists` | `bool` | `true` when the item moved between lists. |
 | `Input` | `BortableInput` | How the drag was made: `Mouse`, `Touch`, `Pen`, `Keyboard`, or `Api` for a move made by code. |
 | `IsClone` | `bool` | `true` when a copy goes into another list and the original stays. |
-| `Canceled` | `bool` | On `OnEnd`: the drag kept nothing - cancelled, spilled with `RevertOnSpill`, or refused by `ConfirmDrop`. |
+| `Canceled` | `bool` | On `OnEnd`: the drag kept nothing - cancelled, spilled with `RevertOnSpill`, refused by `ConfirmDrop` or, for a multi-drag's gathering, by `CanDrop`, or ended as its list left the page with a `ConfirmDrop` to ask (see below). |
 
 Give the lists an `Id` of your own when a handler needs to tell them apart; otherwise each gets a generated one.
 

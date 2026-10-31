@@ -97,8 +97,21 @@ internal sealed class BortableDragContext
     public bool Finished { get; set; }
 
     /// <summary>
-    /// What <c>CanDrop</c> threw when it was asked as the drag was committed (about a multi-drag's gathering): the
-    /// drag is put back and reported as refused, and the exception is passed on after.
+    /// What the app's code threw while this drag was decided - <c>CanDrop</c> inside the gate, <c>ConfirmDrop</c> - or,
+    /// for a move made by code, while it was reported. It was taken as a refusal there, so the drag stays whole and is
+    /// still reported; the call that met it passes it on once it is done (see <see cref="TakeFailure"/>). The first
+    /// one is kept.
     /// </summary>
-    public System.Runtime.ExceptionServices.ExceptionDispatchInfo? Failure { get; set; }
+    public Exception? Failure { get; private set; }
+
+    /// <summary>Keeps <paramref name="exception"/> as the <see cref="Failure"/> to pass on, unless there is one already.</summary>
+    public void Fail(Exception exception) => Failure ??= exception;
+
+    /// <summary>The <see cref="Failure"/> to pass on, which the drag no longer holds: it is passed on once.</summary>
+    public Exception? TakeFailure()
+    {
+        var failure = Failure;
+        Failure = null;
+        return failure;
+    }
 }

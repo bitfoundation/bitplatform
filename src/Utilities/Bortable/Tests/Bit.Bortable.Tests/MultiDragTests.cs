@@ -272,7 +272,10 @@ public class MultiDragTests : BortableTestContext
         await DragStartAsync(list, "B");
         await DragOverAsync(list, 5);
 
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => DropAsync(list));
+        // The browser layer has no use for the exception: the list raises it as its own, and still answers what to say.
+        var announced = await Renderer.Dispatcher.InvokeAsync(() => Zone(list).EndAsync("drop"));
+        Assert.AreEqual("offline", (await PassedOnAsync()).Message);
+        StringAssert.StartsWith(announced, "Cancelled.");
         Assert.AreSequenceEqual(["A", "B", "C", "D", "E"], items);
         // OnEnd still follows OnStart, reporting the drag cancelled.
         Assert.AreEqual("Start:L1 Change:L1 End:L1", Sequence(log));

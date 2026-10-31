@@ -50,9 +50,12 @@ public sealed class BortableEventArgs<TItem>
     public bool IsClone { get; init; }
 
     /// <summary>
-    /// Set on <c>OnEnd</c>: <c>true</c> when the drag ended without keeping any change - it was cancelled (Escape),
-    /// released outside every list of a source with <see cref="Bortable{TItem}.RevertOnSpill"/>, or refused by the
-    /// destination's <see cref="Bortable{TItem}.ConfirmDrop"/> - and every list it touched was put back as it was.
+    /// Set on <c>OnEnd</c>: <c>true</c> when the drag ended without keeping any change, and every list it touched was
+    /// put back as it was. It was cancelled (Escape); released outside every list of a source with
+    /// <see cref="Bortable{TItem}.RevertOnSpill"/>; refused by the destination's <see cref="Bortable{TItem}.ConfirmDrop"/>
+    /// (or one that threw); a multi-drag whose gathering on the drop the destination's
+    /// <see cref="Bortable{TItem}.CanDrop"/> refused (or threw on); or a drag whose list left the page before it was
+    /// dropped, into a list with a <see cref="Bortable{TItem}.ConfirmDrop"/>, which cannot be asked then.
     /// </summary>
     public bool Canceled { get; init; }
 }

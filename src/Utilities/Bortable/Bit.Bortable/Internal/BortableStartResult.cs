@@ -34,7 +34,10 @@ internal sealed class BortableKeyResult
     /// <summary>The key the dragged item is rendered with in that list.</summary>
     public string? Key { get; init; }
 
-    /// <summary>When a drag starts: the ids of the lists that take it.</summary>
+    /// <summary>
+    /// When a drag starts, and after each move of it: the ids of the lists that take it. Carried into another list, the
+    /// item may be taken by other lists than where it was.
+    /// </summary>
     public string[]? Lists { get; init; }
 
     /// <summary>In swap mode: the key of the item highlighted as the swap target, if any.</summary>
