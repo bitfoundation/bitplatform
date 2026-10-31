@@ -79,9 +79,12 @@ public static class McpPrompts
                server's options, and takes them from `Services.GetBmotionService<T>()` - see
                `GetBmotionGuideSection(heading: "Lazy loading on WebAssembly")`.
             3. Add `@using Bit.Bmotion` to `_Imports.razor` in every project that renders animations.
-            4. Set the reduced-motion policy while you are in Program.cs:
-               `AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)`. The default is
-               back-compatible rather than correct, and this is the one moment when adding it costs nothing.
+            4. Set the reduced-motion policy while you are wiring the services up. Where Program.cs registers them,
+               that is `AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)` there. A WebAssembly
+               client that lazy loads Bit.Bmotion still registers nothing in its Program.cs: it sets the policy in
+               `Services.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)` in the layout,
+               the same as the server's `AddBitBmotionServices` sets it. The default is back-compatible rather than
+               correct, and this is the one moment when adding it costs nothing.
             5. Add one small animation from `GetBmotionRecipe(id: "fade-in-on-mount")` to prove the wiring works
                end to end, and build.
 
