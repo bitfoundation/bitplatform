@@ -30,7 +30,8 @@ public static class BonboardingCompletions
         "the popover points at the wrong place after the layout changes",
         "a finished tour never starts again even after a change",
         "the Back button goes to the wrong step in a branching tour",
-        "clicking the highlighted button does nothing"
+        "clicking the highlighted button does nothing",
+        "Could not load file or assembly 'Bit.Bonboarding' in an app that lazy loads it"
     ];
 
     private static readonly string[] _features =

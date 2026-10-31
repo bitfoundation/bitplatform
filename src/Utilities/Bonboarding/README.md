@@ -45,7 +45,7 @@ Every decision about what to show, when to show it, and where to put it is made 
 - **Definitions checked before anyone sees them**, and a user held on a step is told why.
 - **Analytics-grade events**, including how long each step was on screen.
 - Works unchanged on **Blazor Server, Blazor WebAssembly and Blazor Web App**, including while
-  prerendering.
+  prerendering, and can be lazy loaded on WebAssembly.
 - No external CSS framework, and no JavaScript dependency beyond the library's own module.
 
 ## Quick start
@@ -389,7 +389,8 @@ builder.Services.AddBitBonboardingServices();
 ```
 
 Everything is registered as **scoped**, which is per-circuit on Blazor Server and per-application on
-WebAssembly. That matches the lifetime of a user's onboarding state.
+WebAssembly. That matches the lifetime of a user's onboarding state. A WebAssembly app that downloads Bonboarding
+only when it is needed turns a switch on instead - see [lazy loading](#lazy-loading-on-webassembly).
 
 Global defaults can be set at the same time:
 
@@ -419,8 +420,28 @@ builder.Services.AddBitBonboardingServices(ConfigureOnboarding);
 builder.Services.AddBitBonboardingServices(ConfigureOnboarding);
 ```
 
-If your tours only ever run inside components with one render mode, registering in that project
-alone is enough.
+If your tours only ever run inside `InteractiveServer` components, registering in the server project
+alone is enough. `InteractiveWebAssembly` components need both unless their prerendering is off.
+
+While a page prerenders, every component on it runs on the server, whatever its render mode, so it gets the
+server project's registration and the options configured there. Once the page turns interactive, an
+`InteractiveServer` component keeps those, while an `InteractiveWebAssembly` component switches to the client
+project's registration and options - and an `InteractiveAuto` one uses the project it ends up running in. If the two
+configurations differ, the placement, labels and storage prefix change under the user as the page turns interactive.
+
+A missing registration therefore fails at different moments:
+
+- **Missing in the server project:** the page fails while it prerenders, and an `InteractiveServer` component fails
+  whether it prerenders or not. A Bonboarding component fails with an error that names `AddBitBonboardingServices`;
+  a component that injects `IBonboardingService` fails with Blazor's own "There is no registered service of type
+  'Bit.Bonboarding.IBonboardingService'". Only components that never run on the server - `InteractiveWebAssembly`
+  with prerendering off - are unaffected.
+- **Missing in the client project:** prerendering succeeds, on the server project's registration, and the same two
+  errors appear only once the page turns interactive on WebAssembly. The `Bit.Bonboarding.LazyLoad` switch the
+  error mentions is not the fix: it is for [lazy loading](#lazy-loading-on-webassembly), and an injected
+  `IBonboardingService` fails with it on too.
+
+Call `AddBitBonboardingServices` in both projects, through one shared method.
 
 ### 2. Reference the stylesheet
 
@@ -501,6 +522,100 @@ The library loads one ES module from your own origin (`_content/Bit.Bonboarding/
 uses inline `style` attributes for positioning. A policy that allows Blazor itself will already allow
 both, with the exception of a strict `style-src` that forbids `unsafe-inline`; positioning cannot be
 expressed without inline styles.
+
+### Lazy loading on WebAssembly
+
+A WebAssembly app can fetch Bonboarding only when someone opens a part of the app that has tours. Such an app cannot
+call `AddBitBonboardingServices` - `Program.cs` runs before the assembly is there - so it turns on the
+`Bit.Bonboarding.LazyLoad` runtime switch instead. With the switch on and the services not registered,
+`BonboardingRoot`, `BonboardingTour`, `BonboardingBeacon`, `BonboardingChecklist` and `BonboardingTourList` create
+every service they need themselves, once per browser connection, and `IServiceProvider.GetBonboardingService()` hands
+the app's own code the same `IBonboardingService`. A tour's hooks still reach the app's own services through their
+context. In the project that runs in the browser, mark the assembly as lazy loaded and turn the switch on, then load
+the assembly before the first page that uses it renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bonboarding.wasm" />
+  <RuntimeHostConfigurationOption Include="Bit.Bonboarding.LazyLoad" Value="true" />
+</ItemGroup>
+```
+
+```razor
+@* App.razor: the router waits for OnNavigateAsync before it renders the page. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages with tours: fetch Bonboarding before they render. A second call loads nothing again. Routes
+        // match regardless of case, so /Admin/users is one of them too, and /administrators is not.
+        var path = context.Path.Split('?', '#')[0]; // the path keeps the query string and the fragment
+        if (path.Equals("admin", StringComparison.OrdinalIgnoreCase) || path.StartsWith("admin/", StringComparison.OrdinalIgnoreCase))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bonboarding.wasm"]);
+    }
+}
+```
+
+Those pages, or a layout only they use, host the tours and reach the service through `GetBonboardingService()`
+instead of injecting `IBonboardingService`:
+
+```razor
+@* AdminLayout.razor *@
+@inherits LayoutComponentBase
+@inject IServiceProvider Services
+
+<nav>
+    <a href="admin/users" data-bonboarding-anchor="users">Users</a>
+    <button @onclick="ReplayAsync">Replay the tour</button>
+</nav>
+
+@Body
+
+<BonboardingTour Id="admin-welcome" AutoStart="BonboardingAutoStart.Once">
+    <BonboardingStep Anchor="users" Title="Users" Description="Invite people and manage their roles here." />
+</BonboardingTour>
+
+<BonboardingRoot />
+
+@code {
+    private Task ReplayAsync() => Services.GetBonboardingService().StartAsync("admin-welcome");
+}
+```
+
+The stylesheet is a plain `<link>`, served whether the assembly has loaded or not, and the components import their
+JavaScript module the first time they need it.
+
+- Leave `AddBitBonboardingServices` out of that project's `Program.cs`: calling it references Bonboarding's types
+  before the assembly is there. For the same reason only what renders after the assembly has loaded may use
+  Bonboarding's types - the pages it is loaded for and a layout only they use, not `App.razor`, a layout every page
+  shares or `Program.cs`. That includes `<BonboardingRoot />`: it goes in that layout, not in the main one.
+- The switch is what tells a lazy loading app apart from one that forgot the registration: without it, a missing
+  registration fails with an error that names `AddBitBonboardingServices`, as it does everywhere else.
+  `AppContext.SetSwitch("Bit.Bonboarding.LazyLoad", true);` at the top of `Program.cs` turns it on too, without
+  referencing Bonboarding's types.
+- No type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive
+  from or implement one of Bonboarding's: no `IBonboardingObserver`, `IBonboardingStore` or `IBonboardingLocalizer`
+  class. The router reads the types of those assemblies at startup, and on WebAssembly a type whose base type or
+  interface lives in an assembly that is not loaded yet fails to load - and keeps failing after Bit.Bonboarding has
+  loaded, breaking the app's use of it for the rest of the session. Put such a class in a library that is lazy loaded
+  together with Bit.Bonboarding.
+- Without the registration the components run on the default `BonboardingOptions`. A tour and a step override most
+  of them - every `BonboardingStepOptions` member, `Labels` and `Persist` - on their definition or as parameters of
+  `BonboardingTour` and `BonboardingStep`. The rest - `StorageKeyPrefix`, `StorageLocation`, `StorageScope`,
+  `AutoNavigateToStepRoute` and `EnableJsDiagnostics` - keep their defaults; an app that needs them registers the
+  services rather than lazy loading.
+- The store, the localizer and the observers cannot be replaced either: progress goes to the browser's
+  `localStorage` under the default `bit-bonboarding:` prefix, which every app on the same origin shares, for the
+  device as a whole rather than per user. A tour that must not write to the browser sets `Persist = false`; analytics
+  subscribe to `GetBonboardingService().EventRaised` instead of registering an observer.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
+  to download later, and lazy loading an AOT-compiled assembly can fail at startup.
 
 ### Verifying the setup
 
@@ -3233,6 +3348,11 @@ A decorator of your own (a logging or telemetry wrapper) forwards every member t
 nothing, and a wrapper that inherited it would silently drop signals and checklist progress. Checklists, tour lists
 and beacons keep working behind a wrapper that forwards.
 
+Where the services are not registered - an app that [lazy loads](#lazy-loading-on-webassembly) Bonboarding on
+WebAssembly - `IServiceProvider.GetBonboardingService()` returns the one the components use; where they are, it
+returns the registered `IBonboardingService`, which the components use too, so code that has to work both ways can
+always call it.
+
 #### `BonboardingStartOptions`
 
 | Member | Default | Description |
@@ -3583,6 +3703,8 @@ IServiceCollection AddBitBonboardingStore<TStore>()       where TStore : class, 
 IServiceCollection AddBitBonboardingInMemoryStore();
 IServiceCollection AddBitBonboardingLocalizer<TLocalizer>() where TLocalizer : class, IBonboardingLocalizer;
 IServiceCollection AddBitBonboardingObserver<TObserver>()  where TObserver : class, IBonboardingObserver;
+
+IBonboardingService GetBonboardingService(this IServiceProvider services); // registered, or lazy loaded - see lazy loading
 ```
 
 All services are scoped.

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,6 +10,10 @@ namespace Bit.Bonboarding;
 /// <summary>
 /// The default browser layer: one lazily imported JS module per scope, one
 /// <see cref="DotNetObjectReference"/> for every session, and no polling anywhere.
+/// <para>
+/// What crosses to the browser and back is read by reflection-based System.Text.Json, which the trimmer cannot see,
+/// so every call and callback roots the types it carries - each nested type included - itself.
+/// </para>
 /// </summary>
 internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 {
@@ -42,6 +47,9 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
     public bool IsAvailable => !_disposed && _module is not null;
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(InitializeOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingBrowserEnvironment))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingSize))]
     public async ValueTask<BonboardingBrowserEnvironment> InitializeAsync(CancellationToken cancellationToken = default)
     {
         var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
@@ -99,6 +107,12 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         await _module.InvokeVoidAsync("detach", cancellationToken, sessionId).ConfigureAwait(false);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingStepActivation))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingTargetDescriptor))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingAdvanceTriggerDescriptor))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingStepGeometry))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingRect))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingSize))]
     public async ValueTask<BonboardingStepGeometry> ActivateStepAsync(
         BonboardingStepActivation activation, CancellationToken cancellationToken = default)
     {
@@ -122,6 +136,9 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         await _module.InvokeVoidAsync("deactivateStep", cancellationToken, sessionId).ConfigureAwait(false);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingStepGeometry))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingRect))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingSize))]
     public async ValueTask<BonboardingStepGeometry> MeasureAsync(string sessionId, CancellationToken cancellationToken = default)
     {
         if (_module is null) return BonboardingStepGeometry.Missing;
@@ -239,6 +256,8 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
     // ---- Beacons ----------------------------------------------------------
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingBeaconActivation))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingTargetDescriptor))]
     public async ValueTask AttachBeaconAsync(BonboardingBeaconActivation activation, ElementReference beacon, CancellationToken cancellationToken = default)
     {
         var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
@@ -253,6 +272,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         await _module.InvokeVoidAsync("detachBeacon", cancellationToken, beaconId).ConfigureAwait(false);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingTargetDescriptor))]
     public async ValueTask FocusTargetAsync(BonboardingTargetDescriptor target, CancellationToken cancellationToken = default)
     {
         if (_module is null) return;
@@ -270,6 +290,9 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
     // target. Keys are not step-scoped: a key press always means the step on screen.
 
     [JSInvokable]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingStepGeometry))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingRect))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BonboardingSize))]
     public ValueTask OnGeometryChanged(string sessionId, BonboardingStepGeometry geometry)
         => IsCurrent(sessionId, geometry.Activation)
             ? Dispatch(sessionId, callbacks => callbacks.OnGeometryChangedAsync(geometry))
@@ -282,6 +305,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
             : ValueTask.CompletedTask;
 
     [JSInvokable]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(KeyPayload))]
     public ValueTask OnKey(string sessionId, KeyPayload payload)
         => Dispatch(sessionId, callbacks => callbacks.OnKeyAsync(payload.Key, payload.ShiftKey));
 

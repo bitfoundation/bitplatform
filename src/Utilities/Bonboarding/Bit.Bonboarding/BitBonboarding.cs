@@ -15,6 +15,9 @@ public static class BitBonboarding
     /// Blazor Server and per-application on WebAssembly. In a Blazor Web App, call it in both the
     /// server and the client project:
     /// <code>builder.Services.AddBitBonboardingServices();</code>
+    /// A WebAssembly app that lazy loads Bit.Bonboarding cannot call it, and turns on the <c>Bit.Bonboarding.LazyLoad</c>
+    /// runtime switch instead: the components then create these services themselves, and
+    /// <see cref="GetBonboardingService"/> hands out the same <see cref="IBonboardingService"/>.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Optional global defaults.</param>
@@ -24,10 +27,6 @@ public static class BitBonboarding
 
         services.AddOptions<BonboardingOptions>();
         if (configure is not null) services.Configure(configure);
-
-        // The interop DTOs cross the JS boundary through reflection-based System.Text.Json, which the
-        // trimmer cannot see, so their members are rooted explicitly.
-        PreserveInteropContracts();
 
         // The clock snoozes and records are stamped with; replace it in tests to move time on.
         services.TryAddSingleton(TimeProvider.System);
@@ -95,18 +94,24 @@ public static class BitBonboarding
         return new Dictionary<string, object>(1) { [BonboardingStepTarget.AnchorAttribute] = name };
     }
 
-    // Roots the public properties and constructors of every type (de)serialized across JS interop,
-    // so the trimmer keeps them. The attributes take effect because this method is reachable from
-    // AddBitBonboardingServices.
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingStepActivation))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingBeaconActivation))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingTargetDescriptor))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingAdvanceTriggerDescriptor))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingStepGeometry))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingBrowserEnvironment))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingRect))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingSize))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingInterop.KeyPayload))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors, typeof(BonboardingInterop.InitializeOptions))]
-    private static void PreserveInteropContracts() { }
+    /// <summary>
+    /// The <see cref="IBonboardingService"/> the components of this circuit or WebAssembly runtime use: the registered
+    /// one, otherwise - in an app that lazy loads Bit.Bonboarding on WebAssembly and turned the
+    /// <c>Bit.Bonboarding.LazyLoad</c> runtime switch on - the one Bonboarding creates itself. Inject
+    /// <see cref="IBonboardingService"/> instead wherever the services are registered; this is for the code of an app
+    /// that cannot register them:
+    /// <code>
+    /// @inject IServiceProvider Services
+    ///
+    /// await Services.GetBonboardingService().StartAsync("welcome");
+    /// </code>
+    /// </summary>
+    /// <param name="services">The services of the code asking: a component's, as injected through <see cref="IServiceProvider"/>.</param>
+    /// <exception cref="InvalidOperationException">The services are not registered, and the switch is not on.</exception>
+    public static IBonboardingService GetBonboardingService(this IServiceProvider services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        return BonboardingRuntime.Of(services).Service;
+    }
 }

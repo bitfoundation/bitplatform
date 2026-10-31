@@ -26,17 +26,19 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
     private bool _disposed;
     private int _refreshVersion;
 
-    [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
-
-    [Inject] private BonboardingGuidanceRegistry Guidance { get; set; } = default!;
-
-    [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
-
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
     [Inject] private ILogger<BonboardingChecklist> Logger { get; set; } = default!;
+
+    // Resolved rather than injected, so the checklist also works in an app that lazy loads Bit.Bonboarding.
+    private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingChecklist),
+        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Guidance | BonboardingRuntime.Needs.Localizer);
+    private BonboardingRuntime Runtime => _runtime.Get(Services);
+    private IBonboardingService BonboardingService => Runtime.Service;
+    private BonboardingGuidanceRegistry Guidance => Runtime.Guidance;
+    private IBonboardingLocalizer Localizer => Runtime.Localizer;
 
     /// <summary>The checklist to render.</summary>
     [Parameter, EditorRequired] public required BonboardingChecklistDefinition Checklist { get; set; }
@@ -260,6 +262,10 @@ public sealed partial class BonboardingChecklist : ComponentBase, IAsyncDisposab
     {
         if (_disposed) return ValueTask.CompletedTask;
         _disposed = true;
+
+        // Nothing was subscribed to or registered when the services were never reached - resolving them failed, say.
+        // Closed from here on: nothing is resolved for a component that is gone.
+        if (_runtime.Close() is null) return ValueTask.CompletedTask;
 
         BonboardingService.EventRaised -= OnTourEvent;
         Guidance.ChecklistChanged -= OnChecklistChanged;

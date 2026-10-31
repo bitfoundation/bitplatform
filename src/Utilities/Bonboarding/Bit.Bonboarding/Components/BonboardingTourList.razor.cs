@@ -25,13 +25,17 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
     private bool _disposed;
     private int _refreshVersion;
 
-    [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
-
-    [Inject] private BonboardingGuidanceRegistry Guidance { get; set; } = default!;
-
-    [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
     [Inject] private ILogger<BonboardingTourList> Logger { get; set; } = default!;
+
+    // Resolved rather than injected, so the list also works in an app that lazy loads Bit.Bonboarding.
+    private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingTourList),
+        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Guidance | BonboardingRuntime.Needs.Localizer);
+    private BonboardingRuntime Runtime => _runtime.Get(Services);
+    private IBonboardingService BonboardingService => Runtime.Service;
+    private BonboardingGuidanceRegistry Guidance => Runtime.Guidance;
+    private IBonboardingLocalizer Localizer => Runtime.Localizer;
 
     /// <summary>The tours to list, in order. Defaults to every registered tour, by title.</summary>
     [Parameter] public IEnumerable<BonboardingTourDefinition>? Tours { get; set; }
@@ -190,6 +194,10 @@ public sealed partial class BonboardingTourList : ComponentBase, IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+
+        // Nothing was subscribed to when the services were never reached - resolving them failed, say.
+        // Closed from here on: nothing is resolved for a component that is gone.
+        if (_runtime.Close() is null) return;
 
         BonboardingService.SessionsChanged -= OnChanged;
         BonboardingService.EventRaised -= OnTourEvent;

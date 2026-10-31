@@ -46,6 +46,10 @@ started from anywhere through `IBonboardingService`:
 await BonboardingService.StartOnceAsync(tour); // skipped if the user already finished or dismissed it
 ```
 
+A WebAssembly app can lazy load `Bit.Bonboarding.wasm` instead: it skips the registration, turns the
+`Bit.Bonboarding.LazyLoad` runtime switch on and reaches the service through `IServiceProvider.GetBonboardingService()`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bonboarding/README.md#lazy-loading-on-webassembly).
+
 ## Features
 
 - Multi-step tours with progress indicators, keyboard navigation and resumable, versioned state.
@@ -61,7 +65,8 @@ await BonboardingService.StartOnceAsync(tour); // skipped if the user already fi
   reduced motion and forced colors.
 - Theming through CSS variables, per-step templates, or a fully headless popover.
 - Analytics-grade events and pluggable persistence and localization.
-- Blazor Server, WebAssembly and Web App (including prerendering) on .NET 10 and 11.
+- Blazor Server, WebAssembly and Web App (including prerendering) on .NET 10 and 11; lazy loadable on
+  WebAssembly.
 
 ## For AI agents
 

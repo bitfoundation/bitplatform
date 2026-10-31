@@ -31,6 +31,17 @@ public static class BonboardingSearchIndex
         ["Multi-page tours"] = "several multiple across navigate navigation",
     };
 
+    /// <summary>
+    /// What a guide section is called, where that is less than its heading (<see cref="McpSearchEntry.Name"/>): a
+    /// heading word that only says how. As the name of "Lazy loading on WebAssembly", "loading" would make the section
+    /// the answer to "load" alone - which asks about a page load, and is answered by "Surviving a full page load". In
+    /// the heading it still counts, so "lazy load" still finds the section first.
+    /// </summary>
+    private static readonly Dictionary<string, string> _names = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Lazy loading on WebAssembly"] = "Lazy WebAssembly",
+    };
+
     /// <summary>"bonboarding" and "blazor onboarding tour" are what a caller reaches for first, and made of nothing but these.</summary>
     private static readonly McpSearch _search = new(Build, ambientWords: ["bonboarding", "bit", "blazor", "onboarding", "tour", "tours"]);
 
@@ -97,7 +108,8 @@ public static class BonboardingSearchIndex
             var body = BonboardingSourceCatalog.GetGuideSection(section.Heading) ?? string.Empty;
 
             yield return new McpSearchEntry("Guide section", section.Heading, section.Parent,
-                $"GetBonboardingGuideSection(heading: \"{section.Heading}\")", body, string.Empty, Aliases: _synonyms.GetValueOrDefault(section.Heading));
+                $"GetBonboardingGuideSection(heading: \"{section.Heading}\")", body, string.Empty,
+                Name: _names.GetValueOrDefault(section.Heading), Aliases: _synonyms.GetValueOrDefault(section.Heading));
         }
 
         foreach (var type in BonboardingApiCatalog.Types)
