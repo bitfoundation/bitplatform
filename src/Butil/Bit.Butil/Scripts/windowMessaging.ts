@@ -21,6 +21,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // would have no handle to reach it and would sit there until the service is disposed.
         if (targets.length === 0) return;
 
+        // Encoded before any port is adopted, for the same reason: should encoding ever throw, no
+        // port is left in the registry for a message that never reached .NET.
+        const encoded = butil.utils.encodeMessage(e.data);
+
         // Ports that arrived with the message are adopted into the messageChannel registry so .NET
         // gets handles it can use, rather than a boolean saying some arrived. Once each, whatever
         // the number of listeners, because it is one port.
@@ -37,7 +41,6 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         // listener that accepts the origin, in registration order, and everyone else is told the
         // message arrived without them.
         const noPorts: string[] = [];
-        const encoded = butil.utils.encodeMessage(e.data);
         for (let i = 0; i < targets.length; i++) {
             const id = targets[i];
             butil.utils.dispatch(_listeners[id].dotNetRef, 'InvokeWindowMessage',

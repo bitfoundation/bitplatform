@@ -125,7 +125,6 @@
     <button id="opfs-roundtrip" @onclick="OpfsRoundTrip">write + read + list + remove</button>
     <button id="opfs-sync" @onclick="OpfsSyncAccess">sync access handle (worker)</button>
     <button id="opfs-sync-aliases" @onclick="OpfsSyncPathAliases">sync access handle (aliased paths)</button>
-    <button id="opfs-sync-negative" @onclick="OpfsSyncNegativeArguments">sync access handle (negative arguments)</button>
 </section>
 
 <section>
@@ -800,28 +799,6 @@
         await opfs.Remove(directory, recursive: true);
 
         Set($"opfs:aliases:{failures}/{size}");
-    }
-
-    // A negative offset, length or size is the caller's mistake, so it throws - rather than coming back
-    // as the null or -1 a missing file or a failed write does. It is refused before anything is sent to
-    // the worker, so the answer is the same with or without sync access handles.
-    private async Task OpfsSyncNegativeArguments()
-    {
-        const string path = "butil-e2e-negative.bin";
-        var refused = 0;
-
-        async Task Expect(Func<Task> call)
-        {
-            try { await call(); }
-            catch (ArgumentOutOfRangeException) { refused++; }
-        }
-
-        await Expect(async () => await opfs.SyncRead(path, offset: -1));
-        await Expect(async () => await opfs.SyncRead(path, length: -1));
-        await Expect(async () => await opfs.SyncWrite(path, [1], offset: -1));
-        await Expect(async () => await opfs.SyncTruncate(path, -1));
-
-        Set($"opfs:negative:{refused}");
     }
 
     // ─── Storage buckets ───────────────────────────────────────────────────────

@@ -45,7 +45,7 @@ bool? enforced = await trustedTypes.IsEnforced();   // null = a 'default' policy
 
     <DemoSection Title="Create a policy"
                  Api="CreatePolicy / HasPolicy / GetPolicyNames"
-                 Description="A policy name has to be listed in the CSP's trusted-types directive, and can only be created once per document - so a false here is a configuration fact rather than an error. The name 'default' is special: the browser falls back to it for any string assigned to a sink without a policy, which is how existing code keeps working under enforcement."
+                 Description="A policy name has to be listed in the CSP's trusted-types directive, and can only be created once per document - so a false here is a configuration fact rather than an error. The name 'default' is special: the browser falls back to it for any string assigned to a sink without a policy, which is how existing code keeps working under enforcement. A sanitizing 'default' policy cannot know which element a string is for, so it sanitizes in a template's context and refuses markup that would parse differently elsewhere - markup you write yourself is better written with SetHtml."
                  Files=@([
 new("TrustedTypes.razor", """
 @inject Bit.Butil.TrustedTypes trustedTypes
@@ -183,7 +183,7 @@ app.Use(async (context, next) =>
                Description="The names of the policies created through this API." />
     <ApiMember Name="CreateHtml"
                Signature="ValueTask<string?> CreateHtml(string policyName, string html)"
-               Description="Runs markup through a policy and returns the resulting text. Null when there is no such policy or it refused." />
+               Description="Runs markup through a policy and returns the resulting text - what the policy would hand a sink. Null when there is no such policy or it refused, as a sanitizing policy does when a raw-text element such as style is left holding a '&lt;'." />
     <ApiMember Name="CreateScriptUrl"
                Signature="ValueTask<string?> CreateScriptUrl(string policyName, string url)"
                Description="Runs a script URL through a policy. Null when the URL isn't one the policy allows." />

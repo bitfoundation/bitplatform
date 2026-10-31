@@ -76,7 +76,9 @@ public class TrustedTypes(IJSRuntime js) : IAsyncDisposable
     /// The policy's name. It has to be listed in the CSP's <c>trusted-types</c> directive, and a name
     /// can only be created once per document. <c>"default"</c> is special: the browser falls back to
     /// it for any string assigned to a sink without a policy, which is the way to make existing code
-    /// keep working under enforcement.
+    /// keep working under enforcement. A sanitizing <c>"default"</c> policy sanitizes every such string
+    /// without knowing which element it is for, as <see cref="TrustedTypePolicyOptions.SanitizeHtml"/>
+    /// describes - so markup this app writes itself is better written through <see cref="SetHtml"/>.
     /// </param>
     /// <param name="options">What the policy allows. Defaults to sanitizing HTML and refusing every script URL.</param>
     /// <param name="sanitizer">
@@ -123,6 +125,10 @@ public class TrustedTypes(IJSRuntime js) : IAsyncDisposable
     /// string into the element would parse it twice, in two contexts, and markup can mean something
     /// different the second time - the shape of a mutation XSS. <see cref="CreateHtml"/> has no element
     /// to parse into, so its text is for display, not for writing into the page some other way.
+    /// <br/>
+    /// A sink the browser hands to the policy itself - any string under a <c>"default"</c> policy - has
+    /// no element to offer either; see <see cref="TrustedTypePolicyOptions.SanitizeHtml"/> for how that
+    /// markup is kept from changing meaning.
     /// </remarks>
     /// <returns>False when there is no such policy or the policy refused the markup; the element is left alone.</returns>
     public ValueTask<bool> SetHtml(ElementReference element, string policyName, string html)

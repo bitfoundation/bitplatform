@@ -168,16 +168,12 @@ public class OriginPrivateFileSystem(IJSRuntime js) : IAsyncDisposable
     /// Reads part of a file through a sync access handle on the worker - without loading the rest.
     /// </summary>
     /// <param name="path">A file path.</param>
-    /// <param name="offset">Where to start, in bytes, zero or more. A negative value throws <see cref="ArgumentOutOfRangeException"/>.</param>
-    /// <param name="length">How many bytes to read, zero or more; 0 reads to the end of the file. A negative value throws <see cref="ArgumentOutOfRangeException"/>.</param>
+    /// <param name="offset">Where to start, in bytes.</param>
+    /// <param name="length">How many bytes to read; 0 reads to the end of the file.</param>
     /// <returns>The bytes read, or null when the file is missing or the worker is unavailable.</returns>
     /// <remarks>Requires <see cref="IsSyncAccessSupported"/>.</remarks>
     public ValueTask<byte[]?> SyncRead(string path, long offset = 0, int length = 0)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(offset);
-        ArgumentOutOfRangeException.ThrowIfNegative(length);
-        return js.Invoke<byte[]?>("BitButil.originPrivateFileSystem.syncRead", path, offset, length);
-    }
+        => js.Invoke<byte[]?>("BitButil.originPrivateFileSystem.syncRead", path, offset, length);
 
     /// <summary>
     /// Writes bytes at an offset through a sync access handle on the worker, creating the file if
@@ -185,7 +181,7 @@ public class OriginPrivateFileSystem(IJSRuntime js) : IAsyncDisposable
     /// </summary>
     /// <param name="path">A file path. Missing directories along it are created.</param>
     /// <param name="data">The bytes to write.</param>
-    /// <param name="offset">Where to start, in bytes, zero or more. A negative value throws <see cref="ArgumentOutOfRangeException"/>.</param>
+    /// <param name="offset">Where to start, in bytes.</param>
     /// <param name="truncate">
     /// When true (the default) the file is cut back to <paramref name="offset"/> first, so the
     /// result is exactly what was written. Pass false to patch bytes in place and leave the rest.
@@ -193,10 +189,7 @@ public class OriginPrivateFileSystem(IJSRuntime js) : IAsyncDisposable
     /// <returns>The number of bytes written, or -1 when the write failed.</returns>
     /// <remarks>Requires <see cref="IsSyncAccessSupported"/>.</remarks>
     public ValueTask<long> SyncWrite(string path, byte[] data, long offset = 0, bool truncate = true)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(offset);
-        return js.Invoke<long>("BitButil.originPrivateFileSystem.syncWrite", path, data, offset, truncate);
-    }
+        => js.Invoke<long>("BitButil.originPrivateFileSystem.syncWrite", path, data, offset, truncate);
 
     /// <summary>
     /// Appends bytes at the end of a file through a sync access handle - the cheap way to keep a
@@ -211,7 +204,7 @@ public class OriginPrivateFileSystem(IJSRuntime js) : IAsyncDisposable
 
     /// <summary>Cuts a file to <paramref name="size"/> bytes, or pads it with zeros when it is shorter.</summary>
     /// <param name="path">A file path.</param>
-    /// <param name="size">The size the file should have afterwards, zero or more. A negative value throws <see cref="ArgumentOutOfRangeException"/>.</param>
+    /// <param name="size">The size the file should have afterwards.</param>
     /// <remarks>
     /// Requires <see cref="IsSyncAccessSupported"/>.
     /// <br/>
@@ -220,10 +213,7 @@ public class OriginPrivateFileSystem(IJSRuntime js) : IAsyncDisposable
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
     public ValueTask<bool> SyncTruncate(string path, long size)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(size);
-        return js.Invoke<bool>("BitButil.originPrivateFileSystem.syncTruncate", path, size);
-    }
+        => js.Invoke<bool>("BitButil.originPrivateFileSystem.syncTruncate", path, size);
 
     /// <summary>Reads a file's size through a sync access handle.</summary>
     /// <param name="path">A file path.</param>

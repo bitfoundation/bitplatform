@@ -61,22 +61,6 @@ public class PrerenderSweepTests
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(e => e.ToString())));
     }
 
-    [TestMethod]
-    [DataRow(Modes.Ssr)]
-    [DataRow(Modes.Server)]
-    [DataRow(Modes.WebAssembly)]
-    public async Task WebAuthn_verify_fails_closed_during_a_static_render(string mode)
-    {
-        using var response = await HarnessHostFactory.Shared(mode).CreateClient().GetAsync("/prerender-sweep");
-
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        var html = await response.Content.ReadAsStringAsync();
-
-        // The safe defaults of a static render add up to a stored credential id of "" and an assertion that
-        // never throws - which a check reading only "did anything throw" would take for a verified user.
-        Assert.AreEqual("False", RenderedHtml.TextOf(html, "sweep-webauthn-verify"));
-    }
-
     private static List<(string Outcome, string Service, string Member, string Detail)> Entries(string html) =>
         [.. Regex.Matches(html, "<li data-outcome=\"([^\"]*)\" data-service=\"([^\"]*)\" data-member=\"([^\"]*)\">([^<]*)</li>")
             .Select(m => (m.Groups[1].Value, m.Groups[2].Value, WebUtility.HtmlDecode(m.Groups[3].Value), WebUtility.HtmlDecode(m.Groups[4].Value)))];

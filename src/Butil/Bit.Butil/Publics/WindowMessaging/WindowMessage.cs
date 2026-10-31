@@ -18,7 +18,7 @@ namespace Bit.Butil;
 /// </param>
 /// <param name="Json">
 /// The message as JSON, or null for a binary one. Always valid JSON, so a payload that was a plain string arrives quoted.
-/// Capped at about 32 MB, as described on <see cref="ButilMessage"/>: a larger message arrives as just its type name.
+/// Capped at 32 MB, as described on <see cref="ButilMessage"/>: a larger message arrives as just its type name.
 /// </param>
 /// <param name="Data">The message's bytes, or null for a JSON one.</param>
 /// <param name="Ports">

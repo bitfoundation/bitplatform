@@ -37,6 +37,35 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
         return null;
     }
 
+    // The elements whose text is written back out as it is, unescaped.
+    const RAW_TEXT = 'style, script, xmp, iframe, noembed, noframes, noscript, plaintext';
+    const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+
+    // What a sanitizing policy hands to a sink: markup sanitized here and parsed again there, in a
+    // context this side never sees - a table, an SVG element, Blazor's own markup container. Under a
+    // "default" policy that is every string assigned to a sink anywhere in the app. So it is sanitized
+    // in the most permissive HTML context there is, a template's, which keeps the table rows and cells
+    // a div would drop. And it is refused when it holds a raw-text element with a '<' in its text: that
+    // text is written back out unescaped, and the same characters parsed inside an SVG or MathML element
+    // are markup - the shape of a mutation XSS. Everything else is escaped on the way out, and so parses
+    // back into the tree that was sanitized wherever the sink puts it.
+    function sanitizeForSink(name: string, value: string, sanitizerId: string | null) {
+        const template = document.createElement('template');
+        // A runtime with no sanitizing sink can't honour the promise this policy makes, and quietly
+        // handing back the input would be the one outcome a trusted-types policy exists to prevent.
+        if (butil.sanitizer.sanitizeInto(template, value ?? '', sanitizerId) !== true) {
+            throw new Error('BitButil: this policy sanitizes HTML, but Element.setHTML is not supported by this browser.');
+        }
+
+        const rawText = template.content.querySelectorAll(RAW_TEXT);
+        for (let i = 0; i < rawText.length; i++) {
+            if (rawText[i].namespaceURI === HTML_NAMESPACE && (rawText[i].textContent ?? '').indexOf('<') >= 0) {
+                throw new Error(`BitButil: policy '${name}' refused markup that would parse differently where it is written; write it with SetHtml instead.`);
+            }
+        }
+        return template.innerHTML;
+    }
+
     butil.trustedTypes = {
         isSupported() { return !!api()?.createPolicy; },
 
@@ -70,12 +99,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
                 _policies[name] = types.createPolicy(name, {
                     createHTML: (value: string) => {
                         if (rules.sanitizeHtml === false) return value;
-                        const sanitized = butil.sanitizer.sanitize(value, sanitizerId ?? null);
-                        // A runtime with no sanitizing sink can't honour the promise this policy
-                        // makes, and quietly handing back the input would be the one outcome a
-                        // trusted-types policy exists to prevent.
-                        if (sanitized === null) throw new Error('BitButil: this policy sanitizes HTML, but Element.setHTML is not supported by this browser.');
-                        return sanitized;
+                        return sanitizeForSink(name, value, sanitizerId ?? null);
                     },
                     createScriptURL: (value: string) => {
                         const allowed: string[] = rules.allowedScriptUrlPrefixes ?? [];

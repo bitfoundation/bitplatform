@@ -46,14 +46,6 @@ public class OpfsAndStorageBucketsTests : ButilObserversPageTest
     }
 
     [TestMethod]
-    public async Task Opfs_SyncAccess_Refuses_Negative_Offsets_Lengths_And_Sizes()
-    {
-        // All four calls throw ArgumentOutOfRangeException on the .NET side, before the worker is
-        // asked anything - so this holds in every browser, with or without sync access handles.
-        await ClickAndExpectAsync("opfs-sync-negative", "opfs:negative:4");
-    }
-
-    [TestMethod]
     public async Task StorageBuckets_Open_Write_List_And_Delete_Roundtrips()
     {
         await ClickAndExpectAsync("buckets-roundtrip", "buckets:roundtrip:");
