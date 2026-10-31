@@ -200,6 +200,71 @@ public class MultiDragTests : BortableTestContext
         Assert.AreSequenceEqual(["A"], Single(log, "Update", "L1").Items);
     }
 
+    [TestMethod]
+    public async Task CanDropIsAskedWhereTheSelectionGathers()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var asked = new List<int>();
+        var list = RenderMultiList(items, extra: p => p.Add(c => c.CanDrop, e => { asked.Add(e.NewIndex); return e.NewIndex != 3; }));
+        await ClickAsync(list, "B");
+        await ClickAsync(list, "D");
+
+        await DragStartAsync(list, "B");
+        await DragOverAsync(list, 5);
+        Assert.AreSequenceEqual(["A", "C", "D", "E", "B"], items);
+
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual([4, 3], asked);
+        Assert.AreSequenceEqual(["A", "B", "C", "D", "E"], items);
+        Assert.AreEqual("B,D", LabelsWithClass(list, Selected));
+    }
+
+    [TestMethod]
+    public async Task ASelectionDroppedInPlaceIsNotGatheredWhereCanDropRefusesIt()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var log = new List<Raised<string>>();
+        var list = RenderMultiList(items, log: log, extra: p => p.Add(c => c.CanDrop, _ => false));
+        await ClickAsync(list, "A");
+        await ClickAsync(list, "E");
+
+        await DragStartAsync(list, "A");
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["A", "B", "C", "D", "E"], items);
+        Assert.AreEqual("Start:L1 End:L1", Sequence(log));
+    }
+
+    [TestMethod]
+    public async Task ASelectionGathersWhereCanDropAllowsIt()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var list = RenderMultiList(items, extra: p => p.Add(c => c.CanDrop, _ => true));
+        await ClickAsync(list, "B");
+        await ClickAsync(list, "D");
+
+        await DragStartAsync(list, "B");
+        await DragOverAsync(list, 5);
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["A", "C", "E", "B", "D"], items);
+    }
+
+    [TestMethod]
+    public async Task ASelectionDroppedInPlaceGathersWhereCanDropAllowsIt()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var list = RenderMultiList(items, extra: p => p.Add(c => c.CanDrop, _ => true));
+        await ClickAsync(list, "A");
+        await ClickAsync(list, "E");
+
+        await DragStartAsync(list, "A");
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["A", "E", "B", "C", "D"], items);
+    }
+
     // ---- across lists ----
 
     [TestMethod]

@@ -39,6 +39,8 @@ internal interface IBortableZone
     /// <summary>Whether this list's <c>CanDrop</c> lets the dragged item take index <paramref name="newIndex"/> here.</summary>
     bool AllowsDropAt(BortableDragContext ctx, int newIndex);
 
+    bool AllowsMove(BortableMoveInfo info);
+
     /// <summary>Whether this list can receive items dragged from <paramref name="source"/>.</summary>
     bool CanReceiveFrom(IBortableZone source);
 

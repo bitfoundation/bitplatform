@@ -589,8 +589,23 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         {
             // A drag whose end was never observed (e.g. its element was removed mid-drag): end it where it is.
             if (Service.Context is { } stale) abandoned = Finish(stale, commit: false);
+        }
+        finally
+        {
+            Service.Gate.Release();
+        }
 
-            info = BeginDrag(item, InputOf(input), carrySelection: true);
+        // The abandoned drag is reported first, as it ended before this one started.
+        if (abandoned is not null)
+        {
+            await ConfirmAndReportAsync(abandoned);
+            if (_disposed || Items is null || Service.Confirming > 0 || !CanDrag(item)) return null;
+        }
+
+        await Service.Gate.WaitAsync();
+        try
+        {
+            info = Service.Context is null ? BeginDrag(item, InputOf(input), carrySelection: true) : null;
             if (info is not null && Service.Context is { } ctx)
             {
                 lists = [.. Service.Zones.Where(zone => zone.TakesDrag(ctx)).Select(zone => zone.Id)];
@@ -604,8 +619,6 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             Service.Gate.Release();
         }
 
-        // The abandoned drag is reported first, as it ended before this one started.
-        if (abandoned is not null) await ReportAsync(abandoned);
         // Picking up an unselected item drops the selection.
         if (_selectionChanged) await PublishSelectionAsync();
         if (info is not null)
@@ -965,7 +978,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private int ApplyOver(BortableDragContext ctx, int index, out BortableMoveInfo? change)
     {
         change = null;
-        if (Swap) return UpdateSwapTarget(ctx, index) ? Changed : Unchanged;
+        if (Swap) return UpdateSwapTarget(ctx, index);
         return ReferenceEquals(ctx.CurrentZone, this)
             ? ReorderWithin(ctx, index, out change)
             : PreviewFromOtherList(ctx, index, out change);
@@ -1036,6 +1049,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private bool AllowsDrop(BortableDragContext ctx, int newIndex)
         => CanDrop is null || CanDrop(ArgsOf(MoveInfo(ctx, this, newIndex)));
 
+    private bool AllowsMove(BortableMoveInfo info) => info.Item is TItem && (CanDrop is null || CanDrop(ArgsOf(info)));
+
     /// <summary>
     /// Whether the item currently being dragged (and, for a multi-drag, the rest of the
     /// selection) may be dropped into this list from another one.
@@ -1103,9 +1118,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// dragging in swap mode. Nothing is moved until drop; only the highlight (<see cref="SwapClass"/>) follows the
     /// pointer. Works within this list and across lists in the group.
     /// </summary>
-    private bool UpdateSwapTarget(BortableDragContext ctx, int index)
+    private int UpdateSwapTarget(BortableDragContext ctx, int index)
     {
-        if (Items is null) return false;
+        if (Items is null) return Unchanged;
 
         // A placeholder shown by a sorting list of the group no longer applies.
         bool changed = ClearPlaceholder(ctx);
@@ -1118,10 +1133,41 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             bool valid = candidate is not null && (home
                 ? !Equals(candidate, ctx.Item)                                          // not the dragged item itself
                 : ctx.Source.Accepts(candidate) && ctx.Source.IndexOf(candidate) < 0);  // fits the source list
+            if (valid && !AllowsSwap(ctx, index, candidate!, home))
+            {
+                SetSwapTarget(ctx, null, null);
+                return Refused;
+            }
             if (valid) target = candidate;
         }
 
-        return SetSwapTarget(ctx, target is null ? null : this, target) | changed;
+        return (SetSwapTarget(ctx, target is null ? null : this, target) | changed) ? Changed : Unchanged;
+    }
+
+    private bool AllowsSwap(BortableDragContext ctx, int index, object partner, bool home)
+    {
+        var swapped = new BortableMoveInfo
+        {
+            Item = ctx.Item,
+            OldIndex = ctx.OldIndex,
+            NewIndex = index,
+            From = ctx.Source,
+            To = this,
+            Input = ctx.Input
+        };
+        if (!AllowsMove(swapped)) return false;
+        if (home) return true;
+
+        var back = ctx.CurrentZone;
+        return back.AllowsMove(new BortableMoveInfo
+        {
+            Item = partner,
+            OldIndex = index,
+            NewIndex = back.IndexOf(ctx.Item),
+            From = this,
+            To = back,
+            Input = ctx.Input
+        });
     }
 
     private static bool SetSwapTarget(BortableDragContext ctx, IBortableZone? zone, object? item)
@@ -1559,7 +1605,6 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     private static IReadOnlyList<object>? CollectMulti(BortableDragContext ctx)
     {
         var block = ctx.MultiItems;
-        ctx.MultiItems = null;
         if (block is null || block.Count <= 1) return null;
 
         var source = ctx.Source;
@@ -1578,6 +1623,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         for (int i = 0; i < primaryPos; i++)
             if (!BlockContains(block, target.ItemAt(i))) anchor++;
 
+        if (!target.AllowsDropAt(ctx, anchor + block.IndexOf(ctx.Item)))
+        {
+            PutBack(ctx);
+            return null;
+        }
+
+        ctx.MultiItems = null;
         ctx.Touch(source);
         ctx.Touch(target);
 
@@ -1872,6 +1924,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     }
 
     bool IBortableZone.AllowsDropAt(BortableDragContext ctx, int newIndex) => AllowsDrop(ctx, newIndex);
+
+    bool IBortableZone.AllowsMove(BortableMoveInfo info) => AllowsMove(info);
 
     private Task RaiseEventAsync(BortableEventType type, BortableMoveInfo info)
     {
