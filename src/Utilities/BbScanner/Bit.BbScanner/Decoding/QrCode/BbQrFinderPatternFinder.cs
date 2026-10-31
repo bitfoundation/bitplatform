@@ -350,6 +350,10 @@ public sealed class BbQrFinderPatternFinder
     private float CrossCheckVertical(int startI, int centerJ, int maxCount, int originalStateCountTotal)
     {
         var maxI = _image!.Height;
+
+        // A centre run left to reach the edge makes every candidate on a long black column cost the column's height,
+        // and an image of such columns the square of it. Twice the row's total rejects nothing the total check at the
+        // end would not: a run that long already puts the column's total more than 40% off the row's.
         var maxCenterCount = 2 * originalStateCountTotal;
         var stateCount = _crossCheckStateCount;
         Array.Clear(stateCount);
@@ -434,6 +438,8 @@ public sealed class BbQrFinderPatternFinder
     private float CrossCheckHorizontal(int startJ, int centerI, int maxCount, int originalStateCountTotal)
     {
         var maxJ = _image!.Width;
+
+        // Bounded as in CrossCheckVertical, and for the same reason: the total check at the end is tighter still.
         var maxCenterCount = 2 * originalStateCountTotal;
         var stateCount = _crossCheckStateCount;
         Array.Clear(stateCount);
@@ -522,6 +528,10 @@ public sealed class BbQrFinderPatternFinder
     private bool CrossCheckDiagonal(int centerI, int centerJ, int originalStateCountTotal)
     {
         Span<int> stateCount = stackalloc int[5];
+
+        // A step along the diagonal moves a pixel each way, so it crosses a finder pattern in no more steps than a row
+        // does - as many upright, half as many turned 45 degrees. No run of a real one comes near twice the row's total,
+        // and without a bound each run could go on to the edge of the image.
         var maxCount = 2 * originalStateCountTotal;
 
         var i = 0;

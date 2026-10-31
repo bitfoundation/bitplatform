@@ -108,7 +108,8 @@ public sealed class BbBitMatrix : IDisposable
         ArgumentOutOfRangeException.ThrowIfNegative(top);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
-        if (top + height > Height || left + width > Width)
+        // Subtracted rather than added: a sum near the largest int wraps round to a small one, which passes.
+        if (top > Height - height || left > Width - width)
         {
             throw new ArgumentOutOfRangeException(nameof(width), "The region lies outside the matrix.");
         }
