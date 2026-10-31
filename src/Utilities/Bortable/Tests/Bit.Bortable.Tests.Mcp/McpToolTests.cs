@@ -298,6 +298,8 @@ public class McpToolTests
         var section = await McpCall.TextAsync("GetBortableGuideSection", new() { ["heading"] = "Lazy loading on WebAssembly" });
 
         Assert.Contains("<BlazorWebAssemblyLazyLoad Include=\"Bit.Bortable.wasm\" />", section);
+        // the switch the library reads before it creates a coordinator of its own (BortableService.UnregisteredSwitch)
+        Assert.Contains("<RuntimeHostConfigurationOption Include=\"Bit.Bortable.Unregistered\" Value=\"true\" />", section);
         Assert.Contains("builder.Services.AddScoped<LazyAssemblyLoader>()", section);
     }
 

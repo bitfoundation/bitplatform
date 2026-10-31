@@ -28,7 +28,8 @@ module, `_content/Bit.Bortable/bit-bortable.js`, is imported by the component on
 <link rel="stylesheet" href="_content/Bit.Bortable/bit-bortable.css" />
 ```
 
-A WebAssembly app can skip the registration and lazy load `Bit.Bortable.wasm` instead; see
+A WebAssembly app that lazy loads `Bit.Bortable.wasm` skips the registration and sets the `Bit.Bortable.Unregistered`
+runtime switch instead; see
 [lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bortable#lazy-loading-on-webassembly).
 
 ```razor

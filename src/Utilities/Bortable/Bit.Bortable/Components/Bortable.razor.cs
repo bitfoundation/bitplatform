@@ -12,7 +12,7 @@ namespace Bit.Bortable;
 /// <c>bit-bortable.js</c> module routes the input where the pointer is - it hit-tests the lists and calls
 /// .NET only when the drop position changes - installs drag handles and plays the FLIP animations.
 /// Needs <see cref="BitBortable.AddBitBortableServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)"/>,
-/// except in a WebAssembly app that lazy loads Bit.Bortable.
+/// or - in a WebAssembly app that lazy loads Bit.Bortable - the <c>Bit.Bortable.Unregistered</c> runtime switch.
 /// </summary>
 /// <typeparam name="TItem">The type of the bound items.</typeparam>
 public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDisposable
@@ -47,8 +47,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    // Resolved rather than injected, so the list also works on WebAssembly when the app lazy loads Bit.Bortable and never
-    // called AddBitBortableServices. Null until first used: DisposeAsync leaves alone what was never resolved.
+    // Resolved rather than injected, so the list also works in an app that lazy loads Bit.Bortable on WebAssembly and so
+    // never called AddBitBortableServices. Null until first used: DisposeAsync leaves alone what was never resolved.
     private BortableService? _service;
     private BortableService Service => _service ??= BortableService.Of(Services);
 

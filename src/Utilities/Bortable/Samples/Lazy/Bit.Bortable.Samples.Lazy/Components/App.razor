@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Bortable lazy loading sample</title>
+    @* A plain link, served whether Bit.Bortable.wasm has been downloaded or not. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bortable/bit-bortable.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bit.Bortable.wasm before the board renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

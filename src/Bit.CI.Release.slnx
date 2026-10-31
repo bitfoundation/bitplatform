@@ -304,6 +304,10 @@
   <Folder Name="/Utilities/Bortable/Samples/Core/">
     <Project Path="Utilities/Bortable/Samples/Core/Bit.Bortable.Samples.Core.csproj" />
   </Folder>
+  <Folder Name="/Utilities/Bortable/Samples/Lazy/">
+    <Project Path="Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj" />
+    <Project Path="Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy.Client/Bit.Bortable.Samples.Lazy.Client.csproj" />
+  </Folder>
   <Folder Name="/Utilities/Bortable/Samples/Server/">
     <Project Path="Utilities/Bortable/Samples/Server/Bit.Bortable.Samples.Server.csproj" />
   </Folder>

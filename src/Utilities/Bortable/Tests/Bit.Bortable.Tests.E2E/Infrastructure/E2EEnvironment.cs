@@ -25,6 +25,12 @@ public static class E2EEnvironment
     public static string? BaseUrl { get; } = Read("BORTABLE_E2E_BASE_URL")?.TrimEnd('/');
 
     /// <summary>
+    /// <c>BORTABLE_E2E_LAZY_BASE_URL</c>: an already running lazy loading sample, which the lazy loading tests drive
+    /// instead of booting its published copy themselves.
+    /// </summary>
+    public static string? LazySampleBaseUrl { get; } = Read("BORTABLE_E2E_LAZY_BASE_URL")?.TrimEnd('/');
+
+    /// <summary>
     /// <c>BORTABLE_E2E_BROWSER</c>: the engine to drive, <c>chromium</c> (the default), <c>firefox</c> or
     /// <c>webkit</c>. Firefox and WebKit are the ones Playwright installed.
     /// </summary>

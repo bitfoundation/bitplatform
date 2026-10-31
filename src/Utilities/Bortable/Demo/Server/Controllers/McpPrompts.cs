@@ -38,11 +38,10 @@ public static class McpPrompts
                client the package and the pages with lists belong in the .Client project.
             3. DO register the services: `builder.Services.AddBitBortableServices();` - in EVERY Program.cs that renders a
                list. In a Blazor Web App with WebAssembly or Auto that means both the server and the .Client project: the
-               server prerenders the lists, and without the registration there the first page throws "Bit.Bortable's
-               services are not registered". Without it in the .Client project the lists still work in the browser, but
-               on their parameters' own defaults, logging a warning - the options set in `Program.cs` are gone once the
-               page turns interactive. (Only a WebAssembly client that lazy loads Bit.Bortable leaves the registration
-               out - see the guide's "Lazy loading on WebAssembly" section.)
+               server prerenders the lists and the client runs them, and without the registration in either the first
+               list that renders there throws "Bit.Bortable's services are not registered". (Only a WebAssembly client
+               that lazy loads Bit.Bortable leaves the registration out, and sets the `Bit.Bortable.Unregistered` runtime
+               switch instead - see the guide's "Lazy loading on WebAssembly" section.)
             4. DO link the stylesheet from the host page - `_content/Bit.Bortable/bit-bortable.css` (App.razor, or
                wwwroot/index.html). Nothing injects it, and without it the dragged item is not dimmed and its original
                does not hide while it is previewed in another list.

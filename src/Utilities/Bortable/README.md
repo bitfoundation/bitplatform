@@ -111,12 +111,15 @@ clones from a palette, a tree of nested lists, and multi-drag and swap mode), ho
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
 Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be tried with the same lists. Every
 page says which renderer it is on and where a drop position is decided: in the browser, on the server across the
-circuit, or in the app's own process.
+circuit, or in the app's own process. [Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its own whose browser
+half downloads `Bit.Bortable.wasm` only when its board opens (see
+[lazy loading](#lazy-loading-on-webassembly)).
 
 ```bash
 dotnet run --project src/Utilities/Bortable/Samples/Server
 dotnet run --project src/Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm
 dotnet run --project src/Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto
+dotnet run --project src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy
 dotnet build -t:Run -f net10.0-android src/Utilities/Bortable/Samples/Maui
 ```
 
@@ -148,7 +151,7 @@ Everything ships in one package, `Bit.Bortable`, under one namespace, `Bit.Borta
 | --- | --- |
 | The component | `Bortable<TItem>`, the list. |
 | The model | `BortablePull`, `BortableDirection`, `BortableInput` and `BortableEventArgs<TItem>`. |
-| The services | `AddBitBortableServices`, which registers the scoped coordinator that tracks the active drag across lists. A WebAssembly app that lazy loads Bortable goes without it. |
+| The services | `AddBitBortableServices`, which registers the scoped coordinator that tracks the active drag across lists. A WebAssembly app that lazy loads Bortable goes without it and sets the `Bit.Bortable.Unregistered` runtime switch instead. |
 | The browser layer | `bit-bortable.js` (hit testing, drag handles, FLIP animations) and `bit-bortable.css` (the drag states). |
 
 ## MCP server
@@ -222,8 +225,8 @@ builder.Services.AddBitBortableServices();
 It registers one scoped service, the coordinator that holds the drag in progress so that lists sharing a group can
 hand an item to each other. Scoped means one per circuit on Blazor Server and one per application on WebAssembly,
 so two users never share a drag. Calling it more than once is harmless. Without it, the first `Bortable` that
-renders throws "Bit.Bortable's services are not registered" - except in a WebAssembly app, which can download
-Bortable only when a page with a list opens and so skips this step; see
+renders throws "Bit.Bortable's services are not registered", on every host. Only a WebAssembly app that downloads
+Bortable when a page with a list opens skips this step, and says so with a runtime switch; see
 [lazy loading](#lazy-loading-on-webassembly).
 
 ### App-wide defaults
@@ -927,14 +930,22 @@ list opens - see [lazy loading](#lazy-loading-on-webassembly).
 
 ### Lazy loading on WebAssembly
 
-The lists also work without `AddBitBortableServices` on WebAssembly, so an app can fetch Bortable only when someone
-opens a part of the app that has a list. When the services are not registered, the lists create their drag
-coordinator themselves, once per WebAssembly runtime, and share it as they would the registered one: lists of a
-group still hand items to each other. Mark the assembly as lazy loaded in the project that runs in the browser, and
-set a runtime switch next to the mark so the router knows the assembly is there to load:
+A WebAssembly app can fetch Bortable only when someone opens a part of the app that has a list. Its `Program.cs`
+cannot call `AddBitBortableServices` then - the assembly is not there yet when it runs - so the app says that it
+leaves the registration out on purpose, with the `Bit.Bortable.Unregistered` runtime switch, and the lists create
+their drag coordinator themselves: once per scope, which on WebAssembly is once per application, shared as the
+registered one would be, so lists of a group still hand items to each other. Without the switch a list that finds no
+registration throws, so an app that merely forgot it still hears of it.
+
+In the project that runs in the browser, set that switch, mark the assembly as lazy loaded, and set a switch of your
+own next to the mark so the router knows the assembly is there to load:
 
 ```xml
-<!-- AOT builds are left out: see below. -->
+<ItemGroup>
+  <!-- Program.cs leaves AddBitBortableServices out, in every build: the lists create their own coordinator. -->
+  <RuntimeHostConfigurationOption Include="Bit.Bortable.Unregistered" Value="true" />
+</ItemGroup>
+<!-- AOT builds load Bit.Bortable with the rest of the app: see below. -->
 <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
   <BlazorWebAssemblyLazyLoad Include="Bit.Bortable.wasm" />
   <RuntimeHostConfigurationOption Include="MyApp.LazyLoadsBortable" Value="true" Trim="true" />
@@ -999,13 +1010,10 @@ keep to these rules:
   parameters' own defaults. Set what you need on the lists themselves - `Messages`, `TouchDelay`, `Animation`, the
   classes - for instance from one static class the pages share:
   `<Bortable Messages="BoardTexts.German" TouchDelay="300" ...>`.
-- The lists log one warning that the services are not registered - expected here; it is what tells an app that
-  should have registered them, such as the client project of a Blazor Web App that forgot to, why its defaults are
-  ignored. `builder.Logging.AddFilter("Bit.Bortable.BitBortable", LogLevel.None)` in `Program.cs` silences it
-  without referencing Bortable's types.
-- Only WebAssembly goes without the registration. On Blazor Server, in Blazor Hybrid and on a server that prerenders,
-  a list without it still throws "Bit.Bortable's services are not registered": the library is loaded with such an
-  app, so a missing registration there is a mistake.
+- `Bit.Bortable.Unregistered` belongs only in the project that lazy loads. Everywhere else - Blazor Server, Blazor
+  Hybrid, the server project of a Blazor Web App, a WebAssembly app that loads Bortable with the rest - register the
+  services and leave the switch out, so that a missing registration throws "Bit.Bortable's services are not
+  registered" where it happens rather than quietly costing the lists their app-wide defaults.
 - In a Blazor Web App only the browser lazy loads, so give `Routes` the `InteractiveWebAssembly` or
   `InteractiveAuto` render mode in `App.razor`, which brings the router - and its `OnNavigateAsync` - to the browser.
   Under `InteractiveAuto` it runs over a server circuit on the first visit, while the WebAssembly runtime downloads,
@@ -1019,8 +1027,15 @@ keep to these rules:
   defaults the client's lists do not set as parameters as well, or a list changes its texts or classes as it turns
   interactive.
 - The condition leaves AOT builds out. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
-  to download later, and lazy loading an AOT-compiled assembly can fail at startup. The switch is set only where the
-  mark is, so an AOT build skips `LoadAssembliesAsync` as well - loading an assembly that is not marked throws.
+  to download later, and lazy loading an AOT-compiled assembly can fail at startup. The router's switch is set only
+  where the mark is, so an AOT build skips `LoadAssembliesAsync` as well - loading an assembly that is not marked
+  throws. `Bit.Bortable.Unregistered` stays outside the condition: an AOT build loads Bortable with the app, but runs
+  the same `Program.cs`, without the registration.
+
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App, and the
+[end-to-end suite](Tests/Bit.Bortable.Tests.E2E) runs its published, trimmed copy in a browser: the home page never
+downloads `Bit.Bortable.wasm`, and the board - opened from the home page or by a deep link the server prerenders -
+downloads it and hands items between its lists.
 
 ### Blazor Server
 
@@ -1239,7 +1254,7 @@ given its own.
 
 | Method | Description |
 | --- | --- |
-| `AddBitBortableServices(this IServiceCollection)` | Registers the scoped drag coordinator. Required, except in a WebAssembly app that [lazy loads](#lazy-loading-on-webassembly) Bortable. |
+| `AddBitBortableServices(this IServiceCollection)` | Registers the scoped drag coordinator. Required, except in a WebAssembly app that [lazy loads](#lazy-loading-on-webassembly) Bortable and sets the `Bit.Bortable.Unregistered` switch. |
 | `AddBitBortableServices(this IServiceCollection, Action<BortableOptions>)` | The same, with [app-wide defaults](#app-wide-defaults) for every list. |
 
 ### BortableOptions
@@ -1292,14 +1307,10 @@ leaves the parameter's own default. See [app-wide defaults](#app-wide-defaults).
 ## Troubleshooting
 
 **"Bit.Bortable's services are not registered: call builder.Services.AddBitBortableServices() in Program.cs"** -
-on Blazor Server, in Blazor Hybrid, or from the server's `Program.cs` of a Blazor Web App. Call it there, in both
-projects of a Blazor Web App. Only WebAssembly goes without it, to [lazy load](#lazy-loading-on-webassembly)
-Bortable.
-
-**Defaults from `Program.cs` stop working once the page turns interactive** - the texts, a longer long press, a
-slower slide. The services are registered in only one project of a Blazor Web App, and the lists in the other run on
-their parameters' own defaults; they log a warning that the services are not registered. Call
-`AddBitBortableServices` in both, through one shared method.
+call it in the `Program.cs` of the project the list rendered in; in a Blazor Web App, in both projects, through one
+shared method. A WebAssembly app that [lazy loads](#lazy-loading-on-webassembly) Bortable cannot, and sets the
+`Bit.Bortable.Unregistered` runtime switch in its project file instead; when such an app gets this error anyway, the
+switch is not in the project that runs in the browser, or sits inside the `ItemGroup` an AOT build leaves out.
 
 **`Could not load file or assembly 'Bit.Bortable'`** in an app that lazy loads it - something used Bortable's types
 before the assembly loaded: load it in `OnNavigateAsync` for every route that renders a list, and keep its types out

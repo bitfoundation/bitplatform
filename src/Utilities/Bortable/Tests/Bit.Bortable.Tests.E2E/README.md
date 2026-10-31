@@ -21,7 +21,9 @@ This suite boots the demo (`Bit.Bortable.Demo.Server`, which prerenders the page
 drives it with Playwright, with real mouse drags - in Chromium by default, and in Firefox or WebKit on request
 (`BORTABLE_E2E_BROWSER`, below). It asserts **effects**: the order readouts the demo binds
 to each list (what .NET holds), the items of each list in DOM order (what the browser shows), the placeholder and the
-classes the drag states put on the items mid-drag, and the lines of the event log.
+classes the drag states put on the items mid-drag, and the lines of the event log. One suite drives the published
+lazy loading sample (`Samples/Lazy`) instead, an app that downloads `Bit.Bortable.wasm` only when a page with a list
+opens.
 
 ## What it proves
 
@@ -41,6 +43,7 @@ classes the drag states put on the items mid-drag, and the lines of the event lo
 | `RulesTests` | The rules page: a column `CanDrop` refuses is marked refused and a release there puts the card back (`RevertOnSpill`); a full column (`MaxItems`) does not take the drag; a drop the server refuses (`ConfirmDrop`) slides back and an approved one stays. The accessibility page's buttons move items without dragging and are announced. |
 | `LargeListTests` | Three hundred rows in a scrolling panel: a pointer drag held at the panel's edge scrolls it and carries the row along; a drag of 60 pointer moves sends one position per row crossed to .NET, with and without `IsolateItems` (the counts and round-trip times go to the test output). |
 | `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, becomes interactive, loads `bit-bortable.js` and applies `bit-bortable.css` when it has lists, shows the code of each of its samples (every file of it, coloured, and nothing of the page around it) in the "View code" panel under that sample and closes it again, without a console error, an unhandled exception, a failed request or the error banner; an unknown address answers 404 with the not-found page; navigating through every demo in the app leaves lists behind that still sort, the drag handle included. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, with the `Bit.Bortable.Unregistered` switch and the router's own in its boot configuration - in a browser: its home page never downloads `Bit.Bortable.wasm`; navigating to the board downloads it before the lists render, and a deep link to the board is prerendered by the server (which resolves the router's `LazyAssemblyLoader`) and then downloads it; either way the two lists, which find no registration, hand an item to each other through the coordinator they created themselves, without a console error, an unhandled exception or a failed request. |
 
 Every page is prerendered, so its lists are on screen before anything listens to them. Each test waits until the
 page runs in the browser (`data-interactive="true"` on the layout) and the lists have imported `bit-bortable.js`,
@@ -68,8 +71,10 @@ target in steps, release. Two things make the outcome deterministic:
 From `src/Utilities/Bortable` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish
+# them first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.Bortable.Demo.Server.csproj
+dotnet publish Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -95,6 +100,7 @@ The workflow `.github/workflows/bit.ci.Bortable.e2e.yml` does the same in Releas
 
 ```bash
 dotnet build src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bortable-e2e.trx
@@ -111,6 +117,11 @@ it between all tests and stops it when the run ends. To drive a demo that is alr
 from the IDE, or a published copy (`dotnet publish` output, started with `dotnet Bit.Bortable.Demo.Server.dll --urls
 http://127.0.0.1:5563`) - point `BORTABLE_E2E_BASE_URL` at it; nothing is then built or booted for the run.
 
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it; `BORTABLE_E2E_LAZY_BASE_URL` points those tests at a
+copy that is already running. A sample that has not been published makes them inconclusive - or failed, on a build
+server - and leaves the other suites alone.
+
 Each test gets a browser context of its own, 1280 x 1400 so that every demo page fits without scrolling (a drag
 cannot be aimed below the fold), in which every request that leaves the demo's origin (its web font) is answered with
 an empty response, so a machine without internet access runs the suite just the same. The tests run one at a time:
@@ -126,6 +137,7 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 |---|---|
 | `BORTABLE_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
 | `BORTABLE_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE, or a published copy) instead of booting one. |
+| `BORTABLE_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
 | `BORTABLE_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, each the one Playwright installed (`playwright.ps1 install firefox webkit`). The touch and pen tests send their input through the Chrome DevTools Protocol, so they report **Inconclusive** outside Chromium. |
 | `BORTABLE_E2E_CHANNEL` / `BORTABLE_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific browser binary (of the `BORTABLE_E2E_BROWSER` engine). Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
 | `BORTABLE_E2E_HEADED=1` | Show the browser. |

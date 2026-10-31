@@ -40,7 +40,8 @@ public abstract class BortableTestContext : BunitContext
     protected BunitJSModuleInterop Module { get; }
 
     /// <summary>The drag coordinator every list of the test shares: the registered one, or the one the lists created.</summary>
-    internal BortableService Coordinator => BortableService.Of(Services);
+    /// <remarks>Asked of the provider the lists are injected with, which is bUnit's inner one rather than <see cref="BunitContext.Services"/>.</remarks>
+    internal BortableService Coordinator => BortableService.Of(Services.GetRequiredService<IServiceProvider>());
 
     /// <summary>The options a list last sent the browser layer (with <c>register</c> or <c>configure</c>).</summary>
     internal BortableJsOptions? SentOptions<TItem>(IRenderedComponent<Bortable<TItem>> list)

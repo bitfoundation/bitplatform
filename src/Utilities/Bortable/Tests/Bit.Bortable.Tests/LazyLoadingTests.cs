@@ -1,68 +1,73 @@
 ﻿using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.Bortable.Tests;
 
 /// <summary>
 /// Where the lists take their drag coordinator from. An app that lazy loads Bit.Bortable on WebAssembly cannot call
-/// AddBitBortableServices, so the lists create their own, once per WebAssembly runtime, and share it; an app that did
-/// register keeps exactly what it registered, and everywhere but WebAssembly the registration stays required.
+/// AddBitBortableServices, so it sets the Bit.Bortable.Unregistered switch and the lists create their own, once per
+/// scope, and share it; an app that did register keeps exactly what it registered, and an app that did neither - one
+/// that forgot the registration - fails where it happens, on every host.
 /// </summary>
-[TestClass]
+/// <remarks>The switch is process-wide, so these tests never run next to others.</remarks>
+[TestClass, DoNotParallelize]
 public class LazyLoadingTests : BortableTestContext
 {
     public LazyLoadingTests() : base(registerServices: false) { }
 
+    [TestInitialize]
+    public void SetTheSwitch() => AppContext.SetSwitch(BortableService.UnregisteredSwitch, true);
+
+    [TestCleanup]
+    public void ClearTheSwitch() => AppContext.SetSwitch(BortableService.UnregisteredSwitch, false);
+
     [TestMethod]
     public async Task AnAppThatRegisteredBortableKeepsItsOwnCoordinator()
     {
-        // on Blazor Server as well: the registration is what the lists use wherever there is one
-        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new RemoteJSRuntime()).AddBitBortableServices().BuildServiceProvider();
+        // the switch as well: the registration is what the lists use wherever there is one
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).AddBitBortableServices().BuildServiceProvider();
         await using var scope = app.CreateAsyncScope();
 
         Assert.AreSame(scope.ServiceProvider.GetRequiredService<BortableService>(), BortableService.Of(scope.ServiceProvider));
     }
 
     [TestMethod]
-    public async Task WithoutTheRegistrationBortableCreatesItsCoordinatorOncePerWebAssemblyRuntime()
+    public async Task WithTheSwitchBortableCreatesItsCoordinatorOncePerScope()
     {
-        var jsRuntime = new WebAssemblyJSRuntime();
-        await using var first = new ServiceCollection().AddSingleton<IJSRuntime>(jsRuntime).BuildServiceProvider();
-        await using var second = new ServiceCollection().AddSingleton<IJSRuntime>(jsRuntime).BuildServiceProvider();
-        await using var otherRuntime = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime()).BuildServiceProvider();
+        // one per circuit, or per renderer with a scope of its own, as a scoped registration gives: never shared
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).BuildServiceProvider();
+        await using var first = app.CreateAsyncScope();
+        await using var second = app.CreateAsyncScope();
 
-        var coordinator = BortableService.Of(first);
+        var coordinator = BortableService.Of(first.ServiceProvider);
 
-        Assert.AreSame(coordinator, BortableService.Of(first));
-        Assert.AreSame(coordinator, BortableService.Of(second));
-        Assert.AreNotSame(coordinator, BortableService.Of(otherRuntime));
+        Assert.AreSame(coordinator, BortableService.Of(first.ServiceProvider));
+        Assert.AreSame(coordinator, BortableService.Of(first.ServiceProvider.GetRequiredService<IServiceProvider>()));
+        Assert.AreNotSame(coordinator, BortableService.Of(second.ServiceProvider));
     }
 
     [TestMethod]
-    public async Task OutsideWebAssemblyTheRegistrationStaysRequired()
+    public async Task WithoutTheSwitchTheRegistrationStaysRequired()
     {
-        // Blazor Server's and Blazor Hybrid's JS runtime, which reaches the browser over a connection, and a container
-        // with no JS runtime at all: Bit.Bortable is loaded with such an app, so a missing registration is a mistake
-        await using var server = new ServiceCollection().AddSingleton<IJSRuntime>(new RemoteJSRuntime()).BuildServiceProvider();
-        await using var none = new ServiceCollection().BuildServiceProvider();
+        // on WebAssembly too: an app that forgot the registration hears of it, rather than quietly losing its defaults
+        AppContext.SetSwitch(BortableService.UnregisteredSwitch, false);
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).BuildServiceProvider();
 
-        foreach (var services in new IServiceProvider[] { server, none })
-        {
-            var error = Assert.ThrowsExactly<InvalidOperationException>(() => BortableService.Of(services));
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => BortableService.Of(app));
 
-            Assert.Contains("call builder.Services.AddBitBortableServices() in Program.cs", error.Message, StringComparison.Ordinal);
-        }
+        Assert.Contains("call builder.Services.AddBitBortableServices() in Program.cs", error.Message, StringComparison.Ordinal);
+        Assert.Contains("sets the Bit.Bortable.Unregistered runtime switch", error.Message, StringComparison.Ordinal);
     }
 
     [TestMethod]
-    public void OutsideWebAssemblyAListWithoutTheRegistrationNamesIt()
+    public void WithoutTheSwitchAListWithoutTheRegistrationNamesIt()
     {
         // the README's troubleshooting quotes this message
-        using var server = ServerContext();
+        AppContext.SetSwitch(BortableService.UnregisteredSwitch, false);
+        using var bare = BareContext();
 
-        var error = Assert.ThrowsExactly<InvalidOperationException>(() => server.Render<Bortable<string>>(p => p.Add(c => c.Items, new List<string> { "A" })));
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => bare.Render<Bortable<string>>(p => p.Add(c => c.Items, new List<string> { "A" })));
 
         Assert.StartsWith("Bit.Bortable's services are not registered", error.Message, StringComparison.Ordinal);
     }
@@ -70,35 +75,28 @@ public class LazyLoadingTests : BortableTestContext
     [TestMethod]
     public async Task AListThatFailedToStartDoesNotFailAgainWhenDisposed()
     {
-        using var server = ServerContext();
-        Assert.ThrowsExactly<InvalidOperationException>(() => server.Render<Bortable<string>>(p => p.Add(c => c.Items, new List<string> { "A" })));
+        AppContext.SetSwitch(BortableService.UnregisteredSwitch, false);
+        using var bare = BareContext();
+        Assert.ThrowsExactly<InvalidOperationException>(() => bare.Render<Bortable<string>>(p => p.Add(c => c.Items, new List<string> { "A" })));
 
         // disposing it must not resolve the coordinator again, and throw a second time
-        await server.DisposeComponentsAsync();
+        await bare.DisposeComponentsAsync();
 
-        Assert.IsNull(server.Renderer.UnhandledException.IsCompleted ? await server.Renderer.UnhandledException : null);
+        Assert.IsNull(bare.Renderer.UnhandledException.IsCompleted ? await bare.Renderer.UnhandledException : null);
     }
 
     [TestMethod]
-    public void WithoutTheRegistrationTheListsTakeNoAppWideDefaultsAndSayWhyOnce()
+    public void WithTheSwitchTheListsTakeNoAppWideDefaults()
     {
-        var log = new WarningLog();
-        Services.AddSingleton<ILoggerFactory>(log);
-
-        var first = RenderList(["A"]);
-        RenderList(["B"]);
+        var list = RenderList(["A"]);
 
         // the parameters' own defaults: nothing set them app-wide
-        Assert.AreEqual(150, first.Instance.Animation);
-        Assert.IsNull(first.Instance.Messages);
-        // one warning however many lists, under the category the guide says to filter
-        var warning = Assert.ContainsSingle(log.Warnings);
-        Assert.AreEqual("Bit.Bortable.BitBortable", warning.Category);
-        Assert.Contains("AddBitBortableServices", warning.Message, StringComparison.Ordinal);
+        Assert.AreEqual(150, list.Instance.Animation);
+        Assert.IsNull(list.Instance.Messages);
     }
 
     [TestMethod]
-    public async Task ADragBetweenListsWorksWithoutTheRegistration()
+    public async Task ADragBetweenListsWorksWithTheSwitch()
     {
         List<string> left = ["A", "B"], right = ["X", "Y"];
         var log = new List<Raised<string>>();
@@ -118,54 +116,17 @@ public class LazyLoadingTests : BortableTestContext
         Assert.ContainsSingle(JSInterop.Invocations["import"]);
     }
 
-    private static BunitContext ServerContext()
+    private static BunitContext BareContext()
     {
         var context = new BunitContext();
         context.JSInterop.Mode = JSRuntimeMode.Loose;
-        context.Services.AddSingleton<IJSRuntime>(new RemoteJSRuntime());
         return context;
     }
 
-    /// <summary>The JavaScript runtime of WebAssembly - the only one in-process.</summary>
-    private sealed class WebAssemblyJSRuntime : IJSInProcessRuntime
-    {
-        public TResult Invoke<TResult>(string identifier, params object?[]? args) => throw new NotSupportedException();
-
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new NotSupportedException();
-
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new NotSupportedException();
-    }
-
-    /// <summary>The JavaScript runtime of Blazor Server and Blazor Hybrid, which reaches the browser over a connection.</summary>
-    private sealed class RemoteJSRuntime : IJSRuntime
+    private sealed class NoJSRuntime : IJSRuntime
     {
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => throw new NotSupportedException();
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => throw new NotSupportedException();
-    }
-
-    /// <summary>Keeps the warnings of Bit.Bortable's categories, with the category each was written under.</summary>
-    private sealed class WarningLog : ILoggerFactory
-    {
-        public List<(string Category, string Message)> Warnings { get; } = [];
-
-        public ILogger CreateLogger(string categoryName) => new Logger(this, categoryName);
-
-        public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
-
-        public void Dispose() { }
-
-        private sealed class Logger(WarningLog log, string category) : ILogger
-        {
-            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-
-            public bool IsEnabled(LogLevel logLevel) => true;
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            {
-                if (logLevel == LogLevel.Warning && category.StartsWith("Bit.Bortable", StringComparison.Ordinal))
-                    log.Warnings.Add((category, formatter(state, exception)));
-            }
-        }
     }
 }

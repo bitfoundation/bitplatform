@@ -1,6 +1,7 @@
 name: bit platform CI - Bortable E2E
 
-# The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright. It
+# The browser suite: the demo (prerendered, then running on WebAssembly) and the published lazy loading sample
+# driven in Chromium with Playwright. It
 # takes far longer than the build-and-unit pipeline (bit.ci.Bortable.yml), so it runs only when started by hand. See
 # src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/README.md for what it proves and how to run it locally.
 
@@ -40,9 +41,11 @@ jobs:
     - name: dotnet workload restore
       run: cd src/Utilities/Bortable && dotnet workload restore
 
-    - name: Build the demo and the E2E suite
+    - name: Build the demo, publish the lazy loading sample and build the E2E suite
+      # The sample is published rather than built: LazyLoadingTests drives what an app that lazy loads ships, trimmed.
       run: |
         dotnet build src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release
         dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium

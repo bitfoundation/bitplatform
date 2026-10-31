@@ -11,8 +11,8 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddDemoServices(this IServiceCollection services)
     {
-        // The drag coordinator every Bortable injects. Without it in the server's container too, the
-        // first prerendered list would throw, unable to resolve BortableService.
+        // The drag coordinator the lists share. Without it in the server's container too, the first
+        // prerendered list would throw "Bit.Bortable's services are not registered".
         services.AddBitBortableServices();
 
         return services;
