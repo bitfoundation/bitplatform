@@ -1932,4 +1932,514 @@
     <data name="RoleDemo" xml:space="preserve">
         <value>تجريبي</value>
     </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>التحقق</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>التحقق من هذا العرض</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>يُجرى على العرض المحدد، بجهازه ومظهره ولغته وبياناته: تحقّق من إمكانية الوصول (axe-core) وبحث عن الألوان التي لا تأتي من المظهر.</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>بدء التحقق</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>تعذّر إجراء التحقق على هذا العرض. انتظر حتى يكتمل تحميله ثم حاول مرة أخرى.</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>إمكانية الوصول ({0})</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>لم يتم العثور على مشكلات.</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>حرج</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>خطير</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>متوسط</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>طفيف</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>إظهار</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>اعرف المزيد</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>ألوان خارج المظهر ({0})</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>ألوان تحددها الصفحة بنفسها ولا تطابق أيًا من ألوان المظهر. خارج مكونات bit والمخططات فقط.</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>المسارات</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>يمرّ المسار على الصفحات خطوة بخطوة، مثل تسجيل الدخول والعثور على عنصر وتعديله. شغّله هنا أو نزّل كل خطوة كلقطة شاشة مرقّمة. ويمكن لوكيلك أيضًا أن يجهّز لك واحدًا.</value>
+    </data>
+    <data name="PickFlow" xml:space="preserve">
+        <value>اختر مسارًا</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>اسم المسار الجديد</value>
+    </data>
+    <data name="CreateFlow" xml:space="preserve">
+        <value>إنشاء</value>
+    </data>
+    <data name="NoSteps" xml:space="preserve">
+        <value>لا توجد خطوات بعد. اضبط العرض المحدد بالشكل الذي يجب أن تبدو عليه الخطوة، ثم أضفه.</value>
+    </data>
+    <data name="RemoveStep" xml:space="preserve">
+        <value>إزالة الخطوة</value>
+    </data>
+    <data name="StepNote" xml:space="preserve">
+        <value>ما الذي تعرضه هذه الخطوة (اختياري)</value>
+    </data>
+    <data name="AddStep" xml:space="preserve">
+        <value>إضافة العرض المحدد كخطوة</value>
+    </data>
+    <data name="PreviousStep" xml:space="preserve">
+        <value>الخطوة السابقة</value>
+    </data>
+    <data name="NextStep" xml:space="preserve">
+        <value>الخطوة التالية</value>
+    </data>
+    <data name="StepOf" xml:space="preserve">
+        <value>الخطوة {0} من {1}</value>
+    </data>
+    <data name="FlowScreenshots" xml:space="preserve">
+        <value>لقطات شاشة مرقّمة</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>حذف المسار</value>
+    </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} تعليق مفتوح</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>حالة المراجعة</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>مسودة</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>قيد المراجعة</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>معتمدة</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>منفّذة</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>حدّدها {0}، {1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>لا يوجد وكيل يستمع. اطلب من وكيلك أن يمرّ على تعليقات المراجعة في منضدة العمل، وسيردّ على كل تعليق هنا.</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} يستمع إلى التعليقات</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} يعمل على #{1}</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>تعليق جديد</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>اسمك</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>ما الذي يجب تغييره هنا؟</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>إرسال</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>المفتوحة ({0})</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>المنجزة ({0})</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>لا توجد تعليقات بعد. اختر «تعليق» في الأعلى وانقر في أي مكان على الصفحة.</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>لم يُنجز شيء بعد.</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>مفتوح</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>قيد العمل</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>منجز</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>خطة الوكيل</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>رد</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>رد</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>إعادة فتح</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>تم</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>إظهار العرض</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>حذف التعليق</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>هذا الموضع</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>الوضع</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>استخدام الصفحة</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>تعليق</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>فحص</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>تحرير النص</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>العرض</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>المراجعة</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>المراجع</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>ليس من المظهر</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>تقرير المراجعة</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>تقرير المراجعة (HTML)</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>تقرير المراجعة (PDF)</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>العروض</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>التعليقات</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>لا توجد تعليقات.</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>أُنشئ في منضدة العمل، {0}</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>تحرير النص</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>انقر على أي نص في الصفحة لتغييره بكل اللغات.</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>هذا النص مكتوب في الصفحة نفسها وليس في ملفات الترجمة بعد، لذا يظهر بالشكل نفسه في كل اللغات.</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>انقل هذا النص إلى ملفات الترجمة وترجمه: «{0}»</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>اطلب من الوكيل</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>أي نص</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>حفظ</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>يحفظ في ملفات الترجمة ويعيد تحميل العروض. ويرى وكيلك التغيير في git.</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>يعمل حفظ النص عندما تُشغَّل منضدة العمل من المشروع على حاسوبك.</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>غيّر النص {0} · {1}:</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>المظهر والمكونات</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>اللغة البصرية للتطبيق في صفحة واحدة: ألوانه وخطوطه وزواياه والمكونات الرئيسية بكل أشكالها، بالوضع الفاتح والداكن ومن اليمين إلى اليسار.</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>مظهر واحد في التطبيق كله</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>نظام التصميم</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>المظهر والمكونات</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>كل ما هنا يأتي من مظهر التطبيق نفسه. جرّب الخيارات في اللوحة الجانبية لترى كيف يتغير.</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>الألوان</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>الأساسي</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>الثانوي</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>الثالثي</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>المعلومات</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>النجاح</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>التحذير</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>التحذير الشديد</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>الخطأ</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>النص</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>الخلفيات</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>الحدود</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>الخطوط</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>الزوايا</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>الأزرار</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>معطّل</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>الإعدادات</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>حقول الإدخال</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>الاسم</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>اكتب اسمًا</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>الاختيار</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>اختر واحدًا</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>بحث</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>الكمية</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>الخيار {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>الإشعارات</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>الرسائل والحالة</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>رسالة {0} كما يعرضها التطبيق.</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>جارٍ الرفع</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>البطاقات وعلامات التبويب</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>التبويب {0}</value>
+    </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>جدول</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>بطاقات</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>عدد المباني</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>كما هي</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>ثلاثة</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>المئات</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>الأسماء</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>كما هي</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>طويلة جدًا</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>العرض</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>الارتفاع</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>اسحب حافة العرض أو زاويته لتغيير حجمه، أو اكتب المقاس.</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>هذه الصفحة</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>خيار التصميم</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>تحدد الصفحة هذه الخيارات بنفسها، للحالات التي يجب أن تبدو فيها بشكل صحيح. ويُضاف كل اختيار إلى الرابط ولقطات الشاشة.</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>تجربة المظهر</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>اللون الأساسي</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>المظهر</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>لونك الخاص</value>
+    </data>
+    <data name="CornerRadius" xml:space="preserve">
+        <value>الزوايا</value>
+    </data>
+    <data name="RadiusSquare" xml:space="preserve">
+        <value>حادة</value>
+    </data>
+    <data name="RadiusRound" xml:space="preserve">
+        <value>أكثر استدارة</value>
+    </data>
+    <data name="Density" xml:space="preserve">
+        <value>التباعد</value>
+    </data>
+    <data name="DensityCompact" xml:space="preserve">
+        <value>مضغوط</value>
+    </data>
+    <data name="DensityComfortable" xml:space="preserve">
+        <value>واسع</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>يتغير هذا العرض فقط. وعندما يعجبك خيار، اطلب من وكيلك إضافته إلى مظهر التطبيق.</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>إمكانية الوصول</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>حجم النص</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>تقليل الحركة</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>رؤية الألوان</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>نص أكبر كما يجعله إعداد الهاتف أو المتصفح، وبلا حركات، وكيف يرى المصابون بعمى الألوان الصفحة.</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>أي مقاس</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>مقاس مخصص</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>عادية</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>بدون أحمر (بروتانوبيا)</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>بدون أخضر (ديوترانوبيا)</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>بدون أزرق (تريتانوبيا)</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>بدون ألوان (أكروماتوبسيا)</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>نقاط التوقف في التطبيق</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>خيارات التصميم</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>تعاون مباشر مع الذكاء الاصطناعي</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>على الحاسوب الذي يشغّل منضدة العمل، يصل التعليق المثبّت على الصفحة مباشرةً إلى وكيل الذكاء الاصطناعي الخاص بالمطوّر: فيغيّر الصفحة ويردّ هنا ويضع على التعليق علامة الإنجاز أمام عينيك. ومن أي مكان آخر تكون المراجعة للقراءة فقط، حتى لا يتمكن أحد من الوصول إلى ذلك الوكيل عبر رابط مشترك.</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>الوكيل غير متصل</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>لا توجد تعليقات بعد.</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>تُنشأ المسارات على الحاسوب الذي يشغّل منضدة العمل. وهنا يمكنك تشغيلها وتنزيل لقطات الشاشة الخاصة بها.</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>راجع مباشرةً مع وكيل الذكاء الاصطناعي الخاص بك</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>ثبّت تعليقًا على أي موضع في الصفحة. على حاسوبك، يتلقاه وكيل البرمجة الخاص بك أثناء كتابتك، فيغيّر الصفحة ويردّ على التعليق ويضع عليه علامة الإنجاز. يعمل مع Claude Code و Codex و Copilot و Gemini و Junie و Cursor.</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>مراجعة مباشرة مع الذكاء الاصطناعي</value>
+    </data>
 </root>

@@ -76,7 +76,7 @@
                 <button type="button" class="thread-head" @onclick="() => Select(thread)" aria-expanded="@(isSelected ? "true" : "false")">
                     <span class="number status-@thread.Status.ToString().ToLowerInvariant()">@thread.Number</span>
                     <span class="thread-title">
-                        <span class="thread-element">@DescribeAnchor(thread.Anchor)</span>
+                        <span class="thread-element" dir="auto">@DescribeAnchor(thread.Anchor)</span>
                         <span class="thread-view">@DescribeView(thread.Scenario)</span>
                     </span>
                     <span class="thread-status">@Localizer[$"ReviewStatus{thread.Status}"]</span>
@@ -87,7 +87,7 @@
                     {
                         <div class="message @(message.FromAgent ? "from-agent" : null)">
                             <span class="message-author">@message.Author<span class="message-time">@message.At.ToLocalTime().ToString("t", CultureInfo.CurrentUICulture)</span></span>
-                            <span class="message-text">@message.Text</span>
+                            <span class="message-text" dir="auto">@message.Text</span>
                         </div>
                     }
                 </div>

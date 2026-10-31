@@ -1932,4 +1932,514 @@
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
     </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>Kontroller</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>Kontrollera den här vyn</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>Körs på den valda vyn, med dess enhet, tema, språk och data: en tillgänglighetskontroll (axe-core) och en sökning efter färger som inte kommer från temat.</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>Kör kontroller</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>Kontrollerna kunde inte köras på den här vyn. Vänta tills den har laddats och försök igen.</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>Tillgänglighet ({0})</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>Inga problem hittades.</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>Kritisk</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>Allvarlig</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>Måttlig</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>Mindre</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>Visa</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>Läs mer</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>Färger utanför temat ({0})</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>Färger som sidan själv anger och som inte matchar någon av temats färger. Bara utanför bit-komponenter och diagram.</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>Flöden</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>Ett flöde går igenom sidor steg för steg, till exempel att logga in, hitta ett objekt och redigera det. Spela upp det här eller ladda ned varje steg som en numrerad skärmbild. Din agent kan också förbereda ett åt dig.</value>
+    </data>
+    <data name="PickFlow" xml:space="preserve">
+        <value>Välj ett flöde</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>Namn på det nya flödet</value>
+    </data>
+    <data name="CreateFlow" xml:space="preserve">
+        <value>Skapa</value>
+    </data>
+    <data name="NoSteps" xml:space="preserve">
+        <value>Inga steg än. Ställ in den valda vyn så som steget ska se ut och lägg sedan till den.</value>
+    </data>
+    <data name="RemoveStep" xml:space="preserve">
+        <value>Ta bort steg</value>
+    </data>
+    <data name="StepNote" xml:space="preserve">
+        <value>Vad det här steget visar (valfritt)</value>
+    </data>
+    <data name="AddStep" xml:space="preserve">
+        <value>Lägg till den valda vyn som ett steg</value>
+    </data>
+    <data name="PreviousStep" xml:space="preserve">
+        <value>Föregående steg</value>
+    </data>
+    <data name="NextStep" xml:space="preserve">
+        <value>Nästa steg</value>
+    </data>
+    <data name="StepOf" xml:space="preserve">
+        <value>Steg {0} av {1}</value>
+    </data>
+    <data name="FlowScreenshots" xml:space="preserve">
+        <value>Numrerade skärmbilder</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>Ta bort flöde</value>
+    </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} öppna kommentarer</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>Granskningsstatus</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>Utkast</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>Under granskning</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>Godkänd</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>Inbyggd</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>Satt av {0}, {1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>Ingen agent lyssnar. Be din agent att gå igenom granskningskommentarerna på arbetsbänken, så svarar den på var och en här.</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} lyssnar efter kommentarer</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} arbetar med #{1}</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>Ny kommentar</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>Ditt namn</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>Vad ska ändras här?</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>Skicka</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>Öppna ({0})</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>Klara ({0})</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>Inga kommentarer än. Välj Kommentera högst upp och klicka var som helst på sidan.</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>Inget är klart än.</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>Öppen</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>Pågår</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>Klar</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>Agentens plan</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>Svara</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>Svara</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>Öppna igen</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>Klar</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>Visa vyn</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>Ta bort kommentar</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>Den här platsen</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>Läge</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>Använd sidan</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>Kommentera</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>Inspektera</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>Redigera text</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>Vy</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>Granskning</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>Granskare</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>inte från temat</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>Granskningsrapport</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>Granskningsrapport (HTML)</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>Granskningsrapport (PDF)</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>Vyer</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>Kommentarer</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>Inga kommentarer.</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>Skapad på arbetsbänken, {0}</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>Redigera text</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>Klicka på valfri text på sidan för att ändra den, på alla språk.</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>Den här texten är skriven direkt i sidan och finns inte i översättningsfilerna än, så den visas likadant på alla språk.</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>Flytta den här texten till översättningsfilerna och översätt den: ”{0}”</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>Be agenten</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>Vilken text</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>Spara</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>Sparar i översättningsfilerna och laddar om vyerna. Din agent ser ändringen i git.</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>Att spara text fungerar när arbetsbänken körs från projektet på din egen dator.</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>Ändra texten {0} · {1}:</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>Tema och komponenter</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>Appens visuella språk på en sida: färger, typografi, hörn och de viktigaste komponenterna i alla varianter, i ljust, mörkt och höger till vänster.</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>Ett utseende i hela appen</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>Designsystem</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>Tema och komponenter</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>Allt här kommer från appens eget tema. Prova alternativen till höger och se hur det ändras.</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>Färger</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>Primär</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>Sekundär</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>Tertiär</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>Info</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>Framgång</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>Varning</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>Allvarlig varning</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>Fel</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>Text</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>Bakgrunder</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>Kanter</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>Typografi</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>Flygande bäckasiner söka hwila på mjuka tuvor</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>Hörn</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>Knappar</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>Inaktiverad</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>Inställningar</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>Inmatningsfält</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>Namn</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>Skriv ett namn</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>Val</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>Välj ett alternativ</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>Sök</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>Mängd</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>Alternativ {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>Aviseringar</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>Meddelanden och status</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>Ett {0}-meddelande, så som appen visar det.</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>Laddar upp</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>Kort och flikar</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>Flik {0}</value>
+    </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>Tabell</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>Kort</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>Hur många byggnader</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>Oförändrat</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>Tre</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>Hundratals</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>Namn</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>Som de är</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>Mycket långa</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>Bredd</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>Höjd</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>Dra i vyns kant eller hörn för att ändra storleken, eller skriv in storleken.</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>Den här sidan</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>Designalternativ</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>Sidan definierar dessa själv, för de fall där den måste se rätt ut. Varje val följer med i länken och skärmbilderna.</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>Prova temat</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>Primärfärg</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>Tema</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>Egen färg</value>
+    </data>
+    <data name="CornerRadius" xml:space="preserve">
+        <value>Hörn</value>
+    </data>
+    <data name="RadiusSquare" xml:space="preserve">
+        <value>Skarpa</value>
+    </data>
+    <data name="RadiusRound" xml:space="preserve">
+        <value>Rundare</value>
+    </data>
+    <data name="Density" xml:space="preserve">
+        <value>Avstånd</value>
+    </data>
+    <data name="DensityCompact" xml:space="preserve">
+        <value>Kompakt</value>
+    </data>
+    <data name="DensityComfortable" xml:space="preserve">
+        <value>Luftigt</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>Bara den här vyn ändras. När du gillar något, be din agent att lägga in det i appens tema.</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>Tillgänglighet</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>Textstorlek</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>Minska rörelse</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>Färgseende</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>Större text så som en inställning i telefonen eller webbläsaren gör den, inga animationer och hur personer med färgblindhet ser sidan.</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>Valfri storlek</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>Anpassad storlek</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>Typiskt</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>Inget rött (protanopi)</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>Inget grönt (deuteranopi)</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>Inget blått (tritanopi)</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>Ingen färg (akromatopsi)</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>Appens brytpunkter</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>Designalternativ</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>Livesamarbete med AI</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>På datorn som kör arbetsbänken går en kommentar som fästs på sidan raka vägen till utvecklarens AI-agent: den ändrar sidan, svarar direkt här och bockar av kommentaren medan du ser på. Från alla andra platser är granskningen skrivskyddad, så att ingen kan nå den agenten via en delad länk.</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>Agenten är offline</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>Inga kommentarer än.</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>Flöden skapas på datorn som kör arbetsbänken. Här kan du spela upp dem och ladda ned deras skärmbilder.</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>Granska live med din AI-agent</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>Fäst en kommentar var som helst på en sida. På din egen dator får din kodningsagent den medan du skriver, ändrar sidan, svarar i kommentaren och bockar av den. Fungerar med Claude Code, Codex, Copilot, Gemini, Junie och Cursor.</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>Livegranskning med AI</value>
+    </data>
 </root>

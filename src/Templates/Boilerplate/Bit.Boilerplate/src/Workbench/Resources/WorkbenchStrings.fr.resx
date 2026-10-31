@@ -1932,4 +1932,514 @@
     <data name="RoleDemo" xml:space="preserve">
         <value>Démo</value>
     </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>Contrôles</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>Contrôler cette vue</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>S’exécutent sur la vue sélectionnée, avec son appareil, son thème, sa langue et ses données : un contrôle d’accessibilité (axe-core) et une recherche des couleurs qui ne viennent pas du thème.</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>Lancer les contrôles</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>Les contrôles n’ont pas pu s’exécuter sur cette vue. Attendez qu’elle soit chargée, puis réessayez.</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>Accessibilité ({0})</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>Aucun problème trouvé.</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>Critique</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>Grave</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>Modéré</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>Mineur</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>Afficher</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>En savoir plus</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>Couleurs hors du thème ({0})</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>Couleurs que la page définit elle-même et qui ne correspondent à aucune couleur du thème. Uniquement en dehors des composants bit et des graphiques.</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>Parcours</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>Un parcours enchaîne des pages étape par étape, comme se connecter, trouver un élément et le modifier. Lancez-le ici ou téléchargez chaque étape sous forme de capture numérotée. Votre agent peut aussi en préparer un pour vous.</value>
+    </data>
+    <data name="PickFlow" xml:space="preserve">
+        <value>Choisissez un parcours</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>Nom du nouveau parcours</value>
+    </data>
+    <data name="CreateFlow" xml:space="preserve">
+        <value>Créer</value>
+    </data>
+    <data name="NoSteps" xml:space="preserve">
+        <value>Aucune étape pour l’instant. Réglez la vue sélectionnée comme l’étape doit apparaître, puis ajoutez-la.</value>
+    </data>
+    <data name="RemoveStep" xml:space="preserve">
+        <value>Retirer l’étape</value>
+    </data>
+    <data name="StepNote" xml:space="preserve">
+        <value>Ce que montre cette étape (facultatif)</value>
+    </data>
+    <data name="AddStep" xml:space="preserve">
+        <value>Ajouter la vue sélectionnée comme étape</value>
+    </data>
+    <data name="PreviousStep" xml:space="preserve">
+        <value>Étape précédente</value>
+    </data>
+    <data name="NextStep" xml:space="preserve">
+        <value>Étape suivante</value>
+    </data>
+    <data name="StepOf" xml:space="preserve">
+        <value>Étape {0} sur {1}</value>
+    </data>
+    <data name="FlowScreenshots" xml:space="preserve">
+        <value>Captures numérotées</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>Supprimer le parcours</value>
+    </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} commentaires ouverts</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>Statut de révision</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>Brouillon</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>En révision</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>Validée</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>Intégrée</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>Défini par {0}, {1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>Aucun agent n’est à l’écoute. Demandez à votre agent de parcourir les commentaires de révision sur l’établi : il répondra ici à chacun d’eux.</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} est à l’écoute des commentaires</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} travaille sur #{1}</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>Nouveau commentaire</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>Votre nom</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>Que faut-il changer ici ?</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>Envoyer</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>Ouverts ({0})</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>Terminés ({0})</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>Aucun commentaire pour l’instant. Choisissez Commenter en haut et cliquez n’importe où sur la page.</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>Rien n’est encore terminé.</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>Ouvert</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>En cours</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>Terminé</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>Le plan de l’agent</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>Répondre</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>Répondre</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>Rouvrir</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>Terminé</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>Afficher la vue</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>Supprimer le commentaire</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>Cet endroit</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>Mode</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>Utiliser la page</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>Commenter</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>Inspecter</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>Modifier le texte</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>Vue</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>Révision</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>Réviseur</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>hors du thème</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>Fiche de révision</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>Fiche de révision (HTML)</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>Fiche de révision (PDF)</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>Vues</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>Commentaires</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>Aucun commentaire.</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>Créée sur l’établi, {0}</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>Modifier le texte</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>Cliquez sur n’importe quel texte de la page pour le modifier, dans toutes les langues.</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>Ce texte est écrit dans la page elle-même et ne figure pas encore dans les fichiers de traduction, il s’affiche donc de la même façon dans toutes les langues.</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>Déplace ce texte dans les fichiers de traduction et traduis-le : « {0} »</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>Demander à l’agent</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>Quel texte</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>Enregistrer</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>Enregistre dans les fichiers de traduction et recharge les vues. Votre agent voit la modification dans git.</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>L’enregistrement du texte fonctionne quand l’établi s’exécute depuis le projet sur votre propre machine.</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>Modifie le texte {0} · {1} :</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>Thème et composants</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>Le langage visuel de l’application sur une seule page : ses couleurs, sa typographie, ses coins et les principaux composants dans chaque variante, en clair, en sombre et de droite à gauche.</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>Un seul style dans toute l’application</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>Système de design</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>Thème et composants</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>Tout ici provient du thème de l’application. Essayez les réglages à droite pour le voir changer.</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>Couleurs</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>Primaire</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>Secondaire</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>Tertiaire</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>Info</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>Succès</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>Avertissement</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>Avertissement grave</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>Erreur</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>Texte</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>Arrière-plans</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>Bordures</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>Typographie</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>Portez ce vieux whisky au juge blond qui fume</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>Coins</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>Boutons</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>Désactivé</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>Paramètres</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>Champs de saisie</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>Nom</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>Saisissez un nom</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>Choix</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>Choisissez une option</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>Rechercher</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>Quantité</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>Option {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>Notifications</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>Messages et statut</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>Un message {0}, tel que l’application l’affiche.</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>Envoi en cours</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>Cartes et onglets</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>Onglet {0}</value>
+    </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>Tableau</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>Vignettes</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>Combien de bâtiments</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>Tels quels</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>Trois</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>Des centaines</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>Noms</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>Tels quels</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>Très longs</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>Largeur</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>Hauteur</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>Faites glisser le bord ou le coin de la vue pour la redimensionner, ou saisissez la taille.</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>Cette page</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>Option de design</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>La page les définit elle-même, pour les cas où elle doit s’afficher correctement. Chaque choix est repris dans le lien et dans les captures.</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>Essayer le thème</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>Couleur principale</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>Thème</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>Votre propre couleur</value>
+    </data>
+    <data name="CornerRadius" xml:space="preserve">
+        <value>Coins</value>
+    </data>
+    <data name="RadiusSquare" xml:space="preserve">
+        <value>Carrés</value>
+    </data>
+    <data name="RadiusRound" xml:space="preserve">
+        <value>Plus arrondis</value>
+    </data>
+    <data name="Density" xml:space="preserve">
+        <value>Espacement</value>
+    </data>
+    <data name="DensityCompact" xml:space="preserve">
+        <value>Compact</value>
+    </data>
+    <data name="DensityComfortable" xml:space="preserve">
+        <value>Aéré</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>Seule cette vue change. Quand un réglage vous plaît, demandez à votre agent de l’intégrer au thème de l’application.</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>Accessibilité</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>Taille du texte</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>Réduire les animations</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>Vision des couleurs</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>Un texte plus grand comme le produit un réglage du téléphone ou du navigateur, aucune animation, et la page telle que la voient les personnes daltoniennes.</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>Toute taille</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>Taille personnalisée</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>Typique</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>Sans rouge (protanopie)</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>Sans vert (deutéranopie)</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>Sans bleu (tritanopie)</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>Sans couleur (achromatopsie)</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>Points de rupture de l’application</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>Options de design</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>Collaboration en direct avec l’IA</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>Sur la machine qui exécute l’établi, un commentaire épinglé sur la page part directement vers l’agent IA du développeur : il modifie la page, répond ici même et coche le commentaire sous vos yeux. Depuis n’importe quel autre endroit, la révision est en lecture seule, pour que personne ne puisse atteindre cet agent via un lien partagé.</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>L’agent est hors ligne</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>Aucun commentaire pour l’instant.</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>Les parcours se créent sur la machine qui exécute l’établi. Ici, vous pouvez les lancer et télécharger leurs captures.</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>Révisez en direct avec votre agent IA</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>Épinglez un commentaire n’importe où sur une page. Sur votre propre machine, votre agent de codage le reçoit pendant que vous écrivez, modifie la page, répond dans le commentaire et le coche. Fonctionne avec Claude Code, Codex, Copilot, Gemini, Junie et Cursor.</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>Révision en direct avec l’IA</value>
+    </data>
 </root>
