@@ -184,6 +184,8 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// <inheritdoc />
     public virtual bool Persist => false;
 
+    public virtual int PersistVersion => 0;
+
     /// <inheritdoc />
     public event Action? StateChanged;
 

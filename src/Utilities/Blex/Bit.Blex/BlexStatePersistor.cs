@@ -351,7 +351,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
                     {
                         // Not removed when rejected: it is the other tab's write, and that tab is the one to judge it.
                         raw = await UnprotectAsync(store, raw, removeRejected: false, CancellationToken.None).ConfigureAwait(true);
-                        slice = raw is null ? null : Unwrap(store.Name, raw);
+                        slice = raw is null ? null : Unwrap(store, raw);
                     }
                     catch (Exception ex)
                     {
@@ -556,7 +556,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         JsonObject? slice = null;
         try
         {
-            slice = Unwrap(store.Name, raw);
+            slice = Unwrap(store, raw);
         }
         catch (Exception ex)
         {
@@ -762,13 +762,13 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     /// Parses a stored payload, unwrapping the version envelope and running migrations.
     /// Returns <c>null</c> when the payload should be discarded.
     /// </summary>
-    private JsonObject? Unwrap(string storeName, string raw)
+    private JsonObject? Unwrap(IBlexStore store, string raw)
     {
         // Valid JSON that is not an object ([1,2,3], "text", null) is no store's state either: thrown, so it is
         // reported -- and, read at startup, removed -- like any other unreadable payload rather than ignored
         // on every load.
         if (JsonNode.Parse(raw) is not JsonObject parsed)
-            throw new JsonException($"The stored state of '{storeName}' is not a JSON object.");
+            throw new JsonException($"The stored state of '{store.Name}' is not a JSON object.");
 
         var storedVersion = 0;
         var state = parsed;
@@ -785,24 +785,28 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             state = (JsonObject)state.DeepClone(); // detach from the envelope parent
         }
 
-        if (storedVersion == _options.Version)
+        if (storedVersion == VersionOf(store))
             return state;
 
-        return _options.Migrate?.Invoke(storeName, storedVersion, state);
+        return _options.Migrate?.Invoke(store.Name, storedVersion, state);
     }
 
-    private string Wrap(JsonObject state)
+    private string Wrap(IBlexStore store, JsonObject state)
     {
-        if (_options.Version <= 0)
+        var version = VersionOf(store);
+        if (version <= 0)
             return state.ToJsonString();
 
         var envelope = new JsonObject
         {
-            [VersionKey] = _options.Version,
+            [VersionKey] = version,
             [StateKey] = state,
         };
         return envelope.ToJsonString();
     }
+
+    private int VersionOf(IBlexStore store)
+        => store is BlexStoreBase { PersistVersion: > 0 } sb ? sb.PersistVersion : _options.Version;
 
     private async ValueTask TryRemoveAsync(IBlexStore store, CancellationToken cancellationToken)
     {
@@ -962,7 +966,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
                 state = projected.Parent is null ? projected : (JsonObject)projected.DeepClone();
             }
 
-            json = Wrap(state);
+            json = Wrap(store, state);
         }
         catch (Exception ex)
         {
