@@ -85,7 +85,7 @@ Give nodes your own markup with `NodeTemplate` and `BlowHandle`, and edges with 
 - `OnError` diagnostics for malformed graphs instead of exceptions.
 - Theming through `--bit-blow-*` CSS custom properties, with light, dark and system colour modes.
 - Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11; lazy loadable on
-  WebAssembly.
+  WebAssembly outside AOT builds.
 
 ## For AI agents
 

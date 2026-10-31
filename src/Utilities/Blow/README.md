@@ -2755,13 +2755,13 @@ Then load it before the first page that uses Blow renders, from the router's `On
             await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Blow.wasm"]);
     }
 
-    // /workflows and the routes beneath it, such as /Workflows/42 (routes match regardless of case), but not
-    // /workflows-archive. Add every other route that renders Blow. The path keeps any query and fragment.
+    // /workflow, /workflows and the routes beneath them, such as /Workflows/42 (routes match regardless of case),
+    // but not /workflows-archive. Add every other route that renders Blow. The path keeps any query and fragment.
     private static bool IsEditorPage(string path)
     {
-        path = path.Split('?', '#')[0];
-        return path.Equals("workflows", StringComparison.OrdinalIgnoreCase)
-            || path.StartsWith("workflows/", StringComparison.OrdinalIgnoreCase);
+        var page = path.Split('?', '#')[0].Split('/')[0];
+        return page.Equals("workflow", StringComparison.OrdinalIgnoreCase)
+            || page.Equals("workflows", StringComparison.OrdinalIgnoreCase);
     }
 }
 ```
