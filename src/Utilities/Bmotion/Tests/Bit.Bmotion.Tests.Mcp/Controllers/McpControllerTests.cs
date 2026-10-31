@@ -216,6 +216,43 @@ public class McpControllerTests
     }
 
     /// <summary>
+    /// Naming every unmeasured spec is an answer per spec, so a long enough list would make a response as long. Past
+    /// <see cref="McpController.MaxListedTransitions"/> the rest of the list is one answer that does not echo it.
+    /// </summary>
+    [TestMethod]
+    public async Task SimulateBmotionTransition_AListPastTheListedCap_EndsInOneAnswerForTheRest()
+    {
+        // Every spec distinct, so an entry answered for the wrong spec, or out of order, shows.
+        var specs = Enumerable.Range(0, 100_000).Select(i => $"tween(0.1{i:D6})").ToArray();
+
+        var results = await _controller.SimulateBmotionTransition(string.Join(";", specs));
+
+        Assert.AreEqual(McpController.MaxListedTransitions + 1, results.Length);
+        Assert.AreEqual(McpController.MaxSimulatedTransitions, results.Count(result => result.Error is null));
+        CollectionAssert.AreEqual(specs[McpController.MaxSimulatedTransitions..McpController.MaxListedTransitions],
+                                  results[McpController.MaxSimulatedTransitions..^1].Select(result => result.Transition).ToArray());
+
+        var rest = results[^1];
+        Assert.AreEqual(string.Empty, rest.Transition, "the rest of the list is not echoed back");
+        StringAssert.Contains(rest.Error, $"at most {McpController.MaxListedTransitions}");
+        Assert.AreEqual(rest.Error, rest.Reading);
+    }
+
+    [TestMethod]
+    public async Task SimulateBmotionTransition_ExactlyTheListedCap_IsAllNamed()
+    {
+        var atCap = string.Join(";\n", Enumerable.Repeat("tween(0.1)", McpController.MaxListedTransitions)) + ";";
+
+        var results = await _controller.SimulateBmotionTransition(atCap);
+
+        // The empty entries the separators leave are not specs, so the list is exactly at the cap: every spec is
+        // answered for by name, and nothing is left over to report as unread.
+        Assert.AreEqual(McpController.MaxListedTransitions, results.Length);
+        Assert.IsTrue(results.Skip(McpController.MaxSimulatedTransitions).All(result => result.Transition == "tween(0.1)"));
+        Assert.IsFalse(results.Any(result => result.Error?.StartsWith("Not read") ?? false));
+    }
+
+    /// <summary>
     /// Simulating dozens at once would spend more of a client's context than any comparison is read
     /// with, and the interesting comparisons are between two and four candidates. What is over the
     /// cap is still answered: fewer results than transitions asked about is a silent cut, and the
@@ -308,22 +345,37 @@ public class McpControllerTests
         }
     }
 
+    /// <summary>
+    /// The refusal is an answer, not an exception: an MCP client is told only that a throwing tool failed, so the
+    /// limit - and how to stay under it - has to arrive as data to reach the agent at all.
+    /// </summary>
     [TestMethod]
-    public async Task AnalyzeBmotionAnimation_MoreThanTheCapOfProperties_IsRefused()
+    [DataRow(1)]
+    [DataRow(10_000)]
+    public async Task AnalyzeBmotionAnimation_MoreThanTheCapOfProperties_IsRefusedAsAnAnswer(int over)
     {
-        var many = string.Join(", ", Enumerable.Range(0, McpController.MaxAnalyzedProperties + 1).Select(i => $"unknown{i}"));
+        var many = string.Join(", ", Enumerable.Range(0, McpController.MaxAnalyzedProperties + over).Select(i => $"unknown{i}"));
 
-        await Assert.ThrowsExactlyAsync<ArgumentException>(() => _controller.AnalyzeBmotionAnimation(many, "tween(0.4)"));
+        var result = await _controller.AnalyzeBmotionAnimation(many, "tween(0.4)");
+
+        Assert.AreEqual("Not analysed", result.Path);
+        Assert.IsFalse(result.WorksOnBlazorServer);
+        Assert.AreEqual(0, result.Properties.Length, "a refused list is not echoed back");
+        StringAssert.Contains(result.Error, $"at most {McpController.MaxAnalyzedProperties}");
     }
 
     [TestMethod]
-    public async Task AnalyzeBmotionAnimation_ExactlyTheCapOfProperties_IsAnswered()
+    [DataRow(", ")]
+    [DataRow(" ,, ;; ")]
+    public async Task AnalyzeBmotionAnimation_ExactlyTheCapOfProperties_IsAnswered(string separator)
     {
-        var atCap = string.Join(", ", Enumerable.Range(0, McpController.MaxAnalyzedProperties).Select(i => $"unknown{i}"));
+        // Empty entries and a trailing separator are not names, so they do not count toward the limit.
+        var atCap = string.Join(separator, Enumerable.Range(0, McpController.MaxAnalyzedProperties).Select(i => $"unknown{i}")) + separator;
 
         var result = await _controller.AnalyzeBmotionAnimation(atCap, "tween(0.4)");
 
         Assert.AreEqual(McpController.MaxAnalyzedProperties, result.Properties.Length);
+        Assert.IsFalse(result.Error?.Contains("at most") ?? false, result.Error);
     }
 
     /// <summary>

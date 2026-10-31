@@ -390,7 +390,7 @@ public static class BmotionMotionLab
     /// Bm.To has. The explanation goes in both <c>Error</c> and <c>Reason</c>, so a caller that only
     /// renders the human-facing field still sees it, and no verdict is claimed.
     /// </summary>
-    private static BmotionPlaybackDto NotAnalysed(IReadOnlyCollection<string> properties, string transition, string error)
+    internal static BmotionPlaybackDto NotAnalysed(IReadOnlyCollection<string> properties, string transition, string error)
         => new()
         {
             Properties = [.. properties],

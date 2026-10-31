@@ -44,10 +44,28 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     private readonly List<KeyValuePair<string, BmotionElementAnimationState>> _tickBuffer = new();
 
     public BmotionAnimationEngine(IBmotionInterop interop, ILogger<BmotionAnimationEngine>? logger = null)
+        : this(interop, logger, new BitBmotionOptions())
     {
+    }
+
+    /// <summary>
+    /// The engine with the library-wide options - the constructor dependency injection uses. A
+    /// <see cref="BmotionAnimateService"/> created on this engine alone
+    /// (<see cref="BmotionAnimateService(BmotionAnimationEngine, IBmotionInterop)"/>) follows them.
+    /// </summary>
+    public BmotionAnimationEngine(IBmotionInterop interop, ILogger<BmotionAnimationEngine>? logger, BitBmotionOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
         _interop = interop;
         _logger = logger;
+        Options = options;
     }
+
+    /// <summary>The library-wide options this engine was created with: the defaults when it was given none.</summary>
+    internal BitBmotionOptions Options { get; }
+
+    /// <summary>This engine's logger, for a service created on the engine alone.</summary>
+    internal ILogger? Logger => _logger;
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Reduced-motion (accessibility)

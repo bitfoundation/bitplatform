@@ -152,7 +152,8 @@ public class SpringDriverTests
         var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 100, Damping = 0, Delay = delay }, _ => applied++);
 
         Assert.IsFalse(driver.Tick(0));
-        Assert.IsTrue(applied <= BmotionSpringDriver.MaxFastForwardFrames + 1, $"{applied} frames were applied");
+        Assert.IsTrue(applied >= (int)(BmotionFastForward.MaxMs / BmotionFastForward.FrameMs), $"only {applied} frames were applied");
+        Assert.IsTrue(applied <= BmotionFastForward.MaxFrames + 1, $"{applied} frames were applied");
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────────

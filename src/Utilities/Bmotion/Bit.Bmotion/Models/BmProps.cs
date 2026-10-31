@@ -305,11 +305,17 @@ public class BmProps
     }
 
     /// <summary>
-    /// Enumerates every string-valued CSS declaration this target carries (all keyframes of each
-    /// string prop, plus CSS-var values) as <c>(prop, value)</c> pairs. Used by the opt-in
-    /// CSS-injection safe mode to validate values written verbatim into inline style.
+    /// Enumerates every string-valued CSS declaration this target can write (all keyframes of each
+    /// string prop, the free-form <see cref="Css"/> entries under the names they were given, and the
+    /// custom properties) as <c>(prop, value)</c> pairs. Used by the opt-in CSS-injection safe mode to
+    /// validate the names and values written verbatim into inline style.
+    /// <para>
+    /// It is the union of what the serializers write: a <see cref="Css"/> entry shadowing a typed prop
+    /// (<c>Css["backgroundColor"]</c> next to <see cref="BackgroundColor"/>) leaves one of the two in
+    /// <see cref="ToJsDictionary"/> but both in <see cref="ToCssStyleString"/>, so both are listed.
+    /// </para>
     /// </summary>
-    internal IEnumerable<(string Prop, string Value)> EnumerateCssStringValues()
+    internal IEnumerable<(string Prop, string? Value)> EnumerateCssDeclarations()
     {
         foreach (var pair in Frames("backgroundColor", BackgroundColor)) yield return pair;
         foreach (var pair in Frames("color", Color)) yield return pair;
@@ -332,9 +338,12 @@ public class BmProps
 
         if (CssVars != null)
             foreach (var kv in CssVars)
+            {
+                if (!kv.Key.StartsWith("--")) continue; // never written (see ToJsDictionary), so nothing to check
                 yield return (kv.Key, kv.Value);
+            }
 
-        static IEnumerable<(string, string)> Frames(string prop, BmStringKeyframes? k)
+        static IEnumerable<(string, string?)> Frames(string prop, BmStringKeyframes? k)
         {
             if (k is null) yield break;
             foreach (var f in k.Frames) yield return (prop, f);

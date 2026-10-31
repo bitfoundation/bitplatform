@@ -134,12 +134,11 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
         if (_fastForwardMs > 0)
         {
             // Started part-way in: the skipped time is played frame by frame, so a bound crossed meanwhile still
-            // hands over to the bounce exactly where it would have.
-            double ahead = Math.Min(_fastForwardMs, BmotionSpringDriver.MaxFastForwardMs);
+            // hands over to the bounce where it would have - up to the last ten minutes of it, which only a bounce
+            // that never settles notices (see BmotionFastForward).
+            double ahead = _fastForwardMs;
             _fastForwardMs = 0;
-            double t = timestamp - ahead;
-            for (int frame = 0; frame < BmotionSpringDriver.MaxFastForwardFrames && t < timestamp; frame++, t += 1000.0 / 60)
-                if (Tick(t)) return true;
+            if (BmotionFastForward.Play(ahead, timestamp, Tick)) return true;
         }
 
         if (double.IsNaN(_startTs)) _startTs = timestamp;

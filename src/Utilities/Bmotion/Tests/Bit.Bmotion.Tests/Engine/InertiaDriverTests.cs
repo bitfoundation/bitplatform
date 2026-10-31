@@ -187,7 +187,7 @@ public class InertiaDriverTests
         var driver = new BmotionInertiaDriver(0, config, _ => applied++);
 
         Assert.IsFalse(driver.Tick(0));
-        Assert.IsTrue(applied <= BmotionSpringDriver.MaxFastForwardFrames + 1, $"{applied} frames were applied");
+        Assert.IsTrue(applied <= BmotionFastForward.MaxFrames + 1, $"{applied} frames were applied");
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────────

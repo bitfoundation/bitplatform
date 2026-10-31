@@ -93,8 +93,12 @@ public static class BitBmotion
         // IBmotionInterop seam so the engine and components can be unit-tested against a fake.
         services.AddScoped<IBmotionInterop, BmotionInterop>();
 
-        // C# animation engine - drives all animation math in WebAssembly
-        services.AddScoped<BmotionAnimationEngine>();
+        // C# animation engine - drives all animation math in WebAssembly. Created with the options explicitly: a container
+        // without logging (ConfigureBmotionServices' own) would otherwise pick the constructor without them.
+        services.AddScoped(sp => new BmotionAnimationEngine(
+            sp.GetRequiredService<IBmotionInterop>(),
+            sp.GetService<ILogger<BmotionAnimationEngine>>(),
+            sp.GetRequiredService<BitBmotionOptions>()));
 
         // Queryable render-mode capability flags (WASM frame loop vs Server compositor-only).
         services.AddScoped(sp => new BmotionCapabilities(sp.GetRequiredService<IBmotionInterop>()));

@@ -174,6 +174,10 @@ public class McpController : ControllerBase
     // either ran three separate simulations or never learned it could ask for three at once.
     public const int MaxSimulatedTransitions = 8;
 
+    // The most transitions one call answers about, measured or not. Each one past MaxSimulatedTransitions is still
+    // named as unmeasured, so the caller knows which to send again; past this the rest of the list is one answer.
+    public const int MaxListedTransitions = 64;
+
     [HttpGet]
     [McpServerTool(Name = nameof(SimulateBmotionTransition))]
     [Description("Runs one or more transitions on the real Bit.Bmotion engine, off-screen, and reports what the motion actually does: how long it takes to come to rest, how far it overshoots its target, how many times it wobbles, and the shape of the curve. No transition states its own settle time - a spring's falls out of the physics, and a tween's duration says nothing about how the value gets there - so this is the only way to know what one feels like without opening a browser. Pass several, separated by semicolons or newlines, to measure them side by side and choose between them on evidence rather than on the names of the arguments. Accepts 'spring(stiffness: 260, damping: 12)', 'spring(bounce: 0.4, duration: 0.6)', 'tween(0.4, InOut)' or 'inertia(velocity: 500)'.")]
@@ -183,9 +187,9 @@ public class McpController : ControllerBase
         [Description("The value the animation targets.")] double to = 100,
         [Description("Also return the sampled (seconds, value) points of the curve. Off by default: the sparkline and the measurements answer 'what does this feel like', and the raw samples are only worth their size when the curve is being plotted or differentiated.")] bool includeSamples = false)
     {
+        // The split stops one spec past MaxListedTransitions: that last entry is the rest of the list, unread.
         var specs = (transition ?? string.Empty)
-            .Split([';', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToArray();
+            .Split([';', '\n', '\r'], MaxListedTransitions + 1, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // An empty argument is still a question - the lab answers it with the default tween, and
         // saying nothing at all would read as a server that failed rather than a spec that was blank.
@@ -195,10 +199,20 @@ public class McpController : ControllerBase
         // read with; the interesting comparisons are between two and four candidates. The ones over
         // that limit come back unmeasured rather than not at all: a caller who asked about ten and
         // received eight answers cannot tell which two were left out, or that any were.
-        var overLimit = specs.Skip(MaxSimulatedTransitions).Select(spec => BmotionMotionLab.NotMeasured(spec,
-            $"Not measured: {nameof(SimulateBmotionTransition)} measures at most {MaxSimulatedTransitions} " +
-            "transitions per call, and this one came after those. Call it again with this spec to measure it.",
-            from, to));
+        var overLimit = specs.Skip(MaxSimulatedTransitions).Take(MaxListedTransitions - MaxSimulatedTransitions)
+            .Select(spec => BmotionMotionLab.NotMeasured(spec,
+                $"Not measured: {nameof(SimulateBmotionTransition)} measures at most {MaxSimulatedTransitions} " +
+                "transitions per call, and this one came after those. Call it again with this spec to measure it.",
+                from, to));
+
+        // Naming every spec past the limit costs an answer per spec, so a list of any length would cost a response
+        // as long. Past MaxListedTransitions the rest of the list is one answer, which does not echo it back.
+        BmotionSimulationDto[] unread = specs.Length > MaxListedTransitions
+            ? [BmotionMotionLab.NotMeasured(string.Empty,
+                $"Not read: {nameof(SimulateBmotionTransition)} lists at most {MaxListedTransitions} transitions per " +
+                "call, and the rest of the list came after those. Send the ones to compare in calls of their own.",
+                from, to)]
+            : [];
 
         // Every run owns its engine and its frame clock (see BmotionMotionLab), so the comparison
         // costs one simulation rather than the sum of them. Task.WhenAll keeps the order asked for,
@@ -206,7 +220,7 @@ public class McpController : ControllerBase
         var measured = await Task.WhenAll(specs.Take(MaxSimulatedTransitions)
                                                .Select(spec => BmotionMotionLab.SimulateAsync(spec, from, to)));
 
-        BmotionSimulationDto[] results = [.. measured, .. overLimit];
+        BmotionSimulationDto[] results = [.. measured, .. overLimit, .. unread];
 
         return includeSamples ? results : [.. results.Select(result => result with { Samples = [] })];
     }
@@ -220,12 +234,18 @@ public class McpController : ControllerBase
         [Description("The animated properties by their Bm.To(...) argument names, separated by commas, e.g. 'x, opacity' or 'width, backgroundColor'.")] string properties,
         [Description("The transition, e.g. 'spring(stiffness: 200, damping: 20)' or 'tween(0.4, InOut)'. Defaults to a plain tween.")] string? transition = null)
     {
+        // The split stops one name past the limit: a list too long to analyse is not split whole only to be refused.
         var names = (properties ?? string.Empty)
-            .Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToArray();
+            .Split([',', ';', ' '], MaxAnalyzedProperties + 1, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+        // Refused as an answer rather than an exception: an exception reaches an MCP client as a bare "an error
+        // occurred", which says nothing of the limit or how to stay under it.
         if (names.Length > MaxAnalyzedProperties)
-            throw new ArgumentException($"At most {MaxAnalyzedProperties} properties can be analyzed per call.", nameof(properties));
+        {
+            return Task.FromResult(BmotionMotionLab.NotAnalysed([], transition ?? string.Empty,
+                $"Not analysed: {nameof(AnalyzeBmotionAnimation)} takes at most {MaxAnalyzedProperties} property names " +
+                "per call. Split the list over several calls."));
+        }
 
         return BmotionMotionLab.AnalyzePlaybackAsync(names, transition);
     }
