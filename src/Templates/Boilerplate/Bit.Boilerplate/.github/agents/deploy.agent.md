@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: Publishes this project to the user's own Linux VM, with a Test environment deployed from `develop` and Production from `main`. It sets up Docker and a self-hosted GitHub Actions runner on the VM, finds the external services the project depends on and helps the user get each one, stores their keys as GitHub environment secrets, builds the app's images on GitHub-hosted runners into GitHub Container Registry and has the VM's runner bring them up on Docker Compose, and serves the app on the user's own domain through a free Cloudflare Tunnel, with no inbound port open on the VM.
+description: Publishes this project to the user's own Linux VM, with a Test environment deployed from `develop` and Production from `main`. It sets up Docker and a self-hosted GitHub Actions runner on the VM, finds the external services the project depends on and helps the user get each one, stores their keys as GitHub secrets, builds the app's images on GitHub-hosted runners into GitHub Container Registry and has the VM's runner bring them up on Docker Compose, and serves the app on the user's own domain through a free Cloudflare Tunnel, with no inbound port open on the VM.
 ---
 
 # Deploy: put this project on the user's own server
@@ -16,8 +16,8 @@ Explain this first, in a few lines, together with what the user needs to bring: 
 or one each), a domain, a Cloudflare account and the services of section 5. Then go through the steps with them.
 
 - **Two environments.** Test deploys from `develop` and Production from `main`, so the merges ai-dlc's phase 7 makes
-  are the deployments. Each one is a GitHub environment with its own variables and secrets, and its own database,
-  storage and keys.
+  are the deployments. Each one has its own variables and secrets, named after it in the repository, and its own
+  database, storage and keys.
 - **Built on GitHub, run on the VM.** A push to an environment's branch starts its CD workflow. Its build job runs on
   a GitHub-hosted runner: Aspire publishes the AppHost for Docker Compose, and the app's images go to GitHub Container
   Registry (GHCR), tagged with the commit. Its deploy job runs on that environment's self-hosted runner on the VM,
@@ -29,6 +29,9 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   Cloudflare Tunnel, which also gives it DNS, TLS and Cloudflare's cache.
 - **Cloudflare is the recommendation, and it is free.** Its free plan covers the tunnel, the DNS, the certificates and
   the cache this needs, so tell the user they need no paid plan to start.
+- **GitHub Free is enough too.** The workflows read every value from the repository's own variables and secrets, so a
+  private repository on GitHub Free deploys as well. Tell the user in a line that GitHub Pro or Team would make this
+  more professional, with its pros and cons as they stand then, and let them choose.
 <!--#if (aspire != true)-->
 - **This project was created without .NET Aspire**, and this way of deploying is built on it: the AppHost publishes
   the Docker Compose project, and the template's CD builds and deploys it. Propose adding Aspire to the user first,
@@ -51,7 +54,7 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   the GitHub Actions runner, Aspire's Docker Compose publishing (the aspire MCP server's `search_docs`), cloudflared.
   They change between versions.
 - **Secrets.** `bit pipeline` creates the ones it can - the app certificate, the VAPID keys, the database and Redis
-  passwords - and stores them straight into the environment's secrets (section 6). For the keys that only the user's
+  passwords - and stores them straight into the repository's secrets (section 6). For the keys that only the user's
   accounts can give, open a git-ignored file for the user to paste them into, load it, then delete it. If even that is
   too much for them, take the key from the chat, store it at once and never repeat it. No secret goes into a commit or a
   log.
@@ -203,21 +206,22 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **App certificate**: a new `AppCertificate` for each environment, never the development one (see `AppCertificate.md`
   in the server project). Generate it yourself.
 - **Client apps**: the Android, iOS, macOS and Windows signing keys, only for the apps the user ships
-  (`.docs/16- CI-CD Pipeline and Environments.md`).
+  (`.docs/16- CI-CD Pipeline and Environments.md`). Take the jobs of the others out of the CD: every run draws on the
+  Actions minutes of the user's GitHub plan, and macOS minutes cost the most.
 
-## 6. GitHub environments and secrets
+## 6. GitHub secrets and variables
 
 - Run `bit pipeline` in the repository, with `--yes` when nobody is there to answer its questions. It reads the secrets
-  the workflows use, creates the `Test` and `Production` environments, and creates and stores what it can: the app
-  certificate, the VAPID keys, the database and Redis passwords and the Android signing key. `bit pipeline --check`
-  lists what is still missing.
-- Let each environment deploy only from its own branch (`gh api`), and offer the user required reviewers for Production.
+  the workflows use, and creates and stores in the repository what it can: the app certificate, the VAPID keys, the
+  database and Redis passwords and the Android signing key. `bit pipeline --check` lists what is still missing.
 - Set the variables, and the secrets only the user's accounts can give, from the git-ignored file, with `gh variable set
-  --env <name> -f <file>` and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table
-  of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
-  word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
-  line each.
-- Protect `develop` and `main`, so they take changes only through a pull request whose CI passed.
+  -f <file>` and `gh secret set -f <file>`, then delete the file. An environment's own values carry its name in front,
+  like `TEST_SERVER_ADDRESS`. The names are in the table of `.docs/16- CI-CD Pipeline and Environments.md`, and what the
+  workflows read (`vars`, `secrets`) is the final word. A setting the CD has no secret of its own for goes into the apps'
+  settings secrets, one `Section__Key=value` line each.
+- If the user has GitHub Pro or Team, move each environment's secrets into a GitHub environment of its name that
+  deploys only from its own branch, and protect `develop` and `main`, so they take changes only through a pull request
+  whose CI passed.
 
 ## 7. The pipeline
 
@@ -244,8 +248,8 @@ project up, and fails unless every container is healthy and the public address a
 
 - Add the user's domain to Cloudflare on the free plan, and create a named tunnel for each environment.
 <!--#if (cloudflare == true)-->
-- The Compose project already runs the tunnel's connector with its token (`CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare,
-  point the tunnel's public hostname at `http://serverweb:8080`.
+- The Compose project already runs the tunnel's connector with its token (`TEST_CLOUDFLARE_TUNNEL_TOKEN` or
+  `PRODUCTION_CLOUDFLARE_TUNNEL_TOKEN`). In Cloudflare, point the tunnel's public hostname at `http://serverweb:8080`.
 <!--#if (api == "Standalone")-->
 - The api gets a hostname of its own, pointed at `http://serverapi:8080`.
 <!--#endif-->

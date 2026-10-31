@@ -63,6 +63,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     private readonly Dictionary<(string BundleId, string Profile), AppleSigningResult> appleSignings = [];
     private readonly List<string> appleCertificates = [];
     private HashSet<string> repositorySecrets = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, string> storedNames = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> changedFiles = [];
     private bool failed;
 
@@ -117,22 +118,12 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         repositorySecrets = listed;
 
         var existing = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-        var newEnvironments = new List<string>();
 
         foreach (var environment in wanted.Select(s => s.Environment).OfType<string>().Distinct(StringComparer.Ordinal))
         {
-            if ((await Gh(["api", $"repos/{repository}/environments/{Uri.EscapeDataString(environment)}", "--silent"], cancellationToken)).Succeeded)
-            {
-                if (await ListSecretsAsync(environment, cancellationToken) is not { } secrets)
-                    return CliApp.ExitFailed;
-
-                existing[environment] = secrets;
-            }
-            else
-            {
-                existing[environment] = [];
-                newEnvironments.Add(environment);
-            }
+            existing[environment] = (await Gh(["api", $"repos/{repository}/environments/{Uri.EscapeDataString(environment)}", "--silent"], cancellationToken)).Succeeded
+                ? await ListSecretsAsync(environment, cancellationToken) ?? []
+                : [];
         }
 
         bool IsSet(WorkflowSecret secret) => repositorySecrets.Contains(secret.Name) || (secret.Environment is { } environment && existing[environment].Contains(secret.Name));
@@ -141,11 +132,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         Show(wanted, IsSet);
 
         if (options.Check)
-            return missing.Any(s => optional.Contains(s.Name) is false) ? CliApp.ExitCheckFailed : CliApp.ExitOk;
+            return missing.Any(s => optional.Contains(Key(s)) is false) ? CliApp.ExitCheckFailed : CliApp.ExitOk;
 
-        var rotating = options.RotateCertificate ? wanted.Where(s => s.Name is AppCertificate && IsSet(s)).ToList() : [];
+        var rotating = options.RotateCertificate ? wanted.Where(s => Key(s) is AppCertificate && IsSet(s)).ToList() : [];
 
-        if (missing.All(s => optional.Contains(s.Name)) && rotating.Count == 0)
+        if (missing.All(s => optional.Contains(Key(s))) && rotating.Count == 0)
         {
             cli.Console.Out.MarkupLine($"Every secret the workflows use is set in {Markup.Escape(repository)}.");
             return CliApp.ExitOk;
@@ -157,22 +148,17 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         if (options.Yes is false && cli.Prompter.Confirm($"Store the missing secrets in {repository}?", true) is false)
             return CliApp.ExitOk;
 
-        foreach (var environment in newEnvironments)
-        {
-            var created = await Gh(["api", "-X", "PUT", $"repos/{repository}/environments/{Uri.EscapeDataString(environment)}", "--silent"], cancellationToken);
-            cli.Console.Step(created.Succeeded ? StepStatus.Succeeded : StepStatus.Failed, created.Succeeded ? $"Created the {environment} environment" : $"Couldn't create the {environment} environment", created.Succeeded ? null : LastLine(created));
-
-            if (created.Succeeded is false)
-            {
-                cli.Console.StepAttempt(created.Spec!.Attempt);
-                return CliApp.ExitFailed;
-            }
-        }
-
         foreach (var scope in wanted.GroupBy(s => s.Environment))
         {
-            var used = scope.Select(s => s.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var absent = scope.Where(s => IsSet(s) is false).Select(s => s.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            storedNames = new(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var secret in scope)
+            {
+                storedNames.TryAdd(Key(secret), secret.Name);
+            }
+
+            var used = storedNames.Keys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var absent = scope.Where(s => IsSet(s) is false).Select(Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             if (absent.Count > 0)
             {
@@ -211,7 +197,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
             foreach (var (name, value) in new[] { (PublicVapidKey, keys.PublicKey), (PrivateVapidKey, keys.PrivateKey) }.Where(k => used.Contains(k.Item1)))
             {
-                await SetAsync(environment, name, value, absent.Contains(name) ? "created by bit" : "replaced, to match the new pair", cancellationToken);
+                await SetAsync(name, value, absent.Contains(name) ? "created by bit" : "replaced, to match the new pair", cancellationToken);
             }
 
             if (used.Contains(PrivateVapidKey) is false)
@@ -224,25 +210,25 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         {
             var pair = AppCertificates.CreateProduction();
             AppCertificates.Write(BackupFolder(environment), AppCertificates.ActiveName, pair);
-            await SetAsync(environment, AppCertificate, pair.Pem, "created by bit", cancellationToken);
+            await SetAsync(AppCertificate, pair.Pem, "created by bit", cancellationToken);
         }
 
         // Letters and digits only: DbGate gets the Redis ones inside a URL that nothing encodes, and StackExchange.Redis
         // can't take a comma.
         foreach (var name in containerPasswords.Where(absent.Contains))
         {
-            await SetAsync(environment, name, KeyFolder.NewPassword(), "created by bit", cancellationToken);
+            await SetAsync(name, KeyFolder.NewPassword(), "created by bit", cancellationToken);
         }
 
         if (absent.Contains(AndroidKeystoreFile))
         {
             keystore ??= CreateKeystore();
 
-            await SetAsync(environment, AndroidKeystoreFile, Convert.ToBase64String(keystore.Content), "created by bit", cancellationToken);
+            await SetAsync(AndroidKeystoreFile, Convert.ToBase64String(keystore.Content), "created by bit", cancellationToken);
 
             foreach (var name in new[] { AndroidKeystorePassword, AndroidSigningPassword }.Where(used.Contains))
             {
-                await SetAsync(environment, name, keystore.Password, absent.Contains(name) ? "created by bit" : "replaced, to match the new key", cancellationToken);
+                await SetAsync(name, keystore.Password, absent.Contains(name) ? "created by bit" : "replaced, to match the new key", cancellationToken);
             }
 
             await AddFingerprintAsync(environment, keystore, cancellationToken);
@@ -260,13 +246,13 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             if ((createdByBit.Contains(name) && name is not AndroidKeystorePassword and not AndroidSigningPassword) || optional.Contains(name))
                 continue;
 
-            if (await AskAsync(environment, name, cancellationToken) is { Length: > 0 } value)
+            if (await AskAsync(name, cancellationToken) is { Length: > 0 } value)
             {
-                await SetAsync(environment, name, value, null, cancellationToken);
+                await SetAsync(name, value, null, cancellationToken);
             }
             else
             {
-                cli.Console.Step(StepStatus.Skipped, $"Skipped {name}", Scope(environment));
+                cli.Console.Step(StepStatus.Skipped, $"Skipped {Stored(name)}", Scope(environment));
             }
         }
     }
@@ -278,7 +264,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         if (current is null && cli.IsInteractive && options.Yes is false)
         {
-            var path = cli.Prompter.Text($"bit has no copy of {environment ?? "the repository"}'s {AppCertificate}. Its PEM file, so tokens it signed keep working (empty: everyone signs in again)", "");
+            var path = cli.Prompter.Text($"bit has no copy of {Stored(AppCertificate)}. Its PEM file, so tokens it signed keep working (empty: everyone signs in again)", "");
             current = path.Length > 0 && File.Exists(path) ? AppCertificates.Parse(await File.ReadAllTextAsync(path, cancellationToken)) : null;
         }
 
@@ -286,7 +272,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         if (current is not null && used.Contains(RetiredAppCertificate))
         {
-            await SetAsync(environment, RetiredAppCertificate, current.Pem, "the certificate it replaces", cancellationToken);
+            await SetAsync(RetiredAppCertificate, current.Pem, "the certificate it replaces", cancellationToken);
         }
         else
         {
@@ -301,7 +287,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         }
 
         AppCertificates.Write(folder, AppCertificates.ActiveName, next);
-        await SetAsync(environment, AppCertificate, next.Pem, "a new one", cancellationToken);
+        await SetAsync(AppCertificate, next.Pem, "a new one", cancellationToken);
     }
 
     private async Task AppleAsync(string? environment, HashSet<string> absent, CancellationToken cancellationToken)
@@ -320,7 +306,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         {
             if (absent.Remove(name))
             {
-                await SetAsync(environment, name, value, null, cancellationToken);
+                await SetAsync(name, value, null, cancellationToken);
             }
         }
 
@@ -331,7 +317,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         if (string.IsNullOrWhiteSpace(bundleId))
         {
-            cli.Console.Step(StepStatus.Warning, "Skipped the App Store signing", $"bit doesn't know the app's bundle id; set the APP_ID variable of {Scope(environment)} and run bit pipeline again");
+            cli.Console.Step(StepStatus.Warning, "Skipped the App Store signing", "bit doesn't know the app's bundle id; set the repository's APP_ID variable and run bit pipeline again");
             return;
         }
 
@@ -365,12 +351,12 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             }
         }
 
-        await SetAsync(environment, AppleCertificateFile, Convert.ToBase64String(signing.Pkcs12), "created by bit", cancellationToken);
-        await SetAsync(environment, AppleCertificatePassword, signing.Pkcs12Password, "created by bit", cancellationToken);
+        await SetAsync(AppleCertificateFile, Convert.ToBase64String(signing.Pkcs12), "created by bit", cancellationToken);
+        await SetAsync(AppleCertificatePassword, signing.Pkcs12Password, "created by bit", cancellationToken);
 
         if (configuredProfile is null)
         {
-            cli.Console.Out.MarkupLine($"    [grey]Set the IOS_CODE_SIGN_PROVISION variable of {Markup.Escape(Scope(environment))} to[/] {Markup.Escape(profileName)}[grey], the provisioning profile bit created.[/]");
+            cli.Console.Out.MarkupLine($"    [grey]Set the repository's IOS_CODE_SIGN_PROVISION variable to[/] {Markup.Escape(profileName)}[grey], the provisioning profile bit created.[/]");
         }
     }
 
@@ -430,7 +416,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         }
     }
 
-    private async Task<string?> AskAsync(string? environment, string name, CancellationToken cancellationToken)
+    private async Task<string?> AskAsync(string name, CancellationToken cancellationToken)
     {
         var hint = hints.GetValueOrDefault(name);
 
@@ -442,14 +428,14 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             if (cli.IsInteractive is false || options.Yes)
                 return suggested;
 
-            var subject = cli.Prompter.Text($"{name} for {Scope(environment)}: {hint}", suggested);
+            var subject = cli.Prompter.Text($"{Stored(name)}: {hint}", suggested);
             return subject.Length == 0 || subject.StartsWith("mailto:", StringComparison.Ordinal) || subject.StartsWith("https://", StringComparison.Ordinal) ? subject : $"mailto:{subject}";
         }
 
         if (cli.IsInteractive is false || options.Yes)
             return null;
 
-        var answer = cli.Prompter.Secret($"{name} for {Scope(environment)}{(hint is null ? "" : $": {hint}")} (@file reads a file, empty skips it)");
+        var answer = cli.Prompter.Secret($"{Stored(name)}{(hint is null ? "" : $": {hint}")} (@file reads a file, empty skips it)");
 
         if (answer.StartsWith('@') && answer.Length > 1)
         {
@@ -457,7 +443,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
             if (File.Exists(path) is false)
             {
-                cli.Console.Warn($"{path} doesn't exist, so {name} is skipped.");
+                cli.Console.Warn($"{path} doesn't exist, so {Stored(name)} is skipped.");
                 return null;
             }
 
@@ -467,17 +453,14 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         return answer;
     }
 
-    private async Task SetAsync(string? environment, string name, string value, string? detail, CancellationToken cancellationToken)
+    private async Task SetAsync(string key, string value, string? detail, CancellationToken cancellationToken)
     {
-        string[] arguments = environment is null
-            ? ["secret", "set", name, "--repo", repository]
-            : ["secret", "set", name, "--repo", repository, "--env", environment];
-
-        var result = await Runner.RunAsync(new ProcessSpec { FileName = "gh", Arguments = arguments, WorkingDirectory = root, StandardInput = value, Timeout = TimeSpan.FromMinutes(2) }, cancellationToken);
+        var name = Stored(key);
+        var result = await Runner.RunAsync(new ProcessSpec { FileName = "gh", Arguments = ["secret", "set", name, "--repo", repository], WorkingDirectory = root, StandardInput = value, Timeout = TimeSpan.FromMinutes(2) }, cancellationToken);
 
         cli.Console.Step(result.Succeeded ? StepStatus.Succeeded : StepStatus.Failed,
             result.Succeeded ? $"Stored {name}" : $"Couldn't store {name}",
-            result.Succeeded ? string.Join(", ", new[] { Scope(environment), detail }.OfType<string>()) : LastLine(result));
+            result.Succeeded ? detail : LastLine(result));
 
         if (result.Succeeded is false)
         {
@@ -485,7 +468,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             failed = true;
         }
 
-        if (result.Succeeded && environment is null)
+        if (result.Succeeded)
         {
             repositorySecrets.Add(name);
         }
@@ -502,8 +485,8 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             foreach (var secret in scope)
             {
                 var state = isSet(secret) ? "[green]set[/]"
-                    : optional.Contains(secret.Name) ? "[grey]not set, optional[/]"
-                    : createdByBit.Contains(secret.Name) ? "[yellow]missing[/] [grey]bit creates it[/]"
+                    : optional.Contains(Key(secret)) ? "[grey]not set, optional[/]"
+                    : createdByBit.Contains(Key(secret)) ? "[yellow]missing[/] [grey]bit creates it[/]"
                     : "[yellow]missing[/]";
 
                 cli.Console.Out.MarkupLine($"  {Markup.Escape(secret.Name.PadRight(width))}{state}");
@@ -545,6 +528,9 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         if (result.Succeeded)
             return result.OutputLines.Select(l => l.Trim()).Where(l => l.Length > 0).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        if (environment is not null)
+            return null;
+
         cli.Console.Fail($"Couldn't read the secrets of {Scope(environment)}: {LastLine(result)}. Storing secrets needs admin rights on {repository}.", result.Spec?.Attempt);
         return null;
     }
@@ -580,6 +566,10 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     private string BackupFolder(string? environment) => KeyFolder.For(cli.Environment, $"{repository}/{environment ?? "repository"}");
 
     private static string Scope(string? environment) => environment ?? "the repository";
+
+    private static string Key(WorkflowSecret secret) => secret.Environment is { } environment && secret.Name.StartsWith($"{environment}_", StringComparison.OrdinalIgnoreCase) ? secret.Name[(environment.Length + 1)..] : secret.Name;
+
+    private string Stored(string key) => storedNames.GetValueOrDefault(key, key);
 
     private static string LastLine(ProcessResult result) => result.OutputLines.LastOrDefault()?.Trim() ?? $"exit code {result.ExitCode}";
 

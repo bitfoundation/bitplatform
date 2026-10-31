@@ -52,8 +52,9 @@ folder where git would commit the key.
 <!--#if (aspire == true)-->
 
 For the environments the CD deploys, `bit pipeline` creates one for each instead and keeps it in that environment's
-`APP_CERTIFICATE` secret. The deploy job writes it to the `app-certificate` folder of the server's Docker Compose
-project, which the app reads through its `AppCertificateDirectory` setting, before the app or its migrations start.
+secret, `TEST_APP_CERTIFICATE` or `PRODUCTION_APP_CERTIFICATE`. The deploy job writes it to the `app-certificate`
+folder of the server's Docker Compose project, which the app reads through its `AppCertificateDirectory` setting, before
+the app or its migrations start.
 <!--#endif-->
 
 > **⚠ `AppCertificate.key` is a production secret. Do not commit the one you generate.**
@@ -95,9 +96,9 @@ the same subject.
 <!--#if (aspire == true)-->
 
 For the environments the CD deploys, `bit pipeline --rotate-certificate` does the same: the new certificate
-goes into `APP_CERTIFICATE` and the old one into `APP_CERTIFICATE_RETIRED`, which the deploy job writes as
-`AppCertificate.retired.crt` / `.key`. GitHub doesn't give a secret back, so bit keeps a copy of every certificate it
-creates under `~/.bitplatform/keys`; on another machine it asks for the old certificate's PEM file.
+goes into the environment's `<ENV>_APP_CERTIFICATE` and the old one into `<ENV>_APP_CERTIFICATE_RETIRED`, which the
+deploy job writes as `AppCertificate.retired.crt` / `.key`. GitHub doesn't give a secret back, so bit keeps a copy of
+every certificate it creates under `~/.bitplatform/keys`; on another machine it asks for the old certificate's PEM file.
 <!--#endif-->
 
 Deploy. From that moment new tokens are signed with the new key, tokens already in the wild keep validating against
@@ -120,7 +121,7 @@ key-ring reset.
 <!--#if (aspire == true)-->
 
 For the environments the CD deploys, deleting the retired pair means deleting the environment's
-`APP_CERTIFICATE_RETIRED` secret: the next deployment leaves the pair out.
+`<ENV>_APP_CERTIFICATE_RETIRED` secret: the next deployment leaves the pair out.
 <!--#endif-->
 
 > Both files are copied to the output directory by the `AppCertificate.*` glob in the csproj, so a retired pair needs

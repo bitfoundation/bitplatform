@@ -31,7 +31,8 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 
 Merging a pull request into `develop` updates Test, and a release into `main` updates Production. The runs of one
 workflow queue up instead of overlapping, and one that has started is never cancelled halfway. `cd-test.yml` doesn't
-wait for the tests, so protect `develop` with a required `ci.yml` check.
+wait for the tests, so protect `develop` with a required `ci.yml` check, which a private repository has with GitHub Pro
+or Team.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
 `gh attestation verify` checks, and the About page links to them.
@@ -85,8 +86,8 @@ and the `deploy` skill (`.github/agents/deploy.agent.md`) sets up the rest.
 
 ## The apps
 
-The same CD builds the native apps next to the server and leaves them as artifacts of the run; publishing them to the
-stores is up to you.
+The same CD builds the native apps next to the server and leaves them as artifacts of the run for a day, which keeps
+the runs inside the storage GitHub Free includes; publishing them to the stores is up to you.
 
 - **Windows**: an installer with automatic updates (Velopack). Once the `CODE_SIGNING_*` settings are there, it is
   signed with Azure Artifact Signing, so Windows shows your organization as the publisher.
@@ -99,53 +100,56 @@ stores is up to you.
 
 ## Settings and secrets
 
-Each GitHub environment, `Test` and `Production`, has its own variables and secrets (the repository's
-**Settings → Environments**), so the same workflows deploy each environment with its own values. Before it builds, the
-CD writes the environment's values, such as `ServerAddress`, into the `appsettings*.json` files, so they are built into
-that environment's apps.
+The values live in the repository's own variables and secrets (**Settings → Secrets and variables → Actions**), which
+every GitHub plan has, a private repository on GitHub Free included. Each environment, `Test` and `Production`, has its
+own under its name, `<ENV>_` in the table below, like `TEST_SERVER_ADDRESS` and `PRODUCTION_SERVER_ADDRESS`, and the
+CD reads the ones of the environment it deploys. What the environments share has no prefix. Before it builds, the CD
+writes the environment's values, such as `ServerAddress`, into the `appsettings*.json` files, so they are built into
+that environment's apps. With GitHub Pro or Team, each environment's secrets can move into a GitHub environment that
+deploys only from its own branch, so a workflow on another branch can't read Production's.
 
-Run `bit pipeline` in the repository. It reads the secrets the workflows use, creates the environments they deploy to,
-and stores each secret in its environment. It creates what it can on its own: the app certificate, the VAPID key pair,
-the database and Redis passwords and the Android signing key, and with an App Store Connect API key you give it, the iOS
-app's signing. It asks for the rest, and an empty answer skips one. `bit pipeline --check` only lists what's missing.
+Run `bit pipeline` in the repository. It reads the secrets the workflows use and stores each one in the repository. It
+creates what it can on its own: the app certificate, the VAPID key pair, the database and Redis passwords and the
+Android signing key, and with an App Store Connect API key you give it, the iOS app's signing. It asks for the rest, and
+an empty answer skips one. `bit pipeline --check` only lists what's missing.
 
 | Name | Kind | Holds |
 | --- | --- | --- |
-| `SERVER_ADDRESS` | variable | The environment's public address |
+| `<ENV>_SERVER_ADDRESS` | variable | The environment's public address |
 | `APP_VERSION`, `APP_TITLE`, `APP_ID` | variable | The app's version, name and id |
 | `OPENAI_APIKEY` | secret, optional | The key `bit translate` fills missing translations with |
 <!--#if (aspire == true)-->
-| `SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through |
-| `APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
-| `APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
-| `SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
+| `<ENV>_SMTP_CONNECTION_STRING` | secret | The SMTP server the app sends email through |
+| `<ENV>_APP_CERTIFICATE` | secret | The environment's own `AppCertificate`, its `.crt` and `.key` in one PEM, never the development one |
+| `<ENV>_APP_CERTIFICATE_RETIRED` | secret, optional | The certificate it replaced, while tokens it signed are still alive (see `AppCertificate.md`) |
+| `<ENV>_SERVERWEB_SETTINGS` | secret, optional | Any other setting of the web app, one `Section__Key=value` line each |
 <!--#if (api == "Standalone")-->
-| `SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
+| `<ENV>_SERVERAPI_SETTINGS` | secret, optional | The same, for the api |
 <!--#endif-->
 <!--#if (database == "SqlServer" || database == "PostgreSQL" || database == "MySql")-->
-| `DATABASE_PASSWORD` | secret | The database server's password |
+| `<ENV>_DATABASE_PASSWORD` | secret | The database server's password |
 <!--#elif (database == "Other")-->
-| `DATABASE_CONNECTION_STRING` | secret | The connection string the app reads as `otherdb` |
+| `<ENV>_DATABASE_CONNECTION_STRING` | secret | The connection string the app reads as `otherdb` |
 <!--#endif-->
 <!--#if (filesStorage == "S3")-->
-| `S3_CONNECTION_STRING` | secret | The S3-compatible storage, such as Cloudflare R2 |
+| `<ENV>_S3_CONNECTION_STRING` | secret | The S3-compatible storage, such as Cloudflare R2 |
 <!--#elif (filesStorage == "AzureBlobStorage")-->
-| `AZURE_BLOB_STORAGE_CONNECTION_STRING` | secret | The Azure Storage account the files go to |
+| `<ENV>_AZURE_BLOB_STORAGE_CONNECTION_STRING` | secret | The Azure Storage account the files go to |
 <!--#endif-->
 <!--#if (redis == true)-->
-| `REDIS_CACHE_PASSWORD`, `REDIS_PERSISTENT_PASSWORD` | secret | The passwords of the two Redis containers, letters and digits only (see [`/specs/workarounds.md`](/specs/workarounds.md)) |
+| `<ENV>_REDIS_CACHE_PASSWORD`, `<ENV>_REDIS_PERSISTENT_PASSWORD` | secret | The passwords of the two Redis containers, letters and digits only (see [`/specs/workarounds.md`](/specs/workarounds.md)) |
 <!--#endif-->
 <!--#if (cloudflare == true)-->
-| `CLOUDFLARE_TUNNEL_TOKEN` | secret | The connector token of the environment's Cloudflare Tunnel |
+| `<ENV>_CLOUDFLARE_TUNNEL_TOKEN` | secret | The connector token of the environment's Cloudflare Tunnel |
 | `CLOUDFLARE_ZONE`, `CLOUDFLARE_TOKEN` | secret | The zone, and an API token that may purge its cache |
 <!--#endif-->
 <!--#if (notification == true)-->
-| `PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY` | secret | The environment's web push key pair |
-| `VAPID_SUBJECT` | secret | The contact the push services see, such as `mailto:you@example.com` |
+| `<ENV>_PUBLIC_VAPIDKEY`, `<ENV>_PRIVATE_VAPIDKEY` | secret | The environment's web push key pair |
+| `<ENV>_VAPID_SUBJECT` | secret | The contact the push services see, such as `mailto:you@example.com` |
 <!--#endif-->
 <!--#endif-->
 | `ANDROID_RELEASE_*`, `APPSTORE_*`, `IOS_CODE_SIGN_PROVISION` | secret, variable | Signing the Android and iOS apps |
-| `CODE_SIGNING_*`, `WINDOWS_UPDATE_FILES_URL` | secret, variable | Signing the Windows app, and where it looks for updates |
+| `CODE_SIGNING_*`, `<ENV>_WINDOWS_UPDATE_FILES_URL` | secret, variable | Signing the Windows app, and where it looks for updates |
 
 `cd-template.yml` is the final word on what each job reads.
 

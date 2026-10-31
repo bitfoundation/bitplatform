@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
@@ -65,7 +66,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
 
         var workflowSecrets = workflow.Children
             .Where(c => Scalar(c.Key) is not "jobs" and not "on")
-            .SelectMany(c => SecretsIn(c.Value))
+            .SelectMany(c => SecretsIn(c.Value, inputs, file))
             .ToList();
 
         if (workflow.Children.TryGetValue(new YamlScalarNode("jobs"), out var jobsNode) is false || jobsNode is not YamlMappingNode jobs)
@@ -84,7 +85,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
                 continue;
             }
 
-            var names = SecretsIn(job).Concat(workflowSecrets).Distinct(StringComparer.Ordinal).ToList();
+            var names = SecretsIn(job, inputs, $"{file} job {jobId}").Concat(workflowSecrets).Distinct(StringComparer.Ordinal).ToList();
 
             if (names.Count == 0)
                 continue;
@@ -134,7 +135,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
             true when Scalar(secretsNode) is "inherit" => passedSecrets,
             true when secretsNode is YamlMappingNode mapping => name => mapping.Children
                 .Where(c => Scalar(c.Key) == name)
-                .SelectMany(c => SecretsIn(c.Value))
+                .SelectMany(c => SecretsIn(c.Value, inputs, $"{file} job {jobId}"))
                 .SelectMany(passedSecrets),
             _ => _ => []
         };
@@ -268,7 +269,7 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
         return InputExpressionRegex().Match(text.Trim()) is { Success: true } match && inputs.TryGetValue(match.Groups["name"].Value, out var value) ? value : null;
     }
 
-    private static IEnumerable<string> SecretsIn(YamlNode node)
+    private IEnumerable<string> SecretsIn(YamlNode node, IReadOnlyDictionary<string, string?> inputs, string usedBy)
     {
         switch (node)
         {
@@ -277,25 +278,61 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
                 {
                     foreach (Match secret in SecretRegex().Matches(expression.Groups["body"].Value))
                     {
-                        yield return secret.Groups["dot"].Success ? secret.Groups["dot"].Value : secret.Groups["index"].Value;
+                        if (secret.Groups["format"].Success is false)
+                        {
+                            yield return secret.Groups["dot"].Success ? secret.Groups["dot"].Value : secret.Groups["index"].Value;
+                        }
+                        else if (Format(secret.Groups["format"].Value, secret.Groups["arguments"].Value, inputs) is { } name)
+                        {
+                            yield return name;
+                        }
+                        else
+                        {
+                            notes.Add($"{usedBy} reads the secret {secret.Value}, whose name bit can't tell before it runs, so it isn't listed");
+                        }
                     }
                 }
                 break;
 
             case YamlSequenceNode sequence:
-                foreach (var name in sequence.Children.SelectMany(SecretsIn))
+                foreach (var name in sequence.Children.SelectMany(c => SecretsIn(c, inputs, usedBy)))
                 {
                     yield return name;
                 }
                 break;
 
             case YamlMappingNode mapping:
-                foreach (var name in mapping.Children.SelectMany(c => SecretsIn(c.Key).Concat(SecretsIn(c.Value))))
+                foreach (var name in mapping.Children.SelectMany(c => SecretsIn(c.Key, inputs, usedBy).Concat(SecretsIn(c.Value, inputs, usedBy))))
                 {
                     yield return name;
                 }
                 break;
         }
+    }
+
+    private static string? Format(string format, string arguments, IReadOnlyDictionary<string, string?> inputs)
+    {
+        var values = new List<string>();
+
+        foreach (var argument in arguments.Split(',', StringSplitOptions.TrimEntries))
+        {
+            if (argument.Length > 1 && argument[0] == '\'' && argument[^1] == '\'')
+            {
+                values.Add(argument[1..^1]);
+            }
+            else if (InputRegex().Match(argument) is { Success: true } match && inputs.TryGetValue(match.Groups["name"].Value, out var value) && string.IsNullOrEmpty(value) is false)
+            {
+                values.Add(value);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        var name = PlaceholderRegex().Replace(format, m => int.Parse(m.Groups["index"].Value, CultureInfo.InvariantCulture) is var index && index < values.Count ? values[index] : m.Value);
+
+        return PlaceholderRegex().IsMatch(name) ? null : name;
     }
 
     private static string? Child(YamlMappingNode mapping, string key) => mapping.Children.TryGetValue(new YamlScalarNode(key), out var value) ? Scalar(value) : null;
@@ -305,8 +342,14 @@ public sealed partial class GitHubWorkflows(string repositoryRoot, Func<string, 
     [GeneratedRegex(@"\$\{\{(?<body>.*?)\}\}", RegexOptions.Singleline)]
     private static partial Regex ExpressionRegex();
 
-    [GeneratedRegex(@"\bsecrets\s*(\.\s*(?<dot>[A-Za-z_][A-Za-z0-9_-]*)|\[\s*['""](?<index>[^'""]+)['""]\s*\])")]
+    [GeneratedRegex(@"\bsecrets\s*(\.\s*(?<dot>[A-Za-z_][A-Za-z0-9_-]*)|\[\s*['""](?<index>[^'""]+)['""]\s*\]|\[\s*format\(\s*'(?<format>[^']*)'\s*,(?<arguments>[^)]*)\)\s*\])")]
     private static partial Regex SecretRegex();
+
+    [GeneratedRegex(@"\{(?<index>[0-9]+)\}")]
+    private static partial Regex PlaceholderRegex();
+
+    [GeneratedRegex(@"^(github\.event\.)?inputs\.(?<name>[A-Za-z_][A-Za-z0-9_-]*)$")]
+    private static partial Regex InputRegex();
 
     [GeneratedRegex(@"^\$\{\{\s*(github\.event\.)?inputs\.(?<name>[A-Za-z_][A-Za-z0-9_-]*)\s*\}\}$")]
     private static partial Regex InputExpressionRegex();
