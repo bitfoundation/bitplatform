@@ -540,8 +540,10 @@ public static class BlowFlowLab
     private static (BlowSubFlowDto[] SubFlows, int MaxDepth) SubFlows(List<BlowNode> nodes, Dictionary<string, BlowNode> index, List<string> notes)
     {
         var depth = new Dictionary<string, int>(StringComparer.Ordinal);
-        var cycles = new List<string>();
+        var cyclic = new HashSet<string>(StringComparer.Ordinal);
         var ownParent = new List<string>();
+        var path = new List<BlowNode>();
+        var onPath = new Dictionary<string, int>(StringComparer.Ordinal);
 
         foreach (var node in index.Values)
         {
@@ -552,24 +554,53 @@ public static class BlowFlowLab
                 continue;
             }
 
-            var seen = new HashSet<string>(StringComparer.Ordinal) { node.Id };
-            var levels = 0;
+            path.Clear();
+            onPath.Clear();
+            var levels = -1;
+            var reachesCycle = false;
             var current = node;
 
-            while (current.ParentId is { } parentId && parentId != current.Id && index.TryGetValue(parentId, out var parent))
+            while (true)
             {
-                if (seen.Add(parentId) is false)
+                if (depth.TryGetValue(current.Id, out var known))
                 {
-                    cycles.Add(node.Id);
+                    levels = known;
+                    reachesCycle = cyclic.Contains(current.Id);
                     break;
                 }
 
-                levels++;
+                if (onPath.TryGetValue(current.Id, out var start))
+                {
+                    levels = path.Count - start - 1;
+                    reachesCycle = true;
+
+                    for (var i = start; i < path.Count; i++)
+                    {
+                        depth[path[i].Id] = levels;
+                        cyclic.Add(path[i].Id);
+                    }
+
+                    path.RemoveRange(start, path.Count - start);
+                    break;
+                }
+
+                onPath[current.Id] = path.Count;
+                path.Add(current);
+
+                if (current.ParentId is not { } parentId || parentId == current.Id || index.TryGetValue(parentId, out var parent) is false) break;
+
                 current = parent;
             }
 
-            depth[node.Id] = levels;
+            for (var i = path.Count - 1; i >= 0; i--)
+            {
+                depth[path[i].Id] = ++levels;
+
+                if (reachesCycle) cyclic.Add(path[i].Id);
+            }
         }
+
+        var cycles = index.Values.Where(node => cyclic.Contains(node.Id)).Select(node => node.Id).ToList();
 
         if (cycles.Count > 0)
         {

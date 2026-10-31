@@ -4571,7 +4571,8 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             var now = confirmed
                 ? RecheckConnection(drop, reconnecting, out fresh)
                 : new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
-            if (now.IsValid) ApplyConnection(fresh ?? connection, reconnecting);
+            if (now.IsValid && fresh != connection) now = new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+            if (now.IsValid) ApplyConnection(connection, reconnecting);
 
             raised = true;
             RaiseConnectionEnd(end with

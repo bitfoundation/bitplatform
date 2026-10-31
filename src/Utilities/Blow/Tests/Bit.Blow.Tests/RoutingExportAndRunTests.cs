@@ -150,6 +150,52 @@ public class RoutingExportAndRunTests : BunitContext
     }
 
     [TestMethod]
+    public void EdgesAskingForTheSameArrowheadShareOneMarkerNumberedInFirstUseOrder()
+    {
+        var nodes = new List<BlowNode>
+        {
+            new() { Id = "a", Width = 100, Height = 40 },
+            new() { Id = "b", Position = new(300, 0), Width = 100, Height = 40 },
+            new() { Id = "c", Position = new(300, 200), Width = 100, Height = 40 },
+        };
+        var edges = new List<BlowEdge>
+        {
+            new() { Id = "a-b", Source = "a", Target = "b" },
+            new() { Id = "a-c", Source = "a", Target = "c", MarkerStart = true, MarkerColor = "red" },
+            new() { Id = "b-c", Source = "b", Target = "c" },
+            new() { Id = "c-a", Source = "c", Target = "a", MarkerWidth = 12, MarkerHeight = 5 },
+            new() { Id = "b-a", Source = "b", Target = "a", MarkerType = BlowMarkerType.ArrowClosed, MarkerWidth = 7, MarkerHeight = 7 },
+        };
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
+        var paths = doc.Descendants(Svg + "path").Where(p => p.Parent!.Name != Svg + "marker").ToList();
+        var markers = doc.Descendants(Svg + "marker").ToList();
+
+        CollectionAssert.AreEqual(new[] { "m0", "m1", "m2", "m3" }, markers.Select(m => m.Attribute("id")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "7", "7", "12", "7" }, markers.Select(m => m.Attribute("markerWidth")!.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { "7", "7", "5", "7" }, markers.Select(m => m.Attribute("markerHeight")!.Value).ToArray());
+        Assert.AreEqual("red", markers[1].Element(Svg + "path")!.Attribute("stroke")!.Value);
+        CollectionAssert.AreEqual(new[] { "url(#m0)", "url(#m1)", "url(#m0)", "url(#m2)", "url(#m3)" }, paths.Select(p => p.Attribute("marker-end")?.Value).ToArray());
+        CollectionAssert.AreEqual(new[] { null, "url(#m1)", null, null, null }, paths.Select(p => p.Attribute("marker-start")?.Value).ToArray());
+    }
+
+    [TestMethod]
+    public void ANodeWithTwoAncestorsIsPlacedByTheSumOfAllItsParents()
+    {
+        var nodes = new List<BlowNode>
+        {
+            new() { Id = "g", Type = "group", Label = "Group", Position = new(200, 0), Width = 400, Height = 300 },
+            new() { Id = "c", Label = "Child", ParentId = "g", Position = new(50, 50), Width = 200, Height = 150 },
+            new() { Id = "d", Label = "Grandchild", ParentId = "c", Position = new(10, 20), Width = 100, Height = 40 },
+        };
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, []));
+        var rect = doc.Descendants(Svg + "text").Single(t => t.Value == "Grandchild").Parent!.Element(Svg + "rect")!;
+
+        Assert.AreEqual(("260", "70"), (rect.Attribute("x")!.Value, rect.Attribute("y")!.Value));
+    }
+
+    [TestMethod]
     public void NothingInAGraphBecomesMarkupOrAnUnsafeValueInTheExport()
     {
         var nodes = new List<BlowNode>

@@ -230,6 +230,44 @@ public class KeyboardReconnectionReviewTests : BunitContext
     }
 
     [TestMethod]
+    public async Task AnApprovalHoldsOnlyForTheWiringItWasAskedAbout()
+    {
+        var (nodes, edges, measured) = Graph();
+        var asked = new List<BlowConnection>();
+        var pending = new Queue<TaskCompletionSource<bool>>();
+        var connectEnds = new List<BlowConnectEndInfo>();
+        var reconnectEnds = new List<BlowEdgeReconnectEnd>();
+        var cut = Render(nodes, edges, measured, p => p
+            .Add(c => c.OnBeforeConnect, connection =>
+            {
+                asked.Add(connection);
+                var answer = new TaskCompletionSource<bool>();
+                pending.Enqueue(answer);
+                return answer.Task;
+            })
+            .Add(c => c.OnConnectEnd, e => connectEnds.Add(e))
+            .Add(c => c.OnReconnectEnd, e => reconnectEnds.Add(e)));
+
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "c");
+        await NodeKey(cut, "c", "Enter");
+        await EdgeKey(cut, "e", "c");
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "d");
+        await NodeKey(cut, "d", "Enter");
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+
+        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "b") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target), "d -> c was applied, though only a -> c and d -> b were approved");
+        Assert.AreEqual(BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
+        CollectionAssert.AreEqual(new[] { (true, true, BlowConnectionRejection.None), (true, false, BlowConnectionRejection.RejectedByRule) },
+            connectEnds.TakeLast(2).Select(e => (e.IsReconnect, e.IsValid, e.Rejection)).ToArray());
+        CollectionAssert.AreEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, false) },
+            reconnectEnds.TakeLast(2).Select(e => (e.MovingEnd, e.Rewired)).ToArray());
+    }
+
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public async Task ReconnectingTurnedOffMeanwhileIsRespected(bool onTheCanvas)
