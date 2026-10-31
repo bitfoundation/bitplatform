@@ -8,9 +8,9 @@ namespace Bit.Bmotion;
 /// <para>
 /// At most the last <see cref="MaxMs"/> of it are played. Played whole, a huge delay keeps the thread busy for as long
 /// as it names - forever for one so large that adding a frame no longer moves the clock - and on Blazor Server that
-/// thread is the server's. A motion that settles does so long before the cap and lands exactly as before; only one
-/// that never settles (an undamped spring, one that repeats forever) lands where it is <see cref="MaxMs"/> in rather
-/// than where it would be after the whole delay.
+/// thread is the server's. A motion that has finished by then lands exactly as before; only one still moving
+/// <see cref="MaxMs"/> in (an undamped spring, one damped so heavily it creeps to rest, one that repeats forever) lands
+/// where it is then rather than where it would be after the whole delay.
 /// </para>
 /// </summary>
 internal static class BmotionFastForward

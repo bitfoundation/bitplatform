@@ -10,8 +10,9 @@ public abstract class BmTransition
 {
     /// <summary>
     /// Delay before the animation starts, in seconds. A negative delay starts it that far into its motion; a spring or
-    /// inertia plays the skipped time frame by frame, at most its last ten minutes, so one that never settles (no
-    /// damping, or repeating forever) lands where it is ten minutes in.
+    /// inertia plays the skipped time frame by frame, at most its last ten minutes, so one still moving ten minutes in
+    /// (no damping, damping so heavy it creeps to rest, or repeating forever) lands where it is ten minutes in rather
+    /// than where the whole delay would take it.
     /// </summary>
     public double Delay { get; set; }
 

@@ -214,6 +214,9 @@ public class CssSafeModeTests
         Assert.IsNotNull(warning, "Warn mode must log the rejected value");
         StringAssert.Contains(warning, "'.card'", "the warning names the selector");
         Assert.IsTrue(ctx.Interop.WasCalled("resolveOrRegisterBySelector"), "Warn still animates");
+        Assert.IsTrue(ctx.Interop.ArgsOf("playWaapiAnimation")
+                          .Any(args => ((Dictionary<string, object>[])args[2]!)[^1].TryGetValue("boxShadow", out var shadow) && Equals(shadow, $"0 0 4px {Injected}")),
+                      "Warn animates the rejected value as given");
     }
 
     [TestMethod]

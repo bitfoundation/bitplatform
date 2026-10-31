@@ -144,8 +144,8 @@ internal sealed class BmotionSpringDriver : IBmotionAnimationDriver
         if (_fastForwardMs > 0)
         {
             // Started part-way in: the skipped time is played frame by frame, so the spring is where it would have been
-            // had it played - up to the last ten minutes of it, which only a spring that never settles notices (see
-            // BmotionFastForward).
+            // had it played - up to the last ten minutes of it, which only a spring still moving ten minutes in notices
+            // (undamped, damped so heavily it creeps to rest, or repeating forever; see BmotionFastForward).
             double ahead = _fastForwardMs;
             _fastForwardMs = 0;
             if (BmotionFastForward.Play(ahead, timestamp, Tick)) return true;

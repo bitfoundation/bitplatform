@@ -222,13 +222,15 @@ public class McpControllerTests
     [TestMethod]
     public async Task SimulateBmotionTransition_AListPastTheListedCap_EndsInOneAnswerForTheRest()
     {
-        var huge = string.Join(";", Enumerable.Repeat("tween(0.1)", 100_000));
+        // Every spec distinct, so an entry answered for the wrong spec, or out of order, shows.
+        var specs = Enumerable.Range(0, 100_000).Select(i => $"tween(0.1{i:D6})").ToArray();
 
-        var results = await _controller.SimulateBmotionTransition(huge);
+        var results = await _controller.SimulateBmotionTransition(string.Join(";", specs));
 
         Assert.AreEqual(McpController.MaxListedTransitions + 1, results.Length);
         Assert.AreEqual(McpController.MaxSimulatedTransitions, results.Count(result => result.Error is null));
-        Assert.IsTrue(results[..^1].Skip(McpController.MaxSimulatedTransitions).All(result => result.Transition == "tween(0.1)"));
+        CollectionAssert.AreEqual(specs[McpController.MaxSimulatedTransitions..McpController.MaxListedTransitions],
+                                  results[McpController.MaxSimulatedTransitions..^1].Select(result => result.Transition).ToArray());
 
         var rest = results[^1];
         Assert.AreEqual(string.Empty, rest.Transition, "the rest of the list is not echoed back");
