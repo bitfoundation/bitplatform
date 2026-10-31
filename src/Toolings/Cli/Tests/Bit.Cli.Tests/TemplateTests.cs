@@ -200,6 +200,10 @@ public class TemplateTests
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Ios], HostOs.MacOS).ToArray());
+
+        Assert.IsEmpty(Platforms.NativeWorkloads([Platform.Web], HostOs.Windows));
+        CollectionAssert.AreEqual(new[] { "maui-android" }, Platforms.NativeWorkloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
+        CollectionAssert.AreEqual(new[] { "maui" }, Platforms.NativeWorkloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
     }
 
     [TestMethod]
@@ -208,6 +212,9 @@ public class TemplateTests
         Assert.AreEqual("WebAssembly build support", Platforms.BuildSupport([Platform.Web]));
         Assert.AreEqual("WebAssembly and Android build support", Platforms.BuildSupport([Platform.Android, Platform.Web]));
         Assert.AreEqual("WebAssembly, Android, iOS and Windows build support", Platforms.BuildSupport([Platform.Windows, Platform.Web, Platform.Ios, Platform.Android]));
+
+        Assert.AreEqual("Android build support", Platforms.NativeBuildSupport([Platform.Android, Platform.Web]));
+        Assert.AreEqual("Android, iOS and Windows build support", Platforms.NativeBuildSupport([Platform.Windows, Platform.Web, Platform.Ios, Platform.Android]));
     }
 
     [TestMethod]
@@ -221,15 +228,6 @@ public class TemplateTests
         Assert.IsNull(TemplateRequirements.ParseNodeMajor("{ \"devDependencies\": {} }"));
         Assert.AreEqual(new Version(13, 6, 0), TemplateRequirements.ParseAspire("<Project Sdk=\"Aspire.AppHost.Sdk/13.6.0\">"));
         Assert.IsNull(TemplateRequirements.ParseAspire("<Project Sdk=\"Microsoft.NET.Sdk\">"));
-    }
-
-    [TestMethod]
-    public void TheBuild_Should_CoverTheWholeSolutionOnceANativeAppIsPicked()
-    {
-        Assert.AreEqual("Contoso.Web.slnf", Platforms.BuildPath("Contoso", [Platform.Web]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Android]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Windows]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Ios]));
     }
 
     [TestMethod]

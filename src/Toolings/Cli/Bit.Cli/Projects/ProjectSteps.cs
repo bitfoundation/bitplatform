@@ -173,10 +173,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}", "kept in the AppHost's user secrets");
     }
 
-    public async Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
+    public Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
+        => WorkloadsAsync(Templates.Platforms.BuildSupport([Platform.Web]), [Templates.Platforms.WebAssemblyWorkload], progress, cancellationToken);
+
+    public Task<StepResult> NativeWorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
+        => WorkloadsAsync(Templates.Platforms.NativeBuildSupport(project.Platforms), Templates.Platforms.NativeWorkloads(project.Platforms, cli.Environment.Os), progress, cancellationToken);
+
+    private async Task<StepResult> WorkloadsAsync(string support, IReadOnlyList<string> needed, Action<string> progress, CancellationToken cancellationToken)
     {
-        var support = Templates.Platforms.BuildSupport(project.Platforms);
-        var needed = Templates.Platforms.Workloads(project.Platforms, cli.Environment.Os);
         var list = await Dotnet(["workload", "list"], cancellationToken, progress, TimeSpan.FromMinutes(2));
         var installed = ParseInstalledWorkloads(list.Output);
         var missing = needed.Where(w => installed.Contains(w) is false).ToArray();
@@ -227,11 +231,17 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
-    public async Task<StepResult> RestoreAsync(Action<string> progress, CancellationToken cancellationToken)
+    public Task<StepResult> RestoreAsync(Action<string> progress, CancellationToken cancellationToken)
+        => RestoreAsync(Path.GetFileName(project.WebSolutionFilter), "NuGet packages", progress, cancellationToken);
+
+    public Task<StepResult> NativeRestoreAsync(Action<string> progress, CancellationToken cancellationToken)
+        => RestoreAsync(Path.GetFileName(project.Solution), "the native apps' NuGet packages", progress, cancellationToken);
+
+    private async Task<StepResult> RestoreAsync(string path, string what, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["restore", project.BuildPath, .. BuildProperties];
+        string[] arguments = ["restore", path, .. BuildProperties];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
-        return StepResult.FromProcess(result, "Restored NuGet packages", "Couldn't restore NuGet packages", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
+        return StepResult.FromProcess(result, $"Restored {what}", $"Couldn't restore {what}", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
     }
 
     public async Task<StepResult> AndroidDependenciesAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -295,11 +305,19 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             : StepResult.Warning("Xcode doesn't match .NET for iOS", $"{installedVersion} here, {wantedVersion} wanted", hint: $"Get Xcode {wantedVersion} at https://developer.apple.com/download/all", resultCode: "xcode.mismatch");
     }
 
-    public async Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
+    public Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
+        => BuildAsync(Path.GetFileName(project.WebSolutionFilter), "the web app", progress, cancellationToken);
+
+    public Task<StepResult> WorkbenchBuildAsync(Action<string> progress, CancellationToken cancellationToken)
+        => BuildAsync(Templates.Platforms.WorkbenchProject(project.Name), "the Workbench", progress, cancellationToken);
+
+    public Task<StepResult> BuildProjectAsync(string path, Action<string> progress, CancellationToken cancellationToken)
+        => BuildAsync(path, Path.GetFileNameWithoutExtension(path), progress, cancellationToken);
+
+    private async Task<StepResult> BuildAsync(string path, string what, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["build", project.BuildPath, .. BuildProperties];
+        string[] arguments = ["build", path, .. BuildProperties];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
-        var what = project.BuildsSolution ? "the solution" : "the web app";
         string? detail = null;
 
         if (result is { Succeeded: false, NotFound: false, TimedOut: false } && DiagnosticCodes.Extract(result.Output, int.MaxValue).Any(c => c.StartsWith("RZ", StringComparison.Ordinal)))
@@ -487,7 +505,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
             runs.Add(run);
 
-            if (await WaitUntilAliveAsync(new Uri(url), run, progress, cancellationToken) is { } reason)
+            if (await WaitUntilAliveAsync(new Uri(url), new Uri(new Uri(url), "alive"), run, progress, cancellationToken) is { } reason)
             {
                 await StopAsync();
                 running.Dispose();
@@ -497,6 +515,41 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         Running = new RunningProject { AppUrl = ReadLaunchUrl(ServerWebDirectory), StopAsync = _ => StopAsync(), Exited = Task.WhenAny(runs) };
         return StepResult.Succeeded("Started the project", Running.AppUrl);
+    }
+
+    public RunningProject? Workbench { get; private set; }
+
+    public async Task<StepResult> WorkbenchRunAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, project.WorkbenchDirectory))}";
+
+        if (ReadLaunchUrl(project.WorkbenchDirectory) is not { } url)
+            return StepResult.Skipped("Didn't start the Workbench", "it has no URL in its launchSettings.json");
+
+        var running = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var run = RunUntilStoppedAsync(new ProcessSpec
+        {
+            FileName = "dotnet",
+            Arguments = ["run", "--project", project.WorkbenchDirectory, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+            WorkingDirectory = project.Directory,
+            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
+        }, running.Token);
+
+        async Task StopAsync()
+        {
+            await running.CancelAsync();
+            await Task.WhenAny(run, Task.Delay(TimeSpan.FromSeconds(3), CancellationToken.None));
+        }
+
+        if (await WaitUntilAliveAsync(new Uri(url), new Uri(url), run, progress, cancellationToken) is { } reason)
+        {
+            await StopAsync();
+            running.Dispose();
+            return StepResult.Warning("Couldn't start the Workbench", reason, followUp);
+        }
+
+        Workbench = new RunningProject { AppUrl = url, StopAsync = _ => StopAsync(), Exited = run };
+        return StepResult.Succeeded("Started the Workbench", url);
     }
 
     private async Task<ProcessResult?> RunUntilStoppedAsync(ProcessSpec spec, CancellationToken cancellationToken)
@@ -511,9 +564,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
     }
 
-    private async Task<string?> WaitUntilAliveAsync(Uri url, Task<ProcessResult?> run, Action<string> progress, CancellationToken cancellationToken)
+    private async Task<string?> WaitUntilAliveAsync(Uri url, Uri alive, Task<ProcessResult?> run, Action<string> progress, CancellationToken cancellationToken)
     {
-        var alive = new Uri(url, "alive");
         var deadline = DateTime.UtcNow.AddMinutes(10);
 
         progress($"Waiting for {url}");

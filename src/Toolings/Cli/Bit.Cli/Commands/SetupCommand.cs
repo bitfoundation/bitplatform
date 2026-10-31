@@ -83,39 +83,50 @@ public static class SetupCommand
             var stopwatch = Stopwatch.StartNew();
             var steps = new StepRunner(cli);
             var projectSteps = new ProjectSteps(cli, context);
-            bool sdkReady;
+            var runMode = ProjectRun.Mode(cli, aspire, parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoRun));
 
             await AdministratorNeeds.StartAsync(cli, administrator, cancellationToken);
 
             try
             {
-                if (tools.Count > 0)
+                try
                 {
-                    await new ToolInstaller(cli, steps).InstallAsync(tools, NewWorkflow.CreateToolContext(cli, needs), cancellationToken);
+                    if (tools.Count > 0)
+                    {
+                        await new ToolInstaller(cli, steps).InstallAsync(tools, NewWorkflow.CreateToolContext(cli, needs), cancellationToken);
+                    }
+
+                    var sdkReady = await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), runMode, cancellationToken);
+
+                    if (sdkReady && parseResult.GetValue(shared.NoRestore) is false && projectSteps.LacksInitialMigration)
+                    {
+                        await NewWorkflow.RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
+                    }
+
+                    if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
+                    {
+                        await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
+                    }
+
+                    if (sdkReady && runMode is not ProjectRunMode.None)
+                    {
+                        await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, aspire, cancellationToken);
+                    }
+
+                    if (sdkReady)
+                    {
+                        await NewWorkflow.RunNativeStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), cancellationToken);
+                    }
                 }
-
-                sdkReady = await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
+                finally
+                {
+                    await AdministratorNeeds.EndAsync(cli);
+                }
             }
-            finally
+            catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null)
             {
-                await AdministratorNeeds.EndAsync(cli);
-            }
-
-            if (sdkReady && parseResult.GetValue(shared.NoRestore) is false && projectSteps.LacksInitialMigration)
-            {
-                await NewWorkflow.RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
-            }
-
-            if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
-            {
-                await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
-            }
-
-            var runMode = ProjectRun.Mode(cli, aspire, parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoRun));
-
-            if (sdkReady && runMode is not ProjectRunMode.None)
-            {
-                await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, aspire, cancellationToken);
+                await ProjectRun.StopAsync(projectSteps.Running, projectSteps.Workbench);
+                throw;
             }
 
             cli.Console.Out.WriteLine();
@@ -128,10 +139,7 @@ public static class SetupCommand
                 cli.Console.Out.MarkupLine($"    {Markup.Escape(followUp.FollowUp!)}");
             }
 
-            if (projectSteps.Running is { } running)
-            {
-                await ProjectRun.KeepRunningAsync(cli, running, cancellationToken);
-            }
+            await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, cancellationToken);
 
             return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
         });
