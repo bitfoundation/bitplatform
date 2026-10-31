@@ -80,8 +80,8 @@ public class NewWorkflowTests
     public async Task WithoutARun_TheWorkbenchAndTheWebApp_Should_StillBeBuiltBeforeTheNativeApps()
     {
         using var host = new TestHost(HostOs.Linux);
-        var package = FakeTemplatePackage(host, workbench: true);
-        GeneratesProjects(host, workbench: true);
+        var package = FakeTemplatePackage(host);
+        GeneratesProjects(host);
 
         var exitCode = await host.RunAsync("new", "Contoso", "--template-package", package, "--yes", "--no-git", "--no-trust", "--no-tools", "--no-run", "--platforms", "android");
 
@@ -111,7 +111,7 @@ public class NewWorkflowTests
         using var host = new TestHost(HostOs.Linux);
         host.Runner.Executables["aspire"] = "aspire";
         var directory = Path.Combine(host.WorkingDirectory, "Contoso");
-        WriteProject(directory, "Contoso", workbench: true);
+        WriteProject(directory, "Contoso");
         var appHost = Directory.CreateDirectory(Path.Combine(directory, "src", "Server", "Contoso.Server.AppHost")).FullName;
         File.WriteAllText(Path.Combine(appHost, "Program.cs"), "builder.AddProject(\"serverweb\", \"../Contoso.Server.Web.csproj\");");
 
@@ -140,18 +140,9 @@ public class NewWorkflowTests
         using var host = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
         host.AllToolsInstalled();
 
-        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host, workbench: true), "--platforms", "android", "--dry-run", "--yes"), host.Output);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host), "--platforms", "android", "--dry-run", "--yes"), host.Output);
 
         StringAssert.Contains(host.FlatOutput, ".NET SDK check, container runtime for Aspire, WebAssembly build support, build and open the Workbench, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code");
-
-        using var withoutWorkbench = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
-        withoutWorkbench.AllToolsInstalled();
-
-        Assert.AreEqual(0, await withoutWorkbench.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(withoutWorkbench), "--dry-run", "--yes"), withoutWorkbench.Output);
-
-        StringAssert.Contains(withoutWorkbench.FlatOutput, "WebAssembly build support, restore and build the web app, Chromium for UI tests");
-        Assert.IsFalse(withoutWorkbench.Output.Contains("Workbench", StringComparison.Ordinal), withoutWorkbench.Output);
-        Assert.IsFalse(withoutWorkbench.Output.Contains("native apps", StringComparison.Ordinal), withoutWorkbench.Output);
     }
 
     [TestMethod]
@@ -295,7 +286,7 @@ public class NewWorkflowTests
         StringAssert.Contains(TemplateSource.ReadEntry(folder, "Bit.Boilerplate/global.json"), "10.0.300");
     }
 
-    private static string FakeTemplatePackage(TestHost host, bool workbench = false)
+    private static string FakeTemplatePackage(TestHost host)
     {
         var path = Path.Combine(host.Root, "Bit.Boilerplate.0.0.0.nupkg");
 
@@ -312,16 +303,10 @@ public class NewWorkflowTests
             resource.CopyTo(templateJson);
         }
 
-        if (workbench)
-        {
-            using var project = new StreamWriter(archive.CreateEntry("content/Bit.Boilerplate/src/Workbench/Boilerplate.Workbench.csproj").Open());
-            project.Write("<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
-        }
-
         return path;
     }
 
-    private static void GeneratesProjects(TestHost host, bool workbench = false)
+    private static void GeneratesProjects(TestHost host)
     {
         host.Runner.On("dotnet", "new bit-bp", spec =>
         {
@@ -329,16 +314,16 @@ public class NewWorkflowTests
             var name = arguments[arguments.IndexOf("--name") + 1];
             var directory = Directory.CreateDirectory(arguments[arguments.IndexOf("--output") + 1]).FullName;
 
-            WriteProject(directory, name, workbench);
+            WriteProject(directory, name);
             File.WriteAllText(Path.Combine(directory, $"{name}.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
 
             return new ProcessResult { ExitCode = 0, Output = "The template \"bit Boilerplate\" was created successfully." };
         });
     }
 
-    private static void WriteProject(string directory, string name, bool workbench)
+    private static void WriteProject(string directory, string name)
     {
-        string[] web = [$"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", $"src/Client/{name}.Client.Web/{name}.Client.Web.csproj", $"src/Server/{name}.Server.Api/{name}.Server.Api.csproj", $"src/Server/{name}.Server.Web/{name}.Server.Web.csproj", $"src/Tests/{name}.Tests.csproj", .. workbench ? [Platforms.WorkbenchProject(name)] : Array.Empty<string>()];
+        string[] web = [$"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", $"src/Client/{name}.Client.Web/{name}.Client.Web.csproj", $"src/Server/{name}.Server.Api/{name}.Server.Api.csproj", $"src/Server/{name}.Server.Web/{name}.Server.Web.csproj", $"src/Tests/{name}.Tests.csproj", Platforms.WorkbenchProject(name)];
         string[] solution = [.. web, Platforms.MauiProject(name), Platforms.WindowsProject(name)];
 
         Directory.CreateDirectory(directory);
@@ -354,12 +339,9 @@ public class NewWorkflowTests
             </Project>
             """);
 
-        if (workbench)
-        {
-            var properties = Directory.CreateDirectory(Path.Combine(directory, "src", "Workbench", "Properties")).FullName;
-            File.WriteAllText(Path.Combine(directory, Platforms.WorkbenchProject(name)), "<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
-            File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""{ "profiles": { "{{name}}.Workbench": { "commandName": "Project", "applicationUrl": "http://localhost:6030" } } }""");
-        }
+        var properties = Directory.CreateDirectory(Path.Combine(directory, "src", "Workbench", "Properties")).FullName;
+        File.WriteAllText(Path.Combine(directory, Platforms.WorkbenchProject(name)), "<Project Sdk=\"Microsoft.NET.Sdk.Web\" />");
+        File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""{ "profiles": { "{{name}}.Workbench": { "commandName": "Project", "applicationUrl": "http://localhost:6030" } } }""");
     }
 
     private static void AssertInOrder(TestHost host, string[] expected)

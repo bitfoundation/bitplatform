@@ -27,8 +27,6 @@ public sealed partial class ProjectContext
 
     public string WorkbenchDirectory => Path.Combine(Directory, "src", "Workbench");
 
-    public bool HasWorkbench => File.Exists(Path.Combine(Directory, Templates.Platforms.WorkbenchProject(Name)));
-
     public IReadOnlyList<string> ProjectsOutsideWebFilter
     {
         get

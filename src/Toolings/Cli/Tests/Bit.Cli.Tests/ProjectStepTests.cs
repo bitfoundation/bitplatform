@@ -685,22 +685,6 @@ public class ProjectStepTests
     }
 
     [TestMethod]
-    public async Task AProjectWithoutAWorkbench_Should_GoStraightToTheWebApp()
-    {
-        using var host = new TestHost(HostOs.Windows);
-        var project = CreateFakeProject(host, "Contoso");
-        host.Runner.On("dotnet", "workload list", 0, "Installed Workload Id\n---\nwasm-tools   10.0.12/10.0.100   SDK 10.0.400\n");
-        var steps = new StepRunner(host.Services);
-
-        await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, true, ProjectRunMode.UntilClosed, CancellationToken.None);
-
-        CollectionAssert.AreEqual(new[] { "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, DotnetCommands(host).ToArray());
-        Assert.IsFalse(steps.Reports.Any(r => r.Id.StartsWith("workbench", StringComparison.Ordinal)));
-        Assert.IsFalse(host.Output.Contains("Workbench", StringComparison.Ordinal), host.Output);
-        Assert.IsEmpty(host.Runner.Detached);
-    }
-
-    [TestMethod]
     public async Task TheProject_Should_OpenInTheBrowserAsSoonAsItStarts()
     {
         using var host = new TestHost(HostOs.Windows);
@@ -912,7 +896,7 @@ public class ProjectStepTests
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, projectSteps, false, false, false, false, ProjectRunMode.None, CancellationToken.None);
 
         var webCommands = DotnetCommands(host);
-        CollectionAssert.AreEqual(new[] { "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, packages and build come before the native apps.");
+        CollectionAssert.AreEqual(new[] { "workload list", "build src/Workbench/Contoso.Workbench.csproj", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, the Workbench and the web app's packages and build come before the native apps.");
 
         await NewWorkflow.RunNativeStepsAsync(host.Services, steps, project, projectSteps, false, false, false, CancellationToken.None);
 

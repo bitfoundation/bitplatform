@@ -231,37 +231,6 @@ public class TemplateTests
     }
 
     [TestMethod]
-    public void TheTemplate_Should_SayWhetherItHasAWorkbench()
-    {
-        var template = Path.GetDirectoryName(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "global.json"))!;
-
-        Assert.AreEqual(File.Exists(Path.Combine(template, "src", "Workbench", "Boilerplate.Workbench.csproj")), TemplateRequirements.Embedded.Workbench);
-
-        using var host = new TestHost();
-        var package = Path.Combine(host.Root, "Bit.Boilerplate.0.0.0.nupkg");
-
-        using (var archive = ZipFile.Open(package, ZipArchiveMode.Create))
-        {
-            archive.CreateEntry("content/Bit.Boilerplate/global.json");
-        }
-
-        Assert.IsFalse(TemplateRequirements.FromPackage(package).Workbench);
-
-        using (var archive = ZipFile.Open(package, ZipArchiveMode.Update))
-        {
-            archive.CreateEntry("content/Bit.Boilerplate/src/Workbench/Boilerplate.Workbench.csproj");
-        }
-
-        Assert.IsTrue(TemplateRequirements.FromPackage(package).Workbench);
-
-        var project = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Contoso")).FullName;
-        Assert.IsFalse(TemplateRequirements.FromProject(project, "Contoso").Workbench);
-
-        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(project, "src", "Workbench")).FullName, "Contoso.Workbench.csproj"), "<Project />");
-        Assert.IsTrue(TemplateRequirements.FromProject(project, "Contoso").Workbench);
-    }
-
-    [TestMethod]
     public void ParsePlatforms_Should_AcceptListsAndRejectWhatTheHostCantBuild()
     {
         var (platforms, error) = Commands.SharedOptions.ParsePlatforms(["web,android", "windows"], HostOs.Windows);

@@ -4,7 +4,7 @@ using Bit.Cli.Tools;
 
 namespace Bit.Cli.Templates;
 
-public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspire, SdkRequirement? Sdk, string? GlobalJson = null, bool Workbench = false)
+public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspire, SdkRequirement? Sdk, string? GlobalJson = null)
 {
     private const string PackageJsonEntry = "Bit.Boilerplate/src/Client/Boilerplate.Client.Core/package.json";
 
@@ -12,17 +12,14 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
 
     private const string GlobalJsonEntry = "Bit.Boilerplate/global.json";
 
-    private const string WorkbenchEntry = "Bit.Boilerplate/src/Workbench/Boilerplate.Workbench.csproj";
-
-    public static TemplateRequirements Embedded { get; } = FromTemplate(ReadResource("Bit.Cli.package.json"), ReadResource("Bit.Cli.AppHost.csproj"), ReadResource("Bit.Cli.global.json"), ReadResource("Bit.Cli.Workbench.csproj") is not null);
+    public static TemplateRequirements Embedded { get; } = FromTemplate(ReadResource("Bit.Cli.package.json"), ReadResource("Bit.Cli.AppHost.csproj"), ReadResource("Bit.Cli.global.json"));
 
     public static TemplateRequirements FromPackage(string packagePath)
     {
         return FromTemplate(
             TemplateSource.ReadEntry(packagePath, PackageJsonEntry),
             TemplateSource.ReadEntry(packagePath, AppHostEntry),
-            TemplateSource.ReadEntry(packagePath, GlobalJsonEntry),
-            TemplateSource.ReadEntry(packagePath, WorkbenchEntry) is not null);
+            TemplateSource.ReadEntry(packagePath, GlobalJsonEntry));
     }
 
     public TemplateRequirements For(TemplateSelection selection)
@@ -30,9 +27,9 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
         return GlobalJson is null ? this : this with { Sdk = SdkRequirement.FromGlobalJson(selection.Manifest.ApplySwitches(GlobalJson, selection)) ?? Sdk };
     }
 
-    private static TemplateRequirements FromTemplate(string? packageJson, string? appHostProject, string? globalJson, bool workbench)
+    private static TemplateRequirements FromTemplate(string? packageJson, string? appHostProject, string? globalJson)
     {
-        return new(ParseNodeMajor(packageJson), ParseAspire(appHostProject), SdkRequirement.FromGlobalJson(globalJson), globalJson, workbench);
+        return new(ParseNodeMajor(packageJson), ParseAspire(appHostProject), SdkRequirement.FromGlobalJson(globalJson), globalJson);
     }
 
     public static TemplateRequirements FromProject(string directory, string name)
@@ -40,8 +37,7 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
         return new(
             ParseNodeMajor(ReadFile(Path.Combine(directory, "src", "Client", $"{name}.Client.Core", "package.json"))),
             ParseAspire(ReadFile(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost", $"{name}.Server.AppHost.csproj"))),
-            SdkRequirement.FromGlobalJson(ReadFile(Path.Combine(directory, "global.json"))),
-            Workbench: File.Exists(Path.Combine(directory, Platforms.WorkbenchProject(name))));
+            SdkRequirement.FromGlobalJson(ReadFile(Path.Combine(directory, "global.json"))));
     }
 
     public static int? ParseNodeMajor(string? packageJson)
