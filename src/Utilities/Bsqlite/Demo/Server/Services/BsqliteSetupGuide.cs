@@ -110,7 +110,7 @@ public static partial class BsqliteSetupGuide
             which loads Bsqlite with the rest of the app - see
             `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
-            HostingChecklist + "\n" + WebAppChecklist,
+            LoadedWithTheApp + "\n" + HostingChecklist + "\n" + WebAppChecklist,
             WebAppCode,
             _webAppFiles,
             [("readme", "Installation"), ("readme", "Where it runs")],
@@ -130,7 +130,7 @@ public static partial class BsqliteSetupGuide
             Bit.Bsqlite and EF Core loads them from each page that uses the database, before it renders the component that
             does - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
-            HostingChecklist + "\n" + WebAppChecklist + "\n" + AutoChecklist,
+            LoadedWithTheApp + "\n" + HostingChecklist + "\n" + WebAppChecklist + "\n" + AutoChecklist,
             AutoCode,
             _webAppFiles,
             [("readme", "Where it runs")],
@@ -309,6 +309,17 @@ public static partial class BsqliteSetupGuide
            `_content/Bit.Bsqlite/`, imported on demand - a session downloads the VFS of the backend it selected and no other.
         7. Keep the model in a project that references only EF Core Relational, as the demo's Data project does, and
            scaffold migrations with `dotnet ef` against the stock SQLite provider: the same migrations apply in the browser.
+        """;
+
+    private const string LoadedWithTheApp = """
+        ## Loaded with the app, or lazy loaded
+
+        The checklist and the code below - Bsqlite registered in each `Program.cs`, a page that injects
+        `IBsqliteDbContextFactory<AppDbContext>` - are the path of a client that loads Bit.Bsqlite and EF Core with the
+        app, as the demo does. A client that lazy loads them does not take it: it registers nothing of Bsqlite's in its
+        `Program.cs`, which runs before the assemblies are there, and a component that uses the database injects
+        `IServiceProvider` and gets the factory from `GetBitBsqliteServices`, passing it the one method that makes the
+        registration below - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
         """;
 
     private const string WebAppChecklist = """
