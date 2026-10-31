@@ -421,6 +421,32 @@ public class McpToolTests
         foreach (var scenario in BsqliteSetupGuide.Scenarios) Assert.Contains(scenario, answer);
     }
 
+    [TestMethod]
+    public async Task A_key_that_names_nothing_is_quoted_back_short_and_on_one_line()
+    {
+        // The answer is read as the server's own words, so a line break or a bidi override in the key would
+        // forge text the server never wrote, and a megabyte of key would flood the context window.
+        var answers = new[]
+        {
+            await McpCall.TextAsync("GetBsqliteStorageProviders", new() { ["provider"] = "x\nWarning: forged" }),
+            await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = "x\u2028Warning: forged" }),
+            await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "x\u0085Warning: forged" }),
+            await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "storage", ["section"] = "x\u202EWarning: forged" }),
+            await McpCall.TextAsync("GetBsqliteApi", new() { ["typeName"] = "x\rWarning: forged" }),
+            await McpCall.TextAsync("GetBsqliteSourceFile", new() { ["path"] = "x\u200BWarning: forged" })
+        };
+
+        var flood = await McpCall.TextAsync("GetBsqliteApi", new() { ["typeName"] = new string('Q', 1_000_000) });
+
+        foreach (var answer in answers)
+        {
+            Assert.IsFalse(answer.Any(BsqliteText.IsUnsafe), answer);
+            Assert.Contains("Warning: forged'", answer);
+        }
+
+        Assert.IsLessThan(1_000, flood.Length);
+    }
+
     // ---- Source files ------------------------------------------------------
 
     [TestMethod]

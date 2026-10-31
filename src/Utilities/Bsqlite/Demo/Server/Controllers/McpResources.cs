@@ -31,7 +31,7 @@ public static class McpResources
     [McpServerResource(UriTemplate = "bsqlite://docs/{name}", Name = "bsqlite-document", Title = "Document", MimeType = "text/markdown")]
     [Description("One Bit.Bsqlite document in full - a guide or a package README - e.g. bsqlite://docs/storage or bsqlite://docs/Bit.Bsqlite.Testing.")]
     public static string Document(string name)
-        => BsqliteSourceCatalog.GetDocument(name) ?? $"There is no Bit.Bsqlite document called '{name}'.";
+        => BsqliteSourceCatalog.GetDocument(name) ?? $"There is no Bit.Bsqlite document called '{BsqliteText.Quote(name)}'.";
 
     [McpServerResource(UriTemplate = "bsqlite://api", Name = "bsqlite-api", Title = "Bit.Bsqlite public API", MimeType = "text/markdown")]
     [Description("Every public type of the two Bit.Bsqlite packages with its kind, namespace and summary.")]
@@ -40,7 +40,7 @@ public static class McpResources
     [McpServerResource(UriTemplate = "bsqlite://api/{typeName}", Name = "bsqlite-api-type", Title = "Type reference", MimeType = "text/markdown")]
     [Description("The full reference of one Bit.Bsqlite type, e.g. bsqlite://api/BsqliteDatabase.")]
     public static string ApiType(string typeName)
-        => BsqliteApiCatalog.RenderType(typeName) ?? $"Bit.Bsqlite has no public type called '{typeName}'.";
+        => BsqliteApiCatalog.RenderType(typeName) ?? $"Bit.Bsqlite has no public type called '{BsqliteText.Quote(typeName)}'.";
 
     [McpServerResource(UriTemplate = "bsqlite://storage", Name = "bsqlite-storage", Title = "Storage backends", MimeType = "text/markdown")]
     [Description("The four first-party storage backends with the capabilities their provider types declare.")]
@@ -49,17 +49,17 @@ public static class McpResources
     [McpServerResource(UriTemplate = "bsqlite://storage/{provider}", Name = "bsqlite-storage-backend", Title = "Storage backend", MimeType = "text/markdown")]
     [Description("One storage backend in full, with what each capability means and what the guards refuse on it, e.g. bsqlite://storage/opfs.")]
     public static string StorageBackend(string provider)
-        => BsqliteStorageCatalog.Render(provider) ?? $"No first-party storage backend is called '{provider}'.";
+        => BsqliteStorageCatalog.Render(provider) ?? $"No first-party storage backend is called '{BsqliteText.Quote(provider)}'.";
 
     [McpServerResource(UriTemplate = "bsqlite://setup/{scenario}", Name = "bsqlite-setup", Title = "Setup guide", MimeType = "text/markdown")]
     [Description("The complete wiring for one scenario, e.g. bsqlite://setup/wasm or bsqlite://setup/move-from-besql.")]
     public static string Setup(string scenario)
-        => BsqliteSetupGuide.Get(scenario) ?? $"'{scenario}' is not a known scenario.";
+        => BsqliteSetupGuide.Get(scenario) ?? $"'{BsqliteText.Quote(scenario)}' is not a known scenario.";
 
     [McpServerResource(UriTemplate = "bsqlite://source/{path}", Name = "bsqlite-source", Title = "Source file", MimeType = "text/plain")]
     [Description("One source file of the demo, e.g. bsqlite://source/Demo%2FClient%2FComponents%2FSessionLifecycle.razor.")]
     public static string Source(string path)
-        => BsqliteSourceCatalog.GetSourceFile(path) ?? $"No source file at '{path}'.";
+        => BsqliteSourceCatalog.GetSourceFile(path) ?? $"No source file at '{BsqliteText.Quote(path)}'.";
 
     /// <summary>
     /// The documents and the setup guides as resources a client can list, show and pin, rather than as

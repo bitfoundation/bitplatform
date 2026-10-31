@@ -124,11 +124,12 @@ public partial class BsqliteServiceTests
         Assert.Contains("is not a migration mode", numeric.Error!, "A mode is named, as WithMigrationMode is written - not numbered.");
         Assert.Contains("at most", many.Error!);
         Assert.Contains("longer than a provider name", longName.Error!);
-        Assert.IsTrue(new[] { mode, numeric, many, longName }.All(plan => plan.Opens is false && plan.Log.Length == 0));
+        // Nothing is planned from any of them - not even the C# snippet, which for an unknown mode would show KeepExisting.
+        Assert.IsTrue(new[] { mode, numeric, many, longName }.All(plan => plan.Opens is false && plan.Log.Length == 0 && plan.Candidates.Length == 0 && plan.Configuration.Length == 0));
     }
 
     [TestMethod]
-    public async Task An_oversized_list_is_refused_before_any_provider_is_built()
+    public async Task An_oversized_list_is_refused_before_anything_is_planned()
     {
         var names = string.Join(",", Enumerable.Range(0, 1_000).Select(i => $"p{i}"));
         var seventeen = string.Join(",", Enumerable.Range(0, 17).Select(i => $"p{i}"));
@@ -156,6 +157,41 @@ public partial class BsqliteServiceTests
 
         Assert.Contains("No storage provider could open database 'orders.db'", plan.Error!);
         Assert.Contains("AddDatabase(\"orders.db\")", plan.Configuration);
+    }
+
+    [TestMethod]
+    public void A_pasted_file_is_searched_by_its_words_not_by_its_length()
+    {
+        // A word longer than any name names nothing: it is dropped, rather than counted in every entry.
+        var word = BsqliteSearchIndex.Search(new string('Q', 1_000_000), 12);
+        var pasted = BsqliteSearchIndex.Search($"opfs fallback {new string('Q', 1_000_000)}", 12);
+        // However much filler comes first, the words after it are still searched.
+        var filler = BsqliteSearchIndex.Search($"{string.Concat(Enumerable.Repeat("the ", 250_000))}opfs fallback", 12);
+
+        Assert.IsEmpty(word.Terms!);
+        Assert.IsNotEmpty(pasted.Hits);
+        Assert.IsNotEmpty(filler.Hits);
+    }
+
+    [TestMethod]
+    public void A_term_that_matches_nothing_is_quoted_back_on_one_line()
+    {
+        // Every character that could end a line or reorder one ends a word instead, so none reaches Terms or Message.
+        var result = BsqliteSearchIndex.Search("zzzz\u2028qqqq\u0085zqzq\u202Eqzqz\fzzqq\u000Bqqzz\u200Bzqqz", 12);
+
+        Assert.IsEmpty(result.Hits);
+        CollectionAssert.AreEqual(new[] { "zzzz", "qqqq", "zqzq", "qzqz", "zzqq", "qqzz", "zqqz" }, result.Terms);
+        Assert.IsFalse(result.Message!.Any(BsqliteText.IsUnsafe));
+    }
+
+    [TestMethod]
+    public void Caller_text_is_quoted_short_whole_and_on_one_line()
+    {
+        Assert.AreEqual("opfs", BsqliteText.Quote("opfs"));
+        Assert.AreEqual("x\\u2028Warning\\u202E", BsqliteText.Quote("x\u2028Warning\u202E"));
+        Assert.AreEqual($"{new string('a', 64)}...", BsqliteText.Quote(new string('a', 1_000_000)));
+        // A pair straddling the cut is left out whole rather than halved.
+        Assert.AreEqual($"{new string('a', 19)}...", BsqliteText.Quote($"{new string('a', 19)}\U0001F600", 20));
     }
 
     [TestMethod]
