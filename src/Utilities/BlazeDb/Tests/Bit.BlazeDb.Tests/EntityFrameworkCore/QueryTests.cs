@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Bit.BlazeDb.Tests.EntityFrameworkCore;
 
@@ -334,6 +335,28 @@ public class QueryTests
         var error = Assert.ThrowsExactly<NotSupportedException>(() => context.People.ToList());
 
         Assert.Contains("HasQueryFilter", error.Message);
+    }
+
+    [TestMethod]
+    public void A_Query_Filter_On_A_Model_That_Skipped_Validation_Is_Refused()
+    {
+        // A compiled model is not validated when it is loaded; EF's own validator, which knows nothing
+        // of BlazeDb, stands in for that here.
+        var options = new DbContextOptionsBuilder<FilteredPeopleContext>()
+            .UseBlazeDb("unvalidated-filter-" + Guid.NewGuid().ToString("N"))
+            .ReplaceService<IModelValidator, ModelValidator>()
+            .Options;
+
+        // Refused when the model is initialized, before anything touches a table - and for every
+        // context, not only the first one to build the model.
+        for (var i = 0; i < 2; i++)
+        {
+            using var context = new FilteredPeopleContext(options);
+
+            var error = Assert.ThrowsExactly<NotSupportedException>(() => context.Model);
+
+            Assert.Contains("HasQueryFilter", error.Message);
+        }
     }
 
     [TestMethod]

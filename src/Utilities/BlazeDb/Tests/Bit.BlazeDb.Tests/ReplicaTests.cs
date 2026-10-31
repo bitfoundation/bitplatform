@@ -221,9 +221,9 @@ public class ReplicaTests
         Assert.AreEqual(1, replica.GetTable(TodoItem.Table).Count);
 
         await writer.CheckpointAsync();
-        var snapshot = storage.GetFile("snapshot-2.blz")!;
+        var snapshot = storage.GetFile(storage.Snapshot(2))!;
         snapshot[^1] ^= 0xFF;
-        storage.SetFile("snapshot-2.blz", snapshot);
+        storage.SetFile(storage.Snapshot(2), snapshot);
 
         await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await replica.ReloadAsync());
 

@@ -107,7 +107,7 @@ public class TransactionCompositionTests
         }
 
         // One commit record: both rows replay together from one checksummed record.
-        var wal = storage.GetFile("wal-1.blz")!;
+        var wal = storage.GetFile(storage.Wal())!;
         Assert.AreEqual(1, CountRecords(wal));
         await using var reopened = await BlazeDbDatabase.OpenAsync(Persistent(storage));
         Assert.AreEqual(2, reopened.GetTable(PersonTable.Descriptor).Count);
