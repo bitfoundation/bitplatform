@@ -8,7 +8,7 @@
     <ItemGroup>
         <Content Remove="appsettings*.json" />
         <EmbeddedResource Include="appsettings*.json" />
-        <EmbeddedResource Include="Components\Pages\Showcase\Buildings\Data\netherlands.geojson" />
+        <EmbeddedResource Include="Components\Pages\Showcases\Buildings\Data\netherlands.geojson" />
 
         <PackageReference Include="Bit.BlazorUI.AI" />
         <PackageReference Include="Bit.Bmotion" />
@@ -38,15 +38,15 @@
         <Using Include="Boilerplate.Workbench.Components.Chrome" />
         <Using Include="Boilerplate.Workbench.Components.Preview" />
         <Using Include="Boilerplate.Workbench.Components.Pages.AppPages.Settings" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Assistant" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Assistant.Data" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Buildings" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Buildings.Data" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Shifts" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.Shifts.Data" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Data" />
-        <Using Include="Boilerplate.Workbench.Components.Pages.Showcase.PosDashboard.Widgets" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Assistant" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Assistant.Data" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Buildings" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Buildings.Data" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Shifts" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Shifts.Data" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Data" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Widgets" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Models" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Services" />
         <Using Include="Boilerplate.Workbench.Infrastructure.Extensions" />

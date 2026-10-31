@@ -30,7 +30,7 @@ else if (isSmallScreen)
                Title="@Localizer[nameof(WorkbenchStrings.Tools)]"
                AriaLabel="@Localizer[nameof(WorkbenchStrings.Tools)]" />
 
-    <BitPanel @bind-IsOpen="isToolsOpen" ModeFull Position="BitPanelPosition.End" Class="tools-panel">
+    <BitPanel @bind-IsOpen="isToolsOpen" ModeFull Placement="BitPlacement.End" Class="tools-panel">
         <Header>
             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="tools-header">
                 <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="24" height="24" />
