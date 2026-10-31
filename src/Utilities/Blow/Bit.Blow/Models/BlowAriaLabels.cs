@@ -202,6 +202,7 @@ public sealed class BlowAriaLabels
         BlowConnectionRejection.TargetFull => "Cannot connect: the input has no free connections",
         BlowConnectionRejection.Cycle => "Cannot connect: the connection would create a cycle",
         BlowConnectionRejection.MissingNode => "Cannot connect: the node is no longer there",
+        BlowConnectionRejection.Unsettled => "Cannot connect: the edge kept changing while the connection was being confirmed",
         _ => "Cannot connect",
     };
 

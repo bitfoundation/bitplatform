@@ -196,6 +196,121 @@ public class RoutingExportAndRunTests : BunitContext
     }
 
     [TestMethod]
+    public void EveryNodeIsPlacedWhereTheCanvasPlacesItHoweverDeepOrTangledItsParents()
+    {
+        // Two chains deeper than the canvas follows in one walk - one listed parents first, the other children first -
+        // a parent cycle, a node that is its own parent and one whose parent is not in the list.
+        var nodes = new List<BlowNode>();
+        for (var i = 0; i < 60; i++) nodes.Add(Nested($"p{i}", i == 0 ? null : $"p{i - 1}"));
+        for (var i = 59; i >= 0; i--) nodes.Add(Nested($"c{i}", i == 0 ? null : $"c{i - 1}"));
+        nodes.AddRange([Nested("x", "z"), Nested("y", "x"), Nested("z", "y"), Nested("s", "s"), Nested("m", "nowhere")]);
+
+        Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes));
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, []));
+
+        Assert.AreEqual(new BlowXYPosition(600, 60), nodes.Single(n => n.Id == "p59").AbsolutePosition, "the canvas did not sum the whole chain");
+        Assert.AreEqual(new BlowXYPosition(600, 60), nodes.Single(n => n.Id == "c59").AbsolutePosition,
+            "the canvas did not sum the whole of a chain listed children first");
+        foreach (var node in nodes)
+        {
+            var rect = doc.Descendants(Svg + "text").Single(t => t.Value == node.Id).Parent!.Element(Svg + "rect")!;
+            Assert.AreEqual((At(node.AbsolutePosition.X), At(node.AbsolutePosition.Y)), (rect.Attribute("x")!.Value, rect.Attribute("y")!.Value), node.Id);
+        }
+
+        static BlowNode Nested(string id, string? parent)
+            => new() { Id = id, Label = id, ParentId = parent, Position = new(10, 1), Width = 20, Height = 10 };
+
+        static string At(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    [TestMethod]
+    public void AVeryLongParentChainIsExportedWithEveryParentSummedOnce()
+    {
+        const int length = 50_000;
+        var nodes = Enumerable.Range(0, length)
+            .Select(i => new BlowNode { Id = $"n{i}", ParentId = i == 0 ? null : $"n{i - 1}", Position = new(1, 0), Width = 10, Height = 10 })
+            .ToList();
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, [], new BlowSvgExportOptions { Background = null }));
+        var rects = doc.Descendants(Svg + "rect").ToList();
+
+        Assert.HasCount(length, rects);
+        Assert.AreEqual("50000", rects[^1].Attribute("x")!.Value, "the deepest node is drawn last, at the sum of all its parents");
+    }
+
+    [TestMethod]
+    public void ANodeUnderAHiddenAncestorIsLeftOutHoweverFarUpTheAncestorIs()
+    {
+        var nodes = Enumerable.Range(0, 80)
+            .Select(i => new BlowNode { Id = $"n{i}", Label = $"n{i}", ParentId = i == 0 ? null : $"n{i - 1}", Hidden = i == 0, Width = 10, Height = 10 })
+            .ToList();
+        nodes.Add(new BlowNode { Id = "shown", Label = "shown", Width = 10, Height = 10 });
+
+        List<BlowEdge> edges = [new BlowEdge { Id = "e", Source = "shown", Target = "n79" }];
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
+        var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes).Add(c => c.Edges, edges));
+
+        CollectionAssert.AreEqual(new[] { "shown" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
+        Assert.IsEmpty(doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker"), "an edge to a node left out was drawn");
+        CollectionAssert.AreEqual(new[] { "shown" }, cut.FindAll(".bit-blow-node").Select(n => n.GetAttribute("data-id")).ToArray(),
+            "the canvas drew a node the export leaves out");
+        Assert.IsEmpty(cut.FindAll(".bit-blow-edge"), "the canvas drew an edge the export leaves out");
+    }
+
+    [TestMethod]
+    public void AnEndFoldedIntoACollapsedGroupIsDrawnToItHoweverFarUpTheGroupIs()
+    {
+        var nodes = Enumerable.Range(0, 80)
+            .Select(i => new BlowNode { Id = $"n{i}", Label = $"n{i}", ParentId = i == 0 ? null : $"n{i - 1}", Collapsed = i == 0, Hidden = i > 0, Width = 10, Height = 10 })
+            .ToList();
+        nodes.Add(new BlowNode { Id = "shown", Label = "shown", Position = new(100, 0), Width = 10, Height = 10 });
+        List<BlowEdge> edges = [new BlowEdge { Id = "e", Source = "shown", Target = "n79" }];
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, edges));
+        var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes).Add(c => c.Edges, edges));
+
+        Assert.HasCount(1, doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker"), "the export left the edge out");
+        Assert.HasCount(1, cut.FindAll(".bit-blow-edge[data-id='e']"), "the canvas left the edge out");
+    }
+
+    [TestMethod]
+    public void ARoutedEdgeRunsInsideEveryGroupItsEndsSitInHoweverDeep()
+    {
+        var index = new Dictionary<string, BlowNode>(StringComparer.Ordinal);
+        for (var i = 0; i < 80; i++) index[$"g{i}"] = new BlowNode { Id = $"g{i}", ParentId = i == 0 ? null : $"g{i - 1}" };
+        index["s"] = new BlowNode { Id = "s", ParentId = "g79" };
+        // t sits in a parent cycle, which still ends the walk.
+        index["t"] = new BlowNode { Id = "t", ParentId = "c1" };
+        index["c1"] = new BlowNode { Id = "c1", ParentId = "c2" };
+        index["c2"] = new BlowNode { Id = "c2", ParentId = "c1" };
+        var area = new BlowRect(0, 0, 100, 100);
+
+        var obstacles = BlowEdgeLayout.Obstacles(index.Keys.Select(id => (id, area)), area, index["s"], index["t"], index);
+
+        Assert.HasCount(2, obstacles, "only the edge's own two nodes are in its way: a group far up was taken for one");
+    }
+
+    [TestMethod]
+    public void OfNodesThatShareAnIdOnlyTheFirstIsDrawnAsOnTheCanvas()
+    {
+        var nodes = new List<BlowNode>
+        {
+            new() { Id = "a", Label = "first", Width = 100, Height = 40 },
+            new() { Id = "a", Label = "second", Position = new(500, 500), Width = 20, Height = 10 },
+        };
+
+        var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes));
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, [], new BlowSvgExportOptions { Background = null }));
+
+        Assert.HasCount(1, cut.FindAll(".bit-blow-node[data-id='a']"), "the canvas does not draw the second either");
+        var rect = doc.Descendants(Svg + "rect").Single();
+        Assert.AreEqual(("0", "0", "100", "40"),
+            (rect.Attribute("x")!.Value, rect.Attribute("y")!.Value, rect.Attribute("width")!.Value, rect.Attribute("height")!.Value));
+        CollectionAssert.AreEqual(new[] { "first" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
+    }
+
+    [TestMethod]
     public void NothingInAGraphBecomesMarkupOrAnUnsafeValueInTheExport()
     {
         var nodes = new List<BlowNode>

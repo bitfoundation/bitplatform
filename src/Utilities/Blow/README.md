@@ -648,7 +648,8 @@ Pressing the body still selects the node. Demo: `/examples/drag-handle`.
 A node with `Hidden = true` is not drawn and takes no part in selection, box selection, select-all, connecting,
 fit-view (unless `BlowFitViewOptions.IncludeHiddenNodes` is set), alignment guides, the minimap, keyboard nudges or
 align and distribute. Its edges are hidden with it: an edge with one end gone has nothing to be a line between, so
-folding away a branch takes one flag per node and no bookkeeping over the edge list. The layout helpers do not skip
+folding away a branch takes one flag per node and no bookkeeping over the edge list. Nodes nested in it, at any depth,
+are not drawn either, nor are their edges - on screen as in the SVG export. The layout helpers do not skip
 hidden nodes - pass them only the nodes you want arranged (`LayoutAsync` does skip them). Demo: `/examples/hidden`.
 
 A node with children can be collapsed instead, which keeps its edges to the outside:
@@ -795,6 +796,9 @@ A prospective connection is refused, for the reason in brackets (a `BlowConnecti
 - the canvas's `IsValidConnection`, or the rule of either handle, returns false (`RejectedByRule`);
 - the drop handle has `IsConnectableEnd` (or `IsConnectable`) off.
 
+A connection waiting on [`OnBeforeConnect`](#confirming-a-connection-asynchronously) can also be refused by its answer
+(`RejectedByRule`), or dropped because its wiring kept changing while it was asked (`Unsettled`).
+
 The checks run in that order and the first that fails is the reason, so the application's own rules only ever see
 connections that are otherwise allowed. When a drop is refused - on a handle, or near one with no valid handle
 nearby - the reason is announced to screen readers (`AriaLabels.ConnectionRejected`) and carried by
@@ -820,10 +824,16 @@ is full, and `DescribeConnection` the connection a handle would complete. Demo: 
 ### Confirming a connection asynchronously
 
 `OnBeforeConnect` is a last word on a connection the user has just completed - asking a server whether they may
-make it, for instance. It runs once, when the user lets go on a valid handle; the line disappears at once, and the
+make it, for instance. It runs when the user lets go on a valid handle; the line disappears at once, and the
 edge is added (or the reconnected edge rewired) only if it returns true. The graph may change while it runs, so the
-connection is checked against every rule again when it returns and dropped if it is no longer allowed; either way
-`OnConnectEnd` reports the outcome, with `Rejection` set to `RejectedByRule` for a refusal. An exception it throws
+connection is checked against every rule again when it returns and dropped if it is no longer allowed. If the wiring
+itself changed meanwhile - the end of a reconnected edge that stays put was moved by another reconnect confirmed
+first - its answer, yes or no, was about a wiring that will not be made, so it is asked again about the wiring as it
+is now (whichever `OnBeforeConnect` is set by then; none, if it was removed), and only ever judges what is made. A
+wiring it has already answered about is not asked about twice, and one still changing after three answers is
+dropped. Either way `OnConnectEnd` reports the outcome, with `Start` the end that stayed as the edge has it
+now, and `Rejection` set to `RejectedByRule` for a refusal or `Unsettled` for a wiring that would not hold
+still. An exception it throws
 reaches the renderer like one from an event handler. Rules a connection must pass *while it is dragged* belong in
 `IsValidConnection`, which is synchronous because it runs for every handle on every frame. Demo:
 `/examples/confirm-connection`.

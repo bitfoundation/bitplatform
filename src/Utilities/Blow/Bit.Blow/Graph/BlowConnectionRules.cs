@@ -35,6 +35,12 @@ public enum BlowConnectionRejection
 
     /// <summary>An application rule - the canvas's or a handle's <c>IsValidConnection</c> - returned false.</summary>
     RejectedByRule,
+
+    /// <summary>
+    /// The connection kept changing while <c>OnBeforeConnect</c> was deciding on it - the end of a reconnected edge that
+    /// stays put moved again and again - so it was dropped without an answer that covers the wiring it would make.
+    /// </summary>
+    Unsettled,
 }
 
 /// <summary>The verdict on one prospective connection.</summary>
