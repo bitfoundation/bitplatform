@@ -1105,6 +1105,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Voici vos données analytiques</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Redimensionner</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Masquer</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Supprimer la catégorie</value>
   </data>

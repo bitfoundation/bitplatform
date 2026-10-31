@@ -1105,6 +1105,12 @@
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>داده های تحلیلی شما</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>تغییر اندازه</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>مخفی کردن</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>حذف دسته‌بندی</value>
   </data>

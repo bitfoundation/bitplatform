@@ -6,21 +6,65 @@
 @attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
 @*#endif*@
 @attribute [Authorize(Policy = AppFeatures.AdminPanel.Dashboard_View)]
+@using Bit.Bortable
 @inherits AppPageBase
+
+<link rel="stylesheet" href="_content/Bit.Bortable/bit-bortable.css" />
 
 <AppPageData Title="@Localizer[nameof(AppStrings.Dashboard)]"
              SubTitle="@Localizer[nameof(AppStrings.DashboardSubtitle)]"
              PageTitle="@Localizer[nameof(AppStrings.DashboardPageTitle)]" />
 
 <section>
-    <BitStack Gap="3rem">
-        <OverallStatsWidget />
-
-        <BitStack Horizontal Wrap AutoHeight Gap="1.5rem" VerticalAlign="BitAlignment.Stretch">
-            <ProductsCountPerCategoryWidget />
-            <ProductsPercentageWidget />
+    <BitStack Gap="1rem">
+        <BitStack Horizontal AutoHeight HorizontalAlign="BitAlignment.End">
+            <BitToggleButton @bind-IsChecked="isEditing"
+                             Variant="BitVariant.Text"
+                             Text="@Localizer[nameof(AppStrings.Edit)]"
+                             OnIconName="@BitIconName.CheckMark"
+                             OffIconName="@BitIconName.Edit" />
         </BitStack>
 
+        <Bortable TItem="DashboardWidget"
+                  @bind-Items="widgets"
+                  @bind-Items:after="SaveWidgets"
+                  Disabled="isEditing is false"
+                  Direction="BortableDirection.Horizontal"
+                  AriaLabel="@Localizer[nameof(AppStrings.Dashboard)]"
+                  Class="@(isEditing ? "widgets editing" : "widgets")"
+                  ItemClassSelector="@(w => w.Hidden ? $"span-{w.Span} hidden-widget" : $"span-{w.Span}")">
+            <ItemTemplate Context="widget">
+                @if (isEditing)
+                {
+                    <BitStack Horizontal AutoHeight Gap="0" HorizontalAlign="BitAlignment.End">
+                        <BitButton Variant="BitVariant.Text"
+                                   IconName="@BitIconName.MiniExpand"
+                                   Title="@Localizer[nameof(AppStrings.Resize)]"
+                                   OnClick="() => Resize(widget)" />
+                        <BitToggleButton Variant="BitVariant.Text"
+                                         @bind-IsChecked="widget.Hidden"
+                                         @bind-IsChecked:after="SaveWidgets"
+                                         Title="@Localizer[nameof(AppStrings.Hide)]"
+                                         OnIconName="@BitIconName.Hide3"
+                                         OffIconName="@BitIconName.View" />
+                    </BitStack>
+                }
+                @if (isEditing || widget.Hidden is false)
+                {
+                    @switch (widget.Id)
+                    {
+                        case nameof(OverallStatsWidget):
+                            <OverallStatsWidget />
+                            break;
+                        case nameof(ProductsCountPerCategoryWidget):
+                            <ProductsCountPerCategoryWidget />
+                            break;
+                        case nameof(ProductsPercentageWidget):
+                            <ProductsPercentageWidget />
+                            break;
+                    }
+                }
+            </ItemTemplate>
+        </Bortable>
     </BitStack>
 </section>
-

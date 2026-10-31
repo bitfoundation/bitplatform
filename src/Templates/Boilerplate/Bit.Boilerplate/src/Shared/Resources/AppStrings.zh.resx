@@ -1105,6 +1105,12 @@
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>这是您的分析数据</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>调整大小</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>隐藏</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>删除类别</value>
   </data>

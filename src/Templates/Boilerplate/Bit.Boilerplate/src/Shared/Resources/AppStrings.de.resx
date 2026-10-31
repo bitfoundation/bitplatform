@@ -1105,6 +1105,12 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Hier sind Ihre Analysedaten</value>
   </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Größe ändern</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Ausblenden</value>
+  </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Kategorie löschen</value>
   </data>
