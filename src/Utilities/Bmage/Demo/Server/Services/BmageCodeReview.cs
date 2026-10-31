@@ -538,9 +538,11 @@ public static partial class BmageCodeReview
         var engine = BmageEngineReferenceRegex().Match(text);
         if (engine.Success is false || BmageBlazorReferenceRegex().IsMatch(text)) return;
 
-        var browser = text.Contains("Microsoft.NET.Sdk.BlazorWebAssembly", StringComparison.Ordinal)
-                   || BrowserCallRegex().IsMatch(text)
-                   || BrowserServiceUseRegex().IsMatch(text);
+        // Another project referenced here may bring Bit.Bmage.Blazor along, and this review cannot see inside it.
+        if (OtherProjectReferenceRegex().IsMatch(text)) return;
+
+        // Only what the code uses makes it a browser project: the engine alone runs in WebAssembly too, on the managed codecs.
+        var browser = BrowserCallRegex().IsMatch(text) || BrowserServiceUseRegex().IsMatch(text);
 
         if (browser is false) return;
 
@@ -1032,11 +1034,16 @@ public static partial class BmageCodeReview
     private static partial Regex BmageReferenceRegex();
 
     // References only: a <TrimmerRootAssembly Include="Bit.Bmage" /> or a <Using Include="Bit.Bmage" /> installs nothing.
-    [GeneratedRegex(@"<PackageReference\s+Include\s*=\s*""Bit\.Bmage""|[\\/""]Bit\.Bmage\.csproj""")]
+    // The Include may follow other attributes (a Condition, a Version); a tag holds no '<', so the search stops at the next one.
+    [GeneratedRegex(@"<PackageReference\b[^<>]*?\bInclude\s*=\s*""Bit\.Bmage""|[\\/""]Bit\.Bmage\.csproj""")]
     private static partial Regex BmageEngineReferenceRegex();
 
-    [GeneratedRegex(@"<PackageReference\s+Include\s*=\s*""Bit\.Bmage\.Blazor""|[\\/""]Bit\.Bmage\.Blazor\.csproj""")]
+    [GeneratedRegex(@"<PackageReference\b[^<>]*?\bInclude\s*=\s*""Bit\.Bmage\.Blazor""|[\\/""]Bit\.Bmage\.Blazor\.csproj""")]
     private static partial Regex BmageBlazorReferenceRegex();
+
+    // A project reference to anything but the engine's own project, which does not bring the browser integration along.
+    [GeneratedRegex(@"<ProjectReference\b[^<>]*?\bInclude\s*=\s*""(?!(?:[^""<>]*[\\/])?Bit\.Bmage\.csproj"")[^""<>]+""")]
+    private static partial Regex OtherProjectReferenceRegex();
 
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]
     private static partial Regex AotDisabledRegex();

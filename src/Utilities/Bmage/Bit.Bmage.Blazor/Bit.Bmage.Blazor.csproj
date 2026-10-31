@@ -102,7 +102,7 @@
     </Target>
 
     <Target Name="BuildJavaScript"
-            Inputs="@(TypeScriptFiles);tsconfig.json"
+            Inputs="@(TypeScriptFiles);tsconfig.json;package-lock.json"
             Outputs="wwwroot/bit-bmage.js;wwwroot/bit-bmage-worker.js;$(BaseIntermediateOutputPath)bit-bmage.$(Configuration).stamp">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <!-- Minify to a temp file and move it into place, so an interrupted minify never leaves a half-written

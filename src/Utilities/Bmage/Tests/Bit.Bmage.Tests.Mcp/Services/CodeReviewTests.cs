@@ -307,6 +307,7 @@ public class CodeReviewTests
                 <PackageReference Include="Bit.Bmage" />
               </ItemGroup>
             </Project>
+            builder.Services.AddBitBmageServices();
             """);
 
         var finding = Single(review, "blazor-package-missing");
@@ -314,9 +315,13 @@ public class CodeReviewTests
         Assert.AreEqual(3, finding.Line);
         StringAssert.Contains(finding.Fix, "Bit.Bmage.Blazor");
 
-        // A Razor class library is only a browser project by what it uses: the editor, or the browser registration.
+        // A project is a browser project by what it uses: the editor, or the browser registration.
         Single(Review("<Project Sdk=\"Microsoft.NET.Sdk.Razor\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>\n<BmageEditor />"), "blazor-package-missing");
         Single(Review("<ProjectReference Include=\"..\\Bit.Bmage\\Bit.Bmage.csproj\" />\nbuilder.Services.AddBitBmageServices();"), "blazor-package-missing");
+
+        // The Include does not have to come first.
+        Single(Review("<PackageReference Condition=\"'$(TargetFramework)' == 'net10.0'\" Include=\"Bit.Bmage\" />\n<BmageEditor />"), "blazor-package-missing");
+        None(Review("<PackageReference Include=\"Bit.Bmage\" />\n<PackageReference Version=\"10.0.0\" Include=\"Bit.Bmage.Blazor\" />\n<BmageEditor />"), "blazor-package-missing");
     }
 
     [TestMethod]
@@ -326,8 +331,13 @@ public class CodeReviewTests
         None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage\" />\n<PackageReference Include=\"Bit.Bmage.Blazor\" />"), "blazor-package-missing");
         None(Review("<ProjectReference Include=\"..\\Bit.Bmage.Blazor\\Bit.Bmage.Blazor.csproj\" />\n<BmageEditor />"), "blazor-package-missing");
 
-        // The engine alone is what a server, a console app or a worker installs.
+        // The engine alone is what a server, a console app or a worker installs - and it runs in WebAssembly too, on the
+        // managed codecs.
         None(Review("<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>\nbuilder.Services.AddBitBmageHeadlessServices();"), "blazor-package-missing");
+        None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<PackageReference Include=\"Bit.Bmage\" />\n</Project>"), "blazor-package-missing");
+
+        // A referenced project may bring Bit.Bmage.Blazor along.
+        None(Review("<PackageReference Include=\"Bit.Bmage\" />\n<ProjectReference Include=\"..\\Shared\\Shared.csproj\" />\n<BmageEditor />"), "blazor-package-missing");
 
         // Naming the assembly is not installing it.
         None(Review("<Project Sdk=\"Microsoft.NET.Sdk.BlazorWebAssembly\">\n<TrimmerRootAssembly Include=\"Bit.Bmage\" />"), "blazor-package-missing");

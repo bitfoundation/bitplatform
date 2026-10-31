@@ -97,7 +97,7 @@ public sealed class BrowserImageInterop : IAsyncDisposable
             {
                 throw new ImageCapabilityException(
                     $"Could not load the Bmage browser module from '{ModulePath}'. " +
-                    "Check that the Bit.Bmage static web assets are served, and that this code runs after the component is interactive rather than during prerendering. " +
+                    "Check that the Bit.Bmage.Blazor package's static web assets are served, and that this code runs after the component is interactive rather than during prerendering. " +
                     $"The browser reported: {ex.Message}");
             }
             catch (InvalidOperationException ex)
