@@ -81,8 +81,10 @@ public class MessageEncodingTests : ButilPageTest
     {
         // Each of these is small as a structured clone and large as JSON, in a way a count of values misses: one
         // String object shared a hundred times (JSON writes the string each time), an array that is nothing but
-        // holes (each one written as null), and control characters (each one written as a six-character escape).
-        // Then the edge itself: a string whose quoted JSON is exactly the cap fits, and one character more does not.
+        // holes, undefined or NaN (each one written as null - counted as anything shorter, each array would fit),
+        // control characters (each one written as a six-character escape), and quotes and backslashes
+        // (each one written as a two-character escape). Then the edge itself: a string whose quoted JSON is exactly
+        // the cap fits, and one character more does not.
         var result = await Page.EvaluateAsync<string[]>(
             """
             () => {
@@ -96,7 +98,10 @@ public class MessageEncodingTests : ButilPageTest
                     return [
                         json(Array(100).fill(new String('A'.repeat(1024 * 1024)))),
                         json(holes),
+                        json(Array(7_000_000).fill(undefined)),
+                        json(Array(7_000_000).fill(NaN)),
                         json({ text: '\u0001'.repeat(6 * 1024 * 1024) }),
+                        json({ text: '"\\'.repeat(9 * 1024 * 1024) }),
                         String(json('x'.repeat(limit - 2)).length),
                         json('x'.repeat(limit - 1))
                     ];
@@ -108,9 +113,12 @@ public class MessageEncodingTests : ButilPageTest
 
         Assert.AreEqual("\"[object Array]\"", result[0], "a shared String object is written once per reference");
         Assert.AreEqual("\"[object Array]\"", result[1], "a hole is written as null");
-        Assert.AreEqual("\"[object Object]\"", result[2], "a control character is written as an escape");
-        Assert.AreEqual((32 * 1024 * 1024).ToString(), result[3], "JSON of exactly the cap must arrive whole");
-        Assert.AreEqual("\"[object String]\"", result[4], "JSON one character past the cap must not");
+        Assert.AreEqual("\"[object Array]\"", result[2], "an undefined entry is written as null");
+        Assert.AreEqual("\"[object Array]\"", result[3], "NaN is written as null");
+        Assert.AreEqual("\"[object Object]\"", result[4], "a control character is written as an escape");
+        Assert.AreEqual("\"[object Object]\"", result[5], "a quote and a backslash are each written as an escape");
+        Assert.AreEqual((32 * 1024 * 1024).ToString(), result[6], "JSON of exactly the cap must arrive whole");
+        Assert.AreEqual("\"[object String]\"", result[7], "JSON one character past the cap must not");
     }
 
     [TestMethod]

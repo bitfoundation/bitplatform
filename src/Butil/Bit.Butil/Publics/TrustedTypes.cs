@@ -117,6 +117,8 @@ public class TrustedTypes(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Writes markup into an element through a policy - which is the point of having one: under
     /// enforcement this succeeds where assigning a string to <c>innerHTML</c> throws.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Element/setHTML">https://developer.mozilla.org/en-US/docs/Web/API/Element/setHTML</see>
     /// </summary>
     /// <remarks>
     /// A policy that sanitizes HTML (see <see cref="TrustedTypePolicyOptions.SanitizeHtml"/>) writes

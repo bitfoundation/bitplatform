@@ -13,6 +13,22 @@ public class TrustedTypesTests : ButilPageTest
     [TestMethod]
     public async Task A_Sanitizing_Policy_Parses_Markup_In_The_Target_Elements_Own_Context()
     {
+        // Sanitized in a template and then assigned to the table's innerHTML, the rows would survive as well - parsed
+        // twice, in two contexts. Only a call to the table's own setHTML shows the markup was parsed once, in place.
+        await Page.EvaluateAsync(
+            """
+            () => {
+                const table = document.getElementById('tt-table');
+                const setHTML = table.setHTML;
+                window.ttSetHtmlCalls = 0;
+                if (typeof setHTML !== 'function') return;
+                table.setHTML = function (...args) {
+                    window.ttSetHtmlCalls++;
+                    return setHTML.apply(this, args);
+                };
+            }
+            """);
+
         await ClickAndExpectAsync("tt-set-html", "tt:set:");
         var status = await CurrentStatusAsync();
 
@@ -20,6 +36,7 @@ public class TrustedTypesTests : ButilPageTest
 
         Assert.AreEqual("tt:set:True", status);
         Assert.AreEqual("<tbody><tr><td>x</td></tr></tbody>", await Page.Locator("#tt-table").InnerHTMLAsync());
+        Assert.AreEqual(1, await Page.EvaluateAsync<int>("() => window.ttSetHtmlCalls"), "the markup must be written with the table's own setHTML");
     }
 
     [TestMethod]

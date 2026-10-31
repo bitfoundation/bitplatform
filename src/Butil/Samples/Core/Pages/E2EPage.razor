@@ -1507,7 +1507,7 @@
 
         var exact = await compression.Decompress(packed, maxLength: zeros.Length);
         var over = await compression.Decompress(packed, maxLength: zeros.Length - 1);
-        Set($"compression:limit:{packed.Length < 1024}/{exact?.Length ?? -1}/{over is null}");
+        Set($"compression:limit:{packed.Length < 1024}/{exact?.Length ?? -1}/{exact.AsSpan().SequenceEqual(zeros)}/{over is null}");
     }
 
     // ─── Trusted Types ──────────────────────────────────────────────────────────
