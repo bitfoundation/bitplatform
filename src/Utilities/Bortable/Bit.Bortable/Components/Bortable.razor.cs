@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -96,8 +97,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// <c>false</c> to refuse. Asked with the proposed move - <see cref="BortableEventArgs{TItem}.NewIndex"/> is the
     /// index the item would have here, <see cref="BortableEventArgs{TItem}.FromId"/> the list it comes from - for a
     /// reorder within this list and for an item coming in from another list alike, before anything is shown. A
-    /// refused position keeps the item where it was, and the pointer shows that it cannot be dropped there. Keep it
-    /// fast and free of side effects: it runs while the pointer moves. Mirrors the SortableJS <c>onMove</c> option.
+    /// refused position keeps the item where it was, and the pointer shows that it cannot be dropped there. In swap
+    /// mode it is asked about the dragged item alone, with the index of the item it would trade places with; a swap
+    /// across lists also asks the list the dragged item is in about the item that would come back to it. A multi-drag
+    /// asks once more on the drop, with the index the item takes once the rest of the selection gathers next to it: a
+    /// refusal there puts every selected item back and ends the drag as cancelled. One that throws refuses the position
+    /// it was asked about, and the exception is passed on once that step of the drag is done: thrown to the caller of
+    /// <see cref="MoveAsync"/> or <see cref="MoveToAsync"/>, and raised as this list's own during a drag the user makes,
+    /// for the nearest <c>ErrorBoundary</c>. Keep it fast and free of side effects: it runs while the pointer moves.
+    /// Mirrors the SortableJS <c>onMove</c> option.
     /// </summary>
     [Parameter] public Func<BortableEventArgs<TItem>, bool>? CanDrop { get; set; }
 
@@ -116,7 +124,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// them as dropped meanwhile), <c>OnEnd</c> reports <see cref="BortableEventArgs{TItem}.Canceled"/>, and no
     /// <c>OnUpdate</c>, <c>OnAdd</c>, <c>OnRemove</c> or <c>OnSort</c> is raised. Return <c>true</c> to keep it: the
     /// events follow as usual. Do not change the lists while it runs: a refusal puts back what they held before the
-    /// drag.
+    /// drag. One that throws refuses the drop, and the exception is passed on once the drag is reported, as one
+    /// <see cref="CanDrop"/> throws is.
     /// </summary>
     [Parameter] public Func<BortableEventArgs<TItem>, Task<bool>>? ConfirmDrop { get; set; }
 
@@ -599,16 +608,19 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         if (abandoned is not null)
         {
             await ConfirmAndReportAsync(abandoned);
+            await PassOnAsync(abandoned.Context);
             if (_disposed || Items is null || Service.Confirming > 0 || !CanDrag(item)) return null;
         }
 
         await Service.Gate.WaitAsync();
         try
         {
-            info = Service.Context is null ? BeginDrag(item, InputOf(input), carrySelection: true) : null;
+            // Asked again inside the gate: a drop that ended while this call waited for the gate may be confirmed now
+            // (ConfirmAndReportAsync), and a drag started on its lists would be undone along with it.
+            info = Service.Context is null && Service.Confirming == 0 ? BeginDrag(item, InputOf(input), carrySelection: true) : null;
             if (info is not null && Service.Context is { } ctx)
             {
-                lists = [.. Service.Zones.Where(zone => zone.TakesDrag(ctx)).Select(zone => zone.Id)];
+                lists = ListsTaking(ctx);
                 announce = EffectiveMessages.PickedUp(Announcement(ctx, this, item!));
                 clone = ctx.PullMode == BortablePull.Clone;
                 started = ctx;
@@ -733,12 +745,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     private async Task<BortableKeyResult> KeyMoveAsync(string? listId, int index, int drag)
     {
+        BortableDragContext? ctx;
         BortableMoveInfo? change = null;
         BortableKeyResult result;
         await Service.Gate.WaitAsync();
         try
         {
-            var ctx = Service.ContextOf(drag);
+            ctx = Service.ContextOf(drag);
             if (ctx is null || ctx.Input != BortableInput.Keyboard) return NotDragging;
 
             var current = ctx.CurrentZone;
@@ -778,7 +791,10 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
                 Announce = announce,
                 List = zone.Id,
                 Key = zone.KeyOfItem(ctx.Item),
-                Target = ctx.SwapTargetItem is { } swapWith ? ctx.SwapTargetZone!.KeyOfItem(swapWith) : null
+                Target = ctx.SwapTargetItem is { } swapWith ? ctx.SwapTargetZone!.KeyOfItem(swapWith) : null,
+                // Carried into another list, the item may be taken by lists that did not take it where it was, and
+                // the other way round (a swap list trades with the list the item is in).
+                Lists = ListsTaking(ctx)
             };
         }
         finally
@@ -787,6 +803,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
 
         if (change is not null) await change.To.RaiseEventAsync(BortableEventType.Change, change);
+        await PassOnAsync(ctx);
         return result;
     }
 
@@ -876,7 +893,9 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         var zone = outcome.Info.To;
         var key = zone.KeyOfItem(outcome.Info.Item);
         zone.Focus(key);
-        return new BortableKeyResult { Announce = EndAnnouncement(outcome), List = zone.Id, Key = key };
+        var result = new BortableKeyResult { Announce = EndAnnouncement(outcome), List = zone.Id, Key = key };
+        await PassOnAsync(outcome.Context);
+        return result;
     }
 
     private static BortableInput InputOf(string input) => input switch
@@ -941,9 +960,17 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     {
         if (ReferenceEquals(ctx.CurrentZone, this)) return true;
 
-        // Swapping moves the dragged item here and the target item to the source list, so both directions must be allowed.
-        return CanAccept(ctx) && (!Swap || (EffectivePull != BortablePull.None && ctx.Source.CanReceiveFrom(this)));
+        // Swapping moves the dragged item here and the target item to the list the dragged item is in (the source, unless
+        // a keyboard drag carried it into another list), so both directions must be allowed.
+        return CanAccept(ctx) && (!Swap || (EffectivePull != BortablePull.None && ctx.CurrentZone.CanReceiveFrom(this)));
     }
+
+    /// <summary>
+    /// The ids of the lists the browser layer routes <paramref name="ctx"/> to: those that take it, and the list it
+    /// started in, which takes the item back from wherever a keyboard drag carried it.
+    /// </summary>
+    private string[] ListsTaking(BortableDragContext ctx)
+        => [.. Service.Zones.Where(zone => ReferenceEquals(zone, ctx.Source) || zone.TakesDrag(ctx)).Select(zone => zone.Id)];
 
     // What ApplyOver answers: a list changed, nothing changed, or this list refused the position.
     private const int Changed = 1, Unchanged = 0, Refused = -1;
@@ -956,12 +983,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// </summary>
     private async Task<int> OverAsync(int index, int drag)
     {
+        BortableDragContext? ctx;
         BortableMoveInfo? change;
         int result;
         await Service.Gate.WaitAsync();
         try
         {
-            var ctx = Service.ContextOf(drag);
+            ctx = Service.ContextOf(drag);
             if (ctx is null || _disposed || !HandlesDrag(ctx)) return Refused;
             result = ApplyOver(ctx, index, out change);
         }
@@ -971,6 +999,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
 
         if (change is not null) await RaiseEventAsync(BortableEventType.Change, change);
+        await PassOnAsync(ctx);
         return result;
     }
 
@@ -1046,10 +1075,31 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     }
 
     /// <summary>Whether <see cref="CanDrop"/> lets the dragged item take index <paramref name="newIndex"/> of this list.</summary>
-    private bool AllowsDrop(BortableDragContext ctx, int newIndex)
-        => CanDrop is null || CanDrop(ArgsOf(MoveInfo(ctx, this, newIndex)));
+    private bool AllowsDrop(BortableDragContext ctx, int newIndex) => CanDropAllows(ctx, MoveInfo(ctx, this, newIndex));
 
-    private bool AllowsMove(BortableMoveInfo info) => info.Item is TItem && (CanDrop is null || CanDrop(ArgsOf(info)));
+    /// <summary>Whether <paramref name="info"/> moves an item of this list's type, to a position <see cref="CanDrop"/> allows.</summary>
+    private bool AllowsMove(BortableDragContext ctx, BortableMoveInfo info) => info.Item is TItem && CanDropAllows(ctx, info);
+
+    /// <summary>
+    /// Asks <see cref="CanDrop"/> about <paramref name="info"/>, a move of the drag <paramref name="ctx"/>, inside the
+    /// gate. One that throws refuses the move: the drag is left whole - no move half made, no drag left in progress
+    /// with nobody to end it - and the exception is kept on <paramref name="ctx"/>, to be passed on once the gate is
+    /// released (<see cref="PassOnAsync"/>, <see cref="MoveCoreAsync"/>).
+    /// </summary>
+    private bool CanDropAllows(BortableDragContext ctx, BortableMoveInfo info)
+    {
+        if (CanDrop is null) return true;
+        var args = ArgsOf(info);
+        try
+        {
+            return CanDrop(args);
+        }
+        catch (Exception exception)
+        {
+            ctx.Fail(exception);
+            return false;
+        }
+    }
 
     /// <summary>
     /// Whether the item currently being dragged (and, for a multi-drag, the rest of the
@@ -1130,9 +1180,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         if ((!home || AllowSort) && index >= 0 && index < Items.Count)
         {
             var candidate = Items[index];
+            // Across lists the candidate goes where the dragged item is: the source, or the list a keyboard drag
+            // carried it into. A value-equal duplicate there would break Blazor's unique @key.
+            var back = ctx.CurrentZone;
             bool valid = candidate is not null && (home
-                ? !Equals(candidate, ctx.Item)                                          // not the dragged item itself
-                : ctx.Source.Accepts(candidate) && ctx.Source.IndexOf(candidate) < 0);  // fits the source list
+                ? !Equals(candidate, ctx.Item)                                  // not the dragged item itself
+                : back.Accepts(candidate) && back.IndexOf(candidate) < 0);      // fits the list it goes to
             if (valid && !AllowsSwap(ctx, index, candidate!, home))
             {
                 SetSwapTarget(ctx, null, null);
@@ -1144,6 +1197,11 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return (SetSwapTarget(ctx, target is null ? null : this, target) | changed) ? Changed : Unchanged;
     }
 
+    /// <summary>
+    /// Whether <see cref="CanDrop"/> lets the dragged item take the place of <paramref name="partner"/>, at
+    /// <paramref name="index"/> of this list, and - across lists - whether the list the dragged item is in lets
+    /// <paramref name="partner"/> take its place. A swap trades the items themselves, so neither is proposed as a clone.
+    /// </summary>
     private bool AllowsSwap(BortableDragContext ctx, int index, object partner, bool home)
     {
         var swapped = new BortableMoveInfo
@@ -1155,11 +1213,11 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             To = this,
             Input = ctx.Input
         };
-        if (!AllowsMove(swapped)) return false;
+        if (!AllowsMove(ctx, swapped)) return false;
         if (home) return true;
 
         var back = ctx.CurrentZone;
-        return back.AllowsMove(new BortableMoveInfo
+        return back.AllowsMove(ctx, new BortableMoveInfo
         {
             Item = partner,
             OldIndex = index,
@@ -1193,7 +1251,11 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         return true;
     }
 
-    /// <summary>Trades the dragged item's slot with the highlighted swap target.</summary>
+    /// <summary>
+    /// Trades the dragged item's slot with the highlighted swap target. The list the item leaves is the one it is in:
+    /// the source, unless a keyboard drag carried it into another list, which then changes too (see
+    /// <see cref="ReportAsync"/>).
+    /// </summary>
     private static void CommitSwap(BortableDragContext ctx)
     {
         var fromZone = ctx.CurrentZone;
@@ -1250,13 +1312,16 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         if (outcome is null) return null;
         outcome = await ConfirmAndReportAsync(outcome);
-        return how == "abandon" ? null : EndAnnouncement(outcome);
+        var announce = how == "abandon" ? null : EndAnnouncement(outcome);
+        await PassOnAsync(outcome.Context);
+        return announce;
     }
 
     /// <summary>
     /// Ends <paramref name="ctx"/>, inside the gate. With <paramref name="commit"/> the pending swap or placeholder
     /// is committed and a multi-drag selection gathered; without it (a drag that ends before it was released, as
     /// its list is gone) whatever is pending is dropped and the lists keep what the drag already did to them.
+    /// A multi-drag whose gathering <see cref="CanDrop"/> refuses is put back, and ends as cancelled.
     /// Returns what <see cref="ReportAsync"/> raises once the gate is released.
     /// </summary>
     private BortableDragOutcome Finish(BortableDragContext ctx, bool commit)
@@ -1267,16 +1332,17 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         var placeholderZone = ctx.PlaceholderZone;
         var swapZone = ctx.SwapTargetZone;
         IReadOnlyList<object>? moved = null;
+        bool refused = false;
         try
         {
-            if (commit) moved = Commit(ctx);
+            if (commit) moved = Commit(ctx, out refused);
         }
         finally
         {
             EndDrag(ctx, placeholderZone, swapZone);
         }
 
-        return Outcome(ctx, moved, canceled: false);
+        return Outcome(ctx, moved, canceled: refused);
     }
 
     /// <summary>
@@ -1446,8 +1512,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
 
         // The move is already made: a handler of OnStart or OnChange that throws does not keep it from being confirmed
-        // and reported - OnEnd still follows OnStart - and its exception is passed on after.
-        Exception? failure = null;
+        // and reported - OnEnd still follows OnStart - and its exception is passed on after, as one CanDrop threw is.
         try
         {
             await RaiseEventAsync(BortableEventType.Start, start);
@@ -1455,22 +1520,27 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         }
         catch (Exception exception)
         {
-            failure = exception;
+            outcome.Context.Fail(exception);
         }
         outcome = await ConfirmAndReportAsync(outcome);
-        if (failure is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(failure);
 
         // A screen reader hears what a button or a menu just did, as it would for a keyboard drag.
         var info = outcome.Info;
         if (!info.Canceled) await InvokeJsVoidAsync("announce", EffectiveMessages.Moved(Announcement(outcome.Context, info.To, info.Item)));
+
+        // The app's own code asked for the move: what its CanDrop, ConfirmDrop or handlers threw goes back to it.
+        if (outcome.Context.TakeFailure() is { } failure) ExceptionDispatchInfo.Throw(failure);
         return !info.Canceled;
     }
 
     /// <summary>
     /// Asks the destination's <see cref="ConfirmDrop"/> whether to keep a drag that changed the lists, puts them back
-    /// when it says no, then reports the outcome, which it returns. No other drag starts while it is asked.
+    /// when it says no, then reports the outcome, which it returns. No other drag starts while it is asked. One that
+    /// throws refuses the drag - OnEnd still follows OnStart - and its exception is kept on the drag, for the caller to
+    /// pass on once it is done. Without <paramref name="ask"/> it is not asked, and a destination that has one is taken
+    /// to refuse: a drag it could not confirm is not kept.
     /// </summary>
-    private async Task<BortableDragOutcome> ConfirmAndReportAsync(BortableDragOutcome outcome)
+    private async Task<BortableDragOutcome> ConfirmAndReportAsync(BortableDragOutcome outcome, bool ask = true)
     {
         if (!outcome.Info.Canceled && outcome.ChangedZones.Count > 0)
         {
@@ -1481,13 +1551,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
                 bool keep;
                 try
                 {
-                    keep = await outcome.Info.To.ConfirmAsync(outcome.Info);
+                    keep = ask ? await outcome.Info.To.ConfirmAsync(outcome.Info) : !outcome.Info.To.ConfirmsDrop;
                 }
-                catch
+                catch (Exception exception)
                 {
-                    // Put back and reported like a refusal - OnEnd still follows OnStart - before the exception goes on.
-                    await ReportAsync(await RefuseAsync(outcome));
-                    throw;
+                    outcome.Context.Fail(exception);
+                    keep = false;
                 }
 
                 if (!keep) outcome = await RefuseAsync(outcome);
@@ -1498,9 +1567,27 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             }
         }
 
-        await ReportAsync(outcome);
+        // A handler that throws while the drag is reported does not lose what was kept to pass on: both are raised.
+        try
+        {
+            await ReportAsync(outcome);
+        }
+        catch (Exception exception) when (outcome.Context.Failure is not null)
+        {
+            throw new AggregateException(exception, outcome.Context.TakeFailure()!);
+        }
         return outcome;
     }
+
+    /// <summary>
+    /// Passes on what the app's code threw while <paramref name="ctx"/> was decided (see
+    /// <see cref="BortableDragContext.Failure"/>), once the browser layer's call has done its work - put back, reported,
+    /// answered. That call does not come from the app's code, which could catch the exception, and the browser layer
+    /// has no use for it: it is raised as this list's own, as one thrown by an event handler would be, for the nearest
+    /// <c>ErrorBoundary</c> to handle.
+    /// </summary>
+    private Task PassOnAsync(BortableDragContext ctx)
+        => ctx.TakeFailure() is { } failure ? DispatchExceptionAsync(failure) : Task.CompletedTask;
 
     /// <summary>Puts every list a refused drag changed back to what it held before the drag, sliding the items back.</summary>
     private async Task<BortableDragOutcome> RefuseAsync(BortableDragOutcome outcome)
@@ -1544,9 +1631,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         };
     }
 
-    /// <summary>Commits the pending swap or placeholder and gathers a multi-drag selection; returns the items a multi-drag moved.</summary>
-    private static IReadOnlyList<object>? Commit(BortableDragContext ctx)
+    /// <summary>
+    /// Commits the pending swap or placeholder and gathers a multi-drag selection; returns the items a multi-drag moved.
+    /// <paramref name="refused"/> tells that the gathering was refused, and the drag put back.
+    /// </summary>
+    private static IReadOnlyList<object>? Commit(BortableDragContext ctx, out bool refused)
     {
+        refused = false;
         if (ctx.SwapTargetZone is not null && ctx.SwapTargetItem is not null)
         {
             CommitSwap(ctx);
@@ -1555,7 +1646,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         if (ctx.PlaceholderZone is { } target && !ReferenceEquals(target, ctx.CurrentZone))
             target.CommitPlaceholder(ctx);
-        return ctx.MultiItems is not null ? CollectMulti(ctx) : null;
+        return ctx.MultiItems is not null ? CollectMulti(ctx, out refused) : null;
     }
 
     /// <summary>
@@ -1593,6 +1684,15 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
             if (outcome.SourceChanged) await from.RaiseEventAsync(BortableEventType.Sort, info);
             await info.To.RaiseEventAsync(BortableEventType.Sort, info);
         }
+
+        // A list that is neither - one a keyboard drag carried the item into, which a swap then traded it away from - was
+        // changed by the drag too (CommitSwap).
+        if (!info.Canceled)
+        {
+            foreach (var zone in outcome.ChangedZones)
+                if (!ReferenceEquals(zone, from) && !ReferenceEquals(zone, info.To))
+                    await zone.RaiseEventAsync(BortableEventType.Sort, info);
+        }
         await from.RaiseEventAsync(BortableEventType.End, info);
     }
 
@@ -1600,10 +1700,13 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     /// Gathers the rest of the multi-drag selection next to the primary item, which has
     /// already been positioned by the normal reorder / placeholder flow. The selected
     /// block is removed from wherever it sits and re-inserted contiguously, in its
-    /// original order, at the primary's position in the destination list.
+    /// original order, at the primary's position in the destination list. When the destination's
+    /// <c>CanDrop</c> refuses the index the primary takes then, nothing is gathered, the primary is
+    /// put back, and <paramref name="refused"/> is set.
     /// </summary>
-    private static IReadOnlyList<object>? CollectMulti(BortableDragContext ctx)
+    private static IReadOnlyList<object>? CollectMulti(BortableDragContext ctx, out bool refused)
     {
+        refused = false;
         var block = ctx.MultiItems;
         if (block is null || block.Count <= 1) return null;
 
@@ -1623,9 +1726,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         for (int i = 0; i < primaryPos; i++)
             if (!BlockContains(block, target.ItemAt(i))) anchor++;
 
+        // A CanDrop that throws refuses too (CanDropAllows): the drag is still put back and reported, and the exception
+        // passed on after.
         if (!target.AllowsDropAt(ctx, anchor + block.IndexOf(ctx.Item)))
         {
             PutBack(ctx);
+            refused = true;
             return null;
         }
 
@@ -1828,6 +1934,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
     bool IBortableZone.AllowSort => AllowSort;
     bool IBortableZone.RevertOnSpill => RevertOnSpill;
     bool IBortableZone.IsSwap => Swap;
+    bool IBortableZone.ConfirmsDrop => ConfirmDrop is not null;
     bool IBortableZone.CanReceiveFrom(IBortableZone source) => CanReceiveFrom(source);
     bool IBortableZone.Accepts(object item) => item is TItem;
     bool IBortableZone.TakesDrag(BortableDragContext ctx) => !_disposed && HandlesDrag(ctx);
@@ -1847,7 +1954,8 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     void IBortableZone.SetItems(object?[] items)
     {
-        var list = Items!;
+        // The page may have taken the list away, or replaced it with one that cannot change, since: nothing to put back.
+        if (Items is not { IsReadOnly: false } list) return;
         list.Clear();
         foreach (var item in items) list.Add((TItem)item!);
     }
@@ -1925,7 +2033,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
     bool IBortableZone.AllowsDropAt(BortableDragContext ctx, int newIndex) => AllowsDrop(ctx, newIndex);
 
-    bool IBortableZone.AllowsMove(BortableMoveInfo info) => AllowsMove(info);
+    bool IBortableZone.AllowsMove(BortableDragContext ctx, BortableMoveInfo info) => AllowsMove(ctx, info);
 
     private Task RaiseEventAsync(BortableEventType type, BortableMoveInfo info)
     {
@@ -1981,16 +2089,22 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
         var module = _module;
         _module = null; // shared by every list of the scope; BortableService releases it
 
-        await LeaveDragAsync();
-
-        if (module is not null && _appliedOptions is not null)
+        try
         {
-            try { await module.InvokeVoidAsync("unregister", _listElement); }
-            catch (JSDisconnectedException) { }
-            catch (ObjectDisposedException) { }
-            catch (TaskCanceledException) { }
+            // Raises the app's handlers, which may throw: the list leaves the browser layer all the same.
+            await LeaveDragAsync();
         }
-        _bridge?.Dispose();
+        finally
+        {
+            if (module is not null && _appliedOptions is not null)
+            {
+                try { await module.InvokeVoidAsync("unregister", _listElement); }
+                catch (JSDisconnectedException) { }
+                catch (ObjectDisposedException) { }
+                catch (TaskCanceledException) { }
+            }
+            _bridge?.Dispose();
+        }
     }
 
     private async Task LeaveDragAsync()
@@ -1999,9 +2113,12 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
 
         if (ReferenceEquals(ctx.Source, this) || ReferenceEquals(ctx.CurrentZone, this))
         {
-            // The list the item is dragged from is gone: the drag ends where it is, its pending preview dropped.
-            // What it already did stays and is reported like the end of any other drag - a live reorder changed
-            // the bound list, which the app may save on ItemsChanged or OnUpdate, and OnEnd still follows OnStart.
+            // The list the item is dragged from is gone: the drag ends where it is, its pending preview dropped, and
+            // is reported like the end of any other drag - OnEnd still follows OnStart. What it already did stays - a
+            // live reorder changed the bound list, which the app may save on ItemsChanged or OnUpdate - unless the
+            // list it is in has a ConfirmDrop: that is not asked here, as the page may be going away, and a dialog it
+            // opens with it, which would leave this disposal waiting for ever. A drag it could not confirm is not
+            // kept: what it did is put back, as a refusal would.
             BortableDragOutcome? outcome = null;
             await Service.Gate.WaitAsync();
             try
@@ -2013,7 +2130,7 @@ public partial class Bortable<TItem> : IBortableZone, IHandleEvent, IAsyncDispos
                 Service.Gate.Release();
             }
 
-            if (outcome is not null) await ReportAsync(outcome);
+            if (outcome is not null) await ConfirmAndReportAsync(outcome, ask: false);
             return;
         }
 

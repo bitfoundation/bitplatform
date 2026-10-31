@@ -390,6 +390,80 @@ public class KeyboardTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task AGatheringCanDropThrowsOnStillSaysTheDragWasCancelledAndWhereTheItemIs()
+    {
+        List<string> left = ["A", "B", "C"], right = ["X"];
+        var (l1, _) = RenderPair(left, right,
+            leftExtra: p => p.Add(c => c.MultiDrag, true),
+            // C may lead the way in at 0; gathered behind A, it would be at 1.
+            rightExtra: p => p.Add(c => c.CanDrop, e => e.NewIndex == 1 ? throw new InvalidOperationException("offline") : true));
+
+        await ClickAsync(l1, "A");
+        await ClickAsync(l1, "C");
+        await PickAsync(l1, "C");
+        await KeyAsync(l1, "to", "L2", 0);
+        var dropped = await KeyAsync(l1, "drop");
+
+        Assert.AreEqual("offline", (await PassedOnAsync()).Message);
+        Assert.AreSequenceEqual(["A", "B", "C"], left);
+        Assert.AreSequenceEqual(["X"], right);
+        // What the browser layer needs to say so, and to put the focus on the item where it is back.
+        Assert.AreEqual("Cancelled. C is back at position 3 of 3 in To do.", dropped.Announce);
+        Assert.AreEqual("L1", dropped.List);
+        Assert.AreEqual(KeyOf(l1, "C"), dropped.Key);
+    }
+
+    [TestMethod]
+    public async Task AKeyboardStepThatCanDropThrowsOnIsRefusedAndTheDragGoesOn()
+    {
+        List<string> items = ["A", "B", "C"];
+        var list = RenderList(items, extra: p => p.Add(c => c.CanDrop, e => e.NewIndex == 2 ? throw new InvalidOperationException("offline") : true));
+
+        await PickAsync(list, "A");
+        var refused = await KeyAsync(list, "to", index: 2);
+
+        Assert.AreEqual("offline", (await PassedOnAsync()).Message);
+        Assert.IsTrue(refused.Dragging);
+        Assert.AreEqual("A cannot be moved there.", refused.Announce);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+
+        await KeyAsync(list, "to", index: 1);
+        await KeyAsync(list, "drop");
+        Assert.AreSequenceEqual(["B", "A", "C"], items);
+    }
+
+    [TestMethod]
+    public async Task CarriedIntoAnotherListTheItemIsOfferedTheListsThatTakeItThere()
+    {
+        // A swap list trades with the list the item is in: not with the palette it comes from, which takes nothing in,
+        // but with the list it is carried into.
+        List<string> palette = ["a", "b"], words = ["x"], swap = ["y"];
+        var s = RenderList(palette, "S", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.Pull, BortablePull.Clone);
+            p.Add(c => c.Put, false);
+        });
+        RenderList(words, "W", p => p.Add(c => c.Group, "g"));
+        RenderList(swap, "Z", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.Swap, true);
+        });
+
+        var picked = await PickAsync(s, "a");
+        Assert.AreSequenceEqual(["S", "W"], picked.Lists!.Order().ToList());
+
+        var carried = await KeyAsync(s, "to", "W", 0);
+        Assert.AreSequenceEqual(["a", "x"], words);
+        // The palette stays on offer: the item goes back home from wherever it is.
+        Assert.AreSequenceEqual(["S", "W", "Z"], carried.Lists!.Order().ToList());
+
+        var over = await KeyAsync(s, "to", "Z", 0);
+        Assert.IsNotNull(over.Target);
+    }
+
+    [TestMethod]
     public async Task KeysWithoutAKeyboardDragDoNothing()
     {
         List<string> items = ["A", "B"];

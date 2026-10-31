@@ -95,4 +95,25 @@ internal sealed class BortableDragContext
 
     /// <summary>Guards against finalizing the same drag twice (drop + dragend).</summary>
     public bool Finished { get; set; }
+
+    /// <summary>
+    /// What the app's code threw while this drag was decided - <c>CanDrop</c> inside the gate, <c>ConfirmDrop</c> - or,
+    /// for a move made by code, while it was reported. It was taken as a refusal there, so the drag stays whole and is
+    /// still reported; the call that met it passes it on once it is done (see <see cref="TakeFailure"/>). The first
+    /// one is kept. Should reporting the drag throw as well, neither is lost: the reporting exception is wrapped with
+    /// this one in an <see cref="AggregateException"/> - the reporting exception first - which is thrown in place of
+    /// either.
+    /// </summary>
+    public Exception? Failure { get; private set; }
+
+    /// <summary>Keeps <paramref name="exception"/> as the <see cref="Failure"/> to pass on, unless there is one already.</summary>
+    public void Fail(Exception exception) => Failure ??= exception;
+
+    /// <summary>The <see cref="Failure"/> to pass on, which the drag no longer holds: it is passed on once.</summary>
+    public Exception? TakeFailure()
+    {
+        var failure = Failure;
+        Failure = null;
+        return failure;
+    }
 }

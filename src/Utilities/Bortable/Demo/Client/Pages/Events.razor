@@ -79,7 +79,7 @@
                 <tr><td class="bb-table-key"><code>CrossedLists</code></td><td><code>true</code> when the item moved between lists.</td></tr>
                 <tr><td class="bb-table-key"><code>Input</code></td><td>How the drag was made: <code>Mouse</code>, <code>Touch</code>, <code>Pen</code>, <code>Keyboard</code>, or <code>Api</code> for a move made by code.</td></tr>
                 <tr><td class="bb-table-key"><code>IsClone</code></td><td><code>true</code> when a copy goes into another list and the original stays (see <a href="cloning">cloning</a>).</td></tr>
-                <tr><td class="bb-table-key"><code>Canceled</code></td><td>On <code>OnEnd</code>: the drag kept nothing - cancelled, spilled with <code>RevertOnSpill</code>, or refused by <code>ConfirmDrop</code> (see <a href="rules">rules</a>).</td></tr>
+                <tr><td class="bb-table-key"><code>Canceled</code></td><td>On <code>OnEnd</code>: the drag kept nothing - cancelled, spilled with <code>RevertOnSpill</code>, refused by <code>ConfirmDrop</code> or, for a multi-drag's gathering, by <code>CanDrop</code> (see <a href="rules">rules</a>), or ended as its list left the page with a <code>ConfirmDrop</code> to ask.</td></tr>
             </tbody>
         </table>
     </div>

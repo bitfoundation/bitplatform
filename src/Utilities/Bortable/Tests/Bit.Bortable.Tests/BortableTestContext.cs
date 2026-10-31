@@ -120,6 +120,17 @@ public abstract class BortableTestContext : BunitContext
     protected static Task ClickAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
         => ItemElement(list, label).ClickAsync(new MouseEventArgs());
 
+    /// <summary>
+    /// The exception a list passed on during a call the browser layer made, which no code of the app's could catch: it
+    /// raises it as its own, for the nearest <c>ErrorBoundary</c>, and without one it reaches the renderer.
+    /// </summary>
+    protected async Task<Exception> PassedOnAsync()
+    {
+        var passedOn = Renderer.UnhandledException;
+        Assert.IsTrue(passedOn.IsCompleted, "No exception was passed on.");
+        return await passedOn;
+    }
+
     // ---- reading the markup ----
 
     /// <summary>The labels of the rendered items in DOM order, the drop placeholder left out.</summary>

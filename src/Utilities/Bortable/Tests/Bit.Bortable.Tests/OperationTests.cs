@@ -204,6 +204,75 @@ public class OperationTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task ACanDropThatThrowsRefusesThePositionAndTheDragGoesOn()
+    {
+        List<string> items = ["A", "B", "C"];
+        var log = new List<Raised<string>>();
+        var list = RenderList(items, "L1", p =>
+        {
+            p.Add(c => c.CanDrop, e => e.NewIndex == 2 ? throw new InvalidOperationException("offline") : true);
+            Record(p, "L1", log);
+        });
+
+        await DragStartAsync(list, "A");
+
+        // Refused, and passed on as the list's own: the browser layer has no use for it.
+        Assert.AreEqual(-1, await OverResultAsync(list, 3));
+        Assert.AreEqual("offline", (await PassedOnAsync()).Message);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+
+        Assert.IsNotNull(Coordinator.Context, "The drag goes on.");
+        Assert.AreEqual(1, await OverResultAsync(list, 2));
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["B", "A", "C"], items);
+        Assert.IsFalse(Single(log, "End", "L1").Canceled);
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
+    public async Task AMoveMadeByCodeThatCanDropThrowsOnIsReportedAndThrowsToTheCaller()
+    {
+        List<string> items = ["A", "B", "C"];
+        var log = new List<Raised<string>>();
+        var list = RenderList(items, "L1", p =>
+        {
+            p.Add(c => c.CanDrop, e => e.NewIndex == 0 ? throw new InvalidOperationException("offline") : true);
+            Record(p, "L1", log);
+        });
+
+        var error = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => list.InvokeAsync(() => list.Instance.MoveAsync("C", 0)));
+
+        Assert.AreEqual("offline", error.Message);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+        // The drag the move made is over, and reported: OnEnd still follows OnStart.
+        Assert.IsNull(Coordinator.Context);
+        Assert.AreEqual("Start:L1 End:L1", Sequence(log));
+        Assert.IsTrue(Single(log, "End", "L1").Canceled);
+
+        Assert.IsTrue(await list.InvokeAsync(() => list.Instance.MoveAsync("C", 1)), "The next move is not blocked.");
+        Assert.AreSequenceEqual(["A", "C", "B"], items);
+    }
+
+    [TestMethod]
+    public async Task AHandlerThatThrowsWhileAFailedMoveIsReportedThrowsBothToTheCaller()
+    {
+        List<string> items = ["A", "B", "C"];
+        var list = RenderList(items, "L1", p =>
+        {
+            p.Add(c => c.CanDrop, e => e.NewIndex == 0 ? throw new InvalidOperationException("offline") : true);
+            p.Add(c => c.OnEnd, (BortableEventArgs<string> _) => throw new InvalidOperationException("boom"));
+        });
+
+        var error = await Assert.ThrowsExactlyAsync<AggregateException>(() => list.InvokeAsync(() => list.Instance.MoveAsync("C", 0)));
+
+        // The handler's exception first, then what CanDrop threw: neither is lost.
+        Assert.AreSequenceEqual(["boom", "offline"], error.InnerExceptions.Select(e => e.Message));
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
     public async Task ARefusedPositionKeepsThePreviewWhereItWas()
     {
         List<string> left = ["A"], right = ["X", "Y", "Z"];
@@ -357,6 +426,32 @@ public class OperationTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task ADragAskedForAsADropEndsDoesNotStartOnListsTheDropMayPutBack()
+    {
+        List<string> items = ["A", "B", "C"];
+        var answer = new TaskCompletionSource<bool>();
+        var list = RenderList(items, extra: p => p.Add(c => c.ConfirmDrop, _ => answer.Task));
+        var b = KeyOf(list, "B");
+
+        await DragStartAsync(list, "A");
+        await DragOverAsync(list, 3);
+
+        // The drop and the next drag both wait for the gate, the drop first: the drag was asked for before the drop
+        // was being confirmed, and gets the gate once it is.
+        await Coordinator.Gate.WaitAsync();
+        var drop = DropAsync(list);
+        var start = StartByKeyAsync(list, b);
+        Coordinator.Gate.Release();
+
+        Assert.IsNull(await start);
+        Assert.IsNull(Coordinator.Context);
+
+        answer.SetResult(false);
+        await drop;
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+    }
+
+    [TestMethod]
     public async Task ADropThatChangesNothingIsNotConfirmed()
     {
         int asked = 0;
@@ -382,7 +477,8 @@ public class OperationTests : BortableTestContext
         await DragStartAsync(list, "A");
         await DragOverAsync(list, 3);
 
-        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => DropAsync(list));
+        await DropAsync(list);
+        Assert.AreEqual("offline", (await PassedOnAsync()).Message);
         Assert.AreSequenceEqual(["A", "B", "C"], items);
         // OnEnd still follows OnStart, reporting the drag cancelled.
         Assert.IsTrue(Single(log, "End", "L1").Canceled);

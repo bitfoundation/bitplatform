@@ -896,6 +896,12 @@ function markAccepting(s: Session): void {
     }
 }
 
+/** Takes the lists that take the drag as .NET answered them again, after a step that carried the item into another list. */
+function updateAccepting(s: Session, ids: string[]): void {
+    s.accepting = new Set(ids);
+    for (const list of lists.values()) mark(s, list.el, ACCEPTS, s.accepting.has(list.opts.id));
+}
+
 function markOver(s: Session, list: ListState | null): void {
     const el = list?.el ?? null;
     if (s.overEl && s.overEl !== el) {
@@ -1040,7 +1046,9 @@ async function invokeAny<T>(preferred: ListState, method: string, ...args: unkno
         try {
             return await list.ref.invokeMethodAsync<T>(method, ...args);
         } catch {
-            // Disposed: try the next one.
+            // Disposed: try the next one. A list still on the page failed with an error of its own (or .NET is gone),
+            // which no other list would mend: asking them only repeats the call.
+            if (lists.get(list.el) === list && list.el.isConnected) return undefined;
         }
     }
     return undefined;
@@ -1396,6 +1404,7 @@ async function takeKeyStep(s: Session, step: KeyStep): Promise<void> {
             return;
         }
         announce(result.announce);
+        if (result.dragging && result.lists) updateAccepting(s, result.lists);
         follow(s, result, step.refocus !== false);
         if (!result.dragging) end(s);
     })();
