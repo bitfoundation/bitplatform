@@ -230,7 +230,9 @@ public class KeyboardReconnectionReviewTests : BunitContext
     }
 
     [TestMethod]
-    public async Task AnApprovalHoldsOnlyForTheWiringItWasAskedAbout()
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task AnApprovalHoldsOnlyForTheWiringItWasAskedAbout(bool approved)
     {
         var (nodes, edges, measured) = Graph();
         var asked = new List<BlowConnection>();
@@ -258,13 +260,60 @@ public class KeyboardReconnectionReviewTests : BunitContext
         await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
         await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
 
-        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "b") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        // d -> b was approved, but a -> c went first: moving the source to d now makes d -> c, which nobody approved.
+        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "b"), ("d", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
         Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target), "d -> c was applied, though only a -> c and d -> b were approved");
-        Assert.AreEqual(BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
-        CollectionAssert.AreEqual(new[] { (true, true, BlowConnectionRejection.None), (true, false, BlowConnectionRejection.RejectedByRule) },
+        Assert.IsTrue(connectEnds[^1] is { IsReconnect: true, IsValid: true }, "the move still waiting on the app was reported ended");
+
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(approved));
+
+        Assert.AreEqual(approved ? ("d", "c") : ("a", "c"), (edges[0].Source, edges[0].Target));
+        Assert.AreEqual(approved
+            ? BlowAriaLabels.Default.Reconnected("Other source", "Other sink")
+            : BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
+        CollectionAssert.AreEqual(new[]
+            {
+                (true, true, BlowConnectionRejection.None),
+                (true, approved, approved ? BlowConnectionRejection.None : BlowConnectionRejection.RejectedByRule),
+            },
             connectEnds.TakeLast(2).Select(e => (e.IsReconnect, e.IsValid, e.Rejection)).ToArray());
-        CollectionAssert.AreEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, false) },
+        CollectionAssert.AreEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, approved) },
             reconnectEnds.TakeLast(2).Select(e => (e.MovingEnd, e.Rewired)).ToArray());
+    }
+
+    [TestMethod]
+    public async Task AWiringThatWillNotHoldStillIsAskedAboutThreeTimesThenDropped()
+    {
+        var (nodes, edges, measured) = Graph();
+        var asked = new List<BlowConnection>();
+        var pending = new Queue<TaskCompletionSource<bool>>();
+        var connectEnds = new List<BlowConnectEndInfo>();
+        var cut = Render(nodes, edges, measured, p => p
+            .Add(c => c.OnBeforeConnect, connection =>
+            {
+                asked.Add(connection);
+                var answer = new TaskCompletionSource<bool>();
+                pending.Enqueue(answer);
+                return answer.Task;
+            })
+            .Add(c => c.OnConnectEnd, e => connectEnds.Add(e)));
+
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "c");
+        await NodeKey(cut, "c", "Enter");   // target to c, waiting for the app
+
+        // A collaborator keeps moving the source while the app is deciding, so each yes covers a wiring already gone.
+        foreach (var source in new[] { "d", "a", "d" })
+        {
+            await cut.InvokeAsync(() => cut.Instance.EditAsync(() => edges[0].Source = source));
+            await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+        }
+
+        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "c"), ("a", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.IsEmpty(pending, "the app was asked a fourth time");
+        Assert.AreEqual(("d", "b"), (edges[0].Source, edges[0].Target), "a wiring the app never approved was applied");
+        Assert.AreEqual((true, false, BlowConnectionRejection.RejectedByRule),
+            (connectEnds[^1].IsReconnect, connectEnds[^1].IsValid, connectEnds[^1].Rejection));
     }
 
     [TestMethod]

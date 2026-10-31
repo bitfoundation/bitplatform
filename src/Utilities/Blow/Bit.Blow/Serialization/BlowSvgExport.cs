@@ -80,17 +80,19 @@ public static class BlowSvgExport
 
         var index = new Dictionary<string, BlowNode>(StringComparer.Ordinal);
         foreach (var n in nodes) index.TryAdd(n.Id, n);
+        var nesting = Nesting(nodes, index);
         var rects = new Dictionary<string, BlowRect>(StringComparer.Ordinal);
         foreach (var n in nodes)
         {
             if (!IsShown(n, index)) continue;
-            rects[n.Id] = AbsoluteRect(n, index, o.NodeOrigin);
+            rects[n.Id] = AbsoluteRect(n, nesting[n.Id].Position, o.NodeOrigin);
         }
 
         // Edges first, so they run beneath the nodes as on the canvas; groups beneath their children. An end folded
         // into a collapsed group is drawn to the group, as the canvas draws it.
         var paths = new List<(BlowEdge Edge, BlowPathResult Path)>();
         Func<BlowNode, bool> shown = n => rects.ContainsKey(n.Id);
+        BlowSpatialGrid<(string Id, BlowRect Rect)>? grid = null; // built when the first routed edge asks for it
         foreach (var e in edges)
         {
             if (e.Hidden
@@ -109,7 +111,7 @@ public static class BlowSvgExport
                 path = BlowEdgePath.Loop(sx, sy, sp, tx, ty, tp, e.PathOptions?.LoopRadius ?? BlowEdgePath.DefaultLoopRadius, s);
             else if (e.Type == BlowEdgeType.Routed
                      && (o.Routing ?? BlowRoutingOptions.Default).Route(
-                         new BlowRouteRequest(e, new(sx, sy), sp, new(tx, ty), tp, Obstacles(rects, s, t, source, target, index))) is { Path: not null } routed)
+                         new BlowRouteRequest(e, new(sx, sy), sp, new(tx, ty), tp, Obstacles(grid ??= Grid(rects), s, t, source, target, index))) is { Path: not null } routed)
                 path = routed;
             else
                 path = BlowEdgePath.Compute(e.Type == BlowEdgeType.Routed ? BlowEdgeType.SmoothStep : e.Type, sx, sy, sp, tx, ty, tp, e.PathOptions);
@@ -195,7 +197,7 @@ public static class BlowSvgExport
             sb.Append(F($"<rect x=\"{left:0.##}\" y=\"{top:0.##}\" width=\"{width:0.##}\" height=\"{height:0.##}\" fill=\"")).Append(Paint(o.Background, "#ffffff")).Append("\"/>\n");
 
         // Groups first, shallower first, so a child is never drawn beneath its parent.
-        var ordered = nodes.Where(n => rects.ContainsKey(n.Id)).OrderBy(n => Depth(n, index)).ToList();
+        var ordered = nodes.Where(n => rects.ContainsKey(n.Id)).OrderBy(n => nesting[n.Id].Depth).ToList();
         var groups = new StringBuilder();
         var plain = new StringBuilder();
         foreach (var n in ordered)
@@ -222,8 +224,8 @@ public static class BlowSvgExport
         return sb.ToString();
     }
 
-    /// <summary>How deep a chain of parents is followed before it is taken to be a cycle.</summary>
-    private const int MaxDepth = 64;
+    /// <summary>How deep a chain of parents is followed before it is taken to be a cycle: as deep as the canvas follows it.</summary>
+    private const int MaxDepth = BlowCanvas.MaxParentDepth;
 
     /// <summary>
     /// Points whose box holds an SVG path: every end and control point, in absolute coordinates - relative commands,
@@ -403,26 +405,43 @@ public static class BlowSvgExport
         return true;
     }
 
-    private static int Depth(BlowNode node, Dictionary<string, BlowNode> index)
+    /// <summary>
+    /// Every node's position point summed up its parents, and how deep it is nested, resolved as the canvas resolves
+    /// them: in list order, each parent once and remembered, a cycle cut where it is found and the node there taken as
+    /// a root, and a chain followed at most <see cref="MaxDepth"/> levels from where its walk began. A node is placed
+    /// and stacked where the canvas shows it, and a long chain costs no more than a short one per node.
+    /// </summary>
+    private static Dictionary<string, (BlowXYPosition Position, int Depth)> Nesting(IReadOnlyList<BlowNode> nodes,
+        Dictionary<string, BlowNode> index)
     {
-        var depth = 0;
-        for (var current = node; depth < MaxDepth && current.ParentId is { } pid && index.TryGetValue(pid, out var parent); current = parent) depth++;
-        return depth;
+        var resolved = new Dictionary<string, (BlowXYPosition Position, int Depth)>(StringComparer.Ordinal);
+        var resolving = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var n in nodes) Resolve(n, 0);
+        return resolved;
+
+        (BlowXYPosition Position, int Depth) Resolve(BlowNode n, int guard)
+        {
+            if (resolved.TryGetValue(n.Id, out var known)) return known;
+
+            (BlowXYPosition Position, int Depth) result = (n.Position, 0);
+            if (guard < MaxDepth && n.ParentId is { } pid && index.TryGetValue(pid, out var parent)
+                && !ReferenceEquals(parent, n) && !resolving.Contains(parent.Id))
+            {
+                resolving.Add(n.Id);
+                var (position, depth) = Resolve(parent, guard + 1);
+                resolving.Remove(n.Id);
+                result = (new BlowXYPosition(position.X + n.Position.X, position.Y + n.Position.Y), depth + 1);
+            }
+            return resolved[n.Id] = result;
+        }
     }
 
     /// <summary>A node's box in flow space: its position point summed up its parents, less its origin.</summary>
-    private static BlowRect AbsoluteRect(BlowNode node, Dictionary<string, BlowNode> index, BlowXYPosition nodeOrigin)
+    private static BlowRect AbsoluteRect(BlowNode node, BlowXYPosition position, BlowXYPosition nodeOrigin)
     {
-        double x = node.Position.X, y = node.Position.Y;
-        var seen = new HashSet<string>(StringComparer.Ordinal) { node.Id };
-        for (var current = node; seen.Count <= MaxDepth && current.ParentId is { } pid && index.TryGetValue(pid, out var parent) && seen.Add(pid); current = parent)
-        {
-            x += parent.Position.X;
-            y += parent.Position.Y;
-        }
         var size = node.EffectiveSize;
         var origin = node.Origin ?? nodeOrigin;
-        return new BlowRect(x - origin.X * size.Width, y - origin.Y * size.Height, size.Width, size.Height);
+        return new BlowRect(position.X - origin.X * size.Width, position.Y - origin.Y * size.Height, size.Width, size.Height);
     }
 
     private static (double X, double Y, BlowPosition Side) Anchor(BlowNode node, BlowRect rect, BlowHandleType type, string? handleId, BlowPosition fallback)
@@ -440,11 +459,22 @@ public static class BlowSvgExport
     }
 
     /// <summary>What a routed edge goes around, chosen as the canvas chooses it; see <see cref="BlowEdgeLayout.Obstacles"/>.</summary>
-    private static List<BlowRect> Obstacles(Dictionary<string, BlowRect> rects, BlowRect source, BlowRect target, BlowNode from,
-        BlowNode to, Dictionary<string, BlowNode> index)
+    private static List<BlowRect> Obstacles(BlowSpatialGrid<(string Id, BlowRect Rect)> grid, BlowRect source, BlowRect target,
+        BlowNode from, BlowNode to, Dictionary<string, BlowNode> index)
     {
         var area = BlowEdgeLayout.ObstacleArea(source, target);
-        return BlowEdgeLayout.Obstacles(rects.Select(r => (r.Key, r.Value)), area, from, to, index, MaxDepth);
+        return BlowEdgeLayout.Obstacles(grid.Near(area), area, from, to, index, MaxDepth);
+    }
+
+    /// <summary>
+    /// The shown nodes' boxes bucketed by where they lie, so each routed edge looks only at the nodes near it, as on the
+    /// canvas, rather than at every node - in the order of <paramref name="rects"/>, which the obstacles keep.
+    /// </summary>
+    private static BlowSpatialGrid<(string Id, BlowRect Rect)> Grid(Dictionary<string, BlowRect> rects)
+    {
+        var grid = new BlowSpatialGrid<(string Id, BlowRect Rect)>();
+        foreach (var (id, rect) in rects) grid.Add((id, rect), rect);
+        return grid;
     }
 
     private static readonly Regex SafeColor = new(

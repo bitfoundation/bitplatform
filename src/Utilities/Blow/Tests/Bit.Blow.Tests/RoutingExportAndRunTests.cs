@@ -196,6 +196,47 @@ public class RoutingExportAndRunTests : BunitContext
     }
 
     [TestMethod]
+    public void EveryNodeIsPlacedWhereTheCanvasPlacesItHoweverDeepOrTangledItsParents()
+    {
+        // Two chains deeper than the canvas follows in one walk - one listed parents first, the other children first -
+        // a parent cycle, a node that is its own parent and one whose parent is not in the list.
+        var nodes = new List<BlowNode>();
+        for (var i = 0; i < 60; i++) nodes.Add(Nested($"p{i}", i == 0 ? null : $"p{i - 1}"));
+        for (var i = 59; i >= 0; i--) nodes.Add(Nested($"c{i}", i == 0 ? null : $"c{i - 1}"));
+        nodes.AddRange([Nested("x", "z"), Nested("y", "x"), Nested("z", "y"), Nested("s", "s"), Nested("m", "nowhere")]);
+
+        Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes));
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, []));
+
+        Assert.AreEqual(new BlowXYPosition(600, 60), nodes[59].AbsolutePosition, "the canvas did not sum the whole chain");
+        foreach (var node in nodes)
+        {
+            var rect = doc.Descendants(Svg + "text").Single(t => t.Value == node.Id).Parent!.Element(Svg + "rect")!;
+            Assert.AreEqual((At(node.AbsolutePosition.X), At(node.AbsolutePosition.Y)), (rect.Attribute("x")!.Value, rect.Attribute("y")!.Value), node.Id);
+        }
+
+        static BlowNode Nested(string id, string? parent)
+            => new() { Id = id, Label = id, ParentId = parent, Position = new(10, 1), Width = 20, Height = 10 };
+
+        static string At(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    [TestMethod]
+    public void AVeryLongParentChainIsExportedWithEveryParentSummedOnce()
+    {
+        const int length = 50_000;
+        var nodes = Enumerable.Range(0, length)
+            .Select(i => new BlowNode { Id = $"n{i}", ParentId = i == 0 ? null : $"n{i - 1}", Position = new(1, 0), Width = 10, Height = 10 })
+            .ToList();
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, [], new BlowSvgExportOptions { Background = null }));
+        var rects = doc.Descendants(Svg + "rect").ToList();
+
+        Assert.HasCount(length, rects);
+        Assert.AreEqual("50000", rects[^1].Attribute("x")!.Value, "the deepest node is drawn last, at the sum of all its parents");
+    }
+
+    [TestMethod]
     public void NothingInAGraphBecomesMarkupOrAnUnsafeValueInTheExport()
     {
         var nodes = new List<BlowNode>

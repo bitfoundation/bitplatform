@@ -581,9 +581,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>
     /// An asynchronous last word on a connection the user has just completed - asking a server whether the user
-    /// may make it, say. Runs once, after the user lets go on a valid handle and before the edge is added (or an
+    /// may make it, say. Runs after the user lets go on a valid handle and before the edge is added (or an
     /// existing edge rewired); returning false abandons it. The graph may change while it runs, so the connection
-    /// is checked against every rule again once it returns, and dropped if it is no longer allowed. Leave it null
+    /// is checked against every rule again once it returns, and dropped if it is no longer allowed. When the wiring
+    /// itself has changed - the end of a reconnected edge that stays put moved meanwhile - it is asked again about the
+    /// wiring as it is now, so it only ever approves what is made; a wiring still changing after three answers is
+    /// dropped. Leave it null
     /// for the ordinary synchronous connect: the rules a connection has to pass while it is dragged belong in
     /// <see cref="IsValidConnection"/>.
     /// </summary>
@@ -1055,8 +1058,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// <summary>Tracks the measured/unmeasured transition so OnNodesInitialized fires on the edge.</summary>
     private bool _nodesInitialized;
 
-    /// <summary>Depth guard for parent chains. Cycles are caught separately and reported as parent-cycle.</summary>
-    private const int MaxParentDepth = 50;
+    /// <summary>
+    /// Depth guard for parent chains. Cycles are caught separately and reported as parent-cycle. The SVG export follows
+    /// chains exactly as far, so its picture of a deep nesting is the one on screen.
+    /// </summary>
+    internal const int MaxParentDepth = 50;
 
     // per-render caches (rebuilt by PrepareRender)
     private bool _indexDirty = true;
@@ -4556,22 +4562,44 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private readonly record struct ConnectionDrop(
         string FromNode, string? FromHandle, BlowHandleType FromType, string ToNode, string? ToHandle, BlowHandleType ToType);
 
+    /// <summary>
+    /// How many times <see cref="OnBeforeConnect"/> is asked about one connection whose wiring keeps changing while it
+    /// answers, before the connection is dropped.
+    /// </summary>
+    private const int MaxConfirmations = 3;
+
     private async Task ConfirmConnectionAsync(Func<BlowConnection, Task<bool>> confirm, BlowConnection connection,
         ConnectionDrop drop, BlowEdge? reconnecting, ConnectionEnd end)
     {
         var raised = false;
         try
         {
-            var confirmed = await confirm(connection);
-            if (_disposed) return;
+            BlowConnectionCheck now;
+            for (var asked = 1; ; asked++)
+            {
+                var confirmed = await confirm(connection);
+                if (_disposed) return;
 
-            // The graph may have moved on while the confirmation ran - another connection made, the edge being
-            // reconnected deleted, a node removed by a collaborator - so the connection is judged again as of now.
-            BlowConnection? fresh = null;
-            var now = confirmed
-                ? RecheckConnection(drop, reconnecting, out fresh)
-                : new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
-            if (now.IsValid && fresh != connection) now = new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+                // The graph may have moved on while the confirmation ran - another connection made, the edge being
+                // reconnected deleted, a node removed by a collaborator - so the connection is judged again as of now.
+                BlowConnection? fresh = null;
+                now = confirmed
+                    ? RecheckConnection(drop, reconnecting, out fresh)
+                    : new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+                if (!now.IsValid || fresh == connection) break;
+
+                // Still allowed, but no longer the wiring the app said yes to: the end of a reconnected edge that stays
+                // has moved meanwhile - another reconnect of the same edge confirmed first, say. The app approves
+                // exactly what is made, so it is asked again about the wiring as it is now; one that will not hold
+                // still is dropped after a few tries.
+                if (asked == MaxConfirmations)
+                {
+                    now = new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+                    break;
+                }
+                connection = fresh!.Value;
+            }
+
             if (now.IsValid) ApplyConnection(connection, reconnecting);
 
             raised = true;

@@ -817,10 +817,13 @@ is full, and `DescribeConnection` the connection a handle would complete. Demo: 
 ### Confirming a connection asynchronously
 
 `OnBeforeConnect` is a last word on a connection the user has just completed - asking a server whether they may
-make it, for instance. It runs once, when the user lets go on a valid handle; the line disappears at once, and the
+make it, for instance. It runs when the user lets go on a valid handle; the line disappears at once, and the
 edge is added (or the reconnected edge rewired) only if it returns true. The graph may change while it runs, so the
-connection is checked against every rule again when it returns and dropped if it is no longer allowed; either way
-`OnConnectEnd` reports the outcome, with `Rejection` set to `RejectedByRule` for a refusal. An exception it throws
+connection is checked against every rule again when it returns and dropped if it is no longer allowed. If the wiring
+itself changed meanwhile - the end of a reconnected edge that stays put was moved by another reconnect confirmed
+first - it is asked again about the wiring as it is now, so it only ever approves what is made; a wiring still
+changing after three answers is dropped. Either way `OnConnectEnd` reports the outcome, with `Rejection` set to
+`RejectedByRule` for a refusal. An exception it throws
 reaches the renderer like one from an event handler. Rules a connection must pass *while it is dragged* belong in
 `IsValidConnection`, which is synchronous because it runs for every handle on every frame. Demo:
 `/examples/confirm-connection`.
