@@ -35,6 +35,10 @@ public static class BaletteSearchLab
     /// <summary>The most commands one answer reports on.</summary>
     public const int MaxLimit = 200;
 
+    internal const int MaxQueryLength = 256;
+
+    internal const int MaxCommandsLength = 64 * 1024;
+
     /// <summary>The matchers this tool can run, as the demo's own search lab offers them.</summary>
     public static readonly string[] Matchers = ["fuzzy", "fuzzy-ignore-case", "substring"];
 
@@ -58,6 +62,8 @@ public static class BaletteSearchLab
     public static BaletteSearchInspectionDto Inspect(string? query, string? commands, string? matcher, bool groupWhenSearching, int limit)
     {
         query ??= string.Empty;
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(query.Length, MaxQueryLength, nameof(query));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(commands?.Length ?? 0, MaxCommandsLength, nameof(commands));
 
         var notes = new List<string>();
 

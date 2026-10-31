@@ -27,6 +27,8 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
     /// <summary>Bonus for matching the case exactly.</summary>
     public const int BonusCaseMatch = 1;
 
+    internal const int MaxCells = 1 << 20;
+
     /// <summary>Shared default instance.</summary>
     public static BaletteFuzzyMatcher Default { get; } = new();
 
@@ -60,8 +62,14 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
         var caseSensitive = !IgnoreCase && HasUpper(query);
         var strip = Normalize && !BaletteTextFold.HasDiacritic(query);
         int p = query.Length, t = text.Length;
+        if ((long)(p + 1) * (t + 1) > MaxCells)
+        {
+            return BaletteFieldMatch.None;
+        }
+
         var size = (p + 1) * (t + 1);
-        (t_scratch ??= new Scratch()).Get(p, t, size, out var q, out var tx, out var m, out var d, out var consec, out var bonus);
+        var scratch = t_scratch ??= new Scratch();
+        scratch.GetText(p, t, size, out var q, out var tx, out var bonus);
         Fold(query, q, caseSensitive, Normalize, strip);
         Fold(text, tx, caseSensitive, Normalize, strip);
 
@@ -70,6 +78,8 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
         {
             return BaletteFieldMatch.None;
         }
+
+        scratch.GetMatrices(size, out var m, out var d, out var consec);
 
         const int NegInf = int.MinValue / 2;
         const int Floor = int.MinValue / 4;
@@ -216,25 +226,14 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
         private char[] _query = new char[32];
         private char[] _text = new char[64];
 
-        public void Get(int p, int t, int size, out char[] query, out char[] text, out int[] m, out int[] d, out int[] consec, out int[] bonus)
+        public void GetText(int p, int t, int size, out char[] query, out char[] text, out int[] bonus)
         {
             if (size > MaxRetainedCells)
             {
                 query = new char[p];
                 text = new char[t];
-                m = new int[size];
-                d = new int[size];
-                consec = new int[size];
                 bonus = new int[t];
                 return;
-            }
-
-            if (_m.Length < size)
-            {
-                var n = Math.Min(MaxRetainedCells, Math.Max(size, _m.Length * 2));
-                _m = new int[n];
-                _d = new int[n];
-                _consec = new int[n];
             }
 
             if (_text.Length < t)
@@ -251,10 +250,30 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
 
             query = _query;
             text = _text;
+            bonus = _bonus;
+        }
+
+        public void GetMatrices(int size, out int[] m, out int[] d, out int[] consec)
+        {
+            if (size > MaxRetainedCells)
+            {
+                m = new int[size];
+                d = new int[size];
+                consec = new int[size];
+                return;
+            }
+
+            if (_m.Length < size)
+            {
+                var n = Math.Min(MaxRetainedCells, Math.Max(size, _m.Length * 2));
+                _m = new int[n];
+                _d = new int[n];
+                _consec = new int[n];
+            }
+
             m = _m;
             d = _d;
             consec = _consec;
-            bonus = _bonus;
         }
     }
 

@@ -270,6 +270,31 @@ public class McpSearchLabTests
         Assert.IsTrue(report.HasMore);
     }
 
+    [TestMethod]
+    public async Task A_query_past_the_limit_is_refused()
+    {
+        var atLimit = await InspectAsync(new string('s', BaletteSearchLab.MaxQueryLength), """["Settings"]""");
+
+        Assert.AreEqual(1, atLimit.Searched);
+
+        var refused = await McpCall.RawAsync("InspectBaletteSearch", new() { ["query"] = new string('s', BaletteSearchLab.MaxQueryLength + 1), ["commands"] = """["Settings"]""" });
+
+        Assert.IsTrue(refused.IsError);
+    }
+
+    [TestMethod]
+    public async Task Commands_past_the_limit_are_refused()
+    {
+        var atLimit = await InspectAsync("s", new string('s', BaletteSearchLab.MaxCommandsLength));
+
+        Assert.AreEqual(1, atLimit.Searched);
+        Assert.AreEqual(1, atLimit.Matched);
+
+        var refused = await McpCall.RawAsync("InspectBaletteSearch", new() { ["query"] = "s", ["commands"] = new string('s', BaletteSearchLab.MaxCommandsLength + 1) });
+
+        Assert.IsTrue(refused.IsError);
+    }
+
     internal static Task<BaletteSearchInspectionDto> InspectAsync(string query, string? commands = null, string? matcher = null, bool? groupWhenSearching = null, int? limit = null)
     {
         var arguments = new Dictionary<string, object?> { ["query"] = query };
