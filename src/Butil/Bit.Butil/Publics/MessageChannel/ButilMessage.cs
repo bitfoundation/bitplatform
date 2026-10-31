@@ -14,6 +14,12 @@ namespace Bit.Butil;
 /// interop between .NET and JavaScript, so Butil draws the line in one place: <b>binary payloads stay
 /// binary, and everything else becomes JSON</b>. A message posted as an <c>ArrayBuffer</c> or a typed
 /// array arrives in <see cref="Data"/>; anything else arrives as JSON text in <see cref="Json"/>.
+/// <br/>
+/// The JSON of one message is capped at about 32 MB. A structured clone keeps shared references that
+/// JSON writes out once per reference, so a message of a few kilobytes can otherwise spell out to
+/// gigabytes. A message over the cap arrives as just its type name - the JSON string
+/// <c>"[object Object]"</c>, <c>"[object Array]"</c> and so on - and a warning is logged to the
+/// browser console. Post a payload that large as binary instead.
 /// </remarks>
 /// <param name="IsBinary">
 /// Which of the two payloads carries this message. Branch on this rather than on a null check -

@@ -116,6 +116,14 @@ public class TrustedTypes(IJSRuntime js) : IAsyncDisposable
     /// Writes markup into an element through a policy - which is the point of having one: under
     /// enforcement this succeeds where assigning a string to <c>innerHTML</c> throws.
     /// </summary>
+    /// <remarks>
+    /// A policy that sanitizes HTML (see <see cref="TrustedTypePolicyOptions.SanitizeHtml"/>) writes
+    /// with <c>Element.setHTML</c> on <paramref name="element"/> itself, so the markup is sanitized as
+    /// it is parsed in that element's own context. Sanitizing to a string first and then parsing that
+    /// string into the element would parse it twice, in two contexts, and markup can mean something
+    /// different the second time - the shape of a mutation XSS. <see cref="CreateHtml"/> has no element
+    /// to parse into, so its text is for display, not for writing into the page some other way.
+    /// </remarks>
     /// <returns>False when there is no such policy or the policy refused the markup; the element is left alone.</returns>
     public ValueTask<bool> SetHtml(ElementReference element, string policyName, string html)
         => js.Invoke<bool>("BitButil.trustedTypes.setHtml", element, policyName, html ?? string.Empty);

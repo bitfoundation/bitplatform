@@ -1,6 +1,7 @@
 @page "/prerender-sweep"
 @inject IServiceProvider Services
 @inject IJSRuntime JS
+@inject Bit.Butil.WebAuthn WebAuthn
 
 @* Every public member of every Butil service, called during a static render. App.razor renders this page
    outside Routes, so it is static in every mode; Bit.Butil.Tests.Hosting reads the result out of the HTML. *@
@@ -8,6 +9,10 @@
 <h1>Butil prerender sweep</h1>
 
 <p id="sweep-runtime">@JS.GetType().Name</p>
+
+@* The sweep only asks whether a call completed. A check has to fail closed as well: with no runtime there is
+   no user to verify, so the answer has to be no rather than whatever the defaults add up to. *@
+<p id="sweep-webauthn-verify">@_webAuthnVerified</p>
 
 @if (_entries is not null)
 {
@@ -34,8 +39,13 @@
     public const string Route = "/prerender-sweep";
 
     private IReadOnlyList<PrerenderSweepEntry>? _entries;
+    private bool? _webAuthnVerified;
 
-    protected override async Task OnInitializedAsync() => _entries = await PrerenderSweep.RunAsync(Services);
+    protected override async Task OnInitializedAsync()
+    {
+        _webAuthnVerified = await WebAuthn.Verify();
+        _entries = await PrerenderSweep.RunAsync(Services);
+    }
 
     private int Count(PrerenderSweepOutcome outcome) => _entries!.Count(e => e.Outcome == outcome);
 }

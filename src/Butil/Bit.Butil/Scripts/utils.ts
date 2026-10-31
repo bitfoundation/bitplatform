@@ -174,6 +174,14 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     // here, in one place, and stated in the C# docs: binary payloads stay binary, and everything
     // else becomes JSON. Non-binary data is ALWAYS stringified, including a plain string, so that
     // the .NET side can deserialize any message without first asking what shape it is.
+    //
+    // The JSON is capped, because a structured clone keeps shared references and JSON cannot: a
+    // message of a few kilobytes built as x = [x, x], forty times over, spells out to 2^40 leaves
+    // here. The cap is spent as the output is written, so a message is refused for the size its
+    // JSON would really have - not for how many values it holds.
+    const MESSAGE_JSON_LIMIT = 32 * 1024 * 1024;
+    const TOO_LARGE = {};
+
     function encodeMessage(data: any): [boolean, string | null, Uint8Array | null] {
         if (data instanceof ArrayBuffer) return [true, null, new Uint8Array(data)];
         if (ArrayBuffer.isView(data)) {
@@ -181,17 +189,37 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             return [true, null, new Uint8Array(view.buffer, view.byteOffset, view.byteLength)];
         }
 
+        let budget = MESSAGE_JSON_LIMIT;
         try {
-            let budget = 32 * 1024 * 1024;
-            return [false, JSON.stringify(data ?? null, (key, value) => {
-                budget -= key.length + (typeof value === 'string' ? value.length : 8);
-                if (budget < 0) throw new RangeError();
+            return [false, JSON.stringify(data ?? null, function (this: any, key: string, value: any) {
+                budget -= jsonLength(this, key, value);
+                if (budget < 0) throw TOO_LARGE;
                 return value;
             }), null];
-        } catch {
-            // A cyclic graph, or a value JSON cannot represent (a function, a BigInt). Losing the
-            // message entirely would be worse than losing its shape.
+        } catch (e) {
+            if (e === TOO_LARGE) {
+                // The message can no longer say why it arrived empty, so the console does.
+                console.warn(`BitButil: a message whose JSON passes ${MESSAGE_JSON_LIMIT / 1024 / 1024} MB was delivered as its type name only; post it as binary to send it whole.`);
+                return [false, JSON.stringify(Object.prototype.toString.call(data)), null];
+            }
+            // A cyclic graph, or a value JSON cannot represent (a BigInt). Losing the message entirely
+            // would be worse than losing its shape. An array is named rather than joined: join walks
+            // the same shared references the JSON did.
             return [false, JSON.stringify(Array.isArray(data) ? '[object Array]' : String(data)), null];
+        }
+    }
+
+    // How much one value adds to the JSON, near enough: an array's indexes are never written, an
+    // object's keys are - quoted, with a colon - and a comma comes before either. A string counts
+    // its characters unescaped, which is the one place the estimate runs short.
+    function jsonLength(holder: any, key: string, value: any) {
+        const keyLength = Array.isArray(holder) ? 1 : key.length + 4;
+        switch (typeof value) {
+            case 'string': return keyLength + value.length + 2;
+            case 'number': return keyLength + String(value).length;
+            case 'boolean': return keyLength + (value ? 4 : 5);
+            case 'object': return keyLength + (value === null ? 4 : 2);
+            default: return keyLength;   // dropped from an object, written as null in an array
         }
     }
 
