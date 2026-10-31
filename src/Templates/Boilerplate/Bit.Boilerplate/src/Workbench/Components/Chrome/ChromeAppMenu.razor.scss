@@ -42,7 +42,24 @@
         }
     }
 
+    .time-zone-row {
+        width: 100%;
+        padding-inline-start: 8px;
+    }
+
+    .time-zone-picker {
+        min-width: 0;
+        flex-grow: 1;
+    }
+
     .accent-color-switcher {
-        padding: 0.25rem 0.5rem;
+        gap: 8px;
+        width: 100%;
+        padding: 0 8px;
+    }
+
+    .accent-color-swatch {
+        width: 20px;
+        height: 20px;
     }
 }

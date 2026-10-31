@@ -6,6 +6,7 @@ public partial class ScenarioInspector
 
     private List<BitDropdownItem<string>> deviceItems = [];
     private List<BitDropdownItem<string>> cultureItems = [];
+    private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Brand;
 
     [Parameter] public WorkbenchScenario Value { get; set; } = new();
 
@@ -58,8 +59,6 @@ public partial class ScenarioInspector
     }
 
     private static BitVariant VariantOf(bool isActive) => isActive ? BitVariant.Fill : BitVariant.Outline;
-
-    private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Brand;
 
     protected override void OnParametersSet()
     {

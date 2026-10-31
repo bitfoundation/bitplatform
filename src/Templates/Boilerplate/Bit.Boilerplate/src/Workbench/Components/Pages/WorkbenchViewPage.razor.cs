@@ -97,14 +97,11 @@ public partial class WorkbenchViewPage
 
         var url = NavigationManager.ToAbsoluteUri($"{WorkbenchUrls.Workbench(pageInfo.Key)}{store.QueryString}").ToString();
 
+        lastAppliedUri = url;
+
         if (url != NavigationManager.Uri)
         {
-            lastAppliedUri = url;
             NavigationManager.NavigateTo(url, replace: true);
-        }
-        else
-        {
-            lastAppliedUri = url;
         }
     }
 

@@ -146,6 +146,37 @@
                         }
                         @*#endif*@
 
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0" Class="time-zone-row">
+                            <BitIcon IconName="@BitIconName.WorldClock" Color="BitColor.Primary" />
+                            <BitTimeZonePicker TValue="string"
+                                               Responsive
+                                               NoBorder
+                                               Background="BitColorKind.Transparent"
+                                               Class="time-zone-picker"
+                                               Value="@(chromeStore.TimeZoneId ?? TimeZoneInfo.Local.Id)"
+                                               ValueChanged="(string? timeZoneId) => chromeStore.PickTimeZone(timeZoneId)"
+                                               Title="@AppLocalizer[nameof(AppStrings.TimeZone)]"
+                                               AriaLabel="@AppLocalizer[nameof(AppStrings.TimeZone)]"
+                                               Placeholder="@AppLocalizer[nameof(AppStrings.SelectTimeZone)]"
+                                               SearchBoxPlaceholder="@AppLocalizer[nameof(AppStrings.FindTimeZone)]"
+                                               SearchBoxAriaLabel="@AppLocalizer[nameof(AppStrings.FindTimeZone)]"
+                                               NoResultsMessage="@AppLocalizer[nameof(AppStrings.NoTimeZoneMatchesSearchMessage)]"
+                                               ResponsiveCloseButtonAriaLabel="@AppLocalizer[nameof(AppStrings.Close)]" />
+                        </BitStack>
+
+                        @*#if (signalR == true || notification == true)*@
+                        <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
+                            <BitActionButton Style="flex-grow:1"
+                                             OnClick="() => chromeStore.TurnNotifications(chromeStore.AreNotificationsOn is false)"
+                                             IconName="@(chromeStore.AreNotificationsOn ? BitIconName.Ringer : BitIconName.RingerOff)">
+                                @AppLocalizer[nameof(AppStrings.Notifications)]
+                            </BitActionButton>
+                            <BitToggle AriaLabel="@AppLocalizer[chromeStore.AreNotificationsOn ? nameof(AppStrings.TurnNotificationsOff) : nameof(AppStrings.TurnNotificationsOn)]"
+                                       OnChange="(bool isOn) => chromeStore.TurnNotifications(isOn)"
+                                       Value="chromeStore.AreNotificationsOn" />
+                        </BitStack>
+                        @*#endif*@
+
                         <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="0">
                             <BitActionButton Style="flex-grow:1" OnClick="ToggleTheme" IconName="@(isDark ? BitIconName.ClearNight : BitIconName.Sunny)">
                                 @(isDark ? AppLocalizer[nameof(AppStrings.Dark)] : AppLocalizer[nameof(AppStrings.Light)])
@@ -153,7 +184,7 @@
                             <BitToggle OnChange="ToggleTheme" Value="isDark is false" />
                         </BitStack>
 
-                        <BitAccentColorSwitcher Class="accent-color-switcher" />
+                        <BitAccentColorSwitcher Class="accent-color-switcher" Classes="@(new() { Swatch = "accent-color-swatch" })" />
 
                         @if (Shell.IsSignedIn)
                         {
