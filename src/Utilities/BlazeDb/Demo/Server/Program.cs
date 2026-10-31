@@ -9,6 +9,15 @@ using Microsoft.AspNetCore.HttpOverrides;
 using ModelContextProtocol.Protocol;
 using System.Text.Json.Serialization;
 
+// InspectBlazeDbTable compiles what a caller sends in a child process of this app, with a capped heap and a
+// deadline, so a source that is expensive to compile costs that process and not this one - see
+// Services/BlazeDbInspectionWorker.cs. This is how that process starts: the same app, asked to be the worker.
+if (args is [BlazeDbInspectionWorker.Argument])
+{
+    await BlazeDbInspectionWorker.ServeAsync();
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()

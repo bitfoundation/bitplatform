@@ -4,6 +4,7 @@ using Bit.BlazeDb.Demo.Server.Dtos;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ModelContextProtocol;
 
 namespace Bit.BlazeDb.Demo.Server.Services;
 
@@ -21,7 +22,9 @@ namespace Bit.BlazeDb.Demo.Server.Services;
 /// </para>
 /// <para>
 /// The submitted source is compiled and never run: everything reported is read off the compilation and
-/// the generated syntax, so nothing a caller sends can execute on this server.
+/// the generated syntax, so nothing a caller sends can execute on this server. Nor can what it costs to
+/// compile reach the server: the compile happens in a worker process with a capped heap, killed when it
+/// runs out of time - see <see cref="BlazeDbInspectionWorker"/>.
 /// </para>
 /// </summary>
 public static class BlazeDbTableInspector
@@ -32,6 +35,9 @@ public static class BlazeDbTableInspector
     public const int MaxNameLength = 256;
 
     public const int MaxAttributeTokens = 2_000;
+
+    /// <summary>Far more members than a table type has; every one is work for the generator and the compiler.</summary>
+    public const int MaxMembers = 500;
 
     private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(20);
 
@@ -83,18 +89,28 @@ public static class BlazeDbTableInspector
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(_timeout);
 
-        await _gate.WaitAsync(timeout.Token);
         try
         {
-            return Inspect(source, includeGeneratedCode, timeout.Token);
+            // The gate bounds the workers busy at once, and so the memory they can take between them.
+            await _gate.WaitAsync(timeout.Token);
+            try
+            {
+                return await BlazeDbInspectionWorker.InspectAsync(source, includeGeneratedCode, timeout.Token);
+            }
+            finally
+            {
+                _gate.Release();
+            }
         }
-        finally
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested is false)
         {
-            _gate.Release();
+            throw new McpException($"The source was not inspected: it did not finish within {_timeout.TotalSeconds} seconds. " +
+                                   "Send one table type at a time, or try again if the server is busy.");
         }
     }
 
-    private static BlazeDbTableInspectionDto Inspect(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
+    /// <summary>The inspection itself, run inside a <see cref="BlazeDbInspectionWorker"/>.</summary>
+    internal static BlazeDbTableInspectionDto Inspect(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
     {
         source ??= string.Empty;
 
@@ -116,9 +132,11 @@ public static class BlazeDbTableInspector
             _references.Value,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
 
-        if (ExceedsLimits(compilation.GetSemanticModel(userTree), cancellationToken))
+        if (ExceededLimit(compilation.GetSemanticModel(userTree), cancellationToken) is { } limit)
         {
-            throw new ArgumentException("The source exceeds the inspector's limits.", nameof(source));
+            // An McpException is the one error the SDK hands a client with its message; any other arrives
+            // as a bare "an error occurred", which tells the caller nothing about what to change.
+            throw new McpException($"The source was not inspected: {limit}. A table type needs nothing near that - send the type on its own.");
         }
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new BlazeDbTableGenerator()).WithUpdatedParseOptions(_parseOptions);
@@ -184,27 +202,73 @@ public static class BlazeDbTableInspector
         };
     }
 
-    private static bool ExceedsLimits(SemanticModel model, CancellationToken cancellationToken)
+    /// <summary>
+    /// The limit the source goes past, or null. The limits bound what the generator emits and what a report
+    /// carries; what compiling the source costs is bounded by the worker it runs in.
+    /// </summary>
+    private static string? ExceededLimit(SemanticModel model, CancellationToken cancellationToken)
     {
         var root = model.SyntaxTree.GetRoot(cancellationToken);
 
-        if (root.DescendantTokens().Any(token => token.IsKind(SyntaxKind.IdentifierToken) && token.ValueText.Length > MaxNameLength)) return true;
+        // One walk over the syntax for every limit it can tell on its own, picking up what the checks that
+        // need the compiler look at.
+        var members = 0;
+        var attributeTokens = 0;
+        var attributeEnd = -1;
+        var types = new List<BaseTypeDeclarationSyntax>();
+        var arguments = new List<AttributeArgumentSyntax>();
 
-        var attributes = root.DescendantNodes().OfType<AttributeListSyntax>().ToArray();
-
-        if (attributes.Sum(attribute => attribute.DescendantTokens().Count()) > MaxAttributeTokens) return true;
-
-        foreach (var type in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
+        foreach (var item in root.DescendantNodesAndTokens())
         {
-            if (model.GetDeclaredSymbol(type, cancellationToken)?.ToDisplayString().Length > MaxNameLength) return true;
+            if (item.AsNode() is { } node)
+            {
+                if (node is MemberDeclarationSyntax) members++;
+
+                switch (node)
+                {
+                    case BaseTypeDeclarationSyntax type:
+                        types.Add(type);
+                        break;
+                    case AttributeListSyntax:
+                        attributeEnd = Math.Max(attributeEnd, node.Span.End);
+                        break;
+                    case AttributeArgumentSyntax argument:
+                        arguments.Add(argument);
+                        break;
+                }
+
+                continue;
+            }
+
+            var token = item.AsToken();
+
+            if (token.IsKind(SyntaxKind.IdentifierToken) && token.ValueText.Length > MaxNameLength) return $"a name is longer than {MaxNameLength} characters";
+
+            // A node comes before its tokens, so every token short of where the last attribute list ends is that list's.
+            if (token.SpanStart < attributeEnd && ++attributeTokens > MaxAttributeTokens) return $"its attributes run to more than {MaxAttributeTokens} tokens";
         }
 
-        foreach (var argument in attributes.SelectMany(attribute => attribute.DescendantNodes().OfType<AttributeArgumentSyntax>()))
+        // A table type and the declarations around it hold its members rather than add to them, so a table of
+        // MaxMembers members is within the limit wherever it is declared; anything else declared counts.
+        var holders = new HashSet<SyntaxNode>();
+
+        foreach (var type in types)
         {
-            if (model.GetConstantValue(argument.Expression, cancellationToken) is { HasValue: true, Value: string { Length: > MaxNameLength } }) return true;
+            if (model.GetDeclaredSymbol(type, cancellationToken) is not { } symbol) continue;
+
+            if (symbol.ToDisplayString().Length > MaxNameLength) return $"a type's full name is longer than {MaxNameLength} characters";
+
+            if (symbol.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == TableAttribute)) holders.UnionWith(type.AncestorsAndSelf().OfType<MemberDeclarationSyntax>());
         }
 
-        return false;
+        if (members - holders.Count > MaxMembers) return $"it declares more than {MaxMembers} members";
+
+        foreach (var argument in arguments)
+        {
+            if (model.GetConstantValue(argument.Expression, cancellationToken) is { HasValue: true, Value: string { Length: > MaxNameLength } }) return $"an attribute argument is longer than {MaxNameLength} characters";
+        }
+
+        return null;
     }
 
     private static BlazeDbInspectedTableDto[] FindTables(Compilation compilation, SyntaxTree userTree, GeneratedSourceResult[] generated)

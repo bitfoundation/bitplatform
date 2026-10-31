@@ -174,7 +174,7 @@ public class DurabilityTests
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "Ada", 36));
         await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
-        Assert.AreEqual(10, storage.Inner.GetFile("wal-1.blz")!.Length);
+        Assert.AreEqual(10, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
 
         storage.FailAfterBytes = null;
         people.Insert(new Person(2, "Grace", 45));
@@ -188,36 +188,65 @@ public class DurabilityTests
     [TestMethod]
     public async Task Records_A_Retried_Append_Wrote_Twice_Are_Replayed_Once()
     {
+        // An append can fail after its bytes reached storage, so the retry writes the same records
+        // again - and the retry can tear in its turn, leaving [A][B][A][part of B]. Replaying the
+        // second A would put back the value B changed while keeping the row B inserted: a state the
+        // database was never in.
         var storage = new PartialWriteStorage();
 
         var db = await OpenAsync(storage);
         var people = db.GetTable(PersonTable.Descriptor);
         people.Insert(new Person(1, "Ada", 36));
         await db.FlushAsync();
-        var record = storage.Inner.GetFile("wal-1.blz")!.Length;
+        var record = storage.Inner.GetFile(storage.Inner.Wal())!.Length;
 
-        people.Insert(new Person(2, "Bob", 40));
-        people.Update(new Person(1, "Eve", 37));
+        people.Update(new Person(1, "Eve", 37)); // A, the same size as the record above
+        using (var transaction = db.BeginTransaction())
+        {
+            people.Update(new Person(1, "Ivy", 38));
+            people.Insert(new Person(2, "Bob", 40));
+            transaction.Commit(); // B
+        }
+        storage.FailAfterWrite = true;
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
+        var written = storage.Inner.GetFile(storage.Inner.Wal())!.Length;
+
+        storage.FailAfterWrite = false;
         storage.FailAfterBytes = record + 10;
         await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
+        Assert.AreEqual(written + record + 10, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
+        // Simulated crash: the instance is abandoned before a later flush repairs the log.
 
-        storage.FailAfterBytes = null;
-        await db.FlushAsync();
-        await db.DisposeAsync();
-        Assert.AreEqual(4 * record, storage.Inner.GetFile("wal-1.blz")!.Length);
+        await using (var reopened = await OpenAsync(storage))
+        {
+            var recovered = reopened.GetTable(PersonTable.Descriptor);
+            Assert.AreEqual(new Person(1, "Ivy", 38), recovered.Get(1));
+            Assert.AreEqual(new Person(2, "Bob", 40), recovered.Get(2));
+            // Recovery cuts the torn B away; the second A is intact, so it stays, skipped as a commit already seen.
+            Assert.AreEqual(written + record, storage.Inner.GetFile(storage.Inner.Wal())!.Length);
 
-        await using var reopened = await OpenAsync(storage);
-        var recovered = reopened.GetTable(PersonTable.Descriptor);
-        Assert.AreEqual(new Person(1, "Eve", 37), recovered.Get(1));
-        Assert.AreEqual(new Person(2, "Bob", 40), recovered.Get(2));
+            // The log goes on from where recovery left it.
+
+            storage.FailAfterBytes = null;
+            recovered.Insert(new Person(3, "Cy", 41));
+            await reopened.FlushAsync();
+        }
+
+        await using var final = await OpenAsync(storage);
+        var last = final.GetTable(PersonTable.Descriptor);
+        Assert.AreEqual(new Person(1, "Ivy", 38), last.Get(1));
+        Assert.AreEqual(new Person(3, "Cy", 41), last.Get(3));
     }
 
-    /// <summary>An in-memory backend whose appends can be made to write a prefix and then fail.</summary>
+    /// <summary>An in-memory backend whose appends can be made to write a prefix, or all of it, and then fail.</summary>
     private sealed class PartialWriteStorage : IBlazeDbStorage
     {
         public BlazeDbInMemoryStorage Inner { get; } = new();
 
         public int? FailAfterBytes { get; set; }
+
+        /// <summary>Fails each append once it is on storage, as when the write lands and its acknowledgement is lost.</summary>
+        public bool FailAfterWrite { get; set; }
 
         public ValueTask<byte[]?> ReadAsync(string name, CancellationToken cancellationToken = default) =>
             Inner.ReadAsync(name, cancellationToken);
@@ -233,6 +262,10 @@ public class DurabilityTests
                 throw new IOException("Simulated disk-full part-way through the write.");
             }
             await Inner.AppendAsync(name, data, cancellationToken);
+            if (FailAfterWrite)
+            {
+                throw new IOException("Simulated failure after the write reached storage.");
+            }
         }
 
         public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default) =>
@@ -240,7 +273,7 @@ public class DurabilityTests
     }
 
     [TestMethod]
-    public async Task A_Corrupted_Lsn_Stops_Replay_Rather_Than_Skipping_The_Commit()
+    public async Task A_Corrupted_Lsn_Is_Reported_Rather_Than_Skipping_The_Commit()
     {
         // The LSN sits outside the payload; if it were outside the checksum too, an LSN damaged into
         // something below the snapshot's would make replay skip that one commit and carry on - a
@@ -254,14 +287,48 @@ public class DurabilityTests
         }
 
         // Record layout: magic(4) length(4) lsn(8) crc(4) payload. Zero the first record's LSN.
-        var wal = storage.GetFile("wal-1.blz")!;
+        var wal = storage.GetFile(storage.Wal())!;
         Array.Clear(wal, 8, 8);
-        storage.SetFile("wal-1.blz", wal);
+        storage.SetFile(storage.Wal(), wal);
 
-        await using var reopened = await OpenAsync(storage);
-        var recovered = reopened.GetTable(PersonTable.Descriptor);
-        Assert.IsFalse(recovered.Contains(1));
-        Assert.IsFalse(recovered.Contains(2), "replay continued past a record whose header was damaged");
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await OpenAsync(storage));
+        CollectionAssert.AreEqual(wal, storage.GetFile(storage.Wal()), "The commit behind the damaged record was cut away.");
+    }
+
+    [TestMethod]
+    public async Task A_Damaged_Record_In_The_Middle_Of_The_Log_Is_Reported_And_Left_In_Place()
+    {
+        // A crash only ever tears the end of the log. Damage with intact commits behind it is corruption:
+        // treating it as a torn tail would open the database without those commits, then truncate the
+        // log and destroy them for good.
+        var storage = new BlazeDbInMemoryStorage();
+        var ends = new List<int>();
+        await using (var db = await OpenAsync(storage))
+        {
+            for (var id = 1; id <= 3; id++)
+            {
+                db.GetTable(PersonTable.Descriptor).Insert(new Person(id, "p" + id, id));
+                await db.FlushAsync();
+                ends.Add(storage.GetFile(storage.Wal())!.Length);
+            }
+        }
+
+        var wal = storage.GetFile(storage.Wal())!;
+        var flipped = wal.ToArray();
+        flipped[ends[1] - 1] ^= 0xFF; // The second record's last payload byte.
+        storage.SetFile(storage.Wal(), flipped);
+
+        var error = await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await OpenAsync(storage));
+        Assert.Contains($"byte {ends[0]}", error.Message);
+        CollectionAssert.AreEqual(flipped, storage.GetFile(storage.Wal()));
+
+        // A record missing outright, with the ones around it intact, is a gap in the sequence.
+        var dropped = wal[..ends[0]].Concat(wal[ends[1]..]).ToArray();
+        storage.SetFile(storage.Wal(), dropped);
+
+        error = await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await OpenAsync(storage));
+        Assert.Contains("commit 3 follows commit 1", error.Message);
+        CollectionAssert.AreEqual(dropped, storage.GetFile(storage.Wal()));
     }
 
     [TestMethod]
@@ -277,9 +344,9 @@ public class DurabilityTests
         }
 
         // Simulate a crash mid-append: garbage / half a record at the end of the WAL.
-        var wal = storage.GetFile("wal-1.blz")!;
+        var wal = storage.GetFile(storage.Wal())!;
         var torn = wal.Concat(new byte[] { 0x10, 0x00, 0x00, 0x00, 0xAA, 0xBB }).ToArray();
-        storage.SetFile("wal-1.blz", torn);
+        storage.SetFile(storage.Wal(), torn);
 
         await using (var reopened = await OpenAsync(storage))
         {
@@ -305,9 +372,9 @@ public class DurabilityTests
         }
 
         // Flip a byte in the last record's payload; its CRC no longer matches.
-        var wal = storage.GetFile("wal-1.blz")!;
+        var wal = storage.GetFile(storage.Wal())!;
         wal[^1] ^= 0xFF;
-        storage.SetFile("wal-1.blz", wal);
+        storage.SetFile(storage.Wal(), wal);
 
         await using var reopened = await OpenAsync(storage);
         var recovered = reopened.GetTable(PersonTable.Descriptor);
@@ -330,8 +397,8 @@ public class DurabilityTests
             people.Delete(50);
             await db.CheckpointAsync();
 
-            Assert.Contains("snapshot-2.blz", storage.FileNames);
-            Assert.DoesNotContain("wal-1.blz", storage.FileNames);
+            Assert.IsNotNull(storage.FindFile("snapshot", 2));
+            Assert.IsNull(storage.FindFile("wal", 1));
 
             // Writes after the checkpoint land in the new WAL.
             people.Insert(new Person(100, "After Checkpoint", 1));
@@ -443,9 +510,9 @@ public class DurabilityTests
             await db.CheckpointAsync();
         }
 
-        var snapshot = storage.GetFile("snapshot-2.blz")!;
+        var snapshot = storage.GetFile(storage.Snapshot(2))!;
         snapshot[^1] ^= 0xFF;
-        storage.SetFile("snapshot-2.blz", snapshot);
+        storage.SetFile(storage.Snapshot(2), snapshot);
 
         await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await OpenAsync(storage));
     }
@@ -532,9 +599,8 @@ public class DurabilityTests
     [TestMethod]
     public async Task Deleting_A_Database_Leaves_Nothing_For_The_Next_Open_To_Replay()
     {
-        // Removing only the manifest is not a delete: recovery treats a missing manifest as a fresh
-        // database pointing at wal-1.blz and does not truncate that file, so the next open would
-        // replay the rows that were supposedly gone.
+        // Removing only the manifest is not a delete: the rows that were supposedly gone would still be
+        // sitting in the files it named.
         foreach (var enumerable in new[] { true, false })
         {
             var inner = new BlazeDbInMemoryStorage();
@@ -571,16 +637,23 @@ public class DurabilityTests
         {
             db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Old one", 1));
             await db.FlushAsync();
-            var firstLog = earlier.GetFile("wal-1.blz")!;
+            var firstLogName = earlier.Wal(1);
+            var firstLog = earlier.GetFile(firstLogName)!;
             await db.CheckpointAsync();
             db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Old two", 2));
             await db.FlushAsync();
-            earlier.SetFile("wal-1.blz", firstLog);
+            earlier.SetFile(firstLogName, firstLog);
         }
 
+        // Under the names the earlier database gave them, and under the names every database gave its
+        // logs before file names carried an id.
         var storage = new BlazeDbInMemoryStorage();
-        storage.SetFile("wal-1.blz", earlier.GetFile("wal-1.blz")!);
-        storage.SetFile("wal-2.blz", earlier.GetFile("wal-2.blz")!);
+        foreach (var generation in new[] { 1, 2 })
+        {
+            var log = earlier.GetFile(earlier.Wal(generation))!;
+            storage.SetFile(earlier.Wal(generation), log);
+            storage.SetFile($"wal-{generation}.blz", log);
+        }
 
         await using (var db = await OpenAsync(storage))
         {
@@ -609,20 +682,20 @@ public class DurabilityTests
 
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
         await db.FlushAsync();
-        storage.Undeletable = "wal-1.blz";
+        storage.Undeletable = storage.Inner.Wal();
 
         // The new generation is durable; the old log merely could not be removed.
         await db.CheckpointAsync();
         Assert.AreSequenceEqual([2UL], announced);
         Assert.IsNull(db.LastBackgroundError);
-        Assert.IsNotNull(storage.Inner.GetFile("wal-1.blz"));
+        Assert.IsNotNull(storage.Inner.FindFile("wal", 1));
 
         // The removal is tried again at the next checkpoint.
         storage.Undeletable = null;
         await db.CheckpointAsync();
         Assert.AreSequenceEqual([2UL, 3UL], announced);
-        Assert.IsNull(storage.Inner.GetFile("wal-1.blz"));
-        Assert.IsNull(storage.Inner.GetFile("wal-2.blz"));
+        Assert.IsNull(storage.Inner.FindFile("wal", 1));
+        Assert.IsNull(storage.Inner.FindFile("wal", 2));
     }
 
     /// <summary>A backend that refuses to delete one file.</summary>

@@ -34,6 +34,7 @@ namespace Bit.BlazeDb.Demo.Server.Controllers;
 /// </summary>
 [ApiController]
 [McpServerToolType]
+[McpRefusalFilter]
 [Route("api/[controller]/[action]")]
 public class McpController : ControllerBase
 {

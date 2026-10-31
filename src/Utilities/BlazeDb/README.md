@@ -570,9 +570,12 @@ foreach (var issue in db.VerifyIntegrity())
 | A storage backend | Every commit flushed to it. Commits reach storage on the background flusher within `FlushInterval` (100 ms by default), or at once with `await db.FlushAsync()`; a crash loses what was committed since the last flush, never part of a commit. |
 | After a flush fails | Committed data stays in memory and the flusher retries; `db.LastBackgroundError` reports the standing failure. |
 
-Recovery replays the log up to its first torn or corrupt record, or the first one out of sequence, and stops
-there, so the database comes back as of a commit boundary. A record that appears again, as a retried append
-can leave it, is applied once. Browser storage is the origin's to keep or evict: it can be cleared by the user,
+Recovery replays the log up to its torn tail - a record a crash cut short, with nothing intact after it - and
+cuts the tail off, so the database comes back as of a commit boundary. A record that appears again, as a
+retried append can leave it, is applied once. Damage anywhere else - a record that fails its checksum with
+intact ones after it, or a commit missing from the sequence - is not something a crash leaves, so the open
+throws `BlazeDbCorruptDatabaseException` and leaves the files as they are rather than cutting away the commits
+behind the damage. Browser storage is the origin's to keep or evict: it can be cleared by the user,
 evicted under storage pressure, or unavailable in a private window - ask for persistence with
 `BlazeDbOpfsStorage.RequestPersistenceAsync()`, and keep exports of what must not be lost.
 
@@ -812,10 +815,16 @@ var storage = new BlazeDbEncryptedStorage(await BlazeDbOpfsStorage.CreateAsync("
 
 What this does and does not protect: every frame is sealed with a fresh random 96-bit nonce and the
 file name as associated data, so contents cannot be read or altered without the key and a frame
-cannot be moved between files. It does not prevent *rollback* - someone with access to the files
-can put back an older, internally consistent manifest, snapshot and log - and there is no key
-rotation: to change the key, open the database, checkpoint, and write it out through a storage
-wrapped with the new cipher. Random nonces are safe for about 2^32 frames per key; every flush
+cannot be moved between files. Each database names its snapshots and logs with a random id of its
+own (`wal-{id}-N.blz`), so that also keeps apart databases sealed with the same key - one deleted and
+created again on the same backend, say: a frame of one does not open in the files of another. A
+database created before file names carried an id takes one at its next checkpoint. Within the log, a
+frame dropped from the middle is reported as corruption and a frame copied in again is skipped, because
+every commit carries the next sequence number. It does not prevent *rollback* - someone with access to
+the files can put back an older, internally consistent manifest, snapshot and log, a whole other
+database's among them, or cut frames off the end of the log, which reads the same as commits that never
+reached storage. There is no key rotation: to change the key, open the database, checkpoint, and write
+it out through a storage wrapped with the new cipher. Random nonces are safe for about 2^32 frames per key; every flush
 writes one and every checkpoint two, so at the default flush interval that is about a decade of
 continuous writing, and a long-lived database should rotate before then.
 
