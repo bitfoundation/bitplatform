@@ -7,10 +7,13 @@ namespace Bit.Bmotion.Demo.Server.Services;
 /// <para>
 /// Render mode is the question an agent gets wrong most expensively here, and it fails silently
 /// twice over. In a Blazor Web App the services have to be registered in <b>both</b> DI containers,
-/// because the prerender pass instantiates the client's components on the server - miss one and the
-/// app throws at prerender, not at compile time. And on Blazor Server the few animations only the C#
-/// frame loop can play degrade to instant state changes by design, so an animation an agent tested
-/// on WebAssembly can arrive working-but-motionless with nothing in the build output to say why.
+/// because the prerender pass instantiates the client's components on the server - miss the server's
+/// and the app throws at prerender, not at compile time; miss the client's and its elements run on
+/// the default options, which only a warning in the browser's log reveals. (Only a WebAssembly app
+/// that lazy loads Bit.Bmotion leaves the client's out on purpose.) And on Blazor Server the few
+/// animations only the C# frame loop can play degrade to instant state changes by design, so an
+/// animation an agent tested on WebAssembly can arrive working-but-motionless with nothing in the
+/// build output to say why.
 /// </para>
 /// <para>
 /// Each guide therefore states the container list, the capability matrix for that mode, and the
@@ -174,8 +177,16 @@ public static class BmotionSetupGuide
         app.Run();
         ```
 
-        > Registering in only one container is the single most common Bmotion setup bug. It fails at
-        > prerender with a missing-service exception, not at compile time.
+        > Registering in only one container is the single most common Bmotion setup bug. Missing on the
+        > server, it fails at prerender with "Bit.Bmotion's services are not registered", not at compile
+        > time. Missing in the client, the elements create their own services on the default options -
+        > an element prerendered at rest then plays its entrance a second time - and log a warning
+        > saying so.
+
+        A client that lazy loads Bit.Bmotion is the one exception: it leaves the call out of the client's
+        `Program.cs` only, sets the options with `Services.ConfigureBmotionServices(...)` in a layout,
+        and gives `Routes` the InteractiveWebAssembly render mode - see
+        `GetBmotionGuideSection(heading: "Lazy loading on WebAssembly")`.
         """;
 
     private const string WasmCapabilities = """
@@ -307,6 +318,10 @@ public static class BmotionSetupGuide
         // Client/Program.cs
         builder.Services.AddDemoServices();
         ```
+
+        A client that lazy loads Bit.Bmotion leaves the call out of the client's `Program.cs` only; the
+        server keeps it, since the first visit runs the components there - see
+        `GetBmotionGuideSection(heading: "Lazy loading on WebAssembly")`.
         """;
 
     private const string AutoGuidance = """
@@ -364,7 +379,9 @@ public static class BmotionSetupGuide
         ```
 
         There is no second container and no prerender pass, so the registration mistake that catches out
-        Blazor Web Apps cannot happen here.
+        Blazor Web Apps cannot happen here. This is the setup for an app that loads Bit.Bmotion at
+        startup; one that lazy loads it registers nothing - see
+        `GetBmotionGuideSection(heading: "Lazy loading on WebAssembly")`.
         """;
 
     private const string StandaloneCapabilities = """

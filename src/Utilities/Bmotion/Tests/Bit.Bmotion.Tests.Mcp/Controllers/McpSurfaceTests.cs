@@ -23,6 +23,16 @@ public class McpSurfaceTests
     /// <summary>Anything shaped like one of this server's tool names, wherever it appears in prose.</summary>
     private static readonly Regex ToolReference = new(@"\b(?:Get|Search|Simulate|Compare|Analyze|Review|List)Bmotion[A-Za-z]*\b");
 
+    /// <summary>
+    /// The names of the library's own public members. Its API shares the tools' naming - <c>GetBmotionService</c> - so
+    /// what the prose says about the library is told apart by name. A tool may not take one of these names, or the
+    /// prose could name it unchecked.
+    /// </summary>
+    private static readonly IReadOnlySet<string> LibraryMembers = typeof(BitBmotion).Assembly.GetExportedTypes()
+        .SelectMany(type => type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+        .Select(member => member.Name)
+        .ToHashSet(StringComparer.Ordinal);
+
     private static readonly BmotionMcpCatalogDto Catalog = new McpController().GetMcpCatalog();
 
     private static string[] ToolNames => [.. Catalog.Tools.Select(tool => tool.Name)];
@@ -43,6 +53,14 @@ public class McpSurfaceTests
             Assert.IsTrue(tool.Description.Length > 60,
                           $"'{tool.Name}' has a {tool.Description.Length}-character description, which is too little to choose it by.");
         }
+    }
+
+    [TestMethod]
+    public void Tools_NoneSharesANameWithTheLibraryApi()
+    {
+        // The prose is checked for tool names with the library's own members left out (GetBmotionService), so a tool
+        // named like one of them would pass unchecked - and an agent could not tell which of the two it is told to call.
+        foreach (var name in ToolNames) Assert.IsFalse(LibraryMembers.Contains(name), $"'{name}' is also a member of Bit.Bmotion.");
     }
 
     /// <summary>
@@ -308,7 +326,7 @@ public class McpSurfaceTests
         var dangling = ToolReference.Matches(text)
             .Select(match => match.Value)
             .Distinct(StringComparer.Ordinal)
-            .Where(name => names.Contains(name) is false)
+            .Where(name => names.Contains(name) is false && LibraryMembers.Contains(name) is false)
             .ToArray();
 
         Assert.AreEqual(0, dangling.Length, $"{where} names tools this server does not expose: {string.Join(", ", dangling)}.");

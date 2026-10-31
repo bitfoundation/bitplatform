@@ -72,8 +72,12 @@ public static class McpPrompts
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs and for a separate
                .Client project, then continue with what you find.
             2. Call `GetBmotionSetupGuide` with that render mode and follow it. Registering the services in only one
-               of a Blazor Web App's two DI containers is the most common setup bug - it fails during prerendering,
-               not at compile time.
+               of a Blazor Web App's two DI containers is the most common setup bug - missing on the server it fails
+               during prerendering with "Bit.Bmotion's services are not registered", not at compile time; missing in
+               the client the elements run on the default options and log a warning saying so. Only a WebAssembly
+               client that lazy loads Bit.Bmotion leaves the registration out of its Program.cs, takes services from
+               `Services.GetBmotionService<T>()` and sets the options with `Services.ConfigureBmotionServices(...)` -
+               see `GetBmotionGuideSection(heading: "Lazy loading on WebAssembly")`.
             3. Add `@using Bit.Bmotion` to `_Imports.razor` in every project that renders animations.
             4. Set the reduced-motion policy while you are in Program.cs:
                `AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User)`. The default is
@@ -146,7 +150,11 @@ public static class McpPrompts
             5. Confirm the API you are relying on with `GetBmotionApiDetails` before concluding it is a bug -
                check the actual default value of the parameter involved.
             6. Check the setup itself against `GetBmotionSetupGuide` for this render mode: services registered in
-               every DI container the components run in, and `@using Bit.Bmotion` present.
+               every DI container the components run in, and `@using Bit.Bmotion` present. A warning that Bit.Bmotion's
+               services are not registered means the browser runs on the default options, not the ones Program.cs
+               meant to set - an element prerendered at rest then plays its entrance a second time. In an app that
+               lazy loads Bit.Bmotion, that is `Services.ConfigureBmotionServices(...)` missing from the layout, or
+               setting another `Prerender` than the server's.
             7. Rule out reduced motion. If the operating system asks for reduced motion and the app sets
                `BmReducedMotionMode.User` or `Always`, transforms and layout changes snap by design while opacity
                and colour keep animating. That is correct behaviour, and it looks exactly like a bug.

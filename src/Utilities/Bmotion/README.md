@@ -31,6 +31,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 - [Programmatic API](#programmatic-api)
 - [Motion values](#motion-values)
 - [Prerendering & static SSR](#prerendering--static-ssr)
+- [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Accessibility](#accessibility)
 
@@ -53,6 +54,13 @@ builder.Services.AddBitBmotionServices();
 The browser bridge (`bit-bmotion.js`) ships as a static web asset of the package and is
 imported automatically the first time an animation runs, so no manual `<script>` tag is
 required.
+
+In a Blazor Web App, register them in both `Program.cs` files: the pages are prerendered on the
+server before they run in the browser. On WebAssembly the components also work without the
+registration - they then create the services themselves, once per runtime - which is what lets a
+WebAssembly app [lazy load](#lazy-loading-on-webassembly) Bmotion. Everywhere else it is required:
+on Blazor Server, in Blazor Hybrid and on the server of a Web App, an animated element without it
+throws `Bit.Bmotion's services are not registered` as it is created.
 
 ---
 
@@ -1044,7 +1052,9 @@ the browser can't own.
 ## Programmatic API
 
 `BmotionAnimateService` (inject as `Motion`) animates elements by CSS selector or
-`ElementReference` - no `<Bmotion>` wrapper needed:
+`ElementReference` - no `<Bmotion>` wrapper needed. (In an app that
+[lazy loads](#lazy-loading-on-webassembly) Bmotion, and so registers no services, take it from
+`Services.GetBmotionService<BmotionAnimateService>()` instead.)
 
 ```razor
 @inject BmotionAnimateService Motion
@@ -1258,6 +1268,122 @@ How `Animate` works, and what it covers:
 
 `BmotionCapabilities.IsPrerendering` tells your own components when they are being prerendered
 (`SupportsFrameLoop` then describes the prerendering server, not the runtime that takes over).
+
+---
+
+## Lazy loading on WebAssembly
+
+The components also work without `AddBitBmotionServices`, so a WebAssembly app can fetch Bmotion
+only when someone opens a part of the app that animates. When the services are not registered,
+`Bmotion`, `BmotionReorderGroup` and `BmotionInspector` create every service they need themselves,
+once per WebAssembly runtime; `IServiceProvider.GetBmotionService<T>()` hands the app's own code the
+same ones, and `IServiceProvider.ConfigureBmotionServices(...)` sets their options. Mark the
+assembly as lazy loaded in the project that runs in the browser, and load it before the first page
+that uses it renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bmotion.wasm" />
+</ItemGroup>
+```
+
+```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages that animate: fetch Bmotion before they render. A second call loads nothing again. Routes
+        // match regardless of case, so /Showcase/cards is one of them too.
+        if (context.Path.StartsWith("showcase", StringComparison.OrdinalIgnoreCase))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmotion.wasm"]);
+    }
+}
+```
+
+Those pages, or a layout only they use, hold the animated elements as usual. The layout sets the
+options `AddBitBmotionServices` would have:
+
+```razor
+@* ShowcaseLayout.razor *@
+@inherits LayoutComponentBase
+@inject IServiceProvider Services
+
+@Body
+
+@code {
+    // Runs before the elements of the page mount. Where the services are registered - the server of a Blazor Web
+    // App prerendering this layout - it does nothing: the options given to AddBitBmotionServices hold there.
+    protected override void OnInitialized() => Services.ConfigureBmotionServices(o =>
+    {
+        o.ReducedMotion = BmReducedMotionMode.User;
+        o.Prerender = BmPrerenderMode.Animate;
+    });
+}
+```
+
+And a component that animates from code takes its service from `GetBmotionService<T>()` instead of
+injecting it - `BmotionAnimateService`, `BmotionScrollTracker`, `BmotionViewTransition` or
+`BmotionCapabilities`:
+
+```razor
+@* Counter.razor *@
+@inject IServiceProvider Services
+
+<button @onclick="CountUpAsync">@_count</button>
+
+@code {
+    // Taken once, as an injected service would be.
+    private BmotionAnimateService Motion => field ??= Services.GetBmotionService<BmotionAnimateService>();
+    private int _count;
+
+    private Task CountUpAsync()
+        => Motion.AnimateAsync(0, 100, v => { _count = (int)v; StateHasChanged(); }, Bm.Tween(1.5));
+}
+```
+
+Nothing else changes: the bridge is imported the first time an animation runs either way, and
+`bit-bmotion.css` is a plain `<link>`, served whether the assembly has loaded or not.
+
+- Leave `AddBitBmotionServices` out of that project's `Program.cs`: calling it references Bmotion's
+  types before the assembly is there. For the same reason only what renders after the assembly has
+  loaded may use Bmotion's types - the pages it is loaded for and a layout only they use, not
+  `App.razor`, `Routes.razor`, a layout every page shares or `Program.cs`.
+- No type in an assembly the router reads when the app starts - the app's own assembly first of
+  all - may derive from or implement one of Bmotion's: no component that inherits
+  `BmotionAnimatePresence` or `BmotionConfig`, no `IBmotionInterop` of your own. The router reads the
+  types of those assemblies at startup, and on WebAssembly a type whose base type or interface lives
+  in an assembly that is not loaded yet fails to load - and keeps failing after Bit.Bmotion has
+  loaded. Put such a type in a library that is lazy loaded together with Bit.Bmotion.
+- Until `ConfigureBmotionServices` sets them, the elements run on the default `BitBmotionOptions`.
+  The options are shared by every element of the runtime, read as they mount and as they animate,
+  and every call applies its configuration again: configure them in one place, the same way every
+  time. Per element, the `Prerender` parameter and a surrounding `<BmotionConfig ReduceMotion="...">`
+  still override them.
+- An element that creates the services - because nothing configured them first - logs one warning
+  that they are not registered. It is what tells an app that should have registered them, such as
+  the client project of a Blazor Web App that forgot to, why its options are ignored. Calling
+  `ConfigureBmotionServices` first keeps it away, and so does
+  `builder.Logging.AddFilter("Bit.Bmotion.BitBmotion", LogLevel.None)` in `Program.cs`, which does
+  not reference Bmotion's types.
+- In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` or
+  `InteractiveAuto` render mode in `App.razor`, so the router - and its `OnNavigateAsync` - runs in
+  the browser; with per-page render modes it renders statically on the server and never loads the
+  assembly in the browser. The server project loads Bmotion with the rest of the app and keeps its
+  `AddBitBmotionServices()`, and registers `LazyAssemblyLoader`, which `Routes.razor` injects while
+  it is prerendered there and which loads nothing outside the browser:
+  `builder.Services.AddScoped<LazyAssemblyLoader>()`. Configure the same `Prerender` in the browser
+  as on the server: the runtime takes an element prerendered at rest over at rest only when it agrees
+  on how the element was prerendered - otherwise the element's entrance plays a second time.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there
+  is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.
 
 ---
 

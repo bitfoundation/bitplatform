@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmotion;
@@ -26,8 +27,20 @@ namespace Bit.Bmotion;
 /// </summary>
 public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 {
-    [Inject] private BmotionAnimationEngine Engine { get; set; } = null!;
-    [Inject] private IBmotionInterop Interop { get; set; } = null!;
+    // Taken from BitBmotion.GetBmotionServices rather than injected, as the Bmotion component takes them, so the list
+    // also reorders in a WebAssembly app that lazy loads Bit.Bmotion and so never called AddBitBmotionServices.
+    [Inject]
+    private IServiceProvider Services
+    {
+        set
+        {
+            var services = BitBmotion.GetBmotionServices(value);
+            Engine = services.GetRequiredService<BmotionAnimationEngine>();
+            Interop = services.GetRequiredService<IBmotionInterop>();
+        }
+    }
+    private BmotionAnimationEngine Engine { get; set; } = null!;
+    private IBmotionInterop Interop { get; set; } = null!;
 
     /// <summary>The list being reordered. Supports <c>@bind-Items</c>.</summary>
     [Parameter, EditorRequired] public List<TItem> Items { get; set; } = null!;

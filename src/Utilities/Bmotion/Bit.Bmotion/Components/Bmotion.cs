@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
@@ -17,11 +18,27 @@ namespace Bit.Bmotion;
 public sealed class Bmotion : ComponentBase, IAsyncDisposable
 {
     // ── Injected services ──────────────────────────────────────────────────────
-    [Inject] private BmotionAnimationEngine Engine { get; set; } = null!;
-    [Inject] private IBmotionInterop Interop { get; set; } = null!;
-    [Inject] private BmotionLayoutRegistry LayoutRegistry { get; set; } = null!;
-    [Inject] private BitBmotionOptions Options { get; set; } = null!;
-    [Inject] private BmotionPrerenderState PrerenderState { get; set; } = null!;
+    // Taken from BitBmotion.GetBmotionServices rather than injected one by one, so the element also animates in a
+    // WebAssembly app that lazy loads Bit.Bmotion and so never called AddBitBmotionServices. Taken as the services are
+    // injected, so a missing registration still fails when the component is created, as an injected service does.
+    [Inject]
+    private IServiceProvider Services
+    {
+        set
+        {
+            var services = BitBmotion.GetBmotionServices(value);
+            Engine = services.GetRequiredService<BmotionAnimationEngine>();
+            Interop = services.GetRequiredService<IBmotionInterop>();
+            LayoutRegistry = services.GetRequiredService<BmotionLayoutRegistry>();
+            Options = services.GetRequiredService<BitBmotionOptions>();
+            PrerenderState = services.GetRequiredService<BmotionPrerenderState>();
+        }
+    }
+    private BmotionAnimationEngine Engine { get; set; } = null!;
+    private IBmotionInterop Interop { get; set; } = null!;
+    private BmotionLayoutRegistry LayoutRegistry { get; set; } = null!;
+    private BitBmotionOptions Options { get; set; } = null!;
+    private BmotionPrerenderState PrerenderState { get; set; } = null!;
     [Inject] private ILogger<Bmotion>? Logger { get; set; }
 
     // ── Cascaded contexts ──────────────────────────────────────────────────────

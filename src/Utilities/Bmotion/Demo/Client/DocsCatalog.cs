@@ -93,7 +93,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register the services and pick the global options, link the prerender stylesheet and animate your first element.",
-                "install setup nuget package AddBitBmotionServices quick start program.cs imports stylesheet prerender render mode options cssafemode inertwhileexiting",
+                "install setup nuget package AddBitBmotionServices quick start program.cs imports stylesheet prerender render mode options cssafemode inertwhileexiting lazy load lazyassemblyloader blazorwebassemblylazyload GetBmotionService ConfigureBmotionServices aot",
                 typeof(GettingStarted)),
             new("/basic", "Basics",
                 "Initial and Animate on a single element: every transform, colours, shadows and 3-D, skipping the entrance, timing per property, composing targets and the start/complete events.",

@@ -1,6 +1,7 @@
 @namespace Bit.Bmotion
+@using Microsoft.Extensions.DependencyInjection
 @implements IAsyncDisposable
-@inject BmotionAnimationEngine Engine
+@inject IServiceProvider Services
 
 @* A debug overlay that lists every element registered with the engine and its live animation state
    (active drivers, transform / numeric / string values). Drop it anywhere in a dev build:
@@ -106,7 +107,15 @@
     private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
 
-    protected override void OnInitialized() => _open = StartOpen;
+    private BmotionAnimationEngine Engine { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        // Taken from BitBmotion.GetBmotionServices rather than injected, so the inspector also works in a WebAssembly app
+        // that lazy loads Bit.Bmotion and so never called AddBitBmotionServices.
+        Engine = BitBmotion.GetBmotionServices(Services).GetRequiredService<BmotionAnimationEngine>();
+        _open = StartOpen;
+    }
 
     protected override void OnAfterRender(bool firstRender)
     {
