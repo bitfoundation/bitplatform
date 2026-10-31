@@ -211,6 +211,75 @@ public class MaxiCodeAndMicroQrTests
         }
     }
 
+    [TestMethod]
+    public void AnImageOfBullseyeStripesIsGivenUpOnQuickly()
+    {
+        // Every row crosses a bullseye's runs every 21 pixels, and the column through each centre is light from top to
+        // bottom: followed to the image's edge from every row, it cost the square of the height.
+        using var stripes = new BbBitMatrix(64, 100_000);
+        Fill(stripes, static (x, _) => IsRing(x));
+
+        AssertGivenUpQuickly(stripes);
+    }
+
+    [TestMethod]
+    public void BullseyeColumnsCrossedByLightRowsAreGivenUpOnQuickly()
+    {
+        // The rows either side of each light row find bullseyes, their columns confirm them, and the light row through
+        // the centre the columns give runs on to the image's edge.
+        using var bands = new BbBitMatrix(65_536, 1_024);
+        Fill(bands, static (x, y) => (y % 21) switch
+        {
+            11 => false,
+            10 or 12 => IsRing(x),
+            _ => IsRing(y),
+        });
+
+        AssertGivenUpQuickly(bands);
+    }
+
+    [TestMethod]
+    public void ALatticeOfBullseyeCrossesIsGivenUpOnQuickly()
+    {
+        // Each cross is a bullseye along its row and its column, and both its diagonals are light through every other
+        // cross to the image's edge.
+        using var lattice = new BbBitMatrix(8_192, 8_192);
+        Fill(lattice, static (x, y) => IsCentre(y) ? IsRing(x) : IsCentre(x) && IsRing(y));
+
+        AssertGivenUpQuickly(lattice);
+    }
+
+    /// <summary>A bullseye's runs at two pixels a ring, every 21 pixels: dark, light, dark, light, dark, the light centre three wide, and out again.</summary>
+    private static bool IsRing(int t) => (t % 21) is 0 or 1 or 4 or 5 or 8 or 9 or 13 or 14 or 17 or 18;
+
+    /// <summary>The light centre of <see cref="IsRing"/>.</summary>
+    private static bool IsCentre(int t) => (t % 21) is 10 or 11 or 12;
+
+    private static void Fill(BbBitMatrix image, Func<int, int, bool> dark)
+    {
+        for (var y = 0; y < image.Height; y++)
+        {
+            for (var x = 0; x < image.Width; x++)
+            {
+                image[x, y] = dark(x, y);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Each image above took from twenty to forty seconds before the walks were bounded and well under a second after;
+    /// the bound leaves room for a shared build machine running every target framework's tests side by side.
+    /// </summary>
+    private static void AssertGivenUpQuickly(BbBitMatrix image)
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var result = new BbMaxiCodeReader().Decode(image, new BbMatrixDecodeOptions(TryHarder: true, AllowInverted: false));
+        watch.Stop();
+
+        Assert.IsNull(result);
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
+    }
+
     /// <summary>Up to four live frames of the same image through one decoder, as a camera held still delivers them.</summary>
     private static BbBarcodeResult? DecodeLive(BbLuminanceBuffer frame, BbBarcodeFormat format)
     {

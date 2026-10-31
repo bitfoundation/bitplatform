@@ -282,7 +282,10 @@ public class QrCodeDecoderTests
     [TestMethod]
     public void AnImageOfTallStripedColumnsIsGivenUpOnQuickly()
     {
-        using var stripes = new BbBitMatrix(64, 100_000);
+        // Every row of these columns reads 1:1:3:1:1, and the vertical check of each walked the whole black column before
+        // its centre run was bounded: the square of the height. A hundred thousand rows took seven seconds, under the
+        // bound a shared build machine needs; twice that many take thirty-five, and a tenth of a second bounded.
+        using var stripes = new BbBitMatrix(64, 200_000);
         for (var y = 0; y < stripes.Height; y++)
         {
             for (var x = 0; x < stripes.Width; x++)
@@ -297,12 +300,14 @@ public class QrCodeDecoderTests
         watch.Stop();
 
         Assert.AreEqual(0, found);
-        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     [TestMethod]
     public void FinderPatternColumnsCrossedByLongBlackRowsAreGivenUpOnQuickly()
     {
+        // Every candidate passes the vertical check and then meets an all black row in the horizontal one, which walked
+        // the width of the image before its centre run was bounded: fourteen seconds or more, and a fifth of one bounded.
         using var bands = new BbBitMatrix(65_536, 1_024);
         for (var y = 0; y < bands.Height; y++)
         {
@@ -324,7 +329,7 @@ public class QrCodeDecoderTests
         watch.Stop();
 
         Assert.AreEqual(0, found);
-        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), watch.Elapsed, $"Took {watch.Elapsed}.");
     }
 
     [TestMethod]

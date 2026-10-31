@@ -374,17 +374,20 @@ public sealed class BbBarcodeDecoder : IDisposable
             throw new ArgumentException("The frame is too small to decode.", nameof(pixels));
         }
 
-        if (region.X < 0 || region.Y < 0 || region.X + region.Width > frameWidth || region.Y + region.Height > frameHeight)
+        // Subtracted rather than added, and multiplied in 64 bits: sums and products of sizes near the largest int wrap
+        // round to small ones, which pass a check they should fail.
+        if (region.X < 0 || region.Y < 0 || region.X > frameWidth - region.Width || region.Y > frameHeight - region.Height)
         {
             throw new ArgumentOutOfRangeException(nameof(region), "The region does not lie inside the frame.");
         }
 
-        var stride = region.Width * BbPixelConverter.BytesPerPixel(format);
-        if (pixels.Length < stride * region.Height)
+        var bpp = BbPixelConverter.BytesPerPixel(format);
+        if (pixels.Length < (long)region.Width * region.Height * bpp)
         {
             throw new ArgumentException("The pixels are fewer than the region holds.", nameof(pixels));
         }
 
+        var stride = region.Width * bpp;
         return PrepareRegion(pixels, region.Width, region.Height, stride, format, out step);
     }
 
