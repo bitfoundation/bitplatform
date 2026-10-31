@@ -33,6 +33,7 @@ public static class BsqliteCompletions
         "PRAGMA journal_mode = WAL is rejected",
         "ATTACH is rejected on OPFS",
         "the worker or the engine fails to load under a sub-path",
+        "Could not load file or assembly 'Microsoft.EntityFrameworkCore' in an app that lazy loads Bit.Bsqlite",
     ];
 
     /// <summary>

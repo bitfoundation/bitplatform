@@ -75,6 +75,54 @@ internal static class Snippets
                 _orders = await db.Orders.Where(o => o.Status == OrderStatus.Draft).ToListAsync();
             }
             """;
+
+        public const string LazyServices =
+            """
+            // Program.cs registers nothing of Bsqlite's: it runs before the assemblies are there.
+            // Called only from the pages the assemblies are loaded for.
+            internal static class AppDatabase
+            {
+                public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
+                    .GetBitBsqliteServices(services =>
+                    {
+                        // What Program.cs would have registered, unchanged.
+                        services.AddBitBsqliteServices(sqlite => sqlite
+                            .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                            .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+                            .UseStorage(s => s
+                                .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                                .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
+                            .AddDatabase("app.db"));
+
+                        services.AddBitBsqliteDbContext<AppDbContext>();
+                    })
+                    .GetRequiredService<IBsqliteDbContextFactory<AppDbContext>>();
+            }
+
+            // A page:
+            @inject IServiceProvider Services
+
+            await using var db = await AppDatabase.Contexts(Services).CreateDbContextAsync();
+            """;
+
+        public const string LazyRouter =
+            """
+            @inject LazyAssemblyLoader LazyAssemblyLoader
+
+            <Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+                ...
+            </Router>
+
+            @code {
+                private async Task OnNavigateAsync(NavigationContext context)
+                {
+                    // Every assembly the project file marks BlazorWebAssemblyLazyLoad: Bit.Bsqlite.wasm,
+                    // the EF Core assemblies, what only they use, and the library with your model.
+                    if (UsesTheDatabase(context.Path))
+                        await LazyAssemblyLoader.LoadAssembliesAsync(DatabaseAssemblies);
+                }
+            }
+            """;
     }
 
     public static class Home

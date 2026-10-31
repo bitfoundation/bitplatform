@@ -68,6 +68,26 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Lazy loading on WebAssembly</h3>
+    <p class="bb-card-desc">
+        EF Core and Bsqlite are most of what a WebAssembly app downloads for its database - about 2.1 MB, compressed
+        with Brotli. An app whose database only some pages use can mark them <code>BlazorWebAssemblyLazyLoad</code>,
+        load them from the router's <code>OnNavigateAsync</code> before those pages render, and leave the registration
+        out of <code>Program.cs</code>: <code>GetBitBsqliteServices</code> makes the same registration the first time a
+        page asks, once per browser connection, and still reaches the app's own services.
+    </p>
+    <CodeBlock Title="AppDatabase.cs" Language="csharp" Code="@Snippets.Start.LazyServices" Collapsible="false" />
+    <CodeBlock Title="App.razor" Language="razor" Code="@Snippets.Start.LazyRouter" Collapsible="false" />
+    <div class="bb-note bb-note-warn">
+        Keep EF Core's and Bsqlite's types out of everything that runs before the load, and keep the context and its
+        migrations out of the assembly the router reads - in a library lazy loaded with the rest, as this site's Data
+        project is - or the app fails on its first page when it is opened away from the database. AOT builds do not
+        lazy load. The assemblies to mark and every rule are in the guide's
+        <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#lazy-loading-on-webassembly" target="_blank" rel="noopener noreferrer">Lazy loading on WebAssembly</a>.
+    </div>
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nothing in the host page</h3>
     <p class="bb-card-desc">
         The engine (<code>.wasm</code>), the worker and the backends' VFSes are static web assets under

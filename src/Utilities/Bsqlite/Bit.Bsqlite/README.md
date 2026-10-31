@@ -55,6 +55,11 @@ In a Blazor Hybrid app (MAUI, WPF, Windows Forms) the same registration works un
 adds the `file-system` backend, ranks it ahead of the browser ones, and keeps the database as a SQLite
 file in the app's own folder. `ConfigureFileSystemStorage(o => o.RootDirectory = ...)` moves it.
 
+A WebAssembly app can instead download Bit.Bsqlite and EF Core only when a page that uses the database
+opens: it leaves the registration out of `Program.cs`, and the pages make it with
+`provider.GetBitBsqliteServices(services => ...)` once the assemblies have loaded - see
+[lazy loading](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#lazy-loading-on-webassembly).
+
 ## Use
 
 ```csharp

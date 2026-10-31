@@ -73,6 +73,25 @@ public class McpToolTests
         Assert.DoesNotContain("## Use ADO.NET", section);
     }
 
+    /// <summary>
+    /// The setup guides and the debug prompt send an app that lazy loads Bit.Bsqlite to this section by its heading, so
+    /// the tool has to find it under that heading.
+    /// </summary>
+    [TestMethod]
+    public async Task The_lazy_loading_section_the_setup_guides_point_to_is_served()
+    {
+        var section = await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "getting-started", ["section"] = "Lazy loading on WebAssembly" });
+
+        Assert.StartsWith("## Lazy loading on WebAssembly", section);
+        Assert.Contains("GetBitBsqliteServices", section);
+        Assert.Contains("<BlazorWebAssemblyLazyLoad Include=\"Microsoft.EntityFrameworkCore.wasm\" />", section);
+
+        foreach (var scenario in new[] { "standalone-wasm", "wasm", "auto", "hybrid" })
+        {
+            Assert.Contains("section: \"Lazy loading on WebAssembly\"", await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = scenario }), scenario);
+        }
+    }
+
     [TestMethod]
     public async Task An_unknown_section_lists_the_close_ones_or_all_of_them()
     {
