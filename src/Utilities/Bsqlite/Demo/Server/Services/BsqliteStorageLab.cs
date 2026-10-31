@@ -61,24 +61,23 @@ public static class BsqliteStorageLab
         CancellationToken cancellationToken)
     {
         var candidateNames = Names(candidates ?? DefaultCandidates);
-        string[] registeredNames = registered is null ? [.. candidateNames.Distinct(StringComparer.OrdinalIgnoreCase)] : Names(registered);
+        var registeredList = registered is null ? candidateNames : Names(registered);
         var unavailableList = Names(unavailable);
         var nonPersistentList = Names(nonPersistent);
-        var unavailableNames = unavailableList.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var nonPersistentNames = nonPersistentList.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var binding = string.IsNullOrWhiteSpace(existingBinding) ? null : existingBinding.Trim();
         var database = string.IsNullOrWhiteSpace(databaseName) ? DefaultDatabaseName : databaseName.Trim();
 
-        var invalid = Validate(candidateNames, registeredNames, unavailableList, nonPersistentList, binding, database);
+        var invalid = Validate(candidateNames, registeredList, unavailableList, nonPersistentList, binding, database);
         var mode = BsqliteStorageMigrationMode.KeepExisting;
 
         // Parsed by name only: Enum.TryParse also takes "2" or "Manual, KeepExisting", neither of which is
         // something WithMigrationMode could be handed in code.
         if (invalid is null && string.IsNullOrWhiteSpace(migrationMode) is false)
         {
-            var modeName = MigrationModes.FirstOrDefault(name => string.Equals(name, migrationMode.Trim(), StringComparison.OrdinalIgnoreCase));
+            var modeText = migrationMode.Trim();
+            var modeName = MigrationModes.FirstOrDefault(name => string.Equals(name, modeText, StringComparison.OrdinalIgnoreCase));
 
-            if (modeName is null) invalid = $"'{migrationMode}' is not a migration mode. Use one of: {string.Join(", ", MigrationModes)}.";
+            if (modeName is null) invalid = $"'{BsqliteText.Quote(modeText)}' is not a migration mode. Use one of: {string.Join(", ", MigrationModes)}.";
             else mode = Enum.Parse<BsqliteStorageMigrationMode>(modeName);
         }
 
@@ -98,6 +97,10 @@ public static class BsqliteStorageLab
             };
         }
 
+        // Built only from input that passed: a refused list may end in the whole unsplit rest of the text.
+        string[] registeredNames = registered is null ? [.. candidateNames.Distinct(StringComparer.OrdinalIgnoreCase)] : registeredList;
+        var unavailableNames = unavailableList.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var nonPersistentNames = nonPersistentList.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var notes = new List<string>();
 
         string? configurationError = null;
@@ -475,39 +478,36 @@ public static class BsqliteStorageLab
             ? $"{known.TypeName}.ProviderName"
             : Literal(name);
 
-    /// <summary>A name the caller wrote as a C# string literal: a quote or a backslash in it is escaped rather than ending the literal.</summary>
+    /// <summary>
+    /// A name the caller wrote as a C# string literal: a quote or a backslash in it is escaped rather than ending
+    /// the literal, and a character that would end the line or reorder the snippet around it - as shown, not as
+    /// compiled - is written as its \uXXXX escape, which is the same character to the compiler.
+    /// </summary>
     private static string Literal(string text)
-        => $"\"{text.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
+        => $"\"{BsqliteText.Escape(text.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal))}\"";
 
     private static string? Validate(string[] candidates, string[] registered, string[] unavailable, string[] nonPersistent, string? binding, string database)
     {
-        // Every name reaches the library's log lines, which this tool reports back, and the C# snippet: a line
-        // break in one would forge lines the library never wrote. Names splits on '\r' and '\n', but not on the
-        // other characters that end a line - U+0085, U+2028, a form feed - so the lists are checked as well.
+        // Every name reaches the library's log lines and the C# snippet. Both escape what could forge a line or
+        // reorder one, yet no provider name holds such a character, so a name that does is refused as the mistake
+        // it is. Lengths are checked first: a refused list may end in the whole unsplit rest of the text.
         foreach (var (list, label) in new[] { (candidates, "candidates"), (registered, "registered"), (unavailable, "unavailable"), (nonPersistent, "nonPersistent") })
         {
             if (list.Length > MaxNames) return $"'{label}' names more than {MaxNames} backends; this tool plans for at most {MaxNames}.";
 
-            if (list.Any(HasControlCharacter)) return $"'{label}' names a backend with a control character, which no provider name has.";
+            if (list.FirstOrDefault(name => name.Length > MaxNameLength) is { } longName) return $"'{BsqliteText.Quote(longName, 20)}' is longer than a provider name can usefully be ({MaxNameLength} characters).";
 
-            if (list.FirstOrDefault(name => name.Length > MaxNameLength) is { } longName) return $"'{longName[..20]}...' is longer than a provider name can usefully be ({MaxNameLength} characters).";
+            if (list.Any(BsqliteText.HasUnsafeCharacter)) return $"'{label}' names a backend with a control or format character, which no provider name has.";
         }
 
         if (binding?.Length > MaxNameLength) return $"existingBinding is longer than a provider name can usefully be ({MaxNameLength} characters).";
 
-        if (binding is not null && HasControlCharacter(binding)) return "existingBinding contains a control character, which no provider name has.";
+        if (binding is not null && BsqliteText.HasUnsafeCharacter(binding)) return "existingBinding contains a control or format character, which no provider name has.";
 
         if (database.Length > 256) return "databaseName is longer than 256 characters.";
 
-        return HasControlCharacter(database) ? "databaseName contains a control character, which no database name should." : null;
+        return BsqliteText.HasUnsafeCharacter(database) ? "databaseName contains a control or format character, which no database name should." : null;
     }
-
-    /// <summary>
-    /// A control character, or one of the two Unicode separators that are not control characters yet end a
-    /// line all the same - in a C# comment, in ReplaceLineEndings and in most text views.
-    /// </summary>
-    private static bool HasControlCharacter(string text)
-        => text.Any(c => char.IsControl(c) || c is '\u2028' or '\u2029');
 
     /// <summary>A list of provider names as a caller writes one: "opfs, indexeddb", "opfs indexeddb" or "opfs;indexeddb".</summary>
     private static string[] Names(string? text)
@@ -610,11 +610,22 @@ public static class BsqliteStorageLab
 
         public ILogger<T> For<T>() => new Sink<T>(this);
 
+        /// <summary>
+        /// One entry, one line. The library writes each message on one line, but a message quotes the names it
+        /// was given: whatever in one could end the line or reorder it is escaped here, where every line is made,
+        /// rather than left to each caller of the library to have refused.
+        /// </summary>
         private void Write(LogLevel level, string message, Exception? exception)
         {
-            _lines.Add(exception is null ? $"{level}: {message}" : $"{level}: {message} ({exception.GetType().Name}: {exception.Message})");
+            if (exception is null)
+            {
+                _lines.Add($"{level}: {BsqliteText.Escape(message)}");
+                return;
+            }
 
-            if (exception is not null) LastException = exception.Message;
+            LastException = BsqliteText.Escape(exception.Message);
+
+            _lines.Add($"{level}: {BsqliteText.Escape(message)} ({exception.GetType().Name}: {LastException})");
         }
 
         private sealed class Sink<T>(LabLog log) : ILogger<T>

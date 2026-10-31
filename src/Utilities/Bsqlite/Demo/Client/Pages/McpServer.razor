@@ -184,7 +184,8 @@
         }
     </ChildContent>
     <Extra>
-        @if (_plan?.Configuration is { } configuration)
+        @* A refused input has no registration to show: its Configuration is empty, not missing. *@
+        @if (_plan?.Configuration is { Length: > 0 } configuration)
         {
             <CodeBlock Title="The registration this plan describes" Language="csharp" Code="@configuration" />
         }

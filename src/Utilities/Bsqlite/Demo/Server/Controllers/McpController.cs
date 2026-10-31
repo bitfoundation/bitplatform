@@ -48,6 +48,9 @@ public class McpController : ControllerBase
     // land far below the cap; it is there so a pathological answer cannot dominate a client's context window.
     private const int MaxDocumentLength = 40_000;
 
+    // A key that names nothing is quoted back through BsqliteText.Quote, never as sent: over MCP the
+    // AllowedValues below are schema only, so anything - a line break, a megabyte - can arrive in any argument.
+
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBsqlite), Title = "Search everything about Bit.Bsqlite", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
     [Description("Searches everything known about Bit.Bsqlite at once - the README and every guide, every public type and member of its two packages, the storage backends, the setup guides, the two labs and the demo's source files - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first whenever you do not already know which document or type holds the answer, then call the hit's tool verbatim. Example queries: 'live query', 'opfs fallback indexeddb', 'prerendering', 'migrate to another backend', 'unit test without a browser', 'attach'.")]
@@ -70,7 +73,7 @@ public class McpController : ControllerBase
         var guide = BsqliteSetupGuide.Get(scenario);
 
         return guide is null
-            ? $"'{scenario}' is not a known scenario. Use one of: {string.Join(", ", BsqliteSetupGuide.Scenarios)}."
+            ? $"'{BsqliteText.Quote(scenario)}' is not a known scenario. Use one of: {string.Join(", ", BsqliteSetupGuide.Scenarios)}."
             : Truncate(guide);
     }
 
@@ -87,7 +90,7 @@ public class McpController : ControllerBase
 
         if (resolved is null)
         {
-            return $"There is no Bit.Bsqlite document called '{name}'. The documents are: " +
+            return $"There is no Bit.Bsqlite document called '{BsqliteText.Quote(name)}'. The documents are: " +
                    $"{string.Join(", ", BsqliteSourceCatalog.Documents.Select(document => $"'{document.Name}'"))}.";
         }
 
@@ -106,8 +109,8 @@ public class McpController : ControllerBase
             .ToArray();
 
         return candidates.Length > 0
-            ? $"The '{resolved}' document has no section called '{section}'. Did you mean: {string.Join(", ", candidates)}?"
-            : $"The '{resolved}' document has no section called '{section}'. Its sections are: {string.Join(", ", sections.Select(s => $"'{s.Key}'"))}.";
+            ? $"The '{resolved}' document has no section called '{BsqliteText.Quote(section)}'. Did you mean: {string.Join(", ", candidates)}?"
+            : $"The '{resolved}' document has no section called '{BsqliteText.Quote(section)}'. Its sections are: {string.Join(", ", sections.Select(s => $"'{s.Key}'"))}.";
     }
 
     [HttpGet]
@@ -129,8 +132,8 @@ public class McpController : ControllerBase
             .ToArray();
 
         return candidates.Length > 0
-            ? $"Bit.Bsqlite has no public type called '{typeName}'. Did you mean: {string.Join(", ", candidates)}?"
-            : $"Bit.Bsqlite has no public type called '{typeName}'. Its public types are prefixed 'Bsqlite' or 'IBsqlite' (e.g. 'BsqliteConnection' rather than 'SqliteConnection', 'IBsqliteDbContextFactory' rather than 'DbContextFactory'), except the DI entry point class 'BitBsqlite'; call GetBsqliteApi with no type name for the index.";
+            ? $"Bit.Bsqlite has no public type called '{BsqliteText.Quote(typeName)}'. Did you mean: {string.Join(", ", candidates)}?"
+            : $"Bit.Bsqlite has no public type called '{BsqliteText.Quote(typeName)}'. Its public types are prefixed 'Bsqlite' or 'IBsqlite' (e.g. 'BsqliteConnection' rather than 'SqliteConnection', 'IBsqliteDbContextFactory' rather than 'DbContextFactory'), except the DI entry point class 'BitBsqlite'; call GetBsqliteApi with no type name for the index.";
     }
 
     [HttpGet]
@@ -142,7 +145,7 @@ public class McpController : ControllerBase
         if (string.IsNullOrWhiteSpace(provider)) return BsqliteStorageCatalog.RenderIndex();
 
         return BsqliteStorageCatalog.Render(provider)
-            ?? $"No first-party storage backend is called '{provider}'. The backends are: {string.Join(", ", BsqliteStorageCatalog.Providers.Select(p => p.Name))}. A backend of your own implements IBsqliteStorageProvider - see GetBsqliteSetupGuide(scenario: \"custom-provider\").";
+            ?? $"No first-party storage backend is called '{BsqliteText.Quote(provider)}'. The backends are: {string.Join(", ", BsqliteStorageCatalog.Providers.Select(p => p.Name))}. A backend of your own implements IBsqliteStorageProvider - see GetBsqliteSetupGuide(scenario: \"custom-provider\").";
     }
 
     [HttpGet]
@@ -193,8 +196,8 @@ public class McpController : ControllerBase
                 .ToArray();
 
             return candidates.Length > 0
-                ? $"No source file at '{path}'. Did you mean: {string.Join(", ", candidates)}?"
-                : $"No source file at '{path}'. Call GetBsqliteSourceFile with no path for the index of files.";
+                ? $"No source file at '{BsqliteText.Quote(path)}'. Did you mean: {string.Join(", ", candidates)}?"
+                : $"No source file at '{BsqliteText.Quote(path)}'. Call GetBsqliteSourceFile with no path for the index of files.";
         }
 
         return Truncate(content);
@@ -271,10 +274,6 @@ public class McpController : ControllerBase
     {
         if (text.Length <= MaxDocumentLength) return text;
 
-        // Never between the two halves of a surrogate pair: half a pair is not text, and a client that
-        // re-encodes the answer turns it into a replacement character or rejects it outright.
-        var cut = char.IsHighSurrogate(text[MaxDocumentLength - 1]) ? MaxDocumentLength - 1 : MaxDocumentLength;
-
-        return $"{text[..cut]}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
+        return $"{BsqliteText.CutAt(text, MaxDocumentLength)}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
     }
 }

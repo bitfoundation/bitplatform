@@ -1,4 +1,5 @@
-﻿using Bit.Bsqlite.Demo.Server.Dtos;
+﻿using System.Buffers;
+using Bit.Bsqlite.Demo.Server.Dtos;
 
 namespace Bit.Bsqlite.Demo.Server.Services;
 
@@ -23,16 +24,18 @@ public static class BsqliteSearchIndex
         /// those words, rather than merely appearing inside one ("lite" inside "Bsqlite").
         /// </summary>
         public string[] TitleWords { get; } = SplitWords(Title);
+
+        /// <summary>The title words' stems, taken once here rather than for every term of every search.</summary>
+        public string[] TitleStems { get; } = [.. SplitWords(Title).Select(Stem)];
     }
 
     private const int MaxTerms = 16;
 
     /// <summary>
-    /// The most of a query that is read. Far more than <see cref="MaxTerms"/> words take, and a bound on the
-    /// rest: every term is stemmed again for every entry and every title word, so a term's length is paid for
-    /// thousands of times over - a megabyte-long word is gigabytes of allocations.
+    /// The longest word a query is searched by. No name here has a longer one - a camel-case hump is a word of
+    /// its own - while a term is counted in the text of every entry, and quoted back when it matches nothing.
     /// </summary>
-    private const int MaxQueryLength = 1_000;
+    private const int MaxTermLength = 64;
 
     /// <summary>The most hits one search may return, whatever the caller asked for.</summary>
     private const int MaxHits = 50;
@@ -57,6 +60,9 @@ public static class BsqliteSearchIndex
     private const int MaxBodyScore = 8;
 
     private static readonly Lazy<Entry[]> _entries = new(Build);
+
+    /// <summary>The punctuation that separates the words of a query, besides white space.</summary>
+    private static readonly SearchValues<char> _punctuation = SearchValues.Create(".,;:?!\"'()[]{}/\\<>-_");
 
     /// <summary>
     /// The words every entry in this index carries because of what the index is about. They separate
@@ -110,14 +116,19 @@ public static class BsqliteSearchIndex
             {
                 Terms = [],
                 Hits = [],
-                Message = "The query held no word longer than two letters that was not a filler word, so there was " +
+                Message = $"The query held no word of 3 to {MaxTermLength} letters that was not a filler word, so there was " +
                           "nothing to rank by. Search for the thing itself - 'opfs', 'live query', 'migration' - " +
                           "rather than for a sentence."
             };
         }
 
+        // Text is counted by the stem - the singular - which a plural query word would otherwise never find
+        // inside: "queries" has to count the "Query" of AsLiveQuery, and "backends" every "backend". Each is
+        // taken once here, since every entry is compared by it.
+        var stems = terms.Select(Stem).ToArray();
+
         var ranked = _entries.Value
-            .Select(entry => (Entry: entry, Score: Score(entry, terms)))
+            .Select(entry => (Entry: entry, Score: Score(entry, stems)))
             .Where(hit => hit.Score > 0)
             .OrderByDescending(hit => hit.Score)
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
@@ -129,13 +140,13 @@ public static class BsqliteSearchIndex
 
         var take = Math.Clamp(limit, 1, MaxHits);
 
-        var hits = Cover(ranked, terms, take).Select(hit => new BsqliteSearchHitDto
+        var hits = Cover(ranked, stems, take).Select(hit => new BsqliteSearchHitDto
         {
             Kind = hit.Entry.Kind,
             Title = hit.Entry.Title,
             Context = hit.Entry.Context,
             Tool = hit.Entry.Tool,
-            Snippet = Snippet(hit.Entry, terms)
+            Snippet = Snippet(hit.Entry, stems)
         }).ToArray();
 
         if (hits.Length > 0)
@@ -179,18 +190,18 @@ public static class BsqliteSearchIndex
     /// names none of the top hits, the best entry it does name takes the place of the lowest-ranked hit
     /// that is not itself there for that reason. The order stays the ranking's.
     /// </summary>
-    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] terms, int take)
+    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] stems, int take)
     {
         var top = ranked.Take(take).ToList();
-        if (top.Count < take || terms.Length < 2) return [.. top];
+        if (top.Count < take || stems.Length < 2) return [.. top];
 
         var kept = new HashSet<Entry>();
 
-        foreach (var term in terms)
+        foreach (var stem in stems)
         {
-            if (top.Any(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)))) continue;
+            if (top.Any(hit => IsTitleWord(hit.Entry, stem))) continue;
 
-            var best = ranked.Skip(take).FirstOrDefault(hit => hit.Entry.TitleWords.Any(word => Equivalent(word, term)));
+            var best = ranked.Skip(take).FirstOrDefault(hit => IsTitleWord(hit.Entry, stem));
             if (best.Entry is null) continue;
 
             var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false);
@@ -222,19 +233,15 @@ public static class BsqliteSearchIndex
             .Take(MaxSuggestions)];
     }
 
-    private static int Score(Entry entry, string[] terms)
+    private static int Score(Entry entry, string[] stems)
     {
         var score = 0;
         var matched = 0;
         var named = 0;
 
-        foreach (var term in terms)
+        foreach (var stem in stems)
         {
-            var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
-
-            // Text is counted by the singular, which a plural query word would otherwise never find inside:
-            // "queries" has to count the "Query" of AsLiveQuery, and "backends" every "backend".
-            var stem = Stem(term);
+            var isTitleWord = IsTitleWord(entry, stem);
             var inTitle = isTitleWord ? 0 : Count(entry.Title, stem);
             var inBoosted = Count(entry.Boosted, stem);
             var inBody = Count(entry.Body, stem);
@@ -257,15 +264,12 @@ public static class BsqliteSearchIndex
     }
 
     /// <summary>
-    /// Same word, whatever form it is in - "migrate" has to find the section called "Migration",
-    /// "queries" the one about live queries, and nobody phrases a question in the number or tense the
-    /// heading happens to use.
+    /// Whether one of the entry's title words is the term, whatever form either is in - "migrate" has to find
+    /// the section called "Migration", "queries" the one about live queries, and nobody phrases a question in
+    /// the number or tense the heading happens to use. Both sides come stemmed - the title when the index is
+    /// built, the term once per search - since this is asked of every title word of every entry.
     /// </summary>
-    private static bool Equivalent(string word, string term)
-    {
-        return string.Equals(word, term, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(Stem(word), Stem(term), StringComparison.OrdinalIgnoreCase);
-    }
+    private static bool IsTitleWord(Entry entry, string stem) => entry.TitleStems.Contains(stem, StringComparer.Ordinal);
 
     /// <summary>
     /// A word without its plural, its -ing, -ed, -ion or -ies, and a final silent e: "migrates",
@@ -323,26 +327,24 @@ public static class BsqliteSearchIndex
     /// The text that shows why an entry was found: its prose, or - when only its boosted words matched, as
     /// a member found by its type is - those words, so the snippet never reads as a hit for nothing.
     /// </summary>
-    private static string Snippet(Entry entry, string[] terms)
+    private static string Snippet(Entry entry, string[] stems)
     {
-        var stems = terms.Select(Stem).ToArray();
-
         bool Mentions(string text) => stems.Any(stem => Count(text, stem) > 0);
 
-        return Snippet(Mentions(entry.Body) || Mentions(entry.Boosted) is false ? entry.Body : entry.Boosted, terms);
+        return Snippet(Mentions(entry.Body) || Mentions(entry.Boosted) is false ? entry.Body : entry.Boosted, stems);
     }
 
-    private static string Snippet(string body, string[] terms)
+    private static string Snippet(string body, string[] stems)
     {
         if (body.Length == 0) return string.Empty;
 
         var index = 0;
 
         // The same word starts the snippet that was counted for the score, not "sqlite" inside "Bsqlite".
-        foreach (var term in terms.Select(Stem))
+        foreach (var stem in stems)
         {
-            var at = body.IndexOf(term, StringComparison.OrdinalIgnoreCase);
-            while (at >= 0 && StartsWord(body, at) is false) at = body.IndexOf(term, at + term.Length, StringComparison.OrdinalIgnoreCase);
+            var at = body.IndexOf(stem, StringComparison.OrdinalIgnoreCase);
+            while (at >= 0 && StartsWord(body, at) is false) at = body.IndexOf(stem, at + stem.Length, StringComparison.OrdinalIgnoreCase);
 
             if (at >= 0)
             {
@@ -395,23 +397,38 @@ public static class BsqliteSearchIndex
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
 
-        // A pasted file is searched by its first words, as Take below keeps them, without splitting the rest -
-        // and never cut between the two halves of a surrogate pair, since a term that matches nothing is echoed back.
-        if (query.Length > MaxQueryLength) query = query[..(char.IsHighSurrogate(query[MaxQueryLength - 1]) ? MaxQueryLength - 1 : MaxQueryLength)];
+        var terms = new List<string>(MaxTerms);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase).GetAlternateLookup<ReadOnlySpan<char>>();
+        var stopWords = _stopWords.GetAlternateLookup<ReadOnlySpan<char>>();
 
-        string[] terms = [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
-                              StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            // One- and two-letter words ("a", "in", "do") match everything and rank nothing - and the words a
-            // question is phrased with do worse than nothing: "how do I keep data FROM indexeddb" would
-            // otherwise score a section whose heading merely contains "from".
-            .Where(term => term.Length > 2 && _stopWords.Contains(term) is false)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            // Every term is counted in every entry's body, so the work is terms x corpus. No question is
-            // phrased in more words than this, while a pasted file as a query would scan for hours.
-            .Take(MaxTerms)];
+        // Read a word at a time, and only until the last term is found: every term is counted in every
+        // entry's body, so the work is terms x corpus - no question is phrased in more words than MaxTerms,
+        // while a pasted file as a query would scan for hours. A word that is dropped is never copied, so a
+        // pasted file costs one pass over the text before its last term, whatever is in it.
+        for (int start = 0, end = 0; end <= query.Length && terms.Count < MaxTerms; end++)
+        {
+            if (end < query.Length && IsSeparator(query[end]) is false) continue;
 
-        return DropAmbientWords(terms);
+            var word = query.AsSpan(start, end - start);
+            start = end + 1;
+
+            // One- and two-letter words ("a", "in", "do") match everything and rank nothing, and a word longer
+            // than any name names nothing - while the words a question is phrased with do worse than nothing:
+            // "how do I keep data FROM indexeddb" would otherwise score a section whose heading merely contains "from".
+            if (word.Length is <= 2 or > MaxTermLength || stopWords.Contains(word) || seen.Add(word) is false) continue;
+
+            terms.Add(word.ToString());
+        }
+
+        return DropAmbientWords([.. terms]);
     }
+
+    /// <summary>
+    /// What ends a word of a query: punctuation, and any white space - a form feed, U+0085 or U+2028 as much as
+    /// a space. A term that matches nothing is quoted back, so a character that could end the line or reorder
+    /// it there - one <see cref="BsqliteText.IsUnsafe"/> - ends the word instead of ending up in one.
+    /// </summary>
+    private static bool IsSeparator(char c) => char.IsWhiteSpace(c) || _punctuation.Contains(c) || BsqliteText.IsUnsafe(c);
 
     private static Entry[] Build()
     {

@@ -160,17 +160,38 @@ public partial class BsqliteServiceTests
     }
 
     [TestMethod]
-    public void A_pasted_file_is_searched_by_its_first_words_only()
+    public void A_pasted_file_is_searched_by_its_words_not_by_its_length()
     {
-        // Every term is stemmed again for every entry, so a megabyte-long word would cost gigabytes.
+        // A word longer than any name names nothing: it is dropped, rather than counted in every entry.
         var word = BsqliteSearchIndex.Search(new string('Q', 1_000_000), 12);
         var pasted = BsqliteSearchIndex.Search($"opfs fallback {new string('Q', 1_000_000)}", 12);
-        // A pair straddling the cut is left out whole rather than halved.
-        var pair = BsqliteSearchIndex.Search(new string('Q', 999) + "\U0001F600", 12);
+        // However much filler comes first, the words after it are still searched.
+        var filler = BsqliteSearchIndex.Search($"{string.Concat(Enumerable.Repeat("the ", 250_000))}opfs fallback", 12);
 
-        Assert.AreEqual(1_000, word.Terms!.Single().Length);
+        Assert.IsEmpty(word.Terms!);
         Assert.IsNotEmpty(pasted.Hits);
-        Assert.AreEqual(999, pair.Terms!.Single().Length);
+        Assert.IsNotEmpty(filler.Hits);
+    }
+
+    [TestMethod]
+    public void A_term_that_matches_nothing_is_quoted_back_on_one_line()
+    {
+        // Every character that could end a line or reorder one ends a word instead, so none reaches Terms or Message.
+        var result = BsqliteSearchIndex.Search("zzzz\u2028qqqq\u0085zqzq\u202Eqzqz\fzzqq\u000Bqqzz\u200Bzqqz", 12);
+
+        Assert.IsEmpty(result.Hits);
+        CollectionAssert.AreEqual(new[] { "zzzz", "qqqq", "zqzq", "qzqz", "zzqq", "qqzz", "zqqz" }, result.Terms);
+        Assert.IsFalse(result.Message!.Any(BsqliteText.IsUnsafe));
+    }
+
+    [TestMethod]
+    public void Caller_text_is_quoted_short_whole_and_on_one_line()
+    {
+        Assert.AreEqual("opfs", BsqliteText.Quote("opfs"));
+        Assert.AreEqual("x\\u2028Warning\\u202E", BsqliteText.Quote("x\u2028Warning\u202E"));
+        Assert.AreEqual($"{new string('a', 64)}...", BsqliteText.Quote(new string('a', 1_000_000)));
+        // A pair straddling the cut is left out whole rather than halved.
+        Assert.AreEqual($"{new string('a', 19)}...", BsqliteText.Quote($"{new string('a', 19)}\U0001F600", 20));
     }
 
     [TestMethod]
