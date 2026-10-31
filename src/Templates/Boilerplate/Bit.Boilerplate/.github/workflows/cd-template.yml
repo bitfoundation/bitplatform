@@ -58,9 +58,9 @@ jobs:
           files: 'src/**/appsettings*json'
         env:
           WebAppRender.BlazorMode: 'BlazorWebAssembly'
-          ServerAddress: ${{ vars[format('{0}_SERVER_ADDRESS', inputs.ENV_NAME)] }}
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
 #if (notification == true)
-          AdsPushVapid.PublicKey: ${{ secrets[format('{0}_PUBLIC_VAPIDKEY', inputs.ENV_NAME)] }}
+          AdsPushVapid.PublicKey: ${{ secrets.PUBLIC_VAPIDKEY }}
 #endif
 
       # bit setup leaves the Aspire CLI out in CI, so it is installed here, at the version of the app host's Aspire SDK.
@@ -120,7 +120,7 @@ jobs:
       packages: read
     environment:
       name: ${{ inputs.ENV_NAME }}
-      url: ${{ vars[format('{0}_SERVER_ADDRESS', inputs.ENV_NAME)] }}
+      url: ${{ vars.SERVER_ADDRESS }}
     steps:
 
       - name: Retrieve the Docker Compose project
@@ -140,37 +140,37 @@ jobs:
       - name: Deploy
         env:
           ENV_NAME: ${{ inputs.ENV_NAME }}
-          SMTP: ${{ secrets[format('{0}_SMTP_CONNECTION_STRING', inputs.ENV_NAME)] }}
-          APP_CERTIFICATE: ${{ secrets[format('{0}_APP_CERTIFICATE', inputs.ENV_NAME)] }}
-          APP_CERTIFICATE_RETIRED: ${{ secrets[format('{0}_APP_CERTIFICATE_RETIRED', inputs.ENV_NAME)] }}
-          SERVERWEB_SETTINGS: ${{ secrets[format('{0}_SERVERWEB_SETTINGS', inputs.ENV_NAME)] }}
+          SMTP: ${{ secrets.SMTP_CONNECTION_STRING }}
+          APP_CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
+          APP_CERTIFICATE_RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
+          SERVERWEB_SETTINGS: ${{ secrets.SERVERWEB_SETTINGS }}
 #if (api == "Standalone")
-          SERVERAPI_SETTINGS: ${{ secrets[format('{0}_SERVERAPI_SETTINGS', inputs.ENV_NAME)] }}
+          SERVERAPI_SETTINGS: ${{ secrets.SERVERAPI_SETTINGS }}
 #endif
 #if (database == "SqlServer")
-          SQLSERVER_PASSWORD: ${{ secrets[format('{0}_DATABASE_PASSWORD', inputs.ENV_NAME)] }}
+          SQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
 #elif (database == "PostgreSQL")
-          POSTGRESSERVER_PASSWORD: ${{ secrets[format('{0}_DATABASE_PASSWORD', inputs.ENV_NAME)] }}
+          POSTGRESSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
 #elif (database == "MySql")
-          MYSQLSERVER_PASSWORD: ${{ secrets[format('{0}_DATABASE_PASSWORD', inputs.ENV_NAME)] }}
+          MYSQLSERVER_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
 #elif (database == "Other")
-          OTHERDB: ${{ secrets[format('{0}_DATABASE_CONNECTION_STRING', inputs.ENV_NAME)] }}
+          OTHERDB: ${{ secrets.DATABASE_CONNECTION_STRING }}
 #endif
 #if (filesStorage == "S3")
-          S3: ${{ secrets[format('{0}_S3_CONNECTION_STRING', inputs.ENV_NAME)] }}
+          S3: ${{ secrets.S3_CONNECTION_STRING }}
 #elif (filesStorage == "AzureBlobStorage")
-          AZUREBLOBSTORAGE: ${{ secrets[format('{0}_AZURE_BLOB_STORAGE_CONNECTION_STRING', inputs.ENV_NAME)] }}
+          AZUREBLOBSTORAGE: ${{ secrets.AZURE_BLOB_STORAGE_CONNECTION_STRING }}
 #endif
 #if (redis == true)
-          REDIS_CACHE_PASSWORD: ${{ secrets[format('{0}_REDIS_CACHE_PASSWORD', inputs.ENV_NAME)] }}
-          REDIS_PERSISTENT_PASSWORD: ${{ secrets[format('{0}_REDIS_PERSISTENT_PASSWORD', inputs.ENV_NAME)] }}
+          REDIS_CACHE_PASSWORD: ${{ secrets.REDIS_CACHE_PASSWORD }}
+          REDIS_PERSISTENT_PASSWORD: ${{ secrets.REDIS_PERSISTENT_PASSWORD }}
 #endif
 #if (cloudflare == true)
-          CLOUDFLARE_TUNNEL_TUNNEL_TOKEN: ${{ secrets[format('{0}_CLOUDFLARE_TUNNEL_TOKEN', inputs.ENV_NAME)] }}
+          CLOUDFLARE_TUNNEL_TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TUNNEL_TOKEN }}
 #endif
 #if (notification == true)
-          VAPID_PRIVATE_KEY: ${{ secrets[format('{0}_PRIVATE_VAPIDKEY', inputs.ENV_NAME)] }}
-          VAPID_SUBJECT: ${{ secrets[format('{0}_VAPID_SUBJECT', inputs.ENV_NAME)] }}
+          VAPID_PRIVATE_KEY: ${{ secrets.PRIVATE_VAPIDKEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
 #endif
         run: |
           set -euo pipefail
@@ -216,7 +216,7 @@ jobs:
                 continue
               fi
               if [[ "$line" != *=* || "${line#*=}" == *"'"* ]]; then
-                echo "::error::${ENV_NAME^^}_$settings has a line that is not KEY=value, or whose value contains a single quote: ${line%%=*}"
+                echo "::error::$settings has a line that is not KEY=value, or whose value contains a single quote: ${line%%=*}"
                 exit 1
               fi
               printf "%s='%s'\n" "${line%%=*}" "${line#*=}" >> "$deploy_dir/$file"
@@ -228,7 +228,7 @@ jobs:
           # splits, failing the step on one it can't read. The files are replaced in place, so a running container never
           # finds the folder empty.
           if [[ -z "$APP_CERTIFICATE" ]]; then
-            echo "::error::${ENV_NAME^^}_APP_CERTIFICATE is not set."
+            echo "::error::APP_CERTIFICATE is not set."
             exit 1
           fi
           certificates="$deploy_dir/app-certificate"
@@ -254,7 +254,7 @@ jobs:
 
       - name: Check the public address
         env:
-          SERVER_ADDRESS: ${{ vars[format('{0}_SERVER_ADDRESS', inputs.ENV_NAME)] }}
+          SERVER_ADDRESS: ${{ vars.SERVER_ADDRESS }}
         run: |
           for _ in $(seq 1 30); do
             if curl --fail --silent --show-error --max-time 10 "${SERVER_ADDRESS%/}/alive"; then
@@ -318,8 +318,8 @@ jobs:
         with:
           files: 'src\**\appsettings*json'
         env:
-          ServerAddress: ${{ vars[format('{0}_SERVER_ADDRESS', inputs.ENV_NAME)] }}
-          WindowsUpdate.FilesUrl: ${{ vars[format('{0}_WINDOWS_UPDATE_FILES_URL', inputs.ENV_NAME)] }}
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
+          WindowsUpdate.FilesUrl: ${{ vars.WINDOWS_UPDATE_FILES_URL }}
 
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
       - name: Sign the app with Artifact Signing
@@ -398,7 +398,7 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
-          ServerAddress: ${{ vars[format('{0}_SERVER_ADDRESS', inputs.ENV_NAME)] }}
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
 
       - name: Publish aab
         run: dotnet publish src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj -c Release -p:ApplicationId=${{ vars.APP_ID }} -p:AndroidPackageFormat=aab -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="Boilerplate.keystore" -p:AndroidSigningKeyAlias=Boilerplate -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:Environment=${{ inputs.ENV_NAME }} -f net11.0-android
@@ -460,7 +460,7 @@ jobs:
         with:
           files: 'src/**/appsettings*json'
         env:
-          ServerAddress: ${{ vars[format('{0}_SERVER_ADDRESS', inputs.ENV_NAME)] }}
+          ServerAddress: ${{ vars.SERVER_ADDRESS }}
 
       - name: Import Code-Signing Certificates
         uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0

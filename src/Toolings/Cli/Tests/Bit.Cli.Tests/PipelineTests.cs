@@ -10,7 +10,7 @@ namespace Bit.Cli.Tests;
 public class PipelineTests
 {
     [TestMethod]
-    public async Task TheTemplatesWorkflows_Should_NameEachEnvironmentsOwnSecretsAfterIt()
+    public async Task TheTemplatesWorkflows_Should_NeedTheirSecretsInEachEnvironment()
     {
         var scan = await new GitHubWorkflows(TemplateDirectory()).ScanAsync(CancellationToken.None);
 
@@ -20,13 +20,7 @@ public class PipelineTests
         {
             var names = scan.Secrets.Where(s => s.Environment == environment).Select(s => s.Name).ToList();
 
-            foreach (var name in new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "VAPID_SUBJECT", "APP_CERTIFICATE", "APP_CERTIFICATE_RETIRED", "SMTP_CONNECTION_STRING", "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "CLOUDFLARE_TUNNEL_TOKEN" })
-            {
-                CollectionAssert.Contains(names, $"{environment.ToUpperInvariant()}_{name}", $"{environment}: {string.Join(", ", names)}");
-                CollectionAssert.DoesNotContain(names, name, $"{environment}: {string.Join(", ", names)}");
-            }
-
-            foreach (var name in new[] { "OPENAI_APIKEY", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "APPSTORE_API_KEY_ID" })
+            foreach (var name in new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "VAPID_SUBJECT", "APP_CERTIFICATE", "APP_CERTIFICATE_RETIRED", "SMTP_CONNECTION_STRING", "DATABASE_PASSWORD", "REDIS_CACHE_PASSWORD", "CLOUDFLARE_TUNNEL_TOKEN", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "APPSTORE_API_KEY_ID" })
             {
                 CollectionAssert.Contains(names, name, $"{environment}: {string.Join(", ", names)}");
             }
@@ -69,7 +63,7 @@ public class PipelineTests
                 environment:
                   name: ${{ github.ref_name }}
                 steps:
-                  - run: echo ${{ secrets['INDEXED'] }} ${{ secrets.GITHUB_TOKEN }} ${{ secrets[format('{0}_KEY', github.ref_name)] }}
+                  - run: echo ${{ secrets['INDEXED'] }} ${{ secrets.GITHUB_TOKEN }}
             """);
         Workflow(host, "steps.yml", """
             on:
@@ -82,7 +76,7 @@ public class PipelineTests
                 runs-on: ubuntu-latest
                 environment: ${{ inputs.ENV_NAME }}
                 steps:
-                  - run: echo ${{ secrets.TOKEN }} ${{ secrets[format('{0}_PASSWORD', inputs.ENV_NAME)] }}
+                  - run: echo ${{ secrets.TOKEN }}
               notify:
                 runs-on: ubuntu-latest
                 steps:
@@ -101,18 +95,17 @@ public class PipelineTests
 
         CollectionAssert.AreEquivalent(new[]
         {
-            "Production:TOKEN", "Production:PRODUCTION_PASSWORD", "Production:REMOTE_ONLY", "Staging:TOKEN", "Staging:STAGING_PASSWORD",
+            "Production:TOKEN", "Production:REMOTE_ONLY", "Staging:TOKEN",
             "repository:TOKEN", "repository:CALLER_TOKEN", "repository:INDEXED", "repository:WORKFLOW_WIDE"
         }, found, string.Join(", ", found));
 
         CollectionAssert.AreEqual(new[] { "contoso/pipelines/.github/workflows/shared.yml@v1" }, fetched);
         Assert.IsTrue(scan.Notes.Any(n => n.Contains("broken.yml", StringComparison.Ordinal)), string.Join(Environment.NewLine, scan.Notes));
         Assert.IsTrue(scan.Notes.Any(n => n.Contains("github.ref_name", StringComparison.Ordinal)), string.Join(Environment.NewLine, scan.Notes));
-        Assert.IsTrue(scan.Notes.Any(n => n.Contains("{0}_KEY", StringComparison.Ordinal)), string.Join(Environment.NewLine, scan.Notes));
     }
 
     [TestMethod]
-    public async Task Pipeline_Should_StoreTheKeysItCreatesInTheRepository()
+    public async Task Pipeline_Should_CreateTheEnvironmentAndStoreTheKeysItCreates()
     {
         using var host = Repository();
         Workflow(host, "cd.yml", """
@@ -125,11 +118,11 @@ public class PipelineTests
                   - run: dotnet publish -p:AndroidSigningKeyAlias=Contoso -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}"
                     env:
                       KEYSTORE: ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}
-                      PUBLIC: ${{ secrets.PRODUCTION_PUBLIC_VAPIDKEY }}
-                      PRIVATE: ${{ secrets.PRODUCTION_PRIVATE_VAPIDKEY }}
-                      CERTIFICATE: ${{ secrets.PRODUCTION_APP_CERTIFICATE }}
-                      RETIRED: ${{ secrets.PRODUCTION_APP_CERTIFICATE_RETIRED }}
-                      DATABASE: ${{ secrets.PRODUCTION_DATABASE_CONNECTION_STRING }}
+                      PUBLIC: ${{ secrets.PUBLIC_VAPIDKEY }}
+                      PRIVATE: ${{ secrets.PRIVATE_VAPIDKEY }}
+                      CERTIFICATE: ${{ secrets.APP_CERTIFICATE }}
+                      RETIRED: ${{ secrets.APP_CERTIFICATE_RETIRED }}
+                      DATABASE: ${{ secrets.DATABASE_CONNECTION_STRING }}
                       ALREADY: ${{ secrets.SHARED_SECRET }}
             """);
 
@@ -138,12 +131,12 @@ public class PipelineTests
 
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"));
 
-        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.Contains("PUT") || (c.Arguments is ["secret", "set", ..] && c.Arguments.Contains("--env"))), host.Output);
+        Assert.IsTrue(host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) == "api -X PUT repos/contoso/shop/environments/Production --silent"), host.Output);
 
         var stored = Stored(host);
-        CollectionAssert.AreEquivalent(new[] { "PRODUCTION_PUBLIC_VAPIDKEY", "PRODUCTION_PRIVATE_VAPIDKEY", "PRODUCTION_APP_CERTIFICATE", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "ANDROID_RELEASE_KEYSTORE_PASSWORD", "ANDROID_RELEASE_SIGNING_PASSWORD" }, stored.Keys.ToArray(), host.Output);
+        CollectionAssert.AreEquivalent(new[] { "PUBLIC_VAPIDKEY", "PRIVATE_VAPIDKEY", "APP_CERTIFICATE", "ANDROID_RELEASE_KEYSTORE_FILE_BASE64", "ANDROID_RELEASE_KEYSTORE_PASSWORD", "ANDROID_RELEASE_SIGNING_PASSWORD" }, stored.Keys.ToArray(), host.Output);
 
-        using var certificate = X509Certificate2.CreateFromPem(stored["PRODUCTION_APP_CERTIFICATE"], stored["PRODUCTION_APP_CERTIFICATE"]);
+        using var certificate = X509Certificate2.CreateFromPem(stored["APP_CERTIFICATE"], stored["APP_CERTIFICATE"]);
         StringAssert.Contains(certificate.Subject, "OU=Production");
         Assert.IsTrue(certificate.HasPrivateKey);
 
@@ -155,7 +148,7 @@ public class PipelineTests
         Assert.IsTrue(host.Runner.Calls.All(c => stored.Values.All(v => c.Arguments.Any(a => a.Contains(v, StringComparison.Ordinal)) is false)), "a secret was passed on a command line");
         Assert.IsTrue(File.Exists(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop", "Contoso.keystore")));
         Assert.IsTrue(File.Exists(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop-Production", "AppCertificate.key")));
-        StringAssert.Contains(host.FlatOutput, "Skipped PRODUCTION_DATABASE_CONNECTION_STRING");
+        StringAssert.Contains(host.FlatOutput, "Skipped DATABASE_CONNECTION_STRING");
     }
 
     [TestMethod]
@@ -221,7 +214,7 @@ public class PipelineTests
     }
 
     [TestMethod]
-    public async Task ThePipeline_Should_CreateTheAppStoreSigningOnceForAllTheEnvironments()
+    public async Task ThePipeline_Should_CreateTheAppStoreSigningOnceForEveryEnvironment()
     {
         using var apple = new KeysTests.FakeAppStoreConnect();
         var prompter = new ScriptedPrompter();
@@ -249,13 +242,18 @@ public class PipelineTests
 
         Assert.AreEqual(0, await new PipelineSetup(host.Services, new PipelineOptions([], false, false, false), apple).RunAsync(CancellationToken.None), host.Output);
 
-        var stored = Stored(host);
-        Assert.HasCount(5, stored, host.Output);
+        var sets = host.Runner.Calls.Where(c => c.Arguments is ["secret", "set", ..]).ToList();
+        Assert.HasCount(10, sets, host.Output);
         Assert.AreEqual(1, apple.Requests.Count(r => r.Line is "POST /v1/certificates"));
-        Assert.AreEqual(apple.Key.PrivateKey, stored["APPSTORE_API_KEY_PRIVATE_KEY"]);
 
-        using var certificate = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(stored["APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64"]), stored["APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD"]);
-        Assert.IsTrue(certificate.HasPrivateKey);
+        foreach (var environment in new[] { "Production", "Test" })
+        {
+            var stored = sets.Where(c => c.Arguments.Contains(environment)).ToDictionary(c => c.Arguments[2], c => c.StandardInput!);
+            Assert.AreEqual(apple.Key.PrivateKey, stored["APPSTORE_API_KEY_PRIVATE_KEY"]);
+
+            using var certificate = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(stored["APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64"]), stored["APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD"]);
+            Assert.IsTrue(certificate.HasPrivateKey);
+        }
 
         StringAssert.Contains(host.FlatOutput, "com.contoso.shop App Store");
         Assert.HasCount(1, Directory.GetFiles(Path.Combine(host.Home, ".bitplatform", "keys", "contoso-shop"), "com.contoso.shop.*.p12"));
@@ -284,7 +282,7 @@ public class PipelineTests
 
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("pipeline", "--yes"));
 
-        StringAssert.Contains(host.Output, $"bit ran this in {host.WorkingDirectory}, answering its prompts on standard input: gh secret set PUBLIC_VAPIDKEY --repo contoso/shop");
+        StringAssert.Contains(host.Output, $"bit ran this in {host.WorkingDirectory}, answering its prompts on standard input: gh secret set PUBLIC_VAPIDKEY --repo contoso/shop --env Production");
         Assert.IsTrue(Stored(host).Values.All(v => host.Output.Contains(v, StringComparison.Ordinal) is false), host.Output);
     }
 
