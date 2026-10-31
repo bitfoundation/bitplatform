@@ -224,11 +224,6 @@ public sealed partial class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "container-runtime", "Checking the container runtime", projectSteps.ContainerRuntimeAsync, cancellationToken);
         }
 
-        if (noWorkloads is false)
-        {
-            await RunProjectStepAsync(steps, context, "workloads", $"Installing {Platforms.BuildSupport([Platform.Web])}", projectSteps.WorkloadsAsync, cancellationToken);
-        }
-
         if (noBuild is false)
         {
             await RunProjectStepAsync(steps, context, "workbench-build", "Building the Workbench", projectSteps.WorkbenchBuildAsync, cancellationToken);
@@ -246,6 +241,11 @@ public sealed partial class NewWorkflow(CliServices cli)
                     ProjectRun.OpenInBrowser(cli, url);
                 }
             }
+        }
+
+        if (noWorkloads is false)
+        {
+            await RunProjectStepAsync(steps, context, "workloads", $"Installing {Platforms.BuildSupport([Platform.Web])}", projectSteps.WorkloadsAsync, cancellationToken);
         }
 
         if (noRestore is false)
@@ -547,8 +547,8 @@ public sealed partial class NewWorkflow(CliServices cli)
         if (request.NoGit is false) stepsList.Add("git with develop and main");
         stepsList.Add(".NET SDK check");
         if (selection.Aspire && cli.Environment.IsCI is false) stepsList.Add("container runtime for Aspire");
-        if (request.NoWorkloads is false) stepsList.Add(Platforms.BuildSupport([Platform.Web]));
         if (request.NoBuild is false) stepsList.Add(runMode is ProjectRunMode.UntilClosed ? "build and open the Workbench" : "build the Workbench");
+        if (request.NoWorkloads is false) stepsList.Add(Platforms.BuildSupport([Platform.Web]));
         if (request.NoRestore is false || request.NoBuild is false) stepsList.Add(RestoreAndBuild("the web app"));
         if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
         if (request.NoMigration is false && request.NoRestore is false && selection.Database is not "Other") stepsList.Add("initial migration");

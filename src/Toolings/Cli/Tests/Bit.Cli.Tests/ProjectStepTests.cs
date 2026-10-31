@@ -598,10 +598,10 @@ public class ProjectStepTests
 
         CollectionAssert.AreEqual(new[]
         {
-            "workload list",
-            "workload install wasm-tools",
             "build src/Workbench/Contoso.Workbench.csproj",
             $"run --project {project.WorkbenchDirectory} --no-build",
+            "workload list",
+            "workload install wasm-tools",
             "restore Contoso.Web.slnf",
             "build Contoso.Web.slnf"
         }, DotnetCommands(host).ToArray());
@@ -678,7 +678,7 @@ public class ProjectStepTests
 
             await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, new ProjectSteps(host.Services, project), false, false, false, true, mode, CancellationToken.None);
 
-            CollectionAssert.AreEqual(new[] { "workload list", "build src/Workbench/Contoso.Workbench.csproj", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, DotnetCommands(host).ToArray(), mode.ToString());
+            CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, DotnetCommands(host).ToArray(), mode.ToString());
             Assert.IsFalse(steps.Reports.Any(r => r.Id is "workbench-run"), mode.ToString());
             Assert.IsEmpty(host.Runner.Detached, mode.ToString());
         }
@@ -896,7 +896,7 @@ public class ProjectStepTests
         await NewWorkflow.RunSetupStepsAsync(host.Services, steps, project, projectSteps, false, false, false, false, ProjectRunMode.None, CancellationToken.None);
 
         var webCommands = DotnetCommands(host);
-        CollectionAssert.AreEqual(new[] { "workload list", "build src/Workbench/Contoso.Workbench.csproj", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, the Workbench and the web app's packages and build come before the native apps.");
+        CollectionAssert.AreEqual(new[] { "build src/Workbench/Contoso.Workbench.csproj", "workload list", "restore Contoso.Web.slnf", "build Contoso.Web.slnf" }, webCommands.ToArray(), "Only the web app's build support, the Workbench and the web app's packages and build come before the native apps.");
 
         await NewWorkflow.RunNativeStepsAsync(host.Services, steps, project, projectSteps, false, false, false, CancellationToken.None);
 

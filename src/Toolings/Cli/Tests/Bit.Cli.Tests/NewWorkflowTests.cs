@@ -87,8 +87,8 @@ public class NewWorkflowTests
 
         Assert.AreEqual(0, exitCode, host.Output);
         AssertInOrder(host, [
-            "workload install wasm-tools",
             "build src/Workbench/Contoso.Workbench.csproj",
+            "workload install wasm-tools",
             "restore Contoso.Web.slnf",
             "build Contoso.Web.slnf",
             "dnx dotnet-ef",
@@ -102,7 +102,7 @@ public class NewWorkflowTests
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "run" || c.FileName is "aspire"), Calls(host));
         Assert.IsFalse(host.Runner.Calls.Any(c => string.Join(' ', c.Arguments) is "build Contoso.slnx"), "The whole solution isn't built again: " + Calls(host));
         Assert.IsEmpty(host.Runner.Detached);
-        StringAssert.Contains(host.FlatOutput, "WebAssembly build support, build the Workbench, restore and build the web app, Chromium for UI tests, initial migration, dotnet format, Android build support, restore and build the native apps");
+        StringAssert.Contains(host.FlatOutput, "build the Workbench, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, dotnet format, Android build support, restore and build the native apps");
     }
 
     [TestMethod]
@@ -118,8 +118,8 @@ public class NewWorkflowTests
         Assert.AreEqual(0, await host.RunAsync("setup", directory, "--yes", "--no-tools", "--no-browsers", "--platforms", "android"), host.Output);
 
         AssertInOrder(host, [
-            "workload install wasm-tools",
             "build src/Workbench/Contoso.Workbench.csproj",
+            "workload install wasm-tools",
             "restore Contoso.Web.slnf",
             "build Contoso.Web.slnf",
             "start --apphost",
@@ -142,7 +142,7 @@ public class NewWorkflowTests
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-package", FakeTemplatePackage(host), "--platforms", "android", "--dry-run", "--yes"), host.Output);
 
-        StringAssert.Contains(host.FlatOutput, ".NET SDK check, container runtime for Aspire, WebAssembly build support, build and open the Workbench, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code");
+        StringAssert.Contains(host.FlatOutput, ".NET SDK check, container runtime for Aspire, build and open the Workbench, WebAssembly build support, restore and build the web app, Chromium for UI tests, initial migration, trust for VS Code and AI tools, VS Code extensions, start it with Aspire and open the dashboard and the app, dotnet format, Android build support, restore and build the native apps, open in VS Code");
     }
 
     [TestMethod]
