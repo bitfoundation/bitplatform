@@ -372,4 +372,71 @@ public sealed class BrowserContractRegressionTests : BunitContext
         Assert.AreEqual(other.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId, "The editor now open is left alone.");
         Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one closed undo step.");
     }
+
+    [TestMethod]
+    public async Task Text_typed_before_the_canvas_turns_read_only_is_kept()
+    {
+        // The click on the application's lock button blurs the editor, which reports the text, and then makes the
+        // canvas read-only. Cancelling the edit then removed the new box and dropped the text with it.
+        IRenderedComponent<BinkCanvas> canvas = await EndATextEditWhileItIsMeasuredAsync(c => c.Render(p => p.Add(x => x.ReadOnly, true)));
+
+        Assert.AreEqual("typed", canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text);
+        Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one undo step.");
+        Assert.IsNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId);
+    }
+
+    [TestMethod]
+    public async Task Text_typed_before_switching_tools_is_kept()
+    {
+        IRenderedComponent<BinkCanvas> canvas = await EndATextEditWhileItIsMeasuredAsync(c => c.Render(p => p.Add(x => x.Tool, new BinkDrawTool())));
+
+        Assert.AreEqual("typed", canvas.Instance.CurrentDocument.AllElements.OfType<BinkTextElement>().Single().Text);
+        Assert.AreEqual(1, canvas.Instance.History.UndoCount, "Placing the box and typing into it is one undo step.");
+        Assert.IsNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId);
+    }
+
+    [TestMethod]
+    public async Task An_edit_still_open_when_the_canvas_turns_read_only_changes_nothing()
+    {
+        SetupAttachedModule();
+        var existing = new BinkTextElement(new Vector2(40, 40), "Hello") { Size = new Vector2(120, 30) };
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
+        await canvas.InvokeAsync(() =>
+        {
+            canvas.Instance.CurrentDocument.AddElement(existing);
+            canvas.Instance.History.Clear();
+        });
+        Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
+        canvas.WaitForAssertion(() => Assert.AreEqual(existing.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId));
+
+        canvas.Render(p => p.Add(c => c.ReadOnly, true));
+        // A long text read as a stream reaches the canvas only after the read, by which time it is read-only.
+        await canvas.InvokeAsync(() => ((IBinkInteropClient)canvas.Instance).OnTextEditorKey("Enter", "changed", existing.Id));
+
+        Assert.IsNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId);
+        Assert.AreEqual("Hello", ((BinkTextElement)canvas.Instance.CurrentDocument.GetElement(existing.Id)).Text);
+        Assert.AreEqual(0, canvas.Instance.History.UndoCount);
+    }
+
+    /// <summary>
+    /// Places a text box and ends the edit with a blur, then runs <paramref name="interrupt"/> while the browser is
+    /// still measuring the text, which is when the click that caused the blur arrives on Blazor Server.
+    /// </summary>
+    private async Task<IRenderedComponent<BinkCanvas>> EndATextEditWhileItIsMeasuredAsync(Action<IRenderedComponent<BinkCanvas>> interrupt)
+    {
+        BunitJSModuleInterop module = SetupAttachedModule();
+        var measure = module.Setup<BinkTextMetrics>("measureText", _ => true);
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
+        Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
+        canvas.WaitForAssertion(() => Assert.IsNotNull(((IBinkInteropClient)canvas.Instance).TextEditorElementId));
+
+        var callbacks = new BinkInterop.InteropCallbacks(canvas.Instance);
+        await canvas.InvokeAsync(() => callbacks.OnTextEditorKey("Blur", "typed"));
+        interrupt(canvas);
+
+        // The measurement returning afterwards must not apply the text a second time.
+        measure.SetResult(new BinkTextMetrics { Width = 60, Lines = 1 });
+        await canvas.InvokeAsync(() => { });
+        return canvas;
+    }
 }

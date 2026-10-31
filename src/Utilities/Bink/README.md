@@ -1610,6 +1610,12 @@ await canvas.SavePngAsync("drawing.png");
 Rendering happens on an offscreen canvas, so real fonts and every image format the browser can decode are
 included. This is the right choice for anything a user downloads.
 
+Before drawing, the export loads the images it shows: those in the exported region, on the layers it includes and,
+for a selection, in the selection. Together they may hold at most `MaxPixels` pixels, read from the header of an
+embedded PNG and taken from the natural size the document records for anything else. An image past that is not loaded, and
+is left out of the export unless the canvas already shows it. Unlike `BinkPngExporter`, the browser export has no
+report of what it left out.
+
 The browser encodes JPEG and WebP too, which are far smaller for a drawing over a photo:
 
 ```csharp
@@ -1666,9 +1672,14 @@ var options = new BinkPngExportOptions
 ```
 
 Embedded images are decoded within the same limit: each image, and all images together, may decode to at most
-`MaxPixels`, an image larger than 4096 by 4096 is only decoded where it is drawn at no more than eight source
-pixels per device pixel along each axis, and the decoder grows its buffers as data actually arrives, so a small
-file that claims a huge image cannot allocate for it. Anything refused is counted in `SkippedImages`.
+`MaxPixels`, an image larger than 4096 by 4096 is only decoded where it has no more than eight pixels per output
+pixel along each axis, and the decoder grows its buffers as data actually arrives, so a small file that claims a
+huge image cannot allocate for it. Anything refused is counted in `SkippedImages`.
+
+The whole image is decoded whatever part of it is shown, so the eight-per-pixel rule compares all of its pixels
+with the output pixels it actually covers: a crop, or a part outside the exported region, does not count. A large
+photo cropped to a small detail, or exported through a small `Custom` region, is therefore skipped where the same
+photo drawn whole would not be. Export at a larger `Scale`, or crop the image data itself before embedding it.
 
 Rasterizing takes time in proportion to the geometry: every edge of a shape is tested on each sub-row of every
 pixel row it spans, and every element is drawn across its bounds. A document built to be expensive, with thousands
