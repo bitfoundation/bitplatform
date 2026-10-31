@@ -85,7 +85,7 @@ public static class McpPrompts
     }
 
     [McpServerPrompt(Name = "debug-blow-flow", Title = "Debug a canvas or flow")]
-    [Description("Diagnoses a Bit.Blow problem - a canvas that shows nothing, nodes piled up unstyled, nodes that cannot be dragged or connected, edges that attach to the wrong place or vanish, a page that does not update after an edit, a saved flow that does not restore.")]
+    [Description("Diagnoses a Bit.Blow problem - a canvas that shows nothing, nodes piled up unstyled, nodes that cannot be dragged or connected, edges that attach to the wrong place or vanish, a page that does not update after an edit, a saved flow that does not restore, an app that lazy loads Bit.Blow and fails with Could not load file or assembly 'Bit.Blow'.")]
     public static string DebugBlowFlow(
         [Description("What goes wrong, with the page, the nodes or the flow involved if you know them.")] string symptom)
     {
@@ -98,13 +98,16 @@ public static class McpPrompts
                the stylesheet `_content/Bit.Blow/bit-blow.css` linked from the host page (without it nodes pile up
                unstyled), a container with a height around the canvas (without one it is zero pixels tall and shows
                nothing), and an interactively rendered page (on a static one nothing can be dragged, connected or
-               measured). No invented service registration.
+               measured). Blow has no services, so do not invent a registration of its own; the one registration
+               lazy loading adds is the framework's `LazyAssemblyLoader`, on every host but standalone WebAssembly
+               that renders a component injecting it.
             2. Bind `OnError` on the canvas, or pass the flow (`JsonSerializer.Serialize(canvas.ToObject())`) to
                `InspectBlowFlow`: it renders it through the real canvas and reports duplicate node, edge and handle ids,
                edges to missing nodes, missing parents and parent cycles, and edges naming a handle the node lacks.
             3. Call `SearchBlow` with the symptom and read the guide section it points to - "Nodes", "Handles and
                connections", "Edges", "Sub-flows and grouping", "Saving and restoring" and "Errors and diagnostics" cover
-               the usual causes.
+               the usual causes, and "Lazy loading on WebAssembly" covers an app that cannot load Bit.Blow because it
+               lazy loads it.
             4. If the page does not update after an edit, check how the change happened: the canvas edits the lists in
                place and re-renders only itself, so markup that reads the graph needs `NodesChanged`/`EdgesChanged`
                bound, a change made outside a render of your component needs `Refresh(remeasure: true)` (or

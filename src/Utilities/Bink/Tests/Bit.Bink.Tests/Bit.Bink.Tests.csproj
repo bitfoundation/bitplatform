@@ -22,6 +22,11 @@
         <ProjectReference Include="..\..\Bit.Bink\Bit.Bink.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The checks that keep a library lazy loadable, which every utility whose guide says so shares. -->
+        <Compile Include="..\..\..\Shared\Tests\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
     <!-- The visual regression baselines are read from (and, with BINK_UPDATE_GOLDEN=1, written to) the
          test output folder. -->
     <ItemGroup>

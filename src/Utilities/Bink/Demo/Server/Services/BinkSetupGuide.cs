@@ -77,8 +77,10 @@ public static partial class BinkSetupGuide
                 markup and attaches once WebAssembly starts. Reference `Bit.Bink` from the .Client project (the server
                 gets it transitively). This is exactly how the demo is built, so the files below are its own; its
                 `AddDemoServices` registers a download helper of the demo's, not anything Bink needs. A client that lazy
-                loads Bit.Bink gives `Routes` the InteractiveWebAssembly render mode and registers `LazyAssemblyLoader` on
-                the server - see `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
+                loads Bit.Bink gives `Routes` the InteractiveWebAssembly render mode - a page with its own render mode
+                never runs the router's `OnNavigateAsync` in the browser and has to load the assembly itself - and
+                registers `LazyAssemblyLoader` on the server - see
+                `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor Web App", "Blazor WebAssembly"],
                 null,
@@ -118,7 +120,10 @@ public static partial class BinkSetupGuide
                 "Blazor Hybrid (MAUI, WPF, Windows Forms)",
                 """
                 The engine runs in-process and the canvas in the embedded WebView, over the standard `IJSRuntime` path.
-                The zero-copy render path is WebAssembly-only and is not needed here.
+                The zero-copy render path is WebAssembly-only and is not needed here. A host that shares its `Routes.razor`
+                with a WebAssembly app that lazy loads Bit.Bink registers `LazyAssemblyLoader`
+                (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because the router injects it there too, though the
+                switch leaves it unused - see `GetBinkGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 ["Blazor Hybrid"],
                 HybridFiles,
