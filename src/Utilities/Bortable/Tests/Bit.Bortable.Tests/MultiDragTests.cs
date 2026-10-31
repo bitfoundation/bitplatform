@@ -234,6 +234,51 @@ public class MultiDragTests : BortableTestContext
 
         Assert.AreSequenceEqual(["A", "B", "C", "D", "E"], items);
         Assert.AreEqual("Start:L1 End:L1", Sequence(log));
+        Assert.IsTrue(Single(log, "End", "L1").Canceled);
+        Assert.AreEqual("A,E", LabelsWithClass(list, Selected));
+    }
+
+    [TestMethod]
+    public async Task ARefusedGatheringReportsTheDragCancelled()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var log = new List<Raised<string>>();
+        var list = RenderMultiList(items, log: log, extra: p => p.Add(c => c.CanDrop, e => e.NewIndex != 3));
+        await ClickAsync(list, "B");
+        await ClickAsync(list, "D");
+
+        await DragStartAsync(list, "B");
+        await DragOverAsync(list, 5);
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["A", "B", "C", "D", "E"], items);
+        // The live reorder is undone: nothing is kept, so no ItemsChanged, OnUpdate or OnSort.
+        Assert.AreEqual("Start:L1 Change:L1 End:L1", Sequence(log));
+        var end = Single(log, "End", "L1");
+        Assert.IsTrue(end.Canceled);
+        Assert.AreEqual(1, end.NewIndex);
+    }
+
+    [TestMethod]
+    public async Task ACanDropThatThrowsOnTheGatheringPutsTheSelectionBackAndStillEndsTheDrag()
+    {
+        List<string> items = ["A", "B", "C", "D", "E"];
+        var log = new List<Raised<string>>();
+        var list = RenderMultiList(items, log: log,
+            extra: p => p.Add(c => c.CanDrop, e => e.NewIndex == 3 ? throw new InvalidOperationException("offline") : true));
+        await ClickAsync(list, "B");
+        await ClickAsync(list, "D");
+
+        await DragStartAsync(list, "B");
+        await DragOverAsync(list, 5);
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => DropAsync(list));
+        Assert.AreSequenceEqual(["A", "B", "C", "D", "E"], items);
+        // OnEnd still follows OnStart, reporting the drag cancelled.
+        Assert.AreEqual("Start:L1 Change:L1 End:L1", Sequence(log));
+        Assert.IsTrue(Single(log, "End", "L1").Canceled);
+        Assert.IsNull(Coordinator.Context);
+        Assert.IsNotNull(await DragStartAsync(list, "C"), "The next drag is not blocked.");
     }
 
     [TestMethod]
@@ -295,6 +340,35 @@ public class MultiDragTests : BortableTestContext
         Assert.AreEqual(2, add.NewIndex);
         Assert.AreSequenceEqual(["A", "C"], Single(log, "Remove", "L1").Items);
         Assert.AreEqual("", LabelsWithClass(l1, Selected));
+    }
+
+    [TestMethod]
+    public async Task ASelectionRefusedWhereItGathersInAnotherListGoesBack()
+    {
+        List<string> left = ["A", "B", "C", "D"], right = ["X", "Y"];
+        var log = new List<Raised<string>>();
+        var asked = new List<int>();
+        var l1 = RenderMultiList(left, "L1", log);
+        var l2 = RenderList(right, "L2", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "L2", log);
+            // The placeholder at 1 is allowed; C lands at 2 once A gathers in front of it.
+            p.Add(c => c.CanDrop, e => { asked.Add(e.NewIndex); return e.NewIndex != 2; });
+        });
+        await ClickAsync(l1, "A");
+        await ClickAsync(l1, "C");
+
+        await DragStartAsync(l1, "C");
+        await DragOverAsync(l2, 1);
+        await DropAsync(l2);
+
+        Assert.AreSequenceEqual([1, 2], asked);
+        Assert.AreSequenceEqual(["A", "B", "C", "D"], left);
+        Assert.AreSequenceEqual(["X", "Y"], right);
+        Assert.AreEqual("Start:L1 Change:L2 End:L1", Sequence(log));
+        Assert.IsTrue(Single(log, "End", "L1").Canceled);
+        Assert.AreEqual("A,C", LabelsWithClass(l1, Selected));
     }
 
     [TestMethod]

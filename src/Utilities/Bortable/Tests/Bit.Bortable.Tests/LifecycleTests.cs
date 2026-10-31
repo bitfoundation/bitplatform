@@ -212,6 +212,69 @@ public class LifecycleTests : BortableTestContext
     }
 
     [TestMethod]
+    public async Task RemovingTheSourceListMidDragPutsBackAReorderItsConfirmDropCouldNotBeAskedAbout()
+    {
+        List<string> items = ["A", "B", "C"];
+        var log = new List<Raised<string>>();
+        bool asked = false;
+        var host = Render<Toggle>(p => p.AddChildContent<Bortable<string>>(l =>
+        {
+            l.Add(c => c.Id, "L1");
+            l.Add(c => c.Items, items);
+            l.Add(c => c.ItemTemplate, i => $"<span>{i}</span>");
+            l.Add(c => c.ConfirmDrop, _ => { asked = true; return Task.FromResult(true); });
+            Record(l, "L1", log);
+        }));
+        var l1 = host.FindComponent<Bortable<string>>();
+
+        await DragStartAsync(l1, "A");
+        await DragOverAsync(l1, 3);
+        host.Render(p => p.Add(t => t.Show, false));
+
+        Assert.IsFalse(asked);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+        Assert.AreEqual("Start:L1 Change:L1 ItemsChanged:L1 End:L1", Sequence(log));
+        Assert.IsTrue(Single(log, "End", "L1").Canceled);
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
+    public async Task RemovingTheSourceListOfAKeyboardDragPutsBackWhatItCarriedIntoAListThatConfirmsDrops()
+    {
+        List<string> source = ["a", "b"], words = ["x"];
+        var log = new List<Raised<string>>();
+        bool asked = false;
+        var host = Render<Toggle>(p => p.AddChildContent<Bortable<string>>(l =>
+        {
+            l.Add(c => c.Id, "S");
+            l.Add(c => c.Group, "g");
+            l.Add(c => c.Items, source);
+            l.Add(c => c.ItemTemplate, i => $"<span>{i}</span>");
+            Record(l, "S", log);
+        }));
+        var s = host.FindComponent<Bortable<string>>();
+        RenderList(words, "W", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.ConfirmDrop, _ => { asked = true; return Task.FromResult(true); });
+            Record(p, "W", log);
+        });
+
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync(KeyOf(s, "a"), "pick", null, -1));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "W", 0));
+        Assert.AreSequenceEqual(["a", "x"], words);
+
+        // The list the drag started in closes: the move into W was never dropped, so W cannot have confirmed it.
+        host.Render(p => p.Add(t => t.Show, false));
+
+        Assert.IsFalse(asked);
+        Assert.AreSequenceEqual(["x"], words);
+        Assert.AreSequenceEqual(["a", "b"], source);
+        Assert.IsTrue(Single(log, "End", "S").Canceled);
+        Assert.IsNull(Coordinator.Context);
+    }
+
+    [TestMethod]
     public async Task RemovingTheSourceListClearsASwapHighlightInAnotherList()
     {
         var host = Render<Toggle>(p => p.AddChildContent<Bortable<string>>(l => l

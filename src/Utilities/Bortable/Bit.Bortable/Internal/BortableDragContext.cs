@@ -95,4 +95,10 @@ internal sealed class BortableDragContext
 
     /// <summary>Guards against finalizing the same drag twice (drop + dragend).</summary>
     public bool Finished { get; set; }
+
+    /// <summary>
+    /// What <c>CanDrop</c> threw when it was asked as the drag was committed (about a multi-drag's gathering): the
+    /// drag is put back and reported as refused, and the exception is passed on after.
+    /// </summary>
+    public System.Runtime.ExceptionServices.ExceptionDispatchInfo? Failure { get; set; }
 }

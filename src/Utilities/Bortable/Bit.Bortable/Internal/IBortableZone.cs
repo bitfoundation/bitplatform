@@ -21,6 +21,9 @@ internal interface IBortableZone
     /// <summary>Whether this list is in swap mode: a drop position names the item to trade places with.</summary>
     bool IsSwap { get; }
 
+    /// <summary>Whether this list has a <c>ConfirmDrop</c>, which a drop into it must pass to be kept.</summary>
+    bool ConfirmsDrop { get; }
+
     /// <summary>The list's accessible name (<c>AriaLabel</c>), which announcements name it by; <c>null</c> when it has none.</summary>
     string? Label { get; }
 
@@ -39,6 +42,10 @@ internal interface IBortableZone
     /// <summary>Whether this list's <c>CanDrop</c> lets the dragged item take index <paramref name="newIndex"/> here.</summary>
     bool AllowsDropAt(BortableDragContext ctx, int newIndex);
 
+    /// <summary>
+    /// Whether <paramref name="info"/> moves an item of this list's type to a position its <c>CanDrop</c> allows. A swap
+    /// asks it about each item it trades, with a move built for that item rather than from the drag in progress.
+    /// </summary>
     bool AllowsMove(BortableMoveInfo info);
 
     /// <summary>Whether this list can receive items dragged from <paramref name="source"/>.</summary>
