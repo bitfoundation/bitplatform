@@ -188,6 +188,10 @@ public class DurabilityTests
     [TestMethod]
     public async Task Records_A_Retried_Append_Wrote_Twice_Are_Replayed_Once()
     {
+        // An append can fail after its bytes reached storage, so the retry writes the same records
+        // again - and the retry can tear in its turn, leaving [A][B][A][part of B]. Replaying the
+        // second A would put back the value B changed while keeping the row B inserted: a state the
+        // database was never in.
         var storage = new PartialWriteStorage();
 
         var db = await OpenAsync(storage);
@@ -196,28 +200,38 @@ public class DurabilityTests
         await db.FlushAsync();
         var record = storage.Inner.GetFile("wal-1.blz")!.Length;
 
-        people.Insert(new Person(2, "Bob", 40));
-        people.Update(new Person(1, "Eve", 37));
+        people.Update(new Person(1, "Eve", 37)); // A, the same size as the record above
+        using (var transaction = db.BeginTransaction())
+        {
+            people.Update(new Person(1, "Ivy", 38));
+            people.Insert(new Person(2, "Bob", 40));
+            transaction.Commit(); // B
+        }
+        storage.FailAfterWrite = true;
+        await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
+        var written = storage.Inner.GetFile("wal-1.blz")!.Length;
+
+        storage.FailAfterWrite = false;
         storage.FailAfterBytes = record + 10;
         await Assert.ThrowsExactlyAsync<IOException>(async () => await db.FlushAsync());
-
-        storage.FailAfterBytes = null;
-        await db.FlushAsync();
-        await db.DisposeAsync();
-        Assert.AreEqual(4 * record, storage.Inner.GetFile("wal-1.blz")!.Length);
+        Assert.AreEqual(written + record + 10, storage.Inner.GetFile("wal-1.blz")!.Length);
+        // Simulated crash: the instance is abandoned before a later flush repairs the log.
 
         await using var reopened = await OpenAsync(storage);
         var recovered = reopened.GetTable(PersonTable.Descriptor);
-        Assert.AreEqual(new Person(1, "Eve", 37), recovered.Get(1));
+        Assert.AreEqual(new Person(1, "Ivy", 38), recovered.Get(1));
         Assert.AreEqual(new Person(2, "Bob", 40), recovered.Get(2));
     }
 
-    /// <summary>An in-memory backend whose appends can be made to write a prefix and then fail.</summary>
+    /// <summary>An in-memory backend whose appends can be made to write a prefix, or all of it, and then fail.</summary>
     private sealed class PartialWriteStorage : IBlazeDbStorage
     {
         public BlazeDbInMemoryStorage Inner { get; } = new();
 
         public int? FailAfterBytes { get; set; }
+
+        /// <summary>Fails each append once it is on storage, as when the write lands and its acknowledgement is lost.</summary>
+        public bool FailAfterWrite { get; set; }
 
         public ValueTask<byte[]?> ReadAsync(string name, CancellationToken cancellationToken = default) =>
             Inner.ReadAsync(name, cancellationToken);
@@ -233,6 +247,10 @@ public class DurabilityTests
                 throw new IOException("Simulated disk-full part-way through the write.");
             }
             await Inner.AppendAsync(name, data, cancellationToken);
+            if (FailAfterWrite)
+            {
+                throw new IOException("Simulated failure after the write reached storage.");
+            }
         }
 
         public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default) =>

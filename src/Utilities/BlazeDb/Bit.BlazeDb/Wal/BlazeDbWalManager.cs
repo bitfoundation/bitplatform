@@ -13,9 +13,10 @@ namespace Bit.BlazeDb.Wal;
 ///   snapshot-N.blz   magic BLZS, version, LSN, per-table [key][row] dumps, CRC
 ///                    (version 1 snapshots hold rows only and are still readable)
 ///   wal-N.blz        sequence of records: magic BLZR, [len:4][lsn:8][crc:4][payload]
-/// Recovery = load snapshot, then replay WAL records with LSN &gt; snapshot LSN, stopping at the
-/// first torn/corrupt record. The checksum covers the length and the LSN as well as the payload,
-/// so a corrupted header cannot make replay skip a commit or misread where a record ends.
+/// Recovery = load snapshot, then replay WAL records in LSN order from snapshot LSN + 1, stopping at
+/// the first torn/corrupt record or the first gap in the sequence; a record whose LSN was already
+/// replayed is skipped. The checksum covers the length and the LSN as well as the payload, so a
+/// corrupted header cannot make replay skip a commit or misread where a record ends.
 /// </summary>
 internal sealed class BlazeDbWalManager : IAsyncDisposable
 {
@@ -775,14 +776,20 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     }
 
     /// <summary>
-    /// Walks the log's records and returns the length of the valid prefix, replaying every record
-    /// past the snapshot's LSN when asked to.
+    /// Walks the log's records and returns the length of the valid prefix, replaying each commit
+    /// past the snapshot's LSN once, in LSN order, when asked to.
     ///
-    /// Scanning stops at the first record that is torn or fails its checksum. Everything after such
-    /// a record was written later, so carrying on could apply a commit whose predecessor was lost -
-    /// a state the database was never in. A fragment a failed append left behind is cut off by
-    /// <see cref="RepairWalAsync"/> before the retry is written, so stopping here does not cost the
-    /// commits that followed it.
+    /// Scanning stops at the first record that is torn or fails its checksum, and at the first one
+    /// whose LSN skips past the next one expected. Everything after such a record was written later,
+    /// so carrying on could apply a commit whose predecessor was lost - a state the database was
+    /// never in. The gap matters for an encrypted log in particular: its frames are authenticated one
+    /// at a time, so a frame dropped from the middle leaves every frame around it intact. A fragment a
+    /// failed append left behind is cut off by <see cref="RepairWalAsync"/> before the retry is
+    /// written, so stopping here does not cost the commits that followed it.
+    ///
+    /// A record whose LSN was already seen is skipped rather than replayed. An append that failed
+    /// after some of its records reached storage is retried whole, so those records appear twice;
+    /// applying the second copy would undo whatever the commits between the two copies changed.
     /// </summary>
     private int ScanRecords(byte[] walBytes, bool replay)
     {
@@ -818,11 +825,14 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
                 break;
             }
 
-            if (replay && lsn == lastLsn + 1)
+            if (lsn == lastLsn + 1)
             {
-                ReplayCommit(payload);
+                if (replay)
+                {
+                    ReplayCommit(payload);
+                }
+                lastLsn = lsn;
             }
-            lastLsn = Math.Max(lastLsn, lsn);
             offset += RecordHeaderSize + payloadLength;
         }
 

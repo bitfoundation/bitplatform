@@ -812,9 +812,13 @@ var storage = new BlazeDbEncryptedStorage(await BlazeDbOpfsStorage.CreateAsync("
 
 What this does and does not protect: every frame is sealed with a fresh random 96-bit nonce and the
 file name as associated data, so contents cannot be read or altered without the key and a frame
-cannot be moved between files. It does not prevent *rollback* - someone with access to the files
-can put back an older, internally consistent manifest, snapshot and log - and there is no key
-rotation: to change the key, open the database, checkpoint, and write it out through a storage
+cannot be moved between files. Within the log, a frame dropped from the middle stops replay there
+and a frame copied in again is skipped, because every commit carries the next sequence number. It
+does not prevent *rollback* - someone with access to the files can put back an older, internally
+consistent manifest, snapshot and log, or cut frames off the end of the log, which reads the same as
+commits that never reached storage. Nor does it tell databases apart: frames another database
+sealed with the same key into a file of the same name - one deleted and created again, say - can be
+spliced into the log and replay as this database's own. There is no key rotation: to change the key, open the database, checkpoint, and write it out through a storage
 wrapped with the new cipher. Random nonces are safe for about 2^32 frames per key; every flush
 writes one and every checkpoint two, so at the default flush interval that is about a decade of
 continuous writing, and a long-lived database should rotate before then.

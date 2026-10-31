@@ -3,6 +3,7 @@ using Bit.BlazeDb.Demo.Server.Dtos;
 using Bit.BlazeDb.Demo.Server.Services;
 using Bit.BlazeDb.Serialization;
 using Bit.BlazeDb.Tests.Mcp.Models;
+using ModelContextProtocol.Protocol;
 
 namespace Bit.BlazeDb.Tests.Mcp;
 
@@ -241,22 +242,55 @@ public class McpInspectorTests
         var longName = new string('a', BlazeDbTableInspector.MaxNameLength + 1);
         var deepNamespace = string.Join('.', Enumerable.Repeat("n", BlazeDbTableInspector.MaxNameLength / 2 + 1));
         var half = new string('a', BlazeDbTableInspector.MaxNameLength / 2 + 1);
-        var indexes = string.Concat(Enumerable.Range(0, BlazeDbTableInspector.MaxAttributeTokens / 3 + 1).Select(i => $"[BlazeDbIndex] public int P{i} {{ get; set; }}\n"));
+        var indexes = string.Concat(Enumerable.Range(0, BlazeDbTableInspector.MaxAttributeTokens / 8 + 1).Select(i => $"[BlazeDbIndex(Unique = false)] public int P{i} {{ get; set; }}\n"));
+        var members = string.Concat(Enumerable.Range(0, BlazeDbTableInspector.MaxMembers + 1).Select(i => $"public int P{i} {{ get; set; }}\n"));
+        // Each constant names the one before twice: a thousand characters of source that fold to a gigabyte,
+        // built by the compiler the moment anything binds them.
+        var doubling = "const string A0 = \"aaaaaaaa\";\n" + string.Concat(Enumerable.Range(1, 25).Select(i => $"const string A{i} = A{i - 1} + A{i - 1};\n"));
+        var block = new string('a', 1_000);
+        var repeated = string.Join(" + ", Enumerable.Repeat("Block", BlazeDbTableInspector.MaxConstantLength / block.Length + 1));
 
-        string[] sources =
+        (string Source, string Limit)[] cases =
         [
-            $$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } public int {{longName}} { get; set; } }""",
-            $$"""namespace {{deepNamespace}} { [BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } } }""",
-            $$"""[BlazeDbTable("t")] public partial class T { const string Half = "{{half}}"; [BlazeDbKey] public int Id { get; set; } [BlazeDbIndex(Name = Half + Half)] public int Value { get; set; } }""",
-            $$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{indexes}} }"""
+            ($$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } public int {{longName}} { get; set; } }""", "a name"),
+            ($$"""namespace {{deepNamespace}} { [BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } } }""", "full name"),
+            ($$"""[BlazeDbTable("t")] public partial class T { const string Half = "{{half}}"; [BlazeDbKey] public int Id { get; set; } [BlazeDbIndex(Name = Half + Half)] public int Value { get; set; } }""", "attribute argument"),
+            ($$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{indexes}} }""", "attributes"),
+            ($$"""[BlazeDbTable("t")] public partial class T { [BlazeDbKey] public int Id { get; set; } {{members}} }""", "members"),
+            ($$"""[BlazeDbTable("t")] public partial class T { {{doubling}} [BlazeDbKey] public int Id { get; set; } }""", "constants"),
+            ($$"""[BlazeDbTable("t")] public partial class T { const string Block = "{{block}}"; [BlazeDbKey] public int Id { get; set; } public string All => {{repeated}}; }""", "constants")
         ];
 
-        foreach (var source in sources)
+        foreach (var (source, limit) in cases)
         {
             var result = await McpCall.RawAsync("InspectBlazeDbTable", new() { ["source"] = source });
 
             Assert.IsTrue(result.IsError, source[..80]);
+            Assert.Contains(limit, string.Join('\n', result.Content.OfType<TextContentBlock>().Select(content => content.Text)), source[..80]);
         }
+    }
+
+    [TestMethod]
+    public async Task Constants_that_name_constants_are_inspected()
+    {
+        var report = await InspectAsync("""
+            [BlazeDbTable(Names.Prefix + "items")]
+            public partial class Item
+            {
+                [BlazeDbKey] public int Id { get; set; }
+                [BlazeDbIndex(Name = Names.ByTitle)] public string Title { get; set; } = "";
+            }
+
+            public static class Names
+            {
+                public const string Prefix = "app_";
+                public const string ByTitle = Prefix + nameof(ByTitle);
+            }
+            """);
+
+        Assert.IsTrue(report.IsValid, string.Join(Environment.NewLine, report.Diagnostics.Select(d => $"{d.Id}: {d.Message}")));
+        Assert.AreEqual("app_items", report.Tables.Single().TableName);
+        Assert.AreEqual("app_ByTitle", report.Tables.Single().Indexes.Single().Name);
     }
 
     private static InspectedItem FullItem() => new()
