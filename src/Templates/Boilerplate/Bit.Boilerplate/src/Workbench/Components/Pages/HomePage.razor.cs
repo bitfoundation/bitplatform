@@ -7,12 +7,14 @@ public partial class HomePage
         (BitIconName.ClearNight, nameof(WorkbenchStrings.HomeChipDark)),
         (BitIconName.Globe, nameof(WorkbenchStrings.HomeChipRtl)),
         (BitIconName.Sync, nameof(WorkbenchStrings.HomeChipLoading)),
-        (BitIconName.Camera, nameof(WorkbenchStrings.HomeChipStore))
+        (BitIconName.Camera, nameof(WorkbenchStrings.HomeChipStore)),
+        (BitIconName.ChatBot, nameof(WorkbenchStrings.HomeChipLive))
     ];
 
     private static readonly (string IconName, string TitleKey, string TextKey)[] reasons =
     [
         (BitIconName.Robot, nameof(WorkbenchStrings.HomeWhyAgentsTitle), nameof(WorkbenchStrings.HomeWhyAgentsText)),
+        (BitIconName.ChatBot, nameof(WorkbenchStrings.HomeWhyLiveTitle), nameof(WorkbenchStrings.HomeWhyLiveText)),
         (BitIconName.Code, nameof(WorkbenchStrings.HomeWhyRealTitle), nameof(WorkbenchStrings.HomeWhyRealText)),
         (BitIconName.Split, nameof(WorkbenchStrings.HomeWhyStatesTitle), nameof(WorkbenchStrings.HomeWhyStatesText)),
         (BitIconName.Devices2, nameof(WorkbenchStrings.HomeWhyDevicesTitle), nameof(WorkbenchStrings.HomeWhyDevicesText)),

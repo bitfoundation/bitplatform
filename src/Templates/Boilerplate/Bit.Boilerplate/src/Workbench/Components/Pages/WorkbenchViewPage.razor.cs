@@ -16,7 +16,6 @@ public partial class WorkbenchViewPage
     private string? shownPins;
     private (string PaneId, string Url)? pendingFrameUrl;
     private (string PaneId, string Text, WorkbenchTextMatch[] Matches, WorkbenchReviewAnchor Anchor)? pickedText;
-    private bool isLocal;
 
     private static readonly (string Mode, string IconName, string TextKey)[] modes =
     [
@@ -34,7 +33,6 @@ public partial class WorkbenchViewPage
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
     [AutoInject] private WorkbenchTextEdits textEdits = default!;
-    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
     private string ReviewerName => store.ReviewerName ?? Localizer[nameof(WorkbenchStrings.Reviewer)];
 
@@ -56,8 +54,6 @@ public partial class WorkbenchViewPage
         OwnsSubscription(blexManager.SubscribeTo<WorkbenchStore>(_ => Apply()));
 
         reviewSession.Changed += OnReviewChanged;
-
-        isLocal = httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.IsLocal(context);
     }
 
     protected override void OnParametersSet()
@@ -136,17 +132,23 @@ public partial class WorkbenchViewPage
 
     private void SetMode(string mode)
     {
-        store.SetMode(mode);
-
         if (mode is WorkbenchModes.Comment)
         {
             store.ShowColumn(WorkbenchModes.ReviewColumn);
+
+            if (reviewSession.CanWrite is false)
+                return;
         }
+
+        store.SetMode(mode);
     }
 
     [JSInvokable]
     public async Task BeginComment(string paneId, WorkbenchReviewAnchor anchor)
     {
+        if (reviewSession.CanWrite is false)
+            return;
+
         var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", paneId);
 
         pendingComment = (paneId, anchor, state);
@@ -168,7 +170,7 @@ public partial class WorkbenchViewPage
         StateHasChanged();
     }
 
-    private EventCallback<string> AskAgentCallback => reviewSession.IsEnabled ? EventCallback.Factory.Create<string>(this, AskAgentAboutText) : default;
+    private EventCallback<string> AskAgentCallback => reviewSession.CanWrite ? EventCallback.Factory.Create<string>(this, AskAgentAboutText) : default;
 
     private async Task OnTextSaved()
     {

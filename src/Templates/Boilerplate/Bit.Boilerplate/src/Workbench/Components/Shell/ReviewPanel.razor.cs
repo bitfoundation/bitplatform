@@ -40,6 +40,9 @@ public partial class ReviewPanel
     {
         get
         {
+            if (session.CanWrite is false)
+                return Localizer[nameof(WorkbenchStrings.AgentOffline)];
+
             if (session.Agent is not { IsActive: true } agent)
                 return Localizer[nameof(WorkbenchStrings.NoAgentListening)];
 

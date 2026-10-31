@@ -68,11 +68,15 @@ first when it plans one. It can also bring one of the app's existing pages in, f
 ## Review with your agent
 
 The comments live in a bit Bcrdt document the Workbench keeps in `App_Data`: every browser that has the page open holds
-a copy and sees changes as they happen, whether they come from you, from someone you shared a link with, or from your
-agent. The agent reaches the same document through the Workbench's MCP server (`/mcp`, listed as `workbench` in the
-project's agent settings) or its HTTP endpoints under `/api/review`. Once you ask it to go through the review, it keeps
-listening: a new comment reaches it as you send it, it changes the page, hot reload shows the change in your view, and
-it replies and ticks the comment. The MCP server and the review endpoints answer only on this machine.
+a copy and sees changes as they happen, whether they come from you or from your agent. The agent reaches the same
+document through the Workbench's MCP server (`/mcp`, listed as `workbench` in the project's agent settings) or its HTTP
+endpoints under `/api/review`. Once you ask it to go through the review, it keeps listening: a new comment reaches it as
+you send it, it changes the page, hot reload shows the change in your view, and it replies and ticks the comment.
+
+Only this machine can talk to the agent. The MCP server and the review endpoints answer only local requests, and opened
+from anywhere else, through a shared link or a public address, the review is read-only: comments, replies and statuses
+can be read, the agent shows as offline, and nothing can be added, so nobody reaches your agent without being at your
+computer.
 
 ## How it stays in step with the app
 
@@ -87,7 +91,6 @@ it replies and ticks the comment. The MCP server and the review endpoints answer
 
 The Workbench is not deployed with the app. To show a page to someone else for a while, publish it to a folder, run it
 from there and put it online with a Cloudflare quick tunnel: the link works while your machine, the Workbench and the
-tunnel keep running. Whoever has the link can leave comments, and they reach your agent like yours do. To keep it online, publish it like any ASP.NET Core app to a server that has a Chromium-based
+tunnel keep running. Whoever has the link sees the review but can't add to it. To keep it online, publish it like any ASP.NET Core app to a server that has a Chromium-based
 browser for the screenshots. The `Screenshots` section of `appsettings.json` caps how many captures run at once and how
-many each client may ask for per minute. On a Workbench that stays online for anyone, turn comments off with
-`Reviews:Enabled`.
+many each client may ask for per minute.

@@ -44,15 +44,12 @@ else if (isSmallScreen)
         </Header>
         <Body>
             <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
-            @if (reviewSession.IsEnabled)
-            {
-                <ReviewPanel Page="pageInfo"
-                             SelectedThreadId="@selectedThreadId"
-                             ReviewerName="@ReviewerName"
-                             ReviewerNameChanged="store.NameReviewer"
-                             OnSelect="SelectThread"
-                             OnShow="ShowThread" />
-            }
+            <ReviewPanel Page="pageInfo"
+                         SelectedThreadId="@selectedThreadId"
+                         ReviewerName="@ReviewerName"
+                         ReviewerNameChanged="store.NameReviewer"
+                         OnSelect="SelectThread"
+                         OnShow="ShowThread" />
             <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
         </Body>
     </BitPanel>
@@ -77,9 +74,6 @@ else
             <div class="modes" role="radiogroup" aria-label="@Localizer[nameof(WorkbenchStrings.Mode)]">
                 @foreach (var (mode, iconName, textKey) in modes)
                 {
-                    if (mode is WorkbenchModes.Comment && reviewSession.IsEnabled is false)
-                        continue;
-
                     <BitButton IconOnly Size="BitSize.Small"
                                Variant="@(store.Mode == mode ? BitVariant.Fill : BitVariant.Text)"
                                IconName="@iconName"
@@ -154,30 +148,24 @@ else
             <div class="column-tabs" role="tablist">
                 <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ViewColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ViewColumn ? "true" : "false")"
                         @onclick="() => store.ShowColumn(WorkbenchModes.ViewColumn)">@Localizer[nameof(WorkbenchStrings.ViewTab)]</button>
-                @if (reviewSession.IsEnabled)
-                {
-                    <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ReviewColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ReviewColumn ? "true" : "false")"
-                            @onclick="() => store.ShowColumn(WorkbenchModes.ReviewColumn)">
-                        @Localizer[nameof(WorkbenchStrings.ReviewTab)]
-                        @if (OpenThreadCount > 0)
-                        {
-                            <span class="tab-count">@OpenThreadCount</span>
-                        }
-                    </button>
-                }
+                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ReviewColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ReviewColumn ? "true" : "false")"
+                        @onclick="() => store.ShowColumn(WorkbenchModes.ReviewColumn)">
+                    @Localizer[nameof(WorkbenchStrings.ReviewTab)]
+                    @if (OpenThreadCount > 0)
+                    {
+                        <span class="tab-count">@OpenThreadCount</span>
+                    }
+                </button>
                 <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ChecksColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ChecksColumn ? "true" : "false")"
                         @onclick="() => store.ShowColumn(WorkbenchModes.ChecksColumn)">@Localizer[nameof(WorkbenchStrings.ChecksTab)]</button>
-                @if (reviewSession.IsEnabled)
-                {
-                    <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.FlowsColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.FlowsColumn ? "true" : "false")"
-                            @onclick="() => store.ShowColumn(WorkbenchModes.FlowsColumn)">@Localizer[nameof(WorkbenchStrings.Flows)]</button>
-                }
+                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.FlowsColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.FlowsColumn ? "true" : "false")"
+                        @onclick="() => store.ShowColumn(WorkbenchModes.FlowsColumn)">@Localizer[nameof(WorkbenchStrings.Flows)]</button>
             </div>
             @if (store.Mode == WorkbenchModes.Text)
             {
                 <TextPanel Text="@pickedText?.Text"
                            Matches="@(pickedText?.Matches ?? [])"
-                           CanSave="isLocal && textEdits.CanWriteFiles"
+                           CanSave="reviewSession.CanWrite && textEdits.CanWriteFiles"
                            Culture="@store.SelectedPane.Scenario.Culture"
                            OnSaved="OnTextSaved"
                            OnAskAgent="AskAgentCallback" />
@@ -186,7 +174,7 @@ else
             {
                 <ChecksPanel PaneId="@store.SelectedPane.Id" />
             }
-            else if (reviewSession.IsEnabled && store.Column == WorkbenchModes.FlowsColumn)
+            else if (store.Column == WorkbenchModes.FlowsColumn)
             {
                 <FlowsPanel SelectedFlowId="@store.FlowId"
                             PlayingIndex="store.FlowStep"
@@ -195,7 +183,7 @@ else
                             OnAddStep="AddStep"
                             OnScreenshots="DownloadFlow" />
             }
-            else if (reviewSession.IsEnabled && store.Column == WorkbenchModes.ReviewColumn)
+            else if (store.Column == WorkbenchModes.ReviewColumn)
             {
                 <ReviewPanel Page="pageInfo"
                              PendingAnchor="pendingComment?.Anchor"

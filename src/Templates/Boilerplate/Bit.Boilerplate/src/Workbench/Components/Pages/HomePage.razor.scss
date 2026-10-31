@@ -184,6 +184,11 @@
         inset-inline-end: -1%;
     }
 
+    &.chip-4 {
+        bottom: 24%;
+        inset-inline-end: 3%;
+    }
+
     @include lt-sm {
         display: none;
     }

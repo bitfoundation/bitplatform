@@ -57,18 +57,16 @@ jobs:
       working-directory: Bit.Boilerplate
       run: dotnet publish src/Workbench/Bit.Boilerplate.Workbench.csproj -c Release -o ../server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
-    - name: Point screenshots at the shared browser folder and turn comments off
+    - name: Point screenshots at the shared browser folder
       shell: pwsh
       run: |
         $path = Resolve-Path 'server/web.config'
         [xml]$config = Get-Content $path
         $variables = $config.CreateElement('environmentVariables')
-        foreach ($setting in @(@('PLAYWRIGHT_BROWSERS_PATH', 'C:\ProgramData\ms-playwright'), @('Reviews__Enabled', 'false'))) {
-            $variable = $config.CreateElement('environmentVariable')
-            $variable.SetAttribute('name', $setting[0])
-            $variable.SetAttribute('value', $setting[1])
-            $variables.AppendChild($variable) | Out-Null
-        }
+        $variable = $config.CreateElement('environmentVariable')
+        $variable.SetAttribute('name', 'PLAYWRIGHT_BROWSERS_PATH')
+        $variable.SetAttribute('value', 'C:\ProgramData\ms-playwright')
+        $variables.AppendChild($variable) | Out-Null
         $config.SelectSingleNode('//aspNetCore').AppendChild($variables) | Out-Null
         $config.Save($path)
 

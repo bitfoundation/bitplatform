@@ -73,7 +73,6 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
             endpoints.MapGet("api/review-sheet/{pageKey}", async (string pageKey,
                                                                  string? shots,
                                                                  string? format,
-                                                                 IConfiguration configuration,
                                                                  WorkbenchReviewAgent agent,
                                                                  WorkbenchScreenshotService screenshotService,
                                                                  IStringLocalizer<WorkbenchStrings> localizer,
@@ -87,9 +86,8 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
                 var views = await Task.WhenAll(entries.Select(async entry => (WorkbenchScenario.Parse(entry.Query), (await screenshotService.CapturePage(page, entry.Query, cancellationToken)).Png)));
 
-                var hasReviews = configuration.GetValue("Reviews:Enabled", true);
-                var threads = hasReviews ? [.. (await agent.GetThreads(cancellationToken)).Where(t => t.PageKey == page.Key)] : new List<WorkbenchReviewThread>();
-                var review = hasReviews ? (await agent.GetPages(cancellationToken)).GetValueOrDefault(page.Key) : null;
+                var threads = (await agent.GetThreads(cancellationToken)).Where(t => t.PageKey == page.Key).ToList();
+                var review = (await agent.GetPages(cancellationToken)).GetValueOrDefault(page.Key);
 
                 var html = WorkbenchReviewSheet.Build(page, views, threads, review, localizer);
 
@@ -108,10 +106,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                 return Results.Text(await screenshotService.RunChecks(page, context.Request.QueryString.Value, cancellationToken), "application/json");
             }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
 
-            if (endpoints.ServiceProvider.GetRequiredService<IConfiguration>().GetValue("Reviews:Enabled", true))
-            {
-                endpoints.MapReviewEndpoints();
-            }
+            endpoints.MapReviewEndpoints();
         }
 
         private void MapReviewEndpoints()

@@ -135,8 +135,7 @@ what the user approves is how the real page will look.
 ## 7. Settle it with the user
 
 - Show the result per device and state, as links or images, and change it until the user approves it.
-- The user, and anyone they share the Workbench with, pin comments on the page in Comment mode. The comments reach you
-  as they are written: call `get_review`, then `wait_for_review` with the cursor it returns, again and again, until the
+- The user pins comments on the page in Comment mode. The comments reach you as they are written: call `get_review`, then `wait_for_review` with the cursor it returns, again and again, until the
   user says the review is over. Tell the user you are listening.
 - For each comment, mark it working (`set_comment_status`), show your plan as a checklist (`set_comment_tasks`) and tick
   it as you go, change the page, which hot reload brings to the reviewer's view, then reply in the reviewer's language
@@ -146,7 +145,8 @@ what the user approves is how the real page will look.
   `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, which answers within a minute, `POST /api/review/<id>/reply`
   and `POST /api/review/<id>/status` with a JSON body (`text` or `status`, and `agent`), `PUT /api/review/<id>/tasks`
   (`tasks`, each with `text` and `done`), `GET /api/review/<id>/screenshot`, `POST /api/review/pages/<key>/status` and
-  `POST /api/review/flows`. They answer only on this machine.
+  `POST /api/review/flows`. They answer only on this machine, and opened from anywhere else the review is read-only, so
+  only someone at this computer can reach you.
 - Keep each page's review status current (`set_page_status`): in review when you hand it to the user, approved when
   they approve it, built once it is in the app.
 - Text the user changes in Edit text mode is saved into `WorkbenchStrings` or `AppStrings` in every language; read the

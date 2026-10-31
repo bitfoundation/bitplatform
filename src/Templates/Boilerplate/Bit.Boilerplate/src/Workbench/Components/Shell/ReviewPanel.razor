@@ -1,26 +1,41 @@
 @inherits WorkbenchComponentBase
 
 <div class="review">
+    @if (session.CanWrite is false)
+    {
+        <section class="live">
+            <BitText Typography="BitTypography.Subtitle2" Class="section-title"><BitIcon IconName="@BitIconName.ChatBot" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.LiveReviewTitle)]</BitText>
+            <BitText Typography="BitTypography.Caption1">@Localizer[nameof(WorkbenchStrings.LiveReviewRemote)]</BitText>
+        </section>
+    }
+
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.PageStatus)]</BitText>
-        <div class="segments four">
-            @foreach (var status in Enum.GetValues<WorkbenchPageStatus>())
-            {
-                <BitButton Size="BitSize.Small" Class="segment" Variant="@(PageStatus == status ? BitVariant.Fill : BitVariant.Outline)"
-                           OnClick="() => session.SetPageStatus(Page.Key, status, ReviewerName)">@Localizer[$"PageStatus{status}"]</BitButton>
-            }
-        </div>
+        @if (session.CanWrite)
+        {
+            <div class="segments four">
+                @foreach (var status in Enum.GetValues<WorkbenchPageStatus>())
+                {
+                    <BitButton Size="BitSize.Small" Class="segment" Variant="@(PageStatus == status ? BitVariant.Fill : BitVariant.Outline)"
+                               OnClick="() => session.SetPageStatus(Page.Key, status, ReviewerName)">@Localizer[$"PageStatus{status}"]</BitButton>
+                }
+            </div>
+        }
+        else
+        {
+            <BitText Typography="BitTypography.Body2">@Localizer[$"PageStatus{PageStatus}"]</BitText>
+        }
         @if (session.PageOf(Page.Key) is { By: not null, At: not null } pageReview)
         {
             <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PageStatusSetBy), pageReview.By, pageReview.At.Value.ToLocalTime().ToString("g", CultureInfo.CurrentUICulture)]</BitText>
         }
-        <div class="agent @(session.Agent is { IsActive: true } ? "active" : null)">
+        <div class="agent @(session.CanWrite && session.Agent is { IsActive: true } ? "active" : null)">
             <span class="agent-dot"></span>
             <BitText Typography="BitTypography.Caption1">@AgentLine</BitText>
         </div>
     </section>
 
-    @if (PendingAnchor is not null)
+    @if (PendingAnchor is not null && session.CanWrite)
     {
         <section class="composer">
             <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.NewComment)]</BitText>
@@ -51,7 +66,7 @@
 
         @if (VisibleThreads.Any() is false)
         {
-            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="empty">@Localizer[showDone ? nameof(WorkbenchStrings.NoDoneComments) : nameof(WorkbenchStrings.NoComments)]</BitText>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="empty">@Localizer[showDone ? nameof(WorkbenchStrings.NoDoneComments) : session.CanWrite ? nameof(WorkbenchStrings.NoComments) : nameof(WorkbenchStrings.NoCommentsYet)]</BitText>
         }
 
         @foreach (var thread in VisibleThreads)
@@ -90,7 +105,13 @@
                     </ul>
                 }
 
-                @if (isSelected)
+                @if (isSelected && session.CanWrite is false)
+                {
+                    <div class="thread-actions">
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.View" OnClick="() => OnShow.InvokeAsync(thread)">@Localizer[nameof(WorkbenchStrings.ShowView)]</BitButton>
+                    </div>
+                }
+                else if (isSelected)
                 {
                     <BitTextField @bind-Value="reply"
                                   Multiline

@@ -4,15 +4,16 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 {
-    [AutoInject] private IConfiguration configuration = default!;
+    [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
     [AutoInject] private IBcrdtCollaborationService collaboration = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
 
+    private bool? canWrite;
     private BcrdtCollaborativeDocument? document;
 
     public event Action? Changed;
 
-    public bool IsEnabled => configuration.GetValue("Reviews:Enabled", true);
+    public bool CanWrite => canWrite ??= httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.IsLocal(context);
 
     public bool IsOpen => document is not null;
 
@@ -26,7 +27,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public string? CreateFlow(string name)
     {
-        if (document is null || string.IsNullOrWhiteSpace(name))
+        if (document is null || CanWrite is false || string.IsNullOrWhiteSpace(name))
             return null;
 
         var id = Guid.NewGuid().ToString("N")[..16];
@@ -38,7 +39,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public async Task AddStep(string flowId, string pageKey, string query, string? note, string? state)
     {
-        if (document is null)
+        if (document is null || CanWrite is false)
             return;
 
         var stepId = Guid.NewGuid().ToString("N")[..16];
@@ -49,17 +50,23 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public void RemoveStep(string flowId, string stepId)
     {
+        if (CanWrite is false)
+            return;
+
         document?.Transact(_ => WorkbenchReviewDocument.RemoveStep(document.GetMap("flows"), flowId, stepId), null);
     }
 
     public void DeleteFlow(string flowId)
     {
+        if (CanWrite is false)
+            return;
+
         document?.Transact(_ => document.GetMap("flows").Delete(flowId), null);
     }
 
     public async Task Open(string reviewerName)
     {
-        if (document is not null || IsEnabled is false)
+        if (document is not null)
             return;
 
         var id = Guid.NewGuid().ToString("N");
@@ -76,7 +83,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public async Task<string?> AddThread(string pageKey, string query, WorkbenchReviewAnchor anchor, string author, string text, string? state)
     {
-        if (document is null || string.IsNullOrWhiteSpace(text))
+        if (document is null || CanWrite is false || string.IsNullOrWhiteSpace(text))
             return null;
 
         var id = Guid.NewGuid().ToString("N")[..16];
@@ -89,7 +96,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public void Reply(string threadId, string author, string text)
     {
-        if (document is null || string.IsNullOrWhiteSpace(text))
+        if (document is null || CanWrite is false || string.IsNullOrWhiteSpace(text))
             return;
 
         document.Transact(_ => WorkbenchReviewDocument.AddMessage(document.GetMap("threads"), threadId, fromAgent: false, author, text), null);
@@ -97,16 +104,25 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public void SetStatus(string threadId, WorkbenchReviewStatus status)
     {
+        if (CanWrite is false)
+            return;
+
         document?.Transact(_ => WorkbenchReviewDocument.SetStatus(document.GetMap("threads"), threadId, status, fromAgent: false), null);
     }
 
     public void Delete(string threadId)
     {
+        if (CanWrite is false)
+            return;
+
         document?.Transact(_ => document.GetMap("threads").Delete(threadId), null);
     }
 
     public void SetPageStatus(string pageKey, WorkbenchPageStatus status, string by)
     {
+        if (CanWrite is false)
+            return;
+
         document?.Transact(_ => WorkbenchReviewDocument.SetPageStatus(document.GetMap("pages"), pageKey, status, by), null);
     }
 

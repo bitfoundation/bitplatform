@@ -2233,7 +2233,7 @@
         <value>Saves into the translation files and reloads the views. Your agent sees the change in git.</value>
     </data>
     <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Changes from outside this computer go to the agent as a comment.</value>
+        <value>Saving text works when the Workbench runs from the project on your own computer.</value>
     </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Change the text {0} · {1}:</value>
@@ -2417,5 +2417,29 @@
     </data>
     <data name="ThemeTab" xml:space="preserve">
         <value>Tab {0}</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>Live collaboration with AI</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>On the computer that runs the Workbench, a comment pinned on the page goes straight to the developer's AI agent: it changes the page, answers right here and ticks the comment off while you watch. From anywhere else the review is read-only, so nobody can reach that agent through a shared link.</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>Agent is offline</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>No comments yet.</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>Flows are made on the computer that runs the Workbench. Here you can play them and download their screenshots.</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>Review live with your AI agent</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>Pin a comment on any spot of a page. On your own computer, your coding agent gets it as you write, changes the page, answers on the comment and ticks it off. Works with Claude Code, Codex, Copilot, Gemini, Junie and Cursor.</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>Live review with AI</value>
     </data>
 </root>
