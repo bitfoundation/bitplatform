@@ -6,6 +6,69 @@
     box-sizing: border-box;
 }
 
+.resize-handle {
+    z-index: 2;
+    position: absolute;
+    touch-action: none;
+
+    &::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        transition: opacity 0.15s ease;
+        background-color: $bit-color-border-secondary;
+    }
+
+    &:hover::after {
+        background-color: $bit-color-primary;
+    }
+}
+
+.resize-x {
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    right: -18px;
+    cursor: ew-resize;
+
+    &::after {
+        top: 50%;
+        left: 6px;
+        width: 4px;
+        height: 48px;
+        transform: translateY(-50%);
+    }
+}
+
+.resize-y {
+    left: 0;
+    right: 0;
+    height: 16px;
+    bottom: -18px;
+    cursor: ns-resize;
+
+    &::after {
+        top: 6px;
+        left: 50%;
+        width: 48px;
+        height: 4px;
+        transform: translateX(-50%);
+    }
+}
+
+.resize-xy {
+    width: 18px;
+    height: 18px;
+    right: -18px;
+    bottom: -18px;
+    cursor: nwse-resize;
+
+    &::after {
+        inset: 5px;
+        border-radius: 50%;
+    }
+}
+
 .screen {
     overflow: hidden;
     position: absolute;

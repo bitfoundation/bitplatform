@@ -17,3 +17,49 @@ body {
 .wb-dragging * {
     user-select: none !important;
 }
+
+.wb-resizing,
+.wb-resizing * {
+    user-select: none !important;
+}
+
+.wb-resizing iframe {
+    pointer-events: none;
+}
+
+.device[data-size]::before {
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    font-size: 28px;
+    padding: 6px 16px;
+    position: absolute;
+    border-radius: 999px;
+    content: attr(data-size);
+    pointer-events: none;
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri);
+    transform: translate(-50%, -50%);
+}
+
+[data-wb-motion="reduce"] *,
+[data-wb-motion="reduce"] *::before,
+[data-wb-motion="reduce"] *::after {
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+}
+
+@each $vision in protanopia, deuteranopia, tritanopia, achromatopsia {
+    [data-wb-vision="#{$vision}"] {
+        filter: url("#wb-vision-#{$vision}");
+    }
+}
+
+.wb-vision-filters {
+    width: 0;
+    height: 0;
+    position: absolute;
+}

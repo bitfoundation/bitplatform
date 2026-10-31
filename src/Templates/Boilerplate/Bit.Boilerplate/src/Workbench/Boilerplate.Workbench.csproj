@@ -13,6 +13,9 @@
         <PackageReference Include="Bit.BlazorUI.AI" />
         <PackageReference Include="Bit.Bmotion" />
         <PackageReference Include="Bit.Blex" />
+        <PackageReference Include="Bit.Bcrdt" />
+        <PackageReference Include="Bit.Bcrdt.Server" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" />
         <PackageReference Include="Bit.Bortable" />
         <PackageReference Include="Microsoft.Playwright" />
 
@@ -83,9 +86,10 @@
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
+        <CallTarget Targets="CopyAccessibilityChecker" />
         <CallTarget Targets="BuildCssFiles" />
         <ItemGroup>
-            <Content Include="**\*.razor.css;wwwroot\scripts\workbench.js;wwwroot\styles\workbench.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+            <Content Include="**\*.razor.css;wwwroot\scripts\workbench.js;wwwroot\scripts\axe.min.js;wwwroot\styles\workbench.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
         </ItemGroup>
     </Target>
 
@@ -96,6 +100,10 @@
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;package.json;package-lock.json" Outputs="wwwroot\scripts\workbench.js">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Command="node_modules/.bin/esbuild Scripts/index.ts --bundle --target=safari15,firefox100,chrome95 --outfile=wwwroot/scripts/workbench.js --minify --sourcemap" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="CopyAccessibilityChecker" Inputs="node_modules\axe-core\axe.min.js" Outputs="wwwroot\scripts\axe.min.js">
+        <Copy SourceFiles="node_modules\axe-core\axe.min.js" DestinationFolder="wwwroot\scripts" />
     </Target>
 
     <Target Name="BuildCssFiles">

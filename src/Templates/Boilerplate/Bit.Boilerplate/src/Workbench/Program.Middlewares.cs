@@ -37,6 +37,18 @@ public static partial class Program
             app.UseStaticFiles();
             app.UseAntiforgery();
             app.UseRateLimiter();
+            app.UseWebSockets();
+
+            app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/review") || context.Request.Path.StartsWithSegments("/mcp"), local => local.Use(async (context, next) =>
+            {
+                if (WorkbenchLocalRequests.IsLocal(context) is false)
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return;
+                }
+
+                await next(context);
+            }));
 
             app.MapWorkbenchEndpoints();
 

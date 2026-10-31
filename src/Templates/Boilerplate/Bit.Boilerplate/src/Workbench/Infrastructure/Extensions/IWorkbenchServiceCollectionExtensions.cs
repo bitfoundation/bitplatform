@@ -1,5 +1,8 @@
+using Bit.Bcrdt;
+using Bit.Bcrdt.Server;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Localization;
 //#if (module == "Admin")
 using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 //#endif
@@ -47,6 +50,29 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddBitBlexPersistence();
             services.AddScoped<IBitAccentColorStore, ChromeAccentStore>();
             services.AddAuthorizationCore(options => options.AddPolicy(WorkbenchPolicies.ManageBuildings, policy => policy.RequireRole(WorkbenchPolicies.AdminRoles)));
+
+            services.AddSingleton<WorkbenchTextRecorder>();
+            services.AddSingleton<WorkbenchTextEdits>();
+            services.AddTransient(typeof(IStringLocalizer<>), typeof(WorkbenchRecordingLocalizer<>));
+
+            services.AddSingleton<WorkbenchReviewAgent>();
+            services.AddSingleton<WorkbenchReviewAttachments>();
+            services.AddSingleton<WorkbenchReviewRelay>();
+            services.AddScoped<WorkbenchReviewSession>();
+            services.AddBitBcrdtServices(collaboration => collaboration.UseTransport<WorkbenchReviewRelay>().UseInMemoryStore());
+            services.AddBitBcrdtDocumentHost(sp => new()
+            {
+                Store = new BcrdtFileSystemDocumentStore(Path.Combine(sp.GetRequiredService<IHostEnvironment>().ContentRootPath, "App_Data", "Reviews")),
+                ValidateUpdate = context =>
+                {
+                    sp.GetRequiredService<WorkbenchReviewAgent>().Pulse();
+                    return ValueTask.FromResult(context.DocumentId == WorkbenchReviewDocument.Id);
+                }
+            });
+            services.AddScoped<WorkbenchReviewTools>();
+            services.AddMcpServer(options => options.ServerInfo = new() { Name = "workbench", Title = "bit Workbench", Version = "1.0.0" })
+                .WithHttpTransport()
+                .WithTools<WorkbenchReviewTools>();
 
             services.AddRateLimiter(options =>
             {

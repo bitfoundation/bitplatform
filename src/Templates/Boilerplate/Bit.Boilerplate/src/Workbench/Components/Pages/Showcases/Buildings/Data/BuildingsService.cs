@@ -6,7 +6,7 @@ public partial class BuildingsService
     [AutoInject] private WorkbenchScenarioState scenarioState = default!;
 
     public Task<List<Building>> GetAll(CancellationToken cancellationToken) =>
-        scenarioState.Load("buildings.list", () => Current().ToList(), () => [], cancellationToken);
+        scenarioState.Load("buildings.list", () => Shape(Current()).ToList(), () => [], cancellationToken);
 
     public async Task<Building> Save(Building building, CancellationToken cancellationToken)
     {
@@ -40,4 +40,18 @@ public partial class BuildingsService
     }
 
     private IEnumerable<Building> Current() => (store.Items ?? [.. BuildingSeed.Create()]).Select(b => b.Clone());
+
+    private IEnumerable<Building> Shape(IEnumerable<Building> buildings)
+    {
+        var scenario = scenarioState.Scenario;
+
+        buildings = scenario.GetSwitch("amount") switch
+        {
+            "few" => buildings.Take(3),
+            "many" => BuildingSeed.Multiply([.. buildings], 12),
+            _ => buildings
+        };
+
+        return scenario.GetSwitch("names") is "long" ? buildings.Select(BuildingSeed.Lengthen) : buildings;
+    }
 }

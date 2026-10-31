@@ -48,6 +48,40 @@
     border: 1px solid color-mix(in srgb, #{$bit-color-primary} 35%, transparent);
 }
 
+.breakpoints {
+    gap: 2px;
+    display: flex;
+    padding-inline: 0.25rem;
+}
+
+.breakpoint {
+    flex: 1;
+    padding: 0;
+    min-width: 0;
+    height: 16px;
+    font: inherit;
+    cursor: pointer;
+    font-size: 10px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+    border: 1px solid transparent;
+    color: $bit-color-foreground-secondary;
+    background-color: $bit-color-background-secondary;
+
+    &.active {
+        color: $bit-color-primary-text;
+        background-color: $bit-color-primary;
+    }
+
+    &:hover:not(.active) {
+        border-color: $bit-color-border-secondary;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+    }
+}
+
 .pane-stage {
     flex: 1;
     display: flex;

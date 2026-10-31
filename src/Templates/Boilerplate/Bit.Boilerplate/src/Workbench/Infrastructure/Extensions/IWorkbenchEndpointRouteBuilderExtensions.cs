@@ -1,5 +1,5 @@
 using System.IO.Compression;
-using Microsoft.AspNetCore.WebUtilities;
+using Bit.Bcrdt.Server;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
@@ -20,7 +20,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                 if (entries.Length is 0 or > MaxScreenshotsPerArchive || entries.Any(entry => entry.Page is null))
                     return Results.BadRequest();
 
-                var captures = await Task.WhenAll(entries.Select(entry => Capture(screenshotService, entry.Page!, entry.Query, cancellationToken)));
+                var captures = await Task.WhenAll(entries.Select(entry => screenshotService.CapturePage(entry.Page!, entry.Query, cancellationToken)));
 
                 using var archiveStream = new MemoryStream();
 
@@ -49,7 +49,7 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
                 if (page is null)
                     return Results.NotFound();
 
-                var (png, fileName) = await Capture(screenshotService, page, context.Request.QueryString.Value, cancellationToken);
+                var (png, fileName) = await screenshotService.CapturePage(page, context.Request.QueryString.Value, cancellationToken);
 
                 return Results.File(png, "image/png", fileName);
             }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
@@ -67,29 +67,83 @@ public static class IWorkbenchEndpointRouteBuilderExtensions
 
                 return Results.File(png, "image/png");
             });
+
+            endpoints.MapGet("api/checks/{pageKey}", async (string pageKey, HttpContext context, WorkbenchScreenshotService screenshotService, CancellationToken cancellationToken) =>
+            {
+                var page = WorkbenchPageCatalog.Find(pageKey);
+
+                if (page is null)
+                    return Results.NotFound();
+
+                return Results.Text(await screenshotService.RunChecks(page, context.Request.QueryString.Value, cancellationToken), "application/json");
+            }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
+
+            if (endpoints.ServiceProvider.GetRequiredService<IConfiguration>().GetValue("Reviews:Enabled", true))
+            {
+                endpoints.MapReviewEndpoints();
+            }
+        }
+
+        private void MapReviewEndpoints()
+        {
+            endpoints.MapBitBcrdtWebSocket(WorkbenchReviewRelay.Route,
+                                           (context, documentId) => ValueTask.FromResult(WorkbenchReviewRelay.IsTrusted(context, documentId)),
+                                           new() { DocumentHost = endpoints.ServiceProvider.GetRequiredService<BcrdtDocumentHost>() });
+
+            endpoints.MapMcp("mcp");
+
+            var review = endpoints.MapGroup("api/review");
+
+            review.MapGet("", async (bool? includeDone, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            {
+                var threads = await agent.GetThreads(cancellationToken);
+                var pages = await agent.GetPages(cancellationToken);
+
+                return Results.Json(WorkbenchReviewJson.Describe(threads.Where(t => includeDone is true || t.Status is not WorkbenchReviewStatus.Done), pages, threads.Select(t => t.Sequence).DefaultIfEmpty(0).Max()));
+            });
+
+            review.MapGet("wait", async (long? cursor, string? agent, WorkbenchReviewAgent reviewAgent, CancellationToken cancellationToken) =>
+            {
+                var (next, threads) = await reviewAgent.Wait(AgentName(agent), cursor ?? 0, WorkbenchReviewAgent.MaxWait, cancellationToken);
+
+                return Results.Json(WorkbenchReviewJson.Describe(threads, null, next));
+            });
+
+            review.MapPost("{id}/reply", async (string id, WorkbenchReviewReplyRequest request, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            {
+                if (string.IsNullOrWhiteSpace(request.Text))
+                    return Results.BadRequest();
+
+                return await agent.Reply(AgentName(request.Agent), id, request.Text, cancellationToken) ? Results.NoContent() : Results.NotFound();
+            });
+
+            review.MapPost("{id}/status", async (string id, WorkbenchReviewStatusRequest request, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            {
+                if (Enum.TryParse<WorkbenchReviewStatus>(request.Status, ignoreCase: true, out var status) is false)
+                    return Results.BadRequest();
+
+                return await agent.SetStatus(AgentName(request.Agent), id, status, cancellationToken) ? Results.NoContent() : Results.NotFound();
+            });
+
+            review.MapPut("{id}/tasks", async (string id, WorkbenchReviewTasksRequest request, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            {
+                return await agent.SetTasks(AgentName(request.Agent), id, request.Tasks ?? [], cancellationToken) ? Results.NoContent() : Results.NotFound();
+            });
+
+            review.MapPost("pages/{pageKey}/status", async (string pageKey, WorkbenchReviewStatusRequest request, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            {
+                if (Enum.TryParse<WorkbenchPageStatus>(request.Status, ignoreCase: true, out var status) is false)
+                    return Results.BadRequest();
+
+                return await agent.SetPageStatus(AgentName(request.Agent), pageKey, status, cancellationToken) ? Results.NoContent() : Results.NotFound();
+            });
+
+            review.MapGet("{id}/screenshot", async (string id, WorkbenchReviewAgent agent, CancellationToken cancellationToken) =>
+            {
+                return await agent.Screenshot(id, cancellationToken) is { } shot ? Results.File(shot.Png, "image/png", shot.FileName) : Results.NotFound();
+            }).RequireRateLimiting(IWorkbenchServiceCollectionExtensions.ScreenshotsRateLimitPolicy);
         }
     }
 
-    private static async Task<(byte[] Png, string FileName)> Capture(WorkbenchScreenshotService screenshotService, WorkbenchPageInfo page, string? query, CancellationToken cancellationToken)
-    {
-        var scenario = WorkbenchScenario.Parse(query);
-        var device = scenario.DevicePreset;
-        var (width, height) = device.GetViewport(scenario.Rotated);
-        var snapshotId = QueryHelpers.ParseQuery(query).TryGetValue(WorkbenchUrls.SnapshotQueryKey, out var id) ? id.ToString() : null;
-
-        var png = await screenshotService.Capture(WorkbenchUrls.Preview(page.Key, scenario with { Frame = scenario.Backdrop is not null && scenario.Frame }, snapshotId: snapshotId).TrimStart('/'),
-                                                  width,
-                                                  height,
-                                                  device.PixelRatio,
-                                                  device.IsHandheld,
-                                                  scenario.Theme,
-                                                  scenario.Culture,
-                                                  cancellationToken);
-
-        var (pixelWidth, pixelHeight) = device.GetPixels(scenario.Rotated);
-        var look = scenario.Backdrop is null ? scenario.Data.ToString() : "framed";
-        var fileName = $"{page.Key}-{device.Key}-{pixelWidth}x{pixelHeight}-{scenario.Culture ?? CultureInfoManager.DefaultCulture.Name}-{scenario.Theme}-{look}.png".ToLowerInvariant();
-
-        return (png, fileName);
-    }
+    private static string AgentName(string? agent) => string.IsNullOrWhiteSpace(agent) ? "Agent" : agent.Trim();
 }

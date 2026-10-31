@@ -7,10 +7,30 @@
             <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Device)]</BitText>
             <BitDropdown Items="deviceItems"
                          Value="@Value.Device"
-                         ValueChanged="(string? device) => Update(Value with { Device = device ?? DevicePresets.DefaultKey, Rotated = false })"
+                         ValueChanged="(string? device) => SelectDevice(device)"
                          AriaLabel="@Localizer[nameof(WorkbenchStrings.Device)]"
                          Responsive
                          FitWidth />
+            @if (Value.Device == DevicePresets.CustomKey)
+            {
+                <div class="size-fields">
+                    <BitNumberField TValue="int"
+                                    Label="@Localizer[nameof(WorkbenchStrings.Width)]"
+                                    Value="ViewportWidth"
+                                    ValueChanged="(int width) => Update(Value.WithSize(width, ViewportHeight))"
+                                    Min="@DevicePresets.MinCustomSize.ToString(CultureInfo.InvariantCulture)"
+                                    Max="@DevicePresets.MaxCustomWidth.ToString(CultureInfo.InvariantCulture)"
+                                    Suffix="px" />
+                    <BitNumberField TValue="int"
+                                    Label="@Localizer[nameof(WorkbenchStrings.Height)]"
+                                    Value="ViewportHeight"
+                                    ValueChanged="(int height) => Update(Value.WithSize(ViewportWidth, height))"
+                                    Min="@DevicePresets.MinCustomSize.ToString(CultureInfo.InvariantCulture)"
+                                    Max="@DevicePresets.MaxCustomHeight.ToString(CultureInfo.InvariantCulture)"
+                                    Suffix="px" />
+                </div>
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.CustomSizeHint)]</BitText>
+            }
             <div class="segments two">
                 <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.DevicePreset.IsLandscape(Value.Rotated) is false)" IconName="@BitIconName.CellPhone"
                            OnClick="() => Update(Value with { Rotated = Value.DevicePreset.IsLandscapeByDefault })">@Localizer[nameof(WorkbenchStrings.Portrait)]</BitButton>
@@ -32,6 +52,36 @@
                     }
                 </div>
             }
+        </section>
+    }
+
+    @if (Page is { } page && (page.Variants.Length > 1 || page.Switches.Length > 0))
+    {
+        <section>
+            <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.PageSection)]</BitText>
+            @if (page.Variants.Length > 1)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.Variant)]</BitText>
+                <div class="segments @SegmentsOf(page.Variants.Length)">
+                    @foreach (var (variant, index) in page.Variants.Select((variant, index) => (variant, index)))
+                    {
+                        <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(page.ResolveVariant(Value) == variant)"
+                                   OnClick="() => Update(Value with { Variant = index == 0 ? null : variant.Key })">@Localizer[variant.NameKey]</BitButton>
+                    }
+                </div>
+            }
+            @foreach (var pageSwitch in page.Switches)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[pageSwitch.NameKey]</BitText>
+                <div class="segments @SegmentsOf(pageSwitch.Options.Length)">
+                    @foreach (var option in pageSwitch.Options)
+                    {
+                        <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(pageSwitch.Resolve(Value) == option)"
+                                   OnClick="() => Update(Value.WithSwitch(pageSwitch.Key, option == pageSwitch.Default ? null : option.Value))">@Localizer[option.TextKey]</BitButton>
+                    }
+                </div>
+            }
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PageSectionHint)]</BitText>
         </section>
     }
 
@@ -109,6 +159,63 @@
                          Responsive
                          FitWidth />
         }
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ThemeTweaks)]</BitText>
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AccentColor)]</BitText>
+        <div class="accents" role="radiogroup" aria-label="@Localizer[nameof(WorkbenchStrings.AccentColor)]">
+            @foreach (var (accent, index) in BitAccentColorSwitcher.DefaultAccents.Select((accent, index) => (accent, index)))
+            {
+                var isDefault = index == 0;
+                var isChecked = isDefault ? Value.Accent is null : string.Equals(Value.Accent, accent.Color, StringComparison.OrdinalIgnoreCase);
+                var name = isDefault ? Localizer[nameof(WorkbenchStrings.ThemeDefault)].Value : accent.Name;
+                <button type="button" role="radio"
+                        class="accent @(isDefault ? "accent-default" : null) @(isChecked ? "selected" : null)"
+                        style="@(isDefault ? null : $"--wb-accent:{accent.Color}")"
+                        aria-checked="@(isChecked ? "true" : "false")"
+                        title="@name"
+                        aria-label="@name"
+                        @onclick="() => Update(Value with { Accent = isDefault ? null : WorkbenchScenario.ReadAccent(accent.Color) })"></button>
+            }
+        </div>
+        <BitTextField Label="@Localizer[nameof(WorkbenchStrings.CustomColor)]"
+                      Value="@Value.Accent"
+                      ValueChanged="(string? accent) => Update(Value with { Accent = WorkbenchScenario.ReadAccent(accent) })"
+                      Placeholder="#2f6fde"
+                      MaxLength="7" />
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.CornerRadius)]</BitText>
+        <div class="segments three">
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Radius is WorkbenchRadius.Square)" OnClick="() => Update(Value with { Radius = WorkbenchRadius.Square })">@Localizer[nameof(WorkbenchStrings.RadiusSquare)]</BitButton>
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Radius is null)" OnClick="() => Update(Value with { Radius = null })">@Localizer[nameof(WorkbenchStrings.ThemeDefault)]</BitButton>
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Radius is WorkbenchRadius.Round)" OnClick="() => Update(Value with { Radius = WorkbenchRadius.Round })">@Localizer[nameof(WorkbenchStrings.RadiusRound)]</BitButton>
+        </div>
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.Density)]</BitText>
+        <div class="segments three">
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Density is WorkbenchDensity.Compact)" OnClick="() => Update(Value with { Density = WorkbenchDensity.Compact })">@Localizer[nameof(WorkbenchStrings.DensityCompact)]</BitButton>
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Density is null)" OnClick="() => Update(Value with { Density = null })">@Localizer[nameof(WorkbenchStrings.ThemeDefault)]</BitButton>
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Density is WorkbenchDensity.Comfortable)" OnClick="() => Update(Value with { Density = WorkbenchDensity.Comfortable })">@Localizer[nameof(WorkbenchStrings.DensityComfortable)]</BitButton>
+        </div>
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeTweaksHint)]</BitText>
+    </section>
+
+    <section>
+        <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Accessibility)]</BitText>
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.TextSize)]</BitText>
+        <div class="segments three">
+            @foreach (var scale in WorkbenchScenario.TextScales)
+            {
+                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.TextScale == scale)" OnClick="() => Update(Value with { TextScale = scale })">@FormattableString.Invariant($"{scale}%")</BitButton>
+            }
+        </div>
+        <BitToggle Text="@Localizer[nameof(WorkbenchStrings.ReduceMotion)]" Value="Value.ReducedMotion" ValueChanged="(bool reduce) => Update(Value with { ReducedMotion = reduce })" />
+        <BitDropdown Items="visionItems"
+                     Label="@Localizer[nameof(WorkbenchStrings.ColorVision)]"
+                     Value="@(Value.Vision?.ToString() ?? string.Empty)"
+                     ValueChanged="(string? vision) => Update(Value with { Vision = Enum.TryParse<WorkbenchVision>(vision, out var parsed) ? parsed : null })"
+                     Responsive
+                     FitWidth />
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AccessibilityHint)]</BitText>
     </section>
 
     <section class="actions">

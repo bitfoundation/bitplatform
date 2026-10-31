@@ -22,13 +22,15 @@
         PersistedThemePair = isPreview ? null : HttpContext.Request.Cookies[BitThemeCookie.PairCookieName]
     };
     var (insetTop, insetBottom) = scenario?.DevicePreset.GetSafeArea(scenario.Rotated) ?? (0, 0);
-    var insetStyle = scenario is null ? null : FormattableString.Invariant($"--bit-env-inset-top:{insetTop}px;--bit-env-inset-bottom:{insetBottom}px;--bit-env-inset-left:0px;--bit-env-inset-right:0px;");
+    var insetStyle = scenario is null ? null : FormattableString.Invariant($"--bit-env-inset-top:{insetTop}px;--bit-env-inset-bottom:{insetBottom}px;--bit-env-inset-left:0px;--bit-env-inset-right:0px;{WorkbenchPreviewLook.GetRootStyle(scenario)}");
 }
 
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.Name"
       dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)"
       style="@insetStyle"
+      data-wb-motion="@(scenario?.ReducedMotion is true ? "reduce" : null)"
+      data-wb-vision="@scenario?.Vision?.ToString().ToLowerInvariant()"
       @attributes="BitThemeSsr.BuildRootThemeAttributeMap(themePreference, themeOptions)">
 
 <head>
@@ -61,6 +63,16 @@
     <link rel="stylesheet" href="Boilerplate.Workbench.styles.css" />
 
     <Routes @rendermode="RenderMode" />
+
+    @if (scenario?.Vision is not null)
+    {
+        <svg class="wb-vision-filters" aria-hidden="true" focusable="false">
+            <filter id="wb-vision-protanopia"><feColorMatrix type="matrix" values="0.567 0.433 0 0 0 0.558 0.442 0 0 0 0 0.242 0.758 0 0 0 0 0 1 0" /></filter>
+            <filter id="wb-vision-deuteranopia"><feColorMatrix type="matrix" values="0.625 0.375 0 0 0 0.7 0.3 0 0 0 0 0.3 0.7 0 0 0 0 0 1 0" /></filter>
+            <filter id="wb-vision-tritanopia"><feColorMatrix type="matrix" values="0.95 0.05 0 0 0 0 0.433 0.567 0 0 0 0.475 0.525 0 0 0 0 0 1 0" /></filter>
+            <filter id="wb-vision-achromatopsia"><feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0 0.299 0.587 0.114 0 0 0.299 0.587 0.114 0 0 0 0 0 1 0" /></filter>
+        </svg>
+    }
 
     <script src="_framework/blazor.web.js" autostart="false"></script>
     <script src="_content/Bit.Butil/bit-butil.js"></script>

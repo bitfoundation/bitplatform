@@ -1,0 +1,62 @@
+@inherits WorkbenchComponentBase
+
+<div class="text-panel">
+    <section>
+        <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.EditText)]</BitText>
+        @if (Text is null)
+        {
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.EditTextHint)]</BitText>
+        }
+        else
+        {
+            <BitText Typography="BitTypography.Body2" Class="picked">“@Text”</BitText>
+        }
+    </section>
+
+    @if (Text is not null && Matches.Length == 0)
+    {
+        <section>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.TextNotTranslated)]</BitText>
+            @if (OnAskAgent.HasDelegate)
+            {
+                <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Comment" OnClick="() => OnAskAgent.InvokeAsync(Localizer[nameof(WorkbenchStrings.MoveTextRequest), Text].Value)">@Localizer[nameof(WorkbenchStrings.AskTheAgent)]</BitButton>
+            }
+        </section>
+    }
+
+    @if (selected is not null)
+    {
+        <section>
+            @if (Matches.Length > 1)
+            {
+                <BitDropdown Items="matchItems"
+                             Label="@Localizer[nameof(WorkbenchStrings.TextKey)]"
+                             Value="@SelectedId"
+                             ValueChanged="(string? id) => Select(id)"
+                             Responsive
+                             FitWidth />
+            }
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="key">@selected.Resource · @selected.Key</BitText>
+            @foreach (var translation in translations)
+            {
+                <BitTextField Label="@translation.DisplayName"
+                              Value="@values[translation.Culture]"
+                              ValueChanged="(string? value) => values[translation.Culture] = value"
+                              Multiline="(translation.Value?.Length ?? 0) > 60"
+                              Rows="3"
+                              Dir="@(CultureInfoManager.GetCultureInfo(translation.Culture)?.TextInfo.IsRightToLeft is true ? BitDir.Rtl : BitDir.Ltr)" />
+            }
+            <div class="actions">
+                @if (CanSave)
+                {
+                    <BitButton IconName="@BitIconName.Save" IsEnabled="IsChanged && isSaving is false" OnClick="Save">@Localizer[nameof(WorkbenchStrings.SaveTranslations)]</BitButton>
+                }
+                @if (OnAskAgent.HasDelegate)
+                {
+                    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Comment" IsEnabled="IsChanged" OnClick="Ask">@Localizer[nameof(WorkbenchStrings.AskTheAgent)]</BitButton>
+                }
+            </div>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[CanSave ? nameof(WorkbenchStrings.SaveTranslationsHint) : nameof(WorkbenchStrings.SaveTranslationsRemoteHint)]</BitText>
+        </section>
+    }
+</div>

@@ -56,6 +56,36 @@
                     </div>
                     break;
                 default:
+                    @if (Scenario.Variant is "cards")
+                    {
+                        <div class="cards" role="list" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]">
+                            @foreach (var building in FilteredBuildings)
+                            {
+                                <div role="listitem" @key="building.Id" class="card @(selectedItems.Contains(building) ? "selected" : null)">
+                                    <button type="button" class="card-main" @onclick="() => Select(building, flyTo: true)" @ondblclick="() => OpenEdit(building)">
+                                        <span class="type-dot" style="background-color:@GetTypeColor(building.Type)"></span>
+                                        <span class="name-text">
+                                            <span class="name">@building.Name</span>
+                                            <span class="city">@building.City · @Localizer[$"Province{building.Province}"]</span>
+                                            <span class="city">@Localizer[$"BuildingType{building.Type}"]@(building.Year is { } year ? $" · {year}" : null)</span>
+                                        </span>
+                                    </button>
+                                    @if (canManage)
+                                    {
+                                        <span class="row-actions">
+                                            <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Edit"
+                                                       Title="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]"
+                                                       OnClick="() => OpenEdit(building)" />
+                                            <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete"
+                                                       Title="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]"
+                                                       OnClick="() => ConfirmDelete(building)" />
+                                        </span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        break;
+                    }
                     <BitDataGrid @ref="grid"
                                  TItem="Building"
                                  Items="FilteredBuildings"

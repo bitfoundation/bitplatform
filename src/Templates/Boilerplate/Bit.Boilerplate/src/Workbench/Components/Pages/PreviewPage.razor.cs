@@ -9,6 +9,7 @@ public partial class PreviewPage
     [AutoInject] private BlexManager blexManager = default!;
     [AutoInject] private WorkbenchSnapshots snapshots = default!;
     [AutoInject] private BitAccentColorService accentColorService = default!;
+    [AutoInject] private WorkbenchTextRecorder textRecorder = default!;
 
     [Parameter] public string? PageKey { get; set; }
 
@@ -45,6 +46,11 @@ public partial class PreviewPage
         await WhenStateRestored();
         await accentColorService.InitializeAsync();
 
+        if (Scenario.Radius is { } radius)
+        {
+            await JSRuntime.InvokeVoidAsync("workbench.scaleRadius", radius is WorkbenchRadius.Square ? 0 : 2);
+        }
+
         ScenarioState.Touch();
         _ = WaitUntilReady();
     }
@@ -54,6 +60,9 @@ public partial class PreviewPage
 
     [JSInvokable]
     public void ResetState() => blexManager.ResetAll();
+
+    [JSInvokable]
+    public WorkbenchTextMatch[] FindTexts(string text) => textRecorder.Find(text, CultureInfo.CurrentUICulture.Name);
 
     private async Task WaitUntilReady()
     {

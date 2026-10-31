@@ -1,3 +1,6 @@
+import { highlight, runChecks } from './checks';
+import { connectFrames, customProperties, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+
 const host = window as any;
 const isPreview = location.pathname.startsWith('/preview');
 
@@ -12,6 +15,8 @@ let isScreenReady = false;
 let isReadyPending = false;
 
 function fitStage(stage: HTMLElement) {
+    if (stage.dataset.resizing === 'true') return;
+
     const scaler = stage.querySelector<HTMLElement>('.pane-scaler');
     const frameWidth = Number(stage.dataset.frameWidth);
     const frameHeight = Number(stage.dataset.frameHeight);
@@ -61,6 +66,7 @@ function scan() {
         if (frame && !seenFrames.has(frame)) {
             seenFrames.add(frame);
             stage.classList.remove('ready');
+            frame.addEventListener('load', () => prepareFrame(frame));
         }
     });
 }
@@ -258,6 +264,7 @@ if (!isPreview) {
 
         if (event.data?.type === 'workbench-ready') {
             frame.closest('.pane-stage')?.classList.add('ready');
+            prepareFrame(frame);
         }
 
         if (event.data?.type === 'workbench-scenario' && frame.dataset.paneId) {
@@ -268,6 +275,71 @@ if (!isPreview) {
             shellReference?.invokeMethodAsync('ReportPage', String(event.data.pageKey ?? ''));
         }
     });
+}
+
+function resizeFrames() {
+    document.addEventListener('pointerdown', event => {
+        const handle = event.target instanceof Element ? event.target.closest<HTMLElement>('.resize-handle') : null;
+        const device = handle?.closest<HTMLElement>('.device');
+        const stage = handle?.closest<HTMLElement>('.pane-stage');
+        const paneId = stage?.querySelector('iframe')?.dataset.paneId;
+
+        if (!handle || !device || !stage || !paneId || event.button !== 0) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const axis = handle.dataset.axis ?? 'xy';
+        const scale = Number(getComputedStyle(stage.querySelector('.pane-scaler')!).getPropertyValue('--wb-scale')) || 1;
+        const read = (name: string) => parseFloat(device.style.getPropertyValue(name)) || 0;
+        const bezelX = read('--wb-bezel-l') + read('--wb-bezel-r');
+        const bezelY = read('--wb-bezel-t') + read('--wb-bezel-b');
+        const start = { x: event.clientX, y: event.clientY, width: read('--wb-screen-w'), height: read('--wb-screen-h') };
+        let size = { width: start.width, height: start.height };
+
+        stage.dataset.resizing = 'true';
+        document.documentElement.classList.add('wb-resizing');
+        handle.setPointerCapture(event.pointerId);
+
+        const move = (moveEvent: PointerEvent) => {
+            const width = axis.includes('x') ? start.width + (moveEvent.clientX - start.x) / scale : start.width;
+            const height = axis.includes('y') ? start.height + (moveEvent.clientY - start.y) / scale : start.height;
+
+            size = { width: Math.round(Math.min(Math.max(width, 240), 3840)), height: Math.round(Math.min(Math.max(height, 240), 2400)) };
+
+            device.style.width = `${size.width + bezelX}px`;
+            device.style.height = `${size.height + bezelY}px`;
+            device.style.setProperty('--wb-screen-w', `${size.width}px`);
+            device.style.setProperty('--wb-screen-h', `${size.height}px`);
+            stage.style.setProperty('--wb-frame-w', `${size.width + bezelX}px`);
+            stage.style.setProperty('--wb-frame-h', `${size.height + bezelY}px`);
+            device.dataset.size = `${size.width} × ${size.height}`;
+        };
+
+        const end = () => {
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', end);
+            handle.removeEventListener('pointercancel', end);
+            document.documentElement.classList.remove('wb-resizing');
+            delete device.dataset.size;
+            delete stage.dataset.resizing;
+
+            if (size.width !== start.width || size.height !== start.height) {
+                shellReference?.invokeMethodAsync('ResizePane', paneId, size.width, size.height);
+            } else {
+                fitStage(stage);
+            }
+        };
+
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', end);
+        handle.addEventListener('pointercancel', end);
+    }, true);
+}
+
+if (!isPreview) {
+    resizeFrames();
+    connectFrames({ invoke: (method, ...args) => shellReference?.invokeMethodAsync(method, ...args) });
 }
 
 if (isPreview && document.body.classList.contains('wb-touch')) {
@@ -396,6 +468,65 @@ host.workbench = {
 
     copy(text: string) {
         return navigator.clipboard?.writeText(text);
+    },
+
+    runChecks() {
+        return runChecks();
+    },
+
+    findTexts(text: string) {
+        return previewReference ? previewReference.invokeMethodAsync('FindTexts', text) : Promise.resolve([]);
+    },
+
+    reloadFrames() {
+        document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]').forEach(frame => {
+            frame.closest('.pane-stage')?.classList.remove('ready');
+            frame.contentWindow?.location.reload();
+        });
+    },
+
+    highlight(selector: string) {
+        return highlight(selector);
+    },
+
+    async checkFrame(paneId: string) {
+        const preview = findFrame(paneId)?.contentWindow as any;
+        return await withTimeout(preview?.workbench?.runChecks() ?? Promise.resolve(null), 30000);
+    },
+
+    highlightInFrame(paneId: string, selector: string) {
+        const preview = findFrame(paneId)?.contentWindow as any;
+        return preview?.workbench?.highlight(selector) ?? false;
+    },
+
+    setComponentNames(names: Record<string, string>, notFromTheme: string) {
+        setComponentNames(names, notFromTheme);
+    },
+
+    setMode(mode: string) {
+        setMode(mode);
+    },
+
+    showPins(pins: Record<string, never[]>) {
+        showPins(pins);
+    },
+
+    readBreakpoints() {
+        const style = getComputedStyle(document.documentElement);
+
+        return ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
+            .map(name => ({ name, min: parseFloat(style.getPropertyValue(`--bit-bp-${name}`)) }))
+            .filter(breakpoint => Number.isFinite(breakpoint.min));
+    },
+
+    scaleRadius(factor: number) {
+        const root = document.documentElement;
+        const names = customProperties(document, name => name.startsWith('--bit-shp-') && name.includes('radius') && !name.endsWith('-none') && !name.endsWith('-full'));
+        const computed = getComputedStyle(root);
+        names.forEach(name => {
+            const value = computed.getPropertyValue(name).trim();
+            if (value) root.style.setProperty(name, factor === 0 ? '0px' : `calc((${value}) * ${factor})`);
+        });
     },
 
     setCulture(name: string) {

@@ -76,6 +76,40 @@ public static class BuildingSeed
         return buildings;
     }
 
+    public static IEnumerable<Building> Multiply(List<Building> buildings, int times)
+    {
+        for (var copy = 0; copy < times; copy++)
+        {
+            foreach (var building in buildings)
+            {
+                var clone = building.Clone();
+
+                if (copy > 0)
+                {
+                    var id = building.Id.ToByteArray();
+                    id[15] ^= (byte)copy;
+
+                    clone.Id = new Guid(id);
+                    clone.Name = FormattableString.Invariant($"{building.Name} {copy + 1}");
+                    clone.Latitude += copy * 0.0021;
+                    clone.Longitude -= copy * 0.0034;
+                }
+
+                yield return clone;
+            }
+        }
+    }
+
+    public static Building Lengthen(Building building)
+    {
+        var clone = building.Clone();
+
+        clone.Name = $"{building.Name}, Visitor Centre, Archive and Research Library of the Historic Building";
+        clone.City = $"{building.City}-Oost en Omliggende Gemeenten";
+
+        return clone;
+    }
+
     private static Building New(string name, string city, DutchProvince province, BuildingType type, int? year, double? height, int? floors, double latitude, double longitude) => new()
     {
         Name = name,

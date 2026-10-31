@@ -23,7 +23,28 @@ public static class WorkbenchPageCatalog
             typeof(BuildingsPage),
             nameof(WorkbenchStrings.CategoryDataAndMaps),
             ["BitDataGrid", "BitMap", "BitModal", "BitMessageBox", "BitSnackBar"],
-            nameof(WorkbenchStrings.BuildingsCaption)),
+            nameof(WorkbenchStrings.BuildingsCaption))
+        {
+            Variants =
+            [
+                new("table", nameof(WorkbenchStrings.BuildingsVariantTable)),
+                new("cards", nameof(WorkbenchStrings.BuildingsVariantCards))
+            ],
+            Switches =
+            [
+                new("amount", nameof(WorkbenchStrings.BuildingsSwitchAmount),
+                [
+                    new("normal", nameof(WorkbenchStrings.BuildingsAmountNormal)),
+                    new("few", nameof(WorkbenchStrings.BuildingsAmountFew)),
+                    new("many", nameof(WorkbenchStrings.BuildingsAmountMany))
+                ]),
+                new("names", nameof(WorkbenchStrings.BuildingsSwitchNames),
+                [
+                    new("short", nameof(WorkbenchStrings.BuildingsNamesAsTheyAre)),
+                    new("long", nameof(WorkbenchStrings.BuildingsNamesLong))
+                ])
+            ]
+        },
         new("assistant",
             nameof(WorkbenchStrings.AssistantTitle),
             nameof(WorkbenchStrings.AssistantDescription),

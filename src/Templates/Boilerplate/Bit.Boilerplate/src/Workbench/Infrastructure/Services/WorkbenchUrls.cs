@@ -1,6 +1,8 @@
 using System.Text;
 using System.Buffers.Text;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
@@ -56,6 +58,20 @@ public static class WorkbenchUrls
     public static string EncodePanes(IEnumerable<WorkbenchScenario> scenarios) => Encode(scenarios.Select(s => s.ToQueryString()));
 
     public static WorkbenchScenario[] DecodePanes(string? value) => [.. Decode(value).Select(WorkbenchScenario.Parse)];
+
+    public static Uri LocalBaseAddress(IServer server)
+    {
+        var address = server.Features.Get<IServerAddressesFeature>()?.Addresses
+            .OrderBy(a => a.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault() ?? "http://localhost:5000";
+
+        address = address.Replace("://+", "://localhost")
+                         .Replace("://*", "://localhost")
+                         .Replace("://0.0.0.0", "://localhost")
+                         .Replace("://[::]", "://localhost");
+
+        return new Uri(address.EndsWith('/') ? address : $"{address}/");
+    }
 
     public static string? ReadQuery(string uri, string key)
     {

@@ -7,6 +7,7 @@ public partial class ScenarioInspector
     private List<BitDropdownItem<string>> deviceItems = [];
     private List<BitDropdownItem<string>> cultureItems = [];
     private List<BitDropdownItem<int>> userItems = [];
+    private List<BitDropdownItem<string>> visionItems = [];
     private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Paper;
 
     [Parameter] public WorkbenchScenario Value { get; set; } = new();
@@ -35,6 +36,10 @@ public partial class ScenarioInspector
 
     private string? CaptionPlaceholder => Page is null ? null : Localizer[Page.CaptionKey ?? Page.TitleKey].Value;
 
+    private int ViewportWidth => Value.DevicePreset.GetViewport(Value.Rotated).Width;
+
+    private int ViewportHeight => Value.DevicePreset.GetViewport(Value.Rotated).Height;
+
     protected override void OnInitialized()
     {
         deviceItems = [];
@@ -56,11 +61,26 @@ public partial class ScenarioInspector
             }));
         }
 
+        deviceItems.Add(new() { ItemType = BitDropdownItemType.Header, Text = Localizer[nameof(WorkbenchStrings.DeviceGroupCustom)] });
+        deviceItems.Add(new() { Value = DevicePresets.CustomKey, Text = Localizer[nameof(WorkbenchStrings.CustomSize)] });
+
+        visionItems = [new() { Value = string.Empty, Text = Localizer[nameof(WorkbenchStrings.VisionTypical)] }, .. Enum.GetValues<WorkbenchVision>().Select(vision => new BitDropdownItem<string> { Value = vision.ToString(), Text = Localizer[$"Vision{vision}"] })];
+
         cultureItems = [.. CultureInfoManager.SupportedCultures.Select(sc => new BitDropdownItem<string> { Value = sc.Culture.Name, Text = sc.DisplayName })];
         userItems = [.. WorkbenchDemoUsers.All.Select((user, index) => new BitDropdownItem<int> { Value = index, Text = $"{Localizer[user.NameKey]} · {Localizer[user.RoleKey]}" })];
     }
 
     private static BitVariant VariantOf(bool isActive) => isActive ? BitVariant.Fill : BitVariant.Outline;
+
+    private static string SegmentsOf(int count) => count switch { 2 => "two", 4 => "four", _ => "three" };
+
+    private Task SelectDevice(string? device)
+    {
+        if (device == DevicePresets.CustomKey)
+            return Update(Value.WithSize(ViewportWidth, ViewportHeight));
+
+        return Update(Value with { Device = device ?? DevicePresets.DefaultKey, Rotated = false });
+    }
 
     protected override void OnParametersSet()
     {

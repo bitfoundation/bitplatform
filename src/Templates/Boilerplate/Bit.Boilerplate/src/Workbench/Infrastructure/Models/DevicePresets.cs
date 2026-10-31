@@ -4,6 +4,14 @@ public static class DevicePresets
 {
     public const string DefaultKey = "iphone-17-pro";
 
+    public const string CustomKey = "custom";
+
+    public const int MinCustomSize = 240;
+
+    public const int MaxCustomWidth = 3840;
+
+    public const int MaxCustomHeight = 2400;
+
     public static IReadOnlyList<DevicePreset> All { get; } =
     [
         new("iphone-17-pro-max", "iPhone 17 Pro Max", DeviceKind.Phone, 440, 956, 3, 62, 34, 55, DeviceCutout.Island),
@@ -39,4 +47,12 @@ public static class DevicePresets
     public static DevicePreset Default { get; } = All.First(d => d.Key == DefaultKey);
 
     public static DevicePreset Find(string? key) => All.FirstOrDefault(d => string.Equals(d.Key, key, StringComparison.OrdinalIgnoreCase)) ?? Default;
+
+    public static DevicePreset Custom(int width, int height)
+    {
+        width = width is 0 ? 1024 : Math.Clamp(width, MinCustomSize, MaxCustomWidth);
+        height = height is 0 ? 768 : Math.Clamp(height, MinCustomSize, MaxCustomHeight);
+
+        return new(CustomKey, "Custom", DeviceKind.Desktop, width, height, 1);
+    }
 }

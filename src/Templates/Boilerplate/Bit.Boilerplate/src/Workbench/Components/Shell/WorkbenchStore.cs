@@ -5,12 +5,15 @@ namespace Boilerplate.Workbench.Components.Shell;
 [BlexStore(Name = "workbench", Persist = true)]
 public partial class WorkbenchStore
 {
-    private static readonly string[] scenarioKeys = ["data", "theme", "culture", "chrome", "auth", "user", "device", "rotated", "frame", "backdrop", "caption", "panes"];
+    private static readonly string[] scenarioKeys = ["data", "theme", "culture", "chrome", "auth", "user", "device", "size", "rotated", "frame", "backdrop", "caption", "variant", "accent", "radius", "density", "text", "motion", "vision", "panes"];
 
     [BlexState] private WorkbenchPane[] _panes = [new("1", new())];
     [BlexState] private string _selectedPaneId = "1";
     [BlexState] private string _zoom = "fit";
     [BlexState] private int _lastPaneId = 1;
+    [BlexState(Persist = false)] private string _mode = WorkbenchModes.Browse;
+    [BlexState] private string _column = WorkbenchModes.ViewColumn;
+    [BlexState] private string? _reviewerName;
 
     public WorkbenchPane SelectedPane => Panes.FirstOrDefault(p => p.Id == SelectedPaneId) ?? Panes[0];
 
@@ -36,7 +39,7 @@ public partial class WorkbenchStore
             Zoom = zoom.ToString();
         }
 
-        if (scenarioKeys.Any(values.ContainsKey) is false)
+        if (scenarioKeys.Any(values.ContainsKey) is false && values.Keys.Any(key => key.StartsWith(WorkbenchScenario.SwitchQueryPrefix, StringComparison.Ordinal)) is false)
             return;
 
         var scenarios = values.TryGetValue("panes", out var panes) ? WorkbenchUrls.DecodePanes(panes) : [WorkbenchScenario.Parse(query)];
@@ -50,6 +53,12 @@ public partial class WorkbenchStore
     [BlexAction] private void OnSelectPane(string paneId) => SelectedPaneId = paneId;
 
     [BlexAction] private void OnSetZoom(string zoom) => Zoom = zoom;
+
+    [BlexAction] private void OnSetMode(string mode) => Mode = mode;
+
+    [BlexAction] private void OnShowColumn(string column) => Column = column;
+
+    [BlexAction] private void OnNameReviewer(string? name) => ReviewerName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
 
     [BlexAction]
     private void OnChangeScenario(WorkbenchScenario scenario)
@@ -96,6 +105,28 @@ public partial class WorkbenchStore
         {
             SelectedPaneId = Panes[0].Id;
         }
+    }
+
+    [BlexAction]
+    private void OnResizePane(string paneId, int width, int height)
+    {
+        Panes = [.. Panes.Select(p => p.Id == paneId ? p with { Scenario = p.Scenario.WithSize(width, height) } : p)];
+    }
+
+    [BlexAction]
+    private void OnCompareVariants(string[] variants)
+    {
+        var source = SelectedPane.Scenario;
+
+        Replace([.. variants.Select((variant, index) => source with { Variant = index == 0 ? null : variant })]);
+    }
+
+    [BlexAction]
+    private void OnCompareSwitch(string key, string[] values)
+    {
+        var source = SelectedPane.Scenario;
+
+        Replace([.. values.Select((value, index) => source.WithSwitch(key, index == 0 ? null : value))]);
     }
 
     [BlexAction]
@@ -148,7 +179,15 @@ public partial class WorkbenchStore
             Auth = previous.Auth != current.Auth ? current.Auth : target.Auth,
             Frame = previous.Frame != current.Frame ? current.Frame : target.Frame,
             Backdrop = previous.Backdrop != current.Backdrop ? current.Backdrop : target.Backdrop,
-            Caption = previous.Caption != current.Caption ? current.Caption : target.Caption
+            Caption = previous.Caption != current.Caption ? current.Caption : target.Caption,
+            Variant = previous.Variant != current.Variant ? current.Variant : target.Variant,
+            Switches = previous.Switches != current.Switches ? current.Switches : target.Switches,
+            Accent = previous.Accent != current.Accent ? current.Accent : target.Accent,
+            Radius = previous.Radius != current.Radius ? current.Radius : target.Radius,
+            Density = previous.Density != current.Density ? current.Density : target.Density,
+            TextScale = previous.TextScale != current.TextScale ? current.TextScale : target.TextScale,
+            ReducedMotion = previous.ReducedMotion != current.ReducedMotion ? current.ReducedMotion : target.ReducedMotion,
+            Vision = previous.Vision != current.Vision ? current.Vision : target.Vision
         };
     }
 }

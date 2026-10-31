@@ -1,7 +1,7 @@
 using Bit.Bmage.Codecs.Png;
 using Microsoft.Playwright;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
@@ -18,6 +18,35 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
     private IBrowser? browser;
 
     public async Task<byte[]> Capture(string relativeUrl, int width, int height, double pixelRatio, bool isMobile, WorkbenchThemeMode theme, string? culture, CancellationToken cancellationToken)
+    {
+        var png = await Open(relativeUrl, width, height, pixelRatio, isMobile, theme, culture, async page =>
+        {
+            await page.EvaluateAsync("() => document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))");
+
+            return await page.ScreenshotAsync(new() { Type = ScreenshotType.Png, Animations = ScreenshotAnimations.Disabled });
+        }, cancellationToken);
+
+        return RemoveAlphaChannel(png);
+    }
+
+    public Task<string> RunChecks(WorkbenchPageInfo page, string? query, CancellationToken cancellationToken)
+    {
+        var scenario = WorkbenchScenario.Parse(query);
+        var device = scenario.DevicePreset;
+        var (width, height) = device.GetViewport(scenario.Rotated);
+
+        return Open(WorkbenchUrls.Preview(page.Key, scenario with { Frame = false, Backdrop = null }).TrimStart('/'),
+                    width,
+                    height,
+                    device.PixelRatio,
+                    device.IsHandheld,
+                    scenario.Theme,
+                    scenario.Culture,
+                    async browserPage => (await browserPage.EvaluateAsync("() => window.workbench.runChecks()")).ToString() ?? "{}",
+                    cancellationToken);
+    }
+
+    private async Task<T> Open<T>(string relativeUrl, int width, int height, double pixelRatio, bool isMobile, WorkbenchThemeMode theme, string? culture, Func<IPage, Task<T>> use, CancellationToken cancellationToken)
     {
         captureSlots ??= new(configuration.GetValue("Screenshots:MaxConcurrentCaptures", 2));
 
@@ -41,7 +70,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
 
             var page = await context.NewPageAsync();
 
-            await page.GotoAsync(new Uri(GetLocalBaseAddress(), relativeUrl).ToString(), new() { WaitUntil = WaitUntilState.Load, Timeout = 30_000 });
+            await page.GotoAsync(new Uri(WorkbenchUrls.LocalBaseAddress(server), relativeUrl).ToString(), new() { WaitUntil = WaitUntilState.Load, Timeout = 30_000 });
 
             await page.WaitForFunctionAsync("() => window.__workbenchReady === true", null, new() { Timeout = 30_000 });
 
@@ -53,21 +82,40 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
             {
             }
 
-            await page.EvaluateAsync("() => document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))");
-
-            var png = await page.ScreenshotAsync(new() { Type = ScreenshotType.Png, Animations = ScreenshotAnimations.Disabled });
-
-            return RemoveAlphaChannel(png);
+            return await use(page);
         }
         catch (Exception exp) when (exp is not OperationCanceledException)
         {
-            logger.LogError(exp, "Taking a screenshot of {Url} failed.", relativeUrl);
+            logger.LogError(exp, "Opening {Url} in the headless browser failed.", relativeUrl);
             throw;
         }
         finally
         {
             captureSlots.Release();
         }
+    }
+
+    public async Task<(byte[] Png, string FileName)> CapturePage(WorkbenchPageInfo page, string? query, CancellationToken cancellationToken)
+    {
+        var scenario = WorkbenchScenario.Parse(query);
+        var device = scenario.DevicePreset;
+        var (width, height) = device.GetViewport(scenario.Rotated);
+        var snapshotId = QueryHelpers.ParseQuery(query).TryGetValue(WorkbenchUrls.SnapshotQueryKey, out var id) ? id.ToString() : null;
+
+        var png = await Capture(WorkbenchUrls.Preview(page.Key, scenario with { Frame = scenario.Backdrop is not null && scenario.Frame }, snapshotId: snapshotId).TrimStart('/'),
+                                width,
+                                height,
+                                device.PixelRatio,
+                                device.IsHandheld,
+                                scenario.Theme,
+                                scenario.Culture,
+                                cancellationToken);
+
+        var (pixelWidth, pixelHeight) = device.GetPixels(scenario.Rotated);
+        var look = scenario.Backdrop is null ? scenario.Data.ToString() : "framed";
+        var fileName = $"{page.Key}-{device.Key}-{pixelWidth}x{pixelHeight}-{scenario.Culture ?? CultureInfoManager.DefaultCulture.Name}-{scenario.Theme}-{look}.png".ToLowerInvariant();
+
+        return (png, fileName);
     }
 
     public Task<byte[]> GetThumbnail(string pageKey, bool phone, WorkbenchThemeMode theme)
@@ -105,20 +153,6 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         using var image = PngDecoder.Decode(png);
 
         return PngEncoder.Encode(image).Data;
-    }
-
-    private Uri GetLocalBaseAddress()
-    {
-        var address = server.Features.Get<IServerAddressesFeature>()?.Addresses
-            .OrderBy(a => a.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-            .FirstOrDefault() ?? "http://localhost:5000";
-
-        address = address.Replace("://+", "://localhost")
-                         .Replace("://*", "://localhost")
-                         .Replace("://0.0.0.0", "://localhost")
-                         .Replace("://[::]", "://localhost");
-
-        return new Uri(address.EndsWith('/') ? address : $"{address}/");
     }
 
     private async Task<IBrowser> GetBrowser()

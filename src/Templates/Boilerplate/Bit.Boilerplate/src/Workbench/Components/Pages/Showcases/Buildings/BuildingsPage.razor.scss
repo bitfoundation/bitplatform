@@ -149,6 +149,57 @@
     display: inline-flex;
 }
 
+.cards {
+    flex: 1;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    display: grid;
+    min-height: 0;
+    overflow-y: auto;
+    align-content: start;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.card {
+    gap: 0.25rem;
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    border-radius: 12px;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+
+    &.selected {
+        border-color: $bit-color-primary;
+        background-color: color-mix(in srgb, #{$bit-color-primary} 8%, transparent);
+    }
+}
+
+.card-main {
+    flex: 1;
+    gap: 0.625rem;
+    min-width: 0;
+    border: none;
+    display: flex;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: start;
+    align-items: baseline;
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+
+    .name-text {
+        overflow-wrap: anywhere;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+    }
+}
+
 ::deep .map {
     width: 100%;
     height: 100%;

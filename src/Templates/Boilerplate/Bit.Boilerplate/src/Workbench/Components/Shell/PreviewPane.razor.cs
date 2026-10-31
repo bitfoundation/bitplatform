@@ -8,6 +8,10 @@ public partial class PreviewPane
     private string? shownUrl;
     private int frameWidth;
     private int frameHeight;
+    private int viewportWidth;
+    private int viewportHeight;
+
+    private const int MinBreakpointWidth = 375;
 
     [Parameter] public WorkbenchPane Pane { get; set; } = default!;
 
@@ -28,6 +32,10 @@ public partial class PreviewPane
     [Parameter] public EventCallback<WorkbenchPane> OnRotate { get; set; }
 
     [Parameter] public EventCallback<WorkbenchPane> OnScreenshot { get; set; }
+
+    [Parameter] public EventCallback<WorkbenchPaneSize> OnResize { get; set; }
+
+    [Parameter] public IReadOnlyList<WorkbenchBreakpoint> Breakpoints { get; set; } = [];
 
     private bool ShowFrame => Pane.Scenario.Frame && Pane.Scenario.Backdrop is null;
 
@@ -50,6 +58,7 @@ public partial class PreviewPane
         previewUrl = WorkbenchUrls.Preview(Page.Key, Pane.Scenario, Pane.Id);
         frameUrl ??= previewUrl;
         (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(device, Pane.Scenario.Rotated, ShowFrame);
+        (viewportWidth, viewportHeight) = device.GetViewport(Pane.Scenario.Rotated);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -98,6 +107,33 @@ public partial class PreviewPane
 
         if (scenario.Backdrop is { } backdrop)
             yield return Localizer[$"Backdrop{backdrop}"];
+
+        if (scenario.Variant is not null && Page.ResolveVariant(scenario) is { } variant)
+            yield return Localizer[variant.NameKey];
+
+        foreach (var pageSwitch in Page.Switches)
+        {
+            if (pageSwitch.Resolve(scenario) is var option && option != pageSwitch.Default)
+                yield return Localizer[option.TextKey];
+        }
+
+        if (scenario.Accent is not null)
+            yield return Localizer[nameof(WorkbenchStrings.AccentColor)];
+
+        if (scenario.Radius is { } radius)
+            yield return Localizer[$"Radius{radius}"];
+
+        if (scenario.Density is { } density)
+            yield return Localizer[$"Density{density}"];
+
+        if (scenario.TextScale != 100)
+            yield return FormattableString.Invariant($"{Localizer[nameof(WorkbenchStrings.TextSize)]} {scenario.TextScale}%");
+
+        if (scenario.ReducedMotion)
+            yield return Localizer[nameof(WorkbenchStrings.ReduceMotion)];
+
+        if (scenario.Vision is { } vision)
+            yield return Localizer[$"Vision{vision}"];
     }
 
     private Task Select() => OnSelect.InvokeAsync(Pane);

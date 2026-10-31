@@ -1932,4 +1932,310 @@
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
     </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>Table</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>Cards</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>How many buildings</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>As is</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>Three</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>Hundreds</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>Names</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>As they are</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>Very long</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>Width</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>Height</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>Drag the edge or corner of the view to resize it, or type the size.</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>This page</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>Design option</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>The page defines these itself, for the cases it has to look right in. Each choice goes into the link and the screenshots.</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>Try the theme</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>Primary color</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>Theme</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>Your own color</value>
+    </data>
+    <data name="CornerRadius" xml:space="preserve">
+        <value>Corners</value>
+    </data>
+    <data name="RadiusSquare" xml:space="preserve">
+        <value>Square</value>
+    </data>
+    <data name="RadiusRound" xml:space="preserve">
+        <value>Rounder</value>
+    </data>
+    <data name="Density" xml:space="preserve">
+        <value>Spacing</value>
+    </data>
+    <data name="DensityCompact" xml:space="preserve">
+        <value>Compact</value>
+    </data>
+    <data name="DensityComfortable" xml:space="preserve">
+        <value>Roomy</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>Only this view changes. When you like one, ask your agent to put it in the app's theme.</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>Accessibility</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>Text size</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>Reduce motion</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>Color vision</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>Larger text the way a phone or browser setting makes it, no animations, and how people with color blindness see the page.</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>Any size</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>Custom size</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>Typical</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>No red (protanopia)</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>No green (deuteranopia)</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>No blue (tritanopia)</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>No color (achromatopsia)</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>The app's breakpoints</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>Design options</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>Review status</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>Draft</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>In review</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>Approved</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>Built</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>Set by {0}, {1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>No agent is listening. Ask your agent to go through the review comments in the Workbench, and it answers each one here.</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} is listening for comments</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} is working on #{1}</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>New comment</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>Your name</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>What should change here?</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>Send</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>Open ({0})</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>Done ({0})</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>No comments yet. Pick Comment at the top and click anywhere on the page.</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>Nothing is done yet.</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>Open</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>Working on it</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>Done</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>The agent's plan</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>Reply</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>Reply</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>Reopen</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>Done</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>Show the view</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>Delete comment</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>This spot</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>Mode</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>Use the page</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>Comment</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>Inspect</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>Edit text</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>View</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>Review</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>Reviewer</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>not from the theme</value>
+    </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>Checks</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>Check this view</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>Runs on the selected view, with its device, theme, language and data: an accessibility check (axe-core) and a search for colors that don't come from the theme.</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>Run checks</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>The checks could not run on this view. Wait until it has loaded and try again.</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>Accessibility ({0})</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>No problems found.</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>Critical</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>Serious</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>Moderate</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>Minor</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>Show</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>Learn more</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>Colors outside the theme ({0})</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>Colors the page sets itself that match none of the theme's colors. Outside bit components and charts only.</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>Edit text</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>Click any text on the page to change it, in every language.</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>This text is written in the page itself and is not in the translation files yet, so it shows the same in every language.</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>Move this text into the translation files and translate it: “{0}”</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>Ask the agent</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>Which text</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>Save</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>Saves into the translation files and reloads the views. Your agent sees the change in git.</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>Changes from outside this computer go to the agent as a comment.</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>Change the text {0} · {1}:</value>
+    </data>
 </root>

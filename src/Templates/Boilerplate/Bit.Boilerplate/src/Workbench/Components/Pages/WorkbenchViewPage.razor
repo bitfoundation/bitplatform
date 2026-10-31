@@ -44,6 +44,15 @@ else if (isSmallScreen)
         </Header>
         <Body>
             <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
+            @if (reviewSession.IsEnabled)
+            {
+                <ReviewPanel Page="pageInfo"
+                             SelectedThreadId="@selectedThreadId"
+                             ReviewerName="@ReviewerName"
+                             ReviewerNameChanged="store.NameReviewer"
+                             OnSelect="SelectThread"
+                             OnShow="ShowThread" />
+            }
             <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
         </Body>
     </BitPanel>
@@ -58,8 +67,27 @@ else
             </a>
             <span class="crumb-separator">/</span>
             <BitText Typography="BitTypography.Body1" Class="crumb-title" NoWrap>@Localizer[pageInfo.TitleKey]</BitText>
+            @if (reviewSession.PageOf(pageInfo.Key) is { } pageReview)
+            {
+                <span class="page-status status-@pageReview.Status.ToString().ToLowerInvariant()">@Localizer[$"PageStatus{pageReview.Status}"]</span>
+            }
 
             <BitSpacer />
+
+            <div class="modes" role="radiogroup" aria-label="@Localizer[nameof(WorkbenchStrings.Mode)]">
+                @foreach (var (mode, iconName, textKey) in modes)
+                {
+                    if (mode is WorkbenchModes.Comment && reviewSession.IsEnabled is false)
+                        continue;
+
+                    <BitButton IconOnly Size="BitSize.Small"
+                               Variant="@(store.Mode == mode ? BitVariant.Fill : BitVariant.Text)"
+                               IconName="@iconName"
+                               Title="@Localizer[textKey]"
+                               AriaLabel="@Localizer[textKey]"
+                               OnClick="() => SetMode(mode)" />
+                }
+            </div>
 
             <BitMenuButton Text="@Localizer[nameof(WorkbenchStrings.Compare)]"
                            IconName="@BitIconName.ViewAll2"
@@ -109,7 +137,9 @@ else
                                  OnSelect="p => store.SelectPane(p.Id)"
                                  OnRemove="p => store.RemovePane(p.Id)"
                                  OnRotate="p => store.RotatePane(p.Id)"
-                                 OnScreenshot="DownloadScreenshot" />
+                                 OnScreenshot="DownloadScreenshot"
+                                 OnResize="size => store.ResizePane(size.Pane.Id, size.Width, size.Height)"
+                                 Breakpoints="breakpoints" />
                 }
             }
             else
@@ -121,7 +151,51 @@ else
         </section>
 
         <aside class="sidebar inspector-column">
-            <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" Zoom="@store.Zoom" ZoomChanged="store.SetZoom" />
+            <div class="column-tabs" role="tablist">
+                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ViewColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ViewColumn ? "true" : "false")"
+                        @onclick="() => store.ShowColumn(WorkbenchModes.ViewColumn)">@Localizer[nameof(WorkbenchStrings.ViewTab)]</button>
+                @if (reviewSession.IsEnabled)
+                {
+                    <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ReviewColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ReviewColumn ? "true" : "false")"
+                            @onclick="() => store.ShowColumn(WorkbenchModes.ReviewColumn)">
+                        @Localizer[nameof(WorkbenchStrings.ReviewTab)]
+                        @if (OpenThreadCount > 0)
+                        {
+                            <span class="tab-count">@OpenThreadCount</span>
+                        }
+                    </button>
+                }
+                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ChecksColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ChecksColumn ? "true" : "false")"
+                        @onclick="() => store.ShowColumn(WorkbenchModes.ChecksColumn)">@Localizer[nameof(WorkbenchStrings.ChecksTab)]</button>
+            </div>
+            @if (store.Mode == WorkbenchModes.Text)
+            {
+                <TextPanel Text="@pickedText?.Text"
+                           Matches="@(pickedText?.Matches ?? [])"
+                           CanSave="isLocal && textEdits.CanWriteFiles"
+                           OnSaved="OnTextSaved"
+                           OnAskAgent="AskAgentCallback" />
+            }
+            else if (store.Column == WorkbenchModes.ChecksColumn)
+            {
+                <ChecksPanel PaneId="@store.SelectedPane.Id" />
+            }
+            else if (reviewSession.IsEnabled && store.Column == WorkbenchModes.ReviewColumn)
+            {
+                <ReviewPanel Page="pageInfo"
+                             PendingAnchor="pendingComment?.Anchor"
+                             SelectedThreadId="@selectedThreadId"
+                             ReviewerName="@ReviewerName"
+                             ReviewerNameChanged="store.NameReviewer"
+                             OnSelect="SelectThread"
+                             OnShow="ShowThread"
+                             OnSend="SendComment"
+                             OnCancel="CancelComment" />
+            }
+            else
+            {
+                <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" Zoom="@store.Zoom" ZoomChanged="store.SetZoom" />
+            }
         </aside>
     </div>
 }

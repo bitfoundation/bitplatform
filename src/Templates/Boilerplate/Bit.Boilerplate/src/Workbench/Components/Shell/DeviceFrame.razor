@@ -34,4 +34,11 @@
         <span class="side-button volume-down"></span>
         <span class="side-button power"></span>
     }
+
+    @if (Resizable)
+    {
+        <span class="resize-handle resize-x" data-axis="x" aria-hidden="true"></span>
+        <span class="resize-handle resize-y" data-axis="y" aria-hidden="true"></span>
+        <span class="resize-handle resize-xy" data-axis="xy" aria-hidden="true"></span>
+    }
 </div>

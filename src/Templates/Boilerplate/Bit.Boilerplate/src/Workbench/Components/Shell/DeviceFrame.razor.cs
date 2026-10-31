@@ -14,6 +14,8 @@ public partial class DeviceFrame
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    [Parameter] public bool Resizable { get; set; }
+
     public static (int Left, int Top, int Right, int Bottom) GetBezel(DevicePreset device, bool showFrame)
     {
         if (showFrame is false)

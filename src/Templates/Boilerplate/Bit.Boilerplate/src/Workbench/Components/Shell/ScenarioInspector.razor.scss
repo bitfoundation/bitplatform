@@ -45,6 +45,41 @@ section {
     }
 }
 
+.size-fields {
+    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.accents {
+    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.accent {
+    padding: 0;
+    cursor: pointer;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    outline-offset: 2px;
+    border: 2px solid transparent;
+    background-color: var(--wb-accent);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+
+    &.accent-default {
+        background-color: $bit-color-primary;
+    }
+
+    &.selected {
+        outline: 2px solid $bit-color-foreground-primary;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary-hover;
+    }
+}
+
 .backdrops {
     gap: 0.5rem;
     display: grid;

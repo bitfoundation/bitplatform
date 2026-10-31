@@ -3,7 +3,7 @@
 <div class="pane @(IsSelected ? "selected" : null)" @onclick="Select">
     <div class="pane-header">
         <BitIcon IconName="@GetDeviceIconName(device)" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
-        <BitText Typography="BitTypography.Body2" Class="pane-device" NoWrap>@device.Name</BitText>
+        <BitText Typography="BitTypography.Body2" Class="pane-device" NoWrap>@(device.Key == DevicePresets.CustomKey ? Localizer[nameof(WorkbenchStrings.CustomSize)] : device.Name)</BitText>
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="pane-size" NoWrap>@SizeText</BitText>
         @foreach (var chip in GetChips())
         {
@@ -35,6 +35,24 @@
         }
     </div>
 
+    @if (Breakpoints.Count > 0)
+    {
+        <div class="breakpoints" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.Breakpoints)]">
+            @for (var index = 0; index < Breakpoints.Count; index++)
+            {
+                var breakpoint = Breakpoints[index];
+                var max = index + 1 < Breakpoints.Count ? Breakpoints[index + 1].Min - 1 : (int?)null;
+                var isActive = viewportWidth >= breakpoint.Min && (max is null || viewportWidth <= max);
+                <button type="button"
+                        class="breakpoint @(isActive ? "active" : null)"
+                        aria-pressed="@(isActive ? "true" : "false")"
+                        title="@(max is null ? FormattableString.Invariant($"≥ {breakpoint.Min}px") : FormattableString.Invariant($"{breakpoint.Min}–{max}px"))"
+                        @onclick="() => OnResize.InvokeAsync(new(Pane, Math.Max(breakpoint.Min, MinBreakpointWidth), viewportHeight))"
+                        @onclick:stopPropagation>@breakpoint.Name</button>
+            }
+        </div>
+    }
+
     <div class="pane-stage"
          style="@StageStyle"
          data-frame-width="@frameWidth"
@@ -46,7 +64,8 @@
                          Rotated="Pane.Scenario.Rotated"
                          ShowFrame="ShowFrame"
                          OnDarkContent="Pane.Scenario.Theme is WorkbenchThemeMode.Dark"
-                         Address="@AddressText">
+                         Address="@AddressText"
+                         Resizable>
                 <iframe src="@frameUrl" data-pane-id="@Pane.Id" title="@Localizer[Page.TitleKey]"></iframe>
             </DeviceFrame>
         </div>

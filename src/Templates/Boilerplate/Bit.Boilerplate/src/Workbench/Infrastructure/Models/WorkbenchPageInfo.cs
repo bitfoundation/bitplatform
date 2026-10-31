@@ -7,4 +7,11 @@ public sealed record WorkbenchPageInfo(string Key,
                                        Type ComponentType,
                                        string CategoryKey,
                                        string[] Showcases,
-                                       string? CaptionKey = null);
+                                       string? CaptionKey = null)
+{
+    public WorkbenchPageVariant[] Variants { get; init; } = [];
+
+    public WorkbenchPageSwitch[] Switches { get; init; } = [];
+
+    public WorkbenchPageVariant? ResolveVariant(WorkbenchScenario scenario) => Variants.FirstOrDefault(v => v.Key == scenario.Variant) ?? Variants.FirstOrDefault();
+}

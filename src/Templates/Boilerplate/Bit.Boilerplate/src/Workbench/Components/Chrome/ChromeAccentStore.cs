@@ -3,12 +3,16 @@ namespace Boilerplate.Workbench.Components.Chrome;
 public partial class ChromeAccentStore : IBitAccentColorStore
 {
     [AutoInject] private ChromeStore chromeStore = default!;
+    [AutoInject] private WorkbenchScenarioState scenarioState = default!;
 
-    public Task<string?> GetAccentAsync() => Task.FromResult(chromeStore.Accent);
+    public Task<string?> GetAccentAsync() => Task.FromResult(scenarioState.Scenario.Accent ?? chromeStore.Accent);
 
     public Task SetAccentAsync(string accent)
     {
-        chromeStore.PickAccent(accent);
+        if (string.Equals(accent, scenarioState.Scenario.Accent, StringComparison.OrdinalIgnoreCase) is false)
+        {
+            chromeStore.PickAccent(accent);
+        }
 
         return Task.CompletedTask;
     }
