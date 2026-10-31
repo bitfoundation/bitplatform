@@ -1,0 +1,48 @@
+@inherits WorkbenchComponentBase
+
+<div class="shifts">
+    <div class="shifts-header">
+        <div class="titles">
+            <BitText Typography="BitTypography.H5" Class="title">@Localizer[nameof(WorkbenchStrings.ShiftsHeading)]</BitText>
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">
+                @Localizer[nameof(WorkbenchStrings.PosStoreAmsterdam)] · @Localizer[nameof(WorkbenchStrings.ShiftsSummary), WeekShiftCount, WeekHours.ToString("0.#", CultureInfo.CurrentCulture)]
+            </BitText>
+        </div>
+        <div class="roles" aria-hidden="true">
+            @foreach (var role in roles)
+            {
+                <span class="role"><span class="role-dot" style="background-color:@role.Value"></span>@role.Title</span>
+            }
+        </div>
+    </div>
+
+    @if (isFailed)
+    {
+        <BitMessage Color="BitColor.Warning" Multiline Title="@Localizer[nameof(WorkbenchStrings.LoadFailed)]">
+            <Actions>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="Reload">@Localizer[nameof(WorkbenchStrings.PosRetry)]</BitButton>
+            </Actions>
+        </BitMessage>
+    }
+    else if (isLoading is false && shifts.Length == 0)
+    {
+        <BitMessage Color="BitColor.Info" Multiline>@Localizer[nameof(WorkbenchStrings.ShiftsEmpty)]</BitMessage>
+    }
+
+    <BitFullCalendar Events="events"
+                     Resources="resources"
+                     EventColorOptions="roles"
+                     Settings="settings"
+                     Texts="texts"
+                     View="store.View"
+                     ViewChanged="store.Show"
+                     Mode="store.Mode"
+                     ModeChanged="store.SwitchMode"
+                     Date="@(store.Date ?? DateTime.Today)"
+                     DateChanged="store.GoTo"
+                     Views="views"
+                     IsLoading="isLoading"
+                     ReadOnly="isFailed"
+                     OnChange="OnChange"
+                     Class="calendar" />
+</div>

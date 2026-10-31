@@ -1,0 +1,1695 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="WorkbenchTitle" xml:space="preserve">
+        <value>Arbetsbänk</value>
+    </data>
+    <data name="CategoryDashboards" xml:space="preserve">
+        <value>Översikter</value>
+    </data>
+    <data name="PosDashboardTitle" xml:space="preserve">
+        <value>Kassaöversikt</value>
+    </data>
+    <data name="PosDashboardDescription" xml:space="preserve">
+        <value>En kassaöversikt med widgetar som kan flyttas om, storleksändras, döljas och sparas.</value>
+    </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>Sarah Johnson</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>Daan Visser</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>Niloofar Rahimi</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>Butik Amsterdam</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>Huvudkontor</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>Rotera</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>Skärmbild av den här vyn (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>Skärmbilder av alla vyer (ZIP)</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>Öppna i en ny flik</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>Ta bort den här vyn</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>Utan appram</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>Ljus</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>Mörk</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>System</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>Data</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>Laddar</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>Tomt</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>Fel</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>Blandat</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>Långsamt</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>Utloggad</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>Inloggad</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>Flera konton</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>Enhet</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>Stående</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>Liggande</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>Enhetsram</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>Zoom</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>Anpassa</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>Data</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>Sidorna läser in data från minnet efter en kort fördröjning, så att alla lägen kan visas här, även de som är svåra att fånga i en riktig app.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>App</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>Appram</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>Appens navigeringspanel, sidhuvud, kontomeny och nedre fält.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>Inloggning</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>Tema</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>Språk</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>Återställ</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>Telefoner</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>Vikbara enheter</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>Surfplattor</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>Bärbara datorer</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>Stationära datorer</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>Storlekar för appbutiker</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>Sidor</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>Sök sidor</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>Den här sidan finns inte på arbetsbänken.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>Tillbaka till arbetsbänkens startsida</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>Verktyg</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>Stäng</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>Jämför</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>En vy</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>Telefon, surfplatta och dator</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>Ljust och mörkt</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>Språk sida vid sida</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>Alla datalägen</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>Utloggad, inloggad, flera konton</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>Lägg till vy</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>Skärmbild</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>Kopiera en länk till de här inställningarna</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>Växla arbetsbänken mellan ljust och mörkt</value>
+    </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>Alla butiker</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>Amsterdam, Jordaan</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>Rotterdam, Markthal</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>Utrecht, Oudegracht</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>Flat white</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>Havrelatte</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>Smörcroissant</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>Holländsk äppelpaj</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>Cappuccino</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>Stroopwafel</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>Surdegsbröd</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>Cold brew</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>Emma de Jong</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>Lucas Bakker</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>Mila Janssen</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>Sem Smit</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>Kort</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>Mobilbetalning</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>Kontant</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>Presentkort</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>Havredryck</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>Croissantdeg</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>Espressobönor</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>Take away-muggar</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>Nettoförsäljning</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>Transaktioner</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>Snittköp</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>Återbetalningar</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>Försäljning per timme</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>Betalsätt</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>Mest sålda produkter</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>Försäljningsmål</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>Senaste beställningar</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>Lågt lager</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>Team</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>Rusningstider</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>Dra {0}</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>Widgetalternativ</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>Laddar</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>Kunde inte laddas</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>Resten av översikten fungerar. Försök igen om en stund.</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>Försök igen</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>Inget här än</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>Liten</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>Mellan</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>Stor</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>Flytta upp</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>Flytta ner</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>Dölj</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>Ingen försäljning än</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>Siffrorna visas här så snart den första beställningen har betalats.</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>I dag</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>Den här perioden</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>Samma dag förra veckan</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>Jämfört med samma dag förra veckan</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>Inga betalningar än</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>Totalt</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>{0} sålda</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>Inget mål satt</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>Sätt ett försäljningsmål för att se hur nära butiken är.</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>av målet {0}</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>{0} kvar till målet</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>De senaste beställningarna från alla kassor</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>Inga beställningar än</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>Beställningarna visas här i samma stund som en kassa slår in dem.</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>Beställning</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>Tid</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>Kassör</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>Artiklar</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>Betalning</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>Status</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>Betald</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>Återbetald</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>Väntar</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>för {0} min sedan</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>Artiklar under sin miniminivå</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>Allt finns i lager</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>Inget ligger under sin miniminivå just nu.</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>{0} kvar · minst {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>Slut i lager</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>Lågt</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>Beställt</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>Beställ mer</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>Ingen har pass just nu</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>Teamets resultat visas när någon stämplar in.</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} beställningar</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>Toppsäljare</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>Beställningar per timme de senaste fyra veckorna</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>Lugnt</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>Hektiskt</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>God eftermiddag, Sarah</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>Butik</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>Period</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>7 dagar</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>30 dagar</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>Klar</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>Anpassa</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>Dra widgetarna i handtaget, eller använd deras meny för att ändra storlek, flytta eller dölja dem. Din layout sparas på den här enheten.</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>Lägg till widget ({0})</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>Återställ layout</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>Dolda widgetar</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>Lägg till</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>Alla widgetar finns redan på översikten.</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>Senaste 7 dagarna</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>Senaste 30 dagarna</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>jämfört med i går</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>jämfört med föregående 7 dagar</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>jämfört med föregående 30 dagar</value>
+    </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>Data och kartor</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>Byggnader</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>En datatabell och en karta som hålls synkroniserade. Dubbelklicka på kartan för att lägga till en byggnad, markera en och tryck på Delete för att ta bort den. Avancerade kartfunktioner finns också med, till exempel att begränsa var punkter kan väljas.</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>Kända byggnader</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} byggnader i {1} provinser</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>Sök på namn, ort eller typ</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>Lägg till byggnad</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>Lista</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>Karta</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>Byggnaderna kunde inte laddas</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>Inga byggnader än</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>Dubbelklicka var som helst i Nederländerna på kartan för att lägga till den första.</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>Namn</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>Ort</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>Provins</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>Typ</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>År</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>Höjd (m)</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>Våningar</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>Latitud</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>Longitud</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>Redigera</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>Ta bort</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>Dubbelklicka i Nederländerna för att lägga till en byggnad. Markera en och tryck på Delete för att ta bort den.</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>{0} har sparats</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>Ta bort den här byggnaden?</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} tas bort från listan och kartan.</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>{0} har tagits bort</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>Utanför Nederländerna</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>Byggnader kan bara läggas till innanför Nederländernas gräns.</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>Ny byggnad</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>Redigera byggnad</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>Dubbelklicka på kartan för att välja en plats, eller skriv in koordinaterna. Bara punkter i Nederländerna godtas.</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>Ange ett namn.</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>Ange en ort.</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>Ange ett år mellan 1000 och i år.</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Avbryt</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Spara</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>Museum</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>Kyrka</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>Torn</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>Station</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>Stadion</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>Slott</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>Kontorstorn</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>Stadshus</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>Sevärdhet</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>Groningen</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>Friesland</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>Drenthe</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>Overijssel</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>Flevoland</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>Gelderland</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>Utrecht</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>Nordholland</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>Sydholland</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>Zeeland</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>Nordbrabant</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>Limburg</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>Arbetsbänk · Designa, granska och ta skärmbilder av varje sida</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>En del av ditt bit Boilerplate-projekt</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>Gör klart designen innan backenden finns.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>Arbetsbänken kör appens sidor med exempeldata, så att du kan designa varje läge, se det på alla enheter och exportera skärmbilder redo för appbutikerna, med samma komponenter och tema som din app levereras med.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>Öppna kassaöversikten</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>Varför en arbetsbänk?</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>Varken API, databas eller inloggning behövs</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>Ljust, mörkt och höger till vänster</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>Exakta storlekar för App Store, Google Play och Microsoft Store</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>Mörkt läge</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>Höger till vänster</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>Laddningsläge</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>1320 × 2868 PNG</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>Därför har ditt projekt en arbetsbänk</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>Ett designverktyg, en testbänk och en fotostudio för dina sidor, inne i själva projektet.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>Designa med valfri AI-agent</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>Du behöver inte Claude Design eller Figma. Oavsett om du använder Codex, Copilot eller Claude Code kan din agent designa sidor här, titta på dem i en riktig webbläsare och förfina dem.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>Riktiga komponenter, inte skisser</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>Sidorna använder samma bit BlazorUI-komponenter, tema och stilar som din app, så det du godkänner här ser likadant ut när det väl är inbyggt i appen.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>Varje läge när du vill</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>Laddning, tomt läge, fel, ofullständiga och långsamma data är bara ett klick bort, även de lägen som är svåra att fånga i en app som körs.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>Alla enheter sida vid sida</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>Telefoner, surfplattor och datorer i verklig storlek, i ljust och mörkt läge, på alla språk som din app stöder.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>Skärmbilder för appbutikerna</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>Exportera pixelexakta bilder i storlekarna för App Store, Google Play och Microsoft Store, med färgad bakgrund och bildtext om du vill, renderade av en riktig webbläsare.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>Ett försprång från bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>Arbetsbänken börjar med färdiga sidor, till exempel en kassaöversikt, en schemaplanerare och appens egen inställningssida. Återanvänd det som passar, lär dig av resten och lägg sedan till dina egna sidor bredvid dem.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>Tryggt att experimentera</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>Inget här pratar med ditt API eller din databas, så att testa en ny idé förstör aldrig din app eller dina data.</value>
+    </data>
+    <data name="HomeWhyShareTitle" xml:space="preserve">
+        <value>Kom överens innan ni bygger</value>
+    </data>
+    <data name="HomeWhyShareText" xml:space="preserve">
+        <value>Skicka en länk till en sida i ett visst läge till ditt team eller din kund, och spika designen innan någon skriver backendkod.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>Så passar den in i ditt arbetsflöde</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>Designa sidan här</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>Bygg sidan på arbetsbänken med exempeldata som laddas precis som riktiga data.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>Granska varje läge</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>Kontrollera den på varje enhet, tema, språk och dataläge, ett i taget eller sida vid sida.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>Flytta in den i appen</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>Bygg den godkända designen i din app på samma sätt som resten av appen är byggd, och koppla den till riktiga data. Din AI-agent följer samma steg.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>Sidor på den här arbetsbänken</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>Börja med de här och lägg sedan till dina egna sidor bredvid dem.</value>
+    </data>
+    <data name="HomeBuiltWithTitle" xml:space="preserve">
+        <value>Byggt med bit</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>Arbetsbänken ingår i varje bit Boilerplate-projekt. Den körs bara på din dator, om du inte väljer att publicera den.</value>
+    </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>Varje försäljning, live, på en skärm</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>Alla dina byggnader på en karta</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>Bakgrund</value>
+    </data>
+    <data name="BackdropHint" xml:space="preserve">
+        <value>Placerar sidan i en enhet på en färgad bakgrund med bildtext, så som appbutikerna visar den.</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>Appens färg</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>Midnatt</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>Solnedgång</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>Hav</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>Skog</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>Papper</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>Bildtext</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>Lämna en bildtext tom för att använda den översatta standardtexten.</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>Ramar och bildtexter är välkomna. De tre första skärmbilderna är viktigast.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play avråder från enhetsramar. Håll bildtexterna korta, utan ord som Bäst eller Ny.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>Microsoft Store tillåter inte tillagd text eller logotyper. Lägg i stället till bildtexter i Partner Center.</value>
+    </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>AI-assistent</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>En chatt som svarar med text, diagram och åtgärder som strömmas fram medan de skrivs, med historik, stopp och nytt försök.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>Fråga dina butiker vad som helst</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>Konversationer</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>Ny chatt</value>
+    </data>
+    <data name="AssistantRecent" xml:space="preserve">
+        <value>Senaste</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>Inga konversationer än</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>Konversationerna kunde inte laddas.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>Försök igen</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>Demomodell</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>Hur kan jag hjälpa dig med dina butiker i dag?</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>Fråga om försäljning, lager, kampanjer eller ditt team. På arbetsbänken kommer svaren från ett manus, så att varje läge i konversationen kan designas.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>Fråga om försäljning, lager eller kampanjer</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>Skicka</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>Stoppa</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>Stoppat</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>Tänker</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>Exempelsvar, skrivna i förväg för designen.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>Det här svaret kom aldrig fram.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>Kopiera</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>Kopierat</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>Hjälpsamt</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>Inte hjälpsamt</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>I dag</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>I går</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>Sammanfattning av veckans försäljning</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>Fyll på lagret före helgen</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>Höstkampanj</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>Dagens toppsäljare</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>Hur gick försäljningen den här veckan?</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>Nettoförsäljningen de senaste 7 dagarna landade på **34 820 €**, upp **8,4 %** jämfört med veckan innan.
+
+- **Amsterdam** ledde med 15 940 €, tack vare en hektisk lördag.
+- **Rotterdam** växte snabbast, upp **12,1 %** efter den nya frukostmenyn.
+- **Utrecht** låg stilla; eftermiddagarna där var lugnare än vanligt.
+
+Så här gick varje dag:</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>Vad håller på att ta slut?</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>Tre produkter tar slut före måndagens leverans. Beställ mer nu så kommer de på fredag:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>Skriv en kampanjtext för havrelatte</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>Här är en kort text för disken och dina inlägg i sociala medier:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>Hösten smakar bättre med havre. Valfri havrelatte för 3,50 € den här veckan, i alla tre butikerna.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>Vem sålde mest i dag?</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**Daan** leder i dag med **64 beställningar** och 1 180 € i försäljning. **Sarah** följer med 58 beställningar, sedan **Niloofar** med 51. Daan har också det högsta snittköpet, 18,40 €.</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>På arbetsbänken svarar jag utifrån ett kort manus, så det kan jag inte slå upp. Prova något av förslagen, eller fråga om försäljning, lager, kampanjer eller ditt team.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>Nettoförsäljning, senaste 7 dagarna</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>{0} kvar</value>
+    </data>
+    <data name="AssistantReorder" xml:space="preserve">
+        <value>Beställ mer</value>
+    </data>
+    <data name="AssistantOrdered" xml:space="preserve">
+        <value>Beställt</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>Havredryck</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>Croissanter</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>Pappersmuggar</value>
+    </data>
+    <data name="LoadFailed" xml:space="preserve">
+        <value>Kunde inte laddas. Försök igen om en stund.</value>
+    </data>
+    <data name="CategoryAppPages" xml:space="preserve">
+        <value>Sidor i din app</value>
+    </data>
+    <data name="AppDashboardTitle" xml:space="preserve">
+        <value>Översikt</value>
+    </data>
+    <data name="AppDashboardDescription" xml:space="preserve">
+        <value>Appens egen adminöversikt, här med demodata, så att dess lägen och skärmbilder bara är ett klick bort.</value>
+    </data>
+    <data name="AppDashboardCaption" xml:space="preserve">
+        <value>Dina siffror med ett ögonkast</value>
+    </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>Inställningar</value>
+    </data>
+    <data name="SettingsDescription" xml:space="preserve">
+        <value>Appens egen inställningssida med profil, konto, tvåstegsinloggning, sessioner och integritet, som körs med demodata i stället för mot servern.</value>
+    </data>
+    <data name="SettingsCaption" xml:space="preserve">
+        <value>Ditt konto, på ditt sätt</value>
+    </data>
+    <data name="CalendarViewDay" xml:space="preserve">
+        <value>Dag</value>
+    </data>
+    <data name="CalendarViewWeek" xml:space="preserve">
+        <value>Vecka</value>
+    </data>
+    <data name="CalendarViewMonth" xml:space="preserve">
+        <value>Månad</value>
+    </data>
+    <data name="CalendarViewYear" xml:space="preserve">
+        <value>År</value>
+    </data>
+    <data name="CalendarViewAgenda" xml:space="preserve">
+        <value>Agenda</value>
+    </data>
+    <data name="CalendarModeEvent" xml:space="preserve">
+        <value>Händelser</value>
+    </data>
+    <data name="CalendarModeTimeline" xml:space="preserve">
+        <value>Tidslinje</value>
+    </data>
+    <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
+        <value>Vyer</value>
+    </data>
+    <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
+        <value>Lägen</value>
+    </data>
+    <data name="CalendarTodayButton" xml:space="preserve">
+        <value>I dag</value>
+    </data>
+    <data name="CalendarAddEventButton" xml:space="preserve">
+        <value>Lägg till händelse</value>
+    </data>
+    <data name="CalendarAddEventHoverHint" xml:space="preserve">
+        <value>Lägg till händelse</value>
+    </data>
+    <data name="CalendarPreviousButtonTitle" xml:space="preserve">
+        <value>Föregående</value>
+    </data>
+    <data name="CalendarNextButtonTitle" xml:space="preserve">
+        <value>Nästa</value>
+    </data>
+    <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
+        <value>Föregående månad</value>
+    </data>
+    <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
+        <value>Nästa månad</value>
+    </data>
+    <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
+        <value>Timme</value>
+    </data>
+    <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
+        <value>Minut</value>
+    </data>
+    <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
+        <value>FM/EM</value>
+    </data>
+    <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
+        <value>vald</value>
+    </data>
+    <data name="CalendarSettingsButtonTitle" xml:space="preserve">
+        <value>Inställningar</value>
+    </data>
+    <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
+        <value>Filtrera händelser efter färg</value>
+    </data>
+    <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
+        <value>Filtrera händelser efter person i den aktuella vyn</value>
+    </data>
+    <data name="CalendarAllColorsOption" xml:space="preserve">
+        <value>Alla färger</value>
+    </data>
+    <data name="CalendarAllPeopleOption" xml:space="preserve">
+        <value>Alla personer</value>
+    </data>
+    <data name="CalendarUnnamedAttendee" xml:space="preserve">
+        <value>(Namnlös)</value>
+    </data>
+    <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
+        <value>Kalenderinställningar</value>
+    </data>
+    <data name="CalendarDotBadgeLabel" xml:space="preserve">
+        <value>Punktmarkering</value>
+    </data>
+    <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
+        <value>24-timmarsformat</value>
+    </data>
+    <data name="CalendarDayStartsAtLabel" xml:space="preserve">
+        <value>Dagen börjar</value>
+    </data>
+    <data name="CalendarHourSuffix" xml:space="preserve">
+        <value>h</value>
+    </data>
+    <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
+        <value>Gruppera agendan efter</value>
+    </data>
+    <data name="CalendarAgendaGroupByDate" xml:space="preserve">
+        <value>Datum</value>
+    </data>
+    <data name="CalendarAgendaGroupByColor" xml:space="preserve">
+        <value>Färg</value>
+    </data>
+    <data name="CalendarStackedEventsLabel" xml:space="preserve">
+        <value>Stapla överlappande händelser</value>
+    </data>
+    <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
+        <value>Visa kalender i dagvyn</value>
+    </data>
+    <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
+        <value>Visa veckonummer</value>
+    </data>
+    <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
+        <value>Visa aktuell tid</value>
+    </data>
+    <data name="CalendarSlotDurationLabel" xml:space="preserve">
+        <value>Tidsintervall</value>
+    </data>
+    <data name="CalendarMinuteSuffix" xml:space="preserve">
+        <value>min</value>
+    </data>
+    <data name="CalendarWeekMobileWarning" xml:space="preserve">
+        <value>Veckovyn rekommenderas inte på mindre enheter. Byt till en dator eller använd dagvyn i stället.</value>
+    </data>
+    <data name="CalendarHappeningNowTitle" xml:space="preserve">
+        <value>Pågår nu</value>
+    </data>
+    <data name="CalendarNoAppointmentsNow" xml:space="preserve">
+        <value>Inget inbokat just nu</value>
+    </data>
+    <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
+        <value>Sök händelser...</value>
+    </data>
+    <data name="CalendarNoEventsFound" xml:space="preserve">
+        <value>Inga händelser hittades.</value>
+    </data>
+    <data name="CalendarEventListTitleFormat" xml:space="preserve">
+        <value>Händelser {0}</value>
+    </data>
+    <data name="CalendarEventListCountFormat" xml:space="preserve">
+        <value>{0} händelse(r)</value>
+    </data>
+    <data name="CalendarMoreEventsFormat" xml:space="preserve">
+        <value>+{0} till</value>
+    </data>
+    <data name="CalendarAddEventDialogTitle" xml:space="preserve">
+        <value>Ny händelse</value>
+    </data>
+    <data name="CalendarEditEventDialogTitle" xml:space="preserve">
+        <value>Redigera händelse</value>
+    </data>
+    <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
+        <value>Skapa en ny händelse i din kalender.</value>
+    </data>
+    <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
+        <value>Ändra din befintliga händelse.</value>
+    </data>
+    <data name="CalendarCloseAriaLabel" xml:space="preserve">
+        <value>Stäng</value>
+    </data>
+    <data name="CalendarCloseButton" xml:space="preserve">
+        <value>Stäng</value>
+    </data>
+    <data name="CalendarCancelButton" xml:space="preserve">
+        <value>Avbryt</value>
+    </data>
+    <data name="CalendarEditButton" xml:space="preserve">
+        <value>Redigera</value>
+    </data>
+    <data name="CalendarDeleteButton" xml:space="preserve">
+        <value>Ta bort</value>
+    </data>
+    <data name="CalendarCreateEventButton" xml:space="preserve">
+        <value>Skapa händelse</value>
+    </data>
+    <data name="CalendarSaveChangesButton" xml:space="preserve">
+        <value>Spara ändringar</value>
+    </data>
+    <data name="CalendarTitleLabel" xml:space="preserve">
+        <value>Titel</value>
+    </data>
+    <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
+        <value>Titel på händelsen</value>
+    </data>
+    <data name="CalendarStartDateTimeLabel" xml:space="preserve">
+        <value>Startdatum och -tid</value>
+    </data>
+    <data name="CalendarEndDateTimeLabel" xml:space="preserve">
+        <value>Slutdatum och -tid</value>
+    </data>
+    <data name="CalendarColorLabel" xml:space="preserve">
+        <value>Färg</value>
+    </data>
+    <data name="CalendarEventColorAriaLabel" xml:space="preserve">
+        <value>Färg på händelsen</value>
+    </data>
+    <data name="CalendarDescriptionLabel" xml:space="preserve">
+        <value>Beskrivning</value>
+    </data>
+    <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
+        <value>Beskrivning av händelsen</value>
+    </data>
+    <data name="CalendarAttendeesLabel" xml:space="preserve">
+        <value>Deltagare</value>
+    </data>
+    <data name="CalendarNoAttendeesText" xml:space="preserve">
+        <value>Inga deltagare</value>
+    </data>
+    <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
+        <value>Förnamn</value>
+    </data>
+    <data name="CalendarLastNamePlaceholder" xml:space="preserve">
+        <value>Efternamn</value>
+    </data>
+    <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
+        <value>ID (valfritt)</value>
+    </data>
+    <data name="CalendarAddButton" xml:space="preserve">
+        <value>Lägg till</value>
+    </data>
+    <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
+        <value>Ta bort deltagare</value>
+    </data>
+    <data name="CalendarStartDateLabel" xml:space="preserve">
+        <value>Startdatum</value>
+    </data>
+    <data name="CalendarEndDateLabel" xml:space="preserve">
+        <value>Slutdatum</value>
+    </data>
+    <data name="CalendarAtWord" xml:space="preserve">
+        <value>kl.</value>
+    </data>
+    <data name="CalendarAllDayLabel" xml:space="preserve">
+        <value>Heldag</value>
+    </data>
+    <data name="CalendarWeekNumberFormat" xml:space="preserve">
+        <value>v. {0}</value>
+    </data>
+    <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
+        <value>Vecka {0}</value>
+    </data>
+    <data name="CalendarEventOverlapMessage" xml:space="preserve">
+        <value>Den här tiden är redan upptagen för den resursen.</value>
+    </data>
+    <data name="CalendarOutOfRangeMessage" xml:space="preserve">
+        <value>Det datumet ligger utanför det tillåtna intervallet.</value>
+    </data>
+    <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
+        <value>Den tiden ligger utanför arbetstiden.</value>
+    </data>
+    <data name="CalendarBlockedMessage" xml:space="preserve">
+        <value>Den tiden är inte tillgänglig.</value>
+    </data>
+    <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
+        <value>Markera arbetstid</value>
+    </data>
+    <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
+        <value>Gå till {0}</value>
+    </data>
+    <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
+        <value>Gå till vecka {0}</value>
+    </data>
+    <data name="CalendarValidationTitleRequired" xml:space="preserve">
+        <value>Titel måste anges</value>
+    </data>
+    <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
+        <value>Beskrivning måste anges</value>
+    </data>
+    <data name="CalendarValidationEndAfterStart" xml:space="preserve">
+        <value>Slutdatumet måste vara efter startdatumet</value>
+    </data>
+    <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
+        <value>Förnamn eller efternamn måste anges</value>
+    </data>
+    <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
+        <value>Nytt tidsintervall</value>
+    </data>
+    <data name="CalendarRepeatsLabel" xml:space="preserve">
+        <value>Upprepning</value>
+    </data>
+    <data name="CalendarRepeatsDaily" xml:space="preserve">
+        <value>Dagligen</value>
+    </data>
+    <data name="CalendarRepeatsWeekly" xml:space="preserve">
+        <value>Veckovis</value>
+    </data>
+    <data name="CalendarRepeatsMonthly" xml:space="preserve">
+        <value>Månadsvis</value>
+    </data>
+    <data name="CalendarRepeatsYearly" xml:space="preserve">
+        <value>Årligen</value>
+    </data>
+    <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
+        <value>var {0}</value>
+    </data>
+    <data name="CalendarRepeatsCountFormat" xml:space="preserve">
+        <value>{0} gånger</value>
+    </data>
+    <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
+        <value>till {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
+        <value>på {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
+        <value>varje {0} {1}</value>
+    </data>
+    <data name="CalendarListSeparator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
+        <value>första</value>
+    </data>
+    <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
+        <value>andra</value>
+    </data>
+    <data name="CalendarWeekOfMonthThird" xml:space="preserve">
+        <value>tredje</value>
+    </data>
+    <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
+        <value>fjärde</value>
+    </data>
+    <data name="CalendarWeekOfMonthLast" xml:space="preserve">
+        <value>sista</value>
+    </data>
+    <data name="CalendarRepeatLabel" xml:space="preserve">
+        <value>Upprepa</value>
+    </data>
+    <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
+        <value>Upprepas inte</value>
+    </data>
+    <data name="CalendarRepeatEveryLabel" xml:space="preserve">
+        <value>Upprepa var</value>
+    </data>
+    <data name="CalendarRepeatDaysUnit" xml:space="preserve">
+        <value>dag/dagar</value>
+    </data>
+    <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
+        <value>vecka/veckor</value>
+    </data>
+    <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
+        <value>månad/månader</value>
+    </data>
+    <data name="CalendarRepeatYearsUnit" xml:space="preserve">
+        <value>år</value>
+    </data>
+    <data name="CalendarRepeatOnLabel" xml:space="preserve">
+        <value>Upprepa på</value>
+    </data>
+    <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
+        <value>Dag {0}</value>
+    </data>
+    <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
+        <value>Den {0}</value>
+    </data>
+    <data name="CalendarEndsLabel" xml:space="preserve">
+        <value>Slutar</value>
+    </data>
+    <data name="CalendarEndsNeverOption" xml:space="preserve">
+        <value>Aldrig</value>
+    </data>
+    <data name="CalendarEndsOnDateOption" xml:space="preserve">
+        <value>På ett datum</value>
+    </data>
+    <data name="CalendarEndsAfterOption" xml:space="preserve">
+        <value>Efter</value>
+    </data>
+    <data name="CalendarOccurrencesLabel" xml:space="preserve">
+        <value>gånger</value>
+    </data>
+    <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
+        <value>Undantag</value>
+    </data>
+    <data name="CalendarSkipDateButton" xml:space="preserve">
+        <value>Hoppa över datum</value>
+    </data>
+    <data name="CalendarAddDateButton" xml:space="preserve">
+        <value>Lägg till datum</value>
+    </data>
+    <data name="CalendarSkippedDatesLabel" xml:space="preserve">
+        <value>Överhoppade</value>
+    </data>
+    <data name="CalendarAddedDatesLabel" xml:space="preserve">
+        <value>Tillagda</value>
+    </data>
+    <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
+        <value>Ta bort datum</value>
+    </data>
+    <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
+        <value>Måste vara minst 1</value>
+    </data>
+    <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
+        <value>Serien kan inte sluta innan den börjar</value>
+    </data>
+    <data name="CalendarRecurringEditTitle" xml:space="preserve">
+        <value>Redigera återkommande händelse</value>
+    </data>
+    <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
+        <value>Ta bort återkommande händelse</value>
+    </data>
+    <data name="CalendarThisOccurrenceOption" xml:space="preserve">
+        <value>Den här händelsen</value>
+    </data>
+    <data name="CalendarAllOccurrencesOption" xml:space="preserve">
+        <value>Alla händelser i serien</value>
+    </data>
+    <data name="CalendarOkButton" xml:space="preserve">
+        <value>OK</value>
+    </data>
+    <data name="CalendarResourceLabel" xml:space="preserve">
+        <value>Resurs</value>
+    </data>
+    <data name="CalendarResourceColumnHeader" xml:space="preserve">
+        <value>Resurs</value>
+    </data>
+    <data name="CalendarNoResourceLabel" xml:space="preserve">
+        <value>Ej tilldelad</value>
+    </data>
+    <data name="CalendarNoResourceOption" xml:space="preserve">
+        <value>(ingen)</value>
+    </data>
+    <data name="CalendarNoResourcesMessage" xml:space="preserve">
+        <value>Inga resurser att visa.</value>
+    </data>
+    <data name="PosStaffNoah" xml:space="preserve">
+        <value>Noah Smit</value>
+    </data>
+    <data name="PosStaffJulia" xml:space="preserve">
+        <value>Julia Mulder</value>
+    </data>
+    <data name="CategoryPlanning" xml:space="preserve">
+        <value>Planering</value>
+    </data>
+    <data name="ShiftsTitle" xml:space="preserve">
+        <value>Schemaplanerare</value>
+    </data>
+    <data name="ShiftsDescription" xml:space="preserve">
+        <value>Veckans personalschema för ett kafé: flytta pass och ändra deras längd per person, inom öppettiderna, runt ledigheter och utan dubbelbokningar.</value>
+    </data>
+    <data name="ShiftsCaption" xml:space="preserve">
+        <value>Planera hela veckan på några minuter</value>
+    </data>
+    <data name="ShiftsHeading" xml:space="preserve">
+        <value>Personalschema</value>
+    </data>
+    <data name="ShiftsSummary" xml:space="preserve">
+        <value>{0} pass och {1} timmar den här veckan</value>
+    </data>
+    <data name="ShiftsEmpty" xml:space="preserve">
+        <value>Inga pass är planerade än. Markera en tid på någons rad för att lägga till det första.</value>
+    </data>
+    <data name="ShiftsRoleLead" xml:space="preserve">
+        <value>Skiftledare</value>
+    </data>
+    <data name="ShiftsRoleBarista" xml:space="preserve">
+        <value>Barista</value>
+    </data>
+    <data name="ShiftsRoleBaker" xml:space="preserve">
+        <value>Bagare</value>
+    </data>
+    <data name="ShiftsRoleCashier" xml:space="preserve">
+        <value>Kassör</value>
+    </data>
+    <data name="ShiftsOpening" xml:space="preserve">
+        <value>Öppning</value>
+    </data>
+    <data name="ShiftsMidday" xml:space="preserve">
+        <value>Mellanpass</value>
+    </data>
+    <data name="ShiftsBakery" xml:space="preserve">
+        <value>Bageri</value>
+    </data>
+    <data name="ShiftsClosing" xml:space="preserve">
+        <value>Stängning</value>
+    </data>
+    <data name="ShiftsStocktake" xml:space="preserve">
+        <value>Inventering, kaféet stängt</value>
+    </data>
+    <data name="ShiftsTimeOff" xml:space="preserve">
+        <value>Ledig</value>
+    </data>
+    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
+        <value>Samma bibliotek med öppen källkod som din app bygger på, vart och ett med live-dokumentation som även din AI-agent kan läsa.</value>
+    </data>
+    <data name="HomeProductBlazorUI" xml:space="preserve">
+        <value>Native Blazor-komponenter med inbyggt stöd för teman, höger-till-vänster-språk och tillgänglighet.</value>
+    </data>
+    <data name="HomeProductBlex" xml:space="preserve">
+        <value>Tillstånd som överlever omladdningar och följer med in i varje skärmbild som tas här.</value>
+    </data>
+    <data name="HomeProductBortable" xml:space="preserve">
+        <value>Listor och rutnät som ordnas om genom att dra, precis som widgetarna på översikten.</value>
+    </data>
+    <data name="HomeProductBmotion" xml:space="preserve">
+        <value>Fjäderanimationer, intoningar och hovringseffekter, precis som de på den här sidan.</value>
+    </data>
+    <data name="HomeProductButil" xml:space="preserve">
+        <value>Webbläsarfunktioner från C#, från urklipp till IndexedDB.</value>
+    </data>
+    <data name="HomeProductBoilerplate" xml:space="preserve">
+        <value>Projektmallen som den här arbetsbänken ingår i, från databas till appbutiker.</value>
+    </data>
+    <data name="HomeCtaTitle" xml:space="preserve">
+        <value>Din nästa sida börjar här</value>
+    </data>
+    <data name="HomeCtaText" xml:space="preserve">
+        <value>Be din AI-agent att designa sidan på arbetsbänken. Agenten bygger den med exempeldata, kontrollerar varje läge i en riktig webbläsare och visar dig skärmbilder innan någon backendkod har skrivits.</value>
+    </data>
+    <data name="HomeCtaOpen" xml:space="preserve">
+        <value>Öppna arbetsbänken</value>
+    </data>
+    <data name="HomeCtaPromptLabel" xml:space="preserve">
+        <value>Fråga till exempel</value>
+    </data>
+    <data name="HomeCtaPrompt" xml:space="preserve">
+        <value>Designa en sida för beställningshistorik på arbetsbänken, med lägen för laddning, tomt och fel, och visa mig skärmbilder för telefon och dator.</value>
+    </data>
+    <data name="HomeCtaCopy" xml:space="preserve">
+        <value>Kopiera</value>
+    </data>
+    <data name="HomeCtaCopied" xml:space="preserve">
+        <value>Kopierat</value>
+    </data>
+    <data name="HomeFooterExplore" xml:space="preserve">
+        <value>Utforska</value>
+    </data>
+    <data name="HomeFooterLearn" xml:space="preserve">
+        <value>Lär dig mer</value>
+    </data>
+    <data name="HomeFooterDocs" xml:space="preserve">
+        <value>bit Boilerplate-dokumentation</value>
+    </data>
+    <data name="HomeFooterComponents" xml:space="preserve">
+        <value>bit BlazorUI-komponenter</value>
+    </data>
+    <data name="HomeFooterSource" xml:space="preserve">
+        <value>Källkod på GitHub</value>
+    </data>
+</root>

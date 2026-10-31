@@ -1,0 +1,37 @@
+<div class="@GetClass()" style="@GetStyle()" dir="ltr">
+    @if (ShowFrame && Device.Kind is DeviceKind.Desktop)
+    {
+        <div class="browser-bar">
+            <span class="browser-dots"><i></i><i></i><i></i></span>
+            <span class="browser-address">@Address</span>
+        </div>
+    }
+
+    <div class="screen">
+        @ChildContent
+
+        @if (ShowFrame && Device.IsLandscape(Rotated) is false)
+        {
+            @if (Device.Cutout is DeviceCutout.Island)
+            {
+                <div class="island"></div>
+            }
+            else if (Device.Cutout is DeviceCutout.PunchHole)
+            {
+                <div class="punch-hole"></div>
+            }
+        }
+
+        @if (ShowFrame && Device.Kind is DeviceKind.Phone or DeviceKind.Foldable && Device.Cutout is not DeviceCutout.HomeButton)
+        {
+            <div class="home-indicator @(OnDarkContent switch { true => "on-dark", false => null, null => "follow-theme" })"></div>
+        }
+    </div>
+
+    @if (ShowFrame && Device.Kind is DeviceKind.Phone or DeviceKind.Foldable)
+    {
+        <span class="side-button volume-up"></span>
+        <span class="side-button volume-down"></span>
+        <span class="side-button power"></span>
+    }
+</div>

@@ -1,0 +1,125 @@
+name: Workbench demo CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease_packages:
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      prerelease_packages:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+
+  build_workbench:
+    name: build workbench
+    runs-on: windows-2025
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+        dotnet-version: 10.0.x
+
+    - name: Use prerelease packages
+      if: inputs.prerelease_packages
+      uses: ./.github/actions/use-prerelease-packages
+      with:
+        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
+
+    - name: Setup bit CLI
+      uses: ./.github/actions/setup-bit-cli
+
+    - name: Create project with bit new
+      run: bit new WorkbenchDemo --framework net10.0 --module Admin --sample --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+
+    - name: Publish
+      working-directory: WorkbenchDemo
+      run: dotnet publish src/Workbench/WorkbenchDemo.Workbench.csproj -c Release -o ../server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
+
+    - name: Point screenshots at the shared browser folder
+      shell: pwsh
+      run: |
+        $path = Resolve-Path 'server/web.config'
+        [xml]$config = Get-Content $path
+        $variables = $config.CreateElement('environmentVariables')
+        $variable = $config.CreateElement('environmentVariable')
+        $variable.SetAttribute('name', 'PLAYWRIGHT_BROWSERS_PATH')
+        $variable.SetAttribute('value', 'C:\ProgramData\ms-playwright')
+        $variables.AppendChild($variable) | Out-Null
+        $config.SelectSingleNode('//aspNetCore').AppendChild($variables) | Out-Null
+        $config.Save($path)
+
+    - name: Strip server-owned files from bundle
+      shell: pwsh
+      run: |
+        Get-ChildItem server -File -Include 'appsettings*.json', 'AppCertificate.*', 'AppleAuthKey.p8', '*.pfx' -Recurse |
+          ForEach-Object { Write-Host "Removing $($_.FullName)"; Remove-Item $_.FullName -Force }
+
+    - name: Upload server artifact
+      id: server_artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: Workbench
+        path: server
+        include-hidden-files: true
+
+    - name: Attest server artifact
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-name: Workbench
+        subject-digest: sha256:${{ steps.server_artifact.outputs.artifact-digest }}
+
+  deploy_workbench:
+    name: deploy workbench
+    needs: build_workbench
+    runs-on: [self-hosted, Windows, X64, bitplatform-iis]
+    environment:
+      name: production
+      url: 'https://workbench.bitplatform.dev'
+
+    steps:
+
+    - name: Checkout deploy action
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/actions
+
+    - name: Deploy
+      uses: ./.github/actions/deploy-to-server
+      with:
+        artifact-name: Workbench
+        app-pool: Workbench
+        site-path: C:\inetpub\Workbench
+        sentinel-file: WorkbenchDemo.Workbench.dll
+        health-check-url: 'https://workbench.bitplatform.dev/'
+        cloudflare-zone-id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        cloudflare-token: ${{ secrets.CLOUDFLARE_TOKEN }}
+
+    - name: Install the screenshot browser
+      shell: pwsh
+      run: |
+        $env:PLAYWRIGHT_BROWSERS_PATH = 'C:\ProgramData\ms-playwright'
+        & 'C:\inetpub\Workbench\playwright.ps1' install chromium --only-shell

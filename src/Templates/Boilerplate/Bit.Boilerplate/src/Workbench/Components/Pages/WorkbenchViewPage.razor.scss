@@ -1,0 +1,121 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.workbench {
+    height: 100dvh;
+    display: grid;
+    overflow: hidden;
+    grid-template-rows: 52px minmax(0, 1fr);
+    grid-template-columns: 264px minmax(0, 1fr) 312px;
+    grid-template-areas: "top top top" "nav canvas inspector";
+
+    @include lt-lg {
+        grid-template-columns: 0 minmax(0, 1fr) 300px;
+    }
+}
+
+.topbar {
+    gap: 0.5rem;
+    display: flex;
+    grid-area: top;
+    padding: 0 0.75rem;
+    align-items: center;
+    background-color: $bit-color-background-primary;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.brand {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 15px;
+    font-weight: 700;
+    align-items: center;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    color: $bit-color-foreground-primary;
+}
+
+.crumb-separator {
+    color: $bit-color-foreground-tertiary;
+}
+
+::deep .crumb-title {
+    min-width: 0;
+    color: $bit-color-foreground-secondary;
+}
+
+.sidebar {
+    overflow-y: auto;
+    background-color: $bit-color-background-primary;
+}
+
+.navigator-column {
+    grid-area: nav;
+    border-inline-end: 1px solid $bit-color-border-tertiary;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.inspector-column {
+    grid-area: inspector;
+    border-inline-start: 1px solid $bit-color-border-tertiary;
+}
+
+.canvas {
+    gap: 1rem;
+    display: flex;
+    padding: 1.5rem;
+    overflow: auto;
+    grid-area: canvas;
+    align-items: stretch;
+    background-color: $bit-color-background-secondary;
+    background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, #{$bit-color-foreground-primary} 14%, transparent) 1px, transparent 0);
+    background-size: 22px 22px;
+
+    &.single {
+        justify-content: center;
+
+        ::deep .pane {
+            width: 100%;
+        }
+    }
+
+    &.multi {
+        justify-content: safe center;
+
+        ::deep .pane-header {
+            min-height: 3.25rem;
+            align-content: center;
+        }
+    }
+}
+
+.inline-surface {
+    min-height: 100dvh;
+}
+
+::deep .tools-button {
+    z-index: 900;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.45);
+}
+
+::deep .tools-header {
+    width: 100%;
+}
+
+.not-found {
+    gap: 1rem;
+    display: flex;
+    padding: 4rem 1rem;
+    align-items: center;
+    flex-direction: column;
+}
+
+.canvas-loading {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}

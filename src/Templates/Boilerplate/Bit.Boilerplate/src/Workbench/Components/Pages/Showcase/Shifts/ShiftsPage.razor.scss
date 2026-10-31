@@ -1,0 +1,44 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.shifts {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.shifts-header {
+    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.titles {
+    display: flex;
+    flex-direction: column;
+
+    ::deep .title {
+        font-weight: 700;
+    }
+}
+
+.roles {
+    gap: 0.5rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.role {
+    gap: 0.375rem;
+    display: flex;
+    font-size: 0.8125rem;
+    align-items: center;
+    color: $bit-color-foreground-secondary;
+}
+
+.role-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+}

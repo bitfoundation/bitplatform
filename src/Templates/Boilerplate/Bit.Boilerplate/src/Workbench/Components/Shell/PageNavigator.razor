@@ -1,0 +1,22 @@
+@inherits WorkbenchComponentBase
+
+<nav class="navigator" aria-label="@Localizer[nameof(WorkbenchStrings.Pages)]">
+    <div class="search">
+        <BitSearchBox @bind-Value="searchText" Immediate Placeholder="@Localizer[nameof(WorkbenchStrings.SearchPages)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.SearchPages)]" />
+    </div>
+
+    @foreach (var group in FilteredPages.GroupBy(p => p.CategoryKey))
+    {
+        <div class="group-title">@Localizer[group.Key]</div>
+        @foreach (var item in group)
+        {
+            <a class="page-link @(item.Key == CurrentKey ? "active" : null)" href="@($"{WorkbenchUrls.Workbench(item.Key)}{Query}")" @onclick="OnNavigate">
+                <BitIcon IconName="@item.IconName" Size="BitSize.Medium" Class="page-icon" />
+                <span class="page-text">
+                    <span class="page-title">@Localizer[item.TitleKey]</span>
+                    <span class="page-description">@Localizer[item.DescriptionKey]</span>
+                </span>
+            </a>
+        }
+    }
+</nav>

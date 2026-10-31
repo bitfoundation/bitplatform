@@ -1,0 +1,71 @@
+@*+:cnd:noEmit*@
+@* [mirror] host page head tags, stylesheet and script list - keep in sync with: *@
+@* - src/Server/Boilerplate.Server.Web/Components/App.razor *@
+@* - src/Client/Boilerplate.Client.Web/wwwroot/index.html *@
+@* - src/Client/Boilerplate.Client.Maui/wwwroot/index.html *@
+@using Microsoft.AspNetCore.Http
+
+@{
+    var isPreview = HttpContext.Request.Path.StartsWithSegments("/preview");
+    var scenario = isPreview ? WorkbenchScenario.Parse(HttpContext.Request.QueryString.Value) : null;
+    var themePreference = scenario is not null
+        ? scenario.Theme.ToString().ToLowerInvariant()
+        : HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
+    var themeOptions = new BitThemeSsrOptions
+    {
+        Persist = isPreview is false,
+        PersistCookie = isPreview is false,
+        ViewTransition = isPreview is false,
+        ThemeColorMeta = isPreview is false,
+        LightTheme = AppThemePresets.Light,
+        DarkTheme = AppThemePresets.Dark,
+        PersistedThemePair = isPreview ? null : HttpContext.Request.Cookies[BitThemeCookie.PairCookieName]
+    };
+    var (insetTop, insetBottom) = scenario?.DevicePreset.GetSafeArea(scenario.Rotated) ?? (0, 0);
+    var insetStyle = scenario is null ? null : FormattableString.Invariant($"--bit-env-inset-top:{insetTop}px;--bit-env-inset-bottom:{insetBottom}px;--bit-env-inset-left:0px;--bit-env-inset-right:0px;");
+}
+
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.Name"
+      dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)"
+      style="@insetStyle"
+      @attributes="BitThemeSsr.BuildRootThemeAttributeMap(themePreference, themeOptions)">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <BitThemeHead PersistedPreference="@themePreference" Options="@themeOptions" />
+    <link rel="icon" href="_content/Boilerplate.Client.Core/images/bit-logo.svg" type="image/svg+xml" />
+    <HeadOutlet @rendermode="RenderMode" />
+</head>
+
+<body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main @(isPreview ? "wb-preview-body" : "wb-body")">
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    @*#if (theme == "Cupertino")*@
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
+    @*#endif*@
+    @*#if (theme == "Material")*@
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    @*#endif*@
+    @*#if (theme == "Fluent2")*@
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    @*#endif*@
+    <link rel="stylesheet" href="_content/Boilerplate.Client.Core/styles/app.css" />
+    <link rel="stylesheet" href="_content/Bit.Bortable/bit-bortable.css" />
+    <link rel="stylesheet" href="styles/workbench.css" />
+    <link rel="stylesheet" href="Boilerplate.Workbench.styles.css" />
+
+    <Routes @rendermode="RenderMode" />
+
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script src="_content/Bit.Butil/bit-butil.js"></script>
+    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
+    <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
+    <script src="scripts/workbench.js"></script>
+</body>
+
+</html>

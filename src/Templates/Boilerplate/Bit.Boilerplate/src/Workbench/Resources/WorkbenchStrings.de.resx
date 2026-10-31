@@ -1,0 +1,1695 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="WorkbenchTitle" xml:space="preserve">
+        <value>Werkbank</value>
+    </data>
+    <data name="CategoryDashboards" xml:space="preserve">
+        <value>Dashboards</value>
+    </data>
+    <data name="PosDashboardTitle" xml:space="preserve">
+        <value>Kassen-Dashboard</value>
+    </data>
+    <data name="PosDashboardDescription" xml:space="preserve">
+        <value>Ein Kassen-Dashboard, dessen Widgets sich verschieben, in der Größe ändern, ausblenden und speichern lassen.</value>
+    </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>Sarah Johnson</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>Daan Visser</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>Niloofar Rahimi</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>Filiale Amsterdam</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>Zentrale</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>Drehen</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>Screenshot dieser Ansicht (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>Screenshots aller Ansichten (ZIP)</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>In neuem Tab öffnen</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>Diese Ansicht entfernen</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>Ohne App-Rahmen</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>Hell</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>Dunkel</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>System</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>Daten</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>Lädt</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>Leer</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>Fehler</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>Gemischt</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>Langsam</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>Abgemeldet</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>Angemeldet</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>Konten</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>Gerät</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>Hochformat</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>Querformat</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>Geräterahmen</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>Zoom</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>Einpassen</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>Daten</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>Seiten lesen ihre Daten nach einer kurzen Verzögerung aus dem Speicher, daher lässt sich hier jeder Zustand zeigen, auch solche, die in einer echten App schwer abzupassen sind.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>App</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>App-Rahmen</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>Navigationsbereich, Kopfzeile, Kontomenü und untere Leiste der App.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>Anmeldung</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>Design</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>Sprache</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>Zurücksetzen</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>Smartphones</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>Faltbare Geräte</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>Tablets</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>Laptops</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>Desktop-PCs</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>Store-Formate</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>Seiten</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>Seiten suchen</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>Diese Seite ist nicht auf der Werkbank.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>Zurück zur Startseite der Werkbank</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>Werkzeuge</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>Schließen</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>Vergleichen</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>Eine Ansicht</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>Smartphone, Tablet und Desktop</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>Hell und dunkel</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>Sprachen nebeneinander</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>Alle Datenzustände</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>Abgemeldet, angemeldet, mehrere Konten</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>Ansicht hinzufügen</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>Screenshot</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>Link zu diesem Setup kopieren</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>Werkbank zwischen hell und dunkel umschalten</value>
+    </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>Alle Filialen</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>Amsterdam, Jordaan</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>Rotterdam, Markthal</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>Utrecht, Oudegracht</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>Flat White</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>Latte mit Hafermilch</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>Buttercroissant</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>Holländischer Apfelkuchen</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>Cappuccino</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>Stroopwafel</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>Sauerteigbrot</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>Cold Brew</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>Emma de Jong</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>Lucas Bakker</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>Mila Janssen</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>Sem Smit</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>Karte</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>Mobiles Bezahlen</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>Bar</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>Geschenkkarte</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>Hafermilch</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>Croissantteig</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>Espressobohnen</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>To-go-Becher</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>Nettoumsatz</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>Transaktionen</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>Durchschnittsverkauf</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>Erstattungen</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>Umsatz pro Stunde</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>Zahlungsarten</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>Top-Produkte</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>Umsatzziel</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>Letzte Bestellungen</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>Niedriger Bestand</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>Team</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>Stoßzeiten</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>{0} ziehen</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>Widget-Optionen</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>Wird geladen</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>Laden fehlgeschlagen</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>Der Rest des Dashboards funktioniert. Versuchen Sie es gleich noch einmal.</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>Erneut versuchen</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>Noch nichts vorhanden</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>Klein</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>Mittel</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>Groß</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>Nach vorne</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>Nach hinten</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>Ausblenden</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>Noch keine Verkäufe</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>Die Zahlen erscheinen hier, sobald die erste Bestellung bezahlt ist.</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>Heute</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>Dieser Zeitraum</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>Gleicher Tag der Vorwoche</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>Im Vergleich zum gleichen Tag der Vorwoche</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>Noch keine Zahlungen</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>Gesamt</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>{0} verkauft</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>Kein Ziel festgelegt</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>Legen Sie ein Umsatzziel fest, um zu sehen, wie nah die Filiale daran ist.</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>von {0} Ziel</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>Noch {0} bis zum Ziel</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>Neueste Bestellungen aller Kassen</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>Noch keine Bestellungen</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>Bestellungen erscheinen hier, sobald eine Kasse sie bucht.</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>Bestellung</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>Uhrzeit</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>Kassierer</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>Artikel</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>Zahlung</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>Status</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>Bezahlt</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>Erstattet</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>Ausstehend</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>vor {0} Min.</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>Artikel unter ihrem Mindestbestand</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>Alles ist vorrätig</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>Derzeit liegt nichts unter seinem Mindestbestand.</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>Noch {0} · Minimum {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>Ausverkauft</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>Niedrig</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>Bestellt</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>Nachbestellen</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>Niemand ist im Dienst</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>Die Teamergebnisse erscheinen, sobald sich jemand einstempelt.</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} Bestellungen</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>Meiste Verkäufe</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>Bestellungen pro Stunde in den letzten vier Wochen</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>Ruhig</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>Viel los</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>Guten Tag, Sarah</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>Filiale</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>Zeitraum</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>7 Tage</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>30 Tage</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>Fertig</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>Anpassen</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>Ziehen Sie Widgets an ihrem Griff, oder nutzen Sie ihr Menü, um ihre Größe zu ändern, sie zu verschieben oder auszublenden. Ihr Layout wird auf diesem Gerät gespeichert.</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>Widget hinzufügen ({0})</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>Layout zurücksetzen</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>Ausgeblendete Widgets</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>Hinzufügen</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>Alle Widgets sind bereits auf dem Dashboard.</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>Letzte 7 Tage</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>Letzte 30 Tage</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>ggü. gestern</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>ggü. den vorherigen 7 Tagen</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>ggü. den vorherigen 30 Tagen</value>
+    </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>Daten und Karten</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>Gebäude</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>Eine Datentabelle und eine Karte, die synchron bleiben. Doppelklicken Sie auf die Karte, um ein Gebäude hinzuzufügen, wählen Sie eines aus und drücken Sie Entf, um es zu entfernen. Auch erweiterte Kartenfunktionen sind dabei, etwa die Einschränkung, wo Punkte gewählt werden können.</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>Markante Gebäude</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} Gebäude in {1} Provinzen</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>Nach Name, Ort oder Typ suchen</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>Gebäude hinzufügen</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>Liste</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>Karte</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>Die Gebäude konnten nicht geladen werden</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>Noch keine Gebäude</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>Doppelklicken Sie irgendwo in den Niederlanden auf die Karte, um das erste hinzuzufügen.</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>Ort</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>Provinz</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>Typ</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>Baujahr</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>Höhe (m)</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>Stockwerke</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>Breitengrad</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>Längengrad</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>Bearbeiten</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>Löschen</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>Doppelklicken Sie innerhalb der Niederlande, um ein Gebäude hinzuzufügen. Wählen Sie eines aus und drücken Sie Entf, um es zu entfernen.</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>{0} wurde gespeichert</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>Dieses Gebäude löschen?</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} wird aus der Liste und von der Karte entfernt.</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>{0} wurde gelöscht</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>Außerhalb der Niederlande</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>Gebäude können nur innerhalb der niederländischen Grenze hinzugefügt werden.</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>Neues Gebäude</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>Gebäude bearbeiten</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>Doppelklicken Sie auf die Karte, um einen Ort zu wählen, oder geben Sie die Koordinaten ein. Nur Punkte innerhalb der Niederlande werden akzeptiert.</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>Geben Sie einen Namen ein.</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>Geben Sie einen Ort ein.</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>Geben Sie ein Jahr zwischen 1000 und dem aktuellen Jahr ein.</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Abbrechen</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Speichern</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>Museum</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>Kirche</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>Turm</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>Bahnhof</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>Stadion</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>Palast</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>Büroturm</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>Rathaus</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>Wahrzeichen</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>Groningen</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>Friesland</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>Drenthe</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>Overijssel</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>Flevoland</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>Gelderland</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>Utrecht</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>Nordholland</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>Südholland</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>Zeeland</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>Nordbrabant</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>Limburg</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>Werkbank · Jede Seite entwerfen, prüfen und festhalten</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>Teil Ihres bit Boilerplate-Projekts</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>Stellen Sie das Design fertig, bevor es das Backend gibt.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>Die Werkbank führt die Seiten Ihrer App mit Beispieldaten aus, damit Sie jeden Zustand gestalten, auf jedem Gerät ansehen und Store-fertige Screenshots exportieren können, mit denselben Komponenten und demselben Design, mit denen Ihre App ausgeliefert wird.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>Kassen-Dashboard öffnen</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>Warum eine Werkbank?</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>Keine API, Datenbank oder Anmeldung nötig</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>Hell, dunkel und von rechts nach links</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>Exakte Formate für App Store, Google Play und Microsoft Store</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>Dunkelmodus</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>Von rechts nach links</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>Ladezustand</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>1320 × 2868 PNG</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>Warum Ihr Projekt eine Werkbank hat</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>Ein Designwerkzeug, ein Prüfstand und ein Fotostudio für Ihre Seiten, direkt im Projekt.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>Mit jedem KI-Agenten gestalten</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>Sie brauchen weder Claude Design noch Figma. Ob Sie Codex, Copilot oder Claude Code nutzen, Ihr Agent kann hier Seiten entwerfen, sie in einem echten Browser ansehen und verfeinern.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>Echte Komponenten statt Mockups</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>Seiten nutzen dieselben bit BlazorUI-Komponenten, dasselbe Design und dieselben Stile wie Ihre App. Was Sie hier freigeben, sieht deshalb genauso aus, wenn es in die App eingebaut ist.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>Jeder Zustand auf Abruf</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>Ladende, leere, fehlerhafte, unvollständige und langsame Daten sind nur einen Klick entfernt, auch die Zustände, die in einer laufenden App schwer abzupassen sind.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>Alle Geräte nebeneinander</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>Smartphones, Tablets und Desktops in echter Größe, hell und dunkel, in jeder Sprache, die Ihre App unterstützt.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>Screenshots für die Stores</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>Exportieren Sie pixelgenaue Bilder in den Formaten von App Store, Google Play und Microsoft Store, auf Wunsch mit farbigem Hintergrund und Beschriftung, gerendert von einem echten Browser.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>Ein Vorsprung von bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>Die Werkbank startet mit fertigen Seiten, etwa einem Kassen-Dashboard, einem Schichtplaner und der Einstellungsseite Ihrer App. Übernehmen Sie, was passt, lernen Sie vom Rest und fügen Sie dann Ihre eigenen Seiten daneben hinzu.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>Gefahrlos experimentieren</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>Nichts hier spricht mit Ihrer API oder Datenbank, daher kann eine neue Idee nie Ihre App oder Ihre Daten beschädigen.</value>
+    </data>
+    <data name="HomeWhyShareTitle" xml:space="preserve">
+        <value>Erst abstimmen, dann bauen</value>
+    </data>
+    <data name="HomeWhyShareText" xml:space="preserve">
+        <value>Senden Sie Ihrem Team oder Kunden einen Link zu einer Seite in einem bestimmten Zustand und klären Sie das Design, bevor jemand Backend-Code schreibt.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>Wie sie in Ihren Arbeitsablauf passt</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>Hier entwerfen</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>Bauen Sie die Seite auf der Werkbank mit Beispieldaten, die wie echte geladen werden.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>Jeden Zustand prüfen</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>Prüfen Sie sie auf jedem Gerät, in jedem Design, jeder Sprache und jedem Datenzustand, einzeln oder nebeneinander.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>In die App übernehmen</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>Bauen Sie das freigegebene Design in Ihrer App so nach, wie der Rest der App gebaut ist, und verbinden Sie es mit echten Daten. Ihr KI-Agent folgt denselben Schritten.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>Seiten auf dieser Werkbank</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>Beginnen Sie mit diesen und fügen Sie dann Ihre eigenen Seiten daneben hinzu.</value>
+    </data>
+    <data name="HomeBuiltWithTitle" xml:space="preserve">
+        <value>Gebaut mit bit</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>Die Werkbank gehört zu jedem bit Boilerplate-Projekt. Sie läuft nur auf Ihrem Rechner, sofern Sie sie nicht veröffentlichen.</value>
+    </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>Jeder Verkauf, live, auf einem Bildschirm</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>Alle Ihre Gebäude auf einer Karte</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>Hintergrund</value>
+    </data>
+    <data name="BackdropHint" xml:space="preserve">
+        <value>Setzt die Seite in ein Gerät auf farbigem Hintergrund mit Beschriftung, so wie Store-Einträge sie zeigen.</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>App-Farbe</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>Mitternacht</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>Sonnenuntergang</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>Ozean</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>Wald</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>Papier</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>Beschriftung</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>Lassen Sie eine Beschriftung leer, um den übersetzten Standardtext zu verwenden.</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>Rahmen und Beschriftungen sind willkommen. Die ersten drei Screenshots zählen am meisten.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play rät von Geräterahmen ab. Halten Sie Beschriftungen kurz, ohne Wörter wie Beste oder Neu.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>Der Microsoft Store erlaubt keinen zusätzlichen Text und keine Logos. Fügen Sie Beschriftungen stattdessen im Partner Center hinzu.</value>
+    </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>KI-Assistent</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>Ein Chat, der mit Text, Diagrammen und Aktionen antwortet und die Antwort schon beim Schreiben zeigt, mit Verlauf, Stopp und erneutem Versuch.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>Fragen Sie alles über Ihre Filialen</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>KI</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>Unterhaltungen</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>Neuer Chat</value>
+    </data>
+    <data name="AssistantRecent" xml:space="preserve">
+        <value>Zuletzt</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>Noch keine Unterhaltungen</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>Die Unterhaltungen konnten nicht geladen werden.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>Erneut versuchen</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>Demomodell</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>Wie kann ich Ihnen heute bei Ihren Filialen helfen?</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>Fragen Sie nach Umsatz, Bestand, Aktionen oder Ihrem Team. Auf der Werkbank kommen die Antworten aus einem Skript, damit sich jeder Zustand der Unterhaltung gestalten lässt.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>Fragen Sie nach Umsatz, Bestand oder Aktionen</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>Senden</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>Stoppen</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>Gestoppt</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>Denkt nach</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>Beispielantworten, für das Design vorbereitet.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>Diese Antwort ist nicht angekommen.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>Kopieren</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>Kopiert</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>Hilfreich</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>Nicht hilfreich</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>Heute</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>Gestern</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>Wöchentlicher Umsatzüberblick</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>Vor dem Wochenende auffüllen</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>Herbstaktion</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>Topverkäufer heute</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>Wie lief der Umsatz diese Woche?</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>Der Nettoumsatz der letzten 7 Tage lag bei **34.820 €**, **8,4 %** mehr als in der Vorwoche.
+
+- **Amsterdam** lag mit 15.940 € vorn, dank eines gut besuchten Samstags.
+- **Rotterdam** wuchs am stärksten, um **12,1 %** nach Einführung des neuen Frühstücksmenüs.
+- **Utrecht** blieb unverändert; die Nachmittage waren ruhiger als sonst.
+
+So sah jeder Tag aus:</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>Was geht zur Neige?</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>Drei Produkte gehen vor der Lieferung am Montag aus. Bestellen Sie sie jetzt nach, dann sind sie am Freitag da:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>Schreib einen Werbetext für Latte mit Hafermilch</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>Hier ist ein kurzer Text für die Theke und Ihre Social-Media-Beiträge:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>Der Herbst schmeckt besser mit Hafer. Diese Woche jeder Latte mit Hafermilch für 3,50 €, in allen drei Filialen.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>Wer hat heute am meisten verkauft?</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**Daan** liegt heute mit **64 Bestellungen** und 1.180 € Umsatz vorn. **Sarah** folgt mit 58 Bestellungen, dann **Niloofar** mit 51. Auch Daans Durchschnittsverkauf ist mit 18,40 € der höchste.</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>Auf der Werkbank antworte ich aus einem kurzen Skript, daher kann ich das nicht nachschlagen. Probieren Sie einen der Vorschläge, oder fragen Sie nach Umsatz, Bestand, Aktionen oder Ihrem Team.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>Nettoumsatz, letzte 7 Tage</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>Noch {0}</value>
+    </data>
+    <data name="AssistantReorder" xml:space="preserve">
+        <value>Nachbestellen</value>
+    </data>
+    <data name="AssistantOrdered" xml:space="preserve">
+        <value>Bestellt</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>Hafermilch</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>Croissants</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>Pappbecher</value>
+    </data>
+    <data name="LoadFailed" xml:space="preserve">
+        <value>Laden fehlgeschlagen. Versuchen Sie es gleich noch einmal.</value>
+    </data>
+    <data name="CategoryAppPages" xml:space="preserve">
+        <value>Seiten Ihrer App</value>
+    </data>
+    <data name="AppDashboardTitle" xml:space="preserve">
+        <value>Dashboard</value>
+    </data>
+    <data name="AppDashboardDescription" xml:space="preserve">
+        <value>Das eigene Admin-Dashboard der App, hier mit Demodaten eingebunden, damit seine Zustände und Screenshots nur einen Klick entfernt sind.</value>
+    </data>
+    <data name="AppDashboardCaption" xml:space="preserve">
+        <value>Ihre Zahlen auf einen Blick</value>
+    </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>Einstellungen</value>
+    </data>
+    <data name="SettingsDescription" xml:space="preserve">
+        <value>Die eigene Einstellungsseite der App mit Profil, Konto, Anmeldung in zwei Schritten, Sitzungen und Datenschutz, die mit Demodaten statt mit dem Server läuft.</value>
+    </data>
+    <data name="SettingsCaption" xml:space="preserve">
+        <value>Ihr Konto, ganz nach Ihren Wünschen</value>
+    </data>
+    <data name="CalendarViewDay" xml:space="preserve">
+        <value>Tag</value>
+    </data>
+    <data name="CalendarViewWeek" xml:space="preserve">
+        <value>Woche</value>
+    </data>
+    <data name="CalendarViewMonth" xml:space="preserve">
+        <value>Monat</value>
+    </data>
+    <data name="CalendarViewYear" xml:space="preserve">
+        <value>Jahr</value>
+    </data>
+    <data name="CalendarViewAgenda" xml:space="preserve">
+        <value>Agenda</value>
+    </data>
+    <data name="CalendarModeEvent" xml:space="preserve">
+        <value>Termine</value>
+    </data>
+    <data name="CalendarModeTimeline" xml:space="preserve">
+        <value>Zeitleiste</value>
+    </data>
+    <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
+        <value>Ansichten</value>
+    </data>
+    <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
+        <value>Modi</value>
+    </data>
+    <data name="CalendarTodayButton" xml:space="preserve">
+        <value>Heute</value>
+    </data>
+    <data name="CalendarAddEventButton" xml:space="preserve">
+        <value>Termin hinzufügen</value>
+    </data>
+    <data name="CalendarAddEventHoverHint" xml:space="preserve">
+        <value>Termin hinzufügen</value>
+    </data>
+    <data name="CalendarPreviousButtonTitle" xml:space="preserve">
+        <value>Zurück</value>
+    </data>
+    <data name="CalendarNextButtonTitle" xml:space="preserve">
+        <value>Weiter</value>
+    </data>
+    <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
+        <value>Vorheriger Monat</value>
+    </data>
+    <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
+        <value>Nächster Monat</value>
+    </data>
+    <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
+        <value>Stunde</value>
+    </data>
+    <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
+        <value>Minute</value>
+    </data>
+    <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
+        <value>AM/PM</value>
+    </data>
+    <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
+        <value>ausgewählt</value>
+    </data>
+    <data name="CalendarSettingsButtonTitle" xml:space="preserve">
+        <value>Einstellungen</value>
+    </data>
+    <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
+        <value>Termine nach Farbe filtern</value>
+    </data>
+    <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
+        <value>Termine nach Person in der aktuellen Ansicht filtern</value>
+    </data>
+    <data name="CalendarAllColorsOption" xml:space="preserve">
+        <value>Alle Farben</value>
+    </data>
+    <data name="CalendarAllPeopleOption" xml:space="preserve">
+        <value>Alle Personen</value>
+    </data>
+    <data name="CalendarUnnamedAttendee" xml:space="preserve">
+        <value>(Ohne Namen)</value>
+    </data>
+    <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
+        <value>Kalendereinstellungen</value>
+    </data>
+    <data name="CalendarDotBadgeLabel" xml:space="preserve">
+        <value>Punktmarkierung</value>
+    </data>
+    <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
+        <value>24-Stunden-Format</value>
+    </data>
+    <data name="CalendarDayStartsAtLabel" xml:space="preserve">
+        <value>Tag beginnt um</value>
+    </data>
+    <data name="CalendarHourSuffix" xml:space="preserve">
+        <value>Uhr</value>
+    </data>
+    <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
+        <value>Agenda gruppieren nach</value>
+    </data>
+    <data name="CalendarAgendaGroupByDate" xml:space="preserve">
+        <value>Datum</value>
+    </data>
+    <data name="CalendarAgendaGroupByColor" xml:space="preserve">
+        <value>Farbe</value>
+    </data>
+    <data name="CalendarStackedEventsLabel" xml:space="preserve">
+        <value>Überlappende Termine stapeln</value>
+    </data>
+    <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
+        <value>Kalender in der Tagesansicht anzeigen</value>
+    </data>
+    <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
+        <value>Kalenderwochen anzeigen</value>
+    </data>
+    <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
+        <value>Aktuelle Uhrzeit anzeigen</value>
+    </data>
+    <data name="CalendarSlotDurationLabel" xml:space="preserve">
+        <value>Zeitintervall</value>
+    </data>
+    <data name="CalendarMinuteSuffix" xml:space="preserve">
+        <value>Min.</value>
+    </data>
+    <data name="CalendarWeekMobileWarning" xml:space="preserve">
+        <value>Die Wochenansicht wird auf kleineren Geräten nicht empfohlen. Wechseln Sie bitte zu einem Desktop-Gerät oder nutzen Sie stattdessen die Tagesansicht.</value>
+    </data>
+    <data name="CalendarHappeningNowTitle" xml:space="preserve">
+        <value>Läuft gerade</value>
+    </data>
+    <data name="CalendarNoAppointmentsNow" xml:space="preserve">
+        <value>Im Moment keine Termine</value>
+    </data>
+    <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
+        <value>Termine suchen...</value>
+    </data>
+    <data name="CalendarNoEventsFound" xml:space="preserve">
+        <value>Keine Termine gefunden.</value>
+    </data>
+    <data name="CalendarEventListTitleFormat" xml:space="preserve">
+        <value>Termine am {0}</value>
+    </data>
+    <data name="CalendarEventListCountFormat" xml:space="preserve">
+        <value>{0} Termin(e)</value>
+    </data>
+    <data name="CalendarMoreEventsFormat" xml:space="preserve">
+        <value>+{0} weitere</value>
+    </data>
+    <data name="CalendarAddEventDialogTitle" xml:space="preserve">
+        <value>Neuer Termin</value>
+    </data>
+    <data name="CalendarEditEventDialogTitle" xml:space="preserve">
+        <value>Termin bearbeiten</value>
+    </data>
+    <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
+        <value>Erstellen Sie einen neuen Termin in Ihrem Kalender.</value>
+    </data>
+    <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
+        <value>Ändern Sie Ihren bestehenden Termin.</value>
+    </data>
+    <data name="CalendarCloseAriaLabel" xml:space="preserve">
+        <value>Schließen</value>
+    </data>
+    <data name="CalendarCloseButton" xml:space="preserve">
+        <value>Schließen</value>
+    </data>
+    <data name="CalendarCancelButton" xml:space="preserve">
+        <value>Abbrechen</value>
+    </data>
+    <data name="CalendarEditButton" xml:space="preserve">
+        <value>Bearbeiten</value>
+    </data>
+    <data name="CalendarDeleteButton" xml:space="preserve">
+        <value>Löschen</value>
+    </data>
+    <data name="CalendarCreateEventButton" xml:space="preserve">
+        <value>Termin erstellen</value>
+    </data>
+    <data name="CalendarSaveChangesButton" xml:space="preserve">
+        <value>Änderungen speichern</value>
+    </data>
+    <data name="CalendarTitleLabel" xml:space="preserve">
+        <value>Titel</value>
+    </data>
+    <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
+        <value>Titel des Termins</value>
+    </data>
+    <data name="CalendarStartDateTimeLabel" xml:space="preserve">
+        <value>Startdatum und -zeit</value>
+    </data>
+    <data name="CalendarEndDateTimeLabel" xml:space="preserve">
+        <value>Enddatum und -zeit</value>
+    </data>
+    <data name="CalendarColorLabel" xml:space="preserve">
+        <value>Farbe</value>
+    </data>
+    <data name="CalendarEventColorAriaLabel" xml:space="preserve">
+        <value>Terminfarbe</value>
+    </data>
+    <data name="CalendarDescriptionLabel" xml:space="preserve">
+        <value>Beschreibung</value>
+    </data>
+    <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
+        <value>Beschreibung des Termins</value>
+    </data>
+    <data name="CalendarAttendeesLabel" xml:space="preserve">
+        <value>Teilnehmer</value>
+    </data>
+    <data name="CalendarNoAttendeesText" xml:space="preserve">
+        <value>Keine Teilnehmer</value>
+    </data>
+    <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
+        <value>Vorname</value>
+    </data>
+    <data name="CalendarLastNamePlaceholder" xml:space="preserve">
+        <value>Nachname</value>
+    </data>
+    <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
+        <value>ID (optional)</value>
+    </data>
+    <data name="CalendarAddButton" xml:space="preserve">
+        <value>Hinzufügen</value>
+    </data>
+    <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
+        <value>Teilnehmer entfernen</value>
+    </data>
+    <data name="CalendarStartDateLabel" xml:space="preserve">
+        <value>Startdatum</value>
+    </data>
+    <data name="CalendarEndDateLabel" xml:space="preserve">
+        <value>Enddatum</value>
+    </data>
+    <data name="CalendarAtWord" xml:space="preserve">
+        <value>um</value>
+    </data>
+    <data name="CalendarAllDayLabel" xml:space="preserve">
+        <value>Ganztägig</value>
+    </data>
+    <data name="CalendarWeekNumberFormat" xml:space="preserve">
+        <value>KW {0}</value>
+    </data>
+    <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
+        <value>Kalenderwoche {0}</value>
+    </data>
+    <data name="CalendarEventOverlapMessage" xml:space="preserve">
+        <value>Dieser Zeitraum ist bei dieser Ressource bereits belegt.</value>
+    </data>
+    <data name="CalendarOutOfRangeMessage" xml:space="preserve">
+        <value>Dieses Datum liegt außerhalb des erlaubten Bereichs.</value>
+    </data>
+    <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
+        <value>Diese Uhrzeit liegt außerhalb der Geschäftszeiten.</value>
+    </data>
+    <data name="CalendarBlockedMessage" xml:space="preserve">
+        <value>Diese Zeit ist nicht verfügbar.</value>
+    </data>
+    <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
+        <value>Geschäftszeiten hervorheben</value>
+    </data>
+    <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
+        <value>{0} öffnen</value>
+    </data>
+    <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
+        <value>Kalenderwoche {0} öffnen</value>
+    </data>
+    <data name="CalendarValidationTitleRequired" xml:space="preserve">
+        <value>Titel ist erforderlich</value>
+    </data>
+    <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
+        <value>Beschreibung ist erforderlich</value>
+    </data>
+    <data name="CalendarValidationEndAfterStart" xml:space="preserve">
+        <value>Das Enddatum muss nach dem Startdatum liegen</value>
+    </data>
+    <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
+        <value>Vor- oder Nachname ist erforderlich</value>
+    </data>
+    <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
+        <value>Neuer Zeitraum</value>
+    </data>
+    <data name="CalendarRepeatsLabel" xml:space="preserve">
+        <value>Wiederholung</value>
+    </data>
+    <data name="CalendarRepeatsDaily" xml:space="preserve">
+        <value>Täglich</value>
+    </data>
+    <data name="CalendarRepeatsWeekly" xml:space="preserve">
+        <value>Wöchentlich</value>
+    </data>
+    <data name="CalendarRepeatsMonthly" xml:space="preserve">
+        <value>Monatlich</value>
+    </data>
+    <data name="CalendarRepeatsYearly" xml:space="preserve">
+        <value>Jährlich</value>
+    </data>
+    <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
+        <value>alle {0}</value>
+    </data>
+    <data name="CalendarRepeatsCountFormat" xml:space="preserve">
+        <value>{0}-mal</value>
+    </data>
+    <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
+        <value>bis {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
+        <value>am {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
+        <value>am {0} {1}</value>
+    </data>
+    <data name="CalendarListSeparator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
+        <value>ersten</value>
+    </data>
+    <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
+        <value>zweiten</value>
+    </data>
+    <data name="CalendarWeekOfMonthThird" xml:space="preserve">
+        <value>dritten</value>
+    </data>
+    <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
+        <value>vierten</value>
+    </data>
+    <data name="CalendarWeekOfMonthLast" xml:space="preserve">
+        <value>letzten</value>
+    </data>
+    <data name="CalendarRepeatLabel" xml:space="preserve">
+        <value>Wiederholen</value>
+    </data>
+    <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
+        <value>Einmalig</value>
+    </data>
+    <data name="CalendarRepeatEveryLabel" xml:space="preserve">
+        <value>Wiederholen alle</value>
+    </data>
+    <data name="CalendarRepeatDaysUnit" xml:space="preserve">
+        <value>Tag(e)</value>
+    </data>
+    <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
+        <value>Woche(n)</value>
+    </data>
+    <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
+        <value>Monat(e)</value>
+    </data>
+    <data name="CalendarRepeatYearsUnit" xml:space="preserve">
+        <value>Jahr(e)</value>
+    </data>
+    <data name="CalendarRepeatOnLabel" xml:space="preserve">
+        <value>Wiederholen am</value>
+    </data>
+    <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
+        <value>Am {0}.</value>
+    </data>
+    <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
+        <value>Am {0}</value>
+    </data>
+    <data name="CalendarEndsLabel" xml:space="preserve">
+        <value>Endet</value>
+    </data>
+    <data name="CalendarEndsNeverOption" xml:space="preserve">
+        <value>Nie</value>
+    </data>
+    <data name="CalendarEndsOnDateOption" xml:space="preserve">
+        <value>An einem Datum</value>
+    </data>
+    <data name="CalendarEndsAfterOption" xml:space="preserve">
+        <value>Nach</value>
+    </data>
+    <data name="CalendarOccurrencesLabel" xml:space="preserve">
+        <value>Termin(en)</value>
+    </data>
+    <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
+        <value>Ausnahmen</value>
+    </data>
+    <data name="CalendarSkipDateButton" xml:space="preserve">
+        <value>Datum auslassen</value>
+    </data>
+    <data name="CalendarAddDateButton" xml:space="preserve">
+        <value>Datum hinzufügen</value>
+    </data>
+    <data name="CalendarSkippedDatesLabel" xml:space="preserve">
+        <value>Ausgelassen</value>
+    </data>
+    <data name="CalendarAddedDatesLabel" xml:space="preserve">
+        <value>Hinzugefügt</value>
+    </data>
+    <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
+        <value>Datum entfernen</value>
+    </data>
+    <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
+        <value>Muss mindestens 1 sein</value>
+    </data>
+    <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
+        <value>Die Serie kann nicht vor ihrem Beginn enden</value>
+    </data>
+    <data name="CalendarRecurringEditTitle" xml:space="preserve">
+        <value>Serientermin bearbeiten</value>
+    </data>
+    <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
+        <value>Serientermin löschen</value>
+    </data>
+    <data name="CalendarThisOccurrenceOption" xml:space="preserve">
+        <value>Dieser Termin</value>
+    </data>
+    <data name="CalendarAllOccurrencesOption" xml:space="preserve">
+        <value>Alle Termine der Serie</value>
+    </data>
+    <data name="CalendarOkButton" xml:space="preserve">
+        <value>OK</value>
+    </data>
+    <data name="CalendarResourceLabel" xml:space="preserve">
+        <value>Ressource</value>
+    </data>
+    <data name="CalendarResourceColumnHeader" xml:space="preserve">
+        <value>Ressource</value>
+    </data>
+    <data name="CalendarNoResourceLabel" xml:space="preserve">
+        <value>Nicht zugewiesen</value>
+    </data>
+    <data name="CalendarNoResourceOption" xml:space="preserve">
+        <value>(keine)</value>
+    </data>
+    <data name="CalendarNoResourcesMessage" xml:space="preserve">
+        <value>Keine Ressourcen zum Anzeigen.</value>
+    </data>
+    <data name="PosStaffNoah" xml:space="preserve">
+        <value>Noah Smit</value>
+    </data>
+    <data name="PosStaffJulia" xml:space="preserve">
+        <value>Julia Mulder</value>
+    </data>
+    <data name="CategoryPlanning" xml:space="preserve">
+        <value>Planung</value>
+    </data>
+    <data name="ShiftsTitle" xml:space="preserve">
+        <value>Schichtplaner</value>
+    </data>
+    <data name="ShiftsDescription" xml:space="preserve">
+        <value>Der Wochendienstplan eines Cafés: Schichten pro Person verschieben und in der Länge ändern, innerhalb der Öffnungszeiten, um freie Tage herum und ohne Doppelbuchungen.</value>
+    </data>
+    <data name="ShiftsCaption" xml:space="preserve">
+        <value>Die ganze Woche in wenigen Minuten planen</value>
+    </data>
+    <data name="ShiftsHeading" xml:space="preserve">
+        <value>Dienstplan</value>
+    </data>
+    <data name="ShiftsSummary" xml:space="preserve">
+        <value>{0} Schichten und {1} Stunden diese Woche</value>
+    </data>
+    <data name="ShiftsEmpty" xml:space="preserve">
+        <value>Es sind noch keine Schichten geplant. Wählen Sie in der Zeile einer Person eine Zeit aus, um die erste hinzuzufügen.</value>
+    </data>
+    <data name="ShiftsRoleLead" xml:space="preserve">
+        <value>Schichtleitung</value>
+    </data>
+    <data name="ShiftsRoleBarista" xml:space="preserve">
+        <value>Barista</value>
+    </data>
+    <data name="ShiftsRoleBaker" xml:space="preserve">
+        <value>Bäcker</value>
+    </data>
+    <data name="ShiftsRoleCashier" xml:space="preserve">
+        <value>Kassierer</value>
+    </data>
+    <data name="ShiftsOpening" xml:space="preserve">
+        <value>Frühschicht</value>
+    </data>
+    <data name="ShiftsMidday" xml:space="preserve">
+        <value>Mittagsschicht</value>
+    </data>
+    <data name="ShiftsBakery" xml:space="preserve">
+        <value>Backstube</value>
+    </data>
+    <data name="ShiftsClosing" xml:space="preserve">
+        <value>Spätschicht</value>
+    </data>
+    <data name="ShiftsStocktake" xml:space="preserve">
+        <value>Inventur, Café geschlossen</value>
+    </data>
+    <data name="ShiftsTimeOff" xml:space="preserve">
+        <value>Frei</value>
+    </data>
+    <data name="HomeBuiltWithSubtitle" xml:space="preserve">
+        <value>Dieselben Open-Source-Bibliotheken, auf denen Ihre App aufbaut, jede mit Live-Dokumentation, die auch Ihr KI-Agent lesen kann.</value>
+    </data>
+    <data name="HomeProductBlazorUI" xml:space="preserve">
+        <value>Native Blazor-Komponenten mit eingebauter Unterstützung für Designs, Rechts-nach-links-Sprachen und Barrierefreiheit.</value>
+    </data>
+    <data name="HomeProductBlex" xml:space="preserve">
+        <value>Zustand, der das Neuladen übersteht und in jeden hier aufgenommenen Screenshot mitwandert.</value>
+    </data>
+    <data name="HomeProductBortable" xml:space="preserve">
+        <value>Listen und Raster, die sich per Ziehen neu ordnen lassen, wie die Widgets des Dashboards.</value>
+    </data>
+    <data name="HomeProductBmotion" xml:space="preserve">
+        <value>Federanimationen, Einblendungen und Hover-Effekte, wie die auf dieser Seite.</value>
+    </data>
+    <data name="HomeProductButil" xml:space="preserve">
+        <value>Browserfunktionen aus C#, von der Zwischenablage bis zu IndexedDB.</value>
+    </data>
+    <data name="HomeProductBoilerplate" xml:space="preserve">
+        <value>Die Projektvorlage, in der diese Werkbank steckt, von der Datenbank bis in die App-Stores.</value>
+    </data>
+    <data name="HomeCtaTitle" xml:space="preserve">
+        <value>Ihre nächste Seite beginnt hier</value>
+    </data>
+    <data name="HomeCtaText" xml:space="preserve">
+        <value>Bitten Sie Ihren KI-Agenten, die Seite auf der Werkbank zu entwerfen. Er baut sie mit Beispieldaten, prüft jeden Zustand in einem echten Browser und zeigt Ihnen Screenshots, bevor überhaupt Backend-Code geschrieben wird.</value>
+    </data>
+    <data name="HomeCtaOpen" xml:space="preserve">
+        <value>Werkbank öffnen</value>
+    </data>
+    <data name="HomeCtaPromptLabel" xml:space="preserve">
+        <value>Fragen Sie zum Beispiel</value>
+    </data>
+    <data name="HomeCtaPrompt" xml:space="preserve">
+        <value>Entwirf auf der Werkbank eine Seite für den Bestellverlauf, mit Lade-, Leer- und Fehlerzustand, und zeig mir Screenshots für Smartphone und Desktop.</value>
+    </data>
+    <data name="HomeCtaCopy" xml:space="preserve">
+        <value>Kopieren</value>
+    </data>
+    <data name="HomeCtaCopied" xml:space="preserve">
+        <value>Kopiert</value>
+    </data>
+    <data name="HomeFooterExplore" xml:space="preserve">
+        <value>Entdecken</value>
+    </data>
+    <data name="HomeFooterLearn" xml:space="preserve">
+        <value>Lernen</value>
+    </data>
+    <data name="HomeFooterDocs" xml:space="preserve">
+        <value>bit Boilerplate-Dokumentation</value>
+    </data>
+    <data name="HomeFooterComponents" xml:space="preserve">
+        <value>bit BlazorUI-Komponenten</value>
+    </data>
+    <data name="HomeFooterSource" xml:space="preserve">
+        <value>Quellcode auf GitHub</value>
+    </data>
+</root>

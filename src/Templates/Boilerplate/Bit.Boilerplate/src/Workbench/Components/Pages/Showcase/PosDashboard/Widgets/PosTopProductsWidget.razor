@@ -1,0 +1,40 @@
+@inherits PosWidgetBase<PosTopProduct[]>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[Dashboard.PeriodKey]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoSalesYet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoSalesYetDescription)">
+    <Skeleton>
+        @for (var i = 0; i < 5; i++)
+        {
+            <div class="row-skeleton">
+                <BitShimmer Shape="BitShape.Square" Height="2.25rem" Width="2.25rem" />
+                <BitShimmer Height="1rem" />
+            </div>
+        }
+    </Skeleton>
+    <ChildContent>
+        <ol class="products">
+            @{ var rank = 0; var top = Data!.Max(p => p.Revenue); }
+            @foreach (var product in Data!)
+            {
+                rank++;
+                <li>
+                    <span class="rank">@rank</span>
+                    <span class="emoji" aria-hidden="true">@product.Emoji</span>
+                    <span class="details">
+                        <span class="name">@Localizer[product.NameKey]</span>
+                        <span class="bar"><span style="width:@BarWidth(product.Revenue, top)"></span></span>
+                    </span>
+                    <span class="figures">
+                        <span class="revenue">@PosFormat.Money(product.Revenue, 0)</span>
+                        <span class="units">@Localizer[nameof(WorkbenchStrings.PosUnitsSold), PosFormat.Number(product.Units)]</span>
+                    </span>
+                </li>
+            }
+        </ol>
+    </ChildContent>
+</PosWidgetFrame>

@@ -34,10 +34,11 @@ public static class RenameCommand
             }
 
             var typeNames = TypeNames.FromFolder(folder);
+            var namespaceNames = NamespaceNames.FromFolder(folder, oldName);
 
-            if (ProjectName.Validate(newName, typeNames) is { } nameError)
+            if (ProjectName.Validate(newName, typeNames, namespaceNames) is { } nameError)
             {
-                return cli.UsageError("name-invalid", $"{nameError} Try: bit rename {ProjectName.Suggest(newName, typeNames)}");
+                return cli.UsageError("name-invalid", $"{nameError} Try: bit rename {ProjectName.Suggest(newName, typeNames, namespaceNames)}");
             }
 
             if (string.Equals(oldName, newName, StringComparison.Ordinal))

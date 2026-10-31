@@ -1,0 +1,211 @@
+@page "/"
+@inherits WorkbenchComponentBase
+
+<PageTitle>@Localizer[nameof(WorkbenchStrings.HomePageTitle)]</PageTitle>
+
+<div class="home">
+    <ShellHeader />
+
+    <section class="hero">
+        <div class="hero-text">
+            <Bmotion Initial="Bm.To(opacity: 0, y: 16)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Enter(0)">
+                <span class="eyebrow"><BitIcon IconName="@BitIconName.Design" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.HomeEyebrow)]</span>
+            </Bmotion>
+            <Bmotion Initial="Bm.To(opacity: 0, y: 16)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Enter(1)">
+                <h1 class="headline">@Localizer[nameof(WorkbenchStrings.HomeHeadline)]</h1>
+            </Bmotion>
+            <Bmotion Initial="Bm.To(opacity: 0, y: 16)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Enter(2)">
+                <p class="lead">@Localizer[nameof(WorkbenchStrings.HomeLead)]</p>
+            </Bmotion>
+            <Bmotion Initial="Bm.To(opacity: 0, y: 16)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Enter(3)">
+                <div class="hero-actions">
+                    <BitButton Size="BitSize.Large" IconName="@BitIconName.BarChartVerticalFill" Href="@WorkbenchUrls.Workbench("pos-dashboard")">
+                        @Localizer[nameof(WorkbenchStrings.HomeOpenFirstPage)]
+                    </BitButton>
+                    <BitButton Size="BitSize.Large" Variant="BitVariant.Outline" Href="#why">
+                        @Localizer[nameof(WorkbenchStrings.HomeWhyButton)]
+                    </BitButton>
+                </div>
+            </Bmotion>
+            <Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)" Transition="Enter(4)">
+                <ul class="facts">
+                    <li><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" Color="BitColor.Success" />@Localizer[nameof(WorkbenchStrings.HomeFactNoServer)]</li>
+                    <li><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" Color="BitColor.Success" />@Localizer[nameof(WorkbenchStrings.HomeFactThemes)]</li>
+                    <li><BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Small" Color="BitColor.Success" />@Localizer[nameof(WorkbenchStrings.HomeFactStores)]</li>
+                </ul>
+            </Bmotion>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+            <Bmotion Initial="Bm.To(opacity: 0, y: 40)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 90, damping: 18).WithDelay(0.15)">
+                <div class="laptop-holder">
+                    <DeviceFrame Device="@DevicePresets.Find("laptop-hidpi")">
+                        <img class="light-only" src="api/thumbnails/pos-dashboard" alt="" loading="lazy" />
+                        <img class="dark-only" src="api/thumbnails/pos-dashboard?theme=Dark" alt="" loading="lazy" />
+                    </DeviceFrame>
+                </div>
+            </Bmotion>
+            <Bmotion Initial="Bm.To(opacity: 0, y: 60, x: 30)" Animate="Bm.To(opacity: 1, y: 0, x: 0)" Transition="Bm.Spring(stiffness: 90, damping: 16).WithDelay(0.35)">
+                <div class="phone-holder">
+                    <DeviceFrame Device="DevicePresets.Default">
+                        <img class="light-only" src="api/thumbnails/buildings?phone=true" alt="" loading="lazy" />
+                        <img class="dark-only" src="api/thumbnails/buildings?phone=true&theme=Dark" alt="" loading="lazy" />
+                    </DeviceFrame>
+                </div>
+            </Bmotion>
+            @for (var i = 0; i < chips.Length; i++)
+            {
+                var chip = chips[i];
+                var chipIndex = i;
+                <Bmotion Initial="Bm.To(opacity: 0, scale: 0.8)" Animate="Bm.To(opacity: 1, scale: 1)" Transition="Bm.Spring(stiffness: 160, damping: 14).WithDelay(0.7 + chipIndex * 0.12)">
+                    <span class="chip chip-@chipIndex">
+                        <BitIcon IconName="@chip.IconName" Size="BitSize.Small" />
+                        @Localizer[chip.TextKey]
+                    </span>
+                </Bmotion>
+            }
+        </div>
+    </section>
+
+    <section id="why" class="section">
+        <div class="section-head">
+            <h2>@Localizer[nameof(WorkbenchStrings.HomeWhyTitle)]</h2>
+            <p>@Localizer[nameof(WorkbenchStrings.HomeWhySubtitle)]</p>
+        </div>
+        <div class="reasons">
+            @foreach (var reason in reasons)
+            {
+                <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -4)">
+                    <article class="reason">
+                        <span class="reason-icon" style="--accent:@reason.Color"><BitIcon IconName="@reason.IconName" /></span>
+                        <h3>@Localizer[reason.TitleKey]</h3>
+                        <p>@Localizer[reason.TextKey]</p>
+                    </article>
+                </Bmotion>
+            }
+        </div>
+    </section>
+
+    <section class="section how">
+        <div class="section-head">
+            <h2>@Localizer[nameof(WorkbenchStrings.HomeHowTitle)]</h2>
+        </div>
+        <ol class="steps">
+            @for (var i = 0; i < steps.Length; i++)
+            {
+                var step = steps[i];
+                var stepNumber = i + 1;
+                <Bmotion Preset="BmPresets.Reveal(distance: 24)">
+                    <li class="step">
+                        <span class="step-number">@stepNumber.ToString(CultureInfo.CurrentCulture)</span>
+                        <h3>@Localizer[step.TitleKey]</h3>
+                        <p>@Localizer[step.TextKey]</p>
+                    </li>
+                </Bmotion>
+            }
+        </ol>
+    </section>
+
+    <section id="pages" class="section">
+        <div class="section-head">
+            <h2>@Localizer[nameof(WorkbenchStrings.HomePagesTitle)]</h2>
+            <p>@Localizer[nameof(WorkbenchStrings.HomePagesSubtitle)]</p>
+        </div>
+        <div class="catalog">
+            @foreach (var entry in WorkbenchPageCatalog.Pages)
+            {
+                <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
+                    <a class="page-card" href="@WorkbenchUrls.Workbench(entry.Key)">
+                        <span class="thumbnail">
+                            <img class="light-only" src="@($"api/thumbnails/{entry.Key}")" alt="@Localizer[entry.TitleKey]" loading="lazy" />
+                            <img class="dark-only" src="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="@Localizer[entry.TitleKey]" loading="lazy" />
+                        </span>
+                        <span class="page-body">
+                            <span class="page-category"><BitIcon IconName="@entry.IconName" Size="BitSize.Small" /> @Localizer[entry.CategoryKey]</span>
+                            <span class="page-title">@Localizer[entry.TitleKey]</span>
+                            <span class="page-description">@Localizer[entry.DescriptionKey]</span>
+                            <span class="page-tags">
+                                @foreach (var tag in entry.Showcases)
+                                {
+                                    <span class="tag">@tag</span>
+                                }
+                            </span>
+                        </span>
+                    </a>
+                </Bmotion>
+            }
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <h2>@Localizer[nameof(WorkbenchStrings.HomeBuiltWithTitle)]</h2>
+            <p>@Localizer[nameof(WorkbenchStrings.HomeBuiltWithSubtitle)]</p>
+        </div>
+        <div class="products">
+            @foreach (var product in products)
+            {
+                <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -4)">
+                    <a class="product" href="@product.Url" target="_blank" rel="noopener">
+                        <span class="product-icon"><BitIcon IconName="@product.IconName" /></span>
+                        <span class="product-text">
+                            <span class="product-name">@product.Name</span>
+                            <span class="product-description">@Localizer[product.TextKey]</span>
+                        </span>
+                        <BitIcon IconName="@BitIconName.OpenInNewWindow" Size="BitSize.Small" Class="product-out" />
+                    </a>
+                </Bmotion>
+            }
+        </div>
+    </section>
+
+    <section class="section">
+        <Bmotion Preset="BmPresets.Reveal(distance: 24)">
+            <div class="cta">
+                <div class="cta-text">
+                    <h2>@Localizer[nameof(WorkbenchStrings.HomeCtaTitle)]</h2>
+                    <p>@Localizer[nameof(WorkbenchStrings.HomeCtaText)]</p>
+                    <div class="cta-actions">
+                        <BitButton Size="BitSize.Large" IconName="@BitIconName.Design" Href="@WorkbenchUrls.Workbench(WorkbenchPageCatalog.Pages[0].Key)">
+                            @Localizer[nameof(WorkbenchStrings.HomeCtaOpen)]
+                        </BitButton>
+                    </div>
+                </div>
+                <figure class="prompt">
+                    <figcaption class="prompt-label"><BitIcon IconName="@BitIconName.Robot" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.HomeCtaPromptLabel)]</figcaption>
+                    <blockquote class="prompt-text">@Localizer[nameof(WorkbenchStrings.HomeCtaPrompt)]</blockquote>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Outline"
+                               IconName="@(isPromptCopied ? BitIconName.CheckMark : BitIconName.Copy)"
+                               OnClick="CopyPrompt">
+                        @Localizer[isPromptCopied ? nameof(WorkbenchStrings.HomeCtaCopied) : nameof(WorkbenchStrings.HomeCtaCopy)]
+                    </BitButton>
+                </figure>
+            </div>
+        </Bmotion>
+    </section>
+
+    <footer class="home-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a class="footer-logo" href="/">
+                    <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />
+                    <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
+                </a>
+                <p>@Localizer[nameof(WorkbenchStrings.HomeFooter)]</p>
+            </div>
+            <nav class="footer-links" aria-label="@Localizer[nameof(WorkbenchStrings.HomeFooterExplore)]">
+                <h3>@Localizer[nameof(WorkbenchStrings.HomeFooterExplore)]</h3>
+                @foreach (var entry in WorkbenchPageCatalog.Pages)
+                {
+                    <a href="@WorkbenchUrls.Workbench(entry.Key)">@Localizer[entry.TitleKey]</a>
+                }
+            </nav>
+            <nav class="footer-links" aria-label="@Localizer[nameof(WorkbenchStrings.HomeFooterLearn)]">
+                <h3>@Localizer[nameof(WorkbenchStrings.HomeFooterLearn)]</h3>
+                <a href="https://bitplatform.dev/templates" target="_blank" rel="noopener">@Localizer[nameof(WorkbenchStrings.HomeFooterDocs)]</a>
+                <a href="https://blazorui.bitplatform.dev" target="_blank" rel="noopener">@Localizer[nameof(WorkbenchStrings.HomeFooterComponents)]</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">@Localizer[nameof(WorkbenchStrings.HomeFooterSource)]</a>
+            </nav>
+        </div>
+    </footer>
+</div>

@@ -1,0 +1,9 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.bare-surface {
+    min-height: 100%;
+    padding: 1rem;
+    padding-top: calc(#{$bit-env-inset-top} + 1rem);
+    padding-bottom: calc(#{$bit-env-inset-bottom} + 1rem);
+    background-color: $bit-color-background-primary;
+}
