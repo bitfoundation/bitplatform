@@ -74,7 +74,8 @@
         with Brotli. An app whose database only some pages use can mark them <code>BlazorWebAssemblyLazyLoad</code>,
         load them from the router's <code>OnNavigateAsync</code> before those pages render, and leave the registration
         out of <code>Program.cs</code>: <code>GetBitBsqliteServices</code> makes the same registration the first time a
-        page asks, once per browser connection, and still reaches the app's own services.
+        page asks in the browser, once for the app, from the one method every page passes it, and still reaches the
+        app's own services.
     </p>
     <CodeBlock Title="AppDatabase.cs" Language="csharp" Code="@Snippets.Start.LazyServices" Collapsible="false" />
     <CodeBlock Title="App.razor" Language="razor" Code="@Snippets.Start.LazyRouter" Collapsible="false" />

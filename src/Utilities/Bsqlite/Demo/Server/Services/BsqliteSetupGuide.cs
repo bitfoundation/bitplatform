@@ -103,9 +103,11 @@ public static partial class BsqliteSetupGuide
             is no browser to open a database in. The demo shares one registration method between the two projects and
             gates every page through one component; both are below, as they ship. A client that lazy loads Bit.Bsqlite
             and EF Core registers nothing of Bsqlite's in its `Program.cs` and builds the services with
-            `GetBitBsqliteServices` instead, gives `Routes` the InteractiveWebAssembly render mode - as the demo does - so
-            the router's `OnNavigateAsync` runs in the browser, and registers `LazyAssemblyLoader` in the server project
-            (`builder.Services.AddScoped<LazyAssemblyLoader>()`), which loads Bsqlite with the rest of the app - see
+            `GetBitBsqliteServices` instead - only in the browser, so its pages ask for them only once
+            `RendererInfo.IsInteractive` is true, unless the server project registers them too - gives `Routes` the
+            InteractiveWebAssembly render mode - as the demo does - so the router's `OnNavigateAsync` runs in the browser,
+            and registers `LazyAssemblyLoader` in the server project (`builder.Services.AddScoped<LazyAssemblyLoader>()`),
+            which loads Bsqlite with the rest of the app - see
             `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
             HostingChecklist + "\n" + WebAppChecklist,
@@ -159,10 +161,11 @@ public static partial class BsqliteSetupGuide
             opened in-process by the native SQLite the app brings for Android, iOS, Mac Catalyst, Windows and macOS.
             So the registration a WebAssembly client uses - typically one extension method in a shared Razor class
             library - serves the Hybrid app unchanged, and so do the pages. Nothing is downloaded in a Hybrid app, so
-            nothing is lazy loaded: pages it shares with a WebAssembly client that lazy loads Bit.Bsqlite get the Hybrid
-            app's registration from `GetBitBsqliteServices`, or build their own where it has none, and a host that shares
-            the router's file registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`) - see
-            `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
+            nothing is lazy loaded: a Hybrid app that shares pages with a WebAssembly client that lazy loads Bit.Bsqlite
+            registers the services with the method the pages pass to `GetBitBsqliteServices`, which then hands them its
+            container - it builds none in a web view, which would leave its databases open when it closes - and a host
+            that shares the router's file registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`)
+            - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
             HybridChecklist,
             HybridCode,

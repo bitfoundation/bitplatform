@@ -172,27 +172,30 @@ Brotli, for a small app on the demo's model. An app whose database only some pag
 then registers nothing of Bsqlite's, and the pages build the same services the first time one of them asks:
 
 ```csharp
-// Called only from the pages the assemblies are loaded for.
+// Called only from the pages the assemblies are loaded for, once they run in the browser.
 internal static class AppDatabase
 {
-    public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
-        .GetBitBsqliteServices(services =>
-        {
-            services.AddBitBsqliteServices(sqlite => sqlite
-                .AddStorageProvider<BsqliteOpfsStorageProvider>()
-                .UseStorage(s => s.Prefer(BsqliteOpfsStorageProvider.ProviderName))
-                .AddDatabase("app.db"));
+    public static void Register(IServiceCollection services)
+    {
+        services.AddBitBsqliteServices(sqlite => sqlite
+            .AddStorageProvider<BsqliteOpfsStorageProvider>()
+            .UseStorage(s => s.Prefer(BsqliteOpfsStorageProvider.ProviderName))
+            .AddDatabase("app.db"));
 
-            services.AddBitBsqliteDbContext<AppDbContext>();
-        })
+        services.AddBitBsqliteDbContext<AppDbContext>();
+    }
+
+    public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
+        .GetBitBsqliteServices(Register)
         .GetRequiredService<IBsqliteDbContextFactory<AppDbContext>>();
 }
 ```
 
-`GetBitBsqliteServices` makes that registration once per browser connection, in a container of Bsqlite's own in front
-of the app's, and returns the app's own container where `AddBitBsqliteServices` was called after all. Which assemblies
-to mark, the router's code, and the rules the rest of the app keeps - no public `DbContext` or migration in an assembly
-the router reads, nothing of EF Core's in `Program.cs`, no AOT - are in the *Getting started* guide's
+`GetBitBsqliteServices` makes that registration once, on WebAssembly, in a container of Bsqlite's own in front of the
+app's, and takes the same method on every call. Where the app called `AddBitBsqliteServices` after all - a Blazor
+Hybrid app sharing the pages, which registers with `AppDatabase.Register(builder.Services)` - it returns the app's own
+container, once it has checked that what the method registers is there. Which assemblies to mark, the router's code, and the rules the rest of the app keeps - no public `DbContext` or migration in an assembly
+the router reads, nothing of EF Core's in `Program.cs`, the database asked for only once a page is interactive, no AOT - are in the *Getting started* guide's
 [Lazy loading on WebAssembly](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#lazy-loading-on-webassembly).
 
 ## What this release does not claim

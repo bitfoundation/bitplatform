@@ -171,20 +171,22 @@ using Bit.Bsqlite.Storage.Opfs;
 
 internal static class AppDatabase
 {
-    public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
-        .GetBitBsqliteServices(services =>
-        {
-            // What Program.cs would have registered, unchanged.
-            services.AddBitBsqliteServices(sqlite => sqlite
-                .AddStorageProvider<BsqliteOpfsStorageProvider>()
-                .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
-                .UseStorage(s => s
-                    .Prefer(BsqliteOpfsStorageProvider.ProviderName)
-                    .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
-                .AddDatabase("app.db"));
+    // What Program.cs would have registered, unchanged - and what a Blazor Hybrid app that shares the pages registers.
+    public static void Register(IServiceCollection services)
+    {
+        services.AddBitBsqliteServices(sqlite => sqlite
+            .AddStorageProvider<BsqliteOpfsStorageProvider>()
+            .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+            .UseStorage(s => s
+                .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
+            .AddDatabase("app.db"));
 
-            services.AddBitBsqliteDbContext<AppDbContext>();
-        })
+        services.AddBitBsqliteDbContext<AppDbContext>();
+    }
+
+    public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
+        .GetBitBsqliteServices(Register)
         .GetRequiredService<IBsqliteDbContextFactory<AppDbContext>>();
 }
 ```
@@ -199,13 +201,19 @@ internal static class AppDatabase
 
     protected override async Task OnInitializedAsync()
     {
+        // A prerendered page runs this on the server first, where there is no database to open: wait for the browser.
+        if (!RendererInfo.IsInteractive)
+            return;
+
         await using var db = await AppDatabase.Contexts(Services).CreateDbContextAsync();
         _products = await db.Products.OrderBy(p => p.Name).ToListAsync();
     }
 }
 ```
 
-`GetBitBsqliteServices` runs `configure` once per browser connection - once for a WebAssembly app - into a container of Bsqlite's own, so every page that asks gets the same services and the same open database. What it registers still reaches the app's services: a `BeforeFirstOpen` step, `options.Configure`, a context's constructor and a service of your own registered in `configure` get from the app's container whatever Bsqlite's lacks, and so does code that resolves from the provider it returns. So a service of yours that takes Bsqlite's types - the demo's `BrowserDatabase`, say - is registered in `configure`, next to them, and resolved from that provider. Where the app did call `AddBitBsqliteServices` - a Blazor Hybrid app that shares the pages, or a server that prerenders them - it returns the app's own container and does not run `configure`.
+`GetBitBsqliteServices` runs the method it is given - its `configure`, `Register` above - once, the first time a page asks, into a container of Bsqlite's own, so every page that asks gets the same services and the same open database. Pass it the same method every time: it builds the services from the first call's, so a call with another method throws rather than get services that lack what that one registers. Keep every database, every context and every service of yours that takes Bsqlite's types in that one method. What it registers still reaches the app's services: a `BeforeFirstOpen` step, `options.Configure`, a context's constructor and a service of your own registered in `configure` get from the app's container whatever Bsqlite's lacks, and so does code that resolves from the provider it returns, or from a scope created through it. So a service of yours that takes Bsqlite's types - the demo's `BrowserDatabase`, say - is registered in `configure`, next to them, and resolved from that provider. The app's services come from a scope of the app's own, created with the container and kept as long as it is: its singletons are the ones the components get, while a service it registers as scoped is an instance of that scope's, so register as a singleton one whose instance the components have to share. Logging and options stay the app's: `configure` calls neither `AddLogging` nor `AddOptions`, nor what calls them - `AddMemoryCache`, `AddHttpClient` - since their second set would answer for the app's; `GetBitBsqliteServices` throws, naming them, if it does.
+
+Only WebAssembly builds the services this way: everywhere else Bit.Bsqlite is loaded with the app, which registers them as usual. Where the app did call `AddBitBsqliteServices` - a Blazor Hybrid app that shares the pages, or a server that prerenders them - `GetBitBsqliteServices` returns the app's own container instead, once it has checked that what `configure` registers is there too: such an app registers with the same method, `AppDatabase.Register(builder.Services)`. Anywhere else it throws, which is why the page above asks only once `RendererInfo.IsInteractive` is true.
 
 Mark the assemblies as lazy loaded in the project that runs in the browser, and set a runtime switch next to the marks so the router knows they are there to load:
 
@@ -278,7 +286,7 @@ The rest of the app has to keep to these rules:
 - No public type in an assembly the router reads - the app's own assembly first of all, the client project's in a Blazor Web App - may derive from or implement one of EF Core's or Bsqlite's: no public `DbContext`, `Migration` or `IEntityTypeConfiguration<T>` of yours, and no public `IBsqliteStorageProvider` or `IBsqliteStorageBindingStore`. The router reads the public types of those assemblies when it first builds its route table, which is after the first navigation's `OnNavigateAsync`, and on WebAssembly such a type throws a `ReflectionTypeLoadException` there - `Could not load file or assembly 'Microsoft.EntityFrameworkCore'`. So it goes unnoticed when the app is opened at a page that uses the database, and fails the app on its first page when it is opened anywhere else: try the app from a page that does not. `dotnet ef` scaffolds migrations as public classes, so keep the context, its configurations and its migrations in a library of their own, as the demo's Data project does, and lazy load it with the rest (`MyApp.Data.wasm` above) - or make every one of them `internal`. The entities can stay where they are: they derive from nothing of EF Core's.
 - `Microsoft.EntityFrameworkCore.Abstractions.wasm` stays out of the list. It holds the attributes an entity can carry, such as `[Index]` and `[Precision]`, which code that runs before the load may read - serializing an entity does - and it is 6 KB.
 - The list is what only EF Core and Bsqlite use. Leave out an assembly your app also uses before the database pages open - `System.Data.Common.wasm` for a `DataTable`, `System.Private.Xml.wasm` for XML, `Microsoft.Extensions.Caching.Memory.wasm` for an `IMemoryCache` of its own: otherwise a page that does not use the database fails with `Could not load file or assembly` naming it. With `System.Private.Xml.wasm` loaded together with the others, a `BeforeFirstOpen` step that loads it has nothing left to do.
-- In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` render mode in `App.razor`, as the demo does, so the router - and its `OnNavigateAsync` - runs in the browser. The server project loads Bsqlite with the rest of the app, and registers `LazyAssemblyLoader`, which `Routes.razor` injects while it is prerendered there: `builder.Services.AddScoped<LazyAssemblyLoader>()`. The pages are prerendered there too, where `GetBitBsqliteServices` builds the services for each request - harmless, since a page opens the database only once it is interactive - or returns the ones the server project registered, if it calls `AddBitBsqliteServices`.
+- In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` render mode in `App.razor`, as the demo does, so the router - and its `OnNavigateAsync` - runs in the browser. The server project loads Bsqlite with the rest of the app, and registers `LazyAssemblyLoader`, which `Routes.razor` injects while it is prerendered there: `builder.Services.AddScoped<LazyAssemblyLoader>()`. The pages are prerendered there too, where `GetBitBsqliteServices` builds nothing: a page asks for the database only once `RendererInfo.IsInteractive` is true, as `Products.razor` above does, and so only in the browser. A server project that registers the services itself - with `AppDatabase.Register(builder.Services)` - may let its pages ask while prerendering too, and they get its own.
 - With per-page render modes - the setup for Interactive Auto - the router renders statically on the server and never runs `OnNavigateAsync` in the browser, so a page that uses the database fails as it becomes interactive, with `Could not load file or assembly` or `Could not load type of field`. Such a page loads the assemblies itself. It names none of Bsqlite's or EF Core's types, loads them in `OnInitializedAsync`, and only then renders a component of yours, without a route, that uses the database:
 
   ```razor
@@ -294,13 +302,17 @@ The rest of the app has to keep to these rules:
   }
 
   @code {
-      // The switch set next to the marks: unset on the server and in an AOT build, where the list renders at once.
+      // The switch set next to the marks: unset in an AOT build, where the list renders at once.
       private static readonly bool LazyLoadsBsqlite = AppContext.TryGetSwitch("MyApp.LazyLoadsBsqlite", out var on) && on;
 
       private bool _loaded;
 
       protected override async Task OnInitializedAsync()
       {
+          // Prerendered on the server, the page renders without the list: the database is in the browser.
+          if (!RendererInfo.IsInteractive)
+              return;
+
           if (LazyLoadsBsqlite)
               await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bsqlite.wasm", /* every assembly the project marks */]);
 
@@ -308,6 +320,6 @@ The rest of the app has to keep to these rules:
       }
   }
   ```
-- A Blazor Hybrid app downloads nothing, so there is nothing to lazy load: it can call `AddBitBsqliteServices` as usual, or let the pages it shares with the WebAssembly client build their own. If it shares the router's file, it registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because the router injects it there too, though the switch leaves it unused.
+- A Blazor Hybrid app downloads nothing, so there is nothing to lazy load: it registers the services as usual, with the same method - `AppDatabase.Register(builder.Services)` in `MauiProgram.cs` - and `GetBitBsqliteServices` hands the pages it shares with the WebAssembly client its container. It builds none of its own there: a web view closes long before the app does, and would leave its databases open. If it shares the router's file, it registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because the router injects it there too, though the switch leaves it unused.
 - The condition leaves AOT builds out. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup. The switch is set only where the marks are, so an AOT build skips `LoadAssembliesAsync` as well.
 - `Could not load file or assembly 'Bit.Bsqlite'` - or `'Microsoft.EntityFrameworkCore'`, or `Could not load type of field` - when a database page opens means something used their types before the assemblies loaded: load them in `OnNavigateAsync` for every route whose page uses the database - from the page itself, for a page with its own render mode - and keep their types out of `Program.cs`, `App.razor`, the layouts every page shares and the method that loads them. If it comes in a `ReflectionTypeLoadException` from the router on the first page - and only when the app is opened away from the database pages - a public type in an assembly the router reads derives from or implements one of theirs. The same error naming another assembly of the list, on a page that does not use the database, is one your app uses itself: take it out of the list. `... must be marked with 'BlazorWebAssemblyLazyLoad' item group` names an assembly the call loads that the project file does not mark.
