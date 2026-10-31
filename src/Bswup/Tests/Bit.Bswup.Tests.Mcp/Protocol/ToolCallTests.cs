@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Bit.Bswup.Demo.Server.Controllers;
 using Bit.Bswup.Demo.Server.Services;
 using Bit.Bswup.Tests.Mcp.TestInfra;
 using ModelContextProtocol.Client;
@@ -266,6 +267,40 @@ public class ToolCallTests
         var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
 
         Assert.IsTrue(result.IsError is true);
+        // The reason reaches the model, so it can trim the file and call again - and it says the
+        // whole file was refused, not that the first 64,000 characters were read.
+        StringAssert.Contains(McpTestServer.TextOf(result), "over the 64000-character limit, so none of it was inspected");
+    }
+
+    [TestMethod]
+    public void InspectBswupServiceWorker_AdvertisesTheScriptLengthLimitInItsSchema()
+    {
+        // The refusal above costs a call; the schema is read before the first one, so the limit
+        // has to be there too or a model only learns it by hitting it.
+        var tool = _tools.Single(tool => tool.Name == "InspectBswupServiceWorker");
+        var description = tool.ProtocolTool.InputSchema.GetProperty("properties").GetProperty("script").GetProperty("description").GetString();
+
+        StringAssert.Contains(description, "at most 64,000 characters");
+    }
+
+    [TestMethod]
+    public async Task InspectBswupServiceWorker_RefusesAssignmentsChainedPastTheLimit()
+    {
+        var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments });
+
+        Assert.IsTrue(result.IsError is true);
+        StringAssert.Contains(McpTestServer.TextOf(result), "chained too deeply");
+    }
+
+    [TestMethod]
+    public async Task InspectBswupServiceWorker_RefusesInputWithoutLoggingAServerError()
+    {
+        // A caller's oversized file is the caller's mistake: the SDK's '"{ToolName}" threw an
+        // unhandled exception.' error, stack trace and all, is for faults of the server.
+        await _server.CallAsync("InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
+        await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments });
+
+        Assert.IsFalse(_server.LoggedExceptions.Any(exception => exception is ToolInputException), "a refused input was logged as a server error");
     }
 
     [TestMethod]

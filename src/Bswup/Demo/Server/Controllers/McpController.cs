@@ -1,5 +1,5 @@
-﻿using ModelContextProtocol.Server;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using ModelContextProtocol.Server;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Dtos;
 using Bit.Bswup.Demo.Server.Services;
@@ -63,9 +63,15 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     /// array in full before the first 200 of it were kept. Two hundred URLs of any plausible
     /// length fit inside this several times over, so a real question never reaches it.
     /// </summary>
-    private const int MaxAssetUrlsLength = 64_000;
+    internal const int MaxAssetUrlsLength = 64_000;
 
-    private const int MaxScriptLength = 64_000;
+    /// <summary>
+    /// The longest service-worker file one inspection will read. A real one is a few kilobytes of
+    /// settings above an importScripts line; the cap only keeps a pasted bundle, or text built to
+    /// make the scanner work hard, from reaching it. The <c>script</c> description states it, so
+    /// an agent knows the limit before it calls.
+    /// </summary>
+    internal const int MaxScriptLength = 64_000;
 
     private static readonly char[] AssetUrlSeparators = ['\n', '\r', ',', ';'];
 
@@ -140,12 +146,29 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Checks a service-worker.js file against the shipped Bswup worker and reports what it will actually do: which self.* settings it assigns, which of those names the worker does not know (a typo it silently ignores), settings assigned after the importScripts line (where the engine can no longer see them), a missing engine import, a defaultUrl no asset serves, string entries in the URL lists, and what a mode preset adds. Pass 'assetUrls' and the same call also decides those assets, running them through the include/exclude lists this file produces, built-in patterns first - which answers 'will this be cached?' without deploying. Run it on every service-worker file you write or change: none of these failures produce an error anyone sees until a user is offline.")]
     public BswupServiceWorkerInspectionDto InspectBswupServiceWorker(
-        [Description("The full content of the service-worker.js (or service-worker.published.js) file to check, verbatim.")] string script,
+        [Description("The full content of the service-worker.js (or service-worker.published.js) file to check, verbatim - at most 64,000 characters.")] string script,
         [Description("Optional asset URLs to decide under this file, written as they appear in service-worker-assets.js (e.g. '_framework/blazor.boot.json', 'css/app.css') - one per line, or comma- or semicolon-separated. Pass the handful the question is about, including one that must NOT be cached; do not paste a whole manifest.")] string? assetUrls = null)
     {
-        if (script?.Length > MaxScriptLength) throw new BadHttpRequestException($"The script is longer than {MaxScriptLength} characters.");
+        // Refused whole, and said so: "at most N are read" would sound as if the first N had been.
+        if (script?.Length > MaxScriptLength)
+        {
+            throw new ToolInputException($"The script is {script.Length} characters long, over the {MaxScriptLength}-character limit, so none of it was inspected. Pass the service-worker file on its own - a real one is a few kilobytes - and call again.");
+        }
 
-        var inspection = BswupServiceWorkerInspector.Inspect(script);
+        // Read once, for both the review and the asset decisions below. Only the read is guarded:
+        // the caller's file is the one input here that can be refused, and a catch around anything
+        // wider would relabel a server fault as the caller's mistake.
+        ServiceWorkerScript parsed;
+        try
+        {
+            parsed = BswupServiceWorkerInspector.Parse(script);
+        }
+        catch (ScriptTooComplexException exception)
+        {
+            throw new ToolInputException(exception.Message, exception);
+        }
+
+        var inspection = BswupServiceWorkerInspector.Inspect(parsed);
 
         if (string.IsNullOrWhiteSpace(assetUrls)) return inspection;
 
@@ -167,7 +190,7 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         // turns one call into a lot of matching. The cap sits far above the handful of assets a
         // real question is about, and the answer says out loud when it was applied - a silently
         // truncated list would read as 'these are all of them'.
-        var analysis = BswupServiceWorkerInspector.AnalyzeAssets(script, urls.Take(MaxAnalyzedAssetUrls));
+        var analysis = BswupServiceWorkerInspector.AnalyzeAssets(parsed, urls.Take(MaxAnalyzedAssetUrls));
 
         if (cut)
         {

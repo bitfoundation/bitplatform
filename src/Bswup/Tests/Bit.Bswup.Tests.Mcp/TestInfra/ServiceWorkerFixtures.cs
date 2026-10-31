@@ -39,6 +39,16 @@ public static class ServiceWorkerFixtures
         self.importScripts('_content/Bit.Bswup/bit-bswup.sw-cleanup.js');
         """;
 
+    /// <summary>
+    /// <c>self.a = self.a = ... 1;</c>, 7,000 links deep. Every link's value runs to the end of the
+    /// chain, so the values add up far past what the scanner reads (256,000 characters) while the
+    /// file itself, at 63,002 characters, stays under the tools' 64,000-character script limit: the
+    /// one shape that reaches the second limit rather than the first. The tests that refuse it
+    /// assert the "chained too deeply" reason, so a limit change that let the first one fire instead
+    /// fails them rather than passing for the wrong reason.
+    /// </summary>
+    public static readonly string ChainedAssignments = string.Concat(Enumerable.Repeat("self.a = ", 7_000)) + "1;";
+
     /// <summary>Wraps a body in a file that imports the engine after it, the way a real one is written.</summary>
     public static string WithImport(string body) => $"{body}\n\n{Import}\n";
 }

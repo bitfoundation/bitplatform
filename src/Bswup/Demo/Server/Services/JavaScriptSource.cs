@@ -6,6 +6,13 @@ namespace Bit.Bswup.Demo.Server.Services;
 public record JsAssignment(string Name, string Value, int Index);
 
 /// <summary>
+/// A script <see cref="JavaScriptSource"/> refuses to read, because reading it would cost far more
+/// than its length suggests. A type of its own, so a caller that hands in someone else's file can
+/// tell "this input is refused" apart from a fault anywhere else.
+/// </summary>
+public class ScriptTooComplexException(string message) : Exception(message);
+
+/// <summary>
 /// The little bit of JavaScript reading the Bswup tools need: Bswup is configured in JavaScript,
 /// so both the answers (the shipped <c>bit-bswup.sw.js</c> defaults) and the questions (an app's
 /// own <c>service-worker.js</c>, pasted in for review) arrive as source text.
@@ -19,6 +26,13 @@ public record JsAssignment(string Name, string Value, int Index);
 /// </summary>
 public static class JavaScriptSource
 {
+    /// <summary>
+    /// The most assigned-expression text <see cref="ReadAssignments"/> copies out of one script.
+    /// The search resumes right after each name, so a chain like <c>self.a = self.a = ... 1;</c>
+    /// reads every link's value to the end of the chain - text that grows with the square of the
+    /// script's length. Four times the longest script the tools accept, so a real file, nested
+    /// assignments and all, stays far below it.
+    /// </summary>
     private const int MaxAssignedValuesLength = 256_000;
 
     /// <summary>
@@ -77,6 +91,7 @@ public static class JavaScriptSource
     /// Every <c>&lt;target&gt;.&lt;name&gt; = ...</c> assignment, in source order, with the assigned
     /// expression verbatim. Pass comment-stripped code (see <see cref="StripComments"/>).
     /// </summary>
+    /// <exception cref="ScriptTooComplexException">The assigned expressions overlap past <see cref="MaxAssignedValuesLength"/>.</exception>
     public static IReadOnlyList<JsAssignment> ReadAssignments(string code, string target)
     {
         var assignments = new List<JsAssignment>();
@@ -120,7 +135,7 @@ public static class JavaScriptSource
             var valueEnd = FindStatementEnd(code, valueStart);
 
             valuesLength += valueEnd - valueStart;
-            if (valuesLength > MaxAssignedValuesLength) throw new BadHttpRequestException("The script's assignments overlap too much to read.");
+            if (valuesLength > MaxAssignedValuesLength) throw new ScriptTooComplexException($"The script's {prefix}* assignments are chained too deeply to read: their values add up to more than {MaxAssignedValuesLength} characters.");
 
             assignments.Add(new JsAssignment(name, code[valueStart..valueEnd].Trim(), start));
 

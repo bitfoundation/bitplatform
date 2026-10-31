@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.RateLimiting;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Components;
+using Bit.Bswup.Demo.Server.Controllers;
 using Microsoft.AspNetCore.HttpOverrides;
 using Bit.Bswup.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
@@ -15,6 +16,14 @@ const string McpRateLimiterPolicy = "mcp";
 
 // Requests one caller may make to those endpoints per minute.
 const int McpRequestsPerMinute = 240;
+
+// The largest request body those endpoints read, in bytes - down from Kestrel's 30 MB default. It is
+// sized off the most any tool reads, not off a typical call: InspectBswupServiceWorker reads at most
+// 64,000 characters of script and 64,000 of asset URLs, which is 768,000 bytes even with every
+// character JSON-escaped as \uXXXX. So everything the tool would read always arrives, and a list it
+// would cut still gets the tool's own note telling the agent to ask again with the rest. A body past
+// this carries only text no tool would read; McpErrorMiddleware refuses it with the same advice.
+const int McpMaxRequestBodySize = 1_000_000;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -125,7 +134,22 @@ passing the asset URLs the change is about as assetUrls, before reporting the wo
     .WithHttpTransport()
     .WithToolsFromAssembly()
     .WithResourcesFromAssembly()
-    .WithPromptsFromAssembly();
+    .WithPromptsFromAssembly()
+    // A tool refusing its input answers with the reason as its error result - caught here, inside
+    // the SDK's own handling, which would otherwise log every refusal as '"{ToolName}" threw an
+    // unhandled exception.' with a stack trace. An agent retrying an oversized file is not a server
+    // failure, and must not fill the error log as one.
+    .WithRequestFilters(filters => filters.AddCallToolFilter(next => async (request, cancellationToken) =>
+    {
+        try
+        {
+            return await next(request, cancellationToken);
+        }
+        catch (ToolInputException exception)
+        {
+            return new CallToolResult { IsError = true, Content = [new TextContentBlock { Text = exception.Message }] };
+        }
+    }));
 
 // Renders a docs page outside of a request's component hierarchy, so its content can be handed to
 // an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
@@ -184,6 +208,11 @@ app.MapStaticAssets();
 app.UseAntiforgery();
 app.UseRateLimiter();
 
+// A refused request to the MCP endpoints or their HTTP mirror - a tool rejecting its input, a body
+// past McpMaxRequestBodySize - is answered with the reason here, rather than reaching the exception
+// handler as a server failure. Only endpoints carrying McpEndpointMetadata are touched.
+app.UseMiddleware<McpErrorMiddleware>();
+
 // Built once at startup from the same catalog the nav panel and the MCP server read, so a page
 // added there is advertised to search engines without a second list to remember. The URLs are
 // absolute and point at production (SiteMetadata.Origin) rather than at the serving host: a
@@ -205,8 +234,8 @@ app.MapGet("/sitemap.xml", () => Results.Text(siteMap, "application/xml", Encodi
 
 // Both are declared before the Razor components below: /api/... and /mcp are literal routes that
 // no page owns, but keeping them first says out loud that they are not part of the app's UI.
-app.MapControllers().RequireRateLimiting(McpRateLimiterPolicy);
-app.MapMcp("/mcp").RequireRateLimiting(McpRateLimiterPolicy);
+app.MapControllers().RequireRateLimiting(McpRateLimiterPolicy).WithMetadata(new McpEndpointMetadata(McpMaxRequestBodySize, jsonRpc: false));
+app.MapMcp("/mcp").RequireRateLimiting(McpRateLimiterPolicy).WithMetadata(new McpEndpointMetadata(McpMaxRequestBodySize, jsonRpc: true));
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()

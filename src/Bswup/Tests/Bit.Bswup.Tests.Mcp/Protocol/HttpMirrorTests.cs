@@ -145,7 +145,31 @@ public class HttpMirrorTests
     {
         var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = new string(' ', 64_001) });
 
+        await AssertRejectedAsync(response, "over the 64000-character limit, so none of it was inspected");
+    }
+
+    [TestMethod]
+    public async Task PostWithAssignmentsChainedPastTheLimit_IsRejected()
+    {
+        var response = await _server.Http.PostAsJsonAsync("/api/mcp/InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.ChainedAssignments });
+
+        await AssertRejectedAsync(response, "chained too deeply");
+    }
+
+    /// <summary>
+    /// A refused input is a 400 whose problem details say why - the same reason an MCP client gets,
+    /// rather than a server-error page that leaves the caller guessing - and nothing is logged as a
+    /// server error for it.
+    /// </summary>
+    private static async Task AssertRejectedAsync(HttpResponseMessage response, string reason)
+    {
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.AreEqual("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+        StringAssert.Contains(problem.GetProperty("detail").GetString(), reason);
+        Assert.IsFalse(_server.LoggedExceptions.Any(exception => exception is ToolInputException), "a refused input was logged as a server error");
     }
 
     [TestMethod]

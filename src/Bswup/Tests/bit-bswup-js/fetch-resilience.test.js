@@ -440,6 +440,67 @@ describe('a full answer to a ranged request with integrity enabled', () => {
     });
 });
 
+// The other two ways an integrity-checked asset reaches lazyFill through a request that carried no
+// integrity attribute: the verified request could not be built (createNewAssetRequest throws on a
+// URL it cannot compose, and the guarded call sites fall back to the page's own request), and an
+// opaque answer, whose bytes cannot be read - so cannot be hashed - at all.
+describe('bytes fetched without the integrity attribute', () => {
+    const TEXT = 'console.log(1);';
+    const hash = `sha256-${createHash('sha256').update(TEXT).digest('base64')}`;
+
+    // Only the integrity-carrying request fails to build; the worker's other Requests are untouched.
+    const failVerifiedRequest = c => {
+        const Request = c.self.Request;
+        c.self.Request = function (url, init) {
+            if (init && init.integrity) throw new TypeError("Failed to construct 'Request': Invalid URL");
+            return new Request(url, init);
+        };
+    };
+
+    const bootServing = (isPassive, body) => boot({
+        config: { isPassive, enableIntegrityCheck: true, crypto: webcrypto },
+        assets: [{ url: 'app.js', hash }],
+        fetchHandler: async () => new FakeResponse(body, { status: 200 }),
+        configure: failVerifiedRequest,
+    });
+
+    for (const isPassive of [false, true]) {
+        const mode = isPassive ? 'passive' : 'active';
+
+        it(`hashes what the page's own request fetched when the verified one cannot be built in ${mode} mode`, async () => {
+            const tampered = bootServing(isPassive, 'tampered');
+            const { response } = await tampered.fetchEvent({ url: `${ORIGIN}/app.js` });
+            expect(decodeBody(response)).toBe('tampered');
+            expect(tampered.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
+
+            const genuine = bootServing(isPassive, TEXT);
+            await genuine.fetchEvent({ url: `${ORIGIN}/app.js` });
+            expect(genuine.caches.snapshot()[ASSET_CACHE]).toEqual([`${ORIGIN}/app.js.${hash}`]);
+        });
+    }
+
+    it('serves but does not cache an opaque answer it cannot verify', async () => {
+        const CDN = 'https://cdn.example.com/clip.mp4';
+        // A browser hands the worker none of an opaque answer's bytes. This one hands over bytes that
+        // WOULD match the hash, with a crypto to hash them: so only lazyFill's opaque guard keeps it
+        // out of the cache - not a hash mismatch, and not a fixture too thin to read, whose failure
+        // lazyFill's catch would swallow just the same and pass this test with the guard gone.
+        const opaque = () => Object.assign(new FakeResponse(TEXT, { status: 0 }), { type: 'opaque', clone: opaque });
+        const sw = boot({
+            config: { isPassive: true, enableIntegrityCheck: true, crypto: webcrypto },
+            assets: [],
+            fetchHandler: async () => opaque(),
+            configure: c => { c.self.externalAssets = c.array([{ url: CDN, hash }]); },
+        });
+
+        // A ranged media request goes out as the page sent it - here a cross-origin no-cors one.
+        const { handled, response } = await sw.fetchEvent({ url: CDN, mode: 'no-cors', headers: { range: 'bytes=0-1' } });
+        expect(handled).toBe(true);
+        expect(response.type).toBe('opaque');
+        expect(sw.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
+    });
+});
+
 // Offline navigation is the core feature: every route the user deep-links to must come back
 // as the cached app shell, while URLs the server owns (and URLs that ARE assets) must not.
 describe('offline navigation (SPA default document)', () => {
