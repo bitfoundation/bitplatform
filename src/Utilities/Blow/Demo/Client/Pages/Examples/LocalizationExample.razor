@@ -154,6 +154,7 @@
                 BlowConnectionRejection.TargetFull => "Keine Verbindung möglich: Der Eingang hat keine freien Verbindungen",
                 BlowConnectionRejection.Cycle => "Keine Verbindung möglich: Die Verbindung würde einen Zyklus bilden",
                 BlowConnectionRejection.MissingNode => "Keine Verbindung möglich: Der Knoten existiert nicht mehr",
+                BlowConnectionRejection.Unsettled => "Keine Verbindung möglich: Die Kante hat sich während der Bestätigung immer wieder geändert",
                 _ => "Keine Verbindung möglich",
             },
             KeyboardConnectionStarted = (node, port, key) => $"Verbindung von {node}{(port is null ? "" : $", {port}")}. Zu einem anderen "
@@ -205,6 +206,7 @@
                 BlowConnectionRejection.TargetFull => "اتصال ممکن نیست: ورودی اتصال آزادی ندارد",
                 BlowConnectionRejection.Cycle => "اتصال ممکن نیست: این اتصال یک چرخه می‌سازد",
                 BlowConnectionRejection.MissingNode => "اتصال ممکن نیست: گره دیگر وجود ندارد",
+                BlowConnectionRejection.Unsettled => "اتصال ممکن نیست: یال در حین تأیید پیوسته تغییر کرد",
                 _ => "اتصال ممکن نیست",
             },
             KeyboardConnectionStarted = (node, port, key) => $"اتصال از {node}{(port is null ? "" : $"، {port}")}. به گره دیگری بروید و برای "

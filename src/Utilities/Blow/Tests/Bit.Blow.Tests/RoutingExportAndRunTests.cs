@@ -208,7 +208,9 @@ public class RoutingExportAndRunTests : BunitContext
         Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes));
         var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, []));
 
-        Assert.AreEqual(new BlowXYPosition(600, 60), nodes[59].AbsolutePosition, "the canvas did not sum the whole chain");
+        Assert.AreEqual(new BlowXYPosition(600, 60), nodes.Single(n => n.Id == "p59").AbsolutePosition, "the canvas did not sum the whole chain");
+        Assert.AreEqual(new BlowXYPosition(600, 60), nodes.Single(n => n.Id == "c59").AbsolutePosition,
+            "the canvas did not sum the whole of a chain listed children first");
         foreach (var node in nodes)
         {
             var rect = doc.Descendants(Svg + "text").Single(t => t.Value == node.Id).Parent!.Element(Svg + "rect")!;
@@ -234,6 +236,39 @@ public class RoutingExportAndRunTests : BunitContext
 
         Assert.HasCount(length, rects);
         Assert.AreEqual("50000", rects[^1].Attribute("x")!.Value, "the deepest node is drawn last, at the sum of all its parents");
+    }
+
+    [TestMethod]
+    public void ANodeUnderAHiddenAncestorIsLeftOutHoweverFarUpTheAncestorIs()
+    {
+        var nodes = Enumerable.Range(0, 80)
+            .Select(i => new BlowNode { Id = $"n{i}", Label = $"n{i}", ParentId = i == 0 ? null : $"n{i - 1}", Hidden = i == 0, Width = 10, Height = 10 })
+            .ToList();
+        nodes.Add(new BlowNode { Id = "shown", Label = "shown", Width = 10, Height = 10 });
+
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, [new BlowEdge { Id = "e", Source = "shown", Target = "n79" }]));
+
+        CollectionAssert.AreEqual(new[] { "shown" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
+        Assert.IsEmpty(doc.Descendants(Svg + "path").Where(p => p.Parent?.Name != Svg + "marker"), "an edge to a node left out was drawn");
+    }
+
+    [TestMethod]
+    public void OfNodesThatShareAnIdOnlyTheFirstIsDrawnAsOnTheCanvas()
+    {
+        var nodes = new List<BlowNode>
+        {
+            new() { Id = "a", Label = "first", Width = 100, Height = 40 },
+            new() { Id = "a", Label = "second", Position = new(500, 500), Width = 20, Height = 10 },
+        };
+
+        var cut = Render<BlowCanvas>(p => p.Add(c => c.Nodes, nodes));
+        var doc = XDocument.Parse(BlowSvgExport.ToSvg(nodes, [], new BlowSvgExportOptions { Background = null }));
+
+        Assert.HasCount(1, cut.FindAll(".bit-blow-node[data-id='a']"), "the canvas does not draw the second either");
+        var rect = doc.Descendants(Svg + "rect").Single();
+        Assert.AreEqual(("0", "0", "100", "40"),
+            (rect.Attribute("x")!.Value, rect.Attribute("y")!.Value, rect.Attribute("width")!.Value, rect.Attribute("height")!.Value));
+        CollectionAssert.AreEqual(new[] { "first" }, doc.Descendants(Svg + "text").Select(t => t.Value).ToArray());
     }
 
     [TestMethod]

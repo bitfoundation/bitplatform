@@ -792,6 +792,9 @@ A prospective connection is refused, for the reason in brackets (a `BlowConnecti
 - the canvas's `IsValidConnection`, or the rule of either handle, returns false (`RejectedByRule`);
 - the drop handle has `IsConnectableEnd` (or `IsConnectable`) off.
 
+A connection waiting on [`OnBeforeConnect`](#confirming-a-connection-asynchronously) can also be refused by its answer
+(`RejectedByRule`), or dropped because its wiring kept changing while it was asked (`Unsettled`).
+
 The checks run in that order and the first that fails is the reason, so the application's own rules only ever see
 connections that are otherwise allowed. When a drop is refused - on a handle, or near one with no valid handle
 nearby - the reason is announced to screen readers (`AriaLabels.ConnectionRejected`) and carried by
@@ -821,9 +824,12 @@ make it, for instance. It runs when the user lets go on a valid handle; the line
 edge is added (or the reconnected edge rewired) only if it returns true. The graph may change while it runs, so the
 connection is checked against every rule again when it returns and dropped if it is no longer allowed. If the wiring
 itself changed meanwhile - the end of a reconnected edge that stays put was moved by another reconnect confirmed
-first - it is asked again about the wiring as it is now, so it only ever approves what is made; a wiring still
-changing after three answers is dropped. Either way `OnConnectEnd` reports the outcome, with `Rejection` set to
-`RejectedByRule` for a refusal. An exception it throws
+first - its answer, yes or no, was about a wiring that will not be made, so it is asked again about the wiring as it
+is now (whichever `OnBeforeConnect` is set by then; none, if it was removed), and only ever judges what is made. A
+wiring it has already answered about is not asked about twice, and one still changing after three answers is
+dropped. Either way `OnConnectEnd` reports the outcome, with `Start` the end that stayed as it is in the wiring
+judged last, and `Rejection` set to `RejectedByRule` for a refusal or `Unsettled` for a wiring that would not hold
+still. An exception it throws
 reaches the renderer like one from an event handler. Rules a connection must pass *while it is dragged* belong in
 `IsValidConnection`, which is synchronous because it runs for every handle on every frame. Demo:
 `/examples/confirm-connection`.

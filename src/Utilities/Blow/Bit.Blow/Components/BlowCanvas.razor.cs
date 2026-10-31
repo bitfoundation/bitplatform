@@ -584,9 +584,11 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// may make it, say. Runs after the user lets go on a valid handle and before the edge is added (or an
     /// existing edge rewired); returning false abandons it. The graph may change while it runs, so the connection
     /// is checked against every rule again once it returns, and dropped if it is no longer allowed. When the wiring
-    /// itself has changed - the end of a reconnected edge that stays put moved meanwhile - it is asked again about the
-    /// wiring as it is now, so it only ever approves what is made; a wiring still changing after three answers is
-    /// dropped. Leave it null
+    /// itself has changed - the end of a reconnected edge that stays put moved meanwhile - its answer, yes or no, is
+    /// about a wiring that will not be made, so it is asked again about the wiring as it is now (the confirmation set
+    /// then, should the app have replaced it; none, should it have removed it), and only ever judges what is made. A
+    /// wiring it has already answered about is not asked about twice, and one still changing after three answers is
+    /// dropped as <see cref="BlowConnectionRejection.Unsettled"/>. Leave it null
     /// for the ordinary synchronous connect: the rules a connection has to pass while it is dragged belong in
     /// <see cref="IsValidConnection"/>.
     /// </summary>
@@ -1059,16 +1061,15 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     private bool _nodesInitialized;
 
     /// <summary>
-    /// Depth guard for parent chains. Cycles are caught separately and reported as parent-cycle. The SVG export follows
-    /// chains exactly as far, so its picture of a deep nesting is the one on screen.
+    /// Depth guard for walks up a parent chain that do not watch for cycles. Layout watches for them - they are reported
+    /// as parent-cycle - and follows a chain however long it is.
     /// </summary>
-    internal const int MaxParentDepth = 50;
+    private const int MaxParentDepth = BlowEdgeLayout.MaxParentDepth;
 
     // per-render caches (rebuilt by PrepareRender)
     private bool _indexDirty = true;
     private readonly Dictionary<string, BlowNode> _index = [];
-    private readonly Dictionary<string, BlowXYPosition> _rawAbsolute = [];
-    private readonly Dictionary<string, int> _depth = [];
+    private readonly Dictionary<string, BlowEdgeLayout.Nesting> _nesting = [];
     private readonly Dictionary<string, BlowEdgeContext> _edgeContexts = [];
     private readonly List<BlowNode> _renderNodes = [];
     private readonly List<BlowEdge> _renderEdges = [];
@@ -1855,19 +1856,35 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>
     /// Resolves each node's absolute position by walking its parent chain, then applies node
-    /// origin. Runs in O(n): parent chains are memoized and the id lookup is built once.
+    /// origin. Runs in O(n): parent chains are memoized and the id lookup is built once. The SVG
+    /// export resolves them the same way, so its picture of a nesting is the one on screen.
     /// </summary>
     private void ComputeLayout()
     {
         RebuildIndex();
-        _rawAbsolute.Clear();
-        _depth.Clear();
+        _nesting.Clear();
 
-        foreach (var n in Nodes) ResolveRaw(n, 0);
+        BlowEdgeLayout.Nest(Nodes, _index, _nesting, (n, cycle) =>
+        {
+            // A cycle is cut where it is found: walking it would add the same offsets round and round, flinging
+            // every node on it far off screen, so the node there is laid out as a root.
+            if (cycle)
+            {
+                ReportError(BlowErrorCode.ParentCycle, n.Id,
+                    $"Node '{n.Id}' is its own ancestor: following its parents leads back to it. "
+                    + "It is laid out as a root node instead.");
+            }
+            else
+            {
+                ReportError(BlowErrorCode.MissingParentNode, n.Id,
+                    $"Node '{n.Id}' names parent '{n.ParentId}', which is not in the node list; "
+                    + "it is laid out as a root node instead.");
+            }
+        });
 
         foreach (var n in Nodes)
         {
-            var raw = _rawAbsolute[n.Id];
+            var raw = _nesting[n.Id].Position;
             var origin = n.Origin ?? NodeOrigin;
             if (origin.X == 0 && origin.Y == 0)
             {
@@ -1881,54 +1898,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Memoized parent-chain walk returning the un-origin-adjusted absolute position and the
-    /// nesting depth. The depth guard also breaks accidental parent cycles.
-    /// </summary>
-    private (BlowXYPosition Position, int Depth) ResolveRaw(BlowNode n, int guard)
-    {
-        if (_rawAbsolute.TryGetValue(n.Id, out var cached))
-            return (cached, _depth[n.Id]);
-
-        var pos = n.Position;
-        var depth = 0;
-
-        if (guard < MaxParentDepth && n.ParentId is { } pid)
-        {
-            if (_index.TryGetValue(pid, out var parent) && (ReferenceEquals(parent, n) || _resolving.Contains(parent.Id)))
-            {
-                // The parent is this node, or is still waiting on this node's own position: a cycle. Walking it
-                // would add the same offsets round and round until the depth guard gave up, flinging every
-                // node on it far off screen, so it is cut here and this node laid out as a root.
-                ReportError(BlowErrorCode.ParentCycle, n.Id,
-                    $"Node '{n.Id}' is its own ancestor: following its parents leads back to it. "
-                    + "It is laid out as a root node instead.");
-            }
-            else if (parent is not null)
-            {
-                _resolving.Add(n.Id);
-                var (pp, pd) = ResolveRaw(parent, guard + 1);
-                _resolving.Remove(n.Id);
-                pos = new BlowXYPosition(pp.X + n.Position.X, pp.Y + n.Position.Y);
-                depth = pd + 1;
-            }
-            else
-            {
-                ReportError(BlowErrorCode.MissingParentNode, n.Id,
-                    $"Node '{n.Id}' names parent '{pid}', which is not in the node list; "
-                    + "it is laid out as a root node instead.");
-            }
-        }
-
-        _rawAbsolute[n.Id] = pos;
-        _depth[n.Id] = depth;
-        return (pos, depth);
-    }
-
-    /// <summary>The nodes whose parent chain is being resolved right now, for <see cref="ResolveRaw"/> to spot a cycle.</summary>
-    private readonly HashSet<string> _resolving = [];
-
-    private int Depth(BlowNode n) => _depth.TryGetValue(n.Id, out var d) ? d : 0;
+    private int Depth(BlowNode n) => _nesting.TryGetValue(n.Id, out var nesting) ? nesting.Depth : 0;
 
     private int EdgeZIndex(BlowEdge e)
     {
@@ -2070,7 +2040,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     {
         var index = Index;
         var area = BlowEdgeLayout.ObstacleArea(source.GetRect(), target.GetRect());
-        var obstacles = BlowEdgeLayout.Obstacles(ShownNodesNear(area), area, source, target, index, MaxParentDepth);
+        var obstacles = BlowEdgeLayout.Obstacles(ShownNodesNear(area), area, source, target, index);
 
         // The edge's geometry is asked for again whenever any node moved; the router is only asked again when its own
         // ends, or what is near enough to be in its way, did - or the router itself was replaced.
@@ -2152,7 +2122,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// no node.
     /// </summary>
     private BlowNode? DisplayedEndpoint(string nodeId, out bool moved)
-        => BlowEdgeLayout.DisplayedEnd(_index, nodeId, static n => !n.Hidden, MaxParentDepth, out moved);
+        => BlowEdgeLayout.DisplayedEnd(_index, nodeId, static n => !n.Hidden, out moved);
 
     /// <summary>
     /// Where one end of an edge is drawn: at its handle, or - for an end folded into a collapsed node - at that node's
@@ -4534,7 +4504,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         var connection = fresh ?? DescribeConnection(nodeId, handleId, handleType);
         var reconnecting = _reconnectEdge;
 
-        if (OnBeforeConnect is not { } confirm)
+        if (OnBeforeConnect is null)
         {
             ApplyConnection(connection, reconnecting);
             _connEndValid = true;
@@ -4548,7 +4518,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
         // without waiting on a server, and the user can start the next gesture meanwhile.
         var end = TakeConnectionEnd();
         StateHasChanged();
-        _ = SurfaceFailureAsync(ConfirmConnectionAsync(confirm, connection, drop, reconnecting, end));
+        _ = SurfaceFailureAsync(ConfirmConnectionAsync(connection, drop, reconnecting, end));
     }
 
     /// <summary>Hands an exception from work nobody awaits to the renderer, rather than losing it.</summary>
@@ -4564,40 +4534,60 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
 
     /// <summary>
     /// How many times <see cref="OnBeforeConnect"/> is asked about one connection whose wiring keeps changing while it
-    /// answers, before the connection is dropped.
+    /// answers, before the connection is dropped as <see cref="BlowConnectionRejection.Unsettled"/>.
     /// </summary>
     private const int MaxConfirmations = 3;
 
-    private async Task ConfirmConnectionAsync(Func<BlowConnection, Task<bool>> confirm, BlowConnection connection,
-        ConnectionDrop drop, BlowEdge? reconnecting, ConnectionEnd end)
+    private async Task ConfirmConnectionAsync(BlowConnection connection, ConnectionDrop drop, BlowEdge? reconnecting,
+        ConnectionEnd end)
     {
         var raised = false;
         try
         {
+            // Each answer the app gave, by the wiring it was about: a wiring that comes back round to one already
+            // answered is not asked about again.
+            var answers = new Dictionary<BlowConnection, bool>();
+            var asked = 0;
             BlowConnectionCheck now;
-            for (var asked = 1; ; asked++)
+            while (true)
             {
-                var confirmed = await confirm(connection);
-                if (_disposed) return;
+                if (!answers.TryGetValue(connection, out var confirmed))
+                {
+                    if (asked == MaxConfirmations)
+                    {
+                        now = new BlowConnectionCheck(BlowConnectionRejection.Unsettled);
+                        break;
+                    }
+
+                    // The confirmation as it is now: the app may have replaced it, or turned it off, while it answered.
+                    if (OnBeforeConnect is { } confirm)
+                    {
+                        asked++;
+                        confirmed = await confirm(connection);
+                        if (_disposed) return;
+                    }
+                    else
+                    {
+                        confirmed = true;
+                    }
+                    answers[connection] = confirmed;
+                }
 
                 // The graph may have moved on while the confirmation ran - another connection made, the edge being
                 // reconnected deleted, a node removed by a collaborator - so the connection is judged again as of now.
-                BlowConnection? fresh = null;
-                now = confirmed
-                    ? RecheckConnection(drop, reconnecting, out fresh)
-                    : new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
-                if (!now.IsValid || fresh == connection) break;
+                now = RecheckConnection(drop, reconnecting, out var fresh);
 
-                // Still allowed, but no longer the wiring the app said yes to: the end of a reconnected edge that stays
-                // has moved meanwhile - another reconnect of the same edge confirmed first, say. The app approves
-                // exactly what is made, so it is asked again about the wiring as it is now; one that will not hold
-                // still is dropped after a few tries.
-                if (asked == MaxConfirmations)
+                // Still allowed, but no longer the wiring the app answered about: the end of a reconnected edge that
+                // stays has moved meanwhile - another reconnect of the same edge confirmed first, say. A yes or a no
+                // covers only the wiring it was about, so the wiring as it is now is judged in its turn; one that will
+                // not hold still is dropped after a few answers.
+                if (now.IsValid && fresh != connection)
                 {
-                    now = new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
-                    break;
+                    connection = fresh!.Value;
+                    continue;
                 }
-                connection = fresh!.Value;
+                if (!confirmed) now = new BlowConnectionCheck(BlowConnectionRejection.RejectedByRule);
+                break;
             }
 
             if (now.IsValid) ApplyConnection(connection, reconnecting);
@@ -4605,6 +4595,12 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
             raised = true;
             RaiseConnectionEnd(end with
             {
+                // The end that stays is the one the last wiring judged hangs from, not necessarily the one the gesture
+                // began from: it may have moved meanwhile.
+                Start = reconnecting is null ? end.Start
+                    : end.Start.HandleType == BlowHandleType.Source
+                        ? end.Start with { NodeId = connection.Source!, HandleId = connection.SourceHandle }
+                        : end.Start with { NodeId = connection.Target!, HandleId = connection.TargetHandle },
                 Valid = now.IsValid,
                 Rewired = now.IsValid && reconnecting is not null,
                 Rejection = now.Rejection,
@@ -6203,7 +6199,7 @@ public partial class BlowCanvas : IBlowContext, IAsyncDisposable
     /// Where a node's position point sits in flow space: the point its <see cref="BlowNode.Position"/> names, and the
     /// one its children's positions are measured from. Valid after <see cref="ComputeLayout"/>.
     /// </summary>
-    private BlowXYPosition PositionPoint(BlowNode node) => ResolveRaw(node, 0).Position;
+    private BlowXYPosition PositionPoint(BlowNode node) => _nesting[node.Id].Position;
 
     /// <summary>
     /// Where a node's position point would sit, in flow space, with its top-left corner at <paramref name="topLeft"/> -

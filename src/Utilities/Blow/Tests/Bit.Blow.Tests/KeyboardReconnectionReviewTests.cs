@@ -230,9 +230,11 @@ public class KeyboardReconnectionReviewTests : BunitContext
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
-    public async Task AnApprovalHoldsOnlyForTheWiringItWasAskedAbout(bool approved)
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(false, false)]
+    public async Task AnAnswerHoldsOnlyForTheWiringItWasAskedAbout(bool aboutTheOldWiring, bool aboutTheNewWiring)
     {
         var (nodes, edges, measured) = Graph();
         var asked = new List<BlowConnection>();
@@ -240,13 +242,7 @@ public class KeyboardReconnectionReviewTests : BunitContext
         var connectEnds = new List<BlowConnectEndInfo>();
         var reconnectEnds = new List<BlowEdgeReconnectEnd>();
         var cut = Render(nodes, edges, measured, p => p
-            .Add(c => c.OnBeforeConnect, connection =>
-            {
-                asked.Add(connection);
-                var answer = new TaskCompletionSource<bool>();
-                pending.Enqueue(answer);
-                return answer.Task;
-            })
+            .Add(c => c.OnBeforeConnect, Asking(asked, pending))
             .Add(c => c.OnConnectEnd, e => connectEnds.Add(e))
             .Add(c => c.OnReconnectEnd, e => reconnectEnds.Add(e)));
 
@@ -257,27 +253,32 @@ public class KeyboardReconnectionReviewTests : BunitContext
         await EdgeKey(cut, "e", "c");
         await Focus(cut, "d");
         await NodeKey(cut, "d", "Enter");
+        var ended = connectEnds.Count;
         await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
-        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(aboutTheOldWiring));
 
-        // d -> b was approved, but a -> c went first: moving the source to d now makes d -> c, which nobody approved.
+        // d -> b was answered, but a -> c went first: moving the source to d now makes d -> c, which nobody judged.
         CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "b"), ("d", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
-        Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target), "d -> c was applied, though only a -> c and d -> b were approved");
-        Assert.IsTrue(connectEnds[^1] is { IsReconnect: true, IsValid: true }, "the move still waiting on the app was reported ended");
+        Assert.AreEqual(("a", "c"), (edges[0].Source, edges[0].Target), "d -> c was applied, though only a -> c and d -> b were answered");
+        Assert.HasCount(ended + 1, connectEnds, "the move still waiting on the app was reported ended");
+        Assert.IsTrue(connectEnds[^1] is { IsReconnect: true, IsValid: true });
 
-        await cut.InvokeAsync(() => pending.Dequeue().SetResult(approved));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(aboutTheNewWiring));
 
-        Assert.AreEqual(approved ? ("d", "c") : ("a", "c"), (edges[0].Source, edges[0].Target));
-        Assert.AreEqual(approved
+        Assert.AreEqual(aboutTheNewWiring ? ("d", "c") : ("a", "c"), (edges[0].Source, edges[0].Target));
+        Assert.AreEqual(aboutTheNewWiring
             ? BlowAriaLabels.Default.Reconnected("Other source", "Other sink")
             : BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.RejectedByRule), Heard(cut));
+        Assert.HasCount(ended + 2, connectEnds);
         CollectionAssert.AreEqual(new[]
             {
                 (true, true, BlowConnectionRejection.None),
-                (true, approved, approved ? BlowConnectionRejection.None : BlowConnectionRejection.RejectedByRule),
+                (true, aboutTheNewWiring, aboutTheNewWiring ? BlowConnectionRejection.None : BlowConnectionRejection.RejectedByRule),
             },
             connectEnds.TakeLast(2).Select(e => (e.IsReconnect, e.IsValid, e.Rejection)).ToArray());
-        CollectionAssert.AreEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, approved) },
+        Assert.AreEqual(("c", BlowHandleType.Target), (connectEnds[^1].Start.NodeId, connectEnds[^1].Start.HandleType),
+            "the end reported as staying is b, where the gesture began, not c, where the wiring judged last hangs from");
+        CollectionAssert.AreEqual(new[] { (BlowHandleType.Target, true), (BlowHandleType.Source, aboutTheNewWiring) },
             reconnectEnds.TakeLast(2).Select(e => (e.MovingEnd, e.Rewired)).ToArray());
     }
 
@@ -285,17 +286,12 @@ public class KeyboardReconnectionReviewTests : BunitContext
     public async Task AWiringThatWillNotHoldStillIsAskedAboutThreeTimesThenDropped()
     {
         var (nodes, edges, measured) = Graph();
+        nodes.AddRange([new() { Id = "x", Label = "Third source", Position = new(600, 0) }, new() { Id = "y", Label = "Fourth source", Position = new(900, 0) }]);
         var asked = new List<BlowConnection>();
         var pending = new Queue<TaskCompletionSource<bool>>();
         var connectEnds = new List<BlowConnectEndInfo>();
-        var cut = Render(nodes, edges, measured, p => p
-            .Add(c => c.OnBeforeConnect, connection =>
-            {
-                asked.Add(connection);
-                var answer = new TaskCompletionSource<bool>();
-                pending.Enqueue(answer);
-                return answer.Task;
-            })
+        var cut = Render(nodes, edges, [.. measured, Measured("x", Out()), Measured("y", Out())], p => p
+            .Add(c => c.OnBeforeConnect, Asking(asked, pending))
             .Add(c => c.OnConnectEnd, e => connectEnds.Add(e)));
 
         await EdgeKey(cut, "e", "c");
@@ -303,18 +299,94 @@ public class KeyboardReconnectionReviewTests : BunitContext
         await NodeKey(cut, "c", "Enter");   // target to c, waiting for the app
 
         // A collaborator keeps moving the source while the app is deciding, so each yes covers a wiring already gone.
-        foreach (var source in new[] { "d", "a", "d" })
+        foreach (var source in new[] { "d", "x", "y" })
         {
             await cut.InvokeAsync(() => cut.Instance.EditAsync(() => edges[0].Source = source));
             await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
         }
 
-        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "c"), ("a", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "c"), ("x", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
         Assert.IsEmpty(pending, "the app was asked a fourth time");
-        Assert.AreEqual(("d", "b"), (edges[0].Source, edges[0].Target), "a wiring the app never approved was applied");
-        Assert.AreEqual((true, false, BlowConnectionRejection.RejectedByRule),
+        Assert.AreEqual(("y", "b"), (edges[0].Source, edges[0].Target), "a wiring the app never approved was applied");
+        Assert.AreEqual((true, false, BlowConnectionRejection.Unsettled),
             (connectEnds[^1].IsReconnect, connectEnds[^1].IsValid, connectEnds[^1].Rejection));
+        Assert.AreEqual(BlowAriaLabels.Default.ConnectionRejected(BlowConnectionRejection.Unsettled), Heard(cut),
+            "a wiring that would not hold still was announced as refused by the app");
     }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task AWiringThatComesBackToOneAlreadyAnsweredIsNotAskedAboutAgain(bool answer)
+    {
+        var (nodes, edges, measured) = Graph();
+        var asked = new List<BlowConnection>();
+        var pending = new Queue<TaskCompletionSource<bool>>();
+        var connectEnds = new List<BlowConnectEndInfo>();
+        var cut = Render(nodes, edges, measured, p => p
+            .Add(c => c.OnBeforeConnect, Asking(asked, pending))
+            .Add(c => c.OnConnectEnd, e => connectEnds.Add(e)));
+
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "c");
+        await NodeKey(cut, "c", "Enter");   // target to c, waiting for the app
+
+        // The source goes to d and back to a while the app decides: a -> c is what is made after all, and the app has
+        // answered about it already.
+        await cut.InvokeAsync(() => cut.Instance.EditAsync(() => edges[0].Source = "d"));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(answer));
+        await cut.InvokeAsync(() => cut.Instance.EditAsync(() => edges[0].Source = "a"));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+
+        CollectionAssert.AreEqual(new[] { ("a", "c"), ("d", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.IsEmpty(pending, "the app was asked again about a wiring it had answered about");
+        Assert.AreEqual(answer ? ("a", "c") : ("a", "b"), (edges[0].Source, edges[0].Target));
+        Assert.AreEqual((answer, answer ? BlowConnectionRejection.None : BlowConnectionRejection.RejectedByRule),
+            (connectEnds[^1].IsValid, connectEnds[^1].Rejection));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task AWiringAskedAboutAgainIsAskedOfTheConfirmationSetNow(bool replaced)
+    {
+        var (nodes, edges, measured) = Graph();
+        var asked = new List<BlowConnection>();
+        var askedNow = new List<BlowConnection>();
+        var pending = new Queue<TaskCompletionSource<bool>>();
+        var cut = Render(nodes, edges, measured, p => p.Add(c => c.OnBeforeConnect, Asking(asked, pending)));
+
+        await EdgeKey(cut, "e", "c");
+        await Focus(cut, "c");
+        await NodeKey(cut, "c", "Enter");   // target to c, waiting for the app
+
+        // While the app decides, the source moves and the app swaps its confirmation for another, or turns it off.
+        await cut.InvokeAsync(() => cut.Instance.EditAsync(() => edges[0].Source = "d"));
+        Func<BlowConnection, Task<bool>>? confirmNow = replaced
+            ? connection =>
+            {
+                askedNow.Add(connection);
+                return Task.FromResult(true);
+            }
+            : null;
+        cut.Render(p => p.Add(c => c.OnBeforeConnect, confirmNow));
+        await cut.InvokeAsync(() => pending.Dequeue().SetResult(true));
+
+        CollectionAssert.AreEqual(new[] { ("a", "c") }, asked.Select(c => (c.Source, c.Target)).ToArray(),
+            "the confirmation the app had let go of was asked again");
+        CollectionAssert.AreEqual(replaced ? new[] { ("d", "c") } : [], askedNow.Select(c => (c.Source, c.Target)).ToArray());
+        Assert.AreEqual(("d", "c"), (edges[0].Source, edges[0].Target));
+    }
+
+    /// <summary>A confirmation that records what it is asked about and answers when the test says.</summary>
+    private static Func<BlowConnection, Task<bool>> Asking(List<BlowConnection> asked, Queue<TaskCompletionSource<bool>> pending)
+        => connection =>
+        {
+            asked.Add(connection);
+            var answer = new TaskCompletionSource<bool>();
+            pending.Enqueue(answer);
+            return answer.Task;
+        };
 
     [TestMethod]
     [DataRow(true)]
