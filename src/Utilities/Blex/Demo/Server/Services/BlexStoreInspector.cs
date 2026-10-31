@@ -1,4 +1,8 @@
 ﻿using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Bit.Blex.Generators;
 using Bit.Blex.Demo.Server.Dtos;
 using Microsoft.CodeAnalysis;
@@ -26,13 +30,36 @@ public static class BlexStoreInspector
 
     public const int MaxStateComputedPairs = 10_000;
 
+    /// <summary>
+    /// What the generator prints per member in all - the store's name, the member's types, its label and the
+    /// default values of its parameters - summed over every store in the source.
+    /// </summary>
     public const int MaxTypeNameLength = 500_000;
+
+    /// <summary>
+    /// The longest one type may print. A real type is a few hundred characters; one past this was built by
+    /// doubling - nested aliases, or generic inference over its own result - and printing it, in the generator or
+    /// in a compiler error that names it, takes gigabytes and cannot be cancelled.
+    /// </summary>
+    public const int MaxTypeLength = 10_000;
 
     public const int MaxGeneratedLength = 1_000_000;
 
+    /// <summary>An agent fixes the first errors first; past this many, the rest are counted instead of listed.</summary>
+    public const int MaxReportedDiagnostics = 100;
+
     public static readonly TimeSpan InspectionTimeout = TimeSpan.FromSeconds(15);
 
+    /// <summary>Starts this executable as an inspection worker rather than as the web app (see <see cref="RunWorkerAsync"/>).</summary>
+    public const string WorkerArgument = "--blex-inspect-worker";
+
+    /// <summary>The GC heap a worker may use, 1 GB: an inspection needs a few hundred megabytes at most.</summary>
+    private const string WorkerHeapLimit = "0x40000000";
+
+    // Two workers at a time: the rest wait for a slot until their deadline.
     private static readonly SemaphoreSlim _gate = new(2, 2);
+
+    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
     // The usings a store file starts with in practice, so a pasted class without its header still
     // compiles - every sample on the site and in the README is written without them.
@@ -72,17 +99,131 @@ public static class BlexStoreInspector
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(InspectionTimeout);
 
-        await _gate.WaitAsync(timeout.Token);
+        // Only the caller's own cancellation is an exception; running out of time is an answer, so the agent
+        // reads why instead of a bare protocol error.
+        try
+        {
+            await _gate.WaitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested is false)
+        {
+            return Refused([], $"REFUSED: the server was busy inspecting other stores for {InspectionTimeout.TotalSeconds:0} seconds. Try again shortly.");
+        }
 
         try
         {
-            return Inspect(source, includeGeneratedCode, timeout.Token);
+            return await InspectInWorkerAsync(new InspectionRequest(source ?? string.Empty, includeGeneratedCode), timeout.Token);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested is false)
+        {
+            return Refused([], $"REFUSED: the inspection did not finish within {InspectionTimeout.TotalSeconds:0} seconds. Send one store at a time.");
         }
         finally
         {
             _gate.Release();
         }
     }
+
+    /// <summary>
+    /// The worker's half, run by <c>Program.cs</c> when this executable is started with <see cref="WorkerArgument"/>:
+    /// one request from <paramref name="input"/>, its answer to <paramref name="output"/>, and the process ends.
+    /// </summary>
+    public static async Task<int> RunWorkerAsync(Stream input, Stream output)
+    {
+        if (await JsonSerializer.DeserializeAsync<InspectionRequest>(input, _json) is not { } request) return 1;
+
+        // The server kills the worker at the same deadline; stopping the work that can be stopped first lets it
+        // answer instead.
+        using var timeout = new CancellationTokenSource(InspectionTimeout);
+
+        await JsonSerializer.SerializeAsync(output, Inspect(request.Source, request.IncludeGeneratedCode, timeout.Token), _json);
+        await output.FlushAsync();
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Runs one inspection in a child process of this same executable. A source can make Roslyn itself work for
+    /// hours in a call that never looks at a cancellation token - inferring a type that doubles on every call, for
+    /// one - and no check before compiling catches every such shape. A process can be killed where a thread
+    /// cannot, and its heap can be capped where a thread's cannot, so whatever the source does, it does to the worker.
+    /// </summary>
+    private static async Task<BlexStoreInspectionDto> InspectInWorkerAsync(InspectionRequest request, CancellationToken cancellationToken)
+    {
+        using var worker = StartWorker();
+
+        if (worker is null) return Refused([], "REFUSED: the inspection worker could not be started.");
+
+        try
+        {
+            _ = worker.StandardError.BaseStream.CopyToAsync(Stream.Null, CancellationToken.None);
+
+            await using (var input = worker.StandardInput.BaseStream)
+            {
+                await JsonSerializer.SerializeAsync(input, request, _json, cancellationToken);
+            }
+
+            var answer = await JsonSerializer.DeserializeAsync<BlexStoreInspectionDto>(worker.StandardOutput.BaseStream, _json, cancellationToken);
+
+            await worker.WaitForExitAsync(cancellationToken);
+
+            if (worker.ExitCode == 0 && answer is not null) return answer;
+        }
+        catch (Exception exception) when (exception is IOException or JsonException)
+        {
+            // A worker that died part way - past the heap it may use - leaves a broken pipe, and no answer or half of one.
+        }
+        finally
+        {
+            try
+            {
+                if (worker.HasExited is false) worker.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException)
+            {
+                // It exited in between.
+            }
+        }
+
+        return Refused([], "REFUSED: the inspection stopped without an answer - most likely it needed more memory than an inspection " +
+                           "may use. Send one store at a time.");
+    }
+
+    private static Process? StartWorker()
+    {
+        // The apphost next to the server's assembly - the executable IIS runs, and the one a test run copies next to
+        // its own - or else the assembly through the dotnet host.
+        var assembly = typeof(BlexStoreInspector).Assembly.Location;
+        var appHost = Path.ChangeExtension(assembly, OperatingSystem.IsWindows() ? ".exe" : null);
+
+        var start = File.Exists(appHost)
+            ? new ProcessStartInfo(appHost)
+            : new ProcessStartInfo(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet") { ArgumentList = { "exec", assembly } };
+
+        start.ArgumentList.Add(WorkerArgument);
+        start.RedirectStandardInput = true;
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
+        start.UseShellExecute = false;
+        start.CreateNoWindow = true;
+
+        // Past this the worker's allocations fail in the worker, not in the server. A workstation GC, because the
+        // server's runtimeconfig asks for a server GC, which splits the limit across a heap per core.
+        start.Environment["DOTNET_GCHeapHardLimit"] = WorkerHeapLimit;
+        start.Environment["DOTNET_gcServer"] = "0";
+
+        try
+        {
+            return Process.Start(start);
+        }
+        catch (Win32Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>One inspection, as the server hands it to a worker.</summary>
+    private sealed record InspectionRequest(string Source, bool IncludeGeneratedCode);
 
     private static BlexStoreInspectionDto Inspect(string? source, bool includeGeneratedCode, CancellationToken cancellationToken)
     {
@@ -100,20 +241,36 @@ public static class BlexStoreInspector
         var userTree = CSharpSyntaxTree.ParseText(source, _parseOptions, path: "Store.cs");
         var usingsTree = CSharpSyntaxTree.ParseText(ImplicitUsings, _parseOptions, path: "GlobalUsings.cs");
 
+        // Measured on the syntax, before the compiler folds anything: folding a constant made by doubling
+        // another one materializes it, and nothing cancels that.
+        if (HasOversizedConstant(userTree.GetRoot(cancellationToken), cancellationToken))
+        {
+            return Refused(notes, $"REFUSED: a constant in this source is longer than the {MaxSourceLength} characters the source may have, so it " +
+                                  "was built by concatenating another constant with itself. Constants that long are not inspected.");
+        }
+
         var compilation = CSharpCompilation.Create(
             "BlexStoreInspection",
             [userTree, usingsTree],
             _references.Value,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
 
-        if (ExceedsGenerationBudget(compilation, userTree, cancellationToken)) throw TooMuchGeneratedCode();
+        var lengths = new TypeLengths();
+
+        if (HasOversizedType(compilation, userTree, lengths, cancellationToken))
+        {
+            return Refused(notes, $"REFUSED: a type in this source prints longer than {MaxTypeLength} characters, so it was built by doubling " +
+                                  "(nested using aliases, or generic inference over its own result). Types that long are not inspected.");
+        }
+
+        if (ExceedsGenerationBudget(compilation, userTree, lengths, cancellationToken)) return Refused(notes, TooMuchGeneratedCode);
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new BlexGenerator()).WithUpdatedParseOptions(_parseOptions);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _, cancellationToken);
 
         var run = driver.GetRunResult();
 
-        if (run.Results.SelectMany(result => result.GeneratedSources).Sum(generated => (long)generated.SourceText.Length) > MaxGeneratedLength) throw TooMuchGeneratedCode();
+        if (run.Results.SelectMany(result => result.GeneratedSources).Sum(generated => (long)generated.SourceText.Length) > MaxGeneratedLength) return Refused(notes, TooMuchGeneratedCode);
 
         var generatedTrees = run.GeneratedTrees.ToHashSet();
 
@@ -136,9 +293,17 @@ public static class BlexStoreInspector
             .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
-        var diagnostics = generatorDiagnostics.Select(diagnostic => ToDto(diagnostic, "generator", userTree))
-            .Concat(compilerErrors.Select(diagnostic => ToDto(diagnostic, "compiler", userTree)))
+        var diagnostics = generatorDiagnostics.Select(diagnostic => (Diagnostic: diagnostic, Source: "generator"))
+            .Concat(compilerErrors.Select(diagnostic => (Diagnostic: diagnostic, Source: "compiler")))
+            .Take(MaxReportedDiagnostics)
+            .Select(reported => ToDto(reported.Diagnostic, reported.Source, userTree))
             .ToArray();
+
+        if (generatorDiagnostics.Length + compilerErrors.Length > diagnostics.Length)
+        {
+            notes.Add($"Only the first {diagnostics.Length} of {generatorDiagnostics.Length + compilerErrors.Length} diagnostics are listed. " +
+                      "Fix those and inspect the store again.");
+        }
 
         var stores = FindStores(updated, userTree, generatedTrees, cancellationToken);
 
@@ -170,7 +335,7 @@ public static class BlexStoreInspector
 
         return new BlexStoreInspectionDto
         {
-            IsValid = diagnostics.Any(diagnostic => diagnostic.Severity == nameof(DiagnosticSeverity.Error)) is false,
+            IsValid = compilerErrors.Length == 0 && generatorDiagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error) is false,
             Stores = stores,
             Diagnostics = diagnostics,
             Notes = [.. notes],
@@ -209,7 +374,113 @@ public static class BlexStoreInspector
         return [.. stores];
     }
 
-    private static bool ExceedsGenerationBudget(Compilation compilation, SyntaxTree userTree, CancellationToken cancellationToken)
+    /// <summary>
+    /// Whether a constant expression here would be longer than the whole source may be. Each expression is
+    /// measured from its parts, and the name of a constant declared here stands for that constant's own
+    /// measure - so <c>const string B = A + A;</c> measures twice <c>A</c>, as folding would make it, without
+    /// anything being folded. Names are matched by spelling alone, which can overcount but never undercount.
+    /// </summary>
+    private static bool HasOversizedConstant(SyntaxNode root, CancellationToken cancellationToken)
+    {
+        const long over = MaxSourceLength + 1L;
+
+        var constants = root.DescendantNodes()
+            .OfType<VariableDeclaratorSyntax>()
+            .Where(declarator => declarator.Initializer is not null && IsConstant(declarator))
+            .ToLookup(declarator => declarator.Identifier.ValueText, declarator => declarator.Initializer!.Value, StringComparer.Ordinal);
+
+        var measured = new Dictionary<ExpressionSyntax, long>();
+        var named = new Dictionary<string, long>(StringComparer.Ordinal);
+        var resolving = new HashSet<string>(StringComparer.Ordinal);
+
+        // Innermost first, so an expression finds its parts already measured: a chain of thousands of `+`
+        // is measured a link at a time rather than recursed through.
+        foreach (var expression in root.DescendantNodes().OfType<ExpressionSyntax>().Reverse())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (Measure(expression) > MaxSourceLength) return true;
+        }
+
+        return false;
+
+        static bool IsConstant(VariableDeclaratorSyntax declarator)
+            => declarator.Parent?.Parent switch
+            {
+                FieldDeclarationSyntax field => field.Modifiers.Any(SyntaxKind.ConstKeyword),
+                LocalDeclarationStatementSyntax local => local.IsConst,
+                _ => false
+            };
+
+        long Measure(ExpressionSyntax expression)
+        {
+            if (measured.TryGetValue(expression, out var known)) return known;
+
+            // Constants that name each other thousands deep: refused like a long one, not a stack overflow.
+            if (RuntimeHelpers.TryEnsureSufficientExecutionStack() is false) return over;
+
+            var length = expression switch
+            {
+                LiteralExpressionSyntax literal => literal.Token.ValueText.Length,
+                IdentifierNameSyntax name => Named(name.Identifier.ValueText),
+                MemberAccessExpressionSyntax access => Named(access.Name.Identifier.ValueText),
+                BinaryExpressionSyntax binary => Measure(binary.Left) + Measure(binary.Right),
+                ParenthesizedExpressionSyntax parenthesized => Measure(parenthesized.Expression),
+                CastExpressionSyntax cast => Measure(cast.Expression),
+                CheckedExpressionSyntax @checked => Measure(@checked.Expression),
+                ConditionalExpressionSyntax conditional => Math.Max(Measure(conditional.WhenTrue), Measure(conditional.WhenFalse)),
+                InterpolatedStringExpressionSyntax interpolated => interpolated.Contents.Sum(content => content switch
+                {
+                    InterpolatedStringTextSyntax text => text.TextToken.ValueText.Length,
+                    InterpolationSyntax hole => Measure(hole.Expression),
+                    _ => 0L
+                }),
+                _ => 0L
+            };
+
+            length = Math.Min(length, over);
+            measured[expression] = length;
+            return length;
+        }
+
+        long Named(string name)
+        {
+            if (constants.Contains(name) is false) return name.Length;
+
+            if (named.TryGetValue(name, out var known)) return known;
+
+            // A constant defined through itself does not compile, and nothing is folded out of it.
+            if (resolving.Add(name) is false) return 0;
+
+            var length = constants[name].Max(Measure);
+            resolving.Remove(name);
+            named[name] = length;
+            return length;
+        }
+    }
+
+    /// <summary>
+    /// Whether a type written or inferred anywhere in the source prints longer than <see cref="MaxTypeLength"/>.
+    /// Every expression is asked for its type - a type written out is an expression too, and so is the alias
+    /// standing for one - so a type built by doubling is caught before the generator or a compiler error prints it.
+    /// </summary>
+    private static bool HasOversizedType(Compilation compilation, SyntaxTree userTree, TypeLengths lengths, CancellationToken cancellationToken)
+    {
+        var model = compilation.GetSemanticModel(userTree);
+
+        foreach (var expression in userTree.GetRoot(cancellationToken).DescendantNodes().OfType<ExpressionSyntax>())
+        {
+            var info = model.GetTypeInfo(expression, cancellationToken);
+
+            if (info.Type is { } type && lengths.Of(type) > MaxTypeLength) return true;
+
+            if (info.ConvertedType is { } converted && lengths.Of(converted) > MaxTypeLength) return true;
+        }
+
+        return false;
+    }
+
+    private static bool ExceedsGenerationBudget(Compilation compilation, SyntaxTree userTree, TypeLengths lengths, CancellationToken cancellationToken)
     {
         var model = compilation.GetSemanticModel(userTree);
         var seen = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
@@ -220,12 +491,14 @@ public static class BlexStoreInspector
         {
             if (model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol type || seen.Add(type) is false) continue;
 
-            if (type.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "Bit.Blex.BlexStoreAttribute") is false) continue;
+            var storeAttribute = type.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString() == "Bit.Blex.BlexStoreAttribute");
 
-            var storeName = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Length;
+            if (storeAttribute is null) continue;
+
+            var storeName = lengths.Of(type);
             long states = 0;
             long computeds = 0;
-            names += storeName;
+            names += storeName + NameArgumentLength(storeAttribute);
 
             foreach (var member in type.GetMembers())
             {
@@ -246,9 +519,18 @@ public static class BlexStoreInspector
 
                 foreach (var printedType in printed)
                 {
-                    names += storeName + printedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Length;
+                    names += storeName + lengths.Of(printedType);
 
                     if (names > MaxTypeNameLength) return true;
+                }
+
+                // Printed with the member as well: an action's label, and its parameters' default values (no
+                // longer than the source, HasOversizedConstant has made sure, so reading them is cheap).
+                names += member.GetAttributes().Sum(NameArgumentLength);
+
+                if (member is IMethodSymbol withParameters)
+                {
+                    names += withParameters.Parameters.Sum(parameter => parameter is { HasExplicitDefaultValue: true, ExplicitDefaultValue: string text } ? text.Length : 0L);
                 }
             }
 
@@ -258,10 +540,60 @@ public static class BlexStoreInspector
         }
 
         return false;
+
+        static long NameArgumentLength(AttributeData attribute)
+            => attribute.NamedArguments.FirstOrDefault(argument => argument.Key == "Name").Value.Value is string name ? name.Length : 0;
     }
 
-    private static ArgumentException TooMuchGeneratedCode()
-        => new("The stores in this source would make the generator emit more code than this server inspects.", "source");
+    private const string TooMuchGeneratedCode =
+        "REFUSED: the stores in this source would make the generator emit more code than this server inspects. Send one store at a time.";
+
+    /// <summary>
+    /// The answer to a source that is not inspected, with the reason as its last note: an agent reads it, where an
+    /// exception would reach it as a bare "an error occurred" and an HTTP caller as a 500.
+    /// </summary>
+    private static BlexStoreInspectionDto Refused(List<string> notes, string reason)
+        => new() { IsValid = false, Stores = [], Diagnostics = [], Notes = [.. notes, reason] };
+
+    /// <summary>
+    /// How long a type prints fully qualified, worked out without printing it. Each distinct type is measured once,
+    /// so Tuple&lt;A, A&gt; costs a step more than A rather than twice A - where printing it costs twice. Lengths
+    /// saturate instead of overflowing; the result is close to, not exactly, what printing gives.
+    /// </summary>
+    private sealed class TypeLengths
+    {
+        private const long Saturated = long.MaxValue / 4;
+
+        private readonly Dictionary<ISymbol, long> _lengths = new(SymbolEqualityComparer.Default);
+
+        public long Of(ISymbol? symbol)
+        {
+            if (symbol is null) return 0;
+
+            if (_lengths.TryGetValue(symbol, out var known)) return known;
+
+            // A type nested thousands deep: refused like a long one, not a stack overflow.
+            if (RuntimeHelpers.TryEnsureSufficientExecutionStack() is false) return Saturated;
+
+            var length = symbol switch
+            {
+                IArrayTypeSymbol array => Add(Of(array.ElementType), array.Rank + 1),
+                IPointerTypeSymbol pointer => Add(Of(pointer.PointedAtType), 1),
+                IFunctionPointerTypeSymbol pointer => pointer.Signature.Parameters
+                    .Aggregate(Add(Of(pointer.Signature.ReturnType), "delegate*<>".Length), (sum, parameter) => Add(sum, Add(Of(parameter.Type), 2))),
+                INamedTypeSymbol named => named.TypeArguments
+                    .Aggregate(Add(Of((ISymbol?)named.ContainingType ?? named.ContainingNamespace), named.Name.Length + 3), (sum, argument) => Add(sum, Add(Of(argument), 2))),
+                INamespaceSymbol { IsGlobalNamespace: true } => "global::".Length,
+                INamespaceSymbol ns => Add(Of(ns.ContainingNamespace), ns.Name.Length + 1),
+                _ => symbol.Name.Length
+            };
+
+            _lengths[symbol] = length;
+            return length;
+        }
+
+        private static long Add(long left, long right) => Math.Min(left + right, Saturated);
+    }
 
     private static BlexGeneratedMemberDto? Describe(ISymbol member)
     {

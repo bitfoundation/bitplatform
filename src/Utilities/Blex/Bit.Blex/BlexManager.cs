@@ -323,7 +323,10 @@ public sealed class BlexManager
         var escaped = new StringBuilder(text.Length);
         foreach (var c in text)
         {
-            if (char.IsControl(c) || char.GetUnicodeCategory(c) is UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator)
+            // Line breaks would forge a line of their own; bidirectional controls reorder what a terminal shows.
+            if (char.IsControl(c)
+                || char.GetUnicodeCategory(c) is UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator
+                || c is '\u061C' or '\u200E' or '\u200F' or (>= '\u202A' and <= '\u202E') or (>= '\u2066' and <= '\u2069'))
                 escaped.Append("\\u").Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
             else
                 escaped.Append(c);

@@ -143,9 +143,9 @@ public class McpInspectStoreTests
         var states = string.Concat(Enumerable.Range(0, side).Select(i => $"    [BlexState] private int _s{i};\n"));
         var computeds = string.Concat(Enumerable.Range(0, side).Select(i => $"    [BlexComputed] private int ComputeC{i}() => S0;\n"));
 
-        var result = await McpCall.RawAsync("InspectBlexStore", new() { ["source"] = $"[BlexStore]\npublic partial class WideStore\n{{\n{states}{computeds}}}" });
+        var result = await InspectAsync($"[BlexStore]\npublic partial class WideStore\n{{\n{states}{computeds}}}");
 
-        Assert.IsTrue(result.IsError);
+        AssertRefused(result, "the stores in this source would make the generator emit more code");
     }
 
     [TestMethod]
@@ -166,12 +166,166 @@ public class McpInspectStoreTests
     [TestMethod]
     public async Task A_store_whose_type_names_multiply_past_the_budget_is_refused()
     {
-        var ns = string.Join('.', Enumerable.Repeat(new string('N', 500), 40));
+        // Short enough for one type, printed once per member until the sum is past the budget.
+        var ns = string.Join('.', Enumerable.Repeat(new string('N', 500), 10));
         var states = string.Concat(Enumerable.Range(0, BlexStoreInspector.MaxTypeNameLength / ns.Length + 1).Select(i => $"    [BlexState] private int _s{i};\n"));
 
-        var result = await McpCall.RawAsync("InspectBlexStore", new() { ["source"] = $"namespace {ns};\n\n[BlexStore]\npublic partial class DeepStore\n{{\n{states}}}" });
+        var result = await InspectAsync($"namespace {ns};\n\n[BlexStore]\npublic partial class DeepStore\n{{\n{states}}}");
 
-        Assert.IsTrue(result.IsError);
+        AssertRefused(result, "the stores in this source would make the generator emit more code");
+    }
+
+    [TestMethod]
+    public async Task A_type_doubled_by_nested_aliases_is_refused_before_anything_prints_it()
+    {
+        // Each alias is a tuple of the one before: sixteen of them print hundreds of times longer than they are
+        // written, and every level more doubles that.
+        const int depth = 16;
+        var aliases = string.Concat(Enumerable.Range(1, depth).Select(i => $"namespace N{i} {{ using A{i} = System.Tuple<A{i - 1}, A{i - 1}>;\n"));
+
+        var result = await InspectAsync($$"""
+            using A0 = System.Tuple<int, int>;
+            {{aliases}}
+            [BlexStore]
+            public partial class AliasStore
+            {
+                [BlexState] private A{{depth}}? _value;
+            }
+            {{new string('}', depth)}}
+            """);
+
+        AssertRefused(result, "a type in this source prints longer than");
+    }
+
+    [TestMethod]
+    public async Task A_type_doubled_by_generic_inference_is_refused_before_a_compiler_error_prints_it()
+    {
+        const int depth = 16;
+        var call = Enumerable.Range(0, depth).Aggregate("1", (inner, _) => $"Twice({inner})");
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class InferredStore
+            {
+                [BlexState] private int _count;
+
+                private static (T, T) Twice<T>(T value) => (value, value);
+
+                [BlexAction] private void OnReset() => Count = {{call}};
+            }
+            """);
+
+        AssertRefused(result, "a type in this source prints longer than");
+    }
+
+    [TestMethod]
+    public async Task A_source_that_keeps_the_compiler_busy_is_stopped_at_the_deadline_and_the_server_carries_on()
+    {
+        // Forty nested calls: Roslyn's own inference over a type that doubles each time runs for years, inside a call
+        // that never looks at a cancellation token. Only killing the worker it runs in ends it.
+        var call = Enumerable.Range(0, 40).Aggregate("1", (inner, _) => $"Twice({inner})");
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class EndlessStore
+            {
+                [BlexState] private int _count;
+
+                private static (T, T) Twice<T>(T value) => (value, value);
+
+                [BlexAction] private void OnReset() => Count = {{call}};
+            }
+            """);
+
+        AssertRefused(result, "the inspection did not finish within");
+        Assert.IsTrue((await InspectAsync(Counter)).IsValid, "the next inspection runs as usual");
+    }
+
+    [TestMethod]
+    public async Task A_constant_doubled_past_the_source_length_is_refused_before_it_is_folded()
+    {
+        // Twenty-four doublings of two characters: 32 million once folded, from about a thousand characters.
+        var constants = string.Concat(Enumerable.Range(1, 24).Select(i => $"    private const string C{i} = C{i - 1} + C{i - 1};\n"));
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class LabelStore
+            {
+                private const string C0 = "ab";
+            {{constants}}
+                [BlexState] private string _label = "";
+
+                [BlexAction] private void OnRename(string label = C24) => Label = label;
+            }
+            """);
+
+        AssertRefused(result, "a constant in this source is longer than");
+    }
+
+    [TestMethod]
+    public async Task A_store_name_doubled_through_interpolation_is_refused_too()
+    {
+        var constants = string.Concat(Enumerable.Range(1, 24).Select(i => $"    public const string C{i} = $\"{{C{i - 1}}}{{C{i - 1}}}\";\n"));
+
+        var result = await InspectAsync($$"""
+            public static class Names
+            {
+                public const string C0 = "ab";
+            {{constants}}
+            }
+
+            [BlexStore(Name = Names.C24)]
+            public partial class NamedStore
+            {
+                [BlexState] private int _count;
+            }
+            """);
+
+        AssertRefused(result, "a constant in this source is longer than");
+    }
+
+    [TestMethod]
+    public async Task Constants_built_from_one_another_within_the_source_length_are_inspected()
+    {
+        var result = await InspectAsync("""
+            [BlexStore]
+            public partial class TodoStore
+            {
+                private const string Prefix = "todos";
+                private const string Added = Prefix + "/add";
+
+                [BlexState] private string _last = "";
+
+                [BlexAction(Name = Added)] private void OnAdd(string title = $"{Prefix}: {Added}") => Last = title;
+            }
+            """);
+
+        Assert.IsTrue(result.IsValid, string.Join("; ", result.Diagnostics.Select(d => d.Message).Concat(result.Notes)));
+        Assert.IsTrue(result.Stores.Single().Generated);
+    }
+
+    [TestMethod]
+    public async Task Past_the_cap_the_diagnostics_are_counted_rather_than_listed()
+    {
+        var count = BlexStoreInspector.MaxReportedDiagnostics + 50;
+        var broken = string.Concat(Enumerable.Range(0, count).Select(i => $"        int x{i} = \"text\";\n"));
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class BrokenStore
+            {
+                [BlexState] private int _count;
+
+                private void Broken()
+                {
+            {{broken}}
+                }
+            }
+            """);
+
+        Assert.IsFalse(result.IsValid);
+        Assert.HasCount(BlexStoreInspector.MaxReportedDiagnostics, result.Diagnostics);
+        Assert.Contains(note => note.StartsWith($"Only the first {BlexStoreInspector.MaxReportedDiagnostics} of {count} diagnostics", StringComparison.Ordinal), result.Notes);
     }
 
     [TestMethod]
@@ -227,4 +381,12 @@ public class McpInspectStoreTests
 
     private static Task<BlexStoreInspectionDto> InspectAsync(string source)
         => McpCall.StructuredAsync<BlexStoreInspectionDto>("InspectBlexStore", new() { ["source"] = source });
+
+    /// <summary>A refusal is an answer, not an error: nothing inspected, and the reason as the last note.</summary>
+    private static void AssertRefused(BlexStoreInspectionDto result, string reason)
+    {
+        Assert.IsFalse(result.IsValid);
+        Assert.IsEmpty(result.Stores);
+        StringAssert.StartsWith(result.Notes[^1], "REFUSED: " + reason);
+    }
 }

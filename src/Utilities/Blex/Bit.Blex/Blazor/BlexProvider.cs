@@ -33,9 +33,11 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// When enabled, the entire application state tree is serialized and exposed to the Redux
-    /// DevTools browser extension on every action. This is intended for development only; set
-    /// this to <c>false</c> in production (for example, bind it to your host environment) to
-    /// avoid leaking application state to an installed extension.
+    /// DevTools browser extension on every action, and the monitor can dispatch actions and replace
+    /// state. This is intended for development only; enable it only there (for example, bind it to
+    /// your host environment) so production never leaks application state to an installed extension.
+    /// Under interactive server rendering the bridge runs on the server, so any script on the page -
+    /// not only the extension - can read the state tree, dispatch any action and replace the state.
     /// </remarks>
     [Parameter] public bool EnableDevTools { get; set; }
 

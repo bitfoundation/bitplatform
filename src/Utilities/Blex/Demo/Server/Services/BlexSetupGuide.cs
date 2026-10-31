@@ -223,8 +223,9 @@ public static partial class BlexSetupGuide
             ```
 
             `<BlexProvider>` must be inside the interactive boundary - a statically rendered provider never starts
-            persistence or the DevTools bridge. Turn the bridge off (`EnableDevTools="false"`) unless the Redux
-            DevTools time-travel is wanted: on Blazor Server it streams the whole state tree over the circuit.
+            persistence or the DevTools bridge. The bridge is off by default (`EnableDevTools="false"`, written out
+            above); turn it on in development only: on Blazor Server it streams the whole state tree over the circuit,
+            and any script on the page can dispatch actions and replace the state through it.
             """);
 
         return builder.ToString();
