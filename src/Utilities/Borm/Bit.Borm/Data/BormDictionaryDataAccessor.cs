@@ -27,8 +27,6 @@ namespace Bit.Borm;
 /// </remarks>
 public sealed class BormDictionaryDataAccessor : IBormDataAccessor
 {
-    private const int MaxPadding = 1_000;
-
     private readonly IDictionary<string, object?> _root;
 
     /// <summary>
@@ -226,7 +224,7 @@ public sealed class BormDictionaryDataAccessor : IBormDataAccessor
                 return true;
             }
 
-            if (index - list.Count > MaxPadding) return false;
+            if (index - list.Count > BormPath.MaxPadding) return false;
 
             if (list is Array array)
             {

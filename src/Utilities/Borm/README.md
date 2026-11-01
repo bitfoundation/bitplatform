@@ -433,10 +433,11 @@ The export writes the form these become (a choice and conditional fields), not t
 Use `TryImport` when the schema comes from a user. Besides malformed JSON, it reports a document that is not a
 schema, and one that goes past a budget no real form comes near: 10,000 fields, objects and arrays nested 32 levels
 deep, `allOf` nested 64 levels deep, 80,000 `allOf`/`$ref` merges, 250,000 choices and suggestions (10,000,000
-characters of them) read across its fields, fields built from more than 10,000,000 characters of schema, or
-1,000,000 `anyOf`/`oneOf` branches looked at — a definition every field refers to counts once for each of them. A
-property name with a `.`, `[` or `]` in it is refused too, since a field name is one step of a path. A few hundred
-bytes of `$ref`s can describe millions of fields, and those documents are refused rather than built:
+characters of them) read across its fields, fields built from more than 10,000,000 bytes of schema, or more than
+20,000,000 bytes of it copied by those merges — a definition every field refers to counts once for each of them. An
+`anyOf`/`oneOf` list is worked out once, however many fields refer to it. A property name with a `.`, `[` or `]` in
+it is refused too, since a field name is one step of a path. A few hundred bytes of `$ref`s can describe millions of
+fields, and those documents are refused rather than built:
 
 ```csharp
 if (BormJsonSchemaImporter.TryImport(json, out var definition, out var error))
