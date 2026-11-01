@@ -70,11 +70,11 @@
                 }
                 @if (ShowCsvExport)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => ExportCsvAsync()">@Strings.ExportCsvText</button>
+                    @RenderExportButton(Strings.ExportCsvText, BitIconInfo.From(CsvExportIcon, CsvExportIconName), CsvExportGlyph, () => ExportCsvAsync())
                 }
                 @if (ShowExcelExport)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => ExportExcelAsync()">@Strings.ExportExcelText</button>
+                    @RenderExportButton(Strings.ExportExcelText, BitIconInfo.From(ExcelExportIcon, ExcelExportIconName), ExcelExportGlyph, () => ExportExcelAsync())
                 }
                 @if (ShowColumnChooser)
                 {
@@ -590,6 +590,54 @@
             <div class="bit-dtg-vsp" style="height: @(SpacerHeight(rows.Count - head))px;" aria-hidden="true"></div>
         }
     }
+
+    // A toolbar export button: its text, or with ExportIconOnly its icon alone - the text then naming it for assistive
+    // tech and as its tooltip. An icon set for it shows beside the text as well; an icon-only button given none draws
+    // the built-in glyph, so it never renders empty.
+    private RenderFragment RenderExportButton(string text, BitIconInfo? icon, RenderFragment glyph, Func<Task> export) => __builder =>
+    {
+        <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button"
+                class="bit-dtg-btn@(ExportIconOnly ? " bit-dtg-btn-icon-only" : null)"
+                title="@(ExportIconOnly ? text : null)"
+                aria-label="@(ExportIconOnly ? text : null)"
+                @onclick="export">
+            @if (icon is { IsEmpty: false })
+            {
+                <i class="bit-dtg-btn-ico @icon.GetCssClasses()" aria-hidden="true"></i>
+            }
+            else if (ExportIconOnly)
+            {
+                @glyph
+            }
+            @if (ExportIconOnly is false)
+            {
+                @text
+            }
+        </button>
+    };
+
+    // The built-in glyphs of the icon-only export buttons - a page of text lines for CSV, a page with a table for Excel.
+    // Inline SVG drawn in the text color rather than font icons, since the grid cannot count on an icon font being loaded.
+    private static readonly RenderFragment CsvExportGlyph = __builder =>
+    {
+        <svg class="bit-dtg-btn-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M9.5 1.5H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5Z" />
+            <path d="M9.5 1.5V5H13" />
+            <path d="M5.5 8h5M5.5 10.25h5M5.5 12.5h3" />
+        </svg>
+    };
+
+    private static readonly RenderFragment ExcelExportGlyph = __builder =>
+    {
+        <svg class="bit-dtg-btn-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M9.5 1.5H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5Z" />
+            <path d="M9.5 1.5V5H13" />
+            <rect x="5.5" y="7.5" width="5" height="5" rx="0.5" />
+            <path d="M5.5 10h5M8 7.5v5" />
+        </svg>
+    };
 
     // The skeleton row standing in for a row still being read, cached: it is rendered once per row of a window.
     private RenderFragment? _placeholderRow;

@@ -2496,6 +2496,128 @@ public class BitDataGridTests : BunitTestContext
         StringAssert.StartsWith((string)args[1]!, "﻿");
     }
 
+    // ------------------------------------------------------ Export buttons
+
+    private static IReadOnlyList<IElement> ExportButtons(IRenderedComponent<BitDataGrid<TestRow>> component)
+        => component.FindAll(".bit-dtg-toolbar-end .bit-dtg-btn");
+
+    [TestMethod]
+    public void ExportButtonsShowTheirTextByDefault()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowCsvExport, true);
+            parameters.Add(p => p.ShowExcelExport, true);
+        });
+
+        var buttons = ExportButtons(component);
+        Assert.AreEqual(2, buttons.Count);
+        CollectionAssert.AreEqual(new[] { "Export CSV", "Export Excel" }, buttons.Select(b => b.TextContent.Trim()).ToArray());
+
+        foreach (var button in buttons)
+        {
+            Assert.IsNull(button.GetAttribute("aria-label"), "the visible text already names the button");
+            Assert.IsNull(button.GetAttribute("title"));
+            Assert.IsNull(button.QuerySelector("svg, i"), "a text button gets no icon it was not given");
+            Assert.IsFalse(button.ClassList.Contains("bit-dtg-btn-icon-only"));
+        }
+    }
+
+    [TestMethod]
+    public void ExportIconOnlyNamesItsButtonsWithTheirLocalizedText()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowCsvExport, true);
+            parameters.Add(p => p.ShowExcelExport, true);
+            parameters.Add(p => p.ExportIconOnly, true);
+            parameters.Add(p => p.Strings, new BitDataGridStrings { ExportCsvText = "CSV herunterladen", ExportExcelText = "Excel herunterladen" });
+        });
+
+        var buttons = ExportButtons(component);
+        Assert.AreEqual(2, buttons.Count);
+
+        var names = new[] { "CSV herunterladen", "Excel herunterladen" };
+        for (var i = 0; i < buttons.Count; i++)
+        {
+            Assert.AreEqual(names[i], buttons[i].GetAttribute("aria-label"));
+            Assert.AreEqual(names[i], buttons[i].GetAttribute("title"));
+            Assert.AreEqual(string.Empty, buttons[i].TextContent.Trim(), "the text is hidden");
+            Assert.IsTrue(buttons[i].ClassList.Contains("bit-dtg-btn-icon-only"));
+
+            // No icon was given, so the built-in glyph keeps the button from rendering empty - hidden from assistive tech.
+            var glyph = buttons[i].QuerySelector("svg.bit-dtg-btn-svg")!;
+            Assert.IsNotNull(glyph);
+            Assert.AreEqual("true", glyph.GetAttribute("aria-hidden"));
+            Assert.AreEqual("false", glyph.GetAttribute("focusable"));
+        }
+    }
+
+    [TestMethod]
+    public void ExportIconsShowBesideTheTextOrInPlaceOfIt()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowCsvExport, true);
+            parameters.Add(p => p.ShowExcelExport, true);
+            parameters.Add(p => p.CsvExportIconName, "TextDocument");
+            parameters.Add(p => p.ExcelExportIcon, BitIconInfo.Css("fa-solid fa-file-excel"));
+        });
+
+        var buttons = ExportButtons(component);
+        var csvIcon = buttons[0].QuerySelector("i.bit-dtg-btn-ico")!;
+        var excelIcon = buttons[1].QuerySelector("i.bit-dtg-btn-ico")!;
+
+        Assert.IsTrue(csvIcon.ClassList.Contains("bit-icon") && csvIcon.ClassList.Contains("bit-icon--TextDocument"));
+        Assert.IsTrue(excelIcon.ClassList.Contains("fa-solid") && excelIcon.ClassList.Contains("fa-file-excel"));
+        Assert.AreEqual("true", csvIcon.GetAttribute("aria-hidden"));
+        Assert.AreEqual("Export CSV", buttons[0].TextContent.Trim());
+        Assert.AreEqual("Export Excel", buttons[1].TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.ExportIconOnly, true));
+
+        buttons = ExportButtons(component);
+        Assert.IsNotNull(buttons[0].QuerySelector("i.bit-icon--TextDocument"));
+        Assert.IsNotNull(buttons[1].QuerySelector("i.fa-file-excel"));
+        Assert.IsNull(buttons[0].QuerySelector("svg"), "the given icon replaces the built-in glyph");
+        Assert.AreEqual(string.Empty, buttons[0].TextContent.Trim());
+        Assert.AreEqual("Export CSV", buttons[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void AnIconOnlyExportButtonStillExports()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowCsvExport, true);
+            parameters.Add(p => p.ExportIconOnly, true);
+            parameters.Add(p => p.ExportFileName, "orders");
+        });
+
+        ExportButtons(component).Single().Click();
+
+        var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.download"].Single().Arguments;
+        Assert.AreEqual("orders.csv", args[0]);
+    }
+
+    [TestMethod]
+    public void ADisabledGridDisablesItsIconOnlyExportButtons()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowCsvExport, true);
+            parameters.Add(p => p.ShowExcelExport, true);
+            parameters.Add(p => p.ExportIconOnly, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        foreach (var button in ExportButtons(component))
+        {
+            Assert.IsTrue(button.HasAttribute("disabled"));
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+        }
+    }
+
     // -------------------------------------------------------------- Sorting
 
     [TestMethod]

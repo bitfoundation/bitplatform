@@ -951,6 +951,23 @@ button.bit-dtg-htext {
     border-color: $clr-err;
 }
 
+/* An icon-only export button (ExportIconOnly) is a square of the control height; its text is its accessible name. */
+.bit-dtg-btn-icon-only {
+    padding: 0;
+}
+
+/* The icon of an export button: a font icon given through its Icon/IconName, or the built-in glyph. */
+.bit-dtg-btn-ico {
+    flex: 0 0 auto;
+    line-height: 1;
+}
+
+.bit-dtg-btn-svg {
+    flex: 0 0 auto;
+    width: rem2(16px);
+    height: rem2(16px);
+}
+
 /* The command buttons share the row with the data, so they take the small control height. */
 .bit-dtg-cell-command {
     gap: spacing(0.75);

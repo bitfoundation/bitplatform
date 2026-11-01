@@ -254,6 +254,29 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// in-process with no external dependency; in server mode it covers all matching rows.</summary>
     [Parameter] public bool ShowExcelExport { get; set; }
 
+    /// <summary>Renders the CSV and Excel export buttons of the toolbar as icons alone, for a compact toolbar. Their text
+    /// (<see cref="BitDataGridStrings.ExportCsvText"/>, <see cref="BitDataGridStrings.ExportExcelText"/>) stays their
+    /// accessible name and becomes their tooltip, and a button given no icon of its own draws a built-in one.</summary>
+    [Parameter] public bool ExportIconOnly { get; set; }
+
+    /// <summary>The icon of the CSV export button, from an external icon library: shown beside its text, or in place of it
+    /// with <see cref="ExportIconOnly"/>. Takes precedence over <see cref="CsvExportIconName"/> when both are set.</summary>
+    [Parameter] public BitIconInfo? CsvExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the CSV export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.TextDocument</c>). For external icon libraries, use <see cref="CsvExportIcon"/>
+    /// instead.</summary>
+    [Parameter] public string? CsvExportIconName { get; set; }
+
+    /// <summary>The icon of the Excel export button, from an external icon library: shown beside its text, or in place of
+    /// it with <see cref="ExportIconOnly"/>. Takes precedence over <see cref="ExcelExportIconName"/> when both are set.</summary>
+    [Parameter] public BitIconInfo? ExcelExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the Excel export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.ExcelDocument</c>). For external icon libraries, use <see cref="ExcelExportIcon"/>
+    /// instead.</summary>
+    [Parameter] public string? ExcelExportIconName { get; set; }
+
     /// <summary>
     /// Base name (without extension) of the downloaded export files, so a grid can name its own
     /// downloads instead of the generic default. <c>"orders"</c> produces <c>orders.csv</c> and

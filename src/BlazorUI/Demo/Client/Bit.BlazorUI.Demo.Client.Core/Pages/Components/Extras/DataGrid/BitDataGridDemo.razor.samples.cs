@@ -992,6 +992,14 @@ private readonly IQueryable<Product> queryableProducts = SampleData.Generate(400
                        SortBy=""@(p => p.Price * p.Stock)"" ExportValue=""@(p => p.Price * p.Stock)"" Format=""C0"">
         <Template Context=""p"">@((p.Price * p.Stock).ToString(""C0""))</Template>
     </BitDataGridColumn>
+</BitDataGrid>
+
+<BitDataGrid Items=""@exportProducts"" Height=""300px"" ShowSearchBox=""true""
+             ShowCsvExport=""true"" ShowExcelExport=""true"" ExportIconOnly=""true"" ExportFileName=""products""
+             CsvExportIconName=""@BitIconName.TextDocument"" ExcelExportIconName=""@BitIconName.ExcelDocument"">
+    <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
+    <BitDataGridColumn Property=""p => p.Category"" Width=""170px"" />
+    <BitDataGridColumn Property=""p => p.Price"" Width=""150px"" Format=""C2"" Align=""BitTextAlign.End"" />
 </BitDataGrid>";
     private readonly string example21CsharpCode = @"
 private readonly List<Product> exportProducts = SampleData.Generate(30);

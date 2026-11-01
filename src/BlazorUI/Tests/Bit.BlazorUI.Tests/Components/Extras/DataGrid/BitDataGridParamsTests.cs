@@ -255,6 +255,28 @@ public class BitDataGridParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDataGridShouldTakeTheExportIconsFromTheCascadeUnlessItSetsItsOwn()
+    {
+        var component = RenderWithParams(new BitDataGridParams
+        {
+            ShowCsvExport = true,
+            ShowExcelExport = true,
+            ExportIconOnly = true,
+            CsvExportIcon = BitIconInfo.Css("cascaded-csv"),
+            ExcelExportIconName = "ExcelDocument",
+        }, builder => builder.AddComponentParameter(3, nameof(BitDataGrid<Row>.ExcelExportIcon), BitIconInfo.Css("own-excel")));
+
+        var buttons = component.FindAll(".bit-dtg-toolbar-end .bit-dtg-btn");
+
+        Assert.AreEqual("Export CSV", buttons[0].GetAttribute("aria-label"));
+        Assert.IsNotNull(buttons[0].QuerySelector("i.cascaded-csv"));
+
+        // The grid's own icon and the cascaded name are one setting, so the name does not land beside the icon.
+        Assert.IsNotNull(buttons[1].QuerySelector("i.own-excel"));
+        Assert.IsNull(Grid(component).ExcelExportIconName);
+    }
+
+    [TestMethod]
     public void BitDataGridShouldDropTheHeaderFromTheCascade()
     {
         var component = RenderWithParams(new BitDataGridParams { ShowHeader = false });
@@ -552,6 +574,7 @@ public class BitDataGridParamsTests : BunitTestContext
         if (valueType == typeof(RenderFragment)) return (RenderFragment)(_ => { });
         if (valueType == typeof(BitDataGridClassStyles)) return new BitDataGridClassStyles();
         if (valueType == typeof(BitDataGridStrings)) return new BitDataGridStrings();
+        if (valueType == typeof(BitIconInfo)) return BitIconInfo.Css("fa-solid fa-file");
 
         throw new NotSupportedException($"No sample value for {type}.");
     }

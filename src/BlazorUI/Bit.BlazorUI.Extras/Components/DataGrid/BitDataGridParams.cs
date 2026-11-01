@@ -63,9 +63,33 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
     public bool? ClipboardCopy { get; set; }
 
     /// <summary>
+    /// The icon of the CSV export button, from an external icon library. Takes precedence over
+    /// <see cref="CsvExportIconName"/> when both are set, and is not applied to a grid that sets its own CsvExportIcon or
+    /// CsvExportIconName.
+    /// </summary>
+    public BitIconInfo? CsvExportIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the CSV export button, from the Fluent UI icon set.
+    /// </summary>
+    public string? CsvExportIconName { get; set; }
+
+    /// <summary>
     /// The content shown in place of the rows when there are none.
     /// </summary>
     public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The icon of the Excel export button, from an external icon library. Takes precedence over
+    /// <see cref="ExcelExportIconName"/> when both are set, and is not applied to a grid that sets its own ExcelExportIcon
+    /// or ExcelExportIconName.
+    /// </summary>
+    public BitIconInfo? ExcelExportIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the Excel export button, from the Fluent UI icon set.
+    /// </summary>
+    public string? ExcelExportIconName { get; set; }
 
     /// <summary>
     /// Bakes the grid's rendered colors and fonts into the Excel export.
@@ -76,6 +100,11 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
     /// Lets a click anywhere on a row toggle its detail content.
     /// </summary>
     public bool? ExpandDetailOnRowClick { get; set; }
+
+    /// <summary>
+    /// Renders the CSV and Excel export buttons as icons alone, their text naming them for assistive tech and as tooltips.
+    /// </summary>
+    public bool? ExportIconOnly { get; set; }
 
     /// <summary>
     /// How long, in milliseconds, a text or number filter box waits after the last keystroke before it applies.
@@ -291,9 +320,29 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
             bitDataGrid.TakeFromCascade(nameof(ClipboardCopy), ClipboardCopy.Value, static d => d.ClipboardCopy, static (d, v) => d.ClipboardCopy = v);
         }
 
+        if (CsvExportIcon is not null)
+        {
+            bitDataGrid.TakeFromCascade(nameof(CsvExportIcon), CsvExportIcon, static d => d.CsvExportIcon, static (d, v) => d.CsvExportIcon = v);
+        }
+
+        if (CsvExportIconName.HasValue())
+        {
+            bitDataGrid.TakeFromCascade(nameof(CsvExportIconName), CsvExportIconName, static d => d.CsvExportIconName, static (d, v) => d.CsvExportIconName = v);
+        }
+
         if (EmptyTemplate is not null)
         {
             bitDataGrid.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static d => d.EmptyTemplate, static (d, v) => d.EmptyTemplate = v);
+        }
+
+        if (ExcelExportIcon is not null)
+        {
+            bitDataGrid.TakeFromCascade(nameof(ExcelExportIcon), ExcelExportIcon, static d => d.ExcelExportIcon, static (d, v) => d.ExcelExportIcon = v);
+        }
+
+        if (ExcelExportIconName.HasValue())
+        {
+            bitDataGrid.TakeFromCascade(nameof(ExcelExportIconName), ExcelExportIconName, static d => d.ExcelExportIconName, static (d, v) => d.ExcelExportIconName = v);
         }
 
         if (ExcelExportStyled.HasValue)
@@ -304,6 +353,11 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
         if (ExpandDetailOnRowClick.HasValue)
         {
             bitDataGrid.TakeFromCascade(nameof(ExpandDetailOnRowClick), ExpandDetailOnRowClick.Value, static d => d.ExpandDetailOnRowClick, static (d, v) => d.ExpandDetailOnRowClick = v);
+        }
+
+        if (ExportIconOnly.HasValue)
+        {
+            bitDataGrid.TakeFromCascade(nameof(ExportIconOnly), ExportIconOnly.Value, static d => d.ExportIconOnly, static (d, v) => d.ExportIconOnly = v);
         }
 
         if (FilterDebounce.HasValue)
