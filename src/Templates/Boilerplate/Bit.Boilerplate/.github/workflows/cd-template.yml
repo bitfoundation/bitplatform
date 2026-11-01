@@ -41,7 +41,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
         with:
           arguments: --no-build
 
@@ -302,7 +302,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
         with:
           arguments: --platforms windows --no-build
 
@@ -324,7 +324,7 @@ jobs:
       # Logs in to Azure with the job's OIDC token and points vpk at the Artifact Signing account, so vpk pack signs the app.
       - name: Sign the app with Artifact Signing
         if: vars.CODE_SIGNING_ACCOUNT != ''
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/artifact-signing@v-11.0.0-pre-15
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/artifact-signing@v-11.0.0-pre-16
         with:
           endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
           account: ${{ vars.CODE_SIGNING_ACCOUNT }}
@@ -375,7 +375,7 @@ jobs:
           global-json-file: global.json
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
         with:
           arguments: --platforms android --no-build
 
@@ -444,7 +444,7 @@ jobs:
           xcode-version: '27.0'
 
       - name: Prepare this machine with bit setup
-        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+        uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
         with:
           arguments: --platforms ios --no-build
 
