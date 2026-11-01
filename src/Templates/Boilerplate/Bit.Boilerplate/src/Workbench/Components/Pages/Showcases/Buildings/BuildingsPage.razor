@@ -90,7 +90,8 @@
                     }
                     <BitDataGrid @ref="grid"
                                  TItem="Building"
-                                 Items="FilteredBuildings"
+                                 OnLoadMore="LoadMore"
+                                 LoadMoreBatchSize="20"
                                  KeyField="b => b.Id"
                                  Height="100%"
                                  Class="buildings-grid"
@@ -98,8 +99,6 @@
                                  SelectedItems="selectedItems"
                                  SelectedItemsChanged="OnGridSelectionChanged"
                                  OnRowDoubleClick="OpenEdit"
-                                 Pageable="true"
-                                 PageSize="10"
                                  AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]">
                         <BitDataGridColumn TItem="Building" Property="b => b.Name" Title="@Localizer[nameof(WorkbenchStrings.BuildingName)]" RowHeader="true">
                             <Template Context="building">
@@ -112,7 +111,7 @@
                                 </span>
                             </Template>
                         </BitDataGridColumn>
-                        <BitDataGridColumn TItem="Building" Property="b => b.Type" Title="@Localizer[nameof(WorkbenchStrings.BuildingType)]" SortBy="SortByType" Width="130px" Visible="isNarrow is false">
+                        <BitDataGridColumn TItem="Building" Property="b => b.Type" Title="@Localizer[nameof(WorkbenchStrings.BuildingType)]" Width="130px" Visible="isNarrow is false">
                             <Template Context="building">@Localizer[$"BuildingType{building.Type}"]</Template>
                         </BitDataGridColumn>
                         <BitDataGridColumn TItem="Building" Property="b => b.Year" Title="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" Align="BitTextAlign.End" Width="80px" Visible="isNarrow is false" />

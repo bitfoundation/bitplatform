@@ -150,11 +150,57 @@ public partial class BuildingsPage
         store.MoveMap(view.Center.Latitude, view.Center.Longitude, view.Zoom);
     }
 
-    private void Search(string? text)
+    private async Task Search(string? text)
     {
         store.Search(text);
         BuildMarkers();
+        await RefreshGrid();
     }
+
+    /// <summary>The grid's next batch of the filtered buildings, filtered and sorted the way its filter row and headers ask.</summary>
+    private Task<BitDataGridReadResult<Building>> LoadMore(BitDataGridReadRequest request)
+    {
+        var rows = FilteredBuildings;
+
+        foreach (var filter in request.Filters)
+        {
+            rows = (filter.ColumnId, filter.Value) switch
+            {
+                (nameof(Building.Name), string name) => rows.Where(b => b.Name.Contains(name, StringComparison.CurrentCultureIgnoreCase)),
+                (nameof(Building.Type), BuildingType type) => rows.Where(b => b.Type == type),
+                (nameof(Building.Year), int year) => rows.Where(b => b.Year == year),
+                _ => rows
+            };
+        }
+
+        IOrderedEnumerable<Building>? sorted = null;
+
+        foreach (var sort in request.Sorts.Where(s => s.Direction is not BitDataGridSortDirection.None).OrderBy(s => s.Priority))
+        {
+            Func<Building, object?> key = sort.ColumnId switch
+            {
+                nameof(Building.Type) => SortByType,
+                nameof(Building.Year) => b => b.Year,
+                _ => b => b.Name
+            };
+
+            var descending = sort.Direction is BitDataGridSortDirection.Descending;
+
+            sorted = sorted is null
+                ? (descending ? rows.OrderByDescending(key) : rows.OrderBy(key))
+                : (descending ? sorted.ThenByDescending(key) : sorted.ThenBy(key));
+        }
+
+        // Take is null when an export asks for every row.
+        var batch = (sorted ?? rows).Skip(request.Skip).Take(request.Take ?? int.MaxValue).ToList();
+
+        return Task.FromResult(new BitDataGridReadResult<Building>(batch, 0));
+    }
+
+    /// <summary>Reloads the grid from its first batch. Only a grid already on screen needs it; one that appears loads its own.</summary>
+    private Task RefreshGrid() => status is PosWidgetStatus.Ready && Scenario.Variant is not "cards" && grid is not null
+        ? grid.RefreshAsync()
+        : Task.CompletedTask;
 
     /// <summary>Opens the editor for a new building where the map was double-clicked, if that is inside the country.</summary>
     private async Task OnMapDoubleClick(BitMapLatLng position)
@@ -253,6 +299,7 @@ public partial class BuildingsPage
             buildings.Add(building);
         }
 
+        await RefreshGrid();
         status = PosWidgetStatus.Ready;
         await Select(building, flyTo: true);
         SnackBarService.Success(Localizer[nameof(WorkbenchStrings.BuildingsSaved), building.Name]);
@@ -276,6 +323,7 @@ public partial class BuildingsPage
         }
 
         buildings.RemoveAll(b => b.Id == building.Id);
+        await RefreshGrid();
         status = buildings.Count == 0 ? PosWidgetStatus.Empty : PosWidgetStatus.Ready;
 
         if (store.SelectedId == building.Id)

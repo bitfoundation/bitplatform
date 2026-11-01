@@ -50,12 +50,17 @@
         height: auto;
         grid-template-columns: minmax(0, 1fr);
 
+        // A set height, so the list scrolls inside its pane and loads more rows as it does.
+        .list-pane,
+        .map-pane {
+            height: calc(#{$bit-env-height-available} - 18rem);
+        }
+
         .list-pane {
             min-height: 28rem;
         }
 
         .map-pane {
-            height: calc(#{$bit-env-height-available} - 18rem);
             min-height: 22rem;
         }
 
