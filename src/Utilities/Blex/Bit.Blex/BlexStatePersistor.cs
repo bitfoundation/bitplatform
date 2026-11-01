@@ -23,6 +23,7 @@ namespace Bit.Blex;
 public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 {
     private const string VersionKey = "__blexVersion";
+    private const string StoreVersionKey = "__blexStoreVersion";
     private const string StateKey = "state";
 
     private readonly BlexManager _manager;
@@ -771,42 +772,65 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             throw new JsonException($"The stored state of '{store.Name}' is not a JSON object.");
 
         var storedVersion = 0;
+        var savedUnderOwnVersion = false;
         var state = parsed;
 
-        // An envelope has exactly { "__blexVersion": n, "state": {...} }; requiring the exact
-        // shape prevents misreading a raw store payload that happens to contain a key named
-        // "__blexVersion".
+        // An envelope has exactly { "__blexVersion": n, "state": {...} }, or "__blexStoreVersion" for a
+        // store's own version; requiring the exact shape prevents misreading a raw store payload that
+        // happens to contain a key named like either.
+        var storeVersioned = parsed.ContainsKey(StoreVersionKey);
         if (parsed.Count == 2
-            && parsed.TryGetPropertyValue(VersionKey, out var versionNode)
+            && parsed.TryGetPropertyValue(storeVersioned ? StoreVersionKey : VersionKey, out var versionNode)
             && parsed.TryGetPropertyValue(StateKey, out var stateNode))
         {
+            savedUnderOwnVersion = storeVersioned;
             storedVersion = versionNode?.GetValue<int>() ?? 0;
             state = stateNode as JsonObject ?? new JsonObject();
             state = (JsonObject)state.DeepClone(); // detach from the envelope parent
         }
 
-        if (storedVersion == VersionOf(store))
+        var ownVersion = OwnVersionOf(store);
+        if (ownVersion > 0)
+        {
+            // A store's own versions are counted apart from the app's, which may well reach the same
+            // number: what it saved before it had one -- under the app's version, or none -- is its 0.
+            if (!savedUnderOwnVersion)
+            {
+                storedVersion = 0;
+            }
+            else if (storedVersion == ownVersion)
+            {
+                return state;
+            }
+        }
+        else if (!savedUnderOwnVersion && storedVersion == _options.Version)
+        {
             return state;
+        }
 
         return _options.Migrate?.Invoke(store.Name, storedVersion, state);
     }
 
     private string Wrap(IBlexStore store, JsonObject state)
     {
-        var version = VersionOf(store);
+        var ownVersion = OwnVersionOf(store);
+        var version = ownVersion > 0 ? ownVersion : _options.Version;
         if (version <= 0)
+        {
             return state.ToJsonString();
+        }
 
         var envelope = new JsonObject
         {
-            [VersionKey] = version,
+            [ownVersion > 0 ? StoreVersionKey : VersionKey] = version,
             [StateKey] = state,
         };
         return envelope.ToJsonString();
     }
 
-    private int VersionOf(IBlexStore store)
-        => store is BlexStoreBase { PersistVersion: > 0 } sb ? sb.PersistVersion : _options.Version;
+    /// <summary>The store's own version (<see cref="BlexStoreBase.PersistVersion"/>), or <c>0</c> when it follows the app's.</summary>
+    private static int OwnVersionOf(IBlexStore store)
+        => store is BlexStoreBase { PersistVersion: > 0 } sb ? sb.PersistVersion : 0;
 
     private async ValueTask TryRemoveAsync(IBlexStore store, CancellationToken cancellationToken)
     {

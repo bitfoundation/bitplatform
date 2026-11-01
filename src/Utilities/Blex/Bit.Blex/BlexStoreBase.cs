@@ -184,6 +184,11 @@ public abstract class BlexStoreBase : IBlexStore, INotifyPropertyChanged, IDispo
     /// <inheritdoc />
     public virtual bool Persist => false;
 
+    /// <summary>
+    /// The version of this store's saved state (set via <c>[BlexStoreAttribute(Version = n)]</c>). When greater
+    /// than zero the persistor uses it for this store instead of <see cref="BlexPersistenceOptions.Version"/>;
+    /// <c>0</c> (the default) follows the app's version. Overridden by the generator.
+    /// </summary>
     public virtual int PersistVersion => 0;
 
     /// <inheritdoc />

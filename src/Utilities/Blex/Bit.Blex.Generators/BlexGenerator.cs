@@ -229,6 +229,30 @@ public sealed class BlexGenerator : IIncrementalGenerator
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor NegativeStoreVersion = new(
+        "BLEX024",
+        "Store version cannot be negative",
+        "Blex store '{0}' sets a negative Version; use 0 to have the store follow BlexPersistenceOptions.Version, or a positive number to give it a version of its own",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor VersionWithoutPersist = new(
+        "BLEX025",
+        "Store version has no effect without Persist",
+        "Blex store '{0}' sets Version but not Persist = true, so none of its state is saved and the version is never used; add Persist = true or remove Version",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor OwnGeneratedOverride = new(
+        "BLEX026",
+        "Store declares a member the generator overrides",
+        "Blex store '{0}' declares its own '{1}', which the generated code overrides {2}; remove it from the store",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor ConflictingBaseType = new(
         "BLEX016",
         "Store cannot have another base class",
@@ -372,6 +396,19 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var rollbackArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "RollbackOnError").Value;
             if (rollbackArg.Value is bool rb)
                 rollbackOnError = rb;
+        }
+
+        // Either would otherwise be ignored without a word: a negative version falls back to the app's,
+        // and a store that saves nothing never reads its version. A store that writes its own Persist
+        // override is persisted without the attribute saying so. Both point at the Version argument.
+        if (version < 0)
+        {
+            Report(NegativeStoreVersion, VersionArgumentLocation(storeAttr) ?? classDecl.Identifier.GetLocation(), symbol.Name);
+            version = 0;
+        }
+        else if (version > 0 && !persist && !symbol.GetMembers("Persist").Any(m => !m.IsImplicitlyDeclared))
+        {
+            Report(VersionWithoutPersist, VersionArgumentLocation(storeAttr) ?? classDecl.Identifier.GetLocation(), symbol.Name);
         }
 
         var states = new List<BlexStateModel>();
@@ -611,9 +648,25 @@ public sealed class BlexGenerator : IIncrementalGenerator
             }
         }
 
-        // A name collision would emit uncompilable code; report BLEX005 and emit nothing.
+        // Built before the checks below so they see exactly the overrides Emit writes; the typed
+        // descriptors and the computeds' reads are filled in once the store has passed them.
+        var model = new BlexStoreModel(
+            ns,
+            symbol.Name,
+            storeName,
+            persist,
+            version,
+            enforceActions,
+            rollbackOnError,
+            EmitActions: false,
+            new BlexEquatableArray<BlexStateModel>(states.ToArray()),
+            new BlexEquatableArray<BlexComputedModel>(computeds.ToArray()),
+            new BlexEquatableArray<BlexActionModel>(actions.ToArray()),
+            new BlexEquatableArray<BlexEffectModel>(effects.ToArray()));
+
+        // A name collision would emit uncompilable code; report BLEX005 or BLEX026 and emit nothing.
         var beforeDuplicates = diagnostics.Count;
-        var memberNames = DetectDuplicates(storeName, states, computeds, actions, effects, symbol, Report);
+        var memberNames = DetectDuplicates(storeName, states, computeds, actions, effects, GeneratedOverrides(model), symbol, ctx.SemanticModel.Compilation, Report);
         if (diagnostics.Count > beforeDuplicates)
             return Fail();
 
@@ -631,21 +684,29 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
         var tracked = TrackComputedReads(symbol, ctx.SemanticModel.Compilation, states, computeds);
 
-        var model = new BlexStoreModel(
-            ns,
-            symbol.Name,
-            storeName,
-            persist,
-            version,
-            enforceActions,
-            rollbackOnError,
-            emitActions,
-            new BlexEquatableArray<BlexStateModel>(states.ToArray()),
-            new BlexEquatableArray<BlexComputedModel>(tracked),
-            new BlexEquatableArray<BlexActionModel>(actions.ToArray()),
-            new BlexEquatableArray<BlexEffectModel>(effects.ToArray()));
+        model = model with
+        {
+            EmitActions = emitActions,
+            Computeds = new BlexEquatableArray<BlexComputedModel>(tracked),
+        };
 
         return new BlexTransformOutput(model, new BlexEquatableArray<BlexDiagnosticInfo>(diagnostics.ToArray()));
+    }
+
+    /// <summary>
+    /// Where <c>Version = n</c> is written in the store's attribute, for the diagnostics about it; <c>null</c>
+    /// when it cannot be found.
+    /// </summary>
+    private static Location? VersionArgumentLocation(AttributeData? storeAttr)
+    {
+        if (storeAttr?.ApplicationSyntaxReference?.GetSyntax() is not AttributeSyntax syntax || syntax.ArgumentList is null)
+        {
+            return null;
+        }
+
+        return syntax.ArgumentList.Arguments
+            .FirstOrDefault(a => a.NameEquals?.Name.Identifier.ValueText == "Version")?
+            .GetLocation();
     }
 
     /// <summary>
@@ -953,7 +1014,8 @@ public sealed class BlexGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Reports BLEX005 for every generated member that would collide, and returns the names of every
+    /// Reports BLEX005 for every generated member that would collide, and BLEX026 for every member of the
+    /// store's own that one of the generated overrides would collide with. Returns the names of every
     /// member the store ends up with: its own, the base class's and the generated ones.
     /// </summary>
     private static HashSet<string> DetectDuplicates(
@@ -962,7 +1024,9 @@ public sealed class BlexGenerator : IIncrementalGenerator
         List<BlexComputedModel> computeds,
         List<BlexActionModel> actions,
         List<BlexEffectModel> effects,
+        Dictionary<string, string> overrides,
         INamedTypeSymbol symbol,
+        Compilation compilation,
         System.Action<DiagnosticDescriptor, Location?, string[]> report)
     {
         var seen = new HashSet<string>(System.StringComparer.Ordinal);
@@ -976,6 +1040,22 @@ public sealed class BlexGenerator : IIncrementalGenerator
         {
             if (!member.IsImplicitlyDeclared)
                 seen.Add(member.Name);
+        }
+
+        // An overridden member's name is reserved, so a store declaring it too (its own PersistVersion
+        // next to [BlexStore(Version = 2)]) is not caught by Check: look for it by name, and point at
+        // the store's member. A method overload of the store's own is left alone; the override does not
+        // touch it.
+        var storeBase = compilation.GetTypeByMetadataName("Bit.Blex.BlexStoreBase");
+        foreach (var generated in overrides)
+        {
+            foreach (var own in symbol.GetMembers(generated.Key))
+            {
+                if (!own.IsImplicitlyDeclared && CollidesWithOverride(own, storeBase))
+                {
+                    report(OwnGeneratedOverride, own.Locations.FirstOrDefault(), [storeName, generated.Key, generated.Value]);
+                }
+            }
         }
 
         void Check(string name)
@@ -1016,11 +1096,31 @@ public sealed class BlexGenerator : IIncrementalGenerator
         }
 
         // Private plumbing behind DescribeActions and TransientStateKeys.
-        Check("__blexActionDescriptors");
-        if (states.Any(s => !s.Persist))
+        if (overrides.ContainsKey("DescribeActions"))
+        {
+            Check("__blexActionDescriptors");
+        }
+
+        if (overrides.ContainsKey("TransientStateKeys"))
+        {
             Check("__blexTransientKeys");
+        }
 
         return seen;
+
+        // Every other kind of member shares the name's one slot, and so does a method whose parameters
+        // match one of the base class's overridable methods of that name.
+        static bool CollidesWithOverride(ISymbol own, INamedTypeSymbol? storeBase)
+        {
+            if (own is not IMethodSymbol method || storeBase is null)
+            {
+                return true;
+            }
+
+            return storeBase.GetMembers(own.Name).Any(inherited => inherited is not IMethodSymbol baseMethod
+                || (baseMethod.Parameters.Length == method.Parameters.Length
+                    && baseMethod.Parameters.Zip(method.Parameters, (b, o) => SymbolEqualityComparer.Default.Equals(b.Type, o.Type)).All(same => same)));
+        }
     }
 
     /// <summary>
@@ -1181,9 +1281,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
     /// <summary>
     /// Emits the nested <c>Actions</c> class -- one typed descriptor per action and effect -- and the
     /// <c>DescribeActions</c> override that hands those, plus a <c>"Set X"</c> descriptor per assignable
-    /// state property, to the runtime for dispatch by name.
+    /// state property, to the runtime for dispatch by name. <paramref name="describe"/> says whether
+    /// <c>DescribeActions</c> is overridden at all (see <see cref="GeneratedOverrides"/>).
     /// </summary>
-    private static void EmitActionDescriptors(StringBuilder sb, BlexStoreModel m, string body)
+    private static void EmitActionDescriptors(StringBuilder sb, BlexStoreModel m, string body, bool describe)
     {
         const string Descriptor = "global::Bit.Blex.BlexActionDescriptor";
 
@@ -1246,8 +1347,10 @@ public sealed class BlexGenerator : IIncrementalGenerator
             }
         }
 
-        if (entries.Count == 0)
+        if (!describe)
+        {
             return;
+        }
 
         sb.AppendLine($"{body}private static {Descriptor}[]? __blexActionDescriptors;");
         sb.AppendLine($"{body}/// <inheritdoc />");
@@ -1353,10 +1456,71 @@ public sealed class BlexGenerator : IIncrementalGenerator
         return names;
     }
 
+    /// <summary>
+    /// The <c>BlexStoreBase</c> members the generated partial overrides for a store, each with what has it
+    /// written (for BLEX026). <see cref="Emit"/> writes an override only when it is listed here, so a store
+    /// that declares one of them too is reported before anything is emitted.
+    /// </summary>
+    private static Dictionary<string, string> GeneratedOverrides(BlexStoreModel m)
+    {
+        var overrides = new Dictionary<string, string>(System.StringComparer.Ordinal)
+        {
+            ["Name"] = "for every store",
+            ["SerializeState"] = "for every store",
+            ["DeserializeState"] = "for every store",
+        };
+
+        if (m.Persist)
+        {
+            overrides["Persist"] = "for Persist = true";
+        }
+
+        if (m.Version > 0)
+        {
+            overrides["PersistVersion"] = $"for Version = {m.Version}";
+        }
+
+        if (m.EnforceActions)
+        {
+            overrides["EnforcesActions"] = "for EnforceActions = true";
+        }
+
+        if (m.States.Any(s => !s.Persist))
+        {
+            overrides["TransientStateKeys"] = "for [BlexState(Persist = false)]";
+        }
+
+        if (m.Effects.Any(e => e.HasCancellationToken || e.DebounceMilliseconds > 0))
+        {
+            overrides["CancelEffects"] = "for an effect with a CancellationToken or a debounce";
+        }
+
+        if (m.Computeds.Count > 0)
+        {
+            overrides["InvalidateComputed"] = "for [BlexComputed]";
+        }
+
+        if (m.RollbackOnError && m.States.Count > 0)
+        {
+            overrides["CaptureRollbackState"] = "for RollbackOnError = true";
+            overrides["ApplyRollbackState"] = "for RollbackOnError = true";
+        }
+
+        // A "Set X" descriptor per state property is described too, except in a store that enforces actions.
+        if (m.Actions.Count + m.Effects.Count > 0 || (!m.EnforceActions && m.States.Count > 0))
+        {
+            overrides["DescribeActions"] = "for a store with actions, effects or assignable state";
+        }
+
+        return overrides;
+    }
+
     private static string Emit(BlexStoreModel m)
     {
         const string JsonObject = "global::System.Text.Json.Nodes.JsonObject";
         const string JsonSerializer = "global::System.Text.Json.JsonSerializer";
+
+        var overrides = GeneratedOverrides(m);
 
         var sb = new StringBuilder();
         sb.AppendLine("// <auto-generated/>");
@@ -1382,21 +1546,21 @@ public sealed class BlexGenerator : IIncrementalGenerator
         sb.AppendLine($"{body}public override string Name => base.WithInstanceKey(\"{Escape(m.StoreName)}\");");
         sb.AppendLine();
 
-        if (m.Persist)
+        if (overrides.ContainsKey("Persist"))
         {
             sb.AppendLine($"{body}/// <inheritdoc />");
             sb.AppendLine($"{body}public override bool Persist => true;");
             sb.AppendLine();
         }
 
-        if (m.Version > 0)
+        if (overrides.ContainsKey("PersistVersion"))
         {
             sb.AppendLine($"{body}/// <inheritdoc />");
             sb.AppendLine($"{body}public override int PersistVersion => {m.Version};");
             sb.AppendLine();
         }
 
-        if (m.EnforceActions)
+        if (overrides.ContainsKey("EnforcesActions"))
         {
             sb.AppendLine($"{body}/// <inheritdoc />");
             sb.AppendLine($"{body}protected override bool EnforcesActions => true;");
@@ -1420,10 +1584,9 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        var transient = m.States.Where(s => !s.Persist).ToList();
-        if (transient.Count > 0)
+        if (overrides.ContainsKey("TransientStateKeys"))
         {
-            var keys = string.Join(", ", transient.Select(s => $"\"{Escape(s.PropertyName)}\""));
+            var keys = string.Join(", ", m.States.Where(s => !s.Persist).Select(s => $"\"{Escape(s.PropertyName)}\""));
             sb.AppendLine($"{body}private static readonly string[] __blexTransientKeys = new string[] {{ {keys} }};");
             sb.AppendLine($"{body}/// <inheritdoc />");
             sb.AppendLine($"{body}protected override global::System.Collections.Generic.IReadOnlyCollection<string> TransientStateKeys => __blexTransientKeys;");
@@ -1693,13 +1856,12 @@ public sealed class BlexGenerator : IIncrementalGenerator
         // Cancellation on disposal. Only the sources are cancelled, never disposed: the frame that
         // created one owns it and disposes it in its own finally, and disposing it from here would
         // race that frame's `catch (OperationCanceledException) when (ct.IsCancellationRequested)`.
-        var cancellable = m.Effects.Where(e => e.HasCancellationToken || e.DebounceMilliseconds > 0).ToList();
-        if (cancellable.Count > 0)
+        if (overrides.ContainsKey("CancelEffects"))
         {
             sb.AppendLine($"{body}/// <inheritdoc />");
             sb.AppendLine($"{body}protected override void CancelEffects()");
             sb.AppendLine($"{body}{{");
-            foreach (var e in cancellable)
+            foreach (var e in m.Effects)
             {
                 if (e.HasCancellationToken)
                     sb.AppendLine($"{body}    __{e.WrapperName}Cts?.Cancel();");
@@ -1712,7 +1874,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        if (m.Computeds.Count > 0)
+        if (overrides.ContainsKey("InvalidateComputed"))
         {
             sb.AppendLine($"{body}/// <inheritdoc />");
             sb.AppendLine($"{body}protected override void InvalidateComputed()");
@@ -1751,7 +1913,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
 
         // RollbackOnError: a shallow copy of the state fields, taken as each synchronous action starts and put
         // back when it throws. Field reads and writes only -- no notification, no serialization.
-        if (m.RollbackOnError && m.States.Count > 0)
+        if (overrides.ContainsKey("CaptureRollbackState"))
         {
             var fields = string.Join(", ", m.States.Select(s => "this." + Id(s.FieldName)));
             sb.AppendLine($"{body}/// <inheritdoc />");
@@ -1767,7 +1929,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
             sb.AppendLine();
         }
 
-        EmitActionDescriptors(sb, m, body);
+        EmitActionDescriptors(sb, m, body, overrides.ContainsKey("DescribeActions"));
 
         // SerializeState
         sb.AppendLine($"{body}/// <inheritdoc />");
