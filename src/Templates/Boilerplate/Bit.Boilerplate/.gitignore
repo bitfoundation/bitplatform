@@ -228,6 +228,9 @@ custom.aprof
 
 /src/Client/Boilerplate.Client.Core/Scripts/*.js
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
+/src/Workbench/wwwroot/scripts/workbench*.js
+/src/Workbench/wwwroot/scripts/axe.min.js
+/src/Workbench/wwwroot/images/icons/bit-icon-512.png
 /src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json
 
 .env

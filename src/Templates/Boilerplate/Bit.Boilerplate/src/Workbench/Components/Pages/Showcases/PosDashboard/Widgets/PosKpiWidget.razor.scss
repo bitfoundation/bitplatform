@@ -1,0 +1,49 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.kpi {
+    gap: 0.375rem;
+    display: flex;
+    flex-direction: column;
+    // Lets the value's font size follow the card's width, so a long amount fits a small card.
+    container-type: inline-size;
+}
+
+.kpi-value {
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: nowrap;
+    font-size: clamp(1.25rem, 6cqi, 1.75rem);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.kpi-change {
+    gap: 0 0.25rem;
+    display: flex;
+    font-size: 13px;
+    flex-wrap: wrap;
+    align-items: center;
+
+    &.good {
+        color: $bit-color-success;
+    }
+
+    &.bad {
+        color: $bit-color-error;
+    }
+
+    .kpi-percent {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .kpi-compare {
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.kpi-trend {
+    height: 44px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}

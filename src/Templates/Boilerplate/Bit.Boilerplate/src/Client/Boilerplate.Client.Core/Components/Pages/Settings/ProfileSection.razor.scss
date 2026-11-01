@@ -1,3 +1,9 @@
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
 section {
     width: 100%;
+}
+
+::deep .bit-lnk {
+    color: $bit-color-primary-dark;
 }

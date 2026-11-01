@@ -1,0 +1,231 @@
+@page "/flows"
+@page "/flows/{FlowId}"
+@using Bit.Blow
+@inherits WorkbenchComponentBase
+
+<PageTitle>@(Flow is { } titled ? $"{titled.Name} · {Localizer[nameof(WorkbenchStrings.Flows)]}" : $"{Localizer[nameof(WorkbenchStrings.Flows)]} · {Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]}")</PageTitle>
+
+<div class="flows-page">
+    <header class="topbar">
+        <a class="brand" href="@WorkbenchUrls.Home">
+            <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />
+            <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
+        </a>
+        <span class="crumb-separator">/</span>
+        <a class="crumb" href="@WorkbenchUrls.Flows">@Localizer[nameof(WorkbenchStrings.Flows)]</a>
+        @if (Flow is { } named)
+        {
+            <span class="crumb-separator">/</span>
+            <BitText Typography="BitTypography.Body1" Class="crumb-title" NoWrap>@named.Name</BitText>
+        }
+
+        <BitSpacer />
+
+        @if (Flow is { Screens.Length: > 0 })
+        {
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.ZoomToFit"
+                       Title="@Localizer[nameof(WorkbenchStrings.ShowAllScreens)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ShowAllScreens)]"
+                       OnClick="ShowAll" />
+            <BitButton Variant="@(presentIndex >= 0 ? BitVariant.Fill : BitVariant.Outline)" Size="BitSize.Small" IconName="@BitIconName.Presentation" OnClick="TogglePresent"
+                       aria-pressed="@(presentIndex >= 0 ? "true" : "false")">
+                @Localizer[nameof(WorkbenchStrings.Present)]
+            </BitButton>
+        }
+        @if (Flow is not null && reviewSession.CanWrite)
+        {
+            <BitButton Variant="BitVariant.Text" Size="BitSize.Small" Color="BitColor.Error" IconName="@BitIconName.Delete" IconOnly="isConfirmingDelete is false"
+                       Title="@Localizer[nameof(WorkbenchStrings.DeleteFlow)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.DeleteFlow)]"
+                       OnClick="DeleteFlow">
+                @(isConfirmingDelete ? Localizer[nameof(WorkbenchStrings.DeleteFlowConfirm)].Value : null)
+            </BitButton>
+        }
+        <SoundToggle Size="BitSize.Small" />
+        <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Contrast"
+                   Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
+                   OnClick="ToggleShellTheme" />
+    </header>
+
+    @if (reviewSession.IsOpen is false)
+    {
+        <div class="loading">
+            @if (isOpenFailed)
+            {
+                <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary" role="alert">@Localizer[nameof(WorkbenchStrings.LoadFailed)]</BitText>
+            }
+            else
+            {
+                <BitRingLoading />
+            }
+        </div>
+    }
+    else if (Flow is { } flow)
+    {
+        @* Only this machine may change the board; elsewhere it can be panned, zoomed and presented. *@
+        <main class="board @(reviewSession.CanWrite ? null : "read-only")">
+            <BlowCanvas @ref="canvas"
+                        Class="flow-board"
+                        Nodes="nodes"
+                        Edges="edges"
+                        FitViewOnInit
+                        FitViewOptions="fitOptions"
+                        MinZoom="0.05"
+                        MaxZoom="1.5"
+                        NodesDraggable="reviewSession.CanWrite"
+                        NodesConnectable="reviewSession.CanWrite"
+                        ElementsSelectable="reviewSession.CanWrite"
+                        EdgesReconnectable="false"
+                        OnBeforeDelete="(_, _) => reviewSession.CanWrite"
+                        OnNodeDragStop="MoveScreen"
+                        OnConnect="Connect"
+                        OnNodesDelete="RemoveScreens"
+                        OnEdgesDelete="RemoveLinks"
+                        OnEdgeDoubleClick="EditLabel"
+                        OnNodeDoubleClick="PresentScreen"
+                        AriaLabel="@flow.Name">
+                <NodeTemplate Context="node">
+                    @* A screen: a live preview of its page in its device, with an invisible handle on each marked arrow start. *@
+                    @if (node.Data is WorkbenchFlowScreen screen)
+                    {
+                        <BlowHandle Type="BlowHandleType.Target" Id="in" Position="BlowPosition.Left" />
+                        <div class="screen-card @(CurrentScreenId == screen.Id ? "current" : null) @(PickingLink?.From == screen.Id ? "picking" : null)">
+                            <div class="screen-head">
+                                <span class="screen-number">@numbers.GetValueOrDefault(screen.Id)</span>
+                                <span class="screen-title">@TitleOf(screen.PageKey)</span>
+                                <a class="screen-open nodrag" href="@($"{WorkbenchUrls.Workbench(screen.PageKey)}{screen.Query}")"
+                                   title="@Localizer[nameof(WorkbenchStrings.OpenInWorkbench)]" aria-label="@Localizer[nameof(WorkbenchStrings.OpenInWorkbench)]">
+                                    <BitIcon IconName="@BitIconName.OpenInNewWindow" />
+                                </a>
+                                @if (reviewSession.CanWrite)
+                                {
+                                    <button type="button" class="screen-remove nodrag" @onclick="() => RemoveScreen(screen.Id)"
+                                            title="@Localizer[nameof(WorkbenchStrings.RemoveScreen)]" aria-label="@Localizer[nameof(WorkbenchStrings.RemoveScreen)]">
+                                        <BitIcon IconName="@BitIconName.Delete" />
+                                    </button>
+                                }
+                            </div>
+                            <DeviceFrame Device="screen.Scenario.DevicePreset" Rotated="screen.Scenario.Rotated">
+                                <iframe class="nodrag nowheel" src="@SourceOf(flow, screen)" title="@TitleOf(screen.PageKey)" loading="lazy" data-screen-id="@screen.Id"></iframe>
+                                @foreach (var link in flow.Links.Where(l => l.From == screen.Id && l.Spot is not null))
+                                {
+                                    <span class="spot" style="@SpotStyle(link.Spot!)"></span>
+                                    <BlowHandle Type="BlowHandleType.Source" Id="@link.Id" Position="BlowPosition.Right" IsConnectable="false" Class="spot-handle" Style="@SpotHandleStyle(link.Spot!)" />
+                                }
+                            </DeviceFrame>
+                            @if (string.IsNullOrWhiteSpace(screen.Note) is false)
+                            {
+                                <p class="screen-note" dir="auto">@screen.Note</p>
+                            }
+                        </div>
+                        <BlowHandle Type="BlowHandleType.Source" Id="out" Position="BlowPosition.Right" />
+                    }
+                </NodeTemplate>
+                <ChildContent>
+                    <BlowBackground />
+                    <BlowControls />
+                    <BlowMiniMap />
+                </ChildContent>
+            </BlowCanvas>
+
+            @if (flow.Screens.Length == 0)
+            {
+                <p class="board-empty">@Localizer[nameof(WorkbenchStrings.FlowHasNoScreens)]</p>
+            }
+            else if (reviewSession.CanWrite && presentIndex < 0 && pickingLinkId is null)
+            {
+                <p class="board-help">@Localizer[nameof(WorkbenchStrings.BoardHelp)]</p>
+            }
+
+            @if (presentIndex >= 0 && presentIndex < flow.Screens.Length)
+            {
+                var shown = flow.Screens[presentIndex];
+                <div class="presenter" role="toolbar" aria-label="@Localizer[nameof(WorkbenchStrings.Present)]">
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@(IsRtl ? BitIconName.ChevronRight : BitIconName.ChevronLeft)" Disabled="presentIndex <= 0"
+                               Title="@Localizer[nameof(WorkbenchStrings.PreviousScreen)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.PreviousScreen)]"
+                               OnClick="() => Present(presentIndex - 1)" />
+                    <span class="presenter-text">
+                        <b>@Localizer[nameof(WorkbenchStrings.ScreenOf), presentIndex + 1, flow.Screens.Length]</b>
+                        <span dir="auto">@(shown.Note ?? TitleOf(shown.PageKey))</span>
+                    </span>
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@(IsRtl ? BitIconName.ChevronLeft : BitIconName.ChevronRight)" Disabled="presentIndex >= flow.Screens.Length - 1"
+                               Title="@Localizer[nameof(WorkbenchStrings.NextScreen)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.NextScreen)]"
+                               OnClick="() => Present(presentIndex + 1)" />
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel"
+                               Title="@Localizer[nameof(WorkbenchStrings.StopPresenting)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.StopPresenting)]"
+                               OnClick="StopPresenting" />
+                </div>
+            }
+
+            @* While an arrow's start is picked, the label editor makes way for this banner. *@
+            @if (PickingLink is { } picking)
+            {
+                <div class="pick-banner" role="status">
+                    <span>@Localizer[nameof(WorkbenchStrings.PickArrowStart), numbers.GetValueOrDefault(picking.From), numbers.GetValueOrDefault(picking.To)]</span>
+                    <BitButton Variant="BitVariant.Text" Size="BitSize.Small" OnClick="CancelPick">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                </div>
+            }
+
+            @* Opened by double-clicking an arrow, or right after drawing one. *@
+            @if (EditingLink is { } editing)
+            {
+                <div class="label-editor" role="dialog" aria-label="@Localizer[nameof(WorkbenchStrings.ArrowLabel)]" @onkeydown="OnLabelEditorKeyDown">
+                    <BitTextField @bind-Value="labelDraft"
+                                  Label="@Localizer[nameof(WorkbenchStrings.ArrowLabel)]"
+                                  Placeholder="@Localizer[nameof(WorkbenchStrings.ArrowLabelPlaceholder)]"
+                                  MaxLength="120"
+                                  AutoFocus />
+                    <div class="arrow-start">
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                            @Localizer[editing.Spot is null ? nameof(WorkbenchStrings.ArrowStartHint) : nameof(WorkbenchStrings.ArrowStartMarked), numbers.GetValueOrDefault(editing.From)]
+                        </BitText>
+                        @if (isScreenNotLoaded)
+                        {
+                            <BitText Typography="BitTypography.Caption1" Color="BitColor.Warning" role="status">@Localizer[nameof(WorkbenchStrings.ScreenNotLoaded)]</BitText>
+                        }
+                        <div class="label-actions">
+                            <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.TouchPointer" OnClick="PickSpot">
+                                @Localizer[editing.Spot is null ? nameof(WorkbenchStrings.MarkArrowStart) : nameof(WorkbenchStrings.MarkArrowStartAgain)]
+                            </BitButton>
+                            @if (editing.Spot is not null)
+                            {
+                                <BitButton Variant="BitVariant.Text" Size="BitSize.Small" OnClick="ClearSpot">@Localizer[nameof(WorkbenchStrings.RemoveArrowStart)]</BitButton>
+                            }
+                        </div>
+                    </div>
+                    <div class="label-actions">
+                        <BitButton OnClick="SaveLabel">@Localizer[nameof(WorkbenchStrings.Save)]</BitButton>
+                        <BitButton Variant="BitVariant.Text" OnClick="CloseLabelEditor">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                        <BitSpacer />
+                        <BitButton Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete" OnClick="DeleteLink">@Localizer[nameof(WorkbenchStrings.DeleteArrow)]</BitButton>
+                    </div>
+                </div>
+            }
+        </main>
+    }
+    else
+    {
+        @* /flows, or the id of a flow that no longer exists. *@
+        <main class="flow-list">
+            <BitText Typography="BitTypography.H4" Element="h1">@Localizer[nameof(WorkbenchStrings.Flows)]</BitText>
+            <BitText Typography="BitTypography.Body1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsHint)]</BitText>
+            @if (FlowId is not null)
+            {
+                <BitText Typography="BitTypography.Body1" Class="missing">@Localizer[nameof(WorkbenchStrings.FlowNotFound)]</BitText>
+            }
+            @if (reviewSession.Flows.Count == 0)
+            {
+                <p class="empty">@Localizer[nameof(WorkbenchStrings.FlowsEmpty)]</p>
+            }
+            <div class="flow-cards">
+                @foreach (var item in reviewSession.Flows)
+                {
+                    <a class="flow-card" href="@WorkbenchUrls.Flow(item.Id)">
+                        <BitIcon IconName="@BitIconName.Flow" Class="flow-card-icon" />
+                        <span class="flow-card-name" dir="auto">@item.Name</span>
+                        <span class="flow-card-meta">@Localizer[nameof(WorkbenchStrings.ScreenCount), item.Screens.Length]</span>
+                        <span class="flow-card-pages">@string.Join(IsRtl ? " ← " : " → ", item.Screens.Select(s => TitleOf(s.PageKey)).Distinct())</span>
+                    </a>
+                }
+            </div>
+        </main>
+    }
+</div>

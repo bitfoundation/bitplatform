@@ -1,0 +1,33 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitCard FullSize MinHeight="333px" Border="BitColorKind.Transparent">
+        <BitStack Alignment="BitAlignment.Center" Gap="2rem">
+            <BitStack Gap="0">
+                <BitText Typography="BitTypography.H6" Element="h2">@AppLocalizer[nameof(AppStrings.ProductsCountPerCategoryChart)]</BitText>
+                <BitText Typography="BitTypography.Body2">
+                    @AppLocalizer[nameof(AppStrings.ProductsCountPerCategoryChartText)]
+                </BitText>
+            </BitStack>
+
+            @if (isFailed)
+            {
+                <BitMessage Color="BitColor.Warning" Multiline Title="@Localizer[nameof(WorkbenchStrings.LoadFailed)]">
+                    <Actions>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="GetData">@Localizer[nameof(WorkbenchStrings.PosRetry)]</BitButton>
+                    </Actions>
+                </BitMessage>
+            }
+            else if (isLoading && hasLoadedOnce is false)
+            {
+                <BitGridLoading Style="padding:2rem" />
+            }
+            else
+            {
+                <BitChart Config="config"
+                          AriaLabel="@AppLocalizer[nameof(AppStrings.ProductsCountPerCategoryChart)]"
+                          Description="@AppLocalizer[nameof(AppStrings.ProductsCountPerCategoryChartText)]" />
+            }
+        </BitStack>
+    </BitCard>
+</section>

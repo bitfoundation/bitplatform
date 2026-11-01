@@ -1,0 +1,128 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.theme {
+    gap: 1rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+}
+
+.theme-header {
+    display: flex;
+    flex-direction: column;
+}
+
+section {
+    gap: 0.875rem;
+    display: flex;
+    padding: 1rem;
+    border-radius: 16px;
+    flex-direction: column;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+}
+
+.family {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.swatches {
+    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+}
+
+.swatch-cell,
+.radius-cell {
+    gap: 0.25rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.swatch {
+    height: 2.75rem;
+    border-radius: 10px;
+    // Each swatch gets its token from the markup.
+    background-color: var(--wb-token);
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+.token,
+.value,
+.type-name {
+    font-size: 11px;
+    overflow-wrap: anywhere;
+    color: $bit-color-foreground-secondary;
+}
+
+.token {
+    font-family: ui-monospace, monospace;
+}
+
+.type-scale {
+    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.type-row {
+    gap: 1rem;
+    display: grid;
+    min-width: 0;
+    align-items: baseline;
+    grid-template-columns: 6rem minmax(0, 1fr);
+
+    ::deep .sample {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.radii {
+    gap: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+}
+
+.radius-box {
+    height: 3.5rem;
+    border-radius: var(--wb-radius);
+    border: 2px solid $bit-color-primary;
+    background-color: color-mix(in srgb, #{$bit-color-primary} 10%, transparent);
+}
+
+.row {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.badges {
+    gap: 1rem;
+    padding-top: 0.75rem;
+}
+
+.tooltip-stage {
+    display: flex;
+    // Room above the button for the tooltip that is always shown.
+    padding-top: 3rem;
+    justify-content: center;
+}
+
+.column {
+    gap: 0.625rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.grid {
+    gap: 1rem;
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}

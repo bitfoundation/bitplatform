@@ -1,0 +1,48 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.card {
+    gap: 0.625rem;
+    display: flex;
+    padding: 0.875rem;
+    border-radius: 14px;
+    flex-direction: column;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+.card-head {
+    gap: 0.25rem 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+}
+
+.card-title {
+    // A row of its own, so the value and the change share the next one.
+    flex-basis: 100%;
+    font-size: 13px;
+    color: $bit-color-foreground-secondary;
+}
+
+.card-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $bit-color-foreground-primary;
+}
+
+.card-change {
+    gap: 0.25rem;
+    display: flex;
+    font-size: 13px;
+    font-weight: 600;
+    align-items: center;
+    color: $bit-color-success;
+
+    &.down {
+        color: $bit-color-error;
+    }
+}
+
+.chart {
+    height: 9rem;
+}

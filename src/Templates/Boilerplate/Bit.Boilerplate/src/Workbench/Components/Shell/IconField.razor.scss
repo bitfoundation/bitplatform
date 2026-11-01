@@ -1,0 +1,69 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.field-row {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    ::deep .bit-tfl {
+        flex-grow: 1;
+        min-width: 0;
+    }
+}
+
+.preview {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 1rem;
+    align-items: center;
+    border-radius: 0.25rem;
+    justify-content: center;
+    color: $bit-color-foreground-primary;
+    background: $bit-color-background-secondary;
+    border: 1px solid $bit-color-border-secondary;
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.6;
+    }
+}
+
+.picker {
+    gap: 0.5rem;
+    display: flex;
+    margin-top: 0.5rem;
+    flex-direction: column;
+}
+
+.icons {
+    gap: 0.25rem;
+    display: grid;
+    overflow-y: auto;
+    max-height: 16rem;
+    grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
+}
+
+.icon {
+    height: 2.25rem;
+    display: flex;
+    cursor: pointer;
+    font-size: 1.125rem;
+    align-items: center;
+    border-radius: 0.25rem;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    color: $bit-color-foreground-primary;
+
+    &:hover {
+        background: $bit-color-background-secondary;
+    }
+
+    &.selected {
+        border-color: $bit-color-primary;
+        color: $bit-color-primary;
+    }
+}

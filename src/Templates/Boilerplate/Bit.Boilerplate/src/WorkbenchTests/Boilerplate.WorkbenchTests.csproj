@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
+        <TestingPlatformCommandLineArguments>--settings ./.runsettings --report-trx --report-trx-filename TestResults.trx --results-directory ./TestResults</TestingPlatformCommandLineArguments>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FakeItEasy" />
+        <PackageReference Include="Microsoft.Playwright.MSTest.v4" />
+        <PackageReference Include="bunit" />
+        <PackageReference Include="MSTest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Workbench\Boilerplate.Workbench.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System.Net" />
+        <Using Include="System.Collections.Concurrent" />
+        <Using Include="System.Net.Http.Json" />
+        <Using Include="System.Text.Json.Nodes" />
+        <Using Include="System.Text.RegularExpressions" />
+        <Using Include="Microsoft.AspNetCore.Http" />
+        <Using Include="Microsoft.AspNetCore.Builder" />
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Microsoft.Extensions.Hosting" />
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <Using Include="Microsoft.Playwright" />
+        <Using Include="Microsoft.Playwright.MSTest" />
+        <Using Include="FakeItEasy" />
+        <Using Include="Bit.Blex" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="Boilerplate.Client.Core.Infrastructure.Services" />
+        <Using Include="Boilerplate.Workbench.Resources" />
+        <Using Include="Boilerplate.Workbench.Components.Shell" />
+        <Using Include="Boilerplate.Workbench.Infrastructure.Models" />
+        <Using Include="Boilerplate.Workbench.Infrastructure.Services" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Buildings" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.Buildings.Data" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard" />
+        <Using Include="Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Data" />
+        <Using Include="Boilerplate.WorkbenchTests.Infrastructure" />
+    </ItemGroup>
+
+</Project>

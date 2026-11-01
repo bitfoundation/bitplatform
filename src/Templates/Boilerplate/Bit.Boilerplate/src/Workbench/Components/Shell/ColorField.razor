@@ -1,0 +1,22 @@
+@inherits WorkbenchComponentBase
+
+<div class="color-field">
+    <div class="field-row">
+        <button type="button" class="swatch @(IsColor(Shown) ? null : "empty")" style="@(IsColor(Shown) ? $"background-color: {Shown}" : null)"
+                disabled="@Disabled" @onclick="Toggle"
+                title="@Localizer[nameof(WorkbenchStrings.ColorPick)]" aria-label="@Localizer[nameof(WorkbenchStrings.ColorPick)]"
+                aria-expanded="@(isOpen ? "true" : "false")"></button>
+        <BitTextField Value="@Value" ValueChanged="Change" AriaLabel="@AriaLabel" Placeholder="@Placeholder" Disabled="Disabled" />
+    </div>
+
+    @if (isOpen && Disabled is false)
+    {
+        <div class="picker">
+            <BitColorPicker Value="@(IsColor(Shown) ? Shown : "#000000")"
+                            ValueChanged="(string? color) => draft = color"
+                            OnChangeEnd="Commit"
+                            Format="BitColorFormat.Hex"
+                            ShowEyeDropper />
+        </div>
+    }
+</div>

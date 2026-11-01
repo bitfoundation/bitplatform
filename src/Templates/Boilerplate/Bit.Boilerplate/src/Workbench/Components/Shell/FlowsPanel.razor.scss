@@ -1,0 +1,54 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.flows {
+    display: flex;
+    flex-direction: column;
+}
+
+section {
+    gap: 0.625rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+// The titles are BitText components, reached through their Class.
+::deep .section-title {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.flow-link {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 14px;
+    align-items: center;
+    border-radius: 10px;
+    text-decoration: none;
+    padding: 0.5rem 0.625rem;
+    color: $bit-color-foreground-primary;
+    border: 1px solid $bit-color-border-tertiary;
+
+    &:hover {
+        border-color: $bit-color-primary;
+    }
+
+    // The flow icon is a BitIcon, rendered by another component.
+    ::deep .bit-icn {
+        color: $bit-color-primary;
+    }
+}
+
+.flow-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.flow-count {
+    font-size: 12px;
+    flex-shrink: 0;
+    color: $bit-color-foreground-secondary;
+}

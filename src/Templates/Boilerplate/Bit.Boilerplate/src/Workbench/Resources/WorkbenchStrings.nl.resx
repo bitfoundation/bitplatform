@@ -1,0 +1,2805 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="WorkbenchTitle" xml:space="preserve">
+        <value>Werkbank</value>
+    </data>
+    <data name="CategoryDashboards" xml:space="preserve">
+        <value>Dashboards</value>
+    </data>
+    <data name="PosDashboardTitle" xml:space="preserve">
+        <value>Kassadashboard</value>
+    </data>
+    <data name="PosDashboardDescription" xml:space="preserve">
+        <value>Een kassadashboard met widgets die je kunt verplaatsen, vergroten, verbergen en opslaan.</value>
+    </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>Sanne de Vries</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>Daan Visser</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>Niloofar Rahimi</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>Winkel Amsterdam</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>Hoofdkantoor</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>Draaien</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>Schermafbeelding van deze weergave (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>Schermafbeeldingen van alle weergaven (ZIP)</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>Openen in een nieuw tabblad</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>Deze weergave verwijderen</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>Zonder app-kader</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>Licht</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>Donker</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>Systeem</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>Gegevens</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>Laden</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>Leeg</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>Fout</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>Gemengd</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>Traag</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>Afgemeld</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>Aangemeld</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>Accounts</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>Apparaat</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>Staand</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>Liggend</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>Apparaatkader</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>Zoom</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>Passend</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>Gegevens</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>Pagina's lezen hun gegevens na een korte vertraging uit het geheugen, dus elke toestand is hier te zien, ook die in een echte app lastig te vangen zijn.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>App</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>App-kader</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>Navigatiepaneel, kopbalk, accountmenu en onderbalk van de app.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>Aanmelding</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>Thema</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>Taal</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>Herstellen</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>Telefoons</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>Vouwbare toestellen</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>Tablets</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>Laptops</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>Desktops</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>Store-formaten</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>Pagina's</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>Pagina's zoeken</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>Deze pagina staat niet op de werkbank.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>Terug naar de start van de werkbank</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>Gereedschap</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>Sluiten</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>Vergelijken</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>Eén weergave</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>Telefoon, tablet en desktop</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>Licht en donker</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>Talen naast elkaar</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>Alle gegevenstoestanden</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>Afgemeld, aangemeld, meerdere accounts</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>Weergave toevoegen</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>Schermafbeelding</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>Link naar deze opstelling kopiëren</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>Werkbank wisselen tussen licht en donker</value>
+    </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>Alle winkels</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>Amsterdam, Jordaan</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>Rotterdam, Markthal</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>Utrecht, Oudegracht</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>Flat white</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>Haverlatte</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>Roomboter croissant</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>Appeltaart</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>Cappuccino</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>Stroopwafel</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>Zuurdesembrood</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>Cold brew</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>Emma</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>Lucas</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>Mila</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>Sem</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>Pinpas</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>Mobiel betalen</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>Contant</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>Cadeaukaart</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>Havermelk</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>Croissantdeeg</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>Espressobonen</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>Afhaalbekers</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>Netto-omzet</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>Transacties</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>Gemiddelde verkoop</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>Terugbetalingen</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>Omzet per uur</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>Betaalmethoden</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>Topproducten</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>Omzetdoel</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>Recente bestellingen</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>Lage voorraad</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>Team</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>Drukke uren</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>{0} verslepen</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>Widgetopties</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>Laden</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>Kon dit niet laden</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>De rest van het dashboard werkt. Probeer het zo opnieuw.</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>Opnieuw proberen</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>Nog niets te zien</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>Klein</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>Middel</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>Groot</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>Naar voren</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>Naar achteren</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>Verbergen</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>Nog geen verkopen</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>Cijfers verschijnen hier zodra de eerste bestelling is betaald.</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>Vandaag</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>Deze periode</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>Zelfde dag vorige week</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>Vergeleken met dezelfde dag vorige week</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>Nog geen betalingen</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>Totaal</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>{0} verkocht</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>Geen doel ingesteld</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>Stel een omzetdoel in om te zien hoe dichtbij de winkel is.</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>van doel {0}</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>Nog {0} tot het doel</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>Laatste bestellingen van alle kassa's</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>Nog geen bestellingen</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>Bestellingen verschijnen hier zodra een kassa ze aanslaat.</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>Bestelling</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>Tijd</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>Kassamedewerker</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>Artikelen</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>Betaling</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>Status</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>Betaald</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>Terugbetaald</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>In behandeling</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>{0} min geleden</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>Artikelen onder hun minimum</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>Alles is op voorraad</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>Er zit nu niets onder zijn minimum.</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>Nog {0} · minimum {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>Uitverkocht</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>Laag</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>Besteld</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>Bijbestellen</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>Niemand heeft dienst</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>Teamresultaten verschijnen zodra iemand inklokt.</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} bestellingen</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>Topverkoper</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>Bestellingen per uur over de laatste vier weken</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>Rustig</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>Druk</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>Goedemiddag, Sanne</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>Winkel</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>Periode</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>7 dagen</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>30 dagen</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>Klaar</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>Aanpassen</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>Versleep widgets aan hun greep, of gebruik hun menu om ze te vergroten, verplaatsen of verbergen. Je indeling wordt op dit apparaat bewaard.</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>Widget toevoegen ({0})</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>Indeling herstellen</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>Verborgen widgets</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>Toevoegen</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>Alle widgets staan al op het dashboard.</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>Laatste 7 dagen</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>Laatste 30 dagen</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>t.o.v. gisteren</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>t.o.v. vorige 7 dagen</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>t.o.v. vorige 30 dagen</value>
+    </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>Gegevens en kaarten</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>Gebouwen</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>Een gegevenstabel en een kaart die synchroon blijven. Dubbelklik op de kaart om een gebouw toe te voegen, selecteer er een en druk op Delete om het te verwijderen. Ook geavanceerde kaartfuncties zitten erin, zoals beperken waar punten gekozen kunnen worden.</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>Bijzondere gebouwen</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} gebouwen in {1} provincies</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>Zoeken op naam, plaats of type</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>Gebouw toevoegen</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>Lijst</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>Kaart</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>Kon de gebouwen niet laden</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>Nog geen gebouwen</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>Dubbelklik ergens in Nederland op de kaart om de eerste toe te voegen.</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>Naam</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>Plaats</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>Provincie</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>Type</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>Jaar</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>Hoogte (m)</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>Verdiepingen</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>Breedtegraad</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>Lengtegraad</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>Bewerken</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>Verwijderen</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>Dubbelklik of dubbeltik binnen Nederland om een gebouw toe te voegen. Om er een te verwijderen, selecteer je het en druk je op Delete, of gebruik je de verwijderknop in de lijst.</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>{0} is opgeslagen</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>Dit gebouw verwijderen?</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} wordt van de lijst en de kaart verwijderd.</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>{0} is verwijderd</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>Buiten Nederland</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>Gebouwen kunnen alleen binnen de Nederlandse grens worden toegevoegd.</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>Nieuw gebouw</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>Gebouw bewerken</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>Dubbelklik op de kaart om een plek te kiezen, of typ de coördinaten. Alleen punten binnen Nederland worden geaccepteerd.</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>Vul een naam in.</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>Vul een plaats in.</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>Vul een jaar in tussen 1000 en dit jaar.</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Annuleren</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Opslaan</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>Museum</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>Kerk</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>Toren</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>Station</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>Stadion</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>Paleis</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>Kantoortoren</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>Stadhuis</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>Bezienswaardigheid</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>Groningen</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>Friesland</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>Drenthe</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>Overijssel</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>Flevoland</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>Gelderland</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>Utrecht</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>Noord-Holland</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>Zuid-Holland</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>Zeeland</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>Noord-Brabant</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>Limburg</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>Werkbank · Elke pagina ontwerpen, beoordelen en vastleggen</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>Onderdeel van je project</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>Maak het ontwerp af voordat de backend bestaat.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>De werkbank draait de pagina's van je app op voorbeeldgegevens, zodat je elke toestand ontwerpt, op elk apparaat bekijkt en schermafbeeldingen voor de stores maakt, met dezelfde componenten en hetzelfde thema als je app.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>Open het kassadashboard</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>Waarom een werkbank?</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>Geen API, database of aanmelding nodig</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>Licht, donker en van rechts naar links</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>Exacte formaten voor App Store, Google Play en Microsoft Store</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>Donkere modus</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>Van rechts naar links</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>Laadtoestand</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>1320 × 2868 PNG</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>Waarom je project een werkbank heeft</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>Een ontwerptool, een testbank en een fotostudio voor je pagina's, in het project zelf.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>Ontwerpen met elke AI-agent</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>Je hebt Claude Design of Figma niet nodig. Of je nu Codex, Copilot of Claude Code gebruikt, je agent kan hier pagina's ontwerpen, ze in een echte browser bekijken en verbeteren.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>Echte componenten, geen mockups</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>Pagina's gebruiken dezelfde bit BlazorUI-componenten, hetzelfde thema en dezelfde stijlen als je app, dus wat je hier goedkeurt, ziet er hetzelfde uit zodra het in de app is gebouwd.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>Elke toestand op verzoek</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>Laden, leeg, fout, gedeeltelijk en traag zijn één klik verwijderd, ook de toestanden die in een draaiende app lastig te vangen zijn.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>Alle apparaten naast elkaar</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>Telefoons, tablets en desktops op hun echte formaat, licht en donker, in elke taal die je app ondersteunt.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>Schermafbeeldingen voor de stores</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>Exporteer pixelperfecte afbeeldingen in de formaten van App Store, Google Play en Microsoft Store, desgewenst met een gekleurde achtergrond en een bijschrift, weergegeven door een echte browser.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>Een voorsprong van bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>De werkbank begint met kant-en-klare pagina's, zoals een kassadashboard, een roosterplanner en de instellingenpagina van je eigen app. Hergebruik wat past, leer van de rest en zet daarna je eigen pagina's ernaast.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>Veilig om te experimenteren</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>Niets hier praat met je API of database, dus een nieuw idee uitproberen maakt nooit je app of je gegevens kapot.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>Hoe het in je werkwijze past</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>Vraag het aan je AI</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>Vraag Claude, Codex, GitHub Copilot, Gemini of Junie om de pagina. Die bouwt hem hier met voorbeeldgegevens die laden zoals de echte.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>Beoordeel elke toestand</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>Controleer het op elk apparaat, thema, taal en gegevenstoestand, één voor één of naast elkaar.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>Breng het naar de app</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>Bouw het goedgekeurde ontwerp na in je app, op dezelfde manier als de rest van de app, en koppel het aan echte gegevens. Je AI-agent volgt dezelfde stappen.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>Pagina's op deze werkbank</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>Begin hiermee en zet je eigen pagina's ernaast.</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>De werkbank hoort bij elk project dat met de bit-projectsjabloon is gemaakt. Hij draait alleen op je eigen computer, tenzij je hem publiceert.</value>
+    </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>Elke verkoop, live</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>Je gebouwen, één kaart</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>Achtergrond</value>
+    </data>
+    <data name="BackdropHint" xml:space="preserve">
+        <value>Zet de pagina in een apparaat op een gekleurde achtergrond met een bijschrift, zoals de stores het laten zien.</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>App-kleur</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>Middernacht</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>Zonsondergang</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>Oceaan</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>Bos</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>Papier</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>Bijschrift</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>Laat een bijschrift leeg om de vertaalde standaardtekst te gebruiken.</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>Frames en bijschriften zijn welkom. De eerste drie schermafbeeldingen tellen het meest.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play raadt apparaatframes af. Houd bijschriften kort, zonder woorden als Beste of Nieuw.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>De Microsoft Store staat geen toegevoegde tekst of logo's toe. Voeg bijschriften toe in Partner Center.</value>
+    </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>AI-assistent</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>Een chat die nadenkt, tools gebruikt, bronnen noemt en antwoordt met grafieken, documenten en acties om goed te keuren, live geschreven.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>Vraag het gewoon</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>Gesprekken</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>Nieuw gesprek</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>Nog geen gesprekken</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>De gesprekken konden niet worden geladen.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>Opnieuw proberen</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>Model</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>Waarmee kan ik je vandaag helpen?</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>Vraag naar verkoop, voorraad, acties of je team.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>Vraag iets over je winkels</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>Versturen</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>Stoppen</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>Gestopt</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>Aan het nadenken</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>Voorbeeldantwoorden, geschreven voor het ontwerp.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>Dit antwoord is niet aangekomen.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>Kopiëren</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>Gekopieerd</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>Nuttig</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>Niet nuttig</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>Vandaag</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>Gisteren</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>Weekoverzicht verkoop</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>Voorraad voor het weekend</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>Herfstactie</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>Topverkopers van vandaag</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>Verkoop deze week?</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>Nettoverkoop: **€ 34.820**, **8,4%** meer dan vorige week [1].</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>Wat raakt op?</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>Drie producten raken voor maandag op [1]:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>Schrijf een actie voor havermelk-latte</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>Hier is een korte tekst:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>De herfst smaakt beter met haver. Havermelk-latte de hele week € 3,50.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>Wie verkoopt vandaag het meest?</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**Daan** staat bovenaan met **64 bestellingen** en € 1.180 omzet [1].</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>Hier ken ik alleen de voorgestelde vragen. Probeer er een.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>Nettoverkoop, laatste 7 dagen</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>nog {0}</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>Havermelk</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>Croissants</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>Papieren bekers</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>Grondig</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>Denkt eerst goed na voordat het antwoordt</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>Snel</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>Antwoordt meteen</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>Verkooprapport</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>Voorraad</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>Teamverkoop</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>Bestelling bij leverancier</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>Voorraadtelling en leveringen</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>Bestellingen per teamlid, vandaag</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>De laatste 7 dagen per winkel optellen en vergelijken met vorige week.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>Voorraad naast de verkoop en de levering van maandag leggen.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>Kort houden: het seizoen, de prijs, alle winkels.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>De bestellingen van vandaag per teamlid rangschikken.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>Deze drie bestellen voor vrijdag?</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>Klaar. Bestelling **PO-1042** komt vrijdag.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>Oké, ik heb niets besteld.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>Actie havermelk-latte</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} s</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>Opnieuw genereren</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>Bewerken</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>Opslaan</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>Annuleren</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>Naar het nieuwste</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>Redenering</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>{0} nagedacht</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>Bronnen</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>Bron {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>Bestanden bijvoegen</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>Verwijderen</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>Zet bestanden hier neer om ze bij te voegen</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>Sluiten</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} is te groot. Bestanden mogen maximaal {1} zijn.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>{0} is geen ondersteund bestandstype.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>{0} kon niet worden gelezen.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} is niet bijgevoegd. Je kunt maximaal {1} bestanden tegelijk bijvoegen.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>{0} wordt gebruikt</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>{0} gebruikt</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0} mislukt</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0} gestopt</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0} geweigerd</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0} wacht op je goedkeuring</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>{0} toestaan?</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>Toestaan</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>Altijd toestaan</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>Weigeren</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>Je hebt dit geweigerd.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>Invoer</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>Resultaat</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>Gegevens</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>Downloaden</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>Vergroten</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>Verkleinen</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>Versie</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>Gesprek</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>Verwijderen</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>Zonder titel</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>Afgelopen 7 dagen</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>Afgelopen 30 dagen</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>Er ging iets mis</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>tokens</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} tokens/s</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>Invoer</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>Uitvoer</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>Context</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} van {1} tokens</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>Het gesprek wordt lang</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>Het gesprek is bijna te lang om verder te gaan</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} kB</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} MB</value>
+    </data>
+    <data name="LoadFailed" xml:space="preserve">
+        <value>Kon dit niet laden. Probeer het zo opnieuw.</value>
+    </data>
+    <data name="CategoryAppPages" xml:space="preserve">
+        <value>Pagina's van je app</value>
+    </data>
+    <data name="AppDashboardTitle" xml:space="preserve">
+        <value>Dashboard</value>
+    </data>
+    <data name="AppDashboardDescription" xml:space="preserve">
+        <value>Het eigen beheerdashboard van de app, hier met demogegevens, zodat de toestanden en schermafbeeldingen ervan één klik verwijderd zijn.</value>
+    </data>
+    <data name="AppDashboardCaption" xml:space="preserve">
+        <value>Cijfers in één oogopslag</value>
+    </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>Instellingen</value>
+    </data>
+    <data name="SettingsDescription" xml:space="preserve">
+        <value>De eigen instellingenpagina van de app, met profiel, account, aanmelden in twee stappen, sessies en privacy, draaiend op demogegevens in plaats van de server.</value>
+    </data>
+    <data name="SettingsCaption" xml:space="preserve">
+        <value>Je account, jouw manier</value>
+    </data>
+    <data name="CalendarViewDay" xml:space="preserve">
+        <value>Dag</value>
+    </data>
+    <data name="CalendarViewWeek" xml:space="preserve">
+        <value>Week</value>
+    </data>
+    <data name="CalendarViewMonth" xml:space="preserve">
+        <value>Maand</value>
+    </data>
+    <data name="CalendarViewYear" xml:space="preserve">
+        <value>Jaar</value>
+    </data>
+    <data name="CalendarViewAgenda" xml:space="preserve">
+        <value>Agenda</value>
+    </data>
+    <data name="CalendarModeEvent" xml:space="preserve">
+        <value>Afspraken</value>
+    </data>
+    <data name="CalendarModeTimeline" xml:space="preserve">
+        <value>Tijdlijn</value>
+    </data>
+    <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
+        <value>Weergaven</value>
+    </data>
+    <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
+        <value>Modi</value>
+    </data>
+    <data name="CalendarTodayButton" xml:space="preserve">
+        <value>Vandaag</value>
+    </data>
+    <data name="CalendarAddEventButton" xml:space="preserve">
+        <value>Afspraak toevoegen</value>
+    </data>
+    <data name="CalendarAddEventHoverHint" xml:space="preserve">
+        <value>Afspraak toevoegen</value>
+    </data>
+    <data name="CalendarPreviousButtonTitle" xml:space="preserve">
+        <value>Vorige</value>
+    </data>
+    <data name="CalendarNextButtonTitle" xml:space="preserve">
+        <value>Volgende</value>
+    </data>
+    <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
+        <value>Vorige maand</value>
+    </data>
+    <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
+        <value>Volgende maand</value>
+    </data>
+    <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
+        <value>Uur</value>
+    </data>
+    <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
+        <value>Minuut</value>
+    </data>
+    <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
+        <value>AM/PM</value>
+    </data>
+    <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
+        <value>geselecteerd</value>
+    </data>
+    <data name="CalendarSettingsButtonTitle" xml:space="preserve">
+        <value>Instellingen</value>
+    </data>
+    <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
+        <value>Afspraken filteren op kleur</value>
+    </data>
+    <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
+        <value>Afspraken filteren op persoon in de huidige weergave</value>
+    </data>
+    <data name="CalendarAllColorsOption" xml:space="preserve">
+        <value>Alle kleuren</value>
+    </data>
+    <data name="CalendarAllPeopleOption" xml:space="preserve">
+        <value>Alle personen</value>
+    </data>
+    <data name="CalendarUnnamedAttendee" xml:space="preserve">
+        <value>(Naamloos)</value>
+    </data>
+    <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
+        <value>Agenda-instellingen</value>
+    </data>
+    <data name="CalendarDotBadgeLabel" xml:space="preserve">
+        <value>Stipmarkering</value>
+    </data>
+    <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
+        <value>24-uursnotatie</value>
+    </data>
+    <data name="CalendarDayStartsAtLabel" xml:space="preserve">
+        <value>Dag begint om</value>
+    </data>
+    <data name="CalendarHourSuffix" xml:space="preserve">
+        <value>uur</value>
+    </data>
+    <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
+        <value>Agenda groeperen op</value>
+    </data>
+    <data name="CalendarAgendaGroupByDate" xml:space="preserve">
+        <value>Datum</value>
+    </data>
+    <data name="CalendarAgendaGroupByColor" xml:space="preserve">
+        <value>Kleur</value>
+    </data>
+    <data name="CalendarStackedEventsLabel" xml:space="preserve">
+        <value>Overlappende afspraken stapelen</value>
+    </data>
+    <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
+        <value>Kalender tonen in dagweergave</value>
+    </data>
+    <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
+        <value>Weeknummers tonen</value>
+    </data>
+    <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
+        <value>Huidige tijd tonen</value>
+    </data>
+    <data name="CalendarSlotDurationLabel" xml:space="preserve">
+        <value>Tijdsinterval</value>
+    </data>
+    <data name="CalendarMinuteSuffix" xml:space="preserve">
+        <value>min</value>
+    </data>
+    <data name="CalendarWeekMobileWarning" xml:space="preserve">
+        <value>De weekweergave wordt afgeraden op kleinere apparaten. Schakel over naar een desktop of gebruik in plaats daarvan de dagweergave.</value>
+    </data>
+    <data name="CalendarHappeningNowTitle" xml:space="preserve">
+        <value>Nu bezig</value>
+    </data>
+    <data name="CalendarNoAppointmentsNow" xml:space="preserve">
+        <value>Op dit moment geen afspraken</value>
+    </data>
+    <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
+        <value>Afspraken zoeken...</value>
+    </data>
+    <data name="CalendarNoEventsFound" xml:space="preserve">
+        <value>Geen afspraken gevonden.</value>
+    </data>
+    <data name="CalendarEventListTitleFormat" xml:space="preserve">
+        <value>Afspraken op {0}</value>
+    </data>
+    <data name="CalendarEventListCountFormat" xml:space="preserve">
+        <value>{0} afspraak/afspraken</value>
+    </data>
+    <data name="CalendarMoreEventsFormat" xml:space="preserve">
+        <value>+{0} meer</value>
+    </data>
+    <data name="CalendarAddEventDialogTitle" xml:space="preserve">
+        <value>Nieuwe afspraak</value>
+    </data>
+    <data name="CalendarEditEventDialogTitle" xml:space="preserve">
+        <value>Afspraak bewerken</value>
+    </data>
+    <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
+        <value>Maak een nieuwe afspraak in je agenda.</value>
+    </data>
+    <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
+        <value>Wijzig je bestaande afspraak.</value>
+    </data>
+    <data name="CalendarCloseAriaLabel" xml:space="preserve">
+        <value>Sluiten</value>
+    </data>
+    <data name="CalendarCloseButton" xml:space="preserve">
+        <value>Sluiten</value>
+    </data>
+    <data name="CalendarCancelButton" xml:space="preserve">
+        <value>Annuleren</value>
+    </data>
+    <data name="CalendarEditButton" xml:space="preserve">
+        <value>Bewerken</value>
+    </data>
+    <data name="CalendarDeleteButton" xml:space="preserve">
+        <value>Verwijderen</value>
+    </data>
+    <data name="CalendarCreateEventButton" xml:space="preserve">
+        <value>Afspraak maken</value>
+    </data>
+    <data name="CalendarSaveChangesButton" xml:space="preserve">
+        <value>Wijzigingen opslaan</value>
+    </data>
+    <data name="CalendarTitleLabel" xml:space="preserve">
+        <value>Titel</value>
+    </data>
+    <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
+        <value>Titel van de afspraak</value>
+    </data>
+    <data name="CalendarStartDateTimeLabel" xml:space="preserve">
+        <value>Begindatum en -tijd</value>
+    </data>
+    <data name="CalendarEndDateTimeLabel" xml:space="preserve">
+        <value>Einddatum en -tijd</value>
+    </data>
+    <data name="CalendarColorLabel" xml:space="preserve">
+        <value>Kleur</value>
+    </data>
+    <data name="CalendarEventColorAriaLabel" xml:space="preserve">
+        <value>Kleur van de afspraak</value>
+    </data>
+    <data name="CalendarDescriptionLabel" xml:space="preserve">
+        <value>Beschrijving</value>
+    </data>
+    <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
+        <value>Beschrijving van de afspraak</value>
+    </data>
+    <data name="CalendarAttendeesLabel" xml:space="preserve">
+        <value>Deelnemers</value>
+    </data>
+    <data name="CalendarNoAttendeesText" xml:space="preserve">
+        <value>Geen deelnemers</value>
+    </data>
+    <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
+        <value>Voornaam</value>
+    </data>
+    <data name="CalendarLastNamePlaceholder" xml:space="preserve">
+        <value>Achternaam</value>
+    </data>
+    <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
+        <value>ID (optioneel)</value>
+    </data>
+    <data name="CalendarAddButton" xml:space="preserve">
+        <value>Toevoegen</value>
+    </data>
+    <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
+        <value>Deelnemer verwijderen</value>
+    </data>
+    <data name="CalendarStartDateLabel" xml:space="preserve">
+        <value>Begindatum</value>
+    </data>
+    <data name="CalendarEndDateLabel" xml:space="preserve">
+        <value>Einddatum</value>
+    </data>
+    <data name="CalendarAtWord" xml:space="preserve">
+        <value>om</value>
+    </data>
+    <data name="CalendarAllDayLabel" xml:space="preserve">
+        <value>Hele dag</value>
+    </data>
+    <data name="CalendarWeekNumberFormat" xml:space="preserve">
+        <value>wk {0}</value>
+    </data>
+    <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
+        <value>Week {0}</value>
+    </data>
+    <data name="CalendarEventOverlapMessage" xml:space="preserve">
+        <value>Dit tijdvak is al bezet voor deze resource.</value>
+    </data>
+    <data name="CalendarOutOfRangeMessage" xml:space="preserve">
+        <value>Die datum valt buiten het toegestane bereik.</value>
+    </data>
+    <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
+        <value>Dat tijdstip valt buiten de werktijden.</value>
+    </data>
+    <data name="CalendarBlockedMessage" xml:space="preserve">
+        <value>Dat tijdstip is niet beschikbaar.</value>
+    </data>
+    <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
+        <value>Werktijden markeren</value>
+    </data>
+    <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
+        <value>Naar {0}</value>
+    </data>
+    <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
+        <value>Naar week {0}</value>
+    </data>
+    <data name="CalendarValidationTitleRequired" xml:space="preserve">
+        <value>Titel is verplicht</value>
+    </data>
+    <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
+        <value>Beschrijving is verplicht</value>
+    </data>
+    <data name="CalendarValidationEndAfterStart" xml:space="preserve">
+        <value>Einddatum moet na de begindatum liggen</value>
+    </data>
+    <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
+        <value>Voornaam of achternaam is verplicht</value>
+    </data>
+    <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
+        <value>Nieuw tijdvak</value>
+    </data>
+    <data name="CalendarRepeatsLabel" xml:space="preserve">
+        <value>Herhaling</value>
+    </data>
+    <data name="CalendarRepeatsDaily" xml:space="preserve">
+        <value>Dagelijks</value>
+    </data>
+    <data name="CalendarRepeatsWeekly" xml:space="preserve">
+        <value>Wekelijks</value>
+    </data>
+    <data name="CalendarRepeatsMonthly" xml:space="preserve">
+        <value>Maandelijks</value>
+    </data>
+    <data name="CalendarRepeatsYearly" xml:space="preserve">
+        <value>Jaarlijks</value>
+    </data>
+    <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
+        <value>elke {0}</value>
+    </data>
+    <data name="CalendarRepeatsCountFormat" xml:space="preserve">
+        <value>{0} keer</value>
+    </data>
+    <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
+        <value>tot {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
+        <value>op {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
+        <value>op de {0} {1}</value>
+    </data>
+    <data name="CalendarListSeparator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
+        <value>eerste</value>
+    </data>
+    <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
+        <value>tweede</value>
+    </data>
+    <data name="CalendarWeekOfMonthThird" xml:space="preserve">
+        <value>derde</value>
+    </data>
+    <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
+        <value>vierde</value>
+    </data>
+    <data name="CalendarWeekOfMonthLast" xml:space="preserve">
+        <value>laatste</value>
+    </data>
+    <data name="CalendarRepeatLabel" xml:space="preserve">
+        <value>Herhalen</value>
+    </data>
+    <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
+        <value>Eenmalig</value>
+    </data>
+    <data name="CalendarRepeatEveryLabel" xml:space="preserve">
+        <value>Herhalen elke</value>
+    </data>
+    <data name="CalendarRepeatDaysUnit" xml:space="preserve">
+        <value>dag/dagen</value>
+    </data>
+    <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
+        <value>week/weken</value>
+    </data>
+    <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
+        <value>maand/maanden</value>
+    </data>
+    <data name="CalendarRepeatYearsUnit" xml:space="preserve">
+        <value>jaar/jaren</value>
+    </data>
+    <data name="CalendarRepeatOnLabel" xml:space="preserve">
+        <value>Herhalen op</value>
+    </data>
+    <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
+        <value>Dag {0}</value>
+    </data>
+    <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
+        <value>De {0}</value>
+    </data>
+    <data name="CalendarEndsLabel" xml:space="preserve">
+        <value>Eindigt</value>
+    </data>
+    <data name="CalendarEndsNeverOption" xml:space="preserve">
+        <value>Nooit</value>
+    </data>
+    <data name="CalendarEndsOnDateOption" xml:space="preserve">
+        <value>Op een datum</value>
+    </data>
+    <data name="CalendarEndsAfterOption" xml:space="preserve">
+        <value>Na</value>
+    </data>
+    <data name="CalendarOccurrencesLabel" xml:space="preserve">
+        <value>keer</value>
+    </data>
+    <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
+        <value>Uitzonderingen</value>
+    </data>
+    <data name="CalendarSkipDateButton" xml:space="preserve">
+        <value>Datum overslaan</value>
+    </data>
+    <data name="CalendarAddDateButton" xml:space="preserve">
+        <value>Datum toevoegen</value>
+    </data>
+    <data name="CalendarSkippedDatesLabel" xml:space="preserve">
+        <value>Overgeslagen</value>
+    </data>
+    <data name="CalendarAddedDatesLabel" xml:space="preserve">
+        <value>Toegevoegd</value>
+    </data>
+    <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
+        <value>Datum verwijderen</value>
+    </data>
+    <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
+        <value>Moet minimaal 1 zijn</value>
+    </data>
+    <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
+        <value>De reeks kan niet eindigen voordat hij begint</value>
+    </data>
+    <data name="CalendarRecurringEditTitle" xml:space="preserve">
+        <value>Terugkerende afspraak bewerken</value>
+    </data>
+    <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
+        <value>Terugkerende afspraak verwijderen</value>
+    </data>
+    <data name="CalendarThisOccurrenceOption" xml:space="preserve">
+        <value>Deze afspraak</value>
+    </data>
+    <data name="CalendarAllOccurrencesOption" xml:space="preserve">
+        <value>Alle afspraken in de reeks</value>
+    </data>
+    <data name="CalendarOkButton" xml:space="preserve">
+        <value>OK</value>
+    </data>
+    <data name="CalendarResourceLabel" xml:space="preserve">
+        <value>Resource</value>
+    </data>
+    <data name="CalendarResourceColumnHeader" xml:space="preserve">
+        <value>Team</value>
+    </data>
+    <data name="CalendarNoResourceLabel" xml:space="preserve">
+        <value>Niet toegewezen</value>
+    </data>
+    <data name="CalendarNoResourceOption" xml:space="preserve">
+        <value>(geen)</value>
+    </data>
+    <data name="CalendarNoResourcesMessage" xml:space="preserve">
+        <value>Geen resources om weer te geven.</value>
+    </data>
+    <data name="PosStaffNoah" xml:space="preserve">
+        <value>Noah</value>
+    </data>
+    <data name="PosStaffJulia" xml:space="preserve">
+        <value>Julia</value>
+    </data>
+    <data name="CategoryPlanning" xml:space="preserve">
+        <value>Planning</value>
+    </data>
+    <data name="ShiftsTitle" xml:space="preserve">
+        <value>Roosterplanner</value>
+    </data>
+    <data name="ShiftsDescription" xml:space="preserve">
+        <value>Het weekrooster van een café: verschuif diensten per persoon en pas hun duur aan, binnen de openingstijden, rond vrije dagen en zonder dubbele boekingen.</value>
+    </data>
+    <data name="ShiftsCaption" xml:space="preserve">
+        <value>De week in minuten gepland</value>
+    </data>
+    <data name="ShiftsHeading" xml:space="preserve">
+        <value>Personeelsrooster</value>
+    </data>
+    <data name="ShiftsSummary" xml:space="preserve">
+        <value>{0} diensten en {1} uur deze week</value>
+    </data>
+    <data name="ShiftsEmpty" xml:space="preserve">
+        <value>Er zijn nog geen diensten gepland. Selecteer een tijd in iemands rij om de eerste toe te voegen.</value>
+    </data>
+    <data name="ShiftsRoleLead" xml:space="preserve">
+        <value>Shiftleider</value>
+    </data>
+    <data name="ShiftsRoleBarista" xml:space="preserve">
+        <value>Barista</value>
+    </data>
+    <data name="ShiftsRoleBaker" xml:space="preserve">
+        <value>Bakker</value>
+    </data>
+    <data name="ShiftsRoleCashier" xml:space="preserve">
+        <value>Kassamedewerker</value>
+    </data>
+    <data name="ShiftsOpening" xml:space="preserve">
+        <value>Openingsdienst</value>
+    </data>
+    <data name="ShiftsMidday" xml:space="preserve">
+        <value>Tussendienst</value>
+    </data>
+    <data name="ShiftsBakery" xml:space="preserve">
+        <value>Bakkerij</value>
+    </data>
+    <data name="ShiftsClosing" xml:space="preserve">
+        <value>Sluitdienst</value>
+    </data>
+    <data name="ShiftsStocktake" xml:space="preserve">
+        <value>Inventarisatie, café gesloten</value>
+    </data>
+    <data name="ShiftsTimeOff" xml:space="preserve">
+        <value>Vrij</value>
+    </data>
+    <data name="HomeCtaTitle" xml:space="preserve">
+        <value>Je volgende pagina begint hier</value>
+    </data>
+    <data name="HomeCtaText" xml:space="preserve">
+        <value>Vraag je AI-agent om de pagina op de werkbank te ontwerpen. De agent bouwt de pagina met voorbeeldgegevens, controleert elke toestand in een echte browser en laat je schermafbeeldingen zien voordat er backendcode wordt geschreven.</value>
+    </data>
+    <data name="HomeCtaOpen" xml:space="preserve">
+        <value>Open de werkbank</value>
+    </data>
+    <data name="HomeCtaPromptLabel" xml:space="preserve">
+        <value>Vraag bijvoorbeeld</value>
+    </data>
+    <data name="HomeCtaPrompt" xml:space="preserve">
+        <value>Ontwerp op de werkbank een pagina voor de bestelgeschiedenis, met toestanden voor laden, leeg en fout, en laat me schermafbeeldingen voor telefoon en desktop zien.</value>
+    </data>
+    <data name="HomeCtaCopy" xml:space="preserve">
+        <value>Kopiëren</value>
+    </data>
+    <data name="HomeCtaCopied" xml:space="preserve">
+        <value>Gekopieerd</value>
+    </data>
+    <data name="HomeFooterExplore" xml:space="preserve">
+        <value>Ontdekken</value>
+    </data>
+    <data name="HomeFooterLearn" xml:space="preserve">
+        <value>Leren</value>
+    </data>
+    <data name="HomeFooterDocs" xml:space="preserve">
+        <value>Documentatie van de bit-projectsjabloon</value>
+    </data>
+    <data name="HomeFooterComponents" xml:space="preserve">
+        <value>bit BlazorUI-componenten</value>
+    </data>
+    <data name="HomeFooterSource" xml:space="preserve">
+        <value>Broncode op GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Voorbeelden</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>Nieuwe dienst</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Dienst bewerken</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Teamlid</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Dienst</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>Bijvoorbeeld Openingsdienst</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Rol</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Dag</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Begint</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Eindigt</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>Een dienst moet eindigen nadat hij begint.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} heeft op dat moment al een dienst.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Dienst opgeslagen</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Dienst verwijderd</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>Iedereen</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>Alle rollen</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Pas hem aan met AI</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>De werkbank hoort ook bij je app. Vraag je AI-agent om de functies te veranderen of de tools, apparaten en toestanden toe te voegen die je team nodig heeft.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>Niemand</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>Geen rollen</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>Ingelogd als</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>Globale beheerder</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>Tenantbeheerder</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>Demo</value>
+    </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>Controles</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>Deze weergave controleren</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>Voor de geselecteerde weergave, met het apparaat, thema, de taal en de gegevens ervan: een toegankelijkheidscontrole (axe-core) en een zoektocht naar kleuren die niet uit het thema komen.</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>Controles uitvoeren</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>De controles konden niet draaien op deze weergave. Wacht tot die geladen is en probeer het opnieuw.</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>Toegankelijkheid ({0})</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>Geen problemen gevonden.</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>Kritiek</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>Ernstig</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>Matig</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>Gering</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>Tonen</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>Meer informatie</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>Kleuren buiten het thema ({0})</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>Kleuren die de pagina zelf instelt en die niet uit het thema komen en ook geen mengsel zijn van een themakleur met wit, zwart of de achtergrond. Zonder bit-componenten, grafieken en kleuren die als --data-color worden doorgegeven.</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>Flows</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>Een flow zet de schermen van een taak naast elkaar, elk in de toestand die ertoe doet, zoals een lijst en het dialoogvenster dat de knop ervan opent, met pijlen die laten zien hoe je van het ene naar het volgende komt. Open er een om de app te begrijpen of om hem in een overleg door te nemen.</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>Naam van de nieuwe flow</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>Flow verwijderen</value>
+    </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} open opmerkingen</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>Beoordelingsstatus</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>Concept</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>In beoordeling</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>Goedgekeurd</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>Gebouwd</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>Ingesteld door {0}, {1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>Er luistert geen agent. Vraag je agent om de beoordelingsopmerkingen op de werkbank door te nemen, dan beantwoordt hij ze hier een voor een.</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} luistert naar opmerkingen</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} werkt aan #{1}</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>Nieuwe opmerking</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>Je naam</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>Wat moet hier anders?</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>Versturen</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>Open ({0})</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>Klaar ({0})</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>Nog geen opmerkingen. Kies bovenaan Opmerking en klik ergens op de pagina.</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>Nog niets klaar.</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>Open</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>Bezig</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>Klaar</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>Het plan van de agent</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>Antwoorden</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>Antwoorden</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>Heropenen</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>Klaar</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>Weergave tonen</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>Opmerking verwijderen</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>Deze plek</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>Modus</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>Pagina gebruiken</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>Opmerking</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>Inspecteren</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>Tekst bewerken</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>Weergave</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>Beoordeling</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>Beoordelaar</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>niet uit het thema</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>Beoordelingsverslag</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>Beoordelingsverslag (HTML)</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>Beoordelingsverslag (PDF)</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>Weergaven</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>Opmerkingen</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>Geen opmerkingen.</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>Gemaakt op de werkbank, {0}</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>Tekst bewerken</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>Klik op een tekst op de pagina om die in elke taal te wijzigen.</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>Deze tekst staat in de pagina zelf en zit nog niet in de vertaalbestanden, dus hij ziet er in elke taal hetzelfde uit.</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>Verplaats deze tekst naar de vertaalbestanden en vertaal hem: “{0}”</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>Vraag de agent</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>Welke tekst</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>Opslaan</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>Slaat op in de vertaalbestanden en laadt de weergaven opnieuw. Je agent ziet de wijziging in git.</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>Tekst opslaan werkt als de werkbank vanuit het project op je eigen computer draait.</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>Wijzig de tekst {0} · {1}:</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>Thema en componenten</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>De beeldtaal van de app op één pagina: kleuren, letters en hoeken, en de onderdelen die de app gebruikt in elke toestand, met de overlays één schakelaar verderop.</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>Eén uitstraling in de hele app</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>Ontwerpsysteem</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>Thema en componenten</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>Alles hier komt uit het eigen thema van de app. Probeer de thema-opties van de werkbank om het te zien veranderen.</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>Kleuren</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>Primair</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>Secundair</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>Tertiair</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>Info</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>Succes</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>Waarschuwing</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>Ernstige waarschuwing</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>Fout</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>Tekst</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>Achtergronden</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>Randen</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>Typografie</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>Pa's wijze lynx bezag vroom het fikse aquaduct</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>Hoeken</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>Knoppen</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>Uitgeschakeld</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>Instellingen</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>Invoervelden</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>Naam</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>Typ een naam</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>Keuze</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>Kies er een</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>Zoeken</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>Hoeveelheid</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>Optie {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>Meldingen</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>Berichten en status</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>Een {0}-bericht, zoals de app het toont.</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>Uploaden</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>Kaarten en mensen</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>Tabblad {0}</value>
+    </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>Tabel</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>Tegels</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>Hoeveel gebouwen</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>Ongewijzigd</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>Drie</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>Honderden</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>Namen</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>Zoals ze zijn</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>Heel lang</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>Breedte</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>Hoogte</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>Sleep aan de rand of hoek van de weergave om het formaat te wijzigen, of typ de afmetingen.</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>Deze pagina</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>Ontwerpoptie</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>De pagina bepaalt deze zelf, voor de gevallen waarin hij er goed uit moet zien. Elke keuze gaat mee in de link en de schermafbeeldingen.</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>Thema uitproberen</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>Primaire kleur</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>Thema</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>Eigen kleur</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>Alleen deze weergave verandert. Vind je er een goed, vraag je agent dan om die in het thema van de app te zetten.</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>Toegankelijkheid</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>Tekstgrootte</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>Verminder beweging</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>Kleurenzien</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>Grotere tekst zoals een instelling van telefoon of browser die maakt, geen animaties, en hoe mensen met kleurenblindheid de pagina zien.</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>Elk formaat</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>Aangepast formaat</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>Normaal</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>Geen rood (protanopie)</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>Geen groen (deuteranopie)</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>Geen blauw (tritanopie)</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>Geen kleur (achromatopsie)</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>Breakpoints van de app</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>Ontwerpopties</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>Live samenwerken met AI</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>Op de computer waarop de werkbank draait, gaat een opmerking die je op de pagina vastzet rechtstreeks naar de AI-agent van de ontwikkelaar: die past de pagina aan, antwoordt hier meteen en vinkt de opmerking af terwijl je toekijkt. Vanaf elke andere plek is de beoordeling alleen-lezen, zodat niemand die agent via een gedeelde link kan bereiken.</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>De agent is offline</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>Nog geen opmerkingen.</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>Flows worden getekend op de computer waarop de werkbank draait. Hier kun je ze openen en doorlopen.</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>Live beoordelen met je AI-agent</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>Zet een opmerking vast op elke plek van een pagina. Op je eigen computer krijgt je codeeragent die al terwijl je schrijft, past de pagina aan, antwoordt bij de opmerking en vinkt hem af. Werkt met Claude Code, Codex, Copilot, Gemini, Junie en Cursor.</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>Live beoordelen met AI</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Opmerking vastpinnen</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Tik op de plek waar je een opmerking over wilt maken</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>Nog geen flows. Vraag je agent er een te tekenen, zoals ‘laat zien hoe je een gebouw toevoegt’, of voeg weergaven aan een flow toe vanuit het tabblad Flows van een pagina.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>Er staat geen flow op deze link. Misschien is hij verwijderd.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>Deze flow heeft nog geen schermen. Voeg weergaven toe vanuit het tabblad Flows van een pagina, of vraag het je agent.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Schermen: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>Alle flows</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>De schermen van een taak naast elkaar, verbonden met pijlen</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Deze weergave aan een flow toevoegen</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>De flow krijgt de weergave zoals hij nu is: het apparaat, de instellingen en wat er op de pagina openstaat.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Flow</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>Nieuwe flow</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>Wat dit scherm laat zien (optioneel)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>Hoe je hier komt vanaf het vorige scherm (optioneel)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>Wat de gebruiker doet</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Tik op ‘Gebouw toevoegen’</value>
+    </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>Markeer de knop op scherm {0} die hierheen leidt, dan begint de pijl daar.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>Begint bij de gemarkeerde knop op scherm {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>Knop markeren</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>Opnieuw markeren</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>Markering verwijderen</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>Tik op de knop op scherm {0} die naar scherm {1} leidt.</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Deze weergave toevoegen</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Het bord openen</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>Openen in de werkbank</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Alle schermen tonen</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Presenteren</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Vorig scherm</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Volgend scherm</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Stoppen met presenteren</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} van {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Sleep een scherm om het te verplaatsen en dubbelklik erop om het uit te proberen. Sleep vanaf de stip aan de rechterrand van een scherm naar een ander scherm om een pijl te tekenen, geef hem daarna een naam en markeer de knop waar hij begint. Dubbelklik op een pijl om hem te wijzigen of te verwijderen.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>Deze flow verwijderen?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Dit scherm verwijderen</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Pijl verwijderen</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>Laat het me weten als de agent antwoordt</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>De browser blokkeert meldingen van deze site. Sta ze toe in de site-instellingen.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} heeft gereageerd op {1}</value>
+    </data>
+    <data name="ThemeStatesNote" xml:space="preserve">
+        <value>Aanwijzen, Focus en Ingedrukt worden getekend zonder het element aan te raken, dus een telefoon toont ze ook en er gaat geen toetsenbord open.</value>
+    </data>
+    <data name="ThemeStateDefault" xml:space="preserve">
+        <value>Standaard</value>
+    </data>
+    <data name="ThemeStateHover" xml:space="preserve">
+        <value>Aanwijzen</value>
+    </data>
+    <data name="ThemeStateFocused" xml:space="preserve">
+        <value>Focus</value>
+    </data>
+    <data name="ThemeStatePressed" xml:space="preserve">
+        <value>Ingedrukt</value>
+    </data>
+    <data name="ThemeStateLoading" xml:space="preserve">
+        <value>Laden</value>
+    </data>
+    <data name="ThemeStatePlaceholder" xml:space="preserve">
+        <value>Voorbeeldtekst</value>
+    </data>
+    <data name="ThemeStateFilled" xml:space="preserve">
+        <value>Ingevuld</value>
+    </data>
+    <data name="ThemeStateError" xml:space="preserve">
+        <value>Fout</value>
+    </data>
+    <data name="ThemeStateRequired" xml:space="preserve">
+        <value>Verplicht</value>
+    </data>
+    <data name="ThemeStateReadOnly" xml:space="preserve">
+        <value>Alleen-lezen</value>
+    </data>
+    <data name="ThemeStatePassword" xml:space="preserve">
+        <value>Wachtwoord</value>
+    </data>
+    <data name="ThemeStateMultiline" xml:space="preserve">
+        <value>Meerdere regels</value>
+    </data>
+    <data name="ThemeStateEmpty" xml:space="preserve">
+        <value>Leeg</value>
+    </data>
+    <data name="ThemeStateSelected" xml:space="preserve">
+        <value>Geselecteerd</value>
+    </data>
+    <data name="ThemeStateMultiple" xml:space="preserve">
+        <value>Meerdere geselecteerd</value>
+    </data>
+    <data name="ThemeStateChecked" xml:space="preserve">
+        <value>Aangevinkt</value>
+    </data>
+    <data name="ThemeStateUnchecked" xml:space="preserve">
+        <value>Niet aangevinkt</value>
+    </data>
+    <data name="ThemeStateIndeterminate" xml:space="preserve">
+        <value>Deels aangevinkt</value>
+    </data>
+    <data name="ThemeStateOn" xml:space="preserve">
+        <value>Aan</value>
+    </data>
+    <data name="ThemeStateOff" xml:space="preserve">
+        <value>Uit</value>
+    </data>
+    <data name="ThemeStateDisabledOn" xml:space="preserve">
+        <value>Uitgeschakeld, aan</value>
+    </data>
+    <data name="ThemeStateDisabledChecked" xml:space="preserve">
+        <value>Uitgeschakeld, aangevinkt</value>
+    </data>
+    <data name="ThemeStateExpanded" xml:space="preserve">
+        <value>Uitgevouwen</value>
+    </data>
+    <data name="ThemeStateCollapsed" xml:space="preserve">
+        <value>Ingevouwen</value>
+    </data>
+    <data name="ThemeSelection" xml:space="preserve">
+        <value>Keuzes</value>
+    </data>
+    <data name="ThemeNavigation" xml:space="preserve">
+        <value>Navigatie</value>
+    </data>
+    <data name="ThemeLoaders" xml:space="preserve">
+        <value>Laadindicatoren</value>
+    </data>
+    <data name="ThemeOverlays" xml:space="preserve">
+        <value>Overlays</value>
+    </data>
+    <data name="ThemeOverlaysHint" xml:space="preserve">
+        <value>Open er hier een, of kies hem onder Overlay openen zodat links en screenshots hem open tonen.</value>
+    </data>
+    <data name="ThemeSwitchOverlay" xml:space="preserve">
+        <value>Overlay openen</value>
+    </data>
+    <data name="ThemeOverlayNone" xml:space="preserve">
+        <value>Geen</value>
+    </data>
+    <data name="ThemeOverlayDropdown" xml:space="preserve">
+        <value>Vervolgkeuzelijst</value>
+    </data>
+    <data name="ThemeOverlayDatePicker" xml:space="preserve">
+        <value>Datumkiezer</value>
+    </data>
+    <data name="ThemeOverlayMenu" xml:space="preserve">
+        <value>Menu</value>
+    </data>
+    <data name="ThemeOverlayDialog" xml:space="preserve">
+        <value>Dialoogvenster</value>
+    </data>
+    <data name="ThemeOverlayPanel" xml:space="preserve">
+        <value>Zijpaneel</value>
+    </data>
+    <data name="ThemeOverlaySnackBar" xml:space="preserve">
+        <value>Snackbars</value>
+    </data>
+    <data name="ThemeDialogTitle" xml:space="preserve">
+        <value>Dit gebouw verwijderen?</value>
+    </data>
+    <data name="ThemeDialogMessage" xml:space="preserve">
+        <value>Het verdwijnt voor iedereen uit de lijst en van de kaart.</value>
+    </data>
+    <data name="ThemeActions" xml:space="preserve">
+        <value>Acties</value>
+    </data>
+    <data name="ThemeNameError" xml:space="preserve">
+        <value>Typ minstens twee letters.</value>
+    </data>
+    <data name="ThemeQuantity" xml:space="preserve">
+        <value>Aantal</value>
+    </data>
+    <data name="ThemeQuantityError" xml:space="preserve">
+        <value>Bestel er minstens één.</value>
+    </data>
+    <data name="ThemeCode" xml:space="preserve">
+        <value>Verificatiecode</value>
+    </data>
+    <data name="ThemeNotes" xml:space="preserve">
+        <value>Notities</value>
+    </data>
+    <data name="ThemeDateError" xml:space="preserve">
+        <value>Kies een datum in het verleden.</value>
+    </data>
+    <data name="ThemeChoiceError" xml:space="preserve">
+        <value>Kies een van de opties.</value>
+    </data>
+    <data name="ThemeLinkText" xml:space="preserve">
+        <value>Voorwaarden lezen</value>
+    </data>
+    <data name="ThemeFavorite" xml:space="preserve">
+        <value>Favoriet</value>
+    </data>
+    <data name="ThemeTooltipText" xml:space="preserve">
+        <value>Een minuut geleden opgeslagen</value>
+    </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>Er ging iets mis op deze pagina.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>Opnieuw laden</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>Deze opmerking verwijderen?</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>De vertalingen konden niet worden opgeslagen.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>Het scherm kon niet aan de flow worden toegevoegd.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>Laptop {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>Desktop {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>Telefoon {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>Tablet {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (opengeklapt)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>Paars</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>Groen</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>Oranje</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>Petrol</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>Roze</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>Gebouwen tonen als</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>De browser stond kopiëren niet toe. Selecteer de tekst en kopieer hem zelf.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>Deze weergave herstellen</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>Dit scherm is nog niet geladen. Wacht even en markeer de knop dan opnieuw.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>Laat de plaatsaanduidingen tussen accolades staan zoals in de oorspronkelijke tekst, anders kan de pagina deze tekst niet tonen.</value>
+    </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Geluid bij antwoorden van de agent dempen</value>
+    </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>Component</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>Alleen voor snelle wijzigingen. Schrijf al het andere in het tabblad Beoordeling, dan regelt de agent het.</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>Klik op een component in een weergave om de parameters te zien en te wijzigen.</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>Dit is geen bit BlazorUI-component, of het staat niet meer op de pagina, dus er zijn geen parameters om te tonen.</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>Wijzigingen kunnen alleen worden opgeslagen als de werkbank vanuit het project op je eigen computer draait.</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>{0} tekent dit deel zelf, dus het verandert via de parameters van {0}.</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>De tag is niet in de code gevonden, dus de waarden zijn hier alleen-lezen.</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>Filteren</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>Parameters</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>Overgeërfde parameters</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>Stijlen en klassen</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>CSS-variabelen</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>Een waarde die je hier instelt, komt in de Style van het component.</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>Deze kunnen hier alleen veranderen als de Style van het component dat kan.</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>Uit het thema</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>Ingesteld door code</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>Terug naar standaard</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>Niet ingesteld</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>Opgeslagen in {0}. Hot reload toont het zo meteen.</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>Opgeslagen in {0}. Start de app opnieuw om het te zien.</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>De wijziging kon niet worden opgeslagen; de tag is misschien verplaatst. Klik opnieuw op het component.</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>Kies een pictogram</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>Pictogrammen zoeken</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>Nog {0}. Typ om ze te beperken.</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>Kies een kleur</value>
+    </data>
+    <data name="SuggestShow" xml:space="preserve">
+        <value>Voorgestelde waarden</value>
+    </data>
+</root>

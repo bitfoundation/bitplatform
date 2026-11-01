@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<RunSettings>
+
+    <RunConfiguration>
+        <CollectSourceInformation>true</CollectSourceInformation>
+        <EnvironmentVariables>
+
+            <!-- https://playwright.dev/docs/debug -->
+            <!--<HEADED>1</HEADED>-->
+            <!--<PWDEBUG>1</PWDEBUG>-->
+
+            <!-- The Workbench switches every view between the app's cultures. -->
+            <DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>false</DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>
+
+            <!-- The test server stops in 1 second instead of waiting 30 for open Blazor circuits. -->
+            <ASPNETCORE_SHUTDOWNTIMEOUTSECONDS>1</ASPNETCORE_SHUTDOWNTIMEOUTSECONDS>
+        </EnvironmentVariables>
+    </RunConfiguration>
+
+</RunSettings>

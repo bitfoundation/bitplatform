@@ -3,6 +3,9 @@
         "bitplatform": {
             "httpUrl": "https://bitplatform.dev/mcp?v=11.0.0"
         },
+        "workbench": {
+            "httpUrl": "http://localhost:6030/mcp"
+        },
         "aspire": {
             "command": "aspire",
             "args": [

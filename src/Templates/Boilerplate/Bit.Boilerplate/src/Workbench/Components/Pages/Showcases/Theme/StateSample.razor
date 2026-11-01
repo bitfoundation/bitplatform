@@ -1,0 +1,9 @@
+@inherits WorkbenchComponentBase
+
+<div class="state">
+    <span class="state-name">@(Name ?? Localizer[NameKey!])</span>
+    @* The data-wb attributes tell Scripts/states.ts what to force, and on which element. *@
+    <div class="state-sample" data-wb-state="@Force" data-wb-target="@Target" data-wb-index="@Index" inert="@(Force is not null)">
+        @ChildContent
+    </div>
+</div>

@@ -64,9 +64,12 @@
             <_TemplateCodeFile Include="$(_TemplateSource)**/*.cs;$(_TemplateSource)**/*.razor" Exclude="$(_TemplateSource)**/bin/**;$(_TemplateSource)**/obj/**;$(_TemplateSource)**/node_modules/**" />
         </ItemGroup>
         <WriteLinesToFile File="$(IntermediateOutputPath)template-types.txt" Lines="@(_TemplateCodeFile->'%(Filename)%(Extension)'->Distinct())" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <WriteLinesToFile File="$(IntermediateOutputPath)template-namespaces.txt" Lines="@(_TemplateCodeFile->'%(RecursiveDir)'->Distinct())" Overwrite="true" WriteOnlyWhenDifferent="true" />
         <ItemGroup>
             <EmbeddedResource Include="$(IntermediateOutputPath)template-types.txt" LogicalName="Bit.Cli.template-types.txt" />
+            <EmbeddedResource Include="$(IntermediateOutputPath)template-namespaces.txt" LogicalName="Bit.Cli.template-namespaces.txt" />
             <FileWrites Include="$(IntermediateOutputPath)template-types.txt" />
+            <FileWrites Include="$(IntermediateOutputPath)template-namespaces.txt" />
         </ItemGroup>
     </Target>
 

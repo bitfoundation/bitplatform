@@ -1,0 +1,40 @@
+@inherits PosWidgetBase<PosStockAlert[]>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[nameof(WorkbenchStrings.PosLowStockSubtitle)]"
+                EmptyIconName="@BitIconName.Completed"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosStockAllGood)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosStockAllGoodDescription)">
+    <Skeleton>
+        @for (var i = 0; i < 4; i++)
+        {
+            <BitShimmer Height="2.25rem" />
+        }
+    </Skeleton>
+    <ChildContent>
+        <ul class="stock">
+            @foreach (var item in Data!)
+            {
+                <li>
+                    <span class="emoji" aria-hidden="true">@item.Emoji</span>
+                    <span class="details">
+                        <span class="name">@Localizer[item.NameKey]</span>
+                        <span class="level">@Localizer[nameof(WorkbenchStrings.PosInStock), PosFormat.Number(item.InStock), PosFormat.Number(item.Minimum)]</span>
+                    </span>
+                    <span class="badge @(item.IsOut ? "out" : "low")">@Localizer[item.IsOut ? nameof(WorkbenchStrings.PosOutOfStock) : nameof(WorkbenchStrings.PosLowStockBadge)]</span>
+                    @if (store.ReorderedItems.Contains(item.NameKey))
+                    {
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Accept" Disabled>@Localizer[nameof(WorkbenchStrings.PosOrdered)]</BitButton>
+                    }
+                    else
+                    {
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IsLoading="ordering.Contains(item.NameKey)" OnClick="() => Reorder(item)">@Localizer[nameof(WorkbenchStrings.PosReorder)]</BitButton>
+                    }
+                </li>
+            }
+        </ul>
+    </ChildContent>
+</PosWidgetFrame>

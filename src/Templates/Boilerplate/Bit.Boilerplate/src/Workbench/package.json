@@ -1,0 +1,11 @@
+{
+    "engines": {
+        "node": ">=24"
+    },
+    "devDependencies": {
+        "axe-core": "4.14.0",
+        "esbuild": "0.28.2",
+        "sass": "1.107.0",
+        "typescript": "7.0.2"
+    }
+}

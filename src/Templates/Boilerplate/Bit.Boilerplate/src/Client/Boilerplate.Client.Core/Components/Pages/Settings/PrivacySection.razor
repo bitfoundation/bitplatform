@@ -6,7 +6,7 @@
         @* Withdrawing has to be as easy as agreeing (Art. 7(3)), which a banner shown once cannot be. *@
         @if (ConsentService.AskableCategories.Length > 0)
         {
-            <BitText Typography="BitTypography.H6">@Localizer[nameof(AppStrings.PrivacyChoicesTitle)]</BitText>
+            <BitText Typography="BitTypography.H6" Element="h3">@Localizer[nameof(AppStrings.PrivacyChoicesTitle)]</BitText>
 
             <BitStack Gap="0.5rem">
                 @foreach (var category in ConsentService.AskableCategories)
@@ -27,7 +27,7 @@
             <BitSeparator />
         }
 
-        <BitText Typography="BitTypography.H6">@Localizer[nameof(AppStrings.ExportPersonalDataTitle)]</BitText>
+        <BitText Typography="BitTypography.H6" Element="h3">@Localizer[nameof(AppStrings.ExportPersonalDataTitle)]</BitText>
 
         <BitText Typography="BitTypography.Body1">
             @Localizer[nameof(AppStrings.ExportPersonalDataMessage)]

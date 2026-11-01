@@ -1,0 +1,64 @@
+@*+:cnd:noEmit*@
+@* [mirror] dashboard page and its widgets - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/ *@
+@attribute [Authorize(Policy = AuthPolicies.PRIVILEGED_ACCESS)]
+@*#if (multitenant == true)*@
+@attribute [Authorize(Policy = AuthPolicies.TENANT_SELECTED)]
+@*#endif*@
+@attribute [Authorize(Policy = AppFeatures.AdminPanel.Dashboard_View)]
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack Gap="1rem">
+        <BitStack Horizontal AutoHeight HorizontalAlign="BitAlignment.End">
+            <BitToggleButton IsChecked="store.IsEditing"
+                             IsCheckedChanged="store.Edit"
+                             Variant="BitVariant.Text"
+                             Text="@AppLocalizer[nameof(AppStrings.Edit)]"
+                             OnIconName="@BitIconName.CheckMark"
+                             OffIconName="@BitIconName.Edit" />
+        </BitStack>
+
+        <Bortable TItem="DashboardWidget"
+                  Items="Widgets"
+                  ItemsChanged="SaveWidgets"
+                  Disabled="store.IsEditing is false"
+                  Direction="BortableDirection.Horizontal"
+                  AriaLabel="@AppLocalizer[nameof(AppStrings.Dashboard)]"
+                  Class="@(store.IsEditing ? "widgets editing" : "widgets")"
+                  ItemClassSelector="@(w => w.Hidden ? $"span-{w.Span} hidden-widget" : $"span-{w.Span}")">
+            <ItemTemplate Context="widget">
+                @if (store.IsEditing)
+                {
+                    <BitStack Horizontal AutoHeight Gap="0" HorizontalAlign="BitAlignment.End">
+                        <BitButton Variant="BitVariant.Text"
+                                   IconName="@BitIconName.MiniExpand"
+                                   Title="@AppLocalizer[nameof(AppStrings.Resize)]"
+                                   OnClick="() => Resize(widget)" />
+                        <BitToggleButton Variant="BitVariant.Text"
+                                         IsChecked="widget.Hidden"
+                                         IsCheckedChanged="(bool hidden) => Hide(widget, hidden)"
+                                         Title="@AppLocalizer[nameof(AppStrings.Hide)]"
+                                         OnIconName="@BitIconName.Hide3"
+                                         OffIconName="@BitIconName.View" />
+                    </BitStack>
+                }
+                @if (store.IsEditing || widget.Hidden is false)
+                {
+                    @switch (widget.Id)
+                    {
+                        case nameof(OverallStatsWidget):
+                            <OverallStatsWidget />
+                            break;
+                        case nameof(ProductsCountPerCategoryWidget):
+                            <ProductsCountPerCategoryWidget />
+                            break;
+                        case nameof(ProductsPercentageWidget):
+                            <ProductsPercentageWidget />
+                            break;
+                    }
+                }
+            </ItemTemplate>
+        </Bortable>
+    </BitStack>
+</section>

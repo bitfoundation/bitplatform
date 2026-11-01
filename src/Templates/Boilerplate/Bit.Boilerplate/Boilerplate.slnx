@@ -32,6 +32,7 @@
     <File Path=".github/agents/scaffold-entity.agent.md" />
     <File Path=".github/agents/template-diff.agent.md" />
     <File Path=".github/agents/troubleshoot.agent.md" />
+    <File Path=".github/agents/workbench.agent.md" />
     <File Path=".github/agents/write-tests.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
@@ -105,6 +106,16 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="src/Tests/Boilerplate.Tests.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+<!--#if (advancedTests == true)-->
+    <Project Path="src/WorkbenchTests/Boilerplate.WorkbenchTests.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+<!--#endif-->
+  </Folder>
+  <Folder Name="/Workbench/">
+    <Project Path="src/Workbench/Boilerplate.Workbench.csproj">
       <Build Solution="DebugBlazorServer|*" Project="false" />
     </Project>
   </Folder>

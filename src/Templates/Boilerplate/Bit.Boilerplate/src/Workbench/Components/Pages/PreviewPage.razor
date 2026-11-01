@@ -1,0 +1,17 @@
+@page "/preview/{PageKey}"
+@layout PreviewLayout
+@inherits WorkbenchComponentBase
+
+@if (pageInfo is not null)
+{
+    <PageTitle>@Localizer[pageInfo.TitleKey]</PageTitle>
+    @* With a store backdrop the page moves into an inner iframe of the composition. *@
+    @if (Scenario.Backdrop is null)
+    {
+        <PreviewSurface Page="pageInfo" ShowStatusBar />
+    }
+    else
+    {
+        <StoreComposition Page="pageInfo" />
+    }
+}

@@ -151,6 +151,20 @@ jobs:
         path: ./TestPostgreSQL/src/Tests/TestResults
         retention-days: 14
 
+    - name: Run Workbench tests
+      id: test-postgresql-workbench
+      if: ${{ !cancelled() }}
+      working-directory: TestPostgreSQL/src/WorkbenchTests
+      run: dotnet test
+
+    - name: Upload Workbench test results on failure
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ !cancelled() && steps.test-postgresql-workbench.outcome == 'failure' }}
+      with:
+        name: postgres-tests-workbench
+        path: ./TestPostgreSQL/src/WorkbenchTests/TestResults
+        retention-days: 14
+
 
   test_boilerplate_mysql:
     name: create project with bit new with mysql and test it
@@ -315,6 +329,20 @@ jobs:
       with:
         name: sqlserver-tests-blazorwasm-prerender-firefox
         path: ./TestSqlServer/src/Tests/TestResults
+        retention-days: 14
+
+    - name: Run Workbench tests
+      id: test-mssql-workbench
+      if: ${{ !cancelled() }}
+      working-directory: TestSqlServer/src/WorkbenchTests
+      run: dotnet test
+
+    - name: Upload Workbench test results on failure
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ !cancelled() && steps.test-mssql-workbench.outcome == 'failure' }}
+      with:
+        name: sqlserver-tests-workbench
+        path: ./TestSqlServer/src/WorkbenchTests/TestResults
         retention-days: 14
 
     # This job deliberately has no InvariantGlobalization run: Microsoft.Data.SqlClient throws

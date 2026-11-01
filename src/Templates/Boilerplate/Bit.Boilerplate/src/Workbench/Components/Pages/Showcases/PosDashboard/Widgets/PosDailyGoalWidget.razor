@@ -1,0 +1,43 @@
+@inherits PosWidgetBase<PosGoal>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[Dashboard.PeriodKey]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoGoalSet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoGoalSetDescription)">
+    <Skeleton>
+        <div class="goal">
+            <BitShimmer Shape="BitShape.Circle" Height="8.5rem" Width="8.5rem" />
+            <div class="goal-text">
+                <BitShimmer Height="1.5rem" Width="70%" />
+                <BitShimmer Height="1rem" />
+            </div>
+        </div>
+    </Skeleton>
+    <ChildContent>
+        <div class="goal">
+            <div class="ring">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                    <circle cx="60" cy="60" r="50" class="track" />
+                    @* The arc grows to the progress as the widget appears. *@
+                    <Bmotion Initial="Bm.To(pathLength: 0)" Animate="Bm.To(pathLength: Data!.Progress)" Transition="Bm.Tween(1.1, BmEase.Out)">
+                        <circle cx="60" cy="60" r="50" class="value" />
+                    </Bmotion>
+                </svg>
+                <div class="ring-center">
+                    <span class="ring-percent">@Data!.Progress.ToString("P0", CultureInfo.CurrentCulture)</span>
+                </div>
+            </div>
+            <div class="goal-text">
+                <span class="achieved">@PosFormat.Money(Data!.Achieved, 0)</span>
+                <span class="target">@Localizer[nameof(WorkbenchStrings.PosOfTarget), PosFormat.Money(Data!.Target, 0)]</span>
+                <span class="remaining">
+                    <BitIcon IconName="@BitIconName.Lightbulb" Size="BitSize.Small" />
+                    @Localizer[nameof(WorkbenchStrings.PosRemainingToGoal), PosFormat.Money(Math.Max(0, Data!.Target - Data!.Achieved), 0)]
+                </span>
+            </div>
+        </div>
+    </ChildContent>
+</PosWidgetFrame>

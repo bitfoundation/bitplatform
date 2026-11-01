@@ -1,0 +1,39 @@
+@inherits PosWidgetBase<PosHeatCell[]>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[nameof(WorkbenchStrings.PosPeakHoursSubtitle)]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoOrdersYet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoOrdersYetDescription)">
+    <Skeleton>
+        <BitShimmer Height="11rem" />
+    </Skeleton>
+    <ChildContent>
+        <div class="heatmap-scroll" role="group" tabindex="0" aria-label="@Localizer[nameof(WorkbenchStrings.PosPeakHours)]">
+            <div class="heatmap" style="--hours:@hours.Length">
+                <span></span>
+                @foreach (var hour in hours)
+                {
+                    <span class="hour">@FormatHour(hour)</span>
+                }
+                @foreach (var day in days)
+                {
+                    <span class="day">@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName(day)</span>
+                    @foreach (var hour in hours)
+                    {
+                        var orders = Lookup(day, hour);
+                        var label = $"{CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName(day)} {FormatHour(hour)}, {Localizer[nameof(WorkbenchStrings.PosOrdersCount), PosFormat.Number(orders)]}";
+                        <span class="cell" style="--level:@Level(orders)" role="img" aria-label="@label" title="@label"></span>
+                    }
+                }
+            </div>
+        </div>
+        <div class="scale">
+            <span>@Localizer[nameof(WorkbenchStrings.PosQuiet)]</span>
+            <span class="gradient"></span>
+            <span>@Localizer[nameof(WorkbenchStrings.PosBusy)]</span>
+        </div>
+    </ChildContent>
+</PosWidgetFrame>

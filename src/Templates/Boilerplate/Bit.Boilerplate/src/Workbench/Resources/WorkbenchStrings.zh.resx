@@ -1,0 +1,2805 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="WorkbenchTitle" xml:space="preserve">
+        <value>工作台</value>
+    </data>
+    <data name="CategoryDashboards" xml:space="preserve">
+        <value>仪表板</value>
+    </data>
+    <data name="PosDashboardTitle" xml:space="preserve">
+        <value>POS 仪表板</value>
+    </data>
+    <data name="PosDashboardDescription" xml:space="preserve">
+        <value>一个 POS 仪表板，其中的小组件可以重新排列、调整大小、隐藏和保存。</value>
+    </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>莎拉·约翰逊</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>达恩·菲瑟</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>尼卢法尔·拉希米</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>Amsterdam 门店</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>总部</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>旋转</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>此视图的截图（PNG）</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>所有视图的截图（ZIP）</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>在新标签页中打开</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>移除此视图</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>无应用外壳</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>浅色</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>深色</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>跟随系统</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>有数据</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>加载中</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>无数据</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>错误</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>混合</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>缓慢</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>未登录</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>已登录</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>多账户</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>设备</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>纵向</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>横向</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>设备外框</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>缩放</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>适应窗口</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>数据</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>页面会在短暂延迟后从内存读取数据，因此这里可以展示每种状态，包括在真实应用中难以捕捉的状态。</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>应用</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>应用外壳</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>应用的导航面板、页眉、账户菜单和底部栏。</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>登录状态</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>主题</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>语言</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>重置</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>手机</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>折叠屏</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>平板电脑</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>笔记本电脑</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>台式机</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>应用商店尺寸</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>页面</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>搜索页面</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>工作台中没有这个页面。</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>返回工作台首页</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>工具</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>关闭</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>对比</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>单个视图</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>手机、平板和台式机</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>浅色和深色</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>多种语言并排</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>所有数据状态</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>未登录、已登录、多个账户</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>添加视图</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>截图</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>复制当前配置的链接</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>在浅色和深色之间切换工作台</value>
+    </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>所有门店</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>Amsterdam, Jordaan</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>Rotterdam, Markthal</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>Utrecht, Oudegracht</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>澳白</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>燕麦拿铁</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>黄油可颂</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>荷兰苹果派</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>卡布奇诺</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>荷兰焦糖华夫饼</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>酸种面包</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>冷萃咖啡</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>艾玛</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>卢卡斯</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>米拉</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>塞姆</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>银行卡</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>移动支付</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>现金</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>礼品卡</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>燕麦奶</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>可颂面团</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>意式咖啡豆</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>外带杯</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>净销售额</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>交易笔数</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>平均客单价</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>退款</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>每小时销售额</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>支付方式</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>热销商品</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>销售目标</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>最近订单</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>库存不足</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>团队</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>高峰时段</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>拖动{0}</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>小组件选项</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>加载中</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>无法加载</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>仪表板的其余部分正常。请稍后重试。</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>重试</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>暂无内容</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>小</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>中</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>大</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>前移</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>后移</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>隐藏</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>暂无销售</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>第一笔订单付款后，数据就会显示在这里。</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>今天</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>本期</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>上周同日</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>与上周同日相比</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>暂无付款</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>合计</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>已售 {0}</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>未设定目标</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>设定销售目标，即可查看门店离目标还有多远。</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>目标 {0}</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>距离目标还差 {0}</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>各收银台的最新订单</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>暂无订单</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>收银台一结账，订单就会立即显示在这里。</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>订单</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>时间</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>收银员</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>商品</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>支付方式</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>状态</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>已付款</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>已退款</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>待处理</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>{0} 分钟前</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>低于最低库存的商品</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>库存充足</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>目前没有商品低于最低库存。</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>剩余 {0} · 最低 {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>缺货</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>偏低</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>已订购</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>补货</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>当前无人当班</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>有人打卡上班后，团队业绩就会显示在这里。</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} 笔订单</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>销售冠军</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>过去四周每小时的订单数</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>清闲</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>繁忙</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>下午好，莎拉</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>门店</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>时间段</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>7 天</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>30 天</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>完成</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>自定义</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>拖动小组件的手柄即可移动它们，也可以通过其菜单调整大小、移动或隐藏。您的布局会保存在此设备上。</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>添加小组件（{0}）</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>重置布局</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>已隐藏的小组件</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>添加</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>所有小组件都已在仪表板上。</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>最近 7 天</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>最近 30 天</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>较昨日</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>较之前 7 天</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>较之前 30 天</value>
+    </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>数据与地图</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>建筑</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>数据表格与地图保持同步。双击地图即可添加建筑，选中一座后按 Delete 键即可删除。还包含高级地图功能，例如限制可选取点的范围。</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>地标建筑</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} 座建筑，分布于 {1} 个省</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>按名称、城市或类型搜索</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>添加建筑</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>列表</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>地图</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>无法加载建筑</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>暂无建筑</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>在地图上双击荷兰境内的任意位置，即可添加第一座建筑。</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>名称</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>城市</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>省份</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>类型</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>年份</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>高度（米）</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>楼层数</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>纬度</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>经度</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>编辑</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>删除</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>在荷兰境内双击或轻点两下即可添加建筑。要删除建筑，请选中它后按 Delete 键，或使用列表中的删除按钮。</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>{0} 已保存</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>删除这座建筑？</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} 将从列表和地图中移除。</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>{0} 已删除</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>位于荷兰境外</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>只能在荷兰境内添加建筑。</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>新增建筑</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>编辑建筑</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>双击地图选择位置，或输入坐标。仅接受荷兰境内的位置。</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>请输入名称。</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>请输入城市。</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>请输入 1000 年到今年之间的年份。</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>取消</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>保存</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>博物馆</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>教堂</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>塔楼</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>车站</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>体育场</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>宫殿</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>写字楼</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>市政厅</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>地标</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>格罗宁根省</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>弗里斯兰省</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>德伦特省</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>上艾瑟尔省</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>弗莱福兰省</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>海尔德兰省</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>乌得勒支省</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>北荷兰省</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>南荷兰省</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>泽兰省</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>北布拉班特省</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>林堡省</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>工作台 · 设计、评审并截取每个页面</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>您项目的一部分</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>在后端动工之前，先把设计做完。</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>工作台用示例数据运行您应用的页面，让您可以设计每种状态、在每种设备上查看，并导出可直接提交应用商店的截图，所用组件和主题与您的应用完全相同。</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>打开 POS 仪表板</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>为什么需要工作台？</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>无需 API、数据库或登录</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>浅色、深色和从右到左</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>精确匹配 App Store、Google Play 和 Microsoft Store 的尺寸</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>深色模式</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>从右到左</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>加载状态</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>1320 × 2868 PNG</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>为什么您的项目里有工作台</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>为您的页面提供设计工具、测试台和摄影棚，就在项目内部。</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>用任何 AI 智能体进行设计</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>您不需要 Claude Design 或 Figma。无论您用的是 Codex、Copilot 还是 Claude Code，您的智能体都可以在这里设计页面，在真实浏览器中查看并不断改进。</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>真实组件，而非效果图</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>页面使用与您的应用相同的 bit BlazorUI 组件、主题和样式，因此您在这里确认的设计，集成到应用后看起来也完全一样。</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>任意状态，随时可见</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>加载中、无数据、出错、部分数据和慢速数据，只需一键即可切换，包括在运行中的应用里难以捕捉的状态。</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>所有设备，并排呈现</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>手机、平板和台式机均按真实尺寸显示，浅色深色皆可，覆盖您的应用支持的每种语言。</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>为应用商店准备截图</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>按 App Store、Google Play 和 Microsoft Store 的尺寸导出像素级精确的图片，可按需添加彩色背景和说明文字，并由真实浏览器渲染。</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>bitplatform 助您快人一步</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>工作台自带现成的页面，例如 POS 仪表板、排班表和您应用自己的设置页面。合适的直接复用，其余的用来借鉴，然后在旁边添加您自己的页面。</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>放心尝试</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>这里的一切都不会连接您的 API 或数据库，因此尝试新想法永远不会破坏您的应用或数据。</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>如何融入您的工作流程</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>交给你的 AI</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>让 Claude、Codex、GitHub Copilot、Gemini 或 Junie 来做这个页面，它会在这里用示例数据把页面搭出来，数据像真实数据一样加载。</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>检查每种状态</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>在每种设备、主题、语言和数据状态下检查页面，可以逐个查看，也可以并排对比。</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>移入应用</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>按照应用其余部分的构建方式，在应用中重建已确认的设计，并接入真实数据。您的 AI 智能体也会遵循同样的步骤。</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>此工作台中的页面</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>从这些页面开始，然后在旁边添加您自己的页面。</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>工作台是每个用 bit 项目模板创建的项目的一部分。除非您选择发布，否则它只会在您的电脑上运行。</value>
+    </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>每笔销售，实时可见</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>建筑一图尽览</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>背景</value>
+    </data>
+    <data name="BackdropHint" xml:space="preserve">
+        <value>将页面置于设备外框中，配上彩色背景和说明文字，呈现方式与应用商店详情页一致。</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>应用主色</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>午夜</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>日落</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>海洋</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>森林</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>纸张</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>说明文字</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>说明文字留空时，将使用已翻译的默认文字。</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>欢迎使用外框和说明文字。前三张截图最为重要。</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play 不建议使用设备外框。说明文字要简短，不要使用最佳或全新这类词。</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>Microsoft Store 不允许额外添加文字或徽标。请改在 Partner Center 中添加说明文字。</value>
+    </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>AI 助手</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>一个会推理、会调用工具、会注明来源的聊天界面，用图表、文档和待批准的操作来回答，内容边生成边显示。</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>尽管问</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>对话</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>新对话</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>暂无对话</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>无法加载对话。</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>重试</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>模型</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>今天需要什么帮助？</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>可以问销售、库存、促销或团队的情况。</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>问问你的门店情况</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>发送</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>停止</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>已停止</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>思考中</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>示例回答，为设计而预先编写。</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>这条回答没有送达。</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>复制</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>已复制</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>有帮助</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>没有帮助</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>今天</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>昨天</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>每周销售回顾</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>周末补货</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>秋季促销</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>今日销售冠军</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>本周销售如何？</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>净销售额 **34,820 欧元**，比上周增长 **8.4%** [1]。</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>哪些商品快没货了？</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>有三种商品会在周一前卖完 [1]：</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>写一段燕麦拿铁促销文案</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>这是一段简短的文案：</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>秋天和燕麦更配。本周燕麦拿铁仅需 3.50 欧元。</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>今天谁卖得最多？</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**达恩**以 **64 笔订单**、1,180 欧元的销售额领先 [1]。</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>这里我只会回答推荐的问题。试试其中一个吧。</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>最近 7 天净销售额</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>剩余 {0}</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>燕麦奶</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>可颂</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>纸杯</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>深入</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>先充分思考，再给出回答</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>快速</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>立即回答</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>销售报表</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>库存水平</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>团队销售</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>供应商订单</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>库存盘点与到货安排</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>今日各成员订单</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>按门店汇总最近 7 天，并与上周对比。</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>对照销售和周一的到货检查库存。</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>简短一些：季节、价格、所有门店。</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>按成员对今天的订单排名。</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>要订购这三种商品，周五到货吗？</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>已完成。订单 **PO-1042** 将于周五到货。</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>好的，我没有下单。</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>燕麦拿铁促销文案</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} 秒</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>重新生成</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>编辑</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>保存</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>取消</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>滚动到最新</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>推理过程</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>思考了 {0}</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>来源</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>来源 {0}：{1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>添加附件</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>移除</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>将文件拖放到此处以添加附件</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>关闭</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} 太大。文件最大为 {1}。</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>不支持 {0} 的文件类型。</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>无法读取 {0}。</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>未添加 {0}。一次最多可添加 {1} 个文件。</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>正在使用{0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>已使用{0}</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>{0}失败</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>{0}已停止</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>{0}已被拒绝</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>{0}正在等待你的批准</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>允许{0}吗？</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>允许</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>始终允许</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>拒绝</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>你拒绝了此操作。</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>输入</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>结果</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>数据</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>下载</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>展开</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>收起</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>版本</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>对话</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>删除</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>未命名</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>过去 7 天</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>过去 30 天</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>出了点问题</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>个词元</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>每秒 {0} 个词元</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>输入</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>输出</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}：{1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>上下文</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>已用 {0} / {1} 个词元</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>对话越来越长了</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>对话即将过长，无法继续</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} KB</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} MB</value>
+    </data>
+    <data name="LoadFailed" xml:space="preserve">
+        <value>无法加载。请稍后重试。</value>
+    </data>
+    <data name="CategoryAppPages" xml:space="preserve">
+        <value>您应用的页面</value>
+    </data>
+    <data name="AppDashboardTitle" xml:space="preserve">
+        <value>仪表板</value>
+    </data>
+    <data name="AppDashboardDescription" xml:space="preserve">
+        <value>应用自带的管理仪表板，配上演示数据引入工作台，一键即可查看其各种状态并截图。</value>
+    </data>
+    <data name="AppDashboardCaption" xml:space="preserve">
+        <value>数据一目了然</value>
+    </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>设置</value>
+    </data>
+    <data name="SettingsDescription" xml:space="preserve">
+        <value>应用自带的设置页面，包含个人资料、账户、两步验证、会话和隐私，使用演示数据运行，而不连接服务器。</value>
+    </data>
+    <data name="SettingsCaption" xml:space="preserve">
+        <value>账户由你做主</value>
+    </data>
+    <data name="CalendarViewDay" xml:space="preserve">
+        <value>日</value>
+    </data>
+    <data name="CalendarViewWeek" xml:space="preserve">
+        <value>周</value>
+    </data>
+    <data name="CalendarViewMonth" xml:space="preserve">
+        <value>月</value>
+    </data>
+    <data name="CalendarViewYear" xml:space="preserve">
+        <value>年</value>
+    </data>
+    <data name="CalendarViewAgenda" xml:space="preserve">
+        <value>列表</value>
+    </data>
+    <data name="CalendarModeEvent" xml:space="preserve">
+        <value>日程</value>
+    </data>
+    <data name="CalendarModeTimeline" xml:space="preserve">
+        <value>时间线</value>
+    </data>
+    <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
+        <value>视图</value>
+    </data>
+    <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
+        <value>模式</value>
+    </data>
+    <data name="CalendarTodayButton" xml:space="preserve">
+        <value>今天</value>
+    </data>
+    <data name="CalendarAddEventButton" xml:space="preserve">
+        <value>添加日程</value>
+    </data>
+    <data name="CalendarAddEventHoverHint" xml:space="preserve">
+        <value>添加日程</value>
+    </data>
+    <data name="CalendarPreviousButtonTitle" xml:space="preserve">
+        <value>上一个</value>
+    </data>
+    <data name="CalendarNextButtonTitle" xml:space="preserve">
+        <value>下一个</value>
+    </data>
+    <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
+        <value>上个月</value>
+    </data>
+    <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
+        <value>下个月</value>
+    </data>
+    <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
+        <value>小时</value>
+    </data>
+    <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
+        <value>分钟</value>
+    </data>
+    <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
+        <value>上午/下午</value>
+    </data>
+    <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
+        <value>已选中</value>
+    </data>
+    <data name="CalendarSettingsButtonTitle" xml:space="preserve">
+        <value>设置</value>
+    </data>
+    <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
+        <value>按颜色筛选日程</value>
+    </data>
+    <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
+        <value>按人员筛选当前视图中的日程</value>
+    </data>
+    <data name="CalendarAllColorsOption" xml:space="preserve">
+        <value>所有颜色</value>
+    </data>
+    <data name="CalendarAllPeopleOption" xml:space="preserve">
+        <value>所有人</value>
+    </data>
+    <data name="CalendarUnnamedAttendee" xml:space="preserve">
+        <value>（未命名）</value>
+    </data>
+    <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
+        <value>日历设置</value>
+    </data>
+    <data name="CalendarDotBadgeLabel" xml:space="preserve">
+        <value>圆点标记</value>
+    </data>
+    <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
+        <value>24 小时制</value>
+    </data>
+    <data name="CalendarDayStartsAtLabel" xml:space="preserve">
+        <value>每日起始时间</value>
+    </data>
+    <data name="CalendarHourSuffix" xml:space="preserve">
+        <value>时</value>
+    </data>
+    <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
+        <value>列表分组方式</value>
+    </data>
+    <data name="CalendarAgendaGroupByDate" xml:space="preserve">
+        <value>日期</value>
+    </data>
+    <data name="CalendarAgendaGroupByColor" xml:space="preserve">
+        <value>颜色</value>
+    </data>
+    <data name="CalendarStackedEventsLabel" xml:space="preserve">
+        <value>堆叠显示重叠日程</value>
+    </data>
+    <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
+        <value>在日视图中显示日历</value>
+    </data>
+    <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
+        <value>显示周数</value>
+    </data>
+    <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
+        <value>显示当前时间</value>
+    </data>
+    <data name="CalendarSlotDurationLabel" xml:space="preserve">
+        <value>时间刻度</value>
+    </data>
+    <data name="CalendarMinuteSuffix" xml:space="preserve">
+        <value>分钟</value>
+    </data>
+    <data name="CalendarWeekMobileWarning" xml:space="preserve">
+        <value>不建议在较小的设备上使用周视图。请改用台式机，或切换到日视图。</value>
+    </data>
+    <data name="CalendarHappeningNowTitle" xml:space="preserve">
+        <value>正在进行</value>
+    </data>
+    <data name="CalendarNoAppointmentsNow" xml:space="preserve">
+        <value>目前没有日程</value>
+    </data>
+    <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
+        <value>搜索日程...</value>
+    </data>
+    <data name="CalendarNoEventsFound" xml:space="preserve">
+        <value>未找到日程。</value>
+    </data>
+    <data name="CalendarEventListTitleFormat" xml:space="preserve">
+        <value>{0}的日程</value>
+    </data>
+    <data name="CalendarEventListCountFormat" xml:space="preserve">
+        <value>{0} 个日程</value>
+    </data>
+    <data name="CalendarMoreEventsFormat" xml:space="preserve">
+        <value>还有 {0} 个</value>
+    </data>
+    <data name="CalendarAddEventDialogTitle" xml:space="preserve">
+        <value>新建日程</value>
+    </data>
+    <data name="CalendarEditEventDialogTitle" xml:space="preserve">
+        <value>编辑日程</value>
+    </data>
+    <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
+        <value>在您的日历中创建新日程。</value>
+    </data>
+    <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
+        <value>修改您现有的日程。</value>
+    </data>
+    <data name="CalendarCloseAriaLabel" xml:space="preserve">
+        <value>关闭</value>
+    </data>
+    <data name="CalendarCloseButton" xml:space="preserve">
+        <value>关闭</value>
+    </data>
+    <data name="CalendarCancelButton" xml:space="preserve">
+        <value>取消</value>
+    </data>
+    <data name="CalendarEditButton" xml:space="preserve">
+        <value>编辑</value>
+    </data>
+    <data name="CalendarDeleteButton" xml:space="preserve">
+        <value>删除</value>
+    </data>
+    <data name="CalendarCreateEventButton" xml:space="preserve">
+        <value>创建日程</value>
+    </data>
+    <data name="CalendarSaveChangesButton" xml:space="preserve">
+        <value>保存更改</value>
+    </data>
+    <data name="CalendarTitleLabel" xml:space="preserve">
+        <value>标题</value>
+    </data>
+    <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
+        <value>日程标题</value>
+    </data>
+    <data name="CalendarStartDateTimeLabel" xml:space="preserve">
+        <value>开始日期和时间</value>
+    </data>
+    <data name="CalendarEndDateTimeLabel" xml:space="preserve">
+        <value>结束日期和时间</value>
+    </data>
+    <data name="CalendarColorLabel" xml:space="preserve">
+        <value>颜色</value>
+    </data>
+    <data name="CalendarEventColorAriaLabel" xml:space="preserve">
+        <value>日程颜色</value>
+    </data>
+    <data name="CalendarDescriptionLabel" xml:space="preserve">
+        <value>描述</value>
+    </data>
+    <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
+        <value>日程描述</value>
+    </data>
+    <data name="CalendarAttendeesLabel" xml:space="preserve">
+        <value>参与者</value>
+    </data>
+    <data name="CalendarNoAttendeesText" xml:space="preserve">
+        <value>无参与者</value>
+    </data>
+    <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
+        <value>名字</value>
+    </data>
+    <data name="CalendarLastNamePlaceholder" xml:space="preserve">
+        <value>姓氏</value>
+    </data>
+    <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
+        <value>ID（可选）</value>
+    </data>
+    <data name="CalendarAddButton" xml:space="preserve">
+        <value>添加</value>
+    </data>
+    <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
+        <value>移除参与者</value>
+    </data>
+    <data name="CalendarStartDateLabel" xml:space="preserve">
+        <value>开始日期</value>
+    </data>
+    <data name="CalendarEndDateLabel" xml:space="preserve">
+        <value>结束日期</value>
+    </data>
+    <data name="CalendarAtWord" xml:space="preserve">
+        <value>·</value>
+    </data>
+    <data name="CalendarAllDayLabel" xml:space="preserve">
+        <value>全天</value>
+    </data>
+    <data name="CalendarWeekNumberFormat" xml:space="preserve">
+        <value>{0}周</value>
+    </data>
+    <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
+        <value>第 {0} 周</value>
+    </data>
+    <data name="CalendarEventOverlapMessage" xml:space="preserve">
+        <value>该资源在此时间段已被占用。</value>
+    </data>
+    <data name="CalendarOutOfRangeMessage" xml:space="preserve">
+        <value>该日期超出允许的范围。</value>
+    </data>
+    <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
+        <value>该时间不在工作时间内。</value>
+    </data>
+    <data name="CalendarBlockedMessage" xml:space="preserve">
+        <value>该时间不可用。</value>
+    </data>
+    <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
+        <value>突出显示工作时间</value>
+    </data>
+    <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
+        <value>转到 {0}</value>
+    </data>
+    <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
+        <value>转到第 {0} 周</value>
+    </data>
+    <data name="CalendarValidationTitleRequired" xml:space="preserve">
+        <value>标题为必填项</value>
+    </data>
+    <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
+        <value>描述为必填项</value>
+    </data>
+    <data name="CalendarValidationEndAfterStart" xml:space="preserve">
+        <value>结束日期必须晚于开始日期</value>
+    </data>
+    <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
+        <value>名字或姓氏至少填写一项</value>
+    </data>
+    <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
+        <value>新的时间段</value>
+    </data>
+    <data name="CalendarRepeatsLabel" xml:space="preserve">
+        <value>重复</value>
+    </data>
+    <data name="CalendarRepeatsDaily" xml:space="preserve">
+        <value>每天</value>
+    </data>
+    <data name="CalendarRepeatsWeekly" xml:space="preserve">
+        <value>每周</value>
+    </data>
+    <data name="CalendarRepeatsMonthly" xml:space="preserve">
+        <value>每月</value>
+    </data>
+    <data name="CalendarRepeatsYearly" xml:space="preserve">
+        <value>每年</value>
+    </data>
+    <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
+        <value>间隔 {0}</value>
+    </data>
+    <data name="CalendarRepeatsCountFormat" xml:space="preserve">
+        <value>共 {0} 次</value>
+    </data>
+    <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
+        <value>直到 {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
+        <value>{0}</value>
+    </data>
+    <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
+        <value>{0}{1}</value>
+    </data>
+    <data name="CalendarListSeparator" xml:space="preserve">
+        <value>、</value>
+    </data>
+    <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
+        <value>第一个</value>
+    </data>
+    <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
+        <value>第二个</value>
+    </data>
+    <data name="CalendarWeekOfMonthThird" xml:space="preserve">
+        <value>第三个</value>
+    </data>
+    <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
+        <value>第四个</value>
+    </data>
+    <data name="CalendarWeekOfMonthLast" xml:space="preserve">
+        <value>最后一个</value>
+    </data>
+    <data name="CalendarRepeatLabel" xml:space="preserve">
+        <value>重复</value>
+    </data>
+    <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
+        <value>不重复</value>
+    </data>
+    <data name="CalendarRepeatEveryLabel" xml:space="preserve">
+        <value>重复间隔</value>
+    </data>
+    <data name="CalendarRepeatDaysUnit" xml:space="preserve">
+        <value>天</value>
+    </data>
+    <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
+        <value>周</value>
+    </data>
+    <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
+        <value>个月</value>
+    </data>
+    <data name="CalendarRepeatYearsUnit" xml:space="preserve">
+        <value>年</value>
+    </data>
+    <data name="CalendarRepeatOnLabel" xml:space="preserve">
+        <value>重复于</value>
+    </data>
+    <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
+        <value>每月 {0} 日</value>
+    </data>
+    <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
+        <value>{0}</value>
+    </data>
+    <data name="CalendarEndsLabel" xml:space="preserve">
+        <value>结束</value>
+    </data>
+    <data name="CalendarEndsNeverOption" xml:space="preserve">
+        <value>从不</value>
+    </data>
+    <data name="CalendarEndsOnDateOption" xml:space="preserve">
+        <value>于指定日期</value>
+    </data>
+    <data name="CalendarEndsAfterOption" xml:space="preserve">
+        <value>按次数</value>
+    </data>
+    <data name="CalendarOccurrencesLabel" xml:space="preserve">
+        <value>次</value>
+    </data>
+    <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
+        <value>例外</value>
+    </data>
+    <data name="CalendarSkipDateButton" xml:space="preserve">
+        <value>跳过日期</value>
+    </data>
+    <data name="CalendarAddDateButton" xml:space="preserve">
+        <value>添加日期</value>
+    </data>
+    <data name="CalendarSkippedDatesLabel" xml:space="preserve">
+        <value>已跳过</value>
+    </data>
+    <data name="CalendarAddedDatesLabel" xml:space="preserve">
+        <value>已添加</value>
+    </data>
+    <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
+        <value>移除日期</value>
+    </data>
+    <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
+        <value>至少为 1</value>
+    </data>
+    <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
+        <value>系列不能在开始之前结束</value>
+    </data>
+    <data name="CalendarRecurringEditTitle" xml:space="preserve">
+        <value>编辑重复日程</value>
+    </data>
+    <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
+        <value>删除重复日程</value>
+    </data>
+    <data name="CalendarThisOccurrenceOption" xml:space="preserve">
+        <value>此日程</value>
+    </data>
+    <data name="CalendarAllOccurrencesOption" xml:space="preserve">
+        <value>该系列中的所有日程</value>
+    </data>
+    <data name="CalendarOkButton" xml:space="preserve">
+        <value>确定</value>
+    </data>
+    <data name="CalendarResourceLabel" xml:space="preserve">
+        <value>资源</value>
+    </data>
+    <data name="CalendarResourceColumnHeader" xml:space="preserve">
+        <value>员工</value>
+    </data>
+    <data name="CalendarNoResourceLabel" xml:space="preserve">
+        <value>未分配</value>
+    </data>
+    <data name="CalendarNoResourceOption" xml:space="preserve">
+        <value>（无）</value>
+    </data>
+    <data name="CalendarNoResourcesMessage" xml:space="preserve">
+        <value>没有可显示的资源。</value>
+    </data>
+    <data name="PosStaffNoah" xml:space="preserve">
+        <value>诺亚</value>
+    </data>
+    <data name="PosStaffJulia" xml:space="preserve">
+        <value>尤利娅</value>
+    </data>
+    <data name="CategoryPlanning" xml:space="preserve">
+        <value>规划</value>
+    </data>
+    <data name="ShiftsTitle" xml:space="preserve">
+        <value>排班表</value>
+    </data>
+    <data name="ShiftsDescription" xml:space="preserve">
+        <value>一家咖啡馆的每周员工排班：可按人员移动班次、调整时长，限定在营业时间内，避开休假，也不会重复排班。</value>
+    </data>
+    <data name="ShiftsCaption" xml:space="preserve">
+        <value>几分钟排好一周</value>
+    </data>
+    <data name="ShiftsHeading" xml:space="preserve">
+        <value>员工排班</value>
+    </data>
+    <data name="ShiftsSummary" xml:space="preserve">
+        <value>本周 {0} 个班次，共 {1} 小时</value>
+    </data>
+    <data name="ShiftsEmpty" xml:space="preserve">
+        <value>尚未安排任何班次。在某位员工所在的行中选择一个时间，即可添加第一个班次。</value>
+    </data>
+    <data name="ShiftsRoleLead" xml:space="preserve">
+        <value>值班主管</value>
+    </data>
+    <data name="ShiftsRoleBarista" xml:space="preserve">
+        <value>咖啡师</value>
+    </data>
+    <data name="ShiftsRoleBaker" xml:space="preserve">
+        <value>烘焙师</value>
+    </data>
+    <data name="ShiftsRoleCashier" xml:space="preserve">
+        <value>收银员</value>
+    </data>
+    <data name="ShiftsOpening" xml:space="preserve">
+        <value>开店班</value>
+    </data>
+    <data name="ShiftsMidday" xml:space="preserve">
+        <value>午间班</value>
+    </data>
+    <data name="ShiftsBakery" xml:space="preserve">
+        <value>烘焙班</value>
+    </data>
+    <data name="ShiftsClosing" xml:space="preserve">
+        <value>打烊班</value>
+    </data>
+    <data name="ShiftsStocktake" xml:space="preserve">
+        <value>盘点，咖啡馆暂停营业</value>
+    </data>
+    <data name="ShiftsTimeOff" xml:space="preserve">
+        <value>休假</value>
+    </data>
+    <data name="HomeCtaTitle" xml:space="preserve">
+        <value>您的下一个页面，从这里开始</value>
+    </data>
+    <data name="HomeCtaText" xml:space="preserve">
+        <value>让您的 AI 智能体在工作台中设计它。它会用示例数据构建页面，在真实浏览器中检查每种状态，并在编写任何后端代码之前向您展示截图。</value>
+    </data>
+    <data name="HomeCtaOpen" xml:space="preserve">
+        <value>打开工作台</value>
+    </data>
+    <data name="HomeCtaPromptLabel" xml:space="preserve">
+        <value>试着这样问</value>
+    </data>
+    <data name="HomeCtaPrompt" xml:space="preserve">
+        <value>在工作台中设计一个订单历史页面，包含加载中、无数据和出错状态，并给我看手机和台式机上的截图。</value>
+    </data>
+    <data name="HomeCtaCopy" xml:space="preserve">
+        <value>复制</value>
+    </data>
+    <data name="HomeCtaCopied" xml:space="preserve">
+        <value>已复制</value>
+    </data>
+    <data name="HomeFooterExplore" xml:space="preserve">
+        <value>探索</value>
+    </data>
+    <data name="HomeFooterLearn" xml:space="preserve">
+        <value>学习</value>
+    </data>
+    <data name="HomeFooterDocs" xml:space="preserve">
+        <value>bit 项目模板文档</value>
+    </data>
+    <data name="HomeFooterComponents" xml:space="preserve">
+        <value>bit BlazorUI 组件</value>
+    </data>
+    <data name="HomeFooterSource" xml:space="preserve">
+        <value>GitHub 上的源代码</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>示例</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>新建班次</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>编辑班次</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>团队成员</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>班次</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>例如：开店班</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>角色</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>日期</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>开始</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>结束</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>班次的结束时间必须晚于开始时间。</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} 在这个时间已经有班次了。</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>班次已保存</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>班次已删除</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>全部员工</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>全部角色</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>用 AI 定制它</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>工作台本身也是你应用的一部分。让你的 AI 智能体修改它的功能，或者添加团队需要的工具、设备和状态。</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>无人</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>无角色</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>登录身份</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>全局管理员</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>租户管理员</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>演示</value>
+    </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>检测</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>检测此视图</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>在所选视图上运行，沿用它的设备、主题、语言和数据：一项无障碍检测（axe-core），以及查找不来自主题的颜色。</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>运行检测</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>无法在此视图上运行检测。请等视图加载完成后重试。</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>无障碍（{0}）</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>未发现问题。</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>致命</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>严重</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>中等</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>轻微</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>显示</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>了解详情</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>主题之外的颜色（{0}）</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>页面自行设置、既不来自主题、也不是主题颜色与白色、黑色或背景混合而成的颜色。不包括 bit 组件、图表以及通过 --data-color 传入的颜色。</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>流程</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>流程把一项任务的各个屏幕并排展示，每个屏幕都处于关键状态，比如一个列表和它的按钮打开的对话框，并用箭头标出如何从一个屏幕到下一个。打开一个流程，即可理解应用，或在会议上讲解它。</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>新流程的名称</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>删除流程</value>
+    </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} 条待处理评论</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>评审状态</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>草稿</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>评审中</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>已确认</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>已实现</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>由 {0} 设置，{1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>没有智能体在监听。请让您的智能体处理工作台里的评论，它会在这里逐条回复。</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} 正在监听评论</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} 正在处理 #{1}</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>新评论</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>您的名字</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>这里需要改什么？</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>发送</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>待处理（{0}）</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>已完成（{0}）</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>还没有评论。点击顶部的“评论”，然后点击页面上的任意位置。</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>还没有已完成的评论。</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>待处理</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>处理中</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>已完成</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>智能体的计划</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>回复</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>回复</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>重新打开</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>完成</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>显示视图</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>删除评论</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>此处</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>模式</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>使用页面</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>评论</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>检查</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>编辑文本</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>视图</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>评审</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>评审人</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>不属于主题</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>评审单</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>评审单（HTML）</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>评审单（PDF）</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>视图</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>评论</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>没有评论。</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>由工作台生成，{0}</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>编辑文本</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>点击页面上的任意文字，即可在所有语言中修改它。</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>这段文字直接写在页面里，还没有放进翻译文件，因此在每种语言下都显示相同。</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>把这段文字移到翻译文件中并翻译：“{0}”</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>交给智能体</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>哪段文字</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>保存</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>保存到翻译文件并重新加载视图。您的智能体会在 git 中看到这项更改。</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>只有当工作台从您自己电脑上的项目运行时，才能保存文本。</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>修改文本 {0} · {1}：</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>主题与组件</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>在一页中呈现应用的视觉语言：颜色、字体和圆角，以及应用在各种状态下的组件，浮层只需一个开关即可打开。</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>整个应用，风格统一</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>设计系统</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>主题与组件</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>这里的一切都来自应用自己的主题。试试工作台的主题选项，看看它如何变化。</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>颜色</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>主色</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>辅助色</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>第三色</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>信息</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>成功</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>警告</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>严重警告</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>错误</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>文本</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>背景</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>边框</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>字体</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>敏捷的棕色狐狸跳过了懒狗</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>圆角</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>按钮</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>已禁用</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>设置</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>输入控件</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>名称</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>输入名称</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>选择</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>请选择一项</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>搜索</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>数量</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>选项 {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>通知</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>消息与状态</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>一条 {0} 消息，与应用中的显示效果相同。</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>上传中</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>卡片与人员</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>标签页 {0}</value>
+    </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>表格</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>卡片</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>建筑数量</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>保持原样</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>三座</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>数百座</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>名称</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>保持原样</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>超长</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>宽度</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>高度</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>拖动视图的边缘或角落来调整大小，或直接输入尺寸。</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>此页面</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>设计方案</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>这些选项由页面自己定义，用于它必须正确呈现的各种情况。每个选择都会写入链接和截图。</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>试试主题</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>主色</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>主题</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>自定义颜色</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>只有此视图会改变。看到满意的效果后，请让您的智能体把它写进应用的主题。</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>无障碍</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>文字大小</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>减弱动态效果</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>色觉</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>像手机或浏览器设置那样放大文字、关闭动画，并查看色盲人士眼中的页面。</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>任意尺寸</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>自定义尺寸</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>正常</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>无红色（红色盲）</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>无绿色（绿色盲）</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>无蓝色（蓝色盲）</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>无色彩（全色盲）</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>应用的断点</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>设计方案</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>与 AI 实时协作</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>在运行工作台的电脑上，钉在页面上的评论会直接发给开发者的 AI 智能体：它会修改页面、就在这里回复，并在您眼前将评论勾选为已完成。在其他任何地方，评审都是只读的，因此没有人能通过共享链接接触到这个智能体。</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>智能体离线</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>还没有评论。</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>流程需要在运行工作台的电脑上绘制。在这里，您可以打开并浏览它们。</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>与您的 AI 智能体实时评审</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>在页面的任意位置钉上一条评论。在您自己的电脑上，您的编程智能体会在您输入时就收到它，修改页面、在评论下回复，并将其勾选为已完成。支持 Claude Code、Codex、Copilot、Gemini、Junie 和 Cursor。</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>AI 实时评审</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>在页面上添加评论</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>点按要评论的位置</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>还没有流程。请让您的智能体画一个，比如“展示如何添加一栋建筑”，或在页面的“流程”选项卡中把视图添加到流程。</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>此链接下没有流程，它可能已被删除。</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>此流程还没有屏幕。请在页面的“流程”选项卡中添加视图，或让您的智能体来做。</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>屏幕：{0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>全部流程</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>一项任务的各个屏幕并排展示，用箭头相连</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>将此视图添加到流程</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>流程会按视图当前的样子保存它：设备、设置以及页面上打开的一切。</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>流程</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>新流程</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>此屏幕展示的内容（可选）</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>如何从上一个屏幕来到这里（可选）</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>用户执行的操作</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>点按“添加建筑”</value>
+    </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>标记第 {0} 个屏幕上通往这里的按钮，箭头就会从它开始。</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>从第 {0} 个屏幕上标记的按钮开始。</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>标记按钮</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>重新标记</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>移除标记</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>点按第 {0} 个屏幕上通往第 {1} 个屏幕的按钮。</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>添加此视图</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>打开画板</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>在工作台中打开</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>显示所有屏幕</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>演示</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>上一个屏幕</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>下一个屏幕</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>停止演示</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>第 {0} 个，共 {1} 个</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>拖动屏幕即可移动它，双击屏幕即可试用。从屏幕右边缘的圆点拖到另一个屏幕即可画出箭头，然后为它命名并标记它开始的按钮。双击箭头可修改或删除它。</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>删除此流程？</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>移除此屏幕</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>删除箭头</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>智能体回复时通知我</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>浏览器阻止了此网站的通知。请在网站设置中允许通知。</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} 在“{1}”上回复了</value>
+    </data>
+    <data name="ThemeStatesNote" xml:space="preserve">
+        <value>“悬停”“聚焦”和“按下”无需触碰控件即可绘制，因此手机上也能看到，且不会弹出键盘。</value>
+    </data>
+    <data name="ThemeStateDefault" xml:space="preserve">
+        <value>默认</value>
+    </data>
+    <data name="ThemeStateHover" xml:space="preserve">
+        <value>悬停</value>
+    </data>
+    <data name="ThemeStateFocused" xml:space="preserve">
+        <value>聚焦</value>
+    </data>
+    <data name="ThemeStatePressed" xml:space="preserve">
+        <value>按下</value>
+    </data>
+    <data name="ThemeStateLoading" xml:space="preserve">
+        <value>加载中</value>
+    </data>
+    <data name="ThemeStatePlaceholder" xml:space="preserve">
+        <value>占位文字</value>
+    </data>
+    <data name="ThemeStateFilled" xml:space="preserve">
+        <value>已填写</value>
+    </data>
+    <data name="ThemeStateError" xml:space="preserve">
+        <value>错误</value>
+    </data>
+    <data name="ThemeStateRequired" xml:space="preserve">
+        <value>必填</value>
+    </data>
+    <data name="ThemeStateReadOnly" xml:space="preserve">
+        <value>只读</value>
+    </data>
+    <data name="ThemeStatePassword" xml:space="preserve">
+        <value>密码</value>
+    </data>
+    <data name="ThemeStateMultiline" xml:space="preserve">
+        <value>多行</value>
+    </data>
+    <data name="ThemeStateEmpty" xml:space="preserve">
+        <value>空</value>
+    </data>
+    <data name="ThemeStateSelected" xml:space="preserve">
+        <value>已选择</value>
+    </data>
+    <data name="ThemeStateMultiple" xml:space="preserve">
+        <value>多选</value>
+    </data>
+    <data name="ThemeStateChecked" xml:space="preserve">
+        <value>已勾选</value>
+    </data>
+    <data name="ThemeStateUnchecked" xml:space="preserve">
+        <value>未勾选</value>
+    </data>
+    <data name="ThemeStateIndeterminate" xml:space="preserve">
+        <value>部分勾选</value>
+    </data>
+    <data name="ThemeStateOn" xml:space="preserve">
+        <value>开</value>
+    </data>
+    <data name="ThemeStateOff" xml:space="preserve">
+        <value>关</value>
+    </data>
+    <data name="ThemeStateDisabledOn" xml:space="preserve">
+        <value>已禁用，开</value>
+    </data>
+    <data name="ThemeStateDisabledChecked" xml:space="preserve">
+        <value>已禁用，已勾选</value>
+    </data>
+    <data name="ThemeStateExpanded" xml:space="preserve">
+        <value>已展开</value>
+    </data>
+    <data name="ThemeStateCollapsed" xml:space="preserve">
+        <value>已折叠</value>
+    </data>
+    <data name="ThemeSelection" xml:space="preserve">
+        <value>选择控件</value>
+    </data>
+    <data name="ThemeNavigation" xml:space="preserve">
+        <value>导航</value>
+    </data>
+    <data name="ThemeLoaders" xml:space="preserve">
+        <value>加载指示器</value>
+    </data>
+    <data name="ThemeOverlays" xml:space="preserve">
+        <value>浮层</value>
+    </data>
+    <data name="ThemeOverlaysHint" xml:space="preserve">
+        <value>在这里打开一个，或在“打开浮层”中选择它，让链接和截图显示其打开状态。</value>
+    </data>
+    <data name="ThemeSwitchOverlay" xml:space="preserve">
+        <value>打开浮层</value>
+    </data>
+    <data name="ThemeOverlayNone" xml:space="preserve">
+        <value>无</value>
+    </data>
+    <data name="ThemeOverlayDropdown" xml:space="preserve">
+        <value>下拉列表</value>
+    </data>
+    <data name="ThemeOverlayDatePicker" xml:space="preserve">
+        <value>日期选择器</value>
+    </data>
+    <data name="ThemeOverlayMenu" xml:space="preserve">
+        <value>菜单</value>
+    </data>
+    <data name="ThemeOverlayDialog" xml:space="preserve">
+        <value>对话框</value>
+    </data>
+    <data name="ThemeOverlayPanel" xml:space="preserve">
+        <value>侧边面板</value>
+    </data>
+    <data name="ThemeOverlaySnackBar" xml:space="preserve">
+        <value>底部提示条</value>
+    </data>
+    <data name="ThemeDialogTitle" xml:space="preserve">
+        <value>删除这栋建筑？</value>
+    </data>
+    <data name="ThemeDialogMessage" xml:space="preserve">
+        <value>它将从所有人的列表和地图中消失。</value>
+    </data>
+    <data name="ThemeActions" xml:space="preserve">
+        <value>操作</value>
+    </data>
+    <data name="ThemeNameError" xml:space="preserve">
+        <value>请至少输入两个字母。</value>
+    </data>
+    <data name="ThemeQuantity" xml:space="preserve">
+        <value>数量</value>
+    </data>
+    <data name="ThemeQuantityError" xml:space="preserve">
+        <value>请至少订购一件。</value>
+    </data>
+    <data name="ThemeCode" xml:space="preserve">
+        <value>验证码</value>
+    </data>
+    <data name="ThemeNotes" xml:space="preserve">
+        <value>备注</value>
+    </data>
+    <data name="ThemeDateError" xml:space="preserve">
+        <value>请选择一个过去的日期。</value>
+    </data>
+    <data name="ThemeChoiceError" xml:space="preserve">
+        <value>请选择其中一个选项。</value>
+    </data>
+    <data name="ThemeLinkText" xml:space="preserve">
+        <value>阅读条款</value>
+    </data>
+    <data name="ThemeFavorite" xml:space="preserve">
+        <value>收藏</value>
+    </data>
+    <data name="ThemeTooltipText" xml:space="preserve">
+        <value>一分钟前已保存</value>
+    </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>此页面出了点问题。</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>重新加载</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>删除这条评论？</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>无法保存翻译。</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>无法将此屏幕添加到流程。</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>笔记本电脑 {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>台式机 {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>手机 {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>平板电脑 {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0}（展开）</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>紫色</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>绿色</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>橙色</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>青绿色</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>玫红色</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>建筑显示方式</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>浏览器不允许复制。请选中文字并自行复制。</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>重置此视图</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>此屏幕尚未加载完成。请稍等片刻，然后重新标记按钮。</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>请保留原文中花括号内的占位符，否则页面无法显示这段文字。</value>
+    </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>关闭代理回复的提示音</value>
+    </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>组件</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>仅用于快速修改。其他需求请写在“评审”标签页，智能体会处理。</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>在视图中点击一个组件，即可查看并修改它的参数。</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>这不是 bit BlazorUI 组件，或者它已不在页面上，因此没有可显示的参数。</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>只有当工作台从您自己电脑上的项目运行时，才能保存修改。</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>这一部分由 {0} 自己绘制，因此要通过 {0} 的参数来修改。</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>未在代码中找到它的标签，因此这里的值为只读。</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>筛选</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>参数</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>继承的参数</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>样式和类</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>CSS 变量</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>在此设置的值会写入组件的 Style。</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>只有当组件的 Style 可以修改时，这些才能在这里修改。</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>来自主题</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>由代码设置</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>恢复默认</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>未设置</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>已保存到 {0}。热重载稍后会显示它。</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>已保存到 {0}。重新启动应用即可看到。</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>无法保存修改；它的标签可能已移动。请再次点击该组件。</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>选择图标</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>搜索图标</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>还有 {0} 个。输入文字可缩小范围。</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>选择颜色</value>
+    </data>
+    <data name="SuggestShow" xml:space="preserve">
+        <value>建议的值</value>
+    </data>
+</root>

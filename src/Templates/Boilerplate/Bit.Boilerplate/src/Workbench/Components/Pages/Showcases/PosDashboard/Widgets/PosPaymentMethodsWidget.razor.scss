@@ -1,0 +1,81 @@
+@import '../../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.payments {
+    flex: 1;
+    gap: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;
+}
+
+.donut {
+    width: 9.5rem;
+    height: 9.5rem;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.donut-center {
+    inset: 0;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    // Lets the pointer reach the chart's slices under the total.
+    pointer-events: none;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.donut-total {
+    font-size: 1.125rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.donut-caption {
+    font-size: 12px;
+    color: $bit-color-foreground-secondary;
+}
+
+.legend {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    gap: 0.625rem;
+    display: flex;
+    min-width: 11rem;
+    list-style: none;
+    flex-direction: column;
+
+    li {
+        gap: 0.5rem;
+        display: flex;
+        font-size: 14px;
+        align-items: center;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+        border-radius: 3px;
+        background-color: var(--data-color);
+    }
+
+    .name {
+        flex: 1;
+    }
+
+    .percent {
+        color: $bit-color-foreground-secondary;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .amount {
+        min-width: 4.5rem;
+        font-weight: 600;
+        text-align: end;
+        font-variant-numeric: tabular-nums;
+    }
+}

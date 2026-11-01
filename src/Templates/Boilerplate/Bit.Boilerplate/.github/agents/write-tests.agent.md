@@ -52,6 +52,11 @@ infrastructure is `.docs/17- Automated Testing (Unitigration Tests).md`; this is
   user does - `GetByRole`, `GetByLabel`, `GetByPlaceholder` - with the app's own `AppStrings` text, and asserts with
   `Expect`, which waits until the page gets there. Never wait with `Task.Delay`.
 - **A component**: `server.CreateBunitContext()` renders it against the running server.
+<!--#if (advancedTests == true)-->
+- **The Workbench**: its tests are in `src/WorkbenchTests`, built the same way: `WorkbenchTestServer` runs it in-process,
+  `WorkbenchPageTest` opens it in a browser and `WorkbenchBunit.Create()` renders its components. A change to
+  `src/Workbench` gets its test there, and `dotnet test` in that folder runs them.
+<!--#endif-->
 - A comment above a test says why it exists when its name can't: the defect it guards against, or why this kind of
   test rather than another.
 
