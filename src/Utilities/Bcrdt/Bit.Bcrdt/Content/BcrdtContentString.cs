@@ -91,6 +91,16 @@ public sealed class BcrdtContentString : IBcrdtContent
     }
 
     /// <inheritdoc/>
+    public object? GetValue(int index)
+    {
+        if ((uint)index < (uint)_head.Length) return _head.Span[index].ToString();
+
+        int inTail = index - _head.Length;
+        if (_tail is null || (uint)inTail >= (uint)_tail.Length) throw new ArgumentOutOfRangeException(nameof(index));
+        return _tail[inTail].ToString();
+    }
+
+    /// <inheritdoc/>
     public IBcrdtContent Copy() => new BcrdtContentString(Text);
 
     /// <inheritdoc/>
@@ -122,6 +132,9 @@ public sealed class BcrdtContentString : IBcrdtContent
         _head = Detach(whole[..offset]);
         return new BcrdtContentString(Detach(whole[offset..]));
     }
+
+    /// <inheritdoc/>
+    public bool CanMergeWith(IBcrdtContent right) => right is BcrdtContentString;
 
     /// <inheritdoc/>
     public bool TryMergeWith(IBcrdtContent right)

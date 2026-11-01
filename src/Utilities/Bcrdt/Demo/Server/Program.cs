@@ -26,7 +26,10 @@ builder.Services.AddDemoServices();
 // that joins an empty room is handed the document by the server alone. Its store is in memory and
 // bounded - this server is public, and anyone can make a room - so the least recently used rooms are
 // forgotten first; an application would give it a durable store instead.
-builder.Services.AddBitBcrdtHub();
+// For the same reason the hub takes at most 4 MB from a client rather than 16 - still room for the
+// largest message a provider sends (1 MB) once the JSON protocol has base64-encoded it. It is sized for
+// LiveHub, the hub mapped below: SignalR applies the limit per hub type.
+builder.Services.AddBitBcrdtHub<LiveHub>(4 * 1024 * 1024);
 builder.Services.AddBitBcrdtDocumentHost(_ => new BcrdtDocumentHostOptions
 {
     Store = new BcrdtInMemoryDocumentStore(maxDocuments: 500),
@@ -108,6 +111,7 @@ app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}", options: new BcrdtWebSocketEn
 {
     DocumentHost = app.Services.GetRequiredService<BcrdtDocumentHost>(),
     AuthorizeAccess = (context, documentId) => ValueTask.FromResult(LiveHub.AccessOf(context)),
+    // Binary frames, so the largest message a provider sends arrives at its own size.
     MaxMessageSize = BcrdtSyncProtocol.DefaultMaxMessageSize,
 });
 

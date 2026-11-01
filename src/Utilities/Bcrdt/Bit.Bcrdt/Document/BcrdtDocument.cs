@@ -514,19 +514,43 @@ public sealed class BcrdtDocument : IDisposable
         }
     }
 
-    /// <summary>Repeatedly folds a block into its left neighbour for as long as they are mergeable.</summary>
+    /// <summary>Folds a block, and its left neighbours for as long as they are mergeable, into one.</summary>
+    /// <returns>How many blocks disappeared.</returns>
+    /// <remarks>
+    /// The blocks are found first and folded from the left, so the block that grows only ever appends
+    /// the one neighbour it absorbs. Folded from the right, each block in turn would copy everything
+    /// gathered so far, and a run of n blocks - one update can carry hundreds of thousands, each a value
+    /// or a character long - would cost time in the square of n.
+    /// </remarks>
     private static int TryMergeWithLefts(List<BcrdtAbstractStruct> structs, int position)
     {
         if (position <= 0 || position >= structs.Count) return 0;
 
-        BcrdtAbstractStruct right = structs[position];
-        int index = position;
-
-        while (index > 0)
+        int first = position;
+        int length = structs[position].Length;
+        while (first > 0)
         {
-            BcrdtAbstractStruct left = structs[index - 1];
+            BcrdtAbstractStruct left = structs[first - 1];
+            BcrdtAbstractStruct right = structs[first];
             if (left.Deleted != right.Deleted || left.GetType() != right.GetType()) break;
-            if (!left.TryMergeWith(right)) break;
+            if (!left.CanMergeWith(right) || !BcrdtAbstractStruct.FitsOneBlock(left.Length, length)) break;
+
+            length += left.Length;
+            first--;
+        }
+
+        int survivor = first;
+        for (int index = first + 1; index <= position; index++)
+        {
+            BcrdtAbstractStruct left = structs[survivor];
+            BcrdtAbstractStruct right = structs[index];
+
+            // Only a payload that misjudged whether it could merge gets here; it carries on as a block of its own.
+            if (!left.TryMergeWith(right))
+            {
+                structs[++survivor] = right;
+                continue;
+            }
 
             // The key index may have pointed at the block that just disappeared.
             if (right is BcrdtItem { ParentKey: not null } mapItem &&
@@ -535,13 +559,10 @@ public sealed class BcrdtDocument : IDisposable
             {
                 parent.MapSetRaw(mapItem.ParentKey, left as BcrdtItem);
             }
-
-            right = left;
-            index--;
         }
 
-        int merged = position - index;
-        if (merged > 0) structs.RemoveRange(position + 1 - merged, merged);
+        int merged = position - survivor;
+        if (merged > 0) structs.RemoveRange(survivor + 1, merged);
         return merged;
     }
 

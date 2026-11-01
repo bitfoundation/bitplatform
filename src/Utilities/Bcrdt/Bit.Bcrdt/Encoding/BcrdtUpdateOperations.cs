@@ -25,22 +25,46 @@ public static class BcrdtUpdateOperations
     /// receiver waits for them rather than mistaking the result for a complete history.
     /// </para>
     /// </remarks>
+    /// <exception cref="BcrdtFormatException">
+    /// An update is malformed, or the updates leave a gap in one author's clock range wider than any
+    /// replica writes - which only a crafted update produces, and which would otherwise take billions
+    /// of gap markers to describe. Every update can still be well-formed on its own.
+    /// </exception>
     public static byte[] Merge(params ReadOnlyMemory<byte>[] updates) => Merge(updates, BcrdtUpdateCodec.MaxClockGap);
 
     internal static byte[] Merge(ReadOnlyMemory<byte>[] updates, long maxGap)
     {
         ArgumentNullException.ThrowIfNull(updates);
         if (updates.Length == 0) return BcrdtUpdateEncoder.Empty;
-        if (updates.Length == 1) return updates[0].ToArray();
+        if (updates.Length == 1)
+        {
+            // Read only to be checked, so a malformed update is refused alone just as it is among others.
+            var single = new BcrdtBufferReader(updates[0]);
+            BcrdtUpdateCodec.ReadClientBlocks(ref single);
+            BcrdtDeleteSet.Read(ref single);
+            return updates[0].ToArray();
+        }
 
-        Dictionary<ulong, List<BcrdtAbstractStruct>> byClient = [];
-        List<BcrdtDeleteSet> deleteSets = new(updates.Length);
-
+        List<(Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet)> decoded = new(updates.Length);
         foreach (ReadOnlyMemory<byte> update in updates)
         {
             var reader = new BcrdtBufferReader(update);
             Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
-            deleteSets.Add(BcrdtDeleteSet.Read(ref reader));
+            decoded.Add((groups, BcrdtDeleteSet.Read(ref reader)));
+        }
+
+        return Merge(decoded, maxGap);
+    }
+
+    /// <summary>Combines updates that have already been read, consuming their blocks.</summary>
+    internal static byte[] Merge(List<(Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet)> updates, long maxGap)
+    {
+        Dictionary<ulong, List<BcrdtAbstractStruct>> byClient = [];
+        List<BcrdtDeleteSet> deleteSets = new(updates.Count);
+
+        foreach ((Dictionary<ulong, BcrdtClientBlocks> groups, BcrdtDeleteSet deleteSet) in updates)
+        {
+            deleteSets.Add(deleteSet);
 
             foreach ((ulong client, BcrdtClientBlocks blocks) in groups)
             {

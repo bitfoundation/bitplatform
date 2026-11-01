@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Time.Testing;
+using static Bit.Bcrdt.Tests.HandWrittenUpdates;
 
 namespace Bit.Bcrdt.Tests;
 
@@ -272,6 +273,94 @@ public class PersistenceTests : IDisposable
         Assert.HasCount(1, corruptions);
         await store.CompactAsync("doc");
         Assert.AreEqual("readable", Text((await store.LoadAsync("doc")).Update!));
+    }
+
+    [TestMethod]
+    public async Task A_record_too_far_past_the_ones_before_it_is_set_aside_and_the_rest_load()
+    {
+        var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
+        var corruptions = new List<BcrdtStoreCorruption>();
+        store.CorruptionDetected += corruptions.Add;
+
+        // Every record reads on its own, but the second leaves a hole in its author's clock range wider
+        // than any replica writes. A document refuses such a block, so a log merged with it in could
+        // never be opened again.
+        byte[] far = CollectedRange(7, 2 + (ulong)BcrdtUpdateCodec.MaxClockGap);
+        await store.AppendUpdateAsync("doc", CollectedRange(7, 0));
+        await store.AppendUpdateAsync("doc", far);
+        await store.AppendUpdateAsync("doc", CreateUpdate("kept"));
+
+        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        using var reloaded = new BcrdtDocument();
+        reloaded.ApplyUpdate(stored.Update!);
+
+        Assert.AreEqual(2, stored.RecordCount);
+        Assert.AreEqual("kept", reloaded.GetText("body").ToString());
+        Assert.AreEqual(1L, reloaded.GetStateVector().Get(7));
+
+        // Set aside like any other record the document cannot use - copied away untouched, and reported
+        // once - so every later load and compaction finds a log it can read.
+        BcrdtStoreCorruption corruption = corruptions.Single();
+        Assert.AreEqual(2, corruption.RecordsKept);
+        Assert.AreEqual(8L + far.Length, corruption.BytesDiscarded);
+        Assert.AreEqual(2, (await store.LoadAsync("doc")).RecordCount);
+        await store.CompactAsync("doc");
+        Assert.AreEqual("kept", Text((await store.LoadAsync("doc")).Update!));
+        Assert.HasCount(1, corruptions);
+    }
+
+    [TestMethod]
+    public async Task Records_starting_too_far_past_clock_zero_are_set_aside_even_when_they_merge()
+    {
+        var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
+        var corruptions = new List<BcrdtStoreCorruption>();
+        store.CorruptionDetected += corruptions.Add;
+
+        // A document measures a block from what it already holds - nothing, while it is being loaded - so
+        // content that starts further out than any replica writes is refused, whether it is one record
+        // or two that sit side by side and merge without a gap between them.
+        await store.AppendUpdateAsync("lone", CollectedRange(7, (ulong)BcrdtUpdateCodec.MaxClockGap + 1));
+        await store.AppendUpdateAsync("pair", CollectedRange(7, 1UL << 40));
+        await store.AppendUpdateAsync("pair", CollectedRange(7, (1UL << 40) + 1));
+        await store.AppendUpdateAsync("pair", CreateUpdate("kept"));
+
+        Assert.IsTrue((await store.LoadAsync("lone")).IsEmpty);
+
+        BcrdtStoredDocument pair = await store.LoadAsync("pair");
+        using var reloaded = new BcrdtDocument();
+        reloaded.ApplyUpdate(pair.Update!);
+        Assert.AreEqual(1, pair.RecordCount);
+        Assert.AreEqual("kept", reloaded.GetText("body").ToString());
+
+        Assert.HasCount(2, corruptions);
+        Assert.AreEqual(0, corruptions.Single(corruption => corruption.DocumentId == "lone").RecordsKept);
+        Assert.AreEqual(1, corruptions.Single(corruption => corruption.DocumentId == "pair").RecordsKept);
+    }
+
+    [TestMethod]
+    public async Task Damage_and_a_record_too_far_out_in_one_log_are_set_aside_together()
+    {
+        var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
+        var corruptions = new List<BcrdtStoreCorruption>();
+        store.CorruptionDetected += corruptions.Add;
+
+        byte[] unreadable = [0xFF, 0xFF, 0xFF, 0xFF];
+        byte[] far = CollectedRange(7, (ulong)BcrdtUpdateCodec.MaxClockGap + 1);
+        await store.AppendUpdateAsync("doc", CreateUpdate("kept"));
+        await store.AppendUpdateAsync("doc", unreadable);
+        await store.AppendUpdateAsync("doc", far);
+
+        // One repair, reported once, after which the document opens - not a repair reported for a
+        // document that still fails to load.
+        BcrdtStoredDocument stored = await store.LoadAsync("doc");
+        Assert.AreEqual(1, stored.RecordCount);
+        Assert.AreEqual("kept", Text(stored.Update!));
+
+        BcrdtStoreCorruption corruption = corruptions.Single();
+        Assert.AreEqual(1, corruption.RecordsKept);
+        Assert.AreEqual(8L + unreadable.Length + 8L + far.Length, corruption.BytesDiscarded);
+        Assert.AreEqual("kept", Text((await store.LoadAsync("doc")).Update!));
+        Assert.HasCount(1, corruptions);
     }
 
     [TestMethod]

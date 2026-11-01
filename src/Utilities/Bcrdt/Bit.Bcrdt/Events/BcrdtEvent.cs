@@ -268,9 +268,5 @@ public abstract class BcrdtEvent
         return keys;
     }
 
-    private static object? LastValue(BcrdtItem item)
-    {
-        IReadOnlyList<object?> content = item.Content.GetContent();
-        return content.Count == 0 ? null : content[^1];
-    }
+    private static object? LastValue(BcrdtItem item) => item.Content.GetValue(item.Length - 1);
 }

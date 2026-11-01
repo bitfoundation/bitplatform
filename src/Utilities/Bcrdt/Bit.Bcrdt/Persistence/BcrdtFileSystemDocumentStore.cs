@@ -34,7 +34,8 @@ public sealed record BcrdtStoreCorruption(string DocumentId, string QuarantinePa
 /// record and carries on from there, the log is rewritten with every intact record it holds, and
 /// <see cref="CorruptionDetected"/> says what happened. A damaged tail longer than any one record could
 /// be is no torn append either, and is set aside the same way. So is a record that is intact on disk but
-/// is not a valid update, rather than making the document impossible to open. Finding where intact
+/// is not a valid update, or that places content further past what the records before it hold than any
+/// replica writes, rather than making the document impossible to open. Finding where intact
 /// records resume costs one pass over the damaged bytes, not a checksum at each of them.
 /// </para>
 /// <para>
@@ -233,12 +234,20 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
     }
 
     /// <summary>
-    /// Merges the records into one update, setting aside any that is intact on disk but is not a
-    /// readable update.
+    /// Merges the records into one update, setting aside any that is intact on disk but that a document
+    /// built from the records before it could not apply.
     /// </summary>
     /// <remarks>
-    /// Such a record - written by something else, or by a newer build - would otherwise make every
-    /// merge, and so every load, fail: the document could never be opened again.
+    /// <para>
+    /// Such a record - written by something else, or by a newer build, or one placing content further
+    /// past what the records before it hold than any replica writes - would otherwise make every merge,
+    /// or every load of the merged update, fail: the document could never be opened again.
+    /// </para>
+    /// <para>
+    /// Each record is read once, and checked against the records kept before it the way a document checks
+    /// an update against its own content, starting from nothing. The records kept therefore always merge,
+    /// and their merge always loads.
+    /// </para>
     /// </remarks>
     /// <returns>The merged update, or <see langword="null"/> if nothing readable remains, and how many records it came from.</returns>
     private async Task<(byte[]? Merged, int Count)> MergeAsync(
@@ -247,33 +256,31 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
         List<ReadOnlyMemory<byte>> records,
         CancellationToken cancellationToken)
     {
-        if (records.Count == 0) return (null, 0);
-
-        try
-        {
-            if (records.Count > 1) return (BcrdtUpdateOperations.Merge([.. records]), records.Count);
-            if (IsDecodable(records[0])) return (records[0].ToArray(), 1);
-        }
-        catch (BcrdtFormatException)
-        {
-            // Some record is unreadable; find out which below.
-        }
-
-        List<ReadOnlyMemory<byte>> readable = [];
+        List<ReadOnlyMemory<byte>> kept = new(records.Count);
+        List<(Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet)> updates = new(records.Count);
+        Dictionary<ulong, long> reach = [];
         long discarded = 0;
+
         foreach (ReadOnlyMemory<byte> record in records)
         {
-            if (IsDecodable(record)) readable.Add(record);
-            else discarded += HeaderSize + record.Length;
+            if (TryRead(record, reach, out (Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet) update))
+            {
+                kept.Add(record);
+                updates.Add(update);
+            }
+            else
+            {
+                discarded += HeaderSize + record.Length;
+            }
         }
 
-        await QuarantineAsync(documentId, path, readable, discarded, cancellationToken).ConfigureAwait(false);
+        if (discarded > 0) await QuarantineAsync(documentId, path, kept, discarded, cancellationToken).ConfigureAwait(false);
 
-        return readable.Count switch
+        return kept.Count switch
         {
             0 => (null, 0),
-            1 => (readable[0].ToArray(), 1),
-            _ => (BcrdtUpdateOperations.Merge([.. readable]), readable.Count),
+            1 => (kept[0].ToArray(), 1),
+            _ => (BcrdtUpdateOperations.Merge(updates, BcrdtUpdateCodec.MaxClockGap), kept.Count),
         };
     }
 
@@ -394,13 +401,32 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
         }
     }
 
-    private static bool IsDecodable(ReadOnlyMemory<byte> record)
+    /// <summary>Reads a record, if it is an update a document holding the records kept so far would apply.</summary>
+    /// <param name="record">The record's payload.</param>
+    /// <param name="reach">
+    /// How far each author's content reaches in the records kept so far; advanced by the record when it is kept.
+    /// </param>
+    /// <param name="update">The record, read.</param>
+    private static bool TryRead(
+        ReadOnlyMemory<byte> record,
+        Dictionary<ulong, long> reach,
+        out (Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet) update)
     {
+        update = default;
         try
         {
             var reader = new BcrdtBufferReader(record);
-            BcrdtUpdateCodec.ReadClientBlocks(ref reader);
-            BcrdtDeleteSet.Read(ref reader);
+            Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
+            BcrdtDeleteSet deleteSet = BcrdtDeleteSet.Read(ref reader);
+
+            var reached = new Dictionary<ulong, long>(groups.Count);
+            foreach ((ulong client, BcrdtClientBlocks group) in groups)
+            {
+                reached[client] = BcrdtUpdateCodec.RefuseFarClocks(group, reach.GetValueOrDefault(client));
+            }
+            foreach ((ulong client, long end) in reached) reach[client] = end;
+
+            update = (groups, deleteSet);
             return true;
         }
         catch (BcrdtFormatException)
