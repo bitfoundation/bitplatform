@@ -744,9 +744,9 @@ public class BitPaginationE2ETests : E2ETestBase
             await Expect(PageButton($"pg-color-{color}", 2)).ToHaveCSSAsync("color", await ResolveColorAsync($"var(--bit-clr-{token}-text)"));
             await Expect(Selected($"pg-color-{color}")).ToHaveCSSAsync("background-color", await ResolveColorAsync($"var(--bit-clr-{token}-dark)"));
 
-            // An outlined page number sits on the page, so it is drawn in the role's text color: its foreground shade,
-            // except the primary main, which is read as text as it is. The outline keeps the main.
-            var text = await ResolveColorAsync(token == "pri" ? $"var(--bit-clr-{token})" : $"var(--bit-clr-{token}-fg)");
+            // An outlined page number sits on the page, so it is drawn in the role's text color (role-text). The outline
+            // keeps the main.
+            var text = await ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken(suffix)})");
             var outline = PageButton($"pg-color-outline-{color}", 2);
             await Expect(outline).ToHaveCSSAsync("border-top-color", main);
             await Expect(outline).ToHaveCSSAsync("color", text);

@@ -146,7 +146,6 @@ public partial class BitButtonGroupStylesheetTests
 
         // The labels of an Outline or Text group sit on the page rather than on the role's fill, so they are drawn in the
         // role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
-        // A surface role publishes no text color of its own, so its main stays the label, as role-text has it.
         var group = SourceFiles.GetScssDeclarations(stylesheet, $"\n.{variantClass} {{");
         StringAssert.Contains(group, "--bit-btg-itm-clr-txt: var(--bit-btg-clr-fg, var(--bit-btg-clr));");
         StringAssert.Contains(group, "--bit-btg-dfl-txt: #{$clr-pri};");
@@ -155,6 +154,15 @@ public partial class BitButtonGroupStylesheetTests
         StringAssert.Contains(group, "--bit-btg-itm-clr-fcs: var(--bit-btg-clr);");
 
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btg-#{$role} {"), "--bit-btg-clr-fg: #{role-text($role, $tokens)};");
+
+        // The surface roles are written out by hand, with the text color role-text gives them: the fg of the role map - the
+        // on-color a background or border role is paired with (its main is the page, or a hairline on it) and the main of a
+        // foreground one.
+        foreach (var (role, text) in new[] { ("pbg", "fg-pri"), ("sbg", "fg-pri"), ("tbg", "fg-pri"), ("pfg", "fg-pri"), ("sfg", "fg-sec"),
+                                             ("tfg", "fg-ter"), ("pbr", "fg-pri"), ("sbr", "fg-pri"), ("tbr", "fg-pri") })
+        {
+            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n.bit-btg-{role} {{"), $"--bit-btg-clr-fg: #{{$clr-{text}}};");
+        }
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ButtonGroup", "BitButtonGroup.scss");

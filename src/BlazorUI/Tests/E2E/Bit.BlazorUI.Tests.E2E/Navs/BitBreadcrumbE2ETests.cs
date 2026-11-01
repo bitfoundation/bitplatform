@@ -618,10 +618,10 @@ public class BitBreadcrumbE2ETests : E2ETestBase
             var id = $"bc-color-{color}";
             await Expect(Root(id)).ToHaveClassAsync(HasClass($"bit-brc-{suffix}"));
 
-            // An item is text read on the page, so an accent role other than the primary one draws it in its foreground
-            // shade; the divider is decoration and keeps the main.
+            // An item is text read on the page, so it is drawn in the role's text color (role-text); the divider is
+            // decoration and keeps the main.
             var expected = await ResolveColorAsync($"var({main})");
-            var text = suffix is "sec" or "ter" or "inf" or "suc" or "wrn" or "swr" or "err" ? await ResolveColorAsync($"var({main}-fg)") : expected;
+            var text = await ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken(suffix)})");
             await Expect(Step(id, "Item 1")).ToHaveCSSAsync("color", text);
             await Expect(Step(id, "Item 4")).ToHaveCSSAsync("color", text);
             await Expect(Root(id).Locator("i.bit-brc-div").First).ToHaveCSSAsync("color", expected);

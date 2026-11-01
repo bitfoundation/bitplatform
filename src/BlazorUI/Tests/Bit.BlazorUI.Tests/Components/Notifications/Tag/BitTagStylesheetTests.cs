@@ -218,7 +218,7 @@ public class BitTagStylesheetTests
         StringAssert.Contains(fill, "--bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-active, #{$clr-pri-active}))));");
         StringAssert.Contains(fill, "--bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-background, var(--bit-Tag-disabled-background, var(--bit-tag-dft-clr-dis, #{$clr-pri-dis}))));");
         var outline = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-otl {");
-        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));");
+        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-tint, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-tint, #{$clr-pri-tint}))));");
         StringAssert.Contains(stylesheet, "--bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, var(--bit-tag-dft-clr-dis-text, #{$clr-pri-dis-text})));");
 
         // What the role leaves alone stays the variables': the transparent background of Outline and Text.
@@ -236,20 +236,31 @@ public class BitTagStylesheetTests
         // A component of the library that renders a tag gives it a default role other than the primary one through a
         // class (bit-tag-dft-ter), never through Color: so every color the primary role stands in for reads that default
         // right ahead of it - behind the role of an explicit Color and the public variables, which keep the last word.
-        var fallbacks = Regex.Matches(stylesheet, @"(\S*) #\{\$clr-pri(-[a-z-]+)?\}\)");
-        Assert.IsTrue(fallbacks.Count > 0, "No color falls back to the primary role.");
-        Assert.AreEqual(Regex.Matches(stylesheet, @"\$clr-pri\b").Count, fallbacks.Count, "A primary role token is read other than as the last fallback of a color.");
-
-        foreach (Match fallback in fallbacks)
+        // Which default is told by the color being declared, never by the one it happens to read: the text of an
+        // unfilled tag stands the primary main in for the text color the role is read in on the page (role-text, which
+        // keeps the primary main), a selected one the primary foreground for the one it reads over the tint, and every
+        // other color the slot the primary token names - the pressed wash of an unfilled tag being the main mixed in.
+        var fallbacks = 0;
+        foreach (Match declaration in Regex.Matches(stylesheet, @"(--bit-tag-[a-z-]+):([^;]+);"))
         {
-            var suffix = fallback.Groups[2].Value switch { "-text" => "-txt", var other => other };
+            var property = declaration.Groups[1].Value;
+            foreach (Match fallback in Regex.Matches(declaration.Groups[2].Value, @"var\((--bit-tag-[a-z-]+), #\{(?:\$clr-pri(?<slot>-[a-z-]+)?|(?<wash>translucent)\(\$clr-pri, \d+%\))\}\)"))
+            {
+                fallbacks++;
+                var slot = fallback.Groups["wash"].Success ? "-tint-active" : fallback.Groups["slot"].Value switch { "-text" => "-txt", var other => other };
+                var expected = (property, slot) switch
+                {
+                    ("--bit-tag-v-fg", "") => "--bit-tag-dft-clr-fg",
+                    ("--bit-tag-v-sel-fg", "-fg") => "--bit-tag-dft-clr-sel-fg",
+                    _ => $"--bit-tag-dft-clr{slot}",
+                };
 
-            // The primary main stands in for two defaults: the role's main, and the text color the role is read in on
-            // the page (role-text), which keeps the primary main as it is.
-            var expected = suffix.Length == 0 && fallback.Groups[1].Value == "var(--bit-tag-dft-clr-fg," ? "var(--bit-tag-dft-clr-fg," : $"var(--bit-tag-dft-clr{suffix},";
-
-            Assert.AreEqual(expected, fallback.Groups[1].Value, $"{fallback.Value} is not read behind the host default.");
+                Assert.AreEqual(expected, fallback.Groups[1].Value, $"{property} reads {fallback.Value} behind the wrong host default.");
+            }
         }
+
+        Assert.IsTrue(fallbacks > 0, "No color falls back to the primary role.");
+        Assert.AreEqual(Regex.Matches(stylesheet, @"\$clr-pri\b").Count, fallbacks, "A primary role token is read other than as the last fallback of a color.");
 
         // The classes mirror the role classes - the same roles, the same values - and are never reset by the role classes.
         var roles = SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-#{$role} {");
@@ -269,13 +280,26 @@ public class BitTagStylesheetTests
         var stylesheet = ReadStylesheet();
         var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
 
-        // The text of an Outline or Text tag sits on the page or on the role's light tint rather than on its fill, so it
-        // is drawn in the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1
-        // as text on white. At rest and selected alike.
+        // The text of an Outline or Text tag sits on the page rather than on its fill, so it is drawn in the role's text
+        // color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
         StringAssert.Contains(block, $"--bit-tag-v-fg: var(--bit-tag-clr-fg, var(--bit-Tag-{variant}-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{{$clr-pri}}))));");
-        StringAssert.Contains(block, $"--bit-tag-v-sel-fg: var(--bit-tag-clr-fg, var(--bit-Tag-{variant}-selected-color, ");
 
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-#{$role} {"), "--bit-tag-clr-fg: #{role-text($role, $tokens)};");
+        // A selected one sits on a wash of the role instead - its tint, the surface the role's fg is solved to be read on -
+        // and so reads that fg, the primary role's too, whose main drops under 4.5:1 there. Never on the light tier: that one
+        // is a pastel which in a dark palette is as light as the role's text. The pointer lays a wash over the content, which
+        // deepens a selected tag's rather than replacing it, so no selected step of its own is needed.
+        StringAssert.Contains(block, $"--bit-tag-v-sel-fg: var(--bit-tag-clr-sel-fg, var(--bit-Tag-{variant}-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-{variant}-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-fg, #{{$clr-pri-fg}}))))));");
+        StringAssert.Contains(block, $"--bit-tag-v-sel-bg: var(--bit-tag-clr-tint, var(--bit-Tag-{variant}-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-tint, #{{$clr-pri-tint}}))));");
+        StringAssert.Contains(block, $"--bit-tag-v-hover-bg: var(--bit-tag-clr-tint, var(--bit-Tag-{variant}-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-tint, #{{$clr-pri-tint}}))));");
+        StringAssert.Contains(block, $"--bit-tag-v-active-bg: var(--bit-tag-clr-tint-active, var(--bit-Tag-{variant}-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-tint-active, #{{translucent($clr-pri, 16%)}}))));");
+        StringAssert.DoesNotMatch(stylesheet, new Regex(@"clr-[a-z-]*light|\(\$tokens, light"));
+        StringAssert.DoesNotMatch(stylesheet, new Regex("v-sel-hover-bg|v-sel-active-bg"));
+
+        var roles = SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-#{$role} {");
+        StringAssert.Contains(roles, "--bit-tag-clr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(roles, "--bit-tag-clr-sel-fg: #{role($tokens, fg)};");
+        StringAssert.Contains(roles, "--bit-tag-clr-tint: #{role-wash($tokens)};");
+        StringAssert.Contains(roles, "--bit-tag-clr-tint-active: #{role-wash($tokens, 16%)};");
     }
 
     [TestMethod,
@@ -313,12 +337,11 @@ public class BitTagStylesheetTests
         // A tag can sit in the template of another one, which must not inherit the outer tag's Color, Size or Shape:
         // each root starts the values those classes publish out unset, and the classes - declared further down at the
         // same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-fg", "--bit-tag-clr-txt", "--bit-tag-clr-dis", "--bit-tag-clr-dis-text", "--bit-tag-clr-active",
-                                         "--bit-tag-clr-light", "--bit-tag-clr-light-hover", "--bit-tag-clr-light-active",
+        foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-fg", "--bit-tag-clr-sel-fg", "--bit-tag-clr-txt", "--bit-tag-clr-dis", "--bit-tag-clr-dis-text",
+                                         "--bit-tag-clr-active", "--bit-tag-clr-tint", "--bit-tag-clr-tint-active",
                                          // The default a host gave a tag, which a tag in its template must not inherit either.
-                                         "--bit-tag-dft-clr", "--bit-tag-dft-clr-fg", "--bit-tag-dft-clr-txt", "--bit-tag-dft-clr-dis", "--bit-tag-dft-clr-dis-text",
-                                         "--bit-tag-dft-clr-active", "--bit-tag-dft-clr-light", "--bit-tag-dft-clr-light-hover",
-                                         "--bit-tag-dft-clr-light-active",
+                                         "--bit-tag-dft-clr", "--bit-tag-dft-clr-fg", "--bit-tag-dft-clr-sel-fg", "--bit-tag-dft-clr-txt", "--bit-tag-dft-clr-dis",
+                                         "--bit-tag-dft-clr-dis-text", "--bit-tag-dft-clr-active", "--bit-tag-dft-clr-tint", "--bit-tag-dft-clr-tint-active",
                                          "--bit-tag-sz-gap", "--bit-tag-sz-lbl-gap", "--bit-tag-sz-fs", "--bit-tag-sz-stx-fs", "--bit-tag-sz-img",
                                          "--bit-tag-sz-pad-y", "--bit-tag-sz-pad-x", "--bit-tag-sz-min-height", "--bit-tag-radius" })
         {

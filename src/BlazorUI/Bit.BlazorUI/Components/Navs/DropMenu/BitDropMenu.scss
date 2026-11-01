@@ -558,16 +558,11 @@ $drm-cal-private-properties: cal-bg, cal-brd;
         --bit-drm-clr-dis-text: #{role($tokens, dis-text)};
 
         // The readable foreground of a button whose surface is not painted (the outlined and text
-        // variants, and the Transparent flag). An accent role writes itself onto the page in its text
-        // color (role-text) - a secondary or a warning main is picked to fill a surface and falls under
-        // the 4.5:1 of body text on white - while the color of a neutral surface role *is* the page, so
-        // that one keeps the contrast color it would have been written in on top of itself.
-        @if role($tokens, kind) == semantic {
-            --bit-drm-clr-flt: #{role-text($role, $tokens)};
-        }
-        @else {
-            --bit-drm-clr-flt: #{role($tokens, on)};
-        }
+        // variants, and the Transparent flag): the role's text color (role-text). An accent role writes
+        // itself onto the page in it - a secondary or a warning main is picked to fill a surface and falls
+        // under the 4.5:1 of body text on white - a background or border role, whose color *is* the page or
+        // a hairline on it, in the contrast color it is paired with, and a foreground role in itself.
+        --bit-drm-clr-flt: #{role-text($role, $tokens)};
     }
 }
 

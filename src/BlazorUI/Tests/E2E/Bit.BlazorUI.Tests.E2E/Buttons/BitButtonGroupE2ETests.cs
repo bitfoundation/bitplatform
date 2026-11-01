@@ -957,7 +957,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         await Expect(ItemAt($"color-{name}", 0)).ToHaveCSSAsync("background-color", await Token(dark));
 
         // An outlined item's label sits on the page, so it is drawn in the role's text color; the outline keeps the main.
-        await Expect(ItemAt($"color-outline-{name}", 0)).ToHaveCSSAsync("color", await Token(ButtonsE2EHelpers.TextToken(main)));
+        await Expect(ItemAt($"color-outline-{name}", 0)).ToHaveCSSAsync("color", await Token(E2EColors.TextToken(suffix)));
         await Expect(Group($"color-outline-{name}")).ToHaveCSSAsync("border-top-color", await Token(main));
 
         await Expect(ItemAt($"color-dis-{name}", 1)).ToHaveCSSAsync("background-color", await Token(dis));

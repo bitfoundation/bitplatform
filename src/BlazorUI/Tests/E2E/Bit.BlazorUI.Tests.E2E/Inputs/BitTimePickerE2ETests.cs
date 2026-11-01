@@ -2049,7 +2049,11 @@ public class BitTimePickerE2ETests : E2ETestBase
 
         var expected = await ResolveColorAsync($"var({token})");
         Assert.AreEqual(expected, await StyleOfAsync(Am(callout), "background-color"), $"The selected meridiem of {name} is painted with {token}.");
-        Assert.AreEqual(expected, await StyleOfAsync(Action(callout, "Now"), "color"), $"The now button of {name} reads {token}.");
+
+        // The label of an action button is read on the callout rather than over the role's fill, so it is the role's text
+        // color (role-text).
+        var text = E2EColors.TextToken(suffix);
+        Assert.AreEqual(await ResolveColorAsync($"var(--bit-clr-{text})"), await StyleOfAsync(Action(callout, "Now"), "color"), $"The now button of {name} reads --bit-clr-{text}.");
     }
 
     [TestMethod]

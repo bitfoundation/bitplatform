@@ -206,10 +206,21 @@ public partial class BitBadgeStylesheetTests
 
         // The count of an Outline or Text badge sits on the page rather than on the role's fill, so it is drawn in the
         // role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{"),
-                              $"--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-fg, var(--bit-Badge-{variant}-color, var(--bit-Badge-color, #{{$clr-pri}})));");
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+        StringAssert.Contains(block, $"--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-fg, var(--bit-Badge-{variant}-color, var(--bit-Badge-color, #{{$clr-pri}})));");
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-bdg-#{$role} {"), "--bit-bdg-clr-fg: #{role-text($role, $tokens)};");
+        // A clickable one is hovered and pressed on a wash of the role - its tint, the surface that text color is solved to
+        // be read on - rather than on its light tier, a pastel which in a dark palette is as light as the text.
+        StringAssert.Contains(block, $"--bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-tint, var(--bit-Badge-{variant}-hover-background, ");
+        StringAssert.Contains(block, "#{$clr-pri-tint})))));");
+        StringAssert.Contains(block, $"--bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-tint-active, var(--bit-Badge-{variant}-active-background, ");
+        StringAssert.Contains(block, "#{translucent($clr-pri, 16%)})))))));");
+        StringAssert.DoesNotMatch(block, new Regex("clr-[a-z-]*light"));
+
+        var roles = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-bdg-#{$role} {");
+        StringAssert.Contains(roles, "--bit-bdg-clr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(roles, "--bit-bdg-clr-tint: #{role-wash($tokens)};");
+        StringAssert.Contains(roles, "--bit-bdg-clr-tint-active: #{role-wash($tokens, 16%)};");
     }
 
     [TestMethod]
@@ -221,7 +232,7 @@ public partial class BitBadgeStylesheetTests
         // Shape: each root starts the values those classes publish out unset, and the classes - declared further down
         // at the same weight - still win on the root that carries them.
         foreach (var property in new[] { "--bit-bdg-clr", "--bit-bdg-clr-fg", "--bit-bdg-clr-txt", "--bit-bdg-clr-dis", "--bit-bdg-clr-dis-text", "--bit-bdg-clr-hover",
-                                         "--bit-bdg-clr-active", "--bit-bdg-clr-light", "--bit-bdg-clr-light-hover", "--bit-bdg-clr-fcs",
+                                         "--bit-bdg-clr-active", "--bit-bdg-clr-tint", "--bit-bdg-clr-tint-active", "--bit-bdg-clr-fcs",
                                          "--bit-bdg-height", "--bit-bdg-padding", "--bit-bdg-fontsize", "--bit-bdg-dotsize", "--bit-bdg-radius" })
         {
             StringAssert.Contains(root, $"{property}: initial;");

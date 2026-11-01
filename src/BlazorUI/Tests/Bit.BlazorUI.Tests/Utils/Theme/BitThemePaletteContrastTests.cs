@@ -71,6 +71,8 @@ public sealed class BitThemePaletteContrastTests
     // over the deepest one, the same allowance fg-ter has there.
     private static readonly (string Surface, double Floor)[] PageSurfaces = [("bg-pri", 4.5), ("bg-sec", 4.5), ("bg-ter", 3.0)];
 
+    // Every role's foreground, the primary one's included: what role-text (color-role-maps.scss) draws every role but the
+    // primary one in, and what BitLabel, BitMessage and the other components that print a role as text read for all of them.
     [TestMethod]
     [DataRow("Fluent", "colors.fluent-light.scss")]
     [DataRow("Fluent", "colors.fluent-dark.scss")]
@@ -80,45 +82,131 @@ public sealed class BitThemePaletteContrastTests
     [DataRow("Material", "colors.material-dark.scss")]
     [DataRow("Cupertino", "colors.cupertino-light.scss")]
     [DataRow("Cupertino", "colors.cupertino-dark.scss")]
-    public void RoleTextColorsMeetTheTextContrastFloorOnThePage(string paletteFolder, string paletteFile)
+    public void RoleForegroundsMeetTheTextContrastFloorOnThePage(string paletteFolder, string paletteFile)
     {
-        var scss = SourceFiles.ReadThemeStylesheet(paletteFolder, paletteFile);
-
-        string token(string name)
-        {
-            var match = Regex.Match(scss, $@"--bit-clr-{name}:\s*(#[0-9A-Fa-f]{{6}})");
-            Assert.IsTrue(match.Success, $"--bit-clr-{name} not found in {paletteFile}.");
-            return match.Groups[1].Value;
-        }
-
-        // The packaged palettes leave the role foreground to the shared recipe, so it is mixed here the way the browser
-        // mixes it: the share of the main is read off the recipe itself, so a retuned recipe is held to the floor too.
-        var recipe = Regex.Match(SourceFiles.Read("Bit.BlazorUI", "Styles", "family-tokens.scss"),
-                                 @"--bit-clr-#\{\$role\}-fg: color-mix\(in srgb, var\(--bit-clr-#\{\$role\}\) (\d+)%, var\(--bit-clr-fg-pri\)\);");
-        Assert.IsTrue(recipe.Success, "The role foreground recipe was not found in family-tokens.scss.");
-        Assert.IsFalse(Regex.IsMatch(scss, $@"--bit-clr-(?:{string.Join("|", Roles)})-fg:"), $"{paletteFile} declares a role foreground of its own, which this test does not read.");
-        var share = int.Parse(recipe.Groups[1].Value, CultureInfo.InvariantCulture) / 100.0;
+        var palette = ReadPalette(paletteFolder, paletteFile);
 
         var failures = new List<string>();
         foreach (var role in Roles)
         {
-            // role-text (color-role-maps.scss) reads the primary main as it is - the brand's link color - and every
-            // other role in its foreground shade.
-            var text = role == "pri" ? token(role) : Mix(token(role), token("fg-pri"), share);
-            var surfaces = role == "pri" ? PageSurfaces.Take(1) : PageSurfaces;
-
-            foreach (var (surface, floor) in surfaces)
+            var text = palette.Foreground(role);
+            foreach (var (surface, floor) in PageSurfaces)
             {
-                var ratio = BitThemeColorContrast.GetContrastRatio(text, token(surface));
+                var ratio = BitThemeColorContrast.GetContrastRatio(text, palette.Token(surface));
                 if (ratio < floor)
                 {
-                    failures.Add($"{role} text {text} vs --bit-clr-{surface} = {ratio:F2}:1 (floor {floor}:1)");
+                    failures.Add($"--bit-clr-{role}-fg {text} vs --bit-clr-{surface} = {ratio:F2}:1 (floor {floor}:1)");
                 }
             }
         }
 
         CollectionAssert.AreEqual(Array.Empty<string>(), failures,
-            $"{paletteFile} has roles whose text color is unreadable on the page: {string.Join("; ", failures)}");
+            $"{paletteFile} has role foregrounds that are unreadable on the page: {string.Join("; ", failures)}");
+    }
+
+    // The one role role-text reads in its main: the brand's link color, which holds AA normal text over the page and the 3:1
+    // of large text over the raised surfaces.
+    private static readonly (string Surface, double Floor)[] PrimaryMainSurfaces = [("bg-pri", 4.5), ("bg-sec", 3.0), ("bg-ter", 3.0)];
+
+    [TestMethod]
+    [DataRow("Fluent", "colors.fluent-light.scss")]
+    [DataRow("Fluent", "colors.fluent-dark.scss")]
+    [DataRow("Fluent2", "colors.fluent2-light.scss")]
+    [DataRow("Fluent2", "colors.fluent2-dark.scss")]
+    [DataRow("Material", "colors.material-light.scss")]
+    [DataRow("Material", "colors.material-dark.scss")]
+    [DataRow("Cupertino", "colors.cupertino-light.scss")]
+    [DataRow("Cupertino", "colors.cupertino-dark.scss")]
+    public void ThePrimaryMainMeetsTheTextContrastFloorOnThePage(string paletteFolder, string paletteFile)
+    {
+        var palette = ReadPalette(paletteFolder, paletteFile);
+        var text = palette.Token("pri");
+
+        var failures = new List<string>();
+        foreach (var (surface, floor) in PrimaryMainSurfaces)
+        {
+            var ratio = BitThemeColorContrast.GetContrastRatio(text, palette.Token(surface));
+            if (ratio < floor)
+            {
+                failures.Add($"--bit-clr-pri {text} vs --bit-clr-{surface} = {ratio:F2}:1 (floor {floor}:1)");
+            }
+        }
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
+            $"{paletteFile} has a primary main that is unreadable as text on the page: {string.Join("; ", failures)}");
+    }
+
+    // The surface an outlined or text-only tag is selected on, and a clickable outlined badge is hovered on: the role's tint
+    // laid over the page (role-wash in color-role-maps.scss), with the role's foreground read on top - the primary one's
+    // too, whose main drops under the floor there. The deeper washes of a pointer pressing or resting on it are transient
+    // and are not held to it.
+    [TestMethod]
+    [DataRow("Fluent", "colors.fluent-light.scss")]
+    [DataRow("Fluent", "colors.fluent-dark.scss")]
+    [DataRow("Fluent2", "colors.fluent2-light.scss")]
+    [DataRow("Fluent2", "colors.fluent2-dark.scss")]
+    [DataRow("Material", "colors.material-light.scss")]
+    [DataRow("Material", "colors.material-dark.scss")]
+    [DataRow("Cupertino", "colors.cupertino-light.scss")]
+    [DataRow("Cupertino", "colors.cupertino-dark.scss")]
+    public void RoleForegroundsMeetTheTextContrastFloorOverTheirTint(string paletteFolder, string paletteFile)
+    {
+        var palette = ReadPalette(paletteFolder, paletteFile);
+
+        var failures = new List<string>();
+        foreach (var role in Roles)
+        {
+            var text = palette.Foreground(role);
+            var tint = palette.TintOver(role, "bg-pri");
+            var ratio = BitThemeColorContrast.GetContrastRatio(text, tint);
+            if (ratio < 4.5)
+            {
+                failures.Add($"--bit-clr-{role}-fg {text} vs --bit-clr-{role}-tint over --bit-clr-bg-pri ({tint}) = {ratio:F2}:1 (floor 4.5:1)");
+            }
+        }
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
+            $"{paletteFile} has role foregrounds that are unreadable on their tint: {string.Join("; ", failures)}");
+    }
+
+    private sealed record Palette(string File, string Scss, double ForegroundShare, double TintShare)
+    {
+        public string Token(string name)
+        {
+            var match = Regex.Match(Scss, $@"--bit-clr-{name}:\s*(#[0-9A-Fa-f]{{6}})");
+            Assert.IsTrue(match.Success, $"--bit-clr-{name} not found in {File}.");
+            return match.Groups[1].Value;
+        }
+
+        // The packaged palettes leave the role foreground to the shared recipe, so it is mixed the way the browser mixes it.
+        public string Foreground(string role) => Mix(Token(role), Token("fg-pri"), ForegroundShare);
+
+        // The tint is the main mixed with transparent, which composited over an opaque surface is the main mixed with it.
+        public string TintOver(string role, string surface) => Mix(Token(role), Token(surface), TintShare);
+    }
+
+    // The shares of the main in the two family recipes are read off the recipes themselves, so a retuned recipe is held to
+    // the floors too.
+    private static Palette ReadPalette(string paletteFolder, string paletteFile)
+    {
+        var scss = SourceFiles.ReadThemeStylesheet(paletteFolder, paletteFile);
+        var familyTokens = SourceFiles.Read("Bit.BlazorUI", "Styles", "family-tokens.scss");
+
+        double share(string recipe, string name)
+        {
+            var match = Regex.Match(familyTokens, recipe);
+            Assert.IsTrue(match.Success, $"The role {name} recipe was not found in family-tokens.scss.");
+            return int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) / 100.0;
+        }
+
+        foreach (var family in new[] { "fg", "tint" })
+        {
+            Assert.IsFalse(Regex.IsMatch(scss, $@"--bit-clr-(?:{string.Join("|", Roles)})-{family}:"), $"{paletteFile} declares a role {family} of its own, which this test does not read.");
+        }
+
+        return new(paletteFile, scss,
+                   share(@"--bit-clr-#\{\$role\}-fg: color-mix\(in srgb, var\(--bit-clr-#\{\$role\}\) (\d+)%, var\(--bit-clr-fg-pri\)\);", "foreground"),
+                   share(@"--bit-clr-#\{\$role\}-tint: color-mix\(in srgb, var\(--bit-clr-#\{\$role\}\) (\d+)%, transparent\);", "tint"));
     }
 
     // color-mix(in srgb, a share%, b): each gamma-encoded channel interpolated, as the browser does it.

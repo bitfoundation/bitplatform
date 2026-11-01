@@ -136,11 +136,9 @@ public class BitHeaderE2ETests : E2ETestBase
             var mainColor = await ResolveAsync("color", $"var({main})");
             Assert.AreNotEqual(transparent, mainColor, $"{main} resolves to a color");
 
-            // The text of the borderless variants is read on the page rather than over the role's fill, so an accent
-            // role other than the primary one draws it in its readable foreground shade (role-text).
-            var textColor = suffix is "sec" or "ter" or "inf" or "suc" or "wrn" or "swr" or "err"
-                ? await ResolveAsync("color", $"var({main}-fg)")
-                : mainColor;
+            // The text of the borderless variants is read on the page rather than over the role's fill, so it is drawn in
+            // the role's text color (role-text).
+            var textColor = await ResolveAsync("color", $"var(--bit-clr-{E2EColors.TextToken(suffix)})");
 
             var fill = Page.Locator($"#color-fill-{name}");
             await Expect(fill).ToHaveClassAsync(HasClass($"bit-hdr-{suffix}"));

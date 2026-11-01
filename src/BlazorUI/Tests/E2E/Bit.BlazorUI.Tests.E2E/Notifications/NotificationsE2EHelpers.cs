@@ -31,15 +31,6 @@ internal static class NotificationsE2EHelpers
     ];
 
     /// <summary>
-    /// The theme token a role's text is drawn in when it sits on the page rather than on the role's fill - the label of
-    /// an Outline or Text variant (role-text in color-role-maps.scss): an accent role other than the primary one reads
-    /// its foreground shade (<c>--bit-clr-{role}-fg</c>), since its main is picked to fill a surface; the primary role
-    /// and every surface role read their main.
-    /// </summary>
-    public static string TextToken(string suffix, string token)
-        => suffix is "sec" or "ter" or "inf" or "suc" or "wrn" or "swr" or "err" ? $"{token}-fg" : token;
-
-    /// <summary>
     /// The box of an element in the viewport.
     /// </summary>
     public static async Task<Box> BoxAsync(this IPage page, string selector)

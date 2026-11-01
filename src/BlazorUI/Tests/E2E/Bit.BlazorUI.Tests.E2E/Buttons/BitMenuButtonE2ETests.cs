@@ -833,7 +833,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await Expect(root).ToHaveCSSAsync("color", await Token(onToken));
 
         // An outlined button's label sits on the page, so it is drawn in the role's text color; the outline keeps the main.
-        await Expect(Root($"mnb-color-outline-{name}")).ToHaveCSSAsync("color", await Token(ButtonsE2EHelpers.TextToken(token)));
+        await Expect(Root($"mnb-color-outline-{name}")).ToHaveCSSAsync("color", await Token(E2EColors.TextToken(suffix)));
         await Expect(Root($"mnb-color-outline-{name}")).ToHaveCSSAsync("border-top-color", await Token(token));
         await Expect(Opb($"mnb-color-toggle-{name}")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync($"var(--bit-clr-{token}-dark)"));
         await Expect(Root($"mnb-color-dis-{name}")).ToHaveCSSAsync("background-color", await Token($"{token}-dis"));

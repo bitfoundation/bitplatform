@@ -6,8 +6,8 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// <summary>
 /// What the E2E tests of the Buttons category share: the BitColor and BitSize tables in the enums' order with the
 /// class suffixes the components derive from them (BitCssClasses) and the theme tokens each role paints from, and
-/// a few readers of the live page - a color or a length resolved the way the stylesheet resolves it, a computed
-/// style of a located element, its box.
+/// a few readers of the live page - a length resolved the way the stylesheet resolves it, a computed style of a
+/// located element, its box. A color is resolved, and a role's text color named, by the shared <see cref="E2EColors"/>.
 /// </summary>
 internal static class ButtonsE2EHelpers
 {
@@ -47,15 +47,6 @@ internal static class ButtonsE2EHelpers
     public static IEnumerable<object[]> ColorRows => Colors.Select(c => new object[] { c.Name, c.Suffix, c.Token, c.OnToken });
 
     /// <summary>
-    /// The token a role's text is drawn in when it sits on the page rather than on the role's fill - the label of an
-    /// Outline or Text variant (role-text in color-role-maps.scss): an accent role other than the primary one reads its
-    /// foreground shade (<c>--bit-clr-{token}-fg</c>), since its main is picked to fill a surface; the primary role and
-    /// every surface role read their main.
-    /// </summary>
-    public static string TextToken(string token)
-        => token is "sec" or "ter" or "inf" or "suc" or "wrn" or "swr" or "err" ? $"{token}-fg" : token;
-
-    /// <summary>
     /// Every BitSize in the enum's order: its name, the class suffix (BitCssClasses.Size) and the suffix of the
     /// global size tokens of that class (<c>--bit-siz-ctrl-{token}</c>, <c>--bit-siz-icon-{token}</c>).
     /// </summary>
@@ -77,26 +68,6 @@ internal static class ButtonsE2EHelpers
     /// </summary>
     public static string Spacing(double steps)
         => $"calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * {steps.ToString(CultureInfo.InvariantCulture)})";
-
-    /// <summary>
-    /// Resolves a CSS color (a keyword, a var() of a theme token) to the rgb() a computed style reports, by painting
-    /// it on a probe element appended to the given parent (the body by default) so it inherits what that one does.
-    /// </summary>
-    public static Task<string> ResolveColorAsync(this IPage page, string cssColor, string? parentSelector = null)
-    {
-        return page.EvaluateAsync<string>(
-            """
-            ([value, parent]) => {
-                const host = parent ? document.querySelector(parent) : document.body;
-                const probe = document.createElement('div');
-                probe.style.color = value;
-                host.appendChild(probe);
-                const resolved = getComputedStyle(probe).color;
-                probe.remove();
-                return resolved;
-            }
-            """, new object?[] { cssColor, parentSelector });
-    }
 
     /// <summary>
     /// Resolves a CSS length (a var() of a theme token, a calc()) to pixels, through the width of a probe element.

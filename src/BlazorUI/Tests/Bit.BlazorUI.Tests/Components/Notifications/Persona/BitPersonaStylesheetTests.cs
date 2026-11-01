@@ -248,6 +248,7 @@ public class BitPersonaStylesheetTests
 
         StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-bg: initial;");
         StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-txt: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-fg: initial;");
         Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-pri {"), "The reset comes before the color class that has to win over it.");
         Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-cir {"), "The reset comes before the shape class that has to win over it.");
     }
@@ -266,4 +267,26 @@ public class BitPersonaStylesheetTests
     private static string GetHeader(string stylesheet) => stylesheet[..stylesheet.IndexOf("\n.bit-prs {")];
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Notifications", "Persona", "BitPersona.scss");
+
+    [TestMethod]
+    public void BitPersonaShouldDrawTheInitialsOfAnUnfilledCoinInTheRoleTextColor()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // The initials of an Outline or Text coin sit on the page rather than on the coin's fill, so they are drawn in the
+        // role's text color (role-text): a secondary or a warning fill is under 3:1 as text on white, and a background role's
+        // fill is the page itself. The ring keeps the fill; an unset CoinColor stands for Info.
+        StringAssert.Contains(rules, "\n    --bit-prs-coin-fg: var(--bit-prs-coin-clr-fg, var(--bit-Persona-coin-background, #{$clr-inf-fg}));");
+        StringAssert.Contains(GetRule(rules, "otl"), "color: var(--bit-prs-coin-fg);");
+        StringAssert.Contains(GetRule(rules, "otl"), "border-color: var(--bit-prs-coin-bg);");
+        StringAssert.Contains(GetRule(rules, "txt"), "color: var(--bit-prs-coin-fg);");
+
+        // The role classes are written out by hand, each with the text color role-text gives its role.
+        foreach (var (role, text) in new[] { ("pri", "pri"), ("sec", "sec-fg"), ("ter", "ter-fg"), ("inf", "inf-fg"), ("suc", "suc-fg"), ("wrn", "wrn-fg"),
+                                             ("swr", "swr-fg"), ("err", "err-fg"), ("pbg", "fg-pri"), ("sbg", "fg-pri"), ("tbg", "fg-pri"), ("pfg", "fg-pri"),
+                                             ("sfg", "fg-sec"), ("tfg", "fg-ter"), ("pbr", "fg-pri"), ("sbr", "fg-pri"), ("tbr", "fg-pri") })
+        {
+            StringAssert.Contains(GetRule(rules, role), $"--bit-prs-coin-clr-fg: #{{$clr-{text}}};");
+        }
+    }
 }

@@ -1033,9 +1033,12 @@ public class BitDropMenuE2ETests : E2ETestBase
             await Expect(root).ToHaveCSSAsync("background-color", await ResolveColorAsync($"var({main})"));
             await Expect(root).ToHaveCSSAsync("color", await ResolveColorAsync($"var({on})"));
 
+            // An outlined drop menu writes its label on the page, so it is drawn in the role's text color (role-text); the
+            // outline keeps the main.
             var outline = Root($"dm-color-outline-{color}");
             await Expect(outline).ToHaveClassAsync(HasClass($"bit-drm-{suffix}"));
             await Expect(outline).ToHaveCSSAsync("border-top-color", await ResolveColorAsync($"var({main})"));
+            await Expect(outline).ToHaveCSSAsync("color", await ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken(suffix)})"));
             await Expect(outline).ToHaveCSSAsync("background-color", Transparent);
         }
     }

@@ -879,7 +879,7 @@ public class BitBadgeE2ETests : E2ETestBase
         foreach (var (name, suffix, token) in NotificationsE2EHelpers.Colors)
         {
             var color = await Page.ResolveColorAsync(token);
-            var text = await Page.ResolveColorAsync(NotificationsE2EHelpers.TextToken(suffix, token));
+            var text = await Page.ResolveColorAsync($"--bit-clr-{E2EColors.TextToken(suffix)}");
 
             await Expect(Page.Locator($"#clr-{name}")).ToHaveClassAsync(HasClass($"bit-bdg-{suffix}"));
             await Expect(Page.Locator(Badge($"clr-{name}"))).ToHaveCSSAsync("background-color", color);

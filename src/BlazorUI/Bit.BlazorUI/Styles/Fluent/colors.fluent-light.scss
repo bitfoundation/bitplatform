@@ -26,8 +26,10 @@
 //   - the main tier is solved as a FILL, not as text: a secondary orange or a warning amber is
 //     under 3:1 on white. A role read on the page (the label of an outlined or text-only variant)
 //     is drawn in its '-fg' shade (family-tokens.scss), which keeps >= 4.5:1 over bg-pri and
-//     bg-sec (>= 3:1 over bg-ter). The primary main is the one exception, read as text as it is
-//     (the brand's link color), so it keeps >= 4.5:1 over bg-pri itself.
+//     bg-sec (>= 3:1 over bg-ter), and >= 4.5:1 over the role's '-tint' laid on bg-pri (a
+//     selected outlined tag). The primary main is the one exception, read as text as it is (the
+//     brand's link color), so it keeps >= 4.5:1 over bg-pri itself and >= 3:1 over bg-sec and
+//     bg-ter.
 :root,
 :root[bit-theme="light"],
 :root [bit-theme="light"],
