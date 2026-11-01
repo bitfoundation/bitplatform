@@ -62,7 +62,7 @@ public sealed class BevToolsLoader : IDisposable
         // Asked before anything is downloaded or attached, and on every open: whoever is in the scope can change (a
         // sign-out in the same circuit), and a decision cached from before would outlive it.
         var opening = ++_openings;
-        var refusal = await AuthorizeAsync();
+        var refusal = await AuthorizeAsync(logFailure: true);
         if (opening != _openings)
         {
             return false;
@@ -120,37 +120,58 @@ public sealed class BevToolsLoader : IDisposable
     /// <summary>
     /// Whether <see cref="BitBevToolsLoaderOptions.Authorize"/> accepts whoever is in this scope (true when none is
     /// set), on top of <see cref="CanOpen"/>. Use it to show the "Open dev tools" button only to the people allowed to
-    /// press it; <see cref="OpenAsync"/> asks again either way.
+    /// press it; <see cref="OpenAsync"/> asks again either way. A callback that throws is a refusal here too, and is not
+    /// logged: this runs whenever the app renders its button, for every visitor, and <see cref="OpenAsync"/> logs it.
     /// </summary>
-    public async Task<bool> IsAuthorizedAsync() => CanOpen && await AuthorizeAsync() is null;
+    public async Task<bool> IsAuthorizedAsync() => CanOpen && await AuthorizeAsync(logFailure: false) is null;
 
     /// <returns>Null when authorized, otherwise why not.</returns>
-    private async Task<string?> AuthorizeAsync()
+    private async Task<string?> AuthorizeAsync(bool logFailure)
     {
         if (_context.Options.Authorize is not { } authorize)
         {
             return null;
         }
 
+        // Outside the callback's try: a failure here is Bit.BevTools', and blaming the app's callback for it would send
+        // its developers debugging code that never ran. Still a refusal, since the callback could not be asked.
+        IDisposable? ownWork;
         try
         {
-            using var ownWork = _context.EntryPoint?.BeginOwnWork();
-            return await authorize(_services) ? null : "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize did not accept the current user.";
+            ownWork = _context.EntryPoint?.BeginOwnWork();
         }
         catch (Exception ex)
         {
-            // A failing check is a refusal, never an opening: the callback is a security control. Problem goes to whoever
-            // pressed the button, whom the callback did not accept, so it names the exception and the log holds the rest.
+            return BevToolsLoaderContext.IsVersionMismatch(ex)
+                ? BevToolsLoaderContext.VersionMismatch(_context.EntryPoint!, ex)
+                : "BevTools is not opened here: Bit.BevTools failed before asking BitBevToolsLoaderOptions.Authorize: " + ex.GetType().Name + ": " + ex.Message;
+        }
+
+        using (ownWork)
+        {
             try
             {
-                _services.GetService<ILoggerFactory>()?.CreateLogger("Bit.BevTools").LogWarning(ex, "BitBevToolsLoaderOptions.Authorize threw; BevTools stays closed.");
+                return await authorize(_services) ? null : "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize did not accept the current user.";
             }
-            catch
+            catch (Exception ex)
             {
-                // A log line that cannot be written must not turn the refusal into an exception.
-            }
+                // A failing check is a refusal, never an opening: the callback is a security control. Problem goes to
+                // whoever pressed the button, whom the callback did not accept, so it names the exception and the log
+                // holds the rest.
+                if (logFailure)
+                {
+                    try
+                    {
+                        _services.GetService<ILoggerFactory>()?.CreateLogger("Bit.BevTools").LogWarning(ex, "BitBevToolsLoaderOptions.Authorize threw; BevTools stays closed.");
+                    }
+                    catch
+                    {
+                        // A log line that cannot be written must not turn the refusal into an exception.
+                    }
+                }
 
-            return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + " (logged).";
+                return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + (logFailure ? " (logged)." : ".");
+            }
         }
     }
 

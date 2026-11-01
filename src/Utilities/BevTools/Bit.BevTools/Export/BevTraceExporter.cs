@@ -282,13 +282,12 @@ public static class BevTraceExporter
                 }
                 else if (value is IReadOnlyList<string> { Count: > 0 } list)
                 {
-                    // A render's changed parameters and fields are displays the session captured under its own ValueAccess,
-                    // redacted then, so they are written as the panel shows them. Any other list of strings is an
-                    // extension's data, whose items only Full access shows.
+                    // Its items where the panel lists them (changed parameters and fields, or Full access), otherwise
+                    // the summary the panel shows.
                     var node = session.Inspector.DescribeMetadata(key, list);
-                    w.WriteString(key, node.Kind == BevNodeKind.Redacted || (session.Inspector.ValueAccess != BevValueAccess.Full && data is not RenderEventData)
-                        ? node.Display
-                        : string.Join("; ", list.Take(10).Select(item => item is null ? null : BevRedactor.RedactText(item))) + (list.Count > 10 ? " …" : ""));
+                    w.WriteString(key, node.Kind != BevNodeKind.Redacted && session.Inspector.EventDataItems(data, key, list) is { } items
+                        ? string.Join("; ", items.Take(10)) + (list.Count > 10 ? " …" : "")
+                        : node.Display);
                 }
             }
         }

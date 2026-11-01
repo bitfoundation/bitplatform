@@ -127,8 +127,9 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
   `AllowInMultiUserHost` is set **together with** `Authorize`, a callback that decides who may open it: the panel would
   otherwise show whoever opens it the server side objects of their circuit. `OpenAsync` asks `Authorize` before
   anything is loaded, on every open, and treats an exception as a refusal (`Problem` names the exception, the app's log
-  holds its message); `IsAuthorizedAsync()` lets the app show its
-  button only to those people. Such a session reads no application values (`ValueAccess` is `None`, see
+  holds its message); `IsAuthorizedAsync()` lets the app show its button only to those people, and treats an exception
+  as a refusal too without logging it, since it runs on every render of the button, for every visitor. Such a session
+  reads no application values (`ValueAccess` is `None`, see
   [Security](#security)) unless the app says otherwise, and every attach writes a warning to the app's own log
   (category `Bit.BevTools`). WebAssembly and Blazor Hybrid only ever show users their own process.
 

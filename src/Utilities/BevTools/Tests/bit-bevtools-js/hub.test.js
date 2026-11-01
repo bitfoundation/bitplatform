@@ -214,6 +214,25 @@ describe('browser failures', () => {
         expect(report.stack.length).toBeLessThanOrEqual(4000);
         hub.detach();
     });
+
+    it('never cuts a surrogate pair in half nor sends a lone surrogate, which .NET cannot read', async () => {
+        const { win } = installPage();
+        const hub = await loadHub();
+        const ref = runtime(1);
+        hub.attach(ref, null);
+
+        const error = new Error('m'.repeat(3999) + '\u{1F600}');
+        error.name = 'N'.repeat(199) + '\u{1F600}';
+        error.stack = 'at a \uD800 b';
+        win.dispatch('error', { error, message: error.message });
+
+        const [report] = ref.reported('OnJsError').map(c => c[1]);
+        expect(report.message).toBe('m'.repeat(3999));
+        expect(report.type).toBe('N'.repeat(199));
+        expect(report.stack).toBe('at a \uFFFD b');
+        expect(JSON.stringify(report)).not.toMatch(/\\ud[89ab]/i);
+        hub.detach();
+    });
 });
 
 describe('reconnects', () => {
@@ -479,6 +498,17 @@ describe('redaction in the hub', () => {
         expect(escaped).toBe('https://app.example/?note=«redacted»');
         expect(long).toBe('https://app.example/?q=' + run);
         expect(elapsed).toBeLessThan(1000);
+        hub.detach();
+    });
+
+    it('leaves dotted text with "ey" inside a word alone', async () => {
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), null);
+
+        for (const value of ['survey_results.annual_report.pdf', 'monkey-business.example-site.com', 'Bit.Demo.Keyboard_Shortcuts.Handlers.Register']) {
+            expect(hub.redactUrl('https://app.example/?v=' + value)).toBe('https://app.example/?v=' + value);
+        }
         hub.detach();
     });
 

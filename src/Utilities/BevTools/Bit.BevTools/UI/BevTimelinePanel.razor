@@ -76,13 +76,15 @@
                         }
                         else if (s.Data is { Count: > 0 })
                         {
-                            @* Below Full access the bag is listed flat: BevTools' own metadata stays readable, nothing is expanded. *@
+                            @* Below Full access the bag is listed flat: BevTools' own metadata stays readable, nothing is expanded.
+                               A render's changed fields and parameters are listed item by item, as the exports write them. *@
                             <dt>Data</dt>
                             <dd>
                                 @foreach (var (key, value) in s.Data)
                                 {
                                     var node = Session.Inspector.DescribeMetadata(key, value);
-                                    <div class="bev-vt-row"><span class="bev-vt-name">@key:</span> <span class="bev-vt-value bev-k-@node.Kind.ToString().ToLowerInvariant()">@node.Display</span></div>
+                                    var items = node.Kind == BevNodeKind.Redacted ? null : Session.Inspector.EventDataItems(s.Data, key, value)?.Take(100).ToList();
+                                    <div class="bev-vt-row"><span class="bev-vt-name">@key:</span> <span class="bev-vt-value bev-k-@node.Kind.ToString().ToLowerInvariant()">@(items is { Count: > 0 } ? string.Join("; ", items) : node.Display)</span></div>
                                 }
                             </dd>
                         }

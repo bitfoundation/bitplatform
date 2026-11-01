@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.BevTools.Tests;
@@ -498,6 +499,65 @@ public class LoaderTests : BunitContext
         Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
     }
 
+    /// <summary>
+    /// The app renders its button through IsAuthorizedAsync for every visitor, on every render: a callback that throws for
+    /// anonymous visitors would otherwise write a warning with a stack trace each time.
+    /// </summary>
+    [TestMethod]
+    public async Task A_throwing_Authorize_is_logged_when_someone_opens_BevTools_not_whenever_the_button_is_rendered()
+    {
+        var logs = new ListLoggerProvider();
+        var services = ScopeServices(environment: "Production");
+        services.AddLogging(logging => logging.AddProvider(logs));
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => throw new InvalidOperationException("no user");
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        for (var render = 0; render < 3; render++)
+        {
+            Assert.IsFalse(await loader.IsAuthorizedAsync());
+        }
+
+        Assert.IsEmpty(logs.Entries);
+        Assert.IsFalse(await loader.OpenAsync());
+        var entry = logs.Entries.Single();
+        Assert.AreEqual(LogLevel.Warning, entry.Level);
+        Assert.AreEqual("no user", entry.Exception?.Message);
+        StringAssert.Contains(loader.Problem, "(logged)");
+    }
+
+    [TestMethod]
+    public async Task A_failure_of_BevTools_before_it_asks_Authorize_is_not_blamed_on_the_callback()
+    {
+        var asked = 0;
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.Authorize = _ =>
+            {
+                asked++;
+                return ValueTask.FromResult(true);
+            };
+        });
+        Context(services).Deferred(new ThrowingEntryPoint(new InvalidOperationException("boom")), "test");
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "Bit.BevTools failed before asking");
+        StringAssert.Contains(loader.Problem, "boom");
+        Assert.IsFalse(loader.Problem!.Contains("Authorize threw", StringComparison.Ordinal), loader.Problem);
+        Assert.AreEqual(0, asked, "a refusal: the callback is not asked outside BevTools' own work");
+    }
+
     [TestMethod]
     public async Task A_session_opened_outside_Development_in_a_server_process_reads_no_values_unless_told_to()
     {
@@ -621,6 +681,32 @@ public class LoaderTests : BunitContext
         public IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context) => throw exception;
 
         public IDisposable BeginOwnWork() => throw exception;
+    }
+
+    private sealed class ListLoggerProvider : ILoggerProvider
+    {
+        public List<(string Category, LogLevel Level, Exception? Exception)> Entries { get; } = [];
+
+        public ILogger CreateLogger(string categoryName) => new Logger(this, categoryName);
+
+        public void Dispose()
+        {
+        }
+
+        private sealed class Logger(ListLoggerProvider provider, string category) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (category == "Bit.BevTools")
+                {
+                    provider.Entries.Add((category, logLevel, exception));
+                }
+            }
+        }
     }
 
     private sealed class CountingActivator : IComponentActivator

@@ -87,6 +87,18 @@ public class ValueSafetyTests
     }
 
     [TestMethod]
+    [DataRow("at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] data)")]
+    [DataRow("survey_results.annual_report.pdf")]
+    [DataRow("monkey-business.example-site.com")]
+    [DataRow("Bit.Demo.Keyboard_Shortcuts.Handlers.Register")]
+    [DataRow("Bit.Demo.HeyJudeComponent.Render.Method")]
+    public void Dotted_text_with_ey_inside_a_word_is_not_a_token(string text)
+    {
+        Assert.IsFalse(BevRedactor.LooksLikeSecret(text));
+        Assert.AreSame(text, BevRedactor.RedactText(text));
+    }
+
+    [TestMethod]
     public void A_credential_held_under_an_innocent_name_is_redacted()
     {
         var (session, scope) = TestHelpers.CreateSession();

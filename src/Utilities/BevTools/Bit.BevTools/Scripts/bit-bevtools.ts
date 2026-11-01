@@ -199,9 +199,12 @@ function looksLikeSecret(value: string) {
     return /(?:password|passwd|pwd|api[_-]?key|access[_-]?key|account[_-]?key|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|client[_-]?secret|connectionstring|token|secret|credential|cookie|private[_ -]?key)"?\s*[:=]/i.test(value);
 }
 
-// "ey" and six or more base64url characters, a dot, six or more, a dot: what /ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\./
-// matches, scanned run by run like BevRedactor does. That pattern, tried from every "ey" of a long run ("eyey…"), takes
-// quadratic time, and anchoring it to the start of a run would miss a token right after an escape ("%3DeyJ…", "\neyJ…").
+// A header of "ey" and six or more base64url characters, a dot, a payload of six or more, a dot - TryFindJwt in
+// BevRedactor, scanned the same way, run by run. The header starts a run, or, when the payload starts with "eyJ" (the {"
+// every token's JSON starts with), it is the first "eyJ" inside the run: a token right after an escape ("%3DeyJ…",
+// "\neyJ…") runs into the characters before it. An "ey" inside a run without such a payload is part of a word
+// ("survey_results.annual_report.pdf", "monkey-business.example-site.com"), not a token. A pattern tried from every "ey"
+// of a long run ("eyey…") would take quadratic time.
 function containsJwt(value: string) {
     const runEnd = (index: number) => {
         for (let c = value.charCodeAt(index); (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c === 95 || c === 45; c = value.charCodeAt(++index));
@@ -210,12 +213,13 @@ function containsJwt(value: string) {
     for (let header = 0; header < value.length;) {
         const headerEnd = runEnd(header);
         if (headerEnd - header >= 8 && value[headerEnd] === ".") {
-            const payloadEnd = runEnd(headerEnd + 1);
-            if (payloadEnd - headerEnd - 1 >= 6 && value[payloadEnd] === ".") {
-                // Every "ey" of the run shares the same dot after it; any one with six characters before that dot.
-                for (let i = header; i <= headerEnd - 8; i++) {
-                    if (value[i] === "e" && value[i + 1] === "y") return true;
-                }
+            const payload = headerEnd + 1;
+            const payloadEnd = runEnd(payload);
+            // The search for "eyJ" stops at the payload's at the latest; one with six characters after its "ey" before
+            // the dot starts at headerEnd - 8 at the latest.
+            if (payloadEnd - payload >= 6 && value[payloadEnd] === "."
+                && (value.startsWith("ey", header) || (value.startsWith("eyJ", payload) && value.indexOf("eyJ", header) <= headerEnd - 8))) {
+                return true;
             }
         }
         // The run after the dot can be the header of the next candidate.
@@ -605,7 +609,7 @@ function socketStats(socket: any, observedFromOpen: boolean): BevSocketStats {
         const onClose = (e: CloseEvent) => {
             stats.closedAt = Date.now();
             stats.closeCode = e.code;
-            stats.closeReason = e.reason ? String(e.reason).slice(0, 200) : null;
+            stats.closeReason = e.reason ? clip(String(e.reason), 200) : null;
             trafficVersion++;
         };
         socket.addEventListener("message", onMessage);
@@ -1037,6 +1041,15 @@ function snapshot() {
     };
 }
 
+// Page text sent to .NET: at most max UTF-16 code units, never cut inside a surrogate pair, and with no lone surrogate
+// left (page script can put one in a message as easily as a cut can leave one). JSON.stringify writes one as a "\uD83D"
+// escape that System.Text.Json refuses to read into a string, so the call carrying it would fail and what it reported
+// would be lost.
+function clip(value: string, max: number) {
+    const cut = value.length <= max ? value : value.slice(0, (value.charCodeAt(max - 1) & 0xFC00) === 0xD800 ? max - 1 : max);
+    return /[\uD800-\uDFFF]/.test(cut) ? cut.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDFFF]/g, s => s.length === 2 ? s : "\uFFFD") : cut;
+}
+
 function installPageListeners() {
     on(window, "error", (e: ErrorEvent) => {
         const element = e.target as any;
@@ -1045,8 +1058,8 @@ function installPageListeners() {
             // component library, or a module import. Errors from elements do not bubble, hence the capture listener.
             const url = element.src || element.href || "";
             broadcast("OnJsError", {
-                message: ("Failed to load <" + String(element.tagName).toLowerCase() + "> " + redactUrl(String(url))).slice(0, 4000),
-                source: redactUrl(String(url)).slice(0, 4000) || null,
+                message: clip("Failed to load <" + String(element.tagName).toLowerCase() + "> " + redactUrl(String(url)), 4000),
+                source: clip(redactUrl(String(url)), 4000) || null,
                 stack: null,
                 type: "ResourceLoadError",
             });
@@ -1055,27 +1068,27 @@ function installPageListeners() {
         const err = e.error;
         if (isConnectionDown(err)) return;
         broadcast("OnJsError", {
-            message: String(e.message || (err && err.message) || "Unknown error").slice(0, 4000),
-            source: e.filename ? (redactUrl(e.filename) + ":" + e.lineno + ":" + e.colno).slice(0, 4000) : null,
-            stack: err && err.stack ? String(err.stack).slice(0, 4000) : null,
-            type: err && err.name ? String(err.name).slice(0, 200) : "Error",
+            message: clip(String(e.message || (err && err.message) || "Unknown error"), 4000),
+            source: e.filename ? clip(redactUrl(e.filename) + ":" + e.lineno + ":" + e.colno, 4000) : null,
+            stack: err && err.stack ? clip(String(err.stack), 4000) : null,
+            type: err && err.name ? clip(String(err.name), 200) : "Error",
         });
     }, true);
     on(window, "unhandledrejection", (e: PromiseRejectionEvent) => {
         const reason = e.reason;
         if (isConnectionDown(reason)) return;
         broadcast("OnJsError", {
-            message: String(reason && reason.message ? reason.message : reason).slice(0, 4000),
+            message: clip(String(reason && reason.message ? reason.message : reason), 4000),
             source: null,
-            stack: reason && reason.stack ? String(reason.stack).slice(0, 4000) : null,
+            stack: reason && reason.stack ? clip(String(reason.stack), 4000) : null,
             type: "UnhandledRejection",
         });
     });
     on(document, "securitypolicyviolation", (e: SecurityPolicyViolationEvent) => {
         // Blazor WebAssembly needs 'wasm-unsafe-eval' in script-src; a policy without it stops the runtime here.
         broadcast("OnJsError", {
-            message: ("Content Security Policy blocked " + (e.blockedURI ? redactUrl(e.blockedURI) : "an inline resource") + " (" + (e.effectiveDirective || e.violatedDirective) + ")").slice(0, 4000),
-            source: e.sourceFile ? (redactUrl(e.sourceFile) + ":" + e.lineNumber + ":" + e.columnNumber).slice(0, 4000) : null,
+            message: clip("Content Security Policy blocked " + (e.blockedURI ? redactUrl(e.blockedURI) : "an inline resource") + " (" + (e.effectiveDirective || e.violatedDirective) + ")", 4000),
+            source: e.sourceFile ? clip(redactUrl(e.sourceFile) + ":" + e.lineNumber + ":" + e.columnNumber, 4000) : null,
             stack: null,
             type: "CspViolation",
         });
@@ -2216,7 +2229,7 @@ export function getStorage(kind: string, patterns: string[] | null, previews?: b
             result.push({
                 key,
                 size: value.length,
-                preview: previews === false ? "«hidden»" : sensitive ? REDACTED : (value.length > 120 ? value.slice(0, 120) + "…" : value),
+                preview: previews === false ? "«hidden»" : sensitive ? REDACTED : clip(value, 120) + (value.length > 120 ? "…" : ""),
                 redacted: sensitive || previews === false,
             });
         }

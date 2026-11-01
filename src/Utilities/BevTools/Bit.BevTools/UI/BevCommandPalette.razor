@@ -171,7 +171,8 @@
         }
         catch (Exception ex)
         {
-            Host.Notify("Command failed: " + ex.Message);
+            // An extension's command: its message is redacted like the one its Configure throws (BevToolsRegistry).
+            Host.Notify("Command failed: " + BevRedactor.RedactText(ex.Message));
         }
 
         Close(afterCommand: true);

@@ -634,7 +634,7 @@ public static class BevSessionExporter
                 w.WriteStartObject("data");
                 foreach (var (key, value) in e.Data)
                 {
-                    WriteValue(w, key, value, inspector, capturedDisplays: e.Data is RenderEventData);
+                    WriteValue(w, key, value, inspector, e.Data);
                 }
 
                 w.WriteEndObject();
@@ -1330,12 +1330,10 @@ public static class BevSessionExporter
     /// <summary>
     /// Writes an arbitrary <c>Data</c> value without ever throwing: primitives as themselves, everything else as the
     /// display the timeline panel shows for it. Both go through the inspector, so a sensitive key is redacted and an
-    /// object with sensitive members is never written through its ToString (a record prints every member).
-    /// <paramref name="capturedDisplays"/> marks a render's data, whose lists of strings (changed parameters and fields)
-    /// are displays the session captured under its own ValueAccess and redacted then, so they are written item by item
-    /// as the panel shows them; any other list's items only Full access shows.
+    /// object with sensitive members is never written through its ToString (a record prints every member). A list of
+    /// strings is written item by item where the panel lists its items (<see cref="BevObjectInspector.EventDataItems"/>).
     /// </summary>
-    private static void WriteValue(Utf8JsonWriter w, string key, object? value, BevObjectInspector inspector, bool capturedDisplays)
+    private static void WriteValue(Utf8JsonWriter w, string key, object? value, BevObjectInspector inspector, IReadOnlyDictionary<string, object?> data)
     {
         BevInspectedNode node;
         try
@@ -1387,11 +1385,11 @@ public static class BevSessionExporter
             case DateTime dt:
                 w.WriteString(key, dt);
                 break;
-            case IEnumerable<string> strings when inspector.ValueAccess == BevValueAccess.Full || capturedDisplays:
+            case IEnumerable<string> when inspector.EventDataItems(data, key, value) is { } items:
                 w.WriteStartArray(key);
-                foreach (var item in strings.Take(100))
+                foreach (var item in items.Take(100))
                 {
-                    w.WriteStringValue(item is null ? null : BevRedactor.RedactText(item));
+                    w.WriteStringValue(item);
                 }
 
                 w.WriteEndArray();

@@ -401,7 +401,10 @@ answer, so the rules live there and at capture:
   shows scalars and stops at objects (no members, no `ToString`, which a record would fill with every member); `Full`
   walks with redaction. The default reads nothing outside Development in a process that serves many users: there a
   circuit's objects can reach shared state holding other users' data. BevTools' own event metadata (causes, ids) is
-  shown at `Shallow` even under `None` (`DescribeMetadata`). Forced-render detection is skipped below `Full` - with
+  shown at `Shallow` even under `None` (`DescribeMetadata`). A render event's changed fields and parameters are listed
+  item by item at every level: they are displays captured at the session's own level (none under `None`) and redacted
+  then. `EventDataItems` decides which lists in an event's `Data` the timeline panel and both exporters write item by
+  item, so none shows more than another. Forced-render detection is skipped below `Full` - with
   values hidden every render would look unchanged - so those renders read *not compared*, never *forced*.
 * **Redaction by shape** (`BevRedactor.LooksLikeSecret` / `RedactText`) complements names: JWTs, bearer tokens, PEM
   keys, credential key/value text, provider token formats. Free text keeps its readable part; text that still looks

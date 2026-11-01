@@ -39,6 +39,14 @@ public class ObjectInspectorTests
 
     private readonly record struct Badge(string Holder, [BevToolsSensitive] string Code);
 
+    // Read through UnreadableConstructorType only: a type is cached by its underlying type, so no other test may use it.
+    private sealed record Voucher(string Holder, [BevToolsSensitive] string Code);
+
+    private record Ticket(string Holder, string Code);
+
+    // Its Code binds to the property Ticket declares, so the attribute sits on a constructor of another type than the property's.
+    private sealed record GateTicket(string Holder, [BevToolsSensitive] string Code) : Ticket(Holder, Code);
+
     [TestMethod]
     public void ToString_is_not_shown_for_a_type_with_an_ignored_or_sensitive_member()
     {
@@ -58,6 +66,103 @@ public class ObjectInspectorTests
         var children = inspector.Children(new Pass("ada", "opaque-code"), "");
         Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == nameof(Pass.Code)).Kind);
         Assert.AreEqual("\"ada\"", children.Single(c => c.Name == nameof(Pass.Holder)).Display);
+    }
+
+    [TestMethod]
+    public void A_sensitive_positional_parameter_of_a_derived_record_redacts_the_property_it_inherits()
+    {
+        var inspector = Create();
+
+        Assert.IsFalse(inspector.Describe("ticket", new GateTicket("ada", "opaque-code")).Display.Contains("opaque-code", StringComparison.Ordinal));
+        var children = inspector.Children(new GateTicket("ada", "opaque-code"), "");
+        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == nameof(GateTicket.Code)).Kind);
+        Assert.AreEqual("\"ada\"", children.Single(c => c.Name == nameof(GateTicket.Holder)).Display);
+        Assert.AreEqual("\"opaque-code\"", inspector.Children(new Ticket("ada", "opaque-code"), "").Single(c => c.Name == nameof(Ticket.Code)).Display,
+            "only the derived record marks it");
+    }
+
+    /// <summary>
+    /// A constructor whose parameter or attribute types are in an assembly that is not loaded throws when it is read. The
+    /// type's other constructors still count, and expanding the object does not fail.
+    /// </summary>
+    [TestMethod]
+    public void A_constructor_that_cannot_be_read_is_skipped()
+    {
+        var redactor = new BevRedactor(new BitBevToolsOptions().SensitiveNamePatterns);
+        var type = new UnreadableConstructorType();
+
+        Assert.IsTrue(redactor.IsSensitive(new ReflectedProperty(typeof(Voucher).GetProperty(nameof(Voucher.Code))!, type)));
+        Assert.IsFalse(redactor.IsSensitive(new ReflectedProperty(typeof(Voucher).GetProperty(nameof(Voucher.Holder))!, type)));
+    }
+
+    /// <summary><see cref="Voucher"/>, with one more constructor that throws as one with a missing parameter type does.</summary>
+    private sealed class UnreadableConstructorType() : System.Reflection.TypeDelegator(typeof(Voucher))
+    {
+        public override System.Reflection.ConstructorInfo[] GetConstructors(System.Reflection.BindingFlags bindingAttr) =>
+            [new UnreadableConstructor(), .. typeof(Voucher).GetConstructors(bindingAttr)];
+    }
+
+    private sealed class UnreadableConstructor : System.Reflection.ConstructorInfo
+    {
+        public override System.Reflection.MethodAttributes Attributes => System.Reflection.MethodAttributes.Public;
+
+        public override RuntimeMethodHandle MethodHandle => throw new NotSupportedException();
+
+        public override Type? DeclaringType => typeof(Voucher);
+
+        public override string Name => ConstructorName;
+
+        public override Type? ReflectedType => typeof(Voucher);
+
+        public override System.Reflection.ParameterInfo[] GetParameters() => throw new FileNotFoundException("Could not load file or assembly 'Optional.Dependency'.");
+
+        public override System.Reflection.MethodImplAttributes GetMethodImplementationFlags() => System.Reflection.MethodImplAttributes.IL;
+
+        public override object Invoke(System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder? binder, object?[]? parameters, System.Globalization.CultureInfo? culture) => throw new NotSupportedException();
+
+        public override object? Invoke(object? obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder? binder, object?[]? parameters, System.Globalization.CultureInfo? culture) => throw new NotSupportedException();
+
+        public override object[] GetCustomAttributes(bool inherit) => [];
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit) => [];
+
+        public override bool IsDefined(Type attributeType, bool inherit) => false;
+    }
+
+    /// <summary>A property as read from <paramref name="reflectedType"/>, the way <c>Type.GetProperties</c> on it reports one.</summary>
+    private sealed class ReflectedProperty(System.Reflection.PropertyInfo property, Type reflectedType) : System.Reflection.PropertyInfo
+    {
+        public override System.Reflection.PropertyAttributes Attributes => property.Attributes;
+
+        public override bool CanRead => property.CanRead;
+
+        public override bool CanWrite => property.CanWrite;
+
+        public override Type PropertyType => property.PropertyType;
+
+        public override Type? DeclaringType => reflectedType;
+
+        public override string Name => property.Name;
+
+        public override Type? ReflectedType => reflectedType;
+
+        public override System.Reflection.MethodInfo[] GetAccessors(bool nonPublic) => property.GetAccessors(nonPublic);
+
+        public override System.Reflection.MethodInfo? GetGetMethod(bool nonPublic) => property.GetGetMethod(nonPublic);
+
+        public override System.Reflection.MethodInfo? GetSetMethod(bool nonPublic) => property.GetSetMethod(nonPublic);
+
+        public override System.Reflection.ParameterInfo[] GetIndexParameters() => property.GetIndexParameters();
+
+        public override object? GetValue(object? obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder? binder, object?[]? index, System.Globalization.CultureInfo? culture) => property.GetValue(obj, invokeAttr, binder, index, culture);
+
+        public override void SetValue(object? obj, object? value, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder? binder, object?[]? index, System.Globalization.CultureInfo? culture) => property.SetValue(obj, value, invokeAttr, binder, index, culture);
+
+        public override object[] GetCustomAttributes(bool inherit) => property.GetCustomAttributes(inherit);
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit) => property.GetCustomAttributes(attributeType, inherit);
+
+        public override bool IsDefined(Type attributeType, bool inherit) => property.IsDefined(attributeType, inherit);
     }
 
     [TestMethod]
