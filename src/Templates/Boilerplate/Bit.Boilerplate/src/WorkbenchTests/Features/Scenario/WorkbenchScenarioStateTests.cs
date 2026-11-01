@@ -91,9 +91,9 @@ public class WorkbenchScenarioStateTests
 
         var resolved = PosWidgetSources.Select(state.ResolveState).ToArray();
 
-        CollectionAssert.AreEqual(resolved, PosWidgetSources.Select(again.ResolveState).ToArray(), "A page asking for the same sources in the same order gets the same states.");
-        CollectionAssert.AreEqual(resolved, PosWidgetSources.Select(state.ResolveState).ToArray(), "A source keeps its state when it loads again.");
-        CollectionAssert.AreEqual(new[] { WorkbenchDataState.Error, WorkbenchDataState.Empty, WorkbenchDataState.Live }, resolved[..3]);
+        Assert.AreSequenceEqual(resolved, PosWidgetSources.Select(again.ResolveState).ToArray(), "A page asking for the same sources in the same order gets the same states.");
+        Assert.AreSequenceEqual(resolved, PosWidgetSources.Select(state.ResolveState).ToArray(), "A source keeps its state when it loads again.");
+        Assert.AreSequenceEqual(new[] { WorkbenchDataState.Error, WorkbenchDataState.Empty, WorkbenchDataState.Live }, resolved[..3]);
 
         foreach (var kind in new[] { WorkbenchDataState.Error, WorkbenchDataState.Empty, WorkbenchDataState.Live })
         {
