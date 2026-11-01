@@ -424,13 +424,15 @@ public class BitTextE2ETests : E2ETestBase
 
     [TestMethod]
     [DataRow("Primary", "pri", "--bit-clr-pri")]
-    [DataRow("Secondary", "sec", "--bit-clr-sec")]
-    [DataRow("Tertiary", "ter", "--bit-clr-ter")]
-    [DataRow("Info", "inf", "--bit-clr-inf")]
-    [DataRow("Success", "suc", "--bit-clr-suc")]
-    [DataRow("Warning", "wrn", "--bit-clr-wrn")]
-    [DataRow("SevereWarning", "swr", "--bit-clr-swr")]
-    [DataRow("Error", "err", "--bit-clr-err")]
+    // A text is read on the page rather than over the role's fill, so an accent role other than the primary one paints
+    // it in its readable foreground shade (role-text) rather than in the main it fills with.
+    [DataRow("Secondary", "sec", "--bit-clr-sec-fg")]
+    [DataRow("Tertiary", "ter", "--bit-clr-ter-fg")]
+    [DataRow("Info", "inf", "--bit-clr-inf-fg")]
+    [DataRow("Success", "suc", "--bit-clr-suc-fg")]
+    [DataRow("Warning", "wrn", "--bit-clr-wrn-fg")]
+    [DataRow("SevereWarning", "swr", "--bit-clr-swr-fg")]
+    [DataRow("Error", "err", "--bit-clr-err-fg")]
     [DataRow("PrimaryBackground", "pbg", "--bit-clr-bg-pri")]
     [DataRow("SecondaryBackground", "sbg", "--bit-clr-bg-sec")]
     [DataRow("TertiaryBackground", "tbg", "--bit-clr-bg-ter")]

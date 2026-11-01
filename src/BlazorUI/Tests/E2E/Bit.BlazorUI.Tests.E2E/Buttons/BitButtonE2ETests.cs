@@ -223,6 +223,7 @@ public class BitButtonE2ETests : E2ETestBase
 
         var main = await Token(token);
         var on = await Token(onToken);
+        var label = await Token(ButtonsE2EHelpers.TextToken(token));
         var dis = await Token($"{token}-dis");
         var disText = await Token($"{token}-dis-text");
 
@@ -234,13 +235,15 @@ public class BitButtonE2ETests : E2ETestBase
 
         var outline = Btn($"color-outline-{name}");
         await Expect(outline).ToHaveClassAsync(HasClass($"bit-btn-{suffix}"));
-        await Expect(outline).ToHaveCSSAsync("color", main);
+        // The label of an unfilled variant sits on the page, so it is drawn in the role's text color; the outline keeps
+        // the main.
+        await Expect(outline).ToHaveCSSAsync("color", label);
         await Expect(outline).ToHaveCSSAsync("border-top-color", main);
         await Expect(outline).ToHaveCSSAsync("background-color", Transparent);
 
         var text = Btn($"color-text-{name}");
         await Expect(text).ToHaveClassAsync(HasClass($"bit-btn-{suffix}"));
-        await Expect(text).ToHaveCSSAsync("color", main);
+        await Expect(text).ToHaveCSSAsync("color", label);
         await Expect(text).ToHaveCSSAsync("border-top-color", Transparent);
 
         var disabled = Btn($"color-dis-{name}");

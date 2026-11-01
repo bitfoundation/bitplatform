@@ -445,10 +445,13 @@ await BitThemeManager.SetThemePairAsync(BitThemePresets.MaterialLight, BitThemeP
                         The <code>-light</code> tier is a standalone tint; the on-color is never painted over it, so it is free to be as pale as it likes.
                     </li>
                     <li>
+                        The base tier is solved as a <i>fill</i>, not as text - a secondary orange or a warning amber is under 3:1 on white. A component that prints a role as text on the page (the label of an outlined or text-only button, tag or badge) prints its <code>-fg</code> instead, except the primary role, whose base color is the brand's link color and holds <b>&#8805; 4.5:1</b> over <code>bg-pri</code> as it is.
+                    </li>
+                    <li>
                         <code>-dis-text</code> holds <b>&#8805; 3:1</b> over <code>-dis</code>. Disabled controls are exempt from WCAG 1.4.3, but text nobody can read is still text nobody can read.
                     </li>
                     <li>
-                        <code>-fg</code> is <i>derived</i> rather than solved: by default it is the role's base color shaded towards <code>--bit-clr-fg-pri</code>, which keeps the hue and follows any palette in either scheme, but promises no ratio for a palette it has never seen. A preset whose role colors sit close to its page surface sets its own <code>-fg</code> values.
+                        <code>-fg</code> is <i>derived</i> rather than solved: by default it is the role's base color shaded towards <code>--bit-clr-fg-pri</code>, which keeps the hue and follows any palette in either scheme, but promises no ratio for a palette it has never seen. A preset whose role colors sit close to its page surface sets its own <code>-fg</code> values. For the packaged palettes it is held to the floor of text: every role's <code>-fg</code> clears <b>4.5:1</b> over <code>bg-pri</code> and <code>bg-sec</code> (3:1 over the deepest <code>bg-ter</code>).
                     </li>
                     <li>
                         <code>--bit-clr-fg-pri</code> and <code>--bit-clr-fg-sec</code> clear <b>4.5:1</b> over <code>bg-pri</code>, <code>bg-sec</code> <i>and</i> <code>bg-ter</code> (they sit at 14.6:1 and 6.6:1 even on the deepest of the three). <code>--bit-clr-fg-ter</code>, the subtle tier, clears 4.5:1 on the page surface and stays above 4:1 on the deepest one - which is why every input paints its placeholder with <code>fg-sec</code>: a placeholder is often the only hint of what a field expects, so it is held to the floor of text. <code>--bit-clr-brd-pri</code> keeps <b>&#8805; 3:1</b> over all three (SC 1.4.11, non-text contrast). <code>brd-sec</code> and <code>brd-ter</code> are the <i>decorative</i> stroke tiers - spinner tracks, menu separators, calendar grid lines - and are tuned for definition rather than to a contrast floor. Reach for <code>brd-pri</code> when a border is a control boundary.

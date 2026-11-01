@@ -618,9 +618,12 @@ public class BitBreadcrumbE2ETests : E2ETestBase
             var id = $"bc-color-{color}";
             await Expect(Root(id)).ToHaveClassAsync(HasClass($"bit-brc-{suffix}"));
 
+            // An item is text read on the page, so an accent role other than the primary one draws it in its foreground
+            // shade; the divider is decoration and keeps the main.
             var expected = await ResolveColorAsync($"var({main})");
-            await Expect(Step(id, "Item 1")).ToHaveCSSAsync("color", expected);
-            await Expect(Step(id, "Item 4")).ToHaveCSSAsync("color", expected);
+            var text = suffix is "sec" or "ter" or "inf" or "suc" or "wrn" or "swr" or "err" ? await ResolveColorAsync($"var({main}-fg)") : expected;
+            await Expect(Step(id, "Item 1")).ToHaveCSSAsync("color", text);
+            await Expect(Step(id, "Item 4")).ToHaveCSSAsync("color", text);
             await Expect(Root(id).Locator("i.bit-brc-div").First).ToHaveCSSAsync("color", expected);
         }
     }
@@ -811,7 +814,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync(0, 0);
 
         var item = Step("bc-css-vars-color", "Item 1");
-        await Expect(item).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-err)"));
+        await Expect(item).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-err-fg)"));
         Assert.IsTrue(ParsePx(await item.EvaluateAsync<string>("el => getComputedStyle(el).fontSize")) < 19);
     }
 

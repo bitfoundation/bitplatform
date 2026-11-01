@@ -83,5 +83,18 @@ public class BitHeaderStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitHeaderShouldDrawTheTextOfItsBorderlessVariantsInTheRoleTextColor()
+    {
+        var roles = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n    .bit-hdr-#{$role} {");
+
+        // The text of an Outline or Text header is read on the page rather than over the role's fill, so it takes the
+        // role's text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white -
+        // while the border and the fill keep the main.
+        StringAssert.Contains(roles, "--bit-hdr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(roles, "--bit-hdr-brd: #{role($tokens, main)};");
+        StringAssert.Contains(roles, "--bit-hdr-bg: #{role($tokens, main)};");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Layouts", "Header", "BitHeader.scss");
 }

@@ -47,6 +47,15 @@ internal static class ButtonsE2EHelpers
     public static IEnumerable<object[]> ColorRows => Colors.Select(c => new object[] { c.Name, c.Suffix, c.Token, c.OnToken });
 
     /// <summary>
+    /// The token a role's text is drawn in when it sits on the page rather than on the role's fill - the label of an
+    /// Outline or Text variant (role-text in color-role-maps.scss): an accent role other than the primary one reads its
+    /// foreground shade (<c>--bit-clr-{token}-fg</c>), since its main is picked to fill a surface; the primary role and
+    /// every surface role read their main.
+    /// </summary>
+    public static string TextToken(string token)
+        => token is "sec" or "ter" or "inf" or "suc" or "wrn" or "swr" or "err" ? $"{token}-fg" : token;
+
+    /// <summary>
     /// Every BitSize in the enum's order: its name, the class suffix (BitCssClasses.Size) and the suffix of the
     /// global size tokens of that class (<c>--bit-siz-ctrl-{token}</c>, <c>--bit-siz-icon-{token}</c>).
     /// </summary>

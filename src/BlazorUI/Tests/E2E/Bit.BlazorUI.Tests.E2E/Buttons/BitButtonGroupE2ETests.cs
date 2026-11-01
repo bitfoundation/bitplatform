@@ -956,7 +956,8 @@ public class BitButtonGroupE2ETests : E2ETestBase
         await Expect(item).ToHaveCSSAsync("color", await Token(text));
         await Expect(ItemAt($"color-{name}", 0)).ToHaveCSSAsync("background-color", await Token(dark));
 
-        await Expect(ItemAt($"color-outline-{name}", 0)).ToHaveCSSAsync("color", await Token(main));
+        // An outlined item's label sits on the page, so it is drawn in the role's text color; the outline keeps the main.
+        await Expect(ItemAt($"color-outline-{name}", 0)).ToHaveCSSAsync("color", await Token(ButtonsE2EHelpers.TextToken(main)));
         await Expect(Group($"color-outline-{name}")).ToHaveCSSAsync("border-top-color", await Token(main));
 
         await Expect(ItemAt($"color-dis-{name}", 1)).ToHaveCSSAsync("background-color", await Token(dis));
@@ -1127,7 +1128,7 @@ public class BitButtonGroupE2ETests : E2ETestBase
         await Expect(ItemAt("grp-rerender", 0)).ToHaveClassAsync(HasClass("bit-btg-iol"));
         await Expect(group.Locator(".bit-btg-btx")).ToHaveCountAsync(0);
         await Expect(ItemAt("grp-rerender", 0)).ToHaveAttributeAsync("aria-label", "Add");
-        await Expect(ItemAt("grp-rerender", 0)).ToHaveCSSAsync("color", await Token("err"));
+        await Expect(ItemAt("grp-rerender", 0)).ToHaveCSSAsync("color", await Token("err-fg"));
         await Expect(group).ToHaveAttributeAsync("aria-orientation", "vertical");
     }
 

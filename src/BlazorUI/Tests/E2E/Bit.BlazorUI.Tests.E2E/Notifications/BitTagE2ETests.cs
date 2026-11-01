@@ -617,13 +617,16 @@ public class BitTagE2ETests : E2ETestBase
         foreach (var (name, suffix, token) in NotificationsE2EHelpers.Colors)
         {
             var main = await Page.ResolveColorAsync(token);
+            var text = await Page.ResolveColorAsync(NotificationsE2EHelpers.TextToken(suffix, token));
 
             await Expect(Root($"clr-{name}")).ToHaveClassAsync(HasClass($"bit-tag-{suffix}"));
             await Expect(Root($"clr-{name}")).ToHaveCSSAsync("background-color", main);
             await Expect(Root($"clr-{name}")).ToHaveCSSAsync("color", await Page.ResolveColorAsync(OnTokens[suffix]));
             await Expect(Root($"clr-otl-{name}")).ToHaveCSSAsync("border-top-color", main);
-            await Expect(Root($"clr-otl-{name}")).ToHaveCSSAsync("color", main);
-            await Expect(Root($"clr-txt-{name}")).ToHaveCSSAsync("color", main);
+            // The text of an unfilled variant sits on the page, so it is drawn in the role's text color; the rule keeps
+            // the main.
+            await Expect(Root($"clr-otl-{name}")).ToHaveCSSAsync("color", text);
+            await Expect(Root($"clr-txt-{name}")).ToHaveCSSAsync("color", text);
             await Expect(Root($"clr-sel-{name}")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync($"{token}-active"));
         }
     }

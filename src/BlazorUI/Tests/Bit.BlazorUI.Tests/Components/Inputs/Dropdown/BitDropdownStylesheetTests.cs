@@ -35,7 +35,7 @@ public class BitDropdownStylesheetTests
         StringAssert.Contains(vars, "--bit-drp-clr-hover: var(--bit-drp-role-hover, var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, #{$clr-pri-hover})));");
         StringAssert.Contains(vars, "--bit-drp-clr-text: var(--bit-drp-role-on, var(--bit-Dropdown-accent-text-color, #{$clr-pri-text}));");
         StringAssert.Contains(vars, "--bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-drp-role-main, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-drp-role-fg, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));");
 
         // And Transparent, over the background of the field.
         StringAssert.Contains(stylesheet, "background-color: var(--bit-drp-bg, var(--bit-Dropdown-background, #{$clr-bg-pri}));");
@@ -54,7 +54,7 @@ public class BitDropdownStylesheetTests
         // classes publish out unset; the classes - declared further down at the same weight - still win on the
         // element that carries them.
         foreach (var property in new[] { "--bit-drp-sz-fs", "--bit-drp-sz-h", "--bit-drp-sz-lbl-lh", "--bit-drp-sz-itm-h", "--bit-drp-sz-itm-fs",
-                                         "--bit-drp-sz-ico", "--bit-drp-sz-sel", "--bit-drp-role-main", "--bit-drp-role-on", "--bit-drp-role-hover",
+                                         "--bit-drp-sz-ico", "--bit-drp-sz-sel", "--bit-drp-role-main", "--bit-drp-role-fg", "--bit-drp-role-on", "--bit-drp-role-hover",
                                          "--bit-drp-role-focus", "--bit-drp-bg" })
         {
             StringAssert.Contains(reset, $"{property}: initial;");
@@ -71,5 +71,20 @@ public class BitDropdownStylesheetTests
             Assert.IsTrue(stylesheet.IndexOf(start, StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-drp-md {", StringComparison.Ordinal), "The size classes come before the element that resets them.");
             Assert.IsTrue(stylesheet.IndexOf(start, StringComparison.Ordinal) < stylesheet.IndexOf(".bit-drp-#{$role} {", StringComparison.Ordinal), "The role classes come before the element that resets them.");
         }
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldDrawItsItemHeadersInTheRoleTextColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A header is read on the callout rather than over the role's fill, so an explicit Color paints it in the role's
+        // text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white -
+        // while the accent the dropdown fills its selection and checkboxes with keeps the main.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-drp-ihd {"), "color: var(--bit-drp-role-fg, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));");
+
+        var roles = SourceFiles.GetScssBlock(stylesheet, ".bit-drp-#{$role} {");
+        StringAssert.Contains(roles, "--bit-drp-role-main: #{role($tokens, main)};");
+        StringAssert.Contains(roles, "--bit-drp-role-fg: #{role-text($role, $tokens)};");
     }
 }

@@ -97,7 +97,7 @@ public partial class BitToggleButtonStylesheetTests
         // A toggle button can sit in the content of another one, which must not inherit the outer one's Color or
         // Size: each root starts the values those classes publish out unset, and the classes - declared further
         // down at the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-tgb-clr-txt", "--bit-tgb-clr", "--bit-tgb-clr-hover", "--bit-tgb-clr-active", "--bit-tgb-clr-focus",
+        foreach (var property in new[] { "--bit-tgb-clr-txt", "--bit-tgb-clr", "--bit-tgb-clr-fg", "--bit-tgb-clr-hover", "--bit-tgb-clr-active", "--bit-tgb-clr-focus",
                                          "--bit-tgb-clr-dark", "--bit-tgb-clr-dark-hover", "--bit-tgb-clr-dark-active", "--bit-tgb-clr-dis",
                                          "--bit-tgb-clr-dis-text", "--bit-tgb-min-height", "--bit-tgb-padding", "--bit-tgb-fontsize",
                                          "--bit-tgb-ntx-pad", "--bit-tgb-ntx-icn-size", "--bit-tgb-spn-size", "--bit-tgb-lbl-fontsize",
@@ -106,6 +106,27 @@ public partial class BitToggleButtonStylesheetTests
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
+    }
+
+    [TestMethod,
+        DataRow(".bit-tgb-otl", "outline"),
+        DataRow(".bit-tgb-txt", "text")]
+    public void BitToggleButtonShouldDrawTheLabelOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The resting label of an unchecked Outline or Text toggle button sits on the page rather than on the role's fill,
+        // so it is drawn in the role's text color: a secondary or a warning main is picked to fill a surface and is under
+        // 3:1 as text on white.
+        var block = SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{");
+        StringAssert.Contains(block, $"color: var(--bit-tgb-sfg, var(--bit-tgb-clr-fg, var(--bit-ToggleButton-{variant}-color, var(--bit-ToggleButton-color, #{{$clr-pri}}))));");
+
+        // Only the label: the outline keeps the role's main, and the foreground FixedColor pins stays the on-color the
+        // hover paints over the role's fill.
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-outline-border-color, ");
+        StringAssert.Contains(block, $"--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-{variant}-hover-color, ");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tgb-#{$role} {"), "--bit-tgb-clr-fg: #{role-text($role, $tokens)};");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ToggleButton", "BitToggleButton.scss");

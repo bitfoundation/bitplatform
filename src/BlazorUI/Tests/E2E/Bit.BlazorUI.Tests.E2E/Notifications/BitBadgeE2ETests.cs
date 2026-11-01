@@ -879,12 +879,15 @@ public class BitBadgeE2ETests : E2ETestBase
         foreach (var (name, suffix, token) in NotificationsE2EHelpers.Colors)
         {
             var color = await Page.ResolveColorAsync(token);
+            var text = await Page.ResolveColorAsync(NotificationsE2EHelpers.TextToken(suffix, token));
 
             await Expect(Page.Locator($"#clr-{name}")).ToHaveClassAsync(HasClass($"bit-bdg-{suffix}"));
             await Expect(Page.Locator(Badge($"clr-{name}"))).ToHaveCSSAsync("background-color", color);
             await Expect(Page.Locator(Badge($"clr-otl-{name}"))).ToHaveCSSAsync("border-top-color", color);
-            await Expect(Page.Locator(Badge($"clr-otl-{name}"))).ToHaveCSSAsync("color", color);
-            await Expect(Page.Locator(Badge($"clr-txt-{name}"))).ToHaveCSSAsync("color", color);
+            // The count of an unfilled variant sits on the page, so it is drawn in the role's text color; the outline
+            // keeps the main.
+            await Expect(Page.Locator(Badge($"clr-otl-{name}"))).ToHaveCSSAsync("color", text);
+            await Expect(Page.Locator(Badge($"clr-txt-{name}"))).ToHaveCSSAsync("color", text);
         }
     }
 

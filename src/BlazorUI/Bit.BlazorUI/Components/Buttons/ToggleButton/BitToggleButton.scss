@@ -98,9 +98,9 @@
 // was asked for. The checked and the disabled states are still read before both, so a re-tinted toggle button
 // keeps showing which state it is in.
 
-$tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover, clr-dark-active,
-                         clr-dis, clr-dis-text, min-height, padding, fontsize, ntx-pad, ntx-icn-size, spn-size,
-                         lbl-fontsize,
+$tgb-private-properties: clr-txt, clr, clr-fg, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover,
+                         clr-dark-active, clr-dis, clr-dis-text, min-height, padding, fontsize, ntx-pad, ntx-icn-size,
+                         spn-size, lbl-fontsize,
                          // The colors the hover and press states move (see the variants below), unset at rest so a
                          // toggle button nested in another one never inherits the outer one's state.
                          sfg, sbg, sbr;
@@ -361,7 +361,7 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 
 .bit-tgb-otl {
     --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-outline-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
-    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-outline-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
+    color: var(--bit-tgb-sfg, var(--bit-tgb-clr-fg, var(--bit-ToggleButton-outline-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
     border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-outline-border-color, var(--bit-ToggleButton-border-color, #{$clr-pri}))));
     background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-outline-background, var(--bit-ToggleButton-background, transparent)));
 
@@ -392,7 +392,7 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 
 .bit-tgb-txt {
     --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-text-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
-    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-text-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
+    color: var(--bit-tgb-sfg, var(--bit-tgb-clr-fg, var(--bit-ToggleButton-text-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
     border-color: var(--bit-tgb-sbr, var(--bit-ToggleButton-text-border-color, var(--bit-ToggleButton-border-color, transparent)));
     background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-text-background, var(--bit-ToggleButton-background, transparent)));
 
@@ -466,11 +466,15 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only
 // by an explicit Color (or the OnColor / OffColor of the current state); an unset one is the primary role, which
-// the fallbacks above spell out after the public variables.
+// the fallbacks above spell out after the public variables. The resting label of an unchecked Outline or Text toggle
+// button is read on the page rather than over the role's fill, so it is drawn in the role's text color (role-text) -
+// a secondary or a warning main is picked to fill a surface and falls under the 4.5:1 of body text on white - while
+// the border, the fills and the checked state keep theirs.
 @each $role, $tokens in $bit-color-roles {
     .bit-tgb-#{$role} {
         --bit-tgb-clr-txt: #{role($tokens, on)};
         --bit-tgb-clr: #{role($tokens, main)};
+        --bit-tgb-clr-fg: #{role-text($role, $tokens)};
         --bit-tgb-clr-hover: #{role($tokens, hover)};
         --bit-tgb-clr-active: #{role($tokens, active)};
         --bit-tgb-clr-focus: #{role($tokens, focus)};

@@ -45,6 +45,18 @@ public class BitNavBarStylesheetTests
     }
 
     [TestMethod]
+    public void BitNavBarShouldDrawTheLabelsOfAnUnfilledBarInTheRoleTextColor()
+    {
+        var roles = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-nbr-#{$role} {");
+
+        // Without the fill the labels sit on the bar's own background, so a Color draws them in the role's text color -
+        // a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white - while the
+        // indicator, a rule rather than text, keeps the main.
+        StringAssert.Contains(roles, "--bit-nbr-clr: #{role-text($role, $tokens)};");
+        StringAssert.Contains(roles, "--bit-nbr-clr-ind: #{role($tokens, main)};");
+    }
+
+    [TestMethod]
     public void BitNavBarShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
     {
         var stylesheet = ReadStylesheet();

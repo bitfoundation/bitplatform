@@ -180,6 +180,22 @@ public class BitPaginationStylesheetTests
                        $"{selector} reads the variables of another variant.");
     }
 
+    [TestMethod,
+        DataRow(".bit-pgn-otl", "outline"),
+        DataRow(".bit-pgn-txt", "text")]
+    public void BitPaginationShouldDrawThePageNumbersOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The page numbers of an Outline or Text pagination sit on the page rather than on the role's fill, so they are
+        // drawn in the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as
+        // text on white.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{"),
+                              $"--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-fg, var(--bit-Pagination-{variant}-button-color, var(--bit-Pagination-button-color, #{{$clr-pri}})));");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-pgn-#{$role} {"), "--bit-pgn-clr-fg: #{role-text($role, $tokens)};");
+    }
+
     [TestMethod]
     public void BitPaginationShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
     {
@@ -189,7 +205,7 @@ public class BitPaginationStylesheetTests
         // A pagination never inherits another one's Color or Size from an ancestor carrying those classes: each root
         // starts the values they publish out unset, and the classes - declared further down at the same weight - still
         // win on the root that carries them.
-        foreach (var property in new[] { "--bit-pgn-clr-fcs", "--bit-pgn-clr-txt", "--bit-pgn-clr", "--bit-pgn-clr-hover", "--bit-pgn-clr-active",
+        foreach (var property in new[] { "--bit-pgn-clr-fcs", "--bit-pgn-clr-txt", "--bit-pgn-clr", "--bit-pgn-clr-fg", "--bit-pgn-clr-hover", "--bit-pgn-clr-active",
                                          "--bit-pgn-clr-sel", "--bit-pgn-clr-sel-hover", "--bit-pgn-clr-sel-active", "--bit-pgn-clr-dis-bg",
                                          "--bit-pgn-clr-dis-text", "--bit-pgn-size-btn", "--bit-pgn-font-size", "--bit-pgn-pad-x" })
         {

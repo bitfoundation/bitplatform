@@ -112,8 +112,8 @@
 
 // Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
 // it is nested in. A private variable added to the component goes in this list.
-$drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz-sel, role-main, role-on, role-hover,
-                         role-focus, bg;
+$drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz-sel, role-main, role-fg, role-on,
+                         role-hover, role-focus, bg;
 
 // A dropdown can sit in the template of another one (and its callout in the callout of another one before
 // it is moved to the body), which must not inherit the outer one's Color, Size or Transparent: the root and
@@ -1107,9 +1107,9 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
     cursor: default;
     font-weight: $tg-fw-semibold;
     user-select: none;
-    // An explicit Color first, then the public header color, then the accent (its public variable or the
-    // primary role).
-    color: var(--bit-drp-role-main, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));
+    // An explicit Color first - in the role's text color, since a header is read on the callout rather than over
+    // the role's fill - then the public header color, then the accent (its public variable or the primary role).
+    color: var(--bit-drp-role-fg, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));
     height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
     box-sizing: border-box;
@@ -1483,12 +1483,15 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and published
-// only by an explicit Color - on the root and on the callout. They leave the four slots the dropdown uses
+// only by an explicit Color - on the root and on the callout. They leave the slots the dropdown uses
 // behind; drp-vars reads them ahead of the public accent variables, and spells out the primary role after
-// those for an unset Color.
+// those for an unset Color. An item header is text read on the callout rather than over the role's fill, so
+// it takes the role's text color (role-text): a secondary or a warning main is picked to fill a surface and
+// falls under the 4.5:1 of body text on white.
 @each $role, $tokens in $bit-color-roles {
     .bit-drp-#{$role} {
         --bit-drp-role-main: #{role($tokens, main)};
+        --bit-drp-role-fg: #{role-text($role, $tokens)};
         --bit-drp-role-on: #{role($tokens, on)};
         --bit-drp-role-hover: #{role($tokens, hover)};
         --bit-drp-role-focus: #{role($tokens, focus)};

@@ -173,10 +173,12 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). A text is read on the
+// page rather than over the role's fill, so it is drawn in the role's text color (role-text): a secondary or a warning
+// main is picked to fill a surface and falls under the 4.5:1 of body text on white.
 @each $role, $tokens in $bit-color-roles {
     .bit-txt-#{$role} {
-        color: role($tokens, main);
+        color: role-text($role, $tokens);
     }
 }
 

@@ -244,7 +244,11 @@ public class BitTagStylesheetTests
         {
             var suffix = fallback.Groups[2].Value switch { "-text" => "-txt", var other => other };
 
-            Assert.AreEqual($"var(--bit-tag-dft-clr{suffix},", fallback.Groups[1].Value, $"{fallback.Value} is not read behind the host default.");
+            // The primary main stands in for two defaults: the role's main, and the text color the role is read in on
+            // the page (role-text), which keeps the primary main as it is.
+            var expected = suffix.Length == 0 && fallback.Groups[1].Value == "var(--bit-tag-dft-clr-fg," ? "var(--bit-tag-dft-clr-fg," : $"var(--bit-tag-dft-clr{suffix},";
+
+            Assert.AreEqual(expected, fallback.Groups[1].Value, $"{fallback.Value} is not read behind the host default.");
         }
 
         // The classes mirror the role classes - the same roles, the same values - and are never reset by the role classes.
@@ -255,6 +259,23 @@ public class BitTagStylesheetTests
 
         // Declared after the root rule at the same weight, so the class wins over the reset on the root that carries it.
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-tag {", System.StringComparison.Ordinal) < stylesheet.IndexOf(".bit-tag-dft-#{$role} {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod,
+        DataRow(".bit-tag-otl", "outline"),
+        DataRow(".bit-tag-txt", "text")]
+    public void BitTagShouldDrawTheTextOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // The text of an Outline or Text tag sits on the page or on the role's light tint rather than on its fill, so it
+        // is drawn in the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1
+        // as text on white. At rest and selected alike.
+        StringAssert.Contains(block, $"--bit-tag-v-fg: var(--bit-tag-clr-fg, var(--bit-Tag-{variant}-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{{$clr-pri}}))));");
+        StringAssert.Contains(block, $"--bit-tag-v-sel-fg: var(--bit-tag-clr-fg, var(--bit-Tag-{variant}-selected-color, ");
+
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-#{$role} {"), "--bit-tag-clr-fg: #{role-text($role, $tokens)};");
     }
 
     [TestMethod,
@@ -292,10 +313,10 @@ public class BitTagStylesheetTests
         // A tag can sit in the template of another one, which must not inherit the outer tag's Color, Size or Shape:
         // each root starts the values those classes publish out unset, and the classes - declared further down at the
         // same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-txt", "--bit-tag-clr-dis", "--bit-tag-clr-dis-text", "--bit-tag-clr-active",
+        foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-fg", "--bit-tag-clr-txt", "--bit-tag-clr-dis", "--bit-tag-clr-dis-text", "--bit-tag-clr-active",
                                          "--bit-tag-clr-light", "--bit-tag-clr-light-hover", "--bit-tag-clr-light-active",
                                          // The default a host gave a tag, which a tag in its template must not inherit either.
-                                         "--bit-tag-dft-clr", "--bit-tag-dft-clr-txt", "--bit-tag-dft-clr-dis", "--bit-tag-dft-clr-dis-text",
+                                         "--bit-tag-dft-clr", "--bit-tag-dft-clr-fg", "--bit-tag-dft-clr-txt", "--bit-tag-dft-clr-dis", "--bit-tag-dft-clr-dis-text",
                                          "--bit-tag-dft-clr-active", "--bit-tag-dft-clr-light", "--bit-tag-dft-clr-light-hover",
                                          "--bit-tag-dft-clr-light-active",
                                          "--bit-tag-sz-gap", "--bit-tag-sz-lbl-gap", "--bit-tag-sz-fs", "--bit-tag-sz-stx-fs", "--bit-tag-sz-img",

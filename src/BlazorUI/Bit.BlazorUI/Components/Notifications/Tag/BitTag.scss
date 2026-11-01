@@ -83,8 +83,8 @@
 // tags it renders (see .bit-tag-dft-*), which is read after them.
 
 $tag-private-properties:
-    clr, clr-txt, clr-dis, clr-dis-text, clr-active, clr-light, clr-light-hover, clr-light-active,
-    dft-clr, dft-clr-txt, dft-clr-dis, dft-clr-dis-text, dft-clr-active, dft-clr-light, dft-clr-light-hover,
+    clr, clr-fg, clr-txt, clr-dis, clr-dis-text, clr-active, clr-light, clr-light-hover, clr-light-active,
+    dft-clr, dft-clr-fg, dft-clr-txt, dft-clr-dis, dft-clr-dis-text, dft-clr-active, dft-clr-light, dft-clr-light-hover,
     dft-clr-light-active,
     sz-gap, sz-lbl-gap, sz-fs, sz-stx-fs, sz-img, sz-pad-y, sz-pad-x, sz-min-height, radius,
     // Only Outline and Text step a selected tag further, so Fill falls back to its resting pair.
@@ -446,10 +446,10 @@ $tag-private-properties:
 }
 
 .bit-tag-otl {
-    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
+    --bit-tag-v-fg: var(--bit-tag-clr-fg, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{$clr-pri}))));
     --bit-tag-v-bg: var(--bit-Tag-outline-background, var(--bit-Tag-background, transparent));
     --bit-tag-v-brd: var(--bit-tag-clr, var(--bit-Tag-outline-border-color, var(--bit-Tag-border-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
-    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-outline-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))))));
+    --bit-tag-v-sel-fg: var(--bit-tag-clr-fg, var(--bit-Tag-outline-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{$clr-pri}))))));
     --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));
     --bit-tag-v-sel-brd: var(--bit-tag-clr, var(--bit-Tag-outline-selected-border-color, var(--bit-Tag-selected-border-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
     --bit-tag-v-dis-bg: var(--bit-Tag-outline-disabled-background, var(--bit-Tag-disabled-background, transparent));
@@ -461,10 +461,10 @@ $tag-private-properties:
 }
 
 .bit-tag-txt {
-    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))));
+    --bit-tag-v-fg: var(--bit-tag-clr-fg, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{$clr-pri}))));
     --bit-tag-v-bg: var(--bit-Tag-text-background, var(--bit-Tag-background, transparent));
     --bit-tag-v-brd: var(--bit-Tag-text-border-color, var(--bit-Tag-border-color, transparent));
-    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-text-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr, #{$clr-pri}))))));
+    --bit-tag-v-sel-fg: var(--bit-tag-clr-fg, var(--bit-Tag-text-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{$clr-pri}))))));
     --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-text-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));
     --bit-tag-v-sel-brd: var(--bit-Tag-text-selected-border-color, var(--bit-Tag-selected-border-color, transparent));
     --bit-tag-v-dis-bg: var(--bit-Tag-text-disabled-background, var(--bit-Tag-disabled-background, transparent));
@@ -477,9 +477,13 @@ $tag-private-properties:
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an
 // explicit Color; an unset one is the primary role, which the variant classes spell out after the public variables.
+// The text of an Outline or Text tag is read on the page or on the role's light tint rather than over its fill, so it
+// is drawn in the role's text color (role-text) - a secondary or a warning main is picked to fill a surface and falls
+// under the 4.5:1 of body text on white - while the rule keeps the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-tag-#{$role} {
         --bit-tag-clr: #{role($tokens, main)};
+        --bit-tag-clr-fg: #{role-text($role, $tokens)};
         --bit-tag-clr-txt: #{role($tokens, on)};
         --bit-tag-clr-dis: #{role($tokens, dis)};
         --bit-tag-clr-dis-text: #{role($tokens, dis-text)};
@@ -498,6 +502,7 @@ $tag-private-properties:
 @each $role, $tokens in $bit-color-roles {
     .bit-tag-dft-#{$role} {
         --bit-tag-dft-clr: #{role($tokens, main)};
+        --bit-tag-dft-clr-fg: #{role-text($role, $tokens)};
         --bit-tag-dft-clr-txt: #{role($tokens, on)};
         --bit-tag-dft-clr-dis: #{role($tokens, dis)};
         --bit-tag-dft-clr-dis-text: #{role($tokens, dis-text)};

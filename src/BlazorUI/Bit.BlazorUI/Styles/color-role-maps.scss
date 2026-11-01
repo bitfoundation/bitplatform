@@ -392,3 +392,21 @@ $bit-background-color-roles: ();
 
     @return map.get($tokens, on);
 }
+
+/*
+ * role-text($role, $tokens)
+ * --------------------------------------------------
+ * The color a role's text is drawn in when the role is READ on the page rather than filled behind its on-color - the
+ * label of an outlined or text-only button, tag or badge. An accent role other than the primary one reads its
+ * foreground shade (fg): its main is picked to fill a surface, and a secondary orange or a warning amber falls under
+ * the 4.5:1 of body text on white (WCAG 1.4.3). The primary main is the brand's own text color, which every preset
+ * tunes to be read on the page, so it keeps it, as BitLink does. A surface role keeps its main too: an outlined
+ * button in the page's own color is asked for to sit on a darker surface (or to wear its on-color, FixedColor).
+ */
+@function role-text($role, $tokens) {
+    @if map.get($tokens, kind) == semantic and $role != pri {
+        @return map.get($tokens, fg);
+    }
+
+    @return map.get($tokens, main);
+}

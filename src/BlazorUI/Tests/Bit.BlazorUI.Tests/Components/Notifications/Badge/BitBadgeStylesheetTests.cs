@@ -197,6 +197,21 @@ public partial class BitBadgeStylesheetTests
                        $"{selector} reads the variables of another variant.");
     }
 
+    [TestMethod,
+        DataRow(".bit-bdg-otl", "outline"),
+        DataRow(".bit-bdg-txt", "text")]
+    public void BitBadgeShouldDrawTheCountOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The count of an Outline or Text badge sits on the page rather than on the role's fill, so it is drawn in the
+        // role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{"),
+                              $"--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-fg, var(--bit-Badge-{variant}-color, var(--bit-Badge-color, #{{$clr-pri}})));");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-bdg-#{$role} {"), "--bit-bdg-clr-fg: #{role-text($role, $tokens)};");
+    }
+
     [TestMethod]
     public void BitBadgeShouldPublishItsColorSizeAndShapeOnlyWhereTheyAreSet()
     {
@@ -205,7 +220,7 @@ public partial class BitBadgeStylesheetTests
         // A badge can sit in the child content of another one, which must not inherit the outer badge's Color, Size or
         // Shape: each root starts the values those classes publish out unset, and the classes - declared further down
         // at the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-bdg-clr", "--bit-bdg-clr-txt", "--bit-bdg-clr-dis", "--bit-bdg-clr-dis-text", "--bit-bdg-clr-hover",
+        foreach (var property in new[] { "--bit-bdg-clr", "--bit-bdg-clr-fg", "--bit-bdg-clr-txt", "--bit-bdg-clr-dis", "--bit-bdg-clr-dis-text", "--bit-bdg-clr-hover",
                                          "--bit-bdg-clr-active", "--bit-bdg-clr-light", "--bit-bdg-clr-light-hover", "--bit-bdg-clr-fcs",
                                          "--bit-bdg-height", "--bit-bdg-padding", "--bit-bdg-fontsize", "--bit-bdg-dotsize", "--bit-bdg-radius" })
         {
