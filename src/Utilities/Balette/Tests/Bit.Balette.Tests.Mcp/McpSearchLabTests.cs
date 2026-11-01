@@ -333,6 +333,7 @@ public class McpSearchLabTests
         using var response = await http.GetAsync($"/api/mcp/InspectBaletteSearch?query={new string('s', BaletteQuery.MaxLength + 1)}");
 
         Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("BaletteQuery.MaxLength", await response.Content.ReadAsStringAsync());
 
         var tool = (await McpTestHost.Client.ListToolsAsync()).Single(tool => tool.Name == "InspectBaletteSearch");
         var schema = tool.JsonSchema.GetRawText();

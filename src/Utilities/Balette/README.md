@@ -1321,11 +1321,12 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
 - **Visibility is not authorization.** `VisibleWhen` and `Disabled` shape the UI; the server must still check every
   action a handler asks it to perform.
 - Stored history is validated when it is read: entries a hand-edited or corrupt `localStorage` holds are dropped.
-- **Search is bounded.** A query is searched up to `BaletteQuery.MaxLength` (256) characters; a field up to
-  `BaletteFuzzyMatcher.MaxOptimalLength` (4,096) characters is aligned in at most (256 + 1) x (4,096 + 1) steps, a
-  longer one greedily in one pass, and the typo-tolerant second chance reads a field a machine word at a time - so
-  neither a pasted wall of text nor a huge field makes a keystroke allocate more than the matcher's per-thread buffers,
-  a couple of hundred kilobytes at most (on Blazor Server, on the server), and nothing they hold is shared outside it.
+- **Search is bounded.** A query is searched up to `BaletteQuery.MaxLength` (256) characters, the spaces around it
+  aside; a field up to `BaletteFuzzyMatcher.MaxOptimalLength` (4,096) characters is aligned in at most (256 + 1) x
+  (4,096 + 1) steps, a longer one greedily in one pass, and the typo-tolerant second chance reads a field a machine
+  word at a time - so neither a pasted wall of text nor a huge field makes a keystroke allocate more than the
+  matcher's per-thread buffers, a couple of hundred kilobytes at most (on Blazor Server, on the server), and nothing
+  they hold is shared outside it.
   Search work still grows with the length of the fields you give it: keep descriptions to what a palette row needs,
   and search large documents through an async source backed by a real index.
 

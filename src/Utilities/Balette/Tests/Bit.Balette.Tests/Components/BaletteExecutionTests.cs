@@ -264,6 +264,23 @@ public class BaletteExecutionTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_prompts_answer_past_the_query_limit_reaches_its_handler_whole()
+    {
+        var answer = new string('n', BaletteQuery.MaxLength + 1);
+        string? renamed = null;
+        _service.Register(BaletteCmd.New("Rename…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+            "New name",
+            ctx => { renamed = ctx.PromptValue; return Task.FromResult(BaletteCommandResult.Close); }))));
+        var cut = await OpenAsync();
+        await Press(cut, "Enter");
+
+        await cut.InvokeAsync(() => cut.Instance.SetQueryAsync(answer));
+        await Press(cut, "Enter");
+
+        Assert.AreEqual(answer, renamed);
+    }
+
+    [TestMethod]
     public async Task An_error_result_is_shown_and_keeps_the_prompt_for_a_correction()
     {
         var tries = 0;
