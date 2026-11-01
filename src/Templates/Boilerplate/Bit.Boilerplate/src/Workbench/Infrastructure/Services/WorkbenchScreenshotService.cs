@@ -283,6 +283,16 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
     {
         using var image = PngDecoder.Decode(png);
 
+        // The encoder keeps the channel while any pixel is see-through, like an edge row of a scaled view, so those go over white.
+        foreach (ref var pixel in image.Pixels)
+        {
+            if (pixel.A is 255)
+                continue;
+
+            var cover = 255 - pixel.A;
+            pixel = new((byte)((pixel.R * pixel.A + 255 * cover) / 255), (byte)((pixel.G * pixel.A + 255 * cover) / 255), (byte)((pixel.B * pixel.A + 255 * cover) / 255));
+        }
+
         return PngEncoder.Encode(image).Data;
     }
 
