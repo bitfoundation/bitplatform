@@ -356,6 +356,44 @@ public class McpDropLabTests
     }
 
     [TestMethod]
+    public async Task Ignored_properties_past_the_listing_limit_are_counted_rather_than_each_noted()
+    {
+        var draggable = new JsonObject { ["type"] = "card" };
+        for (var i = 0; i < 1_000; i++) draggable[$"p{i}"] = 0;
+
+        var report = await InspectAsync(Scenario(draggable, "list", Target("list", ["card"])));
+
+        Assert.IsTrue(report.Valid, report.Error);
+
+        var noted = report.Notes.Count(note => note.Contains("is not a property of draggable", StringComparison.Ordinal));
+
+        Assert.IsTrue(noted is > 0 and < 1_000, $"{noted} properties were noted one by one.");
+        Assert.IsTrue(report.Notes.Any(note => note.StartsWith($"{1_000 - noted} more notes", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task An_id_at_the_length_limit_runs_and_one_past_it_is_refused_with_the_reason()
+    {
+        var at = await InspectAsync(Scenario("card", null, Target(new string('x', BdndDropLab.MaxIdLength), ["card"])));
+        var past = await InspectAsync(Scenario("card", null, Target("board", ["card"], children: [Target(new string('x', BdndDropLab.MaxIdLength + 1), ["card"])])));
+
+        Assert.IsTrue(at.Valid, at.Error);
+        Assert.IsFalse(past.Valid);
+        Assert.Contains($"targets[0].children[0].id is {BdndDropLab.MaxIdLength + 1} characters", past.Error!);
+    }
+
+    [TestMethod]
+    public async Task A_long_parent_id_is_refused_rather_than_repeated_for_every_child()
+    {
+        var children = Enumerable.Range(0, BdndDropLab.MaxTargets - 1).Select(i => Target($"c{i}", ["card"])).ToArray();
+
+        var report = await InspectAsync(Scenario("card", null, Target(new string('x', 200_000), ["card"], children: children)));
+
+        Assert.IsFalse(report.Valid);
+        Assert.IsNull(report.Targets);
+    }
+
+    [TestMethod]
     public async Task Input_that_is_not_json_is_rejected_with_the_parsers_own_message()
     {
         var report = await InspectAsync("{ draggable: [");

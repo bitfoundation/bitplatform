@@ -35,9 +35,20 @@ public static partial class BdndDropLab
     /// <summary>How deep targets may nest; a page nesting them deeper than this is not the page in question.</summary>
     public const int MaxDepth = 32;
 
+    /// <summary>
+    /// The longest target id this tool reads. An id is a name a page gives its target, and the report
+    /// repeats it as the parent of every child the target has - so one long id under many children would
+    /// make the report hundreds of times the size of the scenario.
+    /// </summary>
+    public const int MaxIdLength = 256;
+
     /// <summary>The most items one note lists by id before it says how many more there are.</summary>
     private const int MaxListed = 8;
 
+    /// <summary>
+    /// The longest name compared for a typo. A name past this is not one anyone misspells by a letter or
+    /// two, and the comparison would cost the product of the two lengths.
+    /// </summary>
     private const int MaxNearMissLength = 128;
 
     /// <summary>
@@ -118,7 +129,7 @@ public static partial class BdndDropLab
 
         using (document)
         {
-            var readingNotes = new List<string>();
+            var readingNotes = new ReadingNotes();
 
             var error = ReadScenario(document.RootElement, readingNotes, out var scenario);
 
@@ -151,8 +162,30 @@ public static partial class BdndDropLab
 
     private sealed record Scenario(BdndDropHost.Drag Drag, string RawType, List<Target> Roots, List<Target> All, List<Target> HoverChain);
 
+    /// <summary>
+    /// What reading the scenario noticed - mostly properties it ignored. Past <see cref="MaxListed"/> notes
+    /// the rest are only counted: a scenario can hold thousands of stray properties, and a note for each
+    /// would make the report many times the size of the scenario.
+    /// </summary>
+    private sealed class ReadingNotes
+    {
+        public List<string> Listed { get; } = [];
+
+        public int Unlisted { get; private set; }
+
+        public bool Full => Listed.Count >= MaxListed;
+
+        public void Add(string note)
+        {
+            if (Full) Unlisted++;
+            else Listed.Add(note);
+        }
+
+        public void Skip() => Unlisted++;
+    }
+
     /// <summary>Reads the scenario, or says - with the JSON path - what is wrong with it.</summary>
-    private static string? ReadScenario(JsonElement root, List<string> readingNotes, out Scenario? scenario)
+    private static string? ReadScenario(JsonElement root, ReadingNotes readingNotes, out Scenario? scenario)
     {
         scenario = null;
 
@@ -228,7 +261,7 @@ public static partial class BdndDropLab
         return null;
     }
 
-    private static string? ReadTargets(JsonElement array, string path, Target? parent, int depth, List<Target> all, List<Target> siblings, List<string> readingNotes)
+    private static string? ReadTargets(JsonElement array, string path, Target? parent, int depth, List<Target> all, List<Target> siblings, ReadingNotes readingNotes)
     {
         var position = 0;
 
@@ -249,6 +282,10 @@ public static partial class BdndDropLab
             {
                 return $"{at}.id is required: every target needs an id - it is what \"hover\" names and what the report lists.";
             }
+
+            var id = idElement.GetString()!;
+
+            if (id.Length > MaxIdLength) return $"{at}.id is {id.Length} characters; this tool runs targets with ids of up to {MaxIdLength} characters.";
 
             var accept = new List<string>();
 
@@ -281,7 +318,7 @@ public static partial class BdndDropLab
             var target = new Target
             {
                 Index = all.Count,
-                Id = idElement.GetString()!,
+                Id = id,
                 Parent = parent,
                 Depth = depth,
                 // The component combines Accept and AcceptTypes and drops duplicates; so does this.
@@ -396,11 +433,17 @@ public static partial class BdndDropLab
             : $"\"hover\" names '{id}', which is not the id of any target. The ids are: {List(all.Select(target => target.Id).Distinct(StringComparer.Ordinal).ToArray())}.";
     }
 
-    private static void NoteUnknownProperties(JsonElement element, string[] known, string owner, List<string> readingNotes)
+    private static void NoteUnknownProperties(JsonElement element, string[] known, string owner, ReadingNotes readingNotes)
     {
         foreach (var property in element.EnumerateObject())
         {
             if (known.Contains(property.Name, StringComparer.OrdinalIgnoreCase)) continue;
+
+            if (readingNotes.Full)
+            {
+                readingNotes.Skip();
+                continue;
+            }
 
             var close = known.FirstOrDefault(name => IsNearMiss(name, property.Name));
 
@@ -447,7 +490,7 @@ public static partial class BdndDropLab
 
     // ---- The report -----------------------------------------------------------------
 
-    private static BdndDropReportDto Report(int inputBytes, Scenario scenario, BdndDropHost.Outcome outcome, List<string> readingNotes)
+    private static BdndDropReportDto Report(int inputBytes, Scenario scenario, BdndDropHost.Outcome outcome, ReadingNotes readingNotes)
     {
         var hovered = scenario.HoverChain.ToHashSet();
         var drops = outcome.Drops.Select((drop, index) => (Drop: drop, Order: index + 1)).ToDictionary(entry => entry.Drop.Target.Index);
@@ -478,7 +521,12 @@ public static partial class BdndDropLab
 
         Explain(scenario, outcome, targets, notes);
 
-        notes.AddRange(readingNotes);
+        notes.AddRange(readingNotes.Listed);
+
+        if (readingNotes.Unlisted > 0)
+        {
+            notes.Add($"{readingNotes.Unlisted} more {(readingNotes.Unlisted == 1 ? "note" : "notes")} like these were left out - fix the properties above and run the scenario again to see the rest.");
+        }
 
         var native = scenario.Drag.NativeToken is not null;
 
@@ -743,7 +791,8 @@ public static partial class BdndDropLab
     /// <summary>
     /// Two names close enough to be a typo of each other: the same but for case, or one or two edits
     /// apart (one for short names) - "Card" for "card", "cards" for "card", "colum" for "column", and
-    /// two swapped letters count as one edit, "alpah" for "alpha".
+    /// two swapped letters count as one edit, "alpah" for "alpha". Past <see cref="MaxNearMissLength"/>
+    /// only the case is compared.
     /// </summary>
     private static bool IsNearMiss(string a, string b)
     {
@@ -758,7 +807,11 @@ public static partial class BdndDropLab
         return Distance(a.ToLowerInvariant(), b.ToLowerInvariant(), edits) <= edits;
     }
 
-    /// <summary>The optimal string alignment distance: insertions, deletions, substitutions and swaps of two neighbours.</summary>
+    /// <summary>
+    /// The optimal string alignment distance: insertions, deletions, substitutions and swaps of two neighbours.
+    /// Only a distance up to <paramref name="max"/> is worked out exactly; anything further is
+    /// <paramref name="max"/> + 1.
+    /// </summary>
     private static int Distance(string a, string b, int max)
     {
         if (Math.Abs(a.Length - b.Length) > max) return max + 1;
