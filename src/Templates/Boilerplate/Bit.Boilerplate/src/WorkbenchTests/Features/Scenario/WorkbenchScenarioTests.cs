@@ -25,7 +25,7 @@ public class WorkbenchScenarioTests
             Theme = WorkbenchThemeMode.Dark,
             Culture = "fa-IR",
             Chrome = false,
-            Auth = WorkbenchAuthState.MultiAccount,
+            Auth = WorkbenchAuthState.SignedIn,
             User = 2,
             Device = "galaxy-s26",
             Rotated = true,

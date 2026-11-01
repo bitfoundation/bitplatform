@@ -1,6 +1,7 @@
 @*+:cnd:noEmit*@
 @* [mirror] account menu - keep in sync with: *@
 @* - src/Client/Boilerplate.Client.Core/Components/Layout/Header/AppMenu.razor *@
+@* - src/Client/Boilerplate.Client.Core/Components/Layout/Header/SignOutConfirmDialog.razor *@
 @inherits WorkbenchComponentBase
 
 <section>
@@ -108,7 +109,7 @@
                                 </BitActionButton>
                             }
 
-                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="Shell.AddAccount">
+                            <BitActionButton FullWidth IconName="@BitIconName.AddFriend" OnClick="SignIn">
                                 @AppLocalizer[nameof(AppStrings.AddAnotherAccount)]
                             </BitActionButton>
 
@@ -197,7 +198,7 @@
 
                         @if (Shell.IsSignedIn)
                         {
-                            <BitActionButton FullWidth Color="BitColor.Error" IconName="@BitIconName.SignOut" OnClick="SignOut">
+                            <BitActionButton FullWidth Color="BitColor.Error" IconName="@BitIconName.SignOut" OnClick="AskToSignOut">
                                 @AppLocalizer[nameof(AppStrings.SignOut)]
                             </BitActionButton>
                         }
@@ -207,3 +208,14 @@
         </Body>
     </BitDropMenu>
 </section>
+
+@* Saying yes only changes the view's scenario, which the shell then shows as signed out *@
+<BitDialog Blocking
+           @bind-IsOpen="isSignOutConfirmOpen"
+           ShowCloseButton="false"
+           OnOk="SignOut"
+           Title="@AppLocalizer[nameof(AppStrings.SignOut)]"
+           OkText="@AppLocalizer[nameof(AppStrings.SignOut)]"
+           CancelText="@AppLocalizer[nameof(AppStrings.Cancel)]"
+           Message="@AppLocalizer[nameof(AppStrings.SignOutPrompt)]"
+           Styles="@(new() { OkButton = "width:100%", CancelButton = "width:100%" })" />

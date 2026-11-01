@@ -48,11 +48,7 @@ public partial class ChromeShell
     }
 
     // The account actions change the view's scenario instead of calling a server.
-    public Task SignIn() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.SignedIn });
-
     public Task SignOut() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.SignedOut, User = 0 });
-
-    public Task AddAccount() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.MultiAccount });
 
     public Task SwitchAccount(WorkbenchDemoUser user) => ReportScenario(Scenario with { User = WorkbenchDemoUsers.All.ToList().IndexOf(user) });
 

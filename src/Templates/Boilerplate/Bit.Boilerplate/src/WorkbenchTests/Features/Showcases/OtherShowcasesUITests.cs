@@ -38,6 +38,60 @@ public class OtherShowcasesUITests : WorkbenchPageTest
         await Expect(Page.GetByText(new Regex(Regex.Escape(WorkbenchStrings.ShiftsSummary).Replace(@"\{0}", @"\d+").Replace(@"\{1}", @"[\d.,]+")))).ToBeVisibleAsync();
     }
 
+    private ILocator VisibleButton(string name) => Page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true }).Locator("visible=true");
+
+    private ILocator AccountMenu => Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DemoUserYas }).Locator("visible=true").First;
+
+    [TestMethod]
+    public async Task ANewView_Should_ListTheOtherAccountsWithTheFirstUserActive()
+    {
+        await OpenPreview("theme", "?device=desktop-1536");
+
+        await AccountMenu.ClickAsync();
+
+        await Expect(Page.GetByText(WorkbenchDemoUsers.All[0].Email).Locator("visible=true")).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DemoUserSaleh }).Locator("visible=true")).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DemoUserZahra }).Locator("visible=true")).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
+    public async Task SignOut_Should_AskAndThenSignTheViewOut()
+    {
+        await OpenPreview("theme", "?device=desktop-1536");
+
+        await AccountMenu.ClickAsync();
+        await VisibleButton(AppStrings.SignOut).ClickAsync();
+
+        var dialog = Page.GetByRole(AriaRole.Alertdialog);
+
+        await Expect(dialog.GetByText(AppStrings.SignOutPrompt)).ToBeVisibleAsync();
+        await dialog.GetByRole(AriaRole.Button, new() { Name = AppStrings.Cancel, Exact = true }).ClickAsync();
+        await Expect(AccountMenu).ToBeVisibleAsync();
+
+        await AccountMenu.ClickAsync();
+        await VisibleButton(AppStrings.SignOut).ClickAsync();
+        await dialog.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignOut, Exact = true }).ClickAsync();
+
+        await Expect(Page.Locator(".nav-panel").GetByText(AppStrings.SignIn, new() { Exact = true })).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
+    public async Task SignInAndSignUp_Should_ExplainInsteadOfChangingTheView()
+    {
+        await OpenPreview("theme", "?device=desktop-1536&auth=signedout");
+
+        var signUp = Page.Locator(".nav-panel").GetByRole(AriaRole.Button, new() { Name = AppStrings.SignUp, Exact = true });
+
+        await signUp.ClickAsync();
+
+        await Expect(Page.GetByText(WorkbenchStrings.SignInNote)).ToBeVisibleAsync();
+
+        await Page.GetByRole(AriaRole.Dialog).Locator("visible=true").GetByRole(AriaRole.Button).Last.ClickAsync();
+
+        await Expect(Page.GetByText(WorkbenchStrings.SignInNote)).ToHaveCountAsync(0);
+        await Expect(signUp).ToBeVisibleAsync();
+    }
+
     [TestMethod]
     public async Task TheSideMenu_Should_OfferASignedOutVisitorOnlyTheThemePage()
     {

@@ -54,15 +54,15 @@ what the user approves is how the real page will look.
   page back to its defaults.
 - Pages follow the app's sign-in rules the way they will in the app: `[Authorize]` with the app's policies on a page
   that needs them, and `AuthorizeView` around what only some users may see or do. The Workbench signs in as one of three
-  users with the app's roles: a global admin (the default), a tenant admin (a second global admin when the project has
-  no multitenancy) and a demo user. Pick one in the inspector to see what each gets; signed out, a page that needs
+  users with the app's user groups: a global admin (the default), a tenant admin (a second global admin when the project
+  has no multitenancy) and a demo user. Pick one in the inspector to see what each gets; signed out, a page that needs
   sign-in shows the app's not-authorized page.
 - Add it to `WorkbenchPageCatalog`: its key, title, description, icon, category, the components it shows off and the
   caption its store screenshots carry.
 - For a new page, offer two or three directions as design options in its catalog entry (`Variants`) and branch the
   markup on the view's variant; the first is the default. The user compares them side by side. Once they pick one,
   remove the others from the page and from the entry.
-- Cases only this page has, like how many items there are, a plan or a role, a feature on or off, or very long names,
+- Cases only this page has, like how many items there are, a plan or a user group, a feature on or off, or very long names,
   become page switches in its entry (`Switches`). Read the chosen value with the scenario's `GetSwitch` in the page or
   its sample service. They show in the inspector, go into links and screenshots, and Compare spreads one over the views.
 - Follow `AGENTS.md` section 5 as for any page of the app: bit BlazorUI components as they are, styled through their

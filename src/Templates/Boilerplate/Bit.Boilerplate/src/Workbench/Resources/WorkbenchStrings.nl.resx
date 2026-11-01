@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>Je kunt rondkijken, van weergave wisselen en schermafbeeldingen maken. Om iets te wijzigen moet een AI-agent de Workbench uitvoeren.</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>De aanmeldpagina's staan nog niet in de Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Kies je gebruiker op het tabblad Weergave, met de gebruikersgroep die je wilt, of vraag je agent deze pagina's naar de Workbench te halen, dan regelt hij het.</value>
+    </data>
 </root>

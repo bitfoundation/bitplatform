@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>Vous pouvez explorer, changer de vue et faire des captures. Pour modifier quoi que ce soit, un agent IA doit exécuter le Workbench.</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Les pages de connexion ne sont pas encore dans le Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Choisissez votre utilisateur dans l’onglet Vue, avec le groupe d’utilisateurs souhaité, ou demandez à votre agent d’ajouter ces pages au Workbench, il s’en occupe.</value>
+    </data>
 </root>

@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>می‌توانید بگردید، نماها را عوض کنید و اسکرین‌شات بگیرید. برای تغییر دادن، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>صفحه‌های ورود هنوز در Workbench نیستند</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>کاربرتان را با گروه کاربری موردنظر از زبانه نما انتخاب کنید، یا از عاملتان بخواهید این صفحه‌ها را به Workbench بیاورد تا انجامش دهد.</value>
+    </data>
 </root>

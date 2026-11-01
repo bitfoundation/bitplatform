@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>You can look around, switch views and take screenshots. Changing anything needs an AI agent running the Workbench.</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Sign-in pages aren't in the Workbench yet</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Pick your user in the View tab, with the user group you want, or ask your agent to bring these pages into the Workbench and it will take care of it.</value>
+    </data>
 </root>

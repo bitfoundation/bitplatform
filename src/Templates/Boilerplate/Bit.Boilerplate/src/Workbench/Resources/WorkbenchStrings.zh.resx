@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>你可以浏览、切换视图和截图。要进行修改，需要由 AI 智能体运行 Workbench。</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>登录页面尚未加入 Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>请在“视图”标签页中选择所需用户组的用户，或让您的智能体把这些页面加入 Workbench，它会处理好。</value>
+    </data>
 </root>

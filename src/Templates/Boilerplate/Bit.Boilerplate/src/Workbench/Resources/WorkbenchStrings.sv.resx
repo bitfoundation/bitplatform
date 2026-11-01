@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>Du kan titta runt, byta vy och ta skärmbilder. För att ändra något måste en AI-agent köra Workbench.</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Inloggningssidorna finns inte i Workbench än</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Välj din användare på fliken Vy, med den användargrupp du vill ha, eller be din agent att lägga till sidorna i Workbench så tar den hand om det.</value>
+    </data>
 </root>

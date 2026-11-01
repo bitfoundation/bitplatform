@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>يمكنك الاستكشاف وتبديل العروض والتقاط لقطات الشاشة. أما التغيير فيتطلب وكيل ذكاء اصطناعي يشغّل Workbench.</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>صفحات تسجيل الدخول ليست في Workbench بعد</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>اختر المستخدم من تبويب «العرض» بمجموعة المستخدمين التي تريدها، أو اطلب من وكيلك إضافة هذه الصفحات إلى Workbench وسيتولى الأمر.</value>
+    </data>
 </root>

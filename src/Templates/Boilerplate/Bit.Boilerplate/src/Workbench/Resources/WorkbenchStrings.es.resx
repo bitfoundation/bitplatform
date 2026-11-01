@@ -2796,4 +2796,10 @@
     <data name="AgentNotConnectedHint" xml:space="preserve">
         <value>Puedes explorar, cambiar de vista y hacer capturas. Para cambiar algo hace falta un agente de IA que ejecute el Workbench.</value>
     </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Las páginas de inicio de sesión aún no están en el Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Elige tu usuario en la pestaña Vista, con el grupo de usuarios que quieras, o pide a tu agente que traiga estas páginas al Workbench y él se encarga.</value>
+    </data>
 </root>
