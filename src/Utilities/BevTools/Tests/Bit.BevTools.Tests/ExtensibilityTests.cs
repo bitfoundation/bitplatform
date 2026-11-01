@@ -20,6 +20,7 @@ public class ExtensibilityTests : BunitContext
         {
             o.Enabled = true;
             o.Extensions.Add(new AcmeBevToolsExtension());
+            o.Extensions.Add(new FailingCommandExtension());
         });
         this.UseRenderer("Server");
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -138,6 +139,19 @@ public class ExtensibilityTests : BunitContext
         Assert.Contains(e => e.Contains("Broken", StringComparison.Ordinal), registry.ExtensionErrors);
         Assert.IsTrue(registry.IsEnabled);
     }
+
+    [TestMethod]
+    public void A_command_that_throws_is_reported_with_the_credentials_in_its_message_redacted()
+    {
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+
+        cut.Find("[data-bev-palette-opener]").Click();
+        cut.Find(".bev-palette input").Input(">" + FailingCommandExtension.Title);
+        cut.Find(".bev-palette").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+
+        cut.WaitForAssertion(() => Assert.AreEqual("Command failed: refresh failed for token " + BevRedactor.RedactedValue, cut.Find(".bev-notification").TextContent));
+    }
 }
 
 public readonly record struct Money(decimal Amount);
@@ -229,6 +243,27 @@ public sealed class BrokenExtension : IBevToolsExtension
     public string Name => "Broken";
 
     public void Configure(IBevToolsExtensionBuilder builder) => throw new InvalidOperationException("nope");
+}
+
+public sealed class FailingCommandExtension : IBevToolsExtension
+{
+    public const string Title = "Refresh the Acme feed";
+
+    public string Name => "Failing command";
+
+    public void Configure(IBevToolsExtensionBuilder builder) => builder.AddCommand(new FailingCommand());
+
+    private sealed class FailingCommand : IBevToolsCommand
+    {
+        public string Id => "acme.refresh";
+
+        public string Title => FailingCommandExtension.Title;
+
+        public string Category => "Acme";
+
+        public Task ExecuteAsync(IBevToolsCommandContext context, string? argument) =>
+            throw new InvalidOperationException("refresh failed for token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJl");
+    }
 }
 
 public class AcmePanel : ComponentBase

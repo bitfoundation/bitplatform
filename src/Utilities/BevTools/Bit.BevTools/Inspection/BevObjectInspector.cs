@@ -43,6 +43,8 @@ public sealed class BevObjectInspector
     private static readonly ConcurrentDictionary<Type, PropertyInfo?> PairNameCache = new();
     private static readonly ConcurrentDictionary<Type, string?> ConfigurationTypeCache = new();
     private readonly BevRedactor _redactor;
+    // Per instance, unlike the caches above: which members are sensitive depends on the redactor's name patterns.
+    private readonly ConcurrentDictionary<Type, bool> _sensitiveMemberCache = new();
     private readonly IReadOnlyDictionary<Type, BevToolsValueFormatter> _formatters;
     private readonly int _maxItems;
     private readonly int _maxString;
@@ -72,6 +74,19 @@ public sealed class BevObjectInspector
         _redactor.IsSensitiveName(name)
             ? new BevInspectedNode(name, value?.GetType() is { } rt ? TypeNames.Short(rt) : null, BevRedactor.RedactedValue, BevNodeKind.Redacted, "", false)
             : DescribeCore(name, value, "", null, ValueAccess == BevValueAccess.None ? BevValueAccess.Shallow : ValueAccess);
+
+    /// <summary>
+    /// The items of a list of strings in a timeline event's data that may be shown one by one, each redacted, or null
+    /// when only <see cref="DescribeMetadata"/>'s summary may. A render's changed fields and parameters may be at any
+    /// access: they are displays the session captured under its own <see cref="ValueAccess"/> and redacted then
+    /// (<c>RenderTracker.CaptureStateDiff</c>). Any other list holds an extension's values, whose items only
+    /// <see cref="BevValueAccess.Full"/> shows. The timeline panel and both exporters ask this, so none of them shows
+    /// more than the others.
+    /// </summary>
+    internal IEnumerable<string?>? EventDataItems(IReadOnlyDictionary<string, object?> data, string key, object? value) =>
+        value is IEnumerable<string> strings && (data is RenderEventData || ValueAccess == BevValueAccess.Full) && !_redactor.IsSensitiveName(key)
+            ? strings.Select(item => item is null ? null : BevRedactor.RedactText(item))
+            : null;
 
     private BevInspectedNode Describe(string name, object? value, string path, MemberInfo? member, List<object>? ancestors)
     {
@@ -464,24 +479,28 @@ public sealed class BevObjectInspector
         return TypeNames.Short(type);
     }
 
-    /// <summary>True when any member of the type would be redacted, in which case its ToString must not be shown.</summary>
-    private bool HasSensitiveMember(Type type)
+    /// <summary>
+    /// True when any member of the type would be redacted, in which case its ToString must not be shown. Asked for every
+    /// object displayed, on every render when state is captured on render; the answer depends only on the type and this
+    /// inspector's redactor, so it is worked out once per type.
+    /// </summary>
+    private bool HasSensitiveMember(Type type) => _sensitiveMemberCache.GetOrAdd(type, static (t, inspector) =>
     {
-        if (HasIgnoredMember(type))
+        if (HasIgnoredMember(t))
         {
             return true;
         }
 
-        foreach (var member in GetMembers(type))
+        foreach (var member in GetMembers(t))
         {
-            if (_redactor.IsSensitive(member))
+            if (inspector._redactor.IsSensitive(member))
             {
                 return true;
             }
         }
 
         return false;
-    }
+    }, this);
 
     private static string SafeToString(object value)
     {

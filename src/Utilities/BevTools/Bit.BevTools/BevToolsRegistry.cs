@@ -32,7 +32,7 @@ public sealed class BevToolsRegistry
             }
             catch (Exception ex)
             {
-                ExtensionErrors.Add(extension.Name + ": " + ex.Message);
+                ExtensionErrors.Add(extension.Name + ": " + BevRedactor.RedactText(ex.Message));
             }
         }
 

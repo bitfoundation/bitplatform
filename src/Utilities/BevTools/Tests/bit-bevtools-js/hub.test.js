@@ -197,6 +197,42 @@ describe('browser failures', () => {
         expect(csp.message).not.toContain('xyz');
         hub.detach();
     });
+
+    it('sends no more of a script error than BevTools accepts', async () => {
+        const { win } = installPage();
+        const hub = await loadHub();
+        const ref = runtime(1);
+        hub.attach(ref, null);
+
+        const error = new Error('m'.repeat(5000));
+        error.name = 'N'.repeat(500);
+        win.dispatch('error', { error, message: error.message });
+
+        const [report] = ref.reported('OnJsError').map(c => c[1]);
+        expect(report.message).toHaveLength(4000);
+        expect(report.type).toHaveLength(200);
+        expect(report.stack.length).toBeLessThanOrEqual(4000);
+        hub.detach();
+    });
+
+    it('never cuts a surrogate pair in half nor sends a lone surrogate, which .NET cannot read', async () => {
+        const { win } = installPage();
+        const hub = await loadHub();
+        const ref = runtime(1);
+        hub.attach(ref, null);
+
+        const error = new Error('m'.repeat(3999) + '\u{1F600}');
+        error.name = 'N'.repeat(199) + '\u{1F600}';
+        error.stack = 'at a \uD800 b';
+        win.dispatch('error', { error, message: error.message });
+
+        const [report] = ref.reported('OnJsError').map(c => c[1]);
+        expect(report.message).toBe('m'.repeat(3999));
+        expect(report.type).toBe('N'.repeat(199));
+        expect(report.stack).toBe('at a \uFFFD b');
+        expect(JSON.stringify(report)).not.toMatch(/\\ud[89ab]/i);
+        hub.detach();
+    });
 });
 
 describe('reconnects', () => {
@@ -445,6 +481,34 @@ describe('redaction in the hub', () => {
         const url = hub.redactUrl('https://user:pass@app.example/_blazor?id=abc&page=2&x=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln#access_token=t');
 
         expect(url).toBe('https://«redacted»@app.example/_blazor?id=«redacted»&page=2&x=«redacted»#access_token=«redacted»');
+        hub.detach();
+    });
+
+    it('takes a token right after an escape for one, and reads a long run of base64url text in linear time', async () => {
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), null);
+        const run = 'ey'.repeat(50_000);
+
+        const escaped = hub.redactUrl('https://app.example/?note=line%5Cn' + 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln');
+        const start = performance.now();
+        const long = hub.redactUrl('https://app.example/?q=' + run);
+        const elapsed = performance.now() - start;
+
+        expect(escaped).toBe('https://app.example/?note=«redacted»');
+        expect(long).toBe('https://app.example/?q=' + run);
+        expect(elapsed).toBeLessThan(1000);
+        hub.detach();
+    });
+
+    it('leaves dotted text with "ey" inside a word alone', async () => {
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), null);
+
+        for (const value of ['survey_results.annual_report.pdf', 'monkey-business.example-site.com', 'Bit.Demo.Keyboard_Shortcuts.Handlers.Register']) {
+            expect(hub.redactUrl('https://app.example/?v=' + value)).toBe('https://app.example/?v=' + value);
+        }
         hub.detach();
     });
 
