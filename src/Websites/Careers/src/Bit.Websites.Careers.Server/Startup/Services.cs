@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Careers.Server.Services;
 using Microsoft.AspNetCore.Antiforgery;
-using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Bit.Belemetry;
 
 namespace Bit.Websites.Careers.Server.Startup;
 
@@ -48,17 +48,19 @@ public static class Services
 
         services.AddTransient(sp => sp.GetRequiredService<IOptionsSnapshot<AppSettings>>().Value);
 
-        // Add Azure Application Insights using OpenTelemetry if connection string is configured in appsettings.json
+        // Add Azure Application Insights using Belemetry if connection string is configured in appsettings.json
         var appInsightsConnectionString = configuration["ApplicationInsights:ConnectionString"];
         if (string.IsNullOrWhiteSpace(appInsightsConnectionString) is false)
         {
-            services.AddOpenTelemetry().UseAzureMonitor(options =>
+            services.AddBitBelemetryServices(options =>
             {
-                options.ConnectionString = appInsightsConnectionString;
-            }).WithLogging(configureBuilder: null, configureOptions: options =>
-            {
-                options.IncludeScopes = true;
-                options.IncludeFormattedMessage = true;
+                // service.name (cloud_RoleName) comes from the OTEL_SERVICE_NAME environment variable, else the entry assembly name.
+                options.Environment = env.EnvironmentName;
+                // On an ASP.NET Core host Belemetry only serves its browser script unless its .NET pipeline is turned on.
+                options.Server.CollectDotnetTelemetry = true;
+                // Blazor's framework files and package assets: a request span each would be static-file noise.
+                options.Server.IgnoredRequestPaths.AddRange(["/_framework", "/_content"]);
+                options.AddAzureMonitorExporter(appInsightsConnectionString, azure => azure.EnableLiveMetrics = true);
             });
         }
 
