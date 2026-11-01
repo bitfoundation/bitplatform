@@ -253,6 +253,20 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownViewerShouldBlockRemoteImagesWithoutSlashesInSameOriginMode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![leak](https:attacker.com/leak.png) ![tab](<https:&#9;//attacker.com/leak.png>)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(2, imgs.Count);
+        Assert.IsTrue(imgs.All(img => string.IsNullOrEmpty(img.GetAttribute("src"))));
+    }
+
+    [TestMethod]
     public void BitMarkdownViewerShouldKeepRelativeImagesInSameOriginMode()
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>

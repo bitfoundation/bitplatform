@@ -23,8 +23,8 @@ public static class BitMarkdownLinkHelpers
     /// </remarks>
     public static bool IsExternalUrl(string? url)
         => string.IsNullOrEmpty(url) is false
-           && (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-               || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+           && (url.StartsWith("http:", StringComparison.OrdinalIgnoreCase)
+               || url.StartsWith("https:", StringComparison.OrdinalIgnoreCase)
                || url.StartsWith("//", StringComparison.Ordinal));
 
     /// <summary>

@@ -2752,6 +2752,28 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownTokenSeparatorsShouldCommitALongPasteWithoutQuadraticRebuilds()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.TokenSeparators, new[] { ',' });
+            parameters.Add(p => p.DynamicValueGenerator, (BitDropdownItem<string>? item) => item?.Text ?? string.Empty);
+        });
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        component.Find(".bit-drp-inp").Input(string.Join(',', Enumerable.Range(0, 1_500).Select(i => $"t{i}")));
+
+        Assert.IsTrue(watch.Elapsed < TimeSpan.FromSeconds(5), $"the paste took {watch.Elapsed}");
+        Assert.AreEqual(1_500, component.Instance.SelectedItems.Count);
+    }
+
+    [TestMethod]
     public void BitDropdownOpenOnFocusShouldOpenTheCalloutButNotReopenAfterADismissal()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

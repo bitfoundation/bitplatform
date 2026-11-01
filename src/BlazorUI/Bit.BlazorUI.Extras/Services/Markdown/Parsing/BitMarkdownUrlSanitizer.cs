@@ -37,6 +37,9 @@ internal static partial class BitMarkdownUrlSanitizer
 
         string trimmed = url.Trim();
 
+        if (ControlChars().IsMatch(trimmed))
+            return string.Empty;
+
         // Browsers treat leading backslashes like slashes when resolving URLs
         // (e.g. "\\evil.com" and "/\evil.com" behave like "//evil.com"), so reject
         // any URL whose leading run of separators contains a backslash.

@@ -13,6 +13,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitPdfFont
 {
+    private const int MaxCid = 0xFFFF;
+    private const int MaxCidWidthEntries = 1 << 20;
+
     private readonly bool _isType0;
     private readonly int _firstChar;
     private readonly double[] _widths;          // simple-font widths, 1000-em
@@ -638,6 +641,7 @@ public sealed class BitPdfFont
     {
         // Two forms: "c [w1 w2 ...]" and "cFirst cLast w". Array elements (and the
         // inner width list) may be indirect references, so resolve each.
+        var expanded = new BitPdfBudget(MaxCidWidthEntries);
         int i = 0;
         while (i < w.Count)
         {
@@ -661,7 +665,13 @@ public sealed class BitPdfFont
             }
             else if (second is double last && i + 2 < w.Count && xref.FetchIfRef(w[i + 2]) is double width)
             {
-                for (int cid = (int)first; cid <= (int)last; cid++)
+                int from = (int)Math.Max(first, 0);
+                int to = (int)Math.Min(last, MaxCid);
+                if (to >= from && expanded.TrySpend(to - from + 1) is false)
+                {
+                    break;
+                }
+                for (int cid = from; cid <= to; cid++)
                 {
                     cidWidths[cid] = width;
                 }

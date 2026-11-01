@@ -119,6 +119,17 @@ public sealed partial class BitMarkdownAutoLinkAstProcessor : BitMarkdownAstProc
     // matching openers), so URLs like "https://e.com/Foo_(bar)" keep their bracket.
     private static int TrimmedLength(string url)
     {
+        int parens = 0, brackets = 0, braces = 0;
+        foreach (char ch in url)
+        {
+            if (ch == ')') parens++;
+            else if (ch == '(') parens--;
+            else if (ch == ']') brackets++;
+            else if (ch == '[') brackets--;
+            else if (ch == '}') braces++;
+            else if (ch == '{') braces--;
+        }
+
         int end = url.Length;
         while (end > 0)
         {
@@ -130,14 +141,8 @@ public sealed partial class BitMarkdownAutoLinkAstProcessor : BitMarkdownAstProc
             }
             if (c is ')' or ']' or '}')
             {
-                char open = c == ')' ? '(' : c == ']' ? '[' : '{';
-                int closers = 0, openers = 0;
-                for (int k = 0; k < end; k++)
-                {
-                    if (url[k] == c) closers++;
-                    else if (url[k] == open) openers++;
-                }
-                if (closers > openers) { end--; continue; }
+                ref int unbalanced = ref c == ')' ? ref parens : ref c == ']' ? ref brackets : ref braces;
+                if (unbalanced > 0) { unbalanced--; end--; continue; }
             }
             break;
         }

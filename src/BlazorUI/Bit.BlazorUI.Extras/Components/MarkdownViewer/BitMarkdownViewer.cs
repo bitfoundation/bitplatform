@@ -394,7 +394,12 @@ public partial class BitMarkdownViewer : BitComponentBase
 
         try
         {
-            return pipeline.Parse(source, options);
+            var document = pipeline.Parse(source, options);
+
+            if (StripBidiControlCharacters)
+                StripDecodedBidiControlCharacters(document);
+
+            return document;
         }
         catch (RegexMatchTimeoutException)
         {
@@ -406,6 +411,42 @@ public partial class BitMarkdownViewer : BitComponentBase
             fallback.Children.Add(paragraph);
             return fallback;
         }
+    }
+
+    private static void StripDecodedBidiControlCharacters(BitMarkdownDocumentNode document)
+    {
+        BitMarkdownAstHelper.VisitChildLists(document, list =>
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                switch (list[i])
+                {
+                    case BitMarkdownTextNode text:
+                        text.Text = BitMarkdownTextSanitizer.StripBidiControlCharacters(text.Text);
+                        break;
+
+                    case BitMarkdownImageNode image:
+                        list[i] = new BitMarkdownImageNode
+                        {
+                            Url = image.Url,
+                            Title = image.Title is null ? null : BitMarkdownTextSanitizer.StripBidiControlCharacters(image.Title),
+                            Alt = BitMarkdownTextSanitizer.StripBidiControlCharacters(image.Alt)
+                        };
+                        break;
+
+                    case BitMarkdownLinkNode { Title: not null } link:
+                        var stripped = new BitMarkdownLinkNode
+                        {
+                            Url = link.Url,
+                            Title = BitMarkdownTextSanitizer.StripBidiControlCharacters(link.Title),
+                            IsAutoLink = link.IsAutoLink
+                        };
+                        stripped.Children.AddRange(link.Children);
+                        list[i] = stripped;
+                        break;
+                }
+            }
+        });
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -745,8 +786,8 @@ public partial class BitMarkdownViewer : BitComponentBase
         if (string.IsNullOrEmpty(url))
             return false;
 
-        var isAbsolute = url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                         url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+        var isAbsolute = url.StartsWith("http:", StringComparison.OrdinalIgnoreCase) ||
+                         url.StartsWith("https:", StringComparison.OrdinalIgnoreCase);
         var isProtocolRelative = url.StartsWith("//", StringComparison.Ordinal);
 
         // Relative paths, fragments and same-document references never leave the origin.

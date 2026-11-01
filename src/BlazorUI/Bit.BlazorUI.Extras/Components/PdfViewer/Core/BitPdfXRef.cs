@@ -29,6 +29,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
     private readonly Dictionary<(int Num, int Gen), object?> _cache = new();
     private readonly Dictionary<int, List<object?>> _objStmCache = new();
     private readonly HashSet<int> _pending = new();
+    private const int MaxPendingFetches = 64;
 
     private BitPdfStandardSecurityHandler? _security;
     private int _encryptRefNum = -1;
@@ -439,7 +440,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         {
             return null;
         }
-        if (!_pending.Add(reference.Num))
+        if (_pending.Count >= MaxPendingFetches || !_pending.Add(reference.Num))
         {
             return null; // cycle
         }
@@ -665,12 +666,13 @@ public sealed class BitPdfXRef : IBitPdfXRef
         for (int i = 0; i < n; i++)
         {
             int objStart = first + offsets[i];
-            if (objStart < 0 || objStart >= data.Length)
+            int length = i + 1 < n ? offsets[i + 1] - offsets[i] : data.Length - objStart;
+            if (objStart < 0 || objStart >= data.Length || length <= 0 || length > data.Length - objStart)
             {
                 result.Add(null);
                 continue;
             }
-            var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, objStart)), this);
+            var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, objStart, length)), this);
             result.Add(parser.GetObj());
         }
 
@@ -852,9 +854,10 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 break;
             }
             start = i + 1;
+            var lexer = new BitPdfLexer(_source.CreateStream(i + kw.Length));
             try
             {
-                var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(i + kw.Length)), this, _reader, allowStreams: false);
+                var parser = new BitPdfParser(lexer, this, _reader, allowStreams: false);
                 if (parser.GetObj() is BitPdfDict d)
                 {
                     result = d; // keep the last (most recent) trailer
@@ -864,6 +867,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 // Ignore an unparseable trailer candidate.
             }
+            start = Math.Max(start, lexer.Pos);
         }
         return result;
     }

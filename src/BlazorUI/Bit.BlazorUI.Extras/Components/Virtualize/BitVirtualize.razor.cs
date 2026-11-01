@@ -17,6 +17,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     // proportionally between the real (capped) and the virtual (full) extent so the whole range stays reachable.
     private const double MaxCssSize = 10_000_000d;
     private const int ProviderCacheCap = 600;
+    private const int MaxRenderedItems = 1000;
     private const int SizeCacheCap = 20_000;
     // How many measurement batches a dynamic ScrollToIndex keeps re-aligning its target for.
     private const int MaxScrollRealignBatches = 10;
@@ -451,6 +452,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
                               double headSize = double.NaN, double tailSize = double.NaN)
     {
         if (IsDisposing) return;
+        if (double.IsFinite(scrollOffset) is false || double.IsFinite(viewportSize) is false || viewportSize < 0) return;
 
         var viewportChanged = Math.Abs(viewportSize - _viewportSize) > 0.5;
         int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
@@ -1444,7 +1446,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     {
         var size = (Dynamic ? EstimatedSize : FixedSize) + _gap;
         var viewport = _viewportSize > 0 ? _viewportSize : BitVirtualizeWindow.AssumedViewportSize;
-        return BitVirtualizeWindow.Estimate(size, Overscan, viewport) * _lanes;
+        return (int)Math.Min((long)BitVirtualizeWindow.Estimate(size, Overscan, viewport) * _lanes, MaxRenderedItems);
     }
 
     private bool TryGetItem(int index, out TItem item)
@@ -1680,9 +1682,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         var endTrack = FindTrackAtOffset(Math.Max(offset, end - 0.01)) + 1;
 
         var newVisibleStart = Math.Min(startTrack * _lanes, _itemCount);
-        var newVisibleEnd = Math.Min(endTrack * _lanes, _itemCount);
-        var newRenderStart = Math.Max(0, startTrack - Overscan) * _lanes;
-        var newRenderEnd = (int)Math.Min(_itemCount, ((long)endTrack + Overscan) * _lanes);
+        var newRenderStart = Math.Max(0, startTrack - Math.Min(Overscan, MaxRenderedItems / _lanes)) * _lanes;
+        var newRenderEnd = (int)Math.Min(_itemCount, Math.Min(((long)endTrack + Overscan) * _lanes, (long)newVisibleStart + MaxRenderedItems));
+        var newVisibleEnd = Math.Min(Math.Min(endTrack * _lanes, _itemCount), newRenderEnd);
 
         var rangeChanged = newVisibleStart != _visibleStart || newVisibleEnd != _visibleEnd;
 
