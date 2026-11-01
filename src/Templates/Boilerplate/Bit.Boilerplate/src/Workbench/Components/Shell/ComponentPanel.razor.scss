@@ -1,0 +1,136 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.component-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.note {
+    padding: 0.75rem 1rem 0;
+}
+
+section {
+    gap: 0.625rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+// The titles, the source line and the status are BitText components, reached through their Class.
+::deep .section-title {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+::deep .component-name {
+    font-weight: 600;
+}
+
+::deep .source {
+    font-family: ui-monospace, monospace;
+    overflow-wrap: anywhere;
+}
+
+::deep .status {
+    color: $bit-color-success;
+}
+
+::deep .group-title {
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.parameter {
+    gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.parameter-head {
+    gap: 0.375rem;
+    display: flex;
+    min-height: 1.75rem;
+    align-items: center;
+}
+
+.parameter-name {
+    font-weight: 600;
+    font-size: 0.8125rem;
+}
+
+.parameter-type {
+    flex-grow: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: $bit-color-foreground-secondary;
+    font-family: ui-monospace, monospace;
+}
+
+.code {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+    color: $bit-color-foreground-secondary;
+    background: $bit-color-background-secondary;
+    font-family: ui-monospace, monospace;
+}
+
+.parts {
+    gap: 0.375rem;
+    display: flex;
+    flex-direction: column;
+    padding-inline-start: 0.5rem;
+    border-inline-start: 2px solid $bit-color-border-tertiary;
+}
+
+.variable {
+    gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+// A parameter's documentation, or a variable's full name, shown quickly under its name while the pointer is on it,
+// without taking the pointer from what's below.
+[data-doc] {
+    position: relative;
+
+    &::after {
+        top: 100%;
+        opacity: 0;
+        z-index: 2;
+        line-height: 1.4;
+        font-weight: 400;
+        inset-inline: 0;
+        position: absolute;
+        font-size: 0.75rem;
+        visibility: hidden;
+        white-space: normal;
+        pointer-events: none;
+        content: attr(data-doc);
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.5rem;
+        color: $bit-color-background-primary;
+        background: $bit-color-foreground-primary;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
+        transition: opacity 0.1s ease, visibility 0s linear 0.1s;
+    }
+
+    &:hover::after {
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 0.15s;
+    }
+}
+
+.variable-name {
+    overflow: hidden;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-family: ui-monospace, monospace;
+}

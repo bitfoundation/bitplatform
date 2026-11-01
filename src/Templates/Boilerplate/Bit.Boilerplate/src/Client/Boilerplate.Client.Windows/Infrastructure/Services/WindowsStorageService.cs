@@ -2,6 +2,7 @@
 // - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiStorageService.cs
 // - src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebStorageService.cs
 // - src/Tests/Infrastructure/Services/TestStorageService.cs
+// - src/Workbench/Infrastructure/Services/StandIns/WorkbenchStorageService.cs
 // IStorageServiceContractTests pins the behaviour all four must share.
 
 using System.IO.IsolatedStorage;

@@ -1,0 +1,23 @@
+@inherits PosWidgetBase<PosHourlySales[]>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[nameof(WorkbenchStrings.PosSalesByHourSubtitle)]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoSalesYet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoSalesYetDescription)">
+    <Skeleton>
+        <div class="bars-skeleton">
+            @foreach (var height in skeletonHeights)
+            {
+                <BitShimmer Height="@($"{height}%")" />
+            }
+        </div>
+    </Skeleton>
+    <ChildContent>
+        <div class="chart">
+            <BitChart Type="BitChartType.Bar" Data="chartData" Options="chartOptions" Description="@Localizer[Definition.TitleKey]" />
+        </div>
+    </ChildContent>
+</PosWidgetFrame>

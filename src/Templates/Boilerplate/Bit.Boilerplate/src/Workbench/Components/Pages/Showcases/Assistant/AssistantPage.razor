@@ -1,0 +1,77 @@
+@inherits WorkbenchComponentBase
+
+<BitAiOptionsProvider UiOptions="uiOptions">
+    <div class="assistant @(Scenario.Chrome ? null : "bare")">
+        @* The history beside the chat on wide screens; narrow ones open the same list in the side panel below. *@
+        <aside class="history">
+            <AssistantHistory Conversations="Summaries" SelectedId="@session.Conversation.ConversationId" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" OnDelete="Delete" />
+        </aside>
+
+        <section class="chat">
+            <BitAiChat @key="session" Session="session" Disabled="IsBlocked" OnFeedback="KeepCurrent">
+                <HeaderTemplate>
+                    <header class="chat-header">
+                        <BitButton IconOnly Variant="BitVariant.Text"
+                                   IconName="@BitIconName.History"
+                                   Class="history-toggle"
+                                   Title="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
+                                   AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
+                                   OnClick="() => store.ShowHistory(true)" />
+                        <h2 class="chat-title">@(session.Conversation.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</h2>
+                        <BitAiModelSelector Models="assistantService.Models"
+                                            ModelId="@Model.ModelId"
+                                            ModelIdChanged="ChooseModel"
+                                            Disabled="IsBlocked || session.IsGenerating"
+                                            Class="model" />
+                    </header>
+                </HeaderTemplate>
+                <EmptyTemplate>
+                    @* No messages yet: the history's placeholder while it loads, its error with a retry, or the welcome. *@
+                    @if (isLoading)
+                    {
+                        <div class="placeholder">
+                            <BitShimmer Height="2.5rem" Width="45%" Class="shimmer-user" />
+                            <BitShimmer Height="7rem" Width="85%" />
+                            <BitShimmer Height="2.5rem" Width="35%" Class="shimmer-user" />
+                            <BitShimmer Height="5rem" Width="70%" />
+                        </div>
+                    }
+                    else if (isFailed)
+                    {
+                        <BitAiErrorView Error="loadError" OnRetry="LoadConversations" />
+                    }
+                    else
+                    {
+                        <BitAiEmptyState IconName="@BitIconName.Robot"
+                                         Title="@Localizer[nameof(WorkbenchStrings.AssistantWelcomeTitle)]"
+                                         Body="@Localizer[nameof(WorkbenchStrings.AssistantWelcomeText)]"
+                                         Suggestions="suggestions"
+                                         OnSuggestion="Ask" />
+                    }
+                </EmptyTemplate>
+                <ComposerTemplate>
+                    <BitAiPromptInput Session="session"
+                                      Model="Model"
+                                      Value="@(store.Prompt ?? string.Empty)"
+                                      ValueChanged="store.Write"
+                                      Disabled="IsBlocked"
+                                      Placeholder="@Localizer[nameof(WorkbenchStrings.AssistantPromptPlaceholder)]">
+                        <HintTemplate>
+                            <BitAiContextMeter Conversation="session.Conversation" />
+                        </HintTemplate>
+                    </BitAiPromptInput>
+                </ComposerTemplate>
+                <FooterTemplate>
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="disclaimer">@Localizer[nameof(WorkbenchStrings.AssistantDisclaimer)]</BitText>
+                </FooterTemplate>
+            </BitAiChat>
+
+            @* The history on narrow screens, opened by the header's history button. *@
+            <BitPanel IsOpen="store.IsHistoryOpen" IsOpenChanged="store.ShowHistory" Placement="BitPlacement.Start" Classes="@(new() { Container = "history-panel" })">
+                <div class="history-sheet">
+                    <AssistantHistory Conversations="Summaries" SelectedId="@session.Conversation.ConversationId" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" OnDelete="Delete" />
+                </div>
+            </BitPanel>
+        </section>
+    </div>
+</BitAiOptionsProvider>

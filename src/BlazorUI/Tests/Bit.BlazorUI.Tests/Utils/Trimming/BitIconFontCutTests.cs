@@ -212,6 +212,28 @@ public sealed class BitIconFontCutTests
     }
 
     [TestMethod]
+    [DataRow("Bit.BlazorUI.Extras", "fabric.mdl2.bit.blazoui.extras.scss", "bit-icon-ex")]
+    [DataRow("Bit.BlazorUI.AI", "fabric.mdl2.bit.blazoui.ai.scss", "bit-icon-ai")]
+    public void APackagesGlyphSubsetShouldHoldEveryGlyphItsStylesheetDraws(string package, string file, string glyphClass)
+    {
+        // The subset is cut from Bit.BlazorUI.Icons' font by hand, beside the rules naming its glyphs, and no publish cuts it
+        // again: a rule added without its glyph cut into the woff2 draws nothing, whatever icons the app links.
+        var stylesheet = SourceFiles.Read(package, "Styles", file);
+        var font = Regex.Match(stylesheet, @"url\('\.\./fonts/(?<file>[^']+)'\)").Groups["file"].Value;
+        var cmap = TrueTypeSubsetter.ReadCmap(Woff2.Read(File.ReadAllBytes(SourceFiles.GetPath(package, "wwwroot", "fonts", font))).Tables["cmap"]);
+        var full = TrueTypeSubsetter.ReadCmap(Icons.Value.Tables["cmap"]);
+
+        var rules = Regex.Matches(stylesheet, $@"\.{Regex.Escape(glyphClass)}--(?<name>[A-Za-z0-9]+)::before\s*\{{[^}}]*\}}").ToList();
+        Assert.AreNotEqual(0, rules.Count, $"{file} has no .{glyphClass}--Name rule.");
+
+        var missing = rules.Where(r => IconFontSubsetter.Codepoint(r.Value) is not { } codepoint || cmap.GetValueOrDefault(codepoint) is 0 || full.ContainsKey(codepoint) is false)
+                           .Select(r => r.Groups["name"].Value)
+                           .ToArray();
+
+        Assert.AreEqual(0, missing.Length, $"Drawn by {file} but not a glyph of {font} cut from FabMDL2: {string.Join(", ", missing)}");
+    }
+
+    [TestMethod]
     [DataRow(".bit-icon--Add::before{content:\"\\E710\"}", 0xE710)]
     [DataRow(".bit-icon--Add::before { content: \"\\e710 \" }", 0xE710)]
     [DataRow(".bit-icon--Add::before{content:\"\uE710\"}", 0xE710)]

@@ -205,20 +205,36 @@ public class BitPdfWorkLimitsTests
             "1 begincodespacerange <0000> <FFFF> endcodespacerange\n" +
             "3 begincidrange <0000> <00FF> 100 <0010> <0020> 900 <0080> <01FF> 2000 endcidrange"));
 
-        Assert.AreEqual(116, overlapping.Lookup(0x0010));
-        Assert.AreEqual(228, overlapping.Lookup(0x0080));
+        // Where ranges overlap, the one written later wins, as it does in a CMap read in stream order.
+        Assert.AreEqual(900, overlapping.Lookup(0x0010));
+        Assert.AreEqual(133, overlapping.Lookup(0x0021));
+        Assert.AreEqual(2000, overlapping.Lookup(0x0080));
         Assert.AreEqual(2128, overlapping.Lookup(0x0100));
         Assert.AreEqual(0x0300, overlapping.Lookup(0x0300));
         for (int code = 0; code < 0x0200; code++)
         {
-            Assert.AreEqual(code < 0x0100 ? 100 + code : 2000 + code - 0x0080, overlapping.Lookup(code));
+            int expected = code >= 0x0080 ? 2000 + code - 0x0080 : code is >= 0x0010 and <= 0x0020 ? 900 + code - 0x0010 : 100 + code;
+            Assert.AreEqual(expected, overlapping.Lookup(code));
         }
 
+        var corrected = BitPdfCMap.Parse(Encoding.Latin1.GetBytes(
+            "1 begincodespacerange <0000> <FFFF> endcodespacerange\n" +
+            "1 begincidchar <0005> 50 endcidchar\n" +
+            "1 begincidrange <0000> <00FF> 100 endcidrange\n" +
+            "1 begincidchar <0006> 60 endcidchar"));
+
+        Assert.AreEqual(105, corrected.Lookup(0x0005)); // a range written after a cidchar overrides it
+        Assert.AreEqual(60, corrected.Lookup(0x0006));  // and a cidchar written after a range overrides that
+        Assert.AreEqual(107, corrected.Lookup(0x0007));
+
         var topmost = BitPdfCMap.Parse(Encoding.Latin1.GetBytes(
+            "1 begincodespacerange <0000000000000000> <7FFFFFFFFFFFFFFF> endcodespacerange\n" +
             "1 begincidrange <7FFFFFFFFFFFFFF0> <7FFFFFFFFFFFFFFF> 5 endcidrange"));
 
+        Assert.AreEqual(8, topmost.CodeLength);
         Assert.AreEqual(6, topmost.Lookup(0x7FFFFFFFFFFFFFF1));
         Assert.AreEqual(19, topmost.Lookup(0x7FFFFFFFFFFFFFFE));
+        Assert.AreEqual(20, topmost.Lookup(long.MaxValue)); // the range covers the top code too
     }
 
     [TestMethod]
@@ -230,5 +246,54 @@ public class BitPdfWorkLimitsTests
         Assert.AreEqual("A", map.Lookup(1));
         Assert.AreEqual("C", map.Lookup(3));
         Assert.AreSame(map.Lookup(1), map.Lookup(1));
+    }
+
+    [TestMethod]
+    public void AToUnicodeMapShouldResolveCodesThroughOverlappingRanges()
+    {
+        var map = BitPdfToUnicodeCMap.Parse(Encoding.Latin1.GetBytes(
+            "2 beginbfchar <0011> <0058> <0300> <0059> endbfchar\n" +
+            "3 beginbfrange <0010> <0020> <0041> <0018> <0030> <0061> <0200> <0100> <0030> endbfrange\n" +
+            "1 beginbfchar <0019> <005A> endbfchar"));
+
+        // Whichever entry is written later wins, as it does in a CMap read in stream order.
+        Assert.AreEqual("A", map.Lookup(0x10));
+        Assert.AreEqual("B", map.Lookup(0x11)); // a range written after a bfchar overrides it
+        Assert.AreEqual("H", map.Lookup(0x17));
+        Assert.AreEqual("a", map.Lookup(0x18)); // the later range wins where two overlap
+        Assert.AreEqual("Z", map.Lookup(0x19)); // and a bfchar written after both wins over them
+        Assert.AreEqual("i", map.Lookup(0x20));
+        Assert.AreEqual("j", map.Lookup(0x21));
+        Assert.AreEqual("y", map.Lookup(0x30));
+        Assert.IsNull(map.Lookup(0x31));
+        Assert.IsNull(map.Lookup(0x200)); // a range whose low end is past its high end maps nothing
+        Assert.AreEqual("Y", map.Lookup(0x300));
+    }
+
+    [TestMethod]
+    public void AToUnicodeMapWithManyRangesShouldBeIndexedOnceForEveryLookup()
+    {
+        // Every other code of 20,000 two-code ranges, all read through the one index the first lookup
+        // builds: rebuilt for every lookup the loop below takes minutes, and a scan of every range seconds.
+        const int ranges = 20_000;
+        const int lookups = 200_000;
+        string entries = string.Concat(Enumerable.Range(0, ranges).Select(i => $"<{i * 4:X8}> <{i * 4 + 1:X8}> <0041>\n"));
+        var map = BitPdfToUnicodeCMap.Parse(Encoding.Latin1.GetBytes($"{ranges} beginbfrange\n{entries}endbfrange"));
+
+        var watch = Stopwatch.StartNew();
+        int mapped = 0;
+        for (int i = 0; i < lookups; i++)
+        {
+            int code = (i % ranges) * 4 + (i & 3);
+            if (map.Lookup(code) is not null)
+            {
+                mapped++;
+            }
+        }
+
+        Assert.IsTrue(watch.ElapsedMilliseconds < 1_000, $"{lookups} lookups took {watch.ElapsedMilliseconds}ms");
+        Assert.AreEqual(lookups / 2, mapped);
+        Assert.AreEqual("B", map.Lookup(4 * 123 + 1));
+        Assert.IsNull(map.Lookup(4 * 123 + 2));
     }
 }

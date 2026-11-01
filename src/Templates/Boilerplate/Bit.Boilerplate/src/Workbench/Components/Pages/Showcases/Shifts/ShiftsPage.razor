@@ -1,0 +1,92 @@
+@inherits WorkbenchComponentBase
+
+@* Phones start on the day view. *@
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="OnPhoneChanged" />
+
+<div class="shifts">
+    <div class="shifts-header">
+        <div class="titles">
+            <BitText Typography="BitTypography.H5" Element="@PageHeadingElement" Class="title">@Localizer[nameof(WorkbenchStrings.ShiftsHeading)]</BitText>
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">
+                @Localizer[nameof(WorkbenchStrings.PosStoreAmsterdam)] · @Localizer[nameof(WorkbenchStrings.ShiftsSummary), WeekShiftCount, WeekHours.ToString("0.#", CultureInfo.CurrentCulture)]
+            </BitText>
+        </div>
+        <div class="roles" aria-hidden="true">
+            @foreach (var role in roles)
+            {
+                <span class="role"><span class="role-dot" style="--data-color:@role.Value"></span>@role.Title</span>
+            }
+        </div>
+    </div>
+
+    <div class="filters">
+        <BitDropdown Items="staffFilterItems" MultiSelect Responsive
+                     AriaLabel="@Localizer[nameof(WorkbenchStrings.ShiftsStaffLabel)]"
+                     Placeholder="@Localizer[nameof(WorkbenchStrings.ShiftsNoStaff)]"
+                     Values="store.StaffFilter ?? allStaffKeys"
+                     ValuesChanged="(IEnumerable<string?> keys) => FilterStaff(keys)">
+            <TextTemplate>@StaffFilterText</TextTemplate>
+            <ItemTemplate Context="item">
+                <BitPersona Size="BitPersonaSize.Size24" ImageUrl="@WorkbenchPhotos.Find(item.Value!)" PrimaryText="@item.Text" />
+            </ItemTemplate>
+        </BitDropdown>
+        <BitDropdown Items="roleFilterItems" MultiSelect Responsive
+                     AriaLabel="@Localizer[nameof(WorkbenchStrings.ShiftsRoleLabel)]"
+                     Placeholder="@Localizer[nameof(WorkbenchStrings.ShiftsNoRoles)]"
+                     Values="store.RoleFilter ?? allRoles"
+                     ValuesChanged="(IEnumerable<ShiftRole> roles) => FilterRoles(roles)">
+            <TextTemplate>@RoleFilterText</TextTemplate>
+            <ItemTemplate Context="item">
+                <span class="role-item"><span class="role-dot" style="--data-color:@RoleColor(item.Value)"></span>@item.Text</span>
+            </ItemTemplate>
+        </BitDropdown>
+    </div>
+
+    @* The error and empty messages sit above the calendar, which stays in place. *@
+    @if (isFailed)
+    {
+        <BitMessage Color="BitColor.Warning" Multiline Title="@Localizer[nameof(WorkbenchStrings.LoadFailed)]">
+            <Actions>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="Reload">@Localizer[nameof(WorkbenchStrings.PosRetry)]</BitButton>
+            </Actions>
+        </BitMessage>
+    }
+    else if (isLoading is false && shifts.Length == 0)
+    {
+        <BitMessage Color="BitColor.Info" Multiline>@Localizer[nameof(WorkbenchStrings.ShiftsEmpty)]</BitMessage>
+    }
+
+    <BitFullCalendar @ref="calendar"
+                     Events="events"
+                     Resources="resources"
+                     EventColorOptions="roles"
+                     Settings="settings"
+                     Texts="texts"
+                     View="@(store.View ?? DefaultView)"
+                     ViewChanged="store.Show"
+                     Mode="store.Mode"
+                     ModeChanged="store.SwitchMode"
+                     Date="@(store.Date ?? DateTime.Today)"
+                     DateChanged="store.GoTo"
+                     Views="views"
+                     IsLoading="isLoading"
+                     ReadOnly="isFailed || isLoading"
+                     HideFilters
+                     HideSettings
+                     OnChange="OnChange"
+                     OnAddClick="OpenNew"
+                     OnEventClick="OpenExisting"
+                     Class="calendar">
+        <ResourceTemplate Context="resource">
+            <span class="staff">
+                <BitPersona Size="BitPersonaSize.Size32" ImageUrl="@WorkbenchPhotos.Find(resource.Id)" PrimaryText="@resource.Title" HidePersonaDetails />
+                <span class="staff-text">
+                    <span class="staff-name">@resource.Title</span>
+                    <span class="staff-role">@resource.Subtitle</span>
+                </span>
+            </span>
+        </ResourceTemplate>
+    </BitFullCalendar>
+
+    <ShiftEditor @ref="editor" Shifts="shifts" Validate="ValidateShift" OnSaved="OnEditorSaved" OnDeleted="OnEditorDeleted" />
+</div>

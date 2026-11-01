@@ -1,0 +1,28 @@
+@inherits PosWidgetBase<PosKpi>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[Dashboard.PeriodKey]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoSalesYet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoSalesYetDescription)">
+    <Skeleton>
+        <BitShimmer Height="2.25rem" Width="65%" />
+        <BitShimmer Height="1.125rem" Width="45%" />
+        <BitShimmer Height="2.5rem" />
+    </Skeleton>
+    <ChildContent>
+        <div class="kpi">
+            <div class="kpi-value">@FormatValue(Data!.Value)</div>
+            <div class="kpi-change @(IsGoodChange ? "good" : "bad")">
+                <BitIcon IconName="@(Data.Change >= 0 ? BitIconName.SortUp : BitIconName.SortDown)" Size="BitSize.Small" />
+                <span class="kpi-percent">@PosFormat.SignedPercent(Data.Change)</span>
+                <span class="kpi-compare">@Localizer[Dashboard.ComparisonKey]</span>
+            </div>
+            <div class="kpi-trend">
+                <BitChart Type="BitChartType.Line" Data="trendData" Options="trendOptions" Description="@Localizer[Definition.TitleKey]" Style="height:100%" />
+            </div>
+        </div>
+    </ChildContent>
+</PosWidgetFrame>

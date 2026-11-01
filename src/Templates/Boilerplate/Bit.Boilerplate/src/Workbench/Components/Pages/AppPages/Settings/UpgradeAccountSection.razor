@@ -1,0 +1,37 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack>
+        @if (isLoading)
+        {
+            <BitRollingSquareLoading />
+        }
+        else if (isFailed)
+        {
+            <BitMessage Color="BitColor.Warning" AutoMultiline>@AppLocalizer[nameof(AppStrings.UpgradeAdNotAvailableMessage)]</BitMessage>
+        }
+        else if (store.Consents.GetValueOrDefault("Advertising") is false)
+        {
+            <BitMessage Color="BitColor.Info" Multiline>
+                <Content>
+                    @AppLocalizer[nameof(AppStrings.AdsConsentMessage)]
+                </Content>
+                <Actions>
+                    <BitButton Size="BitSize.Small" OnClick="@(() => store.SetConsent("Advertising", true))">
+                        @AppLocalizer[nameof(AppStrings.AdsConsentAgree)]
+                    </BitButton>
+                </Actions>
+            </BitMessage>
+        }
+        else if (store.IsAdWatched is false)
+        {
+            <BitButton IsLoading="isWatching" OnClick="WatchAd">
+                @AppLocalizer[nameof(AppStrings.Upgrade)]
+            </BitButton>
+        }
+        else
+        {
+            <BitMessage Color="BitColor.Success" AutoMultiline>@AppLocalizer[nameof(AppStrings.UpgradeSuccessMessage)]</BitMessage>
+        }
+    </BitStack>
+</section>

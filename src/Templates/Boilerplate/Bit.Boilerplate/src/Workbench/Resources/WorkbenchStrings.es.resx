@@ -1,0 +1,2805 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="WorkbenchTitle" xml:space="preserve">
+        <value>Banco de trabajo</value>
+    </data>
+    <data name="CategoryDashboards" xml:space="preserve">
+        <value>Tableros</value>
+    </data>
+    <data name="PosDashboardTitle" xml:space="preserve">
+        <value>Tablero de ventas</value>
+    </data>
+    <data name="PosDashboardDescription" xml:space="preserve">
+        <value>Un tablero de punto de venta cuyos widgets se pueden reorganizar, cambiar de tamaño, ocultar y guardar.</value>
+    </data>
+    <data name="DemoUserSarah" xml:space="preserve">
+        <value>Sarah Johnson</value>
+    </data>
+    <data name="DemoUserDaan" xml:space="preserve">
+        <value>Daan Visser</value>
+    </data>
+    <data name="DemoUserNiloofar" xml:space="preserve">
+        <value>Niloofar Rahimi</value>
+    </data>
+    <data name="DemoTenantStore" xml:space="preserve">
+        <value>Sucursal de Amsterdam</value>
+    </data>
+    <data name="DemoTenantHeadOffice" xml:space="preserve">
+        <value>Oficina central</value>
+    </data>
+    <data name="Rotate" xml:space="preserve">
+        <value>Girar</value>
+    </data>
+    <data name="ScreenshotThisView" xml:space="preserve">
+        <value>Captura de pantalla de esta vista (PNG)</value>
+    </data>
+    <data name="ScreenshotAllViews" xml:space="preserve">
+        <value>Capturas de pantalla de todas las vistas (ZIP)</value>
+    </data>
+    <data name="OpenInNewTab" xml:space="preserve">
+        <value>Abrir en una pestaña nueva</value>
+    </data>
+    <data name="RemoveView" xml:space="preserve">
+        <value>Quitar esta vista</value>
+    </data>
+    <data name="NoChrome" xml:space="preserve">
+        <value>Sin marco de la app</value>
+    </data>
+    <data name="ThemeLight" xml:space="preserve">
+        <value>Claro</value>
+    </data>
+    <data name="ThemeDark" xml:space="preserve">
+        <value>Oscuro</value>
+    </data>
+    <data name="ThemeSystem" xml:space="preserve">
+        <value>Sistema</value>
+    </data>
+    <data name="DataLive" xml:space="preserve">
+        <value>Datos</value>
+    </data>
+    <data name="DataLoading" xml:space="preserve">
+        <value>Cargando</value>
+    </data>
+    <data name="DataEmpty" xml:space="preserve">
+        <value>Vacío</value>
+    </data>
+    <data name="DataError" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="DataMixed" xml:space="preserve">
+        <value>Mixto</value>
+    </data>
+    <data name="DataSlow" xml:space="preserve">
+        <value>Lento</value>
+    </data>
+    <data name="SignedOut" xml:space="preserve">
+        <value>Sesión cerrada</value>
+    </data>
+    <data name="SignedIn" xml:space="preserve">
+        <value>Sesión iniciada</value>
+    </data>
+    <data name="MultiAccount" xml:space="preserve">
+        <value>Cuentas</value>
+    </data>
+    <data name="Device" xml:space="preserve">
+        <value>Dispositivo</value>
+    </data>
+    <data name="Portrait" xml:space="preserve">
+        <value>Vertical</value>
+    </data>
+    <data name="Landscape" xml:space="preserve">
+        <value>Horizontal</value>
+    </data>
+    <data name="DeviceFrame" xml:space="preserve">
+        <value>Marco del dispositivo</value>
+    </data>
+    <data name="Zoom" xml:space="preserve">
+        <value>Zoom</value>
+    </data>
+    <data name="ZoomFit" xml:space="preserve">
+        <value>Ajustar</value>
+    </data>
+    <data name="DataState" xml:space="preserve">
+        <value>Datos</value>
+    </data>
+    <data name="DataStateHint" xml:space="preserve">
+        <value>Las páginas leen sus datos de la memoria tras una breve espera, así que aquí se puede mostrar cada estado, incluso los que cuesta captar en una app real.</value>
+    </data>
+    <data name="AppSection" xml:space="preserve">
+        <value>App</value>
+    </data>
+    <data name="AppChrome" xml:space="preserve">
+        <value>Marco de la app</value>
+    </data>
+    <data name="AppChromeHint" xml:space="preserve">
+        <value>Panel de navegación, encabezado, menú de la cuenta y barra inferior de la app.</value>
+    </data>
+    <data name="SignInState" xml:space="preserve">
+        <value>Inicio de sesión</value>
+    </data>
+    <data name="Theme" xml:space="preserve">
+        <value>Tema</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>Idioma</value>
+    </data>
+    <data name="Reset" xml:space="preserve">
+        <value>Restablecer</value>
+    </data>
+    <data name="DeviceGroupPhone" xml:space="preserve">
+        <value>Teléfonos</value>
+    </data>
+    <data name="DeviceGroupFoldable" xml:space="preserve">
+        <value>Plegables</value>
+    </data>
+    <data name="DeviceGroupTablet" xml:space="preserve">
+        <value>Tabletas</value>
+    </data>
+    <data name="DeviceGroupLaptop" xml:space="preserve">
+        <value>Portátiles</value>
+    </data>
+    <data name="DeviceGroupDesktop" xml:space="preserve">
+        <value>Equipos de escritorio</value>
+    </data>
+    <data name="DeviceGroupStore" xml:space="preserve">
+        <value>Tamaños para tiendas</value>
+    </data>
+    <data name="Pages" xml:space="preserve">
+        <value>Páginas</value>
+    </data>
+    <data name="SearchPages" xml:space="preserve">
+        <value>Buscar páginas</value>
+    </data>
+    <data name="PageNotFound" xml:space="preserve">
+        <value>Esta página no está en el banco de trabajo.</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>Volver al inicio del banco de trabajo</value>
+    </data>
+    <data name="Tools" xml:space="preserve">
+        <value>Herramientas</value>
+    </data>
+    <data name="Close" xml:space="preserve">
+        <value>Cerrar</value>
+    </data>
+    <data name="Compare" xml:space="preserve">
+        <value>Comparar</value>
+    </data>
+    <data name="CompareSingle" xml:space="preserve">
+        <value>Una vista</value>
+    </data>
+    <data name="CompareDevices" xml:space="preserve">
+        <value>Teléfono, tableta y escritorio</value>
+    </data>
+    <data name="CompareThemes" xml:space="preserve">
+        <value>Claro y oscuro</value>
+    </data>
+    <data name="CompareLanguages" xml:space="preserve">
+        <value>Idiomas lado a lado</value>
+    </data>
+    <data name="CompareStates" xml:space="preserve">
+        <value>Todos los estados de datos</value>
+    </data>
+    <data name="CompareSignIn" xml:space="preserve">
+        <value>Sesión cerrada, sesión iniciada, varias cuentas</value>
+    </data>
+    <data name="AddView" xml:space="preserve">
+        <value>Agregar vista</value>
+    </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>Captura de pantalla</value>
+    </data>
+    <data name="CopyLink" xml:space="preserve">
+        <value>Copiar un enlace a esta configuración</value>
+    </data>
+    <data name="ToggleWorkbenchTheme" xml:space="preserve">
+        <value>Cambiar el banco de trabajo entre claro y oscuro</value>
+    </data>
+    <data name="PosStoreAll" xml:space="preserve">
+        <value>Todas las sucursales</value>
+    </data>
+    <data name="PosStoreAmsterdam" xml:space="preserve">
+        <value>Amsterdam, Jordaan</value>
+    </data>
+    <data name="PosStoreRotterdam" xml:space="preserve">
+        <value>Rotterdam, Markthal</value>
+    </data>
+    <data name="PosStoreUtrecht" xml:space="preserve">
+        <value>Utrecht, Oudegracht</value>
+    </data>
+    <data name="PosProductFlatWhite" xml:space="preserve">
+        <value>Flat white</value>
+    </data>
+    <data name="PosProductOatLatte" xml:space="preserve">
+        <value>Latte con leche de avena</value>
+    </data>
+    <data name="PosProductCroissant" xml:space="preserve">
+        <value>Croissant de mantequilla</value>
+    </data>
+    <data name="PosProductAppleTart" xml:space="preserve">
+        <value>Tarta de manzana holandesa</value>
+    </data>
+    <data name="PosProductCappuccino" xml:space="preserve">
+        <value>Capuchino</value>
+    </data>
+    <data name="PosProductStroopwafel" xml:space="preserve">
+        <value>Stroopwafel</value>
+    </data>
+    <data name="PosProductSourdough" xml:space="preserve">
+        <value>Pan de masa madre</value>
+    </data>
+    <data name="PosProductColdBrew" xml:space="preserve">
+        <value>Cold brew</value>
+    </data>
+    <data name="PosStaffEmma" xml:space="preserve">
+        <value>Emma</value>
+    </data>
+    <data name="PosStaffLucas" xml:space="preserve">
+        <value>Lucas</value>
+    </data>
+    <data name="PosStaffMila" xml:space="preserve">
+        <value>Mila</value>
+    </data>
+    <data name="PosStaffSem" xml:space="preserve">
+        <value>Sem</value>
+    </data>
+    <data name="PosPaymentCard" xml:space="preserve">
+        <value>Tarjeta</value>
+    </data>
+    <data name="PosPaymentWallet" xml:space="preserve">
+        <value>Pago móvil</value>
+    </data>
+    <data name="PosPaymentCash" xml:space="preserve">
+        <value>Efectivo</value>
+    </data>
+    <data name="PosPaymentGiftCard" xml:space="preserve">
+        <value>Tarjeta de regalo</value>
+    </data>
+    <data name="PosStockOatMilk" xml:space="preserve">
+        <value>Leche de avena</value>
+    </data>
+    <data name="PosStockCroissantDough" xml:space="preserve">
+        <value>Masa de croissant</value>
+    </data>
+    <data name="PosStockCoffeeBeans" xml:space="preserve">
+        <value>Granos de espresso</value>
+    </data>
+    <data name="PosStockCups" xml:space="preserve">
+        <value>Vasos para llevar</value>
+    </data>
+    <data name="PosNetSales" xml:space="preserve">
+        <value>Ventas netas</value>
+    </data>
+    <data name="PosTransactions" xml:space="preserve">
+        <value>Transacciones</value>
+    </data>
+    <data name="PosAverageSale" xml:space="preserve">
+        <value>Venta promedio</value>
+    </data>
+    <data name="PosRefunds" xml:space="preserve">
+        <value>Reembolsos</value>
+    </data>
+    <data name="PosSalesByHour" xml:space="preserve">
+        <value>Ventas por hora</value>
+    </data>
+    <data name="PosPaymentMethods" xml:space="preserve">
+        <value>Métodos de pago</value>
+    </data>
+    <data name="PosTopProducts" xml:space="preserve">
+        <value>Productos más vendidos</value>
+    </data>
+    <data name="PosDailyGoal" xml:space="preserve">
+        <value>Objetivo de ventas</value>
+    </data>
+    <data name="PosRecentOrders" xml:space="preserve">
+        <value>Pedidos recientes</value>
+    </data>
+    <data name="PosLowStock" xml:space="preserve">
+        <value>Stock bajo</value>
+    </data>
+    <data name="PosTeam" xml:space="preserve">
+        <value>Equipo</value>
+    </data>
+    <data name="PosPeakHours" xml:space="preserve">
+        <value>Horas pico</value>
+    </data>
+    <data name="PosDragWidget" xml:space="preserve">
+        <value>Arrastrar {0}</value>
+    </data>
+    <data name="PosWidgetOptions" xml:space="preserve">
+        <value>Opciones del widget</value>
+    </data>
+    <data name="PosLoadingWidget" xml:space="preserve">
+        <value>Cargando</value>
+    </data>
+    <data name="PosWidgetFailedTitle" xml:space="preserve">
+        <value>No se pudo cargar</value>
+    </data>
+    <data name="PosWidgetFailedDescription" xml:space="preserve">
+        <value>El resto del tablero funciona bien. Vuelve a intentarlo en un momento.</value>
+    </data>
+    <data name="PosRetry" xml:space="preserve">
+        <value>Intentar de nuevo</value>
+    </data>
+    <data name="PosNoDataYet" xml:space="preserve">
+        <value>Aún no hay nada</value>
+    </data>
+    <data name="PosSizeSmall" xml:space="preserve">
+        <value>Pequeño</value>
+    </data>
+    <data name="PosSizeMedium" xml:space="preserve">
+        <value>Mediano</value>
+    </data>
+    <data name="PosSizeLarge" xml:space="preserve">
+        <value>Grande</value>
+    </data>
+    <data name="PosMoveEarlier" xml:space="preserve">
+        <value>Mover antes</value>
+    </data>
+    <data name="PosMoveLater" xml:space="preserve">
+        <value>Mover después</value>
+    </data>
+    <data name="PosHideWidget" xml:space="preserve">
+        <value>Ocultar</value>
+    </data>
+    <data name="PosNoSalesYet" xml:space="preserve">
+        <value>Aún no hay ventas</value>
+    </data>
+    <data name="PosNoSalesYetDescription" xml:space="preserve">
+        <value>Las cifras aparecen aquí en cuanto se paga el primer pedido.</value>
+    </data>
+    <data name="PosToday" xml:space="preserve">
+        <value>Hoy</value>
+    </data>
+    <data name="PosThisPeriod" xml:space="preserve">
+        <value>Este período</value>
+    </data>
+    <data name="PosLastWeek" xml:space="preserve">
+        <value>Mismo día de la semana pasada</value>
+    </data>
+    <data name="PosSalesByHourSubtitle" xml:space="preserve">
+        <value>Comparado con el mismo día de la semana pasada</value>
+    </data>
+    <data name="PosNoPaymentsYet" xml:space="preserve">
+        <value>Aún no hay pagos</value>
+    </data>
+    <data name="PosTotal" xml:space="preserve">
+        <value>Total</value>
+    </data>
+    <data name="PosUnitsSold" xml:space="preserve">
+        <value>{0} vendidos</value>
+    </data>
+    <data name="PosNoGoalSet" xml:space="preserve">
+        <value>Sin objetivo definido</value>
+    </data>
+    <data name="PosNoGoalSetDescription" xml:space="preserve">
+        <value>Define un objetivo de ventas para ver cuánto le falta a la sucursal.</value>
+    </data>
+    <data name="PosOfTarget" xml:space="preserve">
+        <value>de un objetivo de {0}</value>
+    </data>
+    <data name="PosRemainingToGoal" xml:space="preserve">
+        <value>Faltan {0} para alcanzar el objetivo</value>
+    </data>
+    <data name="PosRecentOrdersSubtitle" xml:space="preserve">
+        <value>Últimos pedidos de todas las cajas</value>
+    </data>
+    <data name="PosNoOrdersYet" xml:space="preserve">
+        <value>Aún no hay pedidos</value>
+    </data>
+    <data name="PosNoOrdersYetDescription" xml:space="preserve">
+        <value>Los pedidos aparecen aquí en cuanto una caja los registra.</value>
+    </data>
+    <data name="PosOrder" xml:space="preserve">
+        <value>Pedido</value>
+    </data>
+    <data name="PosTime" xml:space="preserve">
+        <value>Hora</value>
+    </data>
+    <data name="PosCashier" xml:space="preserve">
+        <value>Cajero</value>
+    </data>
+    <data name="PosItems" xml:space="preserve">
+        <value>Artículos</value>
+    </data>
+    <data name="PosPayment" xml:space="preserve">
+        <value>Pago</value>
+    </data>
+    <data name="PosStatus" xml:space="preserve">
+        <value>Estado</value>
+    </data>
+    <data name="PosOrderStatusPaid" xml:space="preserve">
+        <value>Pagado</value>
+    </data>
+    <data name="PosOrderStatusRefunded" xml:space="preserve">
+        <value>Reembolsado</value>
+    </data>
+    <data name="PosOrderStatusPending" xml:space="preserve">
+        <value>Pendiente</value>
+    </data>
+    <data name="PosMinutesAgo" xml:space="preserve">
+        <value>hace {0} min</value>
+    </data>
+    <data name="PosLowStockSubtitle" xml:space="preserve">
+        <value>Artículos por debajo de su mínimo</value>
+    </data>
+    <data name="PosStockAllGood" xml:space="preserve">
+        <value>Todo está disponible</value>
+    </data>
+    <data name="PosStockAllGoodDescription" xml:space="preserve">
+        <value>Ahora mismo nada está por debajo de su mínimo.</value>
+    </data>
+    <data name="PosInStock" xml:space="preserve">
+        <value>Quedan {0} · mínimo {1}</value>
+    </data>
+    <data name="PosOutOfStock" xml:space="preserve">
+        <value>Agotado</value>
+    </data>
+    <data name="PosLowStockBadge" xml:space="preserve">
+        <value>Bajo</value>
+    </data>
+    <data name="PosOrdered" xml:space="preserve">
+        <value>Pedido</value>
+    </data>
+    <data name="PosReorder" xml:space="preserve">
+        <value>Reponer</value>
+    </data>
+    <data name="PosNoShiftsYet" xml:space="preserve">
+        <value>Nadie está de turno</value>
+    </data>
+    <data name="PosNoShiftsYetDescription" xml:space="preserve">
+        <value>Los resultados del equipo aparecen en cuanto alguien inicia su turno.</value>
+    </data>
+    <data name="PosOrdersCount" xml:space="preserve">
+        <value>{0} pedidos</value>
+    </data>
+    <data name="PosTopSeller" xml:space="preserve">
+        <value>Más ventas</value>
+    </data>
+    <data name="PosPeakHoursSubtitle" xml:space="preserve">
+        <value>Pedidos por hora en las últimas cuatro semanas</value>
+    </data>
+    <data name="PosQuiet" xml:space="preserve">
+        <value>Tranquilo</value>
+    </data>
+    <data name="PosBusy" xml:space="preserve">
+        <value>Concurrido</value>
+    </data>
+    <data name="PosGreeting" xml:space="preserve">
+        <value>Buenas tardes, Sarah</value>
+    </data>
+    <data name="PosStore" xml:space="preserve">
+        <value>Sucursal</value>
+    </data>
+    <data name="PosPeriod" xml:space="preserve">
+        <value>Período</value>
+    </data>
+    <data name="Pos7Days" xml:space="preserve">
+        <value>7 días</value>
+    </data>
+    <data name="Pos30Days" xml:space="preserve">
+        <value>30 días</value>
+    </data>
+    <data name="PosDone" xml:space="preserve">
+        <value>Listo</value>
+    </data>
+    <data name="PosCustomize" xml:space="preserve">
+        <value>Personalizar</value>
+    </data>
+    <data name="PosEditHint" xml:space="preserve">
+        <value>Arrastra los widgets por su asa o usa su menú para cambiarles el tamaño, moverlos u ocultarlos. Tu diseño se guarda en este dispositivo.</value>
+    </data>
+    <data name="PosAddWidget" xml:space="preserve">
+        <value>Agregar widget ({0})</value>
+    </data>
+    <data name="PosResetLayout" xml:space="preserve">
+        <value>Restablecer diseño</value>
+    </data>
+    <data name="PosWidgetGallery" xml:space="preserve">
+        <value>Widgets ocultos</value>
+    </data>
+    <data name="PosAdd" xml:space="preserve">
+        <value>Agregar</value>
+    </data>
+    <data name="PosGalleryEmpty" xml:space="preserve">
+        <value>Todos los widgets ya están en el tablero.</value>
+    </data>
+    <data name="PosLast7Days" xml:space="preserve">
+        <value>Últimos 7 días</value>
+    </data>
+    <data name="PosLast30Days" xml:space="preserve">
+        <value>Últimos 30 días</value>
+    </data>
+    <data name="PosVsYesterday" xml:space="preserve">
+        <value>frente a ayer</value>
+    </data>
+    <data name="PosVsPrevious7Days" xml:space="preserve">
+        <value>frente a los 7 días anteriores</value>
+    </data>
+    <data name="PosVsPrevious30Days" xml:space="preserve">
+        <value>frente a los 30 días anteriores</value>
+    </data>
+    <data name="CategoryDataAndMaps" xml:space="preserve">
+        <value>Datos y mapas</value>
+    </data>
+    <data name="BuildingsTitle" xml:space="preserve">
+        <value>Edificios</value>
+    </data>
+    <data name="BuildingsDescription" xml:space="preserve">
+        <value>Una cuadrícula de datos y un mapa que se mantienen sincronizados. Haz doble clic en el mapa para agregar un edificio, selecciona uno y presiona Supr para eliminarlo. También incluye funciones avanzadas del mapa, como limitar dónde se pueden elegir puntos.</value>
+    </data>
+    <data name="BuildingsHeading" xml:space="preserve">
+        <value>Edificios emblemáticos</value>
+    </data>
+    <data name="BuildingsSubtitle" xml:space="preserve">
+        <value>{0} edificios en {1} provincias</value>
+    </data>
+    <data name="BuildingsSearch" xml:space="preserve">
+        <value>Buscar por nombre, ciudad o tipo</value>
+    </data>
+    <data name="BuildingsAdd" xml:space="preserve">
+        <value>Agregar edificio</value>
+    </data>
+    <data name="BuildingsListView" xml:space="preserve">
+        <value>Lista</value>
+    </data>
+    <data name="BuildingsMapView" xml:space="preserve">
+        <value>Mapa</value>
+    </data>
+    <data name="BuildingsFailedTitle" xml:space="preserve">
+        <value>No se pudieron cargar los edificios</value>
+    </data>
+    <data name="BuildingsEmptyTitle" xml:space="preserve">
+        <value>Aún no hay edificios</value>
+    </data>
+    <data name="BuildingsEmptyDescription" xml:space="preserve">
+        <value>Haz doble clic en cualquier punto de los Países Bajos en el mapa para agregar el primero.</value>
+    </data>
+    <data name="BuildingName" xml:space="preserve">
+        <value>Nombre</value>
+    </data>
+    <data name="BuildingCity" xml:space="preserve">
+        <value>Ciudad</value>
+    </data>
+    <data name="BuildingProvince" xml:space="preserve">
+        <value>Provincia</value>
+    </data>
+    <data name="BuildingType" xml:space="preserve">
+        <value>Tipo</value>
+    </data>
+    <data name="BuildingYear" xml:space="preserve">
+        <value>Año</value>
+    </data>
+    <data name="BuildingHeight" xml:space="preserve">
+        <value>Altura (m)</value>
+    </data>
+    <data name="BuildingFloors" xml:space="preserve">
+        <value>Pisos</value>
+    </data>
+    <data name="BuildingLatitude" xml:space="preserve">
+        <value>Latitud</value>
+    </data>
+    <data name="BuildingLongitude" xml:space="preserve">
+        <value>Longitud</value>
+    </data>
+    <data name="BuildingsEdit" xml:space="preserve">
+        <value>Editar</value>
+    </data>
+    <data name="BuildingsDelete" xml:space="preserve">
+        <value>Eliminar</value>
+    </data>
+    <data name="BuildingsMapHint" xml:space="preserve">
+        <value>Haz doble clic o toca dos veces dentro de los Países Bajos para agregar un edificio. Para eliminar uno, selecciónalo y presiona Supr, o usa su botón de eliminar en la lista.</value>
+    </data>
+    <data name="BuildingsSaved" xml:space="preserve">
+        <value>Se guardó {0}</value>
+    </data>
+    <data name="BuildingsDeleteTitle" xml:space="preserve">
+        <value>¿Eliminar este edificio?</value>
+    </data>
+    <data name="BuildingsDeleteBody" xml:space="preserve">
+        <value>{0} se quitará de la lista y del mapa.</value>
+    </data>
+    <data name="BuildingsDeleted" xml:space="preserve">
+        <value>Se eliminó {0}</value>
+    </data>
+    <data name="BuildingsOutsideTitle" xml:space="preserve">
+        <value>Fuera de los Países Bajos</value>
+    </data>
+    <data name="BuildingsOutsideBody" xml:space="preserve">
+        <value>Solo se pueden agregar edificios dentro de la frontera de los Países Bajos.</value>
+    </data>
+    <data name="BuildingsAddTitle" xml:space="preserve">
+        <value>Nuevo edificio</value>
+    </data>
+    <data name="BuildingsEditTitle" xml:space="preserve">
+        <value>Editar edificio</value>
+    </data>
+    <data name="BuildingsLocationHint" xml:space="preserve">
+        <value>Haz doble clic en el mapa para elegir un punto o escribe las coordenadas. Solo se aceptan puntos dentro de los Países Bajos.</value>
+    </data>
+    <data name="BuildingsNameRequired" xml:space="preserve">
+        <value>Escribe un nombre.</value>
+    </data>
+    <data name="BuildingsCityRequired" xml:space="preserve">
+        <value>Escribe una ciudad.</value>
+    </data>
+    <data name="BuildingsYearInvalid" xml:space="preserve">
+        <value>Escribe un año entre 1000 y el año actual.</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Cancelar</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Guardar</value>
+    </data>
+    <data name="BuildingTypeMuseum" xml:space="preserve">
+        <value>Museo</value>
+    </data>
+    <data name="BuildingTypeChurch" xml:space="preserve">
+        <value>Iglesia</value>
+    </data>
+    <data name="BuildingTypeTower" xml:space="preserve">
+        <value>Torre</value>
+    </data>
+    <data name="BuildingTypeStation" xml:space="preserve">
+        <value>Estación</value>
+    </data>
+    <data name="BuildingTypeStadium" xml:space="preserve">
+        <value>Estadio</value>
+    </data>
+    <data name="BuildingTypePalace" xml:space="preserve">
+        <value>Palacio</value>
+    </data>
+    <data name="BuildingTypeOffice" xml:space="preserve">
+        <value>Torre de oficinas</value>
+    </data>
+    <data name="BuildingTypeCityHall" xml:space="preserve">
+        <value>Ayuntamiento</value>
+    </data>
+    <data name="BuildingTypeLandmark" xml:space="preserve">
+        <value>Monumento</value>
+    </data>
+    <data name="ProvinceGroningen" xml:space="preserve">
+        <value>Groninga</value>
+    </data>
+    <data name="ProvinceFriesland" xml:space="preserve">
+        <value>Frisia</value>
+    </data>
+    <data name="ProvinceDrenthe" xml:space="preserve">
+        <value>Drente</value>
+    </data>
+    <data name="ProvinceOverijssel" xml:space="preserve">
+        <value>Overijssel</value>
+    </data>
+    <data name="ProvinceFlevoland" xml:space="preserve">
+        <value>Flevoland</value>
+    </data>
+    <data name="ProvinceGelderland" xml:space="preserve">
+        <value>Güeldres</value>
+    </data>
+    <data name="ProvinceUtrecht" xml:space="preserve">
+        <value>Utrecht</value>
+    </data>
+    <data name="ProvinceNorthHolland" xml:space="preserve">
+        <value>Holanda Septentrional</value>
+    </data>
+    <data name="ProvinceSouthHolland" xml:space="preserve">
+        <value>Holanda Meridional</value>
+    </data>
+    <data name="ProvinceZeeland" xml:space="preserve">
+        <value>Zelanda</value>
+    </data>
+    <data name="ProvinceNorthBrabant" xml:space="preserve">
+        <value>Brabante Septentrional</value>
+    </data>
+    <data name="ProvinceLimburg" xml:space="preserve">
+        <value>Limburgo</value>
+    </data>
+    <data name="HomePageTitle" xml:space="preserve">
+        <value>Banco de trabajo · Diseña, revisa y captura cada página</value>
+    </data>
+    <data name="HomeEyebrow" xml:space="preserve">
+        <value>Parte de tu proyecto</value>
+    </data>
+    <data name="HomeHeadline" xml:space="preserve">
+        <value>Termina el diseño antes de que exista el backend.</value>
+    </data>
+    <data name="HomeLead" xml:space="preserve">
+        <value>El banco de trabajo ejecuta las páginas de tu app con datos de ejemplo para que puedas diseñar cada estado, verlo en cada dispositivo y exportar capturas listas para las tiendas, con los mismos componentes y el mismo tema que tu app.</value>
+    </data>
+    <data name="HomeOpenFirstPage" xml:space="preserve">
+        <value>Abrir el tablero de ventas</value>
+    </data>
+    <data name="HomeWhyButton" xml:space="preserve">
+        <value>¿Por qué un banco de trabajo?</value>
+    </data>
+    <data name="HomeFactNoServer" xml:space="preserve">
+        <value>Sin necesidad de API, base de datos ni inicio de sesión</value>
+    </data>
+    <data name="HomeFactThemes" xml:space="preserve">
+        <value>Claro, oscuro y de derecha a izquierda</value>
+    </data>
+    <data name="HomeFactStores" xml:space="preserve">
+        <value>Tamaños exactos para App Store, Google Play y Microsoft Store</value>
+    </data>
+    <data name="HomeChipDark" xml:space="preserve">
+        <value>Modo oscuro</value>
+    </data>
+    <data name="HomeChipRtl" xml:space="preserve">
+        <value>De derecha a izquierda</value>
+    </data>
+    <data name="HomeChipLoading" xml:space="preserve">
+        <value>Estado de carga</value>
+    </data>
+    <data name="HomeChipStore" xml:space="preserve">
+        <value>PNG de 1320 × 2868</value>
+    </data>
+    <data name="HomeWhyTitle" xml:space="preserve">
+        <value>Por qué tu proyecto tiene un banco de trabajo</value>
+    </data>
+    <data name="HomeWhySubtitle" xml:space="preserve">
+        <value>Una herramienta de diseño, un banco de pruebas y un estudio fotográfico para tus páginas, dentro del propio proyecto.</value>
+    </data>
+    <data name="HomeWhyAgentsTitle" xml:space="preserve">
+        <value>Diseña con cualquier agente de IA</value>
+    </data>
+    <data name="HomeWhyAgentsText" xml:space="preserve">
+        <value>No necesitas Claude Design ni Figma. Ya uses Codex, Copilot o Claude Code, tu agente puede diseñar páginas aquí, verlas en un navegador real y pulirlas.</value>
+    </data>
+    <data name="HomeWhyRealTitle" xml:space="preserve">
+        <value>Componentes reales, no maquetas</value>
+    </data>
+    <data name="HomeWhyRealText" xml:space="preserve">
+        <value>Las páginas usan los mismos componentes de bit BlazorUI, el mismo tema y los mismos estilos que tu app, así que lo que apruebes aquí se verá igual una vez integrado en la app.</value>
+    </data>
+    <data name="HomeWhyStatesTitle" xml:space="preserve">
+        <value>Cada estado cuando quieras</value>
+    </data>
+    <data name="HomeWhyStatesText" xml:space="preserve">
+        <value>Los datos en carga, vacíos, con error, parciales y lentos están a un clic, incluidos los estados que cuesta captar en una app en ejecución.</value>
+    </data>
+    <data name="HomeWhyDevicesTitle" xml:space="preserve">
+        <value>Todos los dispositivos lado a lado</value>
+    </data>
+    <data name="HomeWhyDevicesText" xml:space="preserve">
+        <value>Teléfonos, tabletas y equipos de escritorio a tamaño real, en claro y oscuro, en cada idioma que admite tu app.</value>
+    </data>
+    <data name="HomeWhyStoresTitle" xml:space="preserve">
+        <value>Capturas para las tiendas</value>
+    </data>
+    <data name="HomeWhyStoresText" xml:space="preserve">
+        <value>Exporta imágenes con precisión de píxel en los tamaños de App Store, Google Play y Microsoft Store, con un fondo de color y una leyenda cuando quieras, generadas por un navegador real.</value>
+    </data>
+    <data name="HomeWhyHeadStartTitle" xml:space="preserve">
+        <value>Una ventaja inicial de bitplatform</value>
+    </data>
+    <data name="HomeWhyHeadStartText" xml:space="preserve">
+        <value>Viene con páginas listas para usar, como un tablero de punto de venta, un planificador de turnos y la propia página de configuración de tu app. Reutiliza lo que te sirva, aprende del resto y luego agrega tus propias páginas junto a ellas.</value>
+    </data>
+    <data name="HomeWhySafeTitle" xml:space="preserve">
+        <value>Experimenta sin riesgos</value>
+    </data>
+    <data name="HomeWhySafeText" xml:space="preserve">
+        <value>Nada aquí se comunica con tu API ni con tu base de datos, así que probar una idea nueva nunca rompe tu app ni tus datos.</value>
+    </data>
+    <data name="HomeHowTitle" xml:space="preserve">
+        <value>Cómo encaja en tu flujo de trabajo</value>
+    </data>
+    <data name="HomeHowStep1Title" xml:space="preserve">
+        <value>Pídesela a tu IA</value>
+    </data>
+    <data name="HomeHowStep1Text" xml:space="preserve">
+        <value>Pide la página a Claude, Codex, GitHub Copilot, Gemini o Junie, y la creará aquí con datos de ejemplo que cargan como los reales.</value>
+    </data>
+    <data name="HomeHowStep2Title" xml:space="preserve">
+        <value>Revisa cada estado</value>
+    </data>
+    <data name="HomeHowStep2Text" xml:space="preserve">
+        <value>Compruébala en cada dispositivo, tema, idioma y estado de datos, de uno en uno o lado a lado.</value>
+    </data>
+    <data name="HomeHowStep3Title" xml:space="preserve">
+        <value>Llévala a la app</value>
+    </data>
+    <data name="HomeHowStep3Text" xml:space="preserve">
+        <value>Reconstruye el diseño aprobado en tu app de la misma forma en que está hecho el resto de la app y conéctalo a datos reales. Tu agente de IA sigue los mismos pasos.</value>
+    </data>
+    <data name="HomePagesTitle" xml:space="preserve">
+        <value>Páginas de este banco de trabajo</value>
+    </data>
+    <data name="HomePagesSubtitle" xml:space="preserve">
+        <value>Empieza con estas y luego agrega tus propias páginas junto a ellas.</value>
+    </data>
+    <data name="HomeFooter" xml:space="preserve">
+        <value>El banco de trabajo forma parte de todo proyecto creado con la plantilla de proyectos de bit. Solo se ejecuta en tu equipo, a menos que decidas publicarlo.</value>
+    </data>
+    <data name="PosDashboardCaption" xml:space="preserve">
+        <value>Cada venta, en vivo</value>
+    </data>
+    <data name="BuildingsCaption" xml:space="preserve">
+        <value>Tus edificios, un mapa</value>
+    </data>
+    <data name="Backdrop" xml:space="preserve">
+        <value>Fondo</value>
+    </data>
+    <data name="BackdropHint" xml:space="preserve">
+        <value>Coloca la página en un dispositivo sobre un fondo de color con una leyenda, como se muestra en las fichas de las tiendas.</value>
+    </data>
+    <data name="BackdropBrand" xml:space="preserve">
+        <value>Color de la app</value>
+    </data>
+    <data name="BackdropMidnight" xml:space="preserve">
+        <value>Medianoche</value>
+    </data>
+    <data name="BackdropSunset" xml:space="preserve">
+        <value>Atardecer</value>
+    </data>
+    <data name="BackdropOcean" xml:space="preserve">
+        <value>Océano</value>
+    </data>
+    <data name="BackdropForest" xml:space="preserve">
+        <value>Bosque</value>
+    </data>
+    <data name="BackdropPaper" xml:space="preserve">
+        <value>Papel</value>
+    </data>
+    <data name="Caption" xml:space="preserve">
+        <value>Leyenda</value>
+    </data>
+    <data name="CaptionHint" xml:space="preserve">
+        <value>Deja una leyenda vacía para usar el texto predeterminado traducido.</value>
+    </data>
+    <data name="StoreRuleAppStore" xml:space="preserve">
+        <value>Los marcos y las leyendas son bienvenidos. Las tres primeras capturas son las que más importan.</value>
+    </data>
+    <data name="StoreRuleGooglePlay" xml:space="preserve">
+        <value>Google Play desaconseja los marcos de dispositivo. Usa leyendas breves, sin palabras como Mejor o Nuevo.</value>
+    </data>
+    <data name="StoreRuleMicrosoftStore" xml:space="preserve">
+        <value>Microsoft Store no admite texto ni logotipos añadidos. Agrega las leyendas en Partner Center.</value>
+    </data>
+    <data name="AssistantTitle" xml:space="preserve">
+        <value>Asistente de IA</value>
+    </data>
+    <data name="AssistantDescription" xml:space="preserve">
+        <value>Un chat que razona, usa herramientas, cita sus fuentes y responde con gráficos, documentos y acciones que aprobar, todo a medida que se escribe.</value>
+    </data>
+    <data name="AssistantCaption" xml:space="preserve">
+        <value>Solo pregunta</value>
+    </data>
+    <data name="CategoryAi" xml:space="preserve">
+        <value>IA</value>
+    </data>
+    <data name="AssistantConversations" xml:space="preserve">
+        <value>Conversaciones</value>
+    </data>
+    <data name="AssistantNewChat" xml:space="preserve">
+        <value>Nuevo chat</value>
+    </data>
+    <data name="AssistantNoHistory" xml:space="preserve">
+        <value>Aún no hay conversaciones</value>
+    </data>
+    <data name="AssistantHistoryFailed" xml:space="preserve">
+        <value>No se pudieron cargar las conversaciones.</value>
+    </data>
+    <data name="AssistantRetry" xml:space="preserve">
+        <value>Intentar de nuevo</value>
+    </data>
+    <data name="AssistantModel" xml:space="preserve">
+        <value>Modelo</value>
+    </data>
+    <data name="AssistantWelcomeTitle" xml:space="preserve">
+        <value>¿En qué te ayudo hoy?</value>
+    </data>
+    <data name="AssistantWelcomeText" xml:space="preserve">
+        <value>Pregunta por ventas, existencias, promociones o tu equipo.</value>
+    </data>
+    <data name="AssistantPromptPlaceholder" xml:space="preserve">
+        <value>Pregunta sobre tus tiendas</value>
+    </data>
+    <data name="AssistantSend" xml:space="preserve">
+        <value>Enviar</value>
+    </data>
+    <data name="AssistantStop" xml:space="preserve">
+        <value>Detener</value>
+    </data>
+    <data name="AssistantStopped" xml:space="preserve">
+        <value>Detenido</value>
+    </data>
+    <data name="AssistantThinking" xml:space="preserve">
+        <value>Pensando</value>
+    </data>
+    <data name="AssistantDisclaimer" xml:space="preserve">
+        <value>Respuestas de ejemplo, preparadas para el diseño.</value>
+    </data>
+    <data name="AssistantAnswerFailed" xml:space="preserve">
+        <value>Esta respuesta no llegó.</value>
+    </data>
+    <data name="AssistantCopy" xml:space="preserve">
+        <value>Copiar</value>
+    </data>
+    <data name="AssistantCopied" xml:space="preserve">
+        <value>Copiado</value>
+    </data>
+    <data name="AssistantHelpful" xml:space="preserve">
+        <value>Útil</value>
+    </data>
+    <data name="AssistantNotHelpful" xml:space="preserve">
+        <value>No es útil</value>
+    </data>
+    <data name="AssistantToday" xml:space="preserve">
+        <value>Hoy</value>
+    </data>
+    <data name="AssistantYesterday" xml:space="preserve">
+        <value>Ayer</value>
+    </data>
+    <data name="AssistantHistoryWeekly" xml:space="preserve">
+        <value>Resumen semanal de ventas</value>
+    </data>
+    <data name="AssistantHistoryRestock" xml:space="preserve">
+        <value>Reposición del fin de semana</value>
+    </data>
+    <data name="AssistantHistoryAutumn" xml:space="preserve">
+        <value>Promoción de otoño</value>
+    </data>
+    <data name="AssistantHistoryTeam" xml:space="preserve">
+        <value>Mejores vendedores de hoy</value>
+    </data>
+    <data name="AssistantSalesPrompt" xml:space="preserve">
+        <value>¿Ventas de esta semana?</value>
+    </data>
+    <data name="AssistantSalesAnswer" xml:space="preserve">
+        <value>Ventas netas: **34.820 €**, un **8,4 %** más que la semana pasada [1].</value>
+    </data>
+    <data name="AssistantStockPrompt" xml:space="preserve">
+        <value>¿Qué se está agotando?</value>
+    </data>
+    <data name="AssistantStockAnswer" xml:space="preserve">
+        <value>Tres productos se agotan antes del lunes [1]:</value>
+    </data>
+    <data name="AssistantPromoPrompt" xml:space="preserve">
+        <value>Escribe una promo de latte de avena</value>
+    </data>
+    <data name="AssistantPromoAnswer" xml:space="preserve">
+        <value>Aquí tienes uno corto:</value>
+    </data>
+    <data name="AssistantPromoDraft" xml:space="preserve">
+        <value>El otoño sabe mejor con avena. Latte de avena a 3,50 € toda la semana.</value>
+    </data>
+    <data name="AssistantStaffPrompt" xml:space="preserve">
+        <value>¿Quién vende más hoy?</value>
+    </data>
+    <data name="AssistantStaffAnswer" xml:space="preserve">
+        <value>**Daan** va en cabeza con **64 pedidos** y 1.180 € en ventas [1].</value>
+    </data>
+    <data name="AssistantFallbackAnswer" xml:space="preserve">
+        <value>Aquí solo conozco las preguntas sugeridas. Prueba una de ellas.</value>
+    </data>
+    <data name="AssistantSalesCardTitle" xml:space="preserve">
+        <value>Ventas netas, últimos 7 días</value>
+    </data>
+    <data name="AssistantUnitsLeft" xml:space="preserve">
+        <value>Quedan {0}</value>
+    </data>
+    <data name="AssistantStockOatMilk" xml:space="preserve">
+        <value>Leche de avena</value>
+    </data>
+    <data name="AssistantStockCroissants" xml:space="preserve">
+        <value>Croissants</value>
+    </data>
+    <data name="AssistantStockPaperCups" xml:space="preserve">
+        <value>Vasos de papel</value>
+    </data>
+    <data name="AssistantModelThorough" xml:space="preserve">
+        <value>Minucioso</value>
+    </data>
+    <data name="AssistantModelThoroughDescription" xml:space="preserve">
+        <value>Lo piensa bien antes de responder</value>
+    </data>
+    <data name="AssistantModelQuick" xml:space="preserve">
+        <value>Rápido</value>
+    </data>
+    <data name="AssistantModelQuickDescription" xml:space="preserve">
+        <value>Responde al instante</value>
+    </data>
+    <data name="AssistantToolSales" xml:space="preserve">
+        <value>Informe de ventas</value>
+    </data>
+    <data name="AssistantToolStock" xml:space="preserve">
+        <value>Existencias</value>
+    </data>
+    <data name="AssistantToolTeam" xml:space="preserve">
+        <value>Ventas del equipo</value>
+    </data>
+    <data name="AssistantToolOrder" xml:space="preserve">
+        <value>Pedido a proveedores</value>
+    </data>
+    <data name="AssistantSourceStock" xml:space="preserve">
+        <value>Recuento de existencias y entregas</value>
+    </data>
+    <data name="AssistantSourceTeam" xml:space="preserve">
+        <value>Pedidos por miembro del equipo, hoy</value>
+    </data>
+    <data name="AssistantSalesReasoning" xml:space="preserve">
+        <value>Sumar los últimos 7 días por tienda y compararlos con la semana pasada.</value>
+    </data>
+    <data name="AssistantStockReasoning" xml:space="preserve">
+        <value>Comparar las existencias con las ventas y la entrega del lunes.</value>
+    </data>
+    <data name="AssistantPromoReasoning" xml:space="preserve">
+        <value>Que sea corto: la temporada, el precio, todas las tiendas.</value>
+    </data>
+    <data name="AssistantStaffReasoning" xml:space="preserve">
+        <value>Ordenar los pedidos de hoy por miembro del equipo.</value>
+    </data>
+    <data name="AssistantOrderReason" xml:space="preserve">
+        <value>¿Pido estos tres para el viernes?</value>
+    </data>
+    <data name="AssistantOrderPlaced" xml:space="preserve">
+        <value>Hecho. El pedido **PO-1042** llega el viernes.</value>
+    </data>
+    <data name="AssistantOrderSkipped" xml:space="preserve">
+        <value>De acuerdo, no he pedido nada.</value>
+    </data>
+    <data name="AssistantPromoTitle" xml:space="preserve">
+        <value>Promoción de latte con leche de avena</value>
+    </data>
+    <data name="AssistantSeconds" xml:space="preserve">
+        <value>{0} s</value>
+    </data>
+    <data name="AssistantRegenerate" xml:space="preserve">
+        <value>Regenerar</value>
+    </data>
+    <data name="AssistantEdit" xml:space="preserve">
+        <value>Editar</value>
+    </data>
+    <data name="AssistantSave" xml:space="preserve">
+        <value>Guardar</value>
+    </data>
+    <data name="AssistantCancel" xml:space="preserve">
+        <value>Cancelar</value>
+    </data>
+    <data name="AssistantScrollToLatest" xml:space="preserve">
+        <value>Ir a lo más reciente</value>
+    </data>
+    <data name="AssistantReasoning" xml:space="preserve">
+        <value>Razonamiento</value>
+    </data>
+    <data name="AssistantReasonedFor" xml:space="preserve">
+        <value>Pensó durante {0}</value>
+    </data>
+    <data name="AssistantSources" xml:space="preserve">
+        <value>Fuentes</value>
+    </data>
+    <data name="AssistantCitationLabel" xml:space="preserve">
+        <value>Fuente {0}: {1}</value>
+    </data>
+    <data name="AssistantAttachFile" xml:space="preserve">
+        <value>Adjuntar archivos</value>
+    </data>
+    <data name="AssistantRemove" xml:space="preserve">
+        <value>Quitar</value>
+    </data>
+    <data name="AssistantDropFiles" xml:space="preserve">
+        <value>Suelta los archivos para adjuntarlos</value>
+    </data>
+    <data name="AssistantDismiss" xml:space="preserve">
+        <value>Descartar</value>
+    </data>
+    <data name="AssistantAttachmentTooLarge" xml:space="preserve">
+        <value>{0} es demasiado grande. Los archivos pueden ocupar hasta {1}.</value>
+    </data>
+    <data name="AssistantAttachmentTypeNotAllowed" xml:space="preserve">
+        <value>{0} no es un tipo de archivo compatible.</value>
+    </data>
+    <data name="AssistantAttachmentReadFailed" xml:space="preserve">
+        <value>No se pudo leer {0}.</value>
+    </data>
+    <data name="AssistantAttachmentTooMany" xml:space="preserve">
+        <value>{0} no se adjuntó. Puedes adjuntar hasta {1} archivos a la vez.</value>
+    </data>
+    <data name="AssistantCallingTool" xml:space="preserve">
+        <value>En curso: {0}</value>
+    </data>
+    <data name="AssistantCalledTool" xml:space="preserve">
+        <value>Usado: {0}</value>
+    </data>
+    <data name="AssistantToolFailed" xml:space="preserve">
+        <value>Error: {0}</value>
+    </data>
+    <data name="AssistantToolCancelled" xml:space="preserve">
+        <value>Detenido: {0}</value>
+    </data>
+    <data name="AssistantToolRejected" xml:space="preserve">
+        <value>Rechazado: {0}</value>
+    </data>
+    <data name="AssistantToolAwaitingApproval" xml:space="preserve">
+        <value>Esperando tu aprobación: {0}</value>
+    </data>
+    <data name="AssistantApproveTool" xml:space="preserve">
+        <value>¿Permitir {0}?</value>
+    </data>
+    <data name="AssistantApprove" xml:space="preserve">
+        <value>Permitir</value>
+    </data>
+    <data name="AssistantApproveAlways" xml:space="preserve">
+        <value>Permitir siempre</value>
+    </data>
+    <data name="AssistantReject" xml:space="preserve">
+        <value>Rechazar</value>
+    </data>
+    <data name="AssistantToolDeclined" xml:space="preserve">
+        <value>Lo rechazaste.</value>
+    </data>
+    <data name="AssistantArguments" xml:space="preserve">
+        <value>Entrada</value>
+    </data>
+    <data name="AssistantResult" xml:space="preserve">
+        <value>Resultado</value>
+    </data>
+    <data name="AssistantJsonRoot" xml:space="preserve">
+        <value>Datos</value>
+    </data>
+    <data name="AssistantDownload" xml:space="preserve">
+        <value>Descargar</value>
+    </data>
+    <data name="AssistantExpand" xml:space="preserve">
+        <value>Ampliar</value>
+    </data>
+    <data name="AssistantCollapse" xml:space="preserve">
+        <value>Reducir</value>
+    </data>
+    <data name="AssistantVersion" xml:space="preserve">
+        <value>Versión</value>
+    </data>
+    <data name="AssistantTranscript" xml:space="preserve">
+        <value>Conversación</value>
+    </data>
+    <data name="AssistantDelete" xml:space="preserve">
+        <value>Eliminar</value>
+    </data>
+    <data name="AssistantUntitled" xml:space="preserve">
+        <value>Sin título</value>
+    </data>
+    <data name="AssistantPreviousSevenDays" xml:space="preserve">
+        <value>Últimos 7 días</value>
+    </data>
+    <data name="AssistantPreviousThirtyDays" xml:space="preserve">
+        <value>Últimos 30 días</value>
+    </data>
+    <data name="AssistantSomethingWentWrong" xml:space="preserve">
+        <value>Algo salió mal</value>
+    </data>
+    <data name="AssistantTokens" xml:space="preserve">
+        <value>tokens</value>
+    </data>
+    <data name="AssistantTokensPerSecond" xml:space="preserve">
+        <value>{0} tokens/s</value>
+    </data>
+    <data name="AssistantInputTokens" xml:space="preserve">
+        <value>Entrada</value>
+    </data>
+    <data name="AssistantOutputTokens" xml:space="preserve">
+        <value>Salida</value>
+    </data>
+    <data name="AssistantUsageLine" xml:space="preserve">
+        <value>{0}: {1}</value>
+    </data>
+    <data name="AssistantContext" xml:space="preserve">
+        <value>Contexto</value>
+    </data>
+    <data name="AssistantContextUsage" xml:space="preserve">
+        <value>{0} de {1} tokens</value>
+    </data>
+    <data name="AssistantContextWarning" xml:space="preserve">
+        <value>La conversación se está alargando</value>
+    </data>
+    <data name="AssistantContextCritical" xml:space="preserve">
+        <value>La conversación casi es demasiado larga para continuar</value>
+    </data>
+    <data name="AssistantKilobytes" xml:space="preserve">
+        <value>{0} KB</value>
+    </data>
+    <data name="AssistantMegabytes" xml:space="preserve">
+        <value>{0} MB</value>
+    </data>
+    <data name="LoadFailed" xml:space="preserve">
+        <value>No se pudo cargar. Vuelve a intentarlo en un momento.</value>
+    </data>
+    <data name="CategoryAppPages" xml:space="preserve">
+        <value>Páginas de tu app</value>
+    </data>
+    <data name="AppDashboardTitle" xml:space="preserve">
+        <value>Tablero</value>
+    </data>
+    <data name="AppDashboardDescription" xml:space="preserve">
+        <value>El propio tablero de administración de la app, incorporado con datos de demostración, para que sus estados y capturas estén a un clic.</value>
+    </data>
+    <data name="AppDashboardCaption" xml:space="preserve">
+        <value>Cifras de un vistazo</value>
+    </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>Configuración</value>
+    </data>
+    <data name="SettingsDescription" xml:space="preserve">
+        <value>La propia página de configuración de la app, con perfil, cuenta, inicio de sesión en dos pasos, sesiones y privacidad, que funciona con datos de demostración en lugar del servidor.</value>
+    </data>
+    <data name="SettingsCaption" xml:space="preserve">
+        <value>Tu cuenta, a tu manera</value>
+    </data>
+    <data name="CalendarViewDay" xml:space="preserve">
+        <value>Día</value>
+    </data>
+    <data name="CalendarViewWeek" xml:space="preserve">
+        <value>Semana</value>
+    </data>
+    <data name="CalendarViewMonth" xml:space="preserve">
+        <value>Mes</value>
+    </data>
+    <data name="CalendarViewYear" xml:space="preserve">
+        <value>Año</value>
+    </data>
+    <data name="CalendarViewAgenda" xml:space="preserve">
+        <value>Agenda</value>
+    </data>
+    <data name="CalendarModeEvent" xml:space="preserve">
+        <value>Eventos</value>
+    </data>
+    <data name="CalendarModeTimeline" xml:space="preserve">
+        <value>Línea de tiempo</value>
+    </data>
+    <data name="CalendarViewTabsAriaLabel" xml:space="preserve">
+        <value>Vistas</value>
+    </data>
+    <data name="CalendarModeTabsAriaLabel" xml:space="preserve">
+        <value>Modos</value>
+    </data>
+    <data name="CalendarTodayButton" xml:space="preserve">
+        <value>Hoy</value>
+    </data>
+    <data name="CalendarAddEventButton" xml:space="preserve">
+        <value>Agregar evento</value>
+    </data>
+    <data name="CalendarAddEventHoverHint" xml:space="preserve">
+        <value>Agregar evento</value>
+    </data>
+    <data name="CalendarPreviousButtonTitle" xml:space="preserve">
+        <value>Anterior</value>
+    </data>
+    <data name="CalendarNextButtonTitle" xml:space="preserve">
+        <value>Siguiente</value>
+    </data>
+    <data name="CalendarPreviousMonthAriaLabel" xml:space="preserve">
+        <value>Mes anterior</value>
+    </data>
+    <data name="CalendarNextMonthAriaLabel" xml:space="preserve">
+        <value>Mes siguiente</value>
+    </data>
+    <data name="CalendarPickerHourAriaLabel" xml:space="preserve">
+        <value>Hora</value>
+    </data>
+    <data name="CalendarPickerMinuteAriaLabel" xml:space="preserve">
+        <value>Minuto</value>
+    </data>
+    <data name="CalendarPickerMeridiemAriaLabel" xml:space="preserve">
+        <value>a. m./p. m.</value>
+    </data>
+    <data name="CalendarPickerSelectedDayAriaLabel" xml:space="preserve">
+        <value>seleccionado</value>
+    </data>
+    <data name="CalendarSettingsButtonTitle" xml:space="preserve">
+        <value>Configuración</value>
+    </data>
+    <data name="CalendarFilterByColorAriaLabel" xml:space="preserve">
+        <value>Filtrar eventos por color</value>
+    </data>
+    <data name="CalendarFilterByPersonAriaLabel" xml:space="preserve">
+        <value>Filtrar eventos por persona en la vista actual</value>
+    </data>
+    <data name="CalendarAllColorsOption" xml:space="preserve">
+        <value>Todos los colores</value>
+    </data>
+    <data name="CalendarAllPeopleOption" xml:space="preserve">
+        <value>Todas las personas</value>
+    </data>
+    <data name="CalendarUnnamedAttendee" xml:space="preserve">
+        <value>(Sin nombre)</value>
+    </data>
+    <data name="CalendarCalendarSettingsLabel" xml:space="preserve">
+        <value>Configuración del calendario</value>
+    </data>
+    <data name="CalendarDotBadgeLabel" xml:space="preserve">
+        <value>Puntos de color</value>
+    </data>
+    <data name="CalendarTwentyFourHourFormatLabel" xml:space="preserve">
+        <value>Formato de 24 horas</value>
+    </data>
+    <data name="CalendarDayStartsAtLabel" xml:space="preserve">
+        <value>El día empieza a las</value>
+    </data>
+    <data name="CalendarHourSuffix" xml:space="preserve">
+        <value>h</value>
+    </data>
+    <data name="CalendarAgendaGroupByLabel" xml:space="preserve">
+        <value>Agrupar agenda por</value>
+    </data>
+    <data name="CalendarAgendaGroupByDate" xml:space="preserve">
+        <value>Fecha</value>
+    </data>
+    <data name="CalendarAgendaGroupByColor" xml:space="preserve">
+        <value>Color</value>
+    </data>
+    <data name="CalendarStackedEventsLabel" xml:space="preserve">
+        <value>Apilar eventos superpuestos</value>
+    </data>
+    <data name="CalendarShowDayViewCalendarLabel" xml:space="preserve">
+        <value>Mostrar el calendario en la vista Día</value>
+    </data>
+    <data name="CalendarShowWeekNumbersLabel" xml:space="preserve">
+        <value>Mostrar números de semana</value>
+    </data>
+    <data name="CalendarShowCurrentTimeIndicatorLabel" xml:space="preserve">
+        <value>Mostrar la hora actual</value>
+    </data>
+    <data name="CalendarSlotDurationLabel" xml:space="preserve">
+        <value>Duración del intervalo</value>
+    </data>
+    <data name="CalendarMinuteSuffix" xml:space="preserve">
+        <value>min</value>
+    </data>
+    <data name="CalendarWeekMobileWarning" xml:space="preserve">
+        <value>La vista Semana no se recomienda en dispositivos pequeños. Cambia a un equipo de escritorio o usa la vista Día.</value>
+    </data>
+    <data name="CalendarHappeningNowTitle" xml:space="preserve">
+        <value>En curso</value>
+    </data>
+    <data name="CalendarNoAppointmentsNow" xml:space="preserve">
+        <value>No hay citas en este momento</value>
+    </data>
+    <data name="CalendarSearchEventsPlaceholder" xml:space="preserve">
+        <value>Buscar eventos...</value>
+    </data>
+    <data name="CalendarNoEventsFound" xml:space="preserve">
+        <value>No se encontraron eventos.</value>
+    </data>
+    <data name="CalendarEventListTitleFormat" xml:space="preserve">
+        <value>Eventos del {0}</value>
+    </data>
+    <data name="CalendarEventListCountFormat" xml:space="preserve">
+        <value>{0} evento(s)</value>
+    </data>
+    <data name="CalendarMoreEventsFormat" xml:space="preserve">
+        <value>+{0} más</value>
+    </data>
+    <data name="CalendarAddEventDialogTitle" xml:space="preserve">
+        <value>Nuevo evento</value>
+    </data>
+    <data name="CalendarEditEventDialogTitle" xml:space="preserve">
+        <value>Editar evento</value>
+    </data>
+    <data name="CalendarAddEventDialogSubtitle" xml:space="preserve">
+        <value>Crea un evento nuevo en tu calendario.</value>
+    </data>
+    <data name="CalendarEditEventDialogSubtitle" xml:space="preserve">
+        <value>Modifica tu evento existente.</value>
+    </data>
+    <data name="CalendarCloseAriaLabel" xml:space="preserve">
+        <value>Cerrar</value>
+    </data>
+    <data name="CalendarCloseButton" xml:space="preserve">
+        <value>Cerrar</value>
+    </data>
+    <data name="CalendarCancelButton" xml:space="preserve">
+        <value>Cancelar</value>
+    </data>
+    <data name="CalendarEditButton" xml:space="preserve">
+        <value>Editar</value>
+    </data>
+    <data name="CalendarDeleteButton" xml:space="preserve">
+        <value>Eliminar</value>
+    </data>
+    <data name="CalendarCreateEventButton" xml:space="preserve">
+        <value>Crear evento</value>
+    </data>
+    <data name="CalendarSaveChangesButton" xml:space="preserve">
+        <value>Guardar cambios</value>
+    </data>
+    <data name="CalendarTitleLabel" xml:space="preserve">
+        <value>Título</value>
+    </data>
+    <data name="CalendarEventTitlePlaceholder" xml:space="preserve">
+        <value>Título del evento</value>
+    </data>
+    <data name="CalendarStartDateTimeLabel" xml:space="preserve">
+        <value>Fecha y hora de inicio</value>
+    </data>
+    <data name="CalendarEndDateTimeLabel" xml:space="preserve">
+        <value>Fecha y hora de fin</value>
+    </data>
+    <data name="CalendarColorLabel" xml:space="preserve">
+        <value>Color</value>
+    </data>
+    <data name="CalendarEventColorAriaLabel" xml:space="preserve">
+        <value>Color del evento</value>
+    </data>
+    <data name="CalendarDescriptionLabel" xml:space="preserve">
+        <value>Descripción</value>
+    </data>
+    <data name="CalendarEventDescriptionPlaceholder" xml:space="preserve">
+        <value>Descripción del evento</value>
+    </data>
+    <data name="CalendarAttendeesLabel" xml:space="preserve">
+        <value>Asistentes</value>
+    </data>
+    <data name="CalendarNoAttendeesText" xml:space="preserve">
+        <value>Sin asistentes</value>
+    </data>
+    <data name="CalendarFirstNamePlaceholder" xml:space="preserve">
+        <value>Nombre</value>
+    </data>
+    <data name="CalendarLastNamePlaceholder" xml:space="preserve">
+        <value>Apellido</value>
+    </data>
+    <data name="CalendarIdOptionalPlaceholder" xml:space="preserve">
+        <value>ID (opcional)</value>
+    </data>
+    <data name="CalendarAddButton" xml:space="preserve">
+        <value>Agregar</value>
+    </data>
+    <data name="CalendarRemoveAttendeeAriaLabel" xml:space="preserve">
+        <value>Quitar asistente</value>
+    </data>
+    <data name="CalendarStartDateLabel" xml:space="preserve">
+        <value>Fecha de inicio</value>
+    </data>
+    <data name="CalendarEndDateLabel" xml:space="preserve">
+        <value>Fecha de fin</value>
+    </data>
+    <data name="CalendarAtWord" xml:space="preserve">
+        <value>a las</value>
+    </data>
+    <data name="CalendarAllDayLabel" xml:space="preserve">
+        <value>Todo el día</value>
+    </data>
+    <data name="CalendarWeekNumberFormat" xml:space="preserve">
+        <value>S{0}</value>
+    </data>
+    <data name="CalendarWeekNumberAriaLabelFormat" xml:space="preserve">
+        <value>Semana {0}</value>
+    </data>
+    <data name="CalendarEventOverlapMessage" xml:space="preserve">
+        <value>Este intervalo de tiempo ya está ocupado en ese recurso.</value>
+    </data>
+    <data name="CalendarOutOfRangeMessage" xml:space="preserve">
+        <value>Esa fecha está fuera del rango permitido.</value>
+    </data>
+    <data name="CalendarOutsideBusinessHoursMessage" xml:space="preserve">
+        <value>Esa hora está fuera del horario laboral.</value>
+    </data>
+    <data name="CalendarBlockedMessage" xml:space="preserve">
+        <value>Esa hora no está disponible.</value>
+    </data>
+    <data name="CalendarHighlightBusinessHoursLabel" xml:space="preserve">
+        <value>Resaltar el horario laboral</value>
+    </data>
+    <data name="CalendarNavLinkDayAriaLabelFormat" xml:space="preserve">
+        <value>Ir al {0}</value>
+    </data>
+    <data name="CalendarNavLinkWeekAriaLabelFormat" xml:space="preserve">
+        <value>Ir a la semana {0}</value>
+    </data>
+    <data name="CalendarValidationTitleRequired" xml:space="preserve">
+        <value>El título es obligatorio</value>
+    </data>
+    <data name="CalendarValidationDescriptionRequired" xml:space="preserve">
+        <value>La descripción es obligatoria</value>
+    </data>
+    <data name="CalendarValidationEndAfterStart" xml:space="preserve">
+        <value>La fecha de fin debe ser posterior a la de inicio</value>
+    </data>
+    <data name="CalendarValidationAttendeeNameRequired" xml:space="preserve">
+        <value>Se requiere el nombre o el apellido</value>
+    </data>
+    <data name="CalendarResizePreviewAriaLabel" xml:space="preserve">
+        <value>Nuevo intervalo de tiempo</value>
+    </data>
+    <data name="CalendarRepeatsLabel" xml:space="preserve">
+        <value>Repetición</value>
+    </data>
+    <data name="CalendarRepeatsDaily" xml:space="preserve">
+        <value>Diaria</value>
+    </data>
+    <data name="CalendarRepeatsWeekly" xml:space="preserve">
+        <value>Semanal</value>
+    </data>
+    <data name="CalendarRepeatsMonthly" xml:space="preserve">
+        <value>Mensual</value>
+    </data>
+    <data name="CalendarRepeatsYearly" xml:space="preserve">
+        <value>Anual</value>
+    </data>
+    <data name="CalendarRepeatsIntervalFormat" xml:space="preserve">
+        <value>cada {0}</value>
+    </data>
+    <data name="CalendarRepeatsCountFormat" xml:space="preserve">
+        <value>{0} veces</value>
+    </data>
+    <data name="CalendarRepeatsUntilFormat" xml:space="preserve">
+        <value>hasta el {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnDaysFormat" xml:space="preserve">
+        <value>los {0}</value>
+    </data>
+    <data name="CalendarRepeatsOnWeekOfMonthFormat" xml:space="preserve">
+        <value>el {0} {1}</value>
+    </data>
+    <data name="CalendarListSeparator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="CalendarWeekOfMonthFirst" xml:space="preserve">
+        <value>primer</value>
+    </data>
+    <data name="CalendarWeekOfMonthSecond" xml:space="preserve">
+        <value>segundo</value>
+    </data>
+    <data name="CalendarWeekOfMonthThird" xml:space="preserve">
+        <value>tercer</value>
+    </data>
+    <data name="CalendarWeekOfMonthFourth" xml:space="preserve">
+        <value>cuarto</value>
+    </data>
+    <data name="CalendarWeekOfMonthLast" xml:space="preserve">
+        <value>último</value>
+    </data>
+    <data name="CalendarRepeatLabel" xml:space="preserve">
+        <value>Repetición</value>
+    </data>
+    <data name="CalendarDoesNotRepeatOption" xml:space="preserve">
+        <value>No se repite</value>
+    </data>
+    <data name="CalendarRepeatEveryLabel" xml:space="preserve">
+        <value>Repetir cada</value>
+    </data>
+    <data name="CalendarRepeatDaysUnit" xml:space="preserve">
+        <value>día(s)</value>
+    </data>
+    <data name="CalendarRepeatWeeksUnit" xml:space="preserve">
+        <value>semana(s)</value>
+    </data>
+    <data name="CalendarRepeatMonthsUnit" xml:space="preserve">
+        <value>mes(es)</value>
+    </data>
+    <data name="CalendarRepeatYearsUnit" xml:space="preserve">
+        <value>año(s)</value>
+    </data>
+    <data name="CalendarRepeatOnLabel" xml:space="preserve">
+        <value>Se repite</value>
+    </data>
+    <data name="CalendarRepeatOnDayOfMonthFormat" xml:space="preserve">
+        <value>El día {0}</value>
+    </data>
+    <data name="CalendarRepeatOnWeekOfMonthFormat" xml:space="preserve">
+        <value>El {0}</value>
+    </data>
+    <data name="CalendarEndsLabel" xml:space="preserve">
+        <value>Termina</value>
+    </data>
+    <data name="CalendarEndsNeverOption" xml:space="preserve">
+        <value>Nunca</value>
+    </data>
+    <data name="CalendarEndsOnDateOption" xml:space="preserve">
+        <value>En una fecha</value>
+    </data>
+    <data name="CalendarEndsAfterOption" xml:space="preserve">
+        <value>Después de</value>
+    </data>
+    <data name="CalendarOccurrencesLabel" xml:space="preserve">
+        <value>repetición(es)</value>
+    </data>
+    <data name="CalendarRepeatExceptionsLabel" xml:space="preserve">
+        <value>Excepciones</value>
+    </data>
+    <data name="CalendarSkipDateButton" xml:space="preserve">
+        <value>Omitir fecha</value>
+    </data>
+    <data name="CalendarAddDateButton" xml:space="preserve">
+        <value>Agregar fecha</value>
+    </data>
+    <data name="CalendarSkippedDatesLabel" xml:space="preserve">
+        <value>Omitidas</value>
+    </data>
+    <data name="CalendarAddedDatesLabel" xml:space="preserve">
+        <value>Agregadas</value>
+    </data>
+    <data name="CalendarRemoveDateAriaLabel" xml:space="preserve">
+        <value>Quitar fecha</value>
+    </data>
+    <data name="CalendarValidationRepeatAtLeastOne" xml:space="preserve">
+        <value>Debe ser al menos 1</value>
+    </data>
+    <data name="CalendarValidationUntilBeforeStart" xml:space="preserve">
+        <value>La serie no puede terminar antes de empezar</value>
+    </data>
+    <data name="CalendarRecurringEditTitle" xml:space="preserve">
+        <value>Editar evento periódico</value>
+    </data>
+    <data name="CalendarRecurringDeleteTitle" xml:space="preserve">
+        <value>Eliminar evento periódico</value>
+    </data>
+    <data name="CalendarThisOccurrenceOption" xml:space="preserve">
+        <value>Este evento</value>
+    </data>
+    <data name="CalendarAllOccurrencesOption" xml:space="preserve">
+        <value>Todos los eventos de la serie</value>
+    </data>
+    <data name="CalendarOkButton" xml:space="preserve">
+        <value>Aceptar</value>
+    </data>
+    <data name="CalendarResourceLabel" xml:space="preserve">
+        <value>Recurso</value>
+    </data>
+    <data name="CalendarResourceColumnHeader" xml:space="preserve">
+        <value>Equipo</value>
+    </data>
+    <data name="CalendarNoResourceLabel" xml:space="preserve">
+        <value>Sin asignar</value>
+    </data>
+    <data name="CalendarNoResourceOption" xml:space="preserve">
+        <value>(ninguno)</value>
+    </data>
+    <data name="CalendarNoResourcesMessage" xml:space="preserve">
+        <value>No hay recursos para mostrar.</value>
+    </data>
+    <data name="PosStaffNoah" xml:space="preserve">
+        <value>Noah</value>
+    </data>
+    <data name="PosStaffJulia" xml:space="preserve">
+        <value>Julia</value>
+    </data>
+    <data name="CategoryPlanning" xml:space="preserve">
+        <value>Planificación</value>
+    </data>
+    <data name="ShiftsTitle" xml:space="preserve">
+        <value>Planificador de turnos</value>
+    </data>
+    <data name="ShiftsDescription" xml:space="preserve">
+        <value>El horario semanal del personal de una cafetería: mueve los turnos de cada persona y ajusta su duración, dentro del horario de apertura, respetando el tiempo libre y sin turnos superpuestos.</value>
+    </data>
+    <data name="ShiftsCaption" xml:space="preserve">
+        <value>La semana, en minutos</value>
+    </data>
+    <data name="ShiftsHeading" xml:space="preserve">
+        <value>Horario del personal</value>
+    </data>
+    <data name="ShiftsSummary" xml:space="preserve">
+        <value>{0} turnos y {1} horas esta semana</value>
+    </data>
+    <data name="ShiftsEmpty" xml:space="preserve">
+        <value>Aún no hay turnos planificados. Selecciona una hora en la fila de una persona para agregar el primero.</value>
+    </data>
+    <data name="ShiftsRoleLead" xml:space="preserve">
+        <value>Jefe de turno</value>
+    </data>
+    <data name="ShiftsRoleBarista" xml:space="preserve">
+        <value>Barista</value>
+    </data>
+    <data name="ShiftsRoleBaker" xml:space="preserve">
+        <value>Panadero</value>
+    </data>
+    <data name="ShiftsRoleCashier" xml:space="preserve">
+        <value>Cajero</value>
+    </data>
+    <data name="ShiftsOpening" xml:space="preserve">
+        <value>Apertura</value>
+    </data>
+    <data name="ShiftsMidday" xml:space="preserve">
+        <value>Mediodía</value>
+    </data>
+    <data name="ShiftsBakery" xml:space="preserve">
+        <value>Panadería</value>
+    </data>
+    <data name="ShiftsClosing" xml:space="preserve">
+        <value>Cierre</value>
+    </data>
+    <data name="ShiftsStocktake" xml:space="preserve">
+        <value>Inventario, cafetería cerrada</value>
+    </data>
+    <data name="ShiftsTimeOff" xml:space="preserve">
+        <value>Tiempo libre</value>
+    </data>
+    <data name="HomeCtaTitle" xml:space="preserve">
+        <value>Tu próxima página empieza aquí</value>
+    </data>
+    <data name="HomeCtaText" xml:space="preserve">
+        <value>Pide a tu agente de IA que la diseñe en el banco de trabajo. Crea la página con datos de ejemplo, revisa cada estado en un navegador real y te muestra capturas antes de que se escriba una sola línea de código de backend.</value>
+    </data>
+    <data name="HomeCtaOpen" xml:space="preserve">
+        <value>Abrir el banco de trabajo</value>
+    </data>
+    <data name="HomeCtaPromptLabel" xml:space="preserve">
+        <value>Prueba a pedir</value>
+    </data>
+    <data name="HomeCtaPrompt" xml:space="preserve">
+        <value>Diseña una página de historial de pedidos en el banco de trabajo, con estados de carga, vacío y error, y muéstrame capturas en teléfono y en escritorio.</value>
+    </data>
+    <data name="HomeCtaCopy" xml:space="preserve">
+        <value>Copiar</value>
+    </data>
+    <data name="HomeCtaCopied" xml:space="preserve">
+        <value>Copiado</value>
+    </data>
+    <data name="HomeFooterExplore" xml:space="preserve">
+        <value>Explorar</value>
+    </data>
+    <data name="HomeFooterLearn" xml:space="preserve">
+        <value>Aprender</value>
+    </data>
+    <data name="HomeFooterDocs" xml:space="preserve">
+        <value>Documentación de la plantilla de proyectos de bit</value>
+    </data>
+    <data name="HomeFooterComponents" xml:space="preserve">
+        <value>Componentes de bit BlazorUI</value>
+    </data>
+    <data name="HomeFooterSource" xml:space="preserve">
+        <value>Código fuente en GitHub</value>
+    </data>
+    <data name="NavShowcases" xml:space="preserve">
+        <value>Ejemplos</value>
+    </data>
+    <data name="ShiftsAddTitle" xml:space="preserve">
+        <value>Nuevo turno</value>
+    </data>
+    <data name="ShiftsEditTitle" xml:space="preserve">
+        <value>Editar turno</value>
+    </data>
+    <data name="ShiftsStaffLabel" xml:space="preserve">
+        <value>Miembro del equipo</value>
+    </data>
+    <data name="ShiftsNameLabel" xml:space="preserve">
+        <value>Turno</value>
+    </data>
+    <data name="ShiftsNamePlaceholder" xml:space="preserve">
+        <value>Por ejemplo, Apertura</value>
+    </data>
+    <data name="ShiftsRoleLabel" xml:space="preserve">
+        <value>Rol</value>
+    </data>
+    <data name="ShiftsDayLabel" xml:space="preserve">
+        <value>Día</value>
+    </data>
+    <data name="ShiftsStartsLabel" xml:space="preserve">
+        <value>Empieza</value>
+    </data>
+    <data name="ShiftsEndsLabel" xml:space="preserve">
+        <value>Termina</value>
+    </data>
+    <data name="ShiftsEndBeforeStart" xml:space="preserve">
+        <value>Un turno tiene que terminar después de empezar.</value>
+    </data>
+    <data name="ShiftsOverlap" xml:space="preserve">
+        <value>{0} ya tiene un turno a esa hora.</value>
+    </data>
+    <data name="ShiftsSaved" xml:space="preserve">
+        <value>Turno guardado</value>
+    </data>
+    <data name="ShiftsDeleted" xml:space="preserve">
+        <value>Turno eliminado</value>
+    </data>
+    <data name="ShiftsAllStaff" xml:space="preserve">
+        <value>Todo el equipo</value>
+    </data>
+    <data name="ShiftsAllRoles" xml:space="preserve">
+        <value>Todos los roles</value>
+    </data>
+    <data name="HomeWhyCustomizeTitle" xml:space="preserve">
+        <value>Personalízalo con IA</value>
+    </data>
+    <data name="HomeWhyCustomizeText" xml:space="preserve">
+        <value>El banco de trabajo también forma parte de tu app. Pide a tu agente de IA que cambie sus funciones o que añada las herramientas, los dispositivos y los estados que tu equipo necesita.</value>
+    </data>
+    <data name="ShiftsNoStaff" xml:space="preserve">
+        <value>Nadie</value>
+    </data>
+    <data name="ShiftsNoRoles" xml:space="preserve">
+        <value>Ningún rol</value>
+    </data>
+    <data name="SignedInAs" xml:space="preserve">
+        <value>Sesión iniciada como</value>
+    </data>
+    <data name="RoleGlobalAdmin" xml:space="preserve">
+        <value>Administrador global</value>
+    </data>
+    <data name="RoleTenantAdmin" xml:space="preserve">
+        <value>Administrador del inquilino</value>
+    </data>
+    <data name="RoleDemo" xml:space="preserve">
+        <value>Demo</value>
+    </data>
+    <data name="ChecksTab" xml:space="preserve">
+        <value>Pruebas</value>
+    </data>
+    <data name="ChecksTitle" xml:space="preserve">
+        <value>Comprobar esta vista</value>
+    </data>
+    <data name="ChecksHint" xml:space="preserve">
+        <value>Se ejecutan en la vista seleccionada, con su dispositivo, tema, idioma y datos: una prueba de accesibilidad (axe-core) y una búsqueda de colores que no vienen del tema.</value>
+    </data>
+    <data name="RunChecks" xml:space="preserve">
+        <value>Ejecutar pruebas</value>
+    </data>
+    <data name="ChecksFailed" xml:space="preserve">
+        <value>No se pudieron ejecutar las pruebas en esta vista. Espera a que termine de cargar y vuelve a intentarlo.</value>
+    </data>
+    <data name="AccessibilityFindings" xml:space="preserve">
+        <value>Accesibilidad ({0})</value>
+    </data>
+    <data name="NoAccessibilityFindings" xml:space="preserve">
+        <value>No se encontraron problemas.</value>
+    </data>
+    <data name="ImpactCritical" xml:space="preserve">
+        <value>Crítico</value>
+    </data>
+    <data name="ImpactSerious" xml:space="preserve">
+        <value>Grave</value>
+    </data>
+    <data name="ImpactModerate" xml:space="preserve">
+        <value>Moderado</value>
+    </data>
+    <data name="ImpactMinor" xml:space="preserve">
+        <value>Leve</value>
+    </data>
+    <data name="ShowOnPage" xml:space="preserve">
+        <value>Mostrar</value>
+    </data>
+    <data name="LearnMore" xml:space="preserve">
+        <value>Más información</value>
+    </data>
+    <data name="ThemeFindings" xml:space="preserve">
+        <value>Colores fuera del tema ({0})</value>
+    </data>
+    <data name="ThemeFindingsHint" xml:space="preserve">
+        <value>Colores que la propia página define y que no vienen del tema ni de mezclar un color del tema con blanco, negro o el fondo. Deja fuera los componentes de bit, los gráficos y los colores que se pasan como --data-color.</value>
+    </data>
+    <data name="Flows" xml:space="preserve">
+        <value>Flujos</value>
+    </data>
+    <data name="FlowsHint" xml:space="preserve">
+        <value>Un flujo muestra las pantallas de una tarea una al lado de otra, cada una en el estado que importa, como una lista y el diálogo que abre su botón, con flechas que indican cómo pasar de una a la siguiente. Abre uno para entender la app o para repasarla en una reunión.</value>
+    </data>
+    <data name="NewFlowName" xml:space="preserve">
+        <value>Nombre del nuevo flujo</value>
+    </data>
+    <data name="DeleteFlow" xml:space="preserve">
+        <value>Eliminar flujo</value>
+    </data>
+    <data name="OpenCommentsCount" xml:space="preserve">
+        <value>{0} comentarios abiertos</value>
+    </data>
+    <data name="PageStatus" xml:space="preserve">
+        <value>Estado de la revisión</value>
+    </data>
+    <data name="PageStatusDraft" xml:space="preserve">
+        <value>Borrador</value>
+    </data>
+    <data name="PageStatusInReview" xml:space="preserve">
+        <value>En revisión</value>
+    </data>
+    <data name="PageStatusApproved" xml:space="preserve">
+        <value>Aprobada</value>
+    </data>
+    <data name="PageStatusBuilt" xml:space="preserve">
+        <value>Integrada</value>
+    </data>
+    <data name="PageStatusSetBy" xml:space="preserve">
+        <value>Definido por {0}, {1}</value>
+    </data>
+    <data name="NoAgentListening" xml:space="preserve">
+        <value>Ningún agente está escuchando. Pide a tu agente que repase los comentarios de la revisión en el banco de trabajo y los irá respondiendo aquí uno por uno.</value>
+    </data>
+    <data name="AgentListening" xml:space="preserve">
+        <value>{0} está atento a los comentarios</value>
+    </data>
+    <data name="AgentWorkingOn" xml:space="preserve">
+        <value>{0} está trabajando en #{1}</value>
+    </data>
+    <data name="NewComment" xml:space="preserve">
+        <value>Nuevo comentario</value>
+    </data>
+    <data name="YourName" xml:space="preserve">
+        <value>Tu nombre</value>
+    </data>
+    <data name="CommentPlaceholder" xml:space="preserve">
+        <value>¿Qué debería cambiar aquí?</value>
+    </data>
+    <data name="Send" xml:space="preserve">
+        <value>Enviar</value>
+    </data>
+    <data name="OpenComments" xml:space="preserve">
+        <value>Abiertos ({0})</value>
+    </data>
+    <data name="DoneComments" xml:space="preserve">
+        <value>Hechos ({0})</value>
+    </data>
+    <data name="NoComments" xml:space="preserve">
+        <value>Aún no hay comentarios. Elige Comentar arriba y haz clic en cualquier parte de la página.</value>
+    </data>
+    <data name="NoDoneComments" xml:space="preserve">
+        <value>Aún no hay nada hecho.</value>
+    </data>
+    <data name="ReviewStatusOpen" xml:space="preserve">
+        <value>Abierto</value>
+    </data>
+    <data name="ReviewStatusWorking" xml:space="preserve">
+        <value>En curso</value>
+    </data>
+    <data name="ReviewStatusDone" xml:space="preserve">
+        <value>Hecho</value>
+    </data>
+    <data name="AgentTasks" xml:space="preserve">
+        <value>El plan del agente</value>
+    </data>
+    <data name="ReplyPlaceholder" xml:space="preserve">
+        <value>Responder</value>
+    </data>
+    <data name="Reply" xml:space="preserve">
+        <value>Responder</value>
+    </data>
+    <data name="Reopen" xml:space="preserve">
+        <value>Reabrir</value>
+    </data>
+    <data name="Resolve" xml:space="preserve">
+        <value>Hecho</value>
+    </data>
+    <data name="ShowView" xml:space="preserve">
+        <value>Mostrar la vista</value>
+    </data>
+    <data name="DeleteComment" xml:space="preserve">
+        <value>Eliminar comentario</value>
+    </data>
+    <data name="ThisSpot" xml:space="preserve">
+        <value>Este punto</value>
+    </data>
+    <data name="Mode" xml:space="preserve">
+        <value>Modo</value>
+    </data>
+    <data name="ModeBrowse" xml:space="preserve">
+        <value>Usar la página</value>
+    </data>
+    <data name="ModeComment" xml:space="preserve">
+        <value>Comentar</value>
+    </data>
+    <data name="ModeInspect" xml:space="preserve">
+        <value>Inspeccionar</value>
+    </data>
+    <data name="ModeText" xml:space="preserve">
+        <value>Editar texto</value>
+    </data>
+    <data name="ViewTab" xml:space="preserve">
+        <value>Vista</value>
+    </data>
+    <data name="ReviewTab" xml:space="preserve">
+        <value>Revisión</value>
+    </data>
+    <data name="Reviewer" xml:space="preserve">
+        <value>Revisor</value>
+    </data>
+    <data name="NotFromTheme" xml:space="preserve">
+        <value>no viene del tema</value>
+    </data>
+    <data name="ReviewSheet" xml:space="preserve">
+        <value>Hoja de revisión</value>
+    </data>
+    <data name="ReviewSheetHtml" xml:space="preserve">
+        <value>Hoja de revisión (HTML)</value>
+    </data>
+    <data name="ReviewSheetPdf" xml:space="preserve">
+        <value>Hoja de revisión (PDF)</value>
+    </data>
+    <data name="ReviewSheetViews" xml:space="preserve">
+        <value>Vistas</value>
+    </data>
+    <data name="ReviewSheetComments" xml:space="preserve">
+        <value>Comentarios</value>
+    </data>
+    <data name="ReviewSheetNoComments" xml:space="preserve">
+        <value>No hay comentarios.</value>
+    </data>
+    <data name="ReviewSheetMade" xml:space="preserve">
+        <value>Creada en el banco de trabajo, {0}</value>
+    </data>
+    <data name="EditText" xml:space="preserve">
+        <value>Editar texto</value>
+    </data>
+    <data name="EditTextHint" xml:space="preserve">
+        <value>Haz clic en cualquier texto de la página para cambiarlo, en todos los idiomas.</value>
+    </data>
+    <data name="TextNotTranslated" xml:space="preserve">
+        <value>Este texto está escrito en la propia página y aún no está en los archivos de traducción, así que se ve igual en todos los idiomas.</value>
+    </data>
+    <data name="MoveTextRequest" xml:space="preserve">
+        <value>Mueve este texto a los archivos de traducción y tradúcelo: «{0}»</value>
+    </data>
+    <data name="AskTheAgent" xml:space="preserve">
+        <value>Pedírselo al agente</value>
+    </data>
+    <data name="TextKey" xml:space="preserve">
+        <value>Qué texto</value>
+    </data>
+    <data name="SaveTranslations" xml:space="preserve">
+        <value>Guardar</value>
+    </data>
+    <data name="SaveTranslationsHint" xml:space="preserve">
+        <value>Guarda en los archivos de traducción y recarga las vistas. Tu agente ve el cambio en git.</value>
+    </data>
+    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
+        <value>Guardar texto funciona cuando el banco de trabajo se ejecuta desde el proyecto en tu propio equipo.</value>
+    </data>
+    <data name="ChangeTextRequest" xml:space="preserve">
+        <value>Cambia el texto {0} · {1}:</value>
+    </data>
+    <data name="ThemePageTitle" xml:space="preserve">
+        <value>Tema y componentes</value>
+    </data>
+    <data name="ThemePageDescription" xml:space="preserve">
+        <value>El lenguaje visual de la app en una página: colores, tipografía y esquinas, y los componentes que usa la app en cada estado, con sus superposiciones a un interruptor.</value>
+    </data>
+    <data name="ThemePageCaption" xml:space="preserve">
+        <value>Un mismo estilo en toda la app</value>
+    </data>
+    <data name="CategoryDesignSystem" xml:space="preserve">
+        <value>Sistema de diseño</value>
+    </data>
+    <data name="ThemeHeading" xml:space="preserve">
+        <value>Tema y componentes</value>
+    </data>
+    <data name="ThemeSubtitle" xml:space="preserve">
+        <value>Todo lo que ves aquí viene del propio tema de la app. Prueba las opciones de tema del banco de trabajo para ver cómo cambia.</value>
+    </data>
+    <data name="ThemeColors" xml:space="preserve">
+        <value>Colores</value>
+    </data>
+    <data name="ThemePrimary" xml:space="preserve">
+        <value>Primario</value>
+    </data>
+    <data name="ThemeSecondary" xml:space="preserve">
+        <value>Secundario</value>
+    </data>
+    <data name="ThemeTertiary" xml:space="preserve">
+        <value>Terciario</value>
+    </data>
+    <data name="ThemeInfo" xml:space="preserve">
+        <value>Información</value>
+    </data>
+    <data name="ThemeSuccess" xml:space="preserve">
+        <value>Éxito</value>
+    </data>
+    <data name="ThemeWarning" xml:space="preserve">
+        <value>Advertencia</value>
+    </data>
+    <data name="ThemeSevereWarning" xml:space="preserve">
+        <value>Advertencia grave</value>
+    </data>
+    <data name="ThemeError" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="ThemeForeground" xml:space="preserve">
+        <value>Texto</value>
+    </data>
+    <data name="ThemeBackground" xml:space="preserve">
+        <value>Fondos</value>
+    </data>
+    <data name="ThemeBorder" xml:space="preserve">
+        <value>Bordes</value>
+    </data>
+    <data name="ThemeTypography" xml:space="preserve">
+        <value>Tipografía</value>
+    </data>
+    <data name="ThemeSampleText" xml:space="preserve">
+        <value>El veloz murciélago hindú comía feliz cardillo y kiwi</value>
+    </data>
+    <data name="ThemeShape" xml:space="preserve">
+        <value>Esquinas</value>
+    </data>
+    <data name="ThemeButtons" xml:space="preserve">
+        <value>Botones</value>
+    </data>
+    <data name="ThemeDisabled" xml:space="preserve">
+        <value>Deshabilitado</value>
+    </data>
+    <data name="ThemeIconButton" xml:space="preserve">
+        <value>Configuración</value>
+    </data>
+    <data name="ThemeInputs" xml:space="preserve">
+        <value>Campos de entrada</value>
+    </data>
+    <data name="ThemeName" xml:space="preserve">
+        <value>Nombre</value>
+    </data>
+    <data name="ThemeNamePlaceholder" xml:space="preserve">
+        <value>Escribe un nombre</value>
+    </data>
+    <data name="ThemeChoice" xml:space="preserve">
+        <value>Elección</value>
+    </data>
+    <data name="ThemeChoicePlaceholder" xml:space="preserve">
+        <value>Elige una opción</value>
+    </data>
+    <data name="ThemeSearch" xml:space="preserve">
+        <value>Buscar</value>
+    </data>
+    <data name="ThemeAmount" xml:space="preserve">
+        <value>Cantidad</value>
+    </data>
+    <data name="ThemeOption" xml:space="preserve">
+        <value>Opción {0}</value>
+    </data>
+    <data name="ThemeToggle" xml:space="preserve">
+        <value>Notificaciones</value>
+    </data>
+    <data name="ThemeFeedback" xml:space="preserve">
+        <value>Mensajes y estado</value>
+    </data>
+    <data name="ThemeMessage" xml:space="preserve">
+        <value>Un mensaje {0}, tal como lo muestra la app.</value>
+    </data>
+    <data name="ThemeProgress" xml:space="preserve">
+        <value>Subiendo</value>
+    </data>
+    <data name="ThemeContainers" xml:space="preserve">
+        <value>Tarjetas y personas</value>
+    </data>
+    <data name="ThemeTab" xml:space="preserve">
+        <value>Pestaña {0}</value>
+    </data>
+    <data name="BuildingsVariantTable" xml:space="preserve">
+        <value>Tabla</value>
+    </data>
+    <data name="BuildingsVariantCards" xml:space="preserve">
+        <value>Tarjetas</value>
+    </data>
+    <data name="BuildingsSwitchAmount" xml:space="preserve">
+        <value>Cuántos edificios</value>
+    </data>
+    <data name="BuildingsAmountNormal" xml:space="preserve">
+        <value>Tal cual</value>
+    </data>
+    <data name="BuildingsAmountFew" xml:space="preserve">
+        <value>Tres</value>
+    </data>
+    <data name="BuildingsAmountMany" xml:space="preserve">
+        <value>Cientos</value>
+    </data>
+    <data name="BuildingsSwitchNames" xml:space="preserve">
+        <value>Nombres</value>
+    </data>
+    <data name="BuildingsNamesAsTheyAre" xml:space="preserve">
+        <value>Tal cual</value>
+    </data>
+    <data name="BuildingsNamesLong" xml:space="preserve">
+        <value>Muy largos</value>
+    </data>
+    <data name="Width" xml:space="preserve">
+        <value>Ancho</value>
+    </data>
+    <data name="Height" xml:space="preserve">
+        <value>Alto</value>
+    </data>
+    <data name="CustomSizeHint" xml:space="preserve">
+        <value>Arrastra el borde o la esquina de la vista para cambiar su tamaño, o escribe el tamaño.</value>
+    </data>
+    <data name="PageSection" xml:space="preserve">
+        <value>Esta página</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>Opción de diseño</value>
+    </data>
+    <data name="PageSectionHint" xml:space="preserve">
+        <value>La propia página los define, para los casos en los que tiene que verse bien. Cada elección se guarda en el enlace y en las capturas.</value>
+    </data>
+    <data name="ThemeTweaks" xml:space="preserve">
+        <value>Probar el tema</value>
+    </data>
+    <data name="AccentColor" xml:space="preserve">
+        <value>Color principal</value>
+    </data>
+    <data name="ThemeDefault" xml:space="preserve">
+        <value>Tema</value>
+    </data>
+    <data name="CustomColor" xml:space="preserve">
+        <value>Tu propio color</value>
+    </data>
+    <data name="ThemeTweaksHint" xml:space="preserve">
+        <value>Solo cambia esta vista. Cuando te guste una opción, pide a tu agente que la lleve al tema de la app.</value>
+    </data>
+    <data name="Accessibility" xml:space="preserve">
+        <value>Accesibilidad</value>
+    </data>
+    <data name="TextSize" xml:space="preserve">
+        <value>Tamaño del texto</value>
+    </data>
+    <data name="ReduceMotion" xml:space="preserve">
+        <value>Reducir movimiento</value>
+    </data>
+    <data name="ColorVision" xml:space="preserve">
+        <value>Visión del color</value>
+    </data>
+    <data name="AccessibilityHint" xml:space="preserve">
+        <value>Texto más grande, como lo deja un ajuste del teléfono o del navegador, sin animaciones, y cómo ven la página las personas con daltonismo.</value>
+    </data>
+    <data name="DeviceGroupCustom" xml:space="preserve">
+        <value>Cualquier tamaño</value>
+    </data>
+    <data name="CustomSize" xml:space="preserve">
+        <value>Tamaño personalizado</value>
+    </data>
+    <data name="VisionTypical" xml:space="preserve">
+        <value>Típica</value>
+    </data>
+    <data name="VisionProtanopia" xml:space="preserve">
+        <value>Sin rojo (protanopía)</value>
+    </data>
+    <data name="VisionDeuteranopia" xml:space="preserve">
+        <value>Sin verde (deuteranopía)</value>
+    </data>
+    <data name="VisionTritanopia" xml:space="preserve">
+        <value>Sin azul (tritanopía)</value>
+    </data>
+    <data name="VisionAchromatopsia" xml:space="preserve">
+        <value>Sin color (acromatopsia)</value>
+    </data>
+    <data name="Breakpoints" xml:space="preserve">
+        <value>Puntos de quiebre de la app</value>
+    </data>
+    <data name="CompareVariants" xml:space="preserve">
+        <value>Opciones de diseño</value>
+    </data>
+    <data name="LiveReviewTitle" xml:space="preserve">
+        <value>Colaboración en vivo con IA</value>
+    </data>
+    <data name="LiveReviewRemote" xml:space="preserve">
+        <value>En el equipo donde se ejecuta el banco de trabajo, un comentario fijado en la página llega directamente al agente de IA del desarrollador: cambia la página, responde aquí mismo y marca el comentario como hecho mientras lo ves. Desde cualquier otro lugar, la revisión es de solo lectura, para que nadie pueda llegar a ese agente a través de un enlace compartido.</value>
+    </data>
+    <data name="AgentOffline" xml:space="preserve">
+        <value>El agente está desconectado</value>
+    </data>
+    <data name="NoCommentsYet" xml:space="preserve">
+        <value>Aún no hay comentarios.</value>
+    </data>
+    <data name="FlowsReadOnly" xml:space="preserve">
+        <value>Los flujos se dibujan en el equipo donde se ejecuta el banco de trabajo. Aquí puedes abrirlos y recorrerlos.</value>
+    </data>
+    <data name="HomeWhyLiveTitle" xml:space="preserve">
+        <value>Revisa en vivo con tu agente de IA</value>
+    </data>
+    <data name="HomeWhyLiveText" xml:space="preserve">
+        <value>Fija un comentario en cualquier punto de una página. En tu propio equipo, tu agente de programación lo recibe mientras escribes, cambia la página, responde en el comentario y lo marca como hecho. Funciona con Claude Code, Codex, Copilot, Gemini, Junie y Cursor.</value>
+    </data>
+    <data name="HomeChipLive" xml:space="preserve">
+        <value>Revisión en vivo con IA</value>
+    </data>
+    <data name="PinComment" xml:space="preserve">
+        <value>Fijar un comentario</value>
+    </data>
+    <data name="TapToComment" xml:space="preserve">
+        <value>Toca el punto que quieres comentar</value>
+    </data>
+    <data name="FlowsEmpty" xml:space="preserve">
+        <value>Aún no hay flujos. Pide a tu agente que dibuje uno, como «muestra cómo se añade un edificio», o añade vistas a un flujo desde la pestaña Flujos de una página.</value>
+    </data>
+    <data name="FlowNotFound" xml:space="preserve">
+        <value>No hay ningún flujo en este enlace. Puede que se haya eliminado.</value>
+    </data>
+    <data name="FlowHasNoScreens" xml:space="preserve">
+        <value>Este flujo aún no tiene pantallas. Añádele vistas desde la pestaña Flujos de una página o pídeselo a tu agente.</value>
+    </data>
+    <data name="ScreenCount" xml:space="preserve">
+        <value>Pantallas: {0}</value>
+    </data>
+    <data name="AllFlows" xml:space="preserve">
+        <value>Todos los flujos</value>
+    </data>
+    <data name="AllFlowsHint" xml:space="preserve">
+        <value>Las pantallas de una tarea una junto a otra, unidas por flechas</value>
+    </data>
+    <data name="AddToFlow" xml:space="preserve">
+        <value>Añadir esta vista a un flujo</value>
+    </data>
+    <data name="AddToFlowHint" xml:space="preserve">
+        <value>El flujo recibe la vista tal como está ahora: su dispositivo, sus ajustes y lo que esté abierto en la página.</value>
+    </data>
+    <data name="Flow" xml:space="preserve">
+        <value>Flujo</value>
+    </data>
+    <data name="NewFlow" xml:space="preserve">
+        <value>Nuevo flujo</value>
+    </data>
+    <data name="ScreenNote" xml:space="preserve">
+        <value>Qué muestra esta pantalla (opcional)</value>
+    </data>
+    <data name="ArrowFromLast" xml:space="preserve">
+        <value>Cómo se llega aquí desde la última pantalla (opcional)</value>
+    </data>
+    <data name="ArrowLabel" xml:space="preserve">
+        <value>Qué hace el usuario</value>
+    </data>
+    <data name="ArrowLabelPlaceholder" xml:space="preserve">
+        <value>Tocar «Añadir edificio»</value>
+    </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>Marca el botón de la pantalla {0} que lleva hasta aquí y la flecha saldrá de él.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>Sale del botón marcado en la pantalla {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>Marcar el botón</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>Marcar de nuevo</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>Quitar la marca</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>Toca el botón de la pantalla {0} que lleva a la pantalla {1}.</value>
+    </data>
+    <data name="AddThisView" xml:space="preserve">
+        <value>Añadir esta vista</value>
+    </data>
+    <data name="OpenBoard" xml:space="preserve">
+        <value>Abrir el tablero</value>
+    </data>
+    <data name="OpenInWorkbench" xml:space="preserve">
+        <value>Abrir en el banco de trabajo</value>
+    </data>
+    <data name="ShowAllScreens" xml:space="preserve">
+        <value>Mostrar todas las pantallas</value>
+    </data>
+    <data name="Present" xml:space="preserve">
+        <value>Presentar</value>
+    </data>
+    <data name="PreviousScreen" xml:space="preserve">
+        <value>Pantalla anterior</value>
+    </data>
+    <data name="NextScreen" xml:space="preserve">
+        <value>Pantalla siguiente</value>
+    </data>
+    <data name="StopPresenting" xml:space="preserve">
+        <value>Dejar de presentar</value>
+    </data>
+    <data name="ScreenOf" xml:space="preserve">
+        <value>{0} de {1}</value>
+    </data>
+    <data name="BoardHelp" xml:space="preserve">
+        <value>Arrastra una pantalla para moverla y haz doble clic en ella para probarla. Arrastra desde el punto del borde derecho de una pantalla hasta otra para dibujar una flecha; luego ponle nombre y marca el botón del que sale. Haz doble clic en una flecha para cambiarla o eliminarla.</value>
+    </data>
+    <data name="DeleteFlowConfirm" xml:space="preserve">
+        <value>¿Eliminar este flujo?</value>
+    </data>
+    <data name="RemoveScreen" xml:space="preserve">
+        <value>Quitar esta pantalla</value>
+    </data>
+    <data name="DeleteArrow" xml:space="preserve">
+        <value>Eliminar flecha</value>
+    </data>
+    <data name="ReplyNotifications" xml:space="preserve">
+        <value>Avisarme cuando el agente responda</value>
+    </data>
+    <data name="NotificationsBlocked" xml:space="preserve">
+        <value>El navegador bloquea las notificaciones de este sitio. Permítelas en la configuración del sitio.</value>
+    </data>
+    <data name="AgentRepliedOn" xml:space="preserve">
+        <value>{0} respondió en {1}</value>
+    </data>
+    <data name="ThemeStatesNote" xml:space="preserve">
+        <value>«Al pasar el cursor», «Con foco» y «Pulsado» se dibujan sin tocar el control, así que también se ven en un móvil y no se abre ningún teclado.</value>
+    </data>
+    <data name="ThemeStateDefault" xml:space="preserve">
+        <value>Predeterminado</value>
+    </data>
+    <data name="ThemeStateHover" xml:space="preserve">
+        <value>Al pasar el cursor</value>
+    </data>
+    <data name="ThemeStateFocused" xml:space="preserve">
+        <value>Con foco</value>
+    </data>
+    <data name="ThemeStatePressed" xml:space="preserve">
+        <value>Pulsado</value>
+    </data>
+    <data name="ThemeStateLoading" xml:space="preserve">
+        <value>Cargando</value>
+    </data>
+    <data name="ThemeStatePlaceholder" xml:space="preserve">
+        <value>Texto de ejemplo</value>
+    </data>
+    <data name="ThemeStateFilled" xml:space="preserve">
+        <value>Rellenado</value>
+    </data>
+    <data name="ThemeStateError" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="ThemeStateRequired" xml:space="preserve">
+        <value>Obligatorio</value>
+    </data>
+    <data name="ThemeStateReadOnly" xml:space="preserve">
+        <value>Solo lectura</value>
+    </data>
+    <data name="ThemeStatePassword" xml:space="preserve">
+        <value>Contraseña</value>
+    </data>
+    <data name="ThemeStateMultiline" xml:space="preserve">
+        <value>Varias líneas</value>
+    </data>
+    <data name="ThemeStateEmpty" xml:space="preserve">
+        <value>Vacío</value>
+    </data>
+    <data name="ThemeStateSelected" xml:space="preserve">
+        <value>Seleccionado</value>
+    </data>
+    <data name="ThemeStateMultiple" xml:space="preserve">
+        <value>Varios seleccionados</value>
+    </data>
+    <data name="ThemeStateChecked" xml:space="preserve">
+        <value>Marcado</value>
+    </data>
+    <data name="ThemeStateUnchecked" xml:space="preserve">
+        <value>Sin marcar</value>
+    </data>
+    <data name="ThemeStateIndeterminate" xml:space="preserve">
+        <value>Marcado en parte</value>
+    </data>
+    <data name="ThemeStateOn" xml:space="preserve">
+        <value>Activado</value>
+    </data>
+    <data name="ThemeStateOff" xml:space="preserve">
+        <value>Desactivado</value>
+    </data>
+    <data name="ThemeStateDisabledOn" xml:space="preserve">
+        <value>Deshabilitado, activado</value>
+    </data>
+    <data name="ThemeStateDisabledChecked" xml:space="preserve">
+        <value>Deshabilitado, marcado</value>
+    </data>
+    <data name="ThemeStateExpanded" xml:space="preserve">
+        <value>Expandido</value>
+    </data>
+    <data name="ThemeStateCollapsed" xml:space="preserve">
+        <value>Contraído</value>
+    </data>
+    <data name="ThemeSelection" xml:space="preserve">
+        <value>Opciones</value>
+    </data>
+    <data name="ThemeNavigation" xml:space="preserve">
+        <value>Navegación</value>
+    </data>
+    <data name="ThemeLoaders" xml:space="preserve">
+        <value>Indicadores de carga</value>
+    </data>
+    <data name="ThemeOverlays" xml:space="preserve">
+        <value>Superposiciones</value>
+    </data>
+    <data name="ThemeOverlaysHint" xml:space="preserve">
+        <value>Abre una aquí, o elígela en «Abrir superposición» para que los enlaces y las capturas la muestren abierta.</value>
+    </data>
+    <data name="ThemeSwitchOverlay" xml:space="preserve">
+        <value>Abrir superposición</value>
+    </data>
+    <data name="ThemeOverlayNone" xml:space="preserve">
+        <value>Ninguna</value>
+    </data>
+    <data name="ThemeOverlayDropdown" xml:space="preserve">
+        <value>Lista desplegable</value>
+    </data>
+    <data name="ThemeOverlayDatePicker" xml:space="preserve">
+        <value>Selector de fecha</value>
+    </data>
+    <data name="ThemeOverlayMenu" xml:space="preserve">
+        <value>Menú</value>
+    </data>
+    <data name="ThemeOverlayDialog" xml:space="preserve">
+        <value>Diálogo</value>
+    </data>
+    <data name="ThemeOverlayPanel" xml:space="preserve">
+        <value>Panel lateral</value>
+    </data>
+    <data name="ThemeOverlaySnackBar" xml:space="preserve">
+        <value>Avisos emergentes</value>
+    </data>
+    <data name="ThemeDialogTitle" xml:space="preserve">
+        <value>¿Eliminar este edificio?</value>
+    </data>
+    <data name="ThemeDialogMessage" xml:space="preserve">
+        <value>Desaparece de la lista y del mapa para todos.</value>
+    </data>
+    <data name="ThemeActions" xml:space="preserve">
+        <value>Acciones</value>
+    </data>
+    <data name="ThemeNameError" xml:space="preserve">
+        <value>Escribe al menos dos letras.</value>
+    </data>
+    <data name="ThemeQuantity" xml:space="preserve">
+        <value>Cantidad</value>
+    </data>
+    <data name="ThemeQuantityError" xml:space="preserve">
+        <value>Pide al menos uno.</value>
+    </data>
+    <data name="ThemeCode" xml:space="preserve">
+        <value>Código de verificación</value>
+    </data>
+    <data name="ThemeNotes" xml:space="preserve">
+        <value>Notas</value>
+    </data>
+    <data name="ThemeDateError" xml:space="preserve">
+        <value>Elige una fecha pasada.</value>
+    </data>
+    <data name="ThemeChoiceError" xml:space="preserve">
+        <value>Elige una de las opciones.</value>
+    </data>
+    <data name="ThemeLinkText" xml:space="preserve">
+        <value>Leer las condiciones</value>
+    </data>
+    <data name="ThemeFavorite" xml:space="preserve">
+        <value>Favorito</value>
+    </data>
+    <data name="ThemeTooltipText" xml:space="preserve">
+        <value>Guardado hace un minuto</value>
+    </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>Algo salió mal en esta página.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>Volver a cargar</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>¿Eliminar este comentario?</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>No se pudieron guardar las traducciones.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>No se pudo añadir la pantalla al flujo.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>Portátil {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>Equipo de escritorio {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>Teléfono {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>Tableta {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (abierto)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>Morado</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>Verde</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>Naranja</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>Verde azulado</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>Rosa</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>Mostrar los edificios como</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>El navegador no permitió copiar. Selecciona el texto y cópialo tú.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>Restablecer esta vista</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>Esta pantalla aún no ha cargado. Espera un momento y vuelve a marcar el botón.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>Mantén los marcadores entre llaves tal como están en el texto original; de lo contrario, la página no podrá mostrar este texto.</value>
+    </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Silenciar el sonido de las respuestas del agente</value>
+    </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>Componente</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>Solo para cambios rápidos. Escribe cualquier otra cosa en la pestaña Revisión y el agente se encarga.</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>Haz clic en un componente de una vista para ver sus parámetros y cambiarlos.</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>Esto no es un componente de bit BlazorUI, o ya no está en la página, así que no hay parámetros que mostrar.</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>Los cambios solo se pueden guardar cuando el banco de trabajo se ejecuta desde el proyecto en tu propio equipo.</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>{0} dibuja esta parte por sí mismo, así que cambia con los parámetros de {0}.</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>No se encontró su etiqueta en el código, así que sus valores aquí son de solo lectura.</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>Filtrar</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>Parámetros</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>Parámetros heredados</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>Estilos y clases</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>Variables CSS</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>Un valor puesto aquí se escribe en el Style del componente.</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>Solo se pueden cambiar aquí cuando se puede cambiar el Style del componente.</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>Del tema</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>Lo fija el código</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>Volver al valor predeterminado</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>Sin definir</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>Guardado en {0}. Hot reload lo mostrará en un momento.</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>Guardado en {0}. Reinicia la aplicación para verlo.</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>No se pudo guardar el cambio; puede que su etiqueta se haya movido. Vuelve a hacer clic en el componente.</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>Elegir un icono</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>Buscar iconos</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>{0} más. Escribe para acotarlos.</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>Elegir un color</value>
+    </data>
+    <data name="SuggestShow" xml:space="preserve">
+        <value>Valores sugeridos</value>
+    </data>
+</root>

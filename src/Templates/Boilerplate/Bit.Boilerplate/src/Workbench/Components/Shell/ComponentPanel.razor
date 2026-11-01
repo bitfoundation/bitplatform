@@ -1,0 +1,218 @@
+@inherits WorkbenchComponentBase
+
+<div class="component-panel">
+    @if (store.IsComponentNoteDismissed is false)
+    {
+        <div class="note">
+            <BitMessage Color="BitColor.Info" Multiline Dismissible DismissAriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" OnDismiss="store.DismissComponentNote">
+                @Localizer[nameof(WorkbenchStrings.ComponentPanelNote)]
+            </BitMessage>
+        </div>
+    }
+
+    <section>
+        @if (IsPicked is false)
+        {
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentPanelHint)]</BitText>
+        }
+        else if (Info is null)
+        {
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentNotReadable)]</BitText>
+        }
+        else
+        {
+            <BitText Typography="BitTypography.Subtitle1" Class="component-name">@Info.Name</BitText>
+            @if (Info.Tag is { } tag)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="source" Title="@tag.File">@FileName(tag.File):@tag.Line</BitText>
+                @if (CanSave is false)
+                {
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentReadOnlyRemote)]</BitText>
+                }
+            }
+            else if (Info.DrawnBy is { } drawnBy)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentDrawnBy), drawnBy]</BitText>
+            }
+            else
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentTagNotFound)]</BitText>
+            }
+            @if (status is not null)
+            {
+                <BitText Typography="BitTypography.Caption1" Class="status" role="status">@status</BitText>
+            }
+            <BitSearchBox @bind-Value="filter"
+                          Immediate
+                          Placeholder="@Localizer[nameof(WorkbenchStrings.ComponentFilter)]"
+                          AriaLabel="@Localizer[nameof(WorkbenchStrings.ComponentFilter)]" />
+        }
+    </section>
+
+    @if (Info is not null)
+    {
+        <section>
+            <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ComponentParameters)]</BitText>
+            @foreach (var parameter in Matching(inherited: false))
+            {
+                @Row(parameter)
+            }
+        </section>
+
+        @if (Matching(inherited: true).Any())
+        {
+            <section>
+                <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ComponentInheritedParameters)]</BitText>
+                @foreach (var parameter in Matching(inherited: true))
+                {
+                    @Row(parameter)
+                }
+            </section>
+        }
+
+        @if (Info.Parameters.Where(p => p.Editor is WorkbenchParameterEditor.Parts && Matches(p.Name)).ToArray() is { Length: > 0 } partParameters)
+        {
+            <section>
+                <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ComponentStyles)]</BitText>
+                @foreach (var parameter in partParameters)
+                {
+                    <div class="parameter">
+                        @Head(parameter)
+                        @if (parameter.Code is not null)
+                        {
+                            <code class="code" title="@Localizer[nameof(WorkbenchStrings.ComponentSetByCode)]">@parameter.Code</code>
+                        }
+                        else
+                        {
+                            <div class="parts">
+                                @foreach (var part in parameter.Parts)
+                                {
+                                    <BitTextField Label="@part.Name"
+                                                  Value="@ShownPart(parameter, part)"
+                                                  ValueChanged="(string? value) => SetPart(parameter, part.Name, value)"
+                                                  Disabled="CanEdit(parameter) is false" />
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        }
+
+        @if (Variables.Where(v => Matches(v.Name)).ToArray() is { Length: > 0 } variables)
+        {
+            <section>
+                <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ComponentCssVariables)]</BitText>
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                    @Localizer[CanEditVariables ? nameof(WorkbenchStrings.ComponentVariablesHint) : nameof(WorkbenchStrings.ComponentVariablesReadOnly)]
+                </BitText>
+                @foreach (var variable in variables)
+                {
+                    @if (variable.IsOwn is false && variables.FirstOrDefault(v => v.IsOwn is false) == variable)
+                    {
+                        <BitText Typography="BitTypography.Caption1" Class="group-title">@Localizer[nameof(WorkbenchStrings.ComponentThemeVariables)]</BitText>
+                    }
+                    <div class="variable">
+                        <div class="variable-head" data-doc="@variable.Name">
+                            <span class="variable-name">@ShortName(variable.Name)</span>
+                        </div>
+                        @if (IsColorVariable(variable))
+                        {
+                            <ColorField Value="@Shown(variable.Name, variable.Value)"
+                                        OnChange="value => SetVariable(variable, value)"
+                                        AriaLabel="@variable.Name"
+                                        Disabled="CanEditVariables is false" />
+                        }
+                        else if (WorkbenchValueSuggestions.Of(variable.Name) is { Length: > 0 } suggestions)
+                        {
+                            <SuggestField Value="@Shown(variable.Name, variable.Value)"
+                                          OnChange="value => SetVariable(variable, value)"
+                                          Suggestions="suggestions"
+                                          AriaLabel="@variable.Name"
+                                          Disabled="CanEditVariables is false" />
+                        }
+                        else
+                        {
+                            <BitTextField Value="@Shown(variable.Name, variable.Value)"
+                                          ValueChanged="(string? value) => SetVariable(variable, value)"
+                                          AriaLabel="@variable.Name"
+                                          Disabled="CanEditVariables is false" />
+                        }
+                    </div>
+                }
+            </section>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>A parameter's name, type and reset button.</summary>
+    private RenderFragment Head(WorkbenchComponentParameter parameter) => @<div class="parameter-head" data-doc="@parameter.Description">
+        <span class="parameter-name">@parameter.Name</span>
+        <span class="parameter-type">@parameter.TypeName</span>
+        @if (IsSet(parameter) && CanEdit(parameter))
+        {
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Undo"
+                       Title="@Localizer[nameof(WorkbenchStrings.ComponentReset)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ComponentReset)]"
+                       OnClick="() => Set(parameter, null)" />
+        }
+    </div>;
+
+    /// <summary>A parameter with the editor its type takes, or the code that sets it.</summary>
+    private RenderFragment Row(WorkbenchComponentParameter parameter) => @<div class="parameter">
+        @Head(parameter)
+        @if (parameter.Code is not null)
+        {
+            <code class="code" title="@Localizer[nameof(WorkbenchStrings.ComponentSetByCode)]">@parameter.Code</code>
+        }
+        else if (parameter.Editor is WorkbenchParameterEditor.Toggle)
+        {
+            <BitToggle Value="@(Shown(parameter) is "true")"
+                       ValueChanged="(bool value) => SetToggle(parameter, value)"
+                       AriaLabel="@parameter.Name"
+                       Disabled="CanEdit(parameter) is false" />
+        }
+        else if (parameter.Editor is WorkbenchParameterEditor.Choice)
+        {
+            <BitDropdown Items="ChoicesOf(parameter)"
+                         Value="@(Shown(parameter) ?? NotSet)"
+                         ValueChanged="(string? value) => Set(parameter, value is NotSet ? null : value)"
+                         AriaLabel="@parameter.Name"
+                         Disabled="CanEdit(parameter) is false"
+                         Responsive />
+        }
+        else if (IsIcon(parameter))
+        {
+            <IconField Value="@Shown(parameter)"
+                       OnChange="value => Set(parameter, value)"
+                       Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
+                       AriaLabel="@parameter.Name"
+                       Disabled="CanEdit(parameter) is false" />
+        }
+        else if (IsColor(parameter))
+        {
+            <ColorField Value="@Shown(parameter)"
+                        OnChange="value => Set(parameter, value)"
+                        Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
+                        AriaLabel="@parameter.Name"
+                        Disabled="CanEdit(parameter) is false" />
+        }
+        else if (parameter.Editor is WorkbenchParameterEditor.Text && WorkbenchValueSuggestions.Of(parameter.Name) is { Length: > 0 } suggestions)
+        {
+            <SuggestField Value="@Shown(parameter)"
+                          OnChange="value => Set(parameter, value)"
+                          Suggestions="suggestions"
+                          Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
+                          AriaLabel="@parameter.Name"
+                          Disabled="CanEdit(parameter) is false" />
+        }
+        else
+        {
+            <BitTextField Value="@Shown(parameter)"
+                          ValueChanged="(string? value) => Set(parameter, string.IsNullOrEmpty(value) ? null : value)"
+                          Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
+                          AriaLabel="@parameter.Name"
+                          Disabled="CanEdit(parameter) is false" />
+        }
+    </div>;
+}

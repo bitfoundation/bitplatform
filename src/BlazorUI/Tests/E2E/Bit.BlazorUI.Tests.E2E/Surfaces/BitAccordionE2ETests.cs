@@ -510,6 +510,7 @@ public class BitAccordionE2ETests : E2ETestBase
         await Expect(Header("acd-busy")).ToHaveAttributeAsync("aria-busy", "true");
         await Expect(HeaderPart("acd-busy", "bit-acd-spn")).ToBeVisibleAsync();
         await Expect(HeaderPart("acd-busy", "bit-acd-spn")).ToHaveCSSAsync("animation-name", "bit-spin");
+        await Expect(Header("acd-busy")).ToHaveAccessibleNameAsync("Busy");
 
         await Header("acd-busy").ClickAsync();
         await Expect(Text("busy-clicks")).ToHaveTextAsync("1");
@@ -708,8 +709,10 @@ public class BitAccordionE2ETests : E2ETestBase
         await Expect(HeaderPart("acd-title-tpl", "bit-acd-des")).ToHaveTextAsync("TitleTemplate");
         await Expect(HeaderPart("acd-title-tpl", "bit-acd-ico")).ToHaveCountAsync(1);
         await Expect(HeaderPart("acd-title-tpl", "bit-acd-eiw")).ToHaveCountAsync(1);
-        await Expect(Header("acd-title-tpl")).ToHaveAttributeAsync("aria-labelledby", "acd-title-tpl-ttl");
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Advanced settings", Exact = true })).ToHaveCountAsync(1);
+        await Expect(Header("acd-title-tpl")).ToHaveAttributeAsync("aria-labelledby", "acd-title-tpl-ttl acd-title-tpl-des");
+        await Expect(Content("acd-title-tpl")).ToHaveAttributeAsync("aria-labelledby", "acd-title-tpl-ttl");
+        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Advanced settings TitleTemplate", Exact = true })).ToHaveCountAsync(1);
+        await Expect(HeaderPart("acd-title-tpl", "bit-acd-hed")).ToHaveAccessibleNameAsync("Advanced settings");
     }
 
     [TestMethod]
@@ -720,11 +723,16 @@ public class BitAccordionE2ETests : E2ETestBase
         var template = Page.Locator("#acd-exp-tpl .bit-acd-eiw .e2e-exp-tpl");
         await Expect(template).ToHaveTextAsync("More");
         await Expect(HeaderPart("acd-exp-tpl", "bit-acd-eic")).ToHaveCountAsync(0);
+        // The name is the title alone, and stays so across the toggle: the state the template shows is told by
+        // aria-expanded.
+        await Expect(Header("acd-exp-tpl")).ToHaveAccessibleNameAsync("ExpanderTemplate");
 
         await Header("acd-exp-tpl").ClickAsync();
 
         await Expect(template).ToHaveTextAsync("Less");
         await Expect(HeaderPart("acd-exp-tpl", "bit-acd-eiw")).ToHaveClassAsync(HasClass("bit-ico--r180"));
+        await Expect(Header("acd-exp-tpl")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(Header("acd-exp-tpl")).ToHaveAccessibleNameAsync("ExpanderTemplate");
     }
 
     [TestMethod]
@@ -800,18 +808,23 @@ public class BitAccordionE2ETests : E2ETestBase
         await Expect(HeaderPart("acd-basic", "bit-acd-hed")).ToHaveAttributeAsync("aria-level", "3");
         await Expect(Header("acd-basic")).ToHaveAttributeAsync("type", "button");
         await Expect(Header("acd-basic")).ToHaveAttributeAsync("aria-controls", "acd-basic-cnt");
-        await Expect(Header("acd-basic")).ToHaveAttributeAsync("aria-labelledby", "acd-basic-ttl");
-        await Expect(Header("acd-basic")).ToHaveAttributeAsync("aria-describedby", "acd-basic-des");
+        await Expect(Header("acd-basic")).ToHaveAttributeAsync("aria-labelledby", "acd-basic-ttl acd-basic-des");
+        await Expect(Header("acd-basic")).Not.ToHaveAttributeAsync("aria-describedby", new Regex(".*"));
+        await Expect(HeaderPart("acd-basic", "bit-acd-hed")).ToHaveAttributeAsync("aria-labelledby", "acd-basic-ttl");
         await Expect(Content("acd-basic")).ToHaveAttributeAsync("role", "region");
         await Expect(Content("acd-basic")).ToHaveAttributeAsync("aria-labelledby", "acd-basic-ttl");
         await Expect(Root("acd-basic")).Not.ToHaveAttributeAsync("role", new Regex(".*"));
 
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Basic title", Exact = true })).ToHaveAttributeAsync("aria-expanded", "false");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Top-level section", Level = 2 })).ToHaveCountAsync(1);
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Top-level section", Exact = true })).ToHaveAccessibleDescriptionAsync("aria-level 2");
+        // The button is named by the title and then the description, all of its visible text (WCAG 2.5.3, Label in
+        // Name), while the heading and the region are named by the title alone.
+        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = "Basic title Basic description", Exact = true })).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Basic title", Exact = true, Level = 3 })).ToHaveCountAsync(1);
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Top-level section", Exact = true, Level = 2 })).ToHaveCountAsync(1);
+        await Expect(Header("acd-lvl2")).ToHaveAccessibleNameAsync("Top-level section aria-level 2");
+        await Expect(Header("acd-lvl2")).ToHaveAccessibleDescriptionAsync("");
 
         await Header("acd-basic").ClickAsync();
-        await Expect(Page.GetByRole(AriaRole.Region, new() { Name = "Basic title" })).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Region, new() { Name = "Basic title", Exact = true })).ToBeVisibleAsync();
     }
 
     [TestMethod]

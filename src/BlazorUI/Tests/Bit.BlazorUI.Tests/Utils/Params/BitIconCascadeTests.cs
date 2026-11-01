@@ -34,6 +34,7 @@ public class BitIconCascadeTests : BunitTestContext
     {
         [typeof(BitAccordionList<>)] = [typeof(BitAccordionListItem)],
         [typeof(BitBreadcrumb<>)] = [typeof(BitBreadcrumbItem)],
+        [typeof(BitDataGrid<>)] = [typeof(BitBreadcrumbItem)],
         [typeof(BitDropdown<,>)] = [typeof(BitDropdownItem<string>), typeof(string)],
         [typeof(BitMenuButton<>)] = [typeof(BitMenuButtonItem)],
         [typeof(BitNav<>)] = [typeof(BitNavItem)],

@@ -1,0 +1,163 @@
+@inherits WorkbenchComponentBase
+
+<BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" OnChange="OnNarrowChanged" />
+
+<div class="buildings">
+    <div class="buildings-header">
+        <div class="titles">
+            <BitText Typography="BitTypography.H5" Element="@PageHeadingElement" Class="title">@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]</BitText>
+            <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.BuildingsSubtitle), FilteredBuildings.Count(), FilteredBuildings.Select(b => b.Province).Distinct().Count()]</BitText>
+        </div>
+        <div class="actions">
+            <BitSearchBox Value="@SearchText" ValueChanged="Search" Immediate DebounceTime="250" Class="search"
+                          Placeholder="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]"
+                          AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsSearch)]" />
+            <AuthorizeView Policy="@WorkbenchPolicies.ManageBuildings">
+                <BitButton IconName="@BitIconName.Add" OnClick="OpenAdd" Disabled="status is not (PosWidgetStatus.Ready or PosWidgetStatus.Empty)">
+                    @Localizer[nameof(WorkbenchStrings.BuildingsAdd)]
+                </BitButton>
+            </AuthorizeView>
+        </div>
+    </div>
+
+    @* Phones show one pane at a time; these buttons pick which. *@
+    @if (isNarrow)
+    {
+        <div class="view-switch" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsViewSwitch)]">
+            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Outline : BitVariant.Fill)" IconName="@BitIconName.BulletedList" OnClick="() => store.ShowMap(false)" aria-pressed="@(store.IsMapShown ? "false" : "true")">@Localizer[nameof(WorkbenchStrings.BuildingsListView)]</BitButton>
+            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Fill : BitVariant.Outline)" IconName="@BitIconName.MapPin" OnClick="() => store.ShowMap(true)" aria-pressed="@(store.IsMapShown ? "true" : "false")">@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]</BitButton>
+        </div>
+    }
+
+    <div class="split @(isNarrow ? (store.IsMapShown ? "narrow show-map" : "narrow show-list") : null)">
+        <section class="list-pane" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsListView)]">
+            @switch (status)
+            {
+                case PosWidgetStatus.Loading:
+                    <div class="state">
+                        @for (var i = 0; i < 8; i++)
+                        {
+                            <BitShimmer Height="2.25rem" />
+                        }
+                    </div>
+                    break;
+                case PosWidgetStatus.Failed:
+                    <div class="state center" role="alert">
+                        <span class="state-icon warning"><BitIcon IconName="@BitIconName.Warning" /></span>
+                        <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.BuildingsFailedTitle)]</BitText>
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.PosWidgetFailedDescription)]</BitText>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="Reload">@Localizer[nameof(WorkbenchStrings.PosRetry)]</BitButton>
+                    </div>
+                    break;
+                case PosWidgetStatus.Empty:
+                    <div class="state center">
+                        <span class="state-icon"><BitIcon IconName="@BitIconName.MapPin" /></span>
+                        <BitText Typography="BitTypography.Subtitle2">@Localizer[nameof(WorkbenchStrings.BuildingsEmptyTitle)]</BitText>
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.BuildingsEmptyDescription)]</BitText>
+                    </div>
+                    break;
+                default:
+                    @* The cards design option; the grid below is the default. *@
+                    @if (Scenario.Variant is "cards")
+                    {
+                        <div class="cards" role="list" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]">
+                            @foreach (var building in FilteredBuildings)
+                            {
+                                <div role="listitem" @key="building.Id" class="card @(selectedItems.Contains(building) ? "selected" : null)">
+                                    <button type="button" class="card-main" @onclick="() => Select(building, flyTo: true)" @ondblclick="() => OpenEdit(building)">
+                                        <span class="type-dot" style="--data-color:@GetTypeColor(building.Type)"></span>
+                                        <span class="name-text">
+                                            <span class="name">@building.Name</span>
+                                            <span class="city">@building.City · @Localizer[$"Province{building.Province}"]</span>
+                                            <span class="city">@Localizer[$"BuildingType{building.Type}"]@(building.Year is { } year ? $" · {year}" : null)</span>
+                                        </span>
+                                    </button>
+                                    @if (canManage)
+                                    {
+                                        <span class="row-actions">
+                                            <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Edit"
+                                                       Title="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]"
+                                                       OnClick="() => OpenEdit(building)" />
+                                            <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete"
+                                                       Title="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]"
+                                                       OnClick="() => ConfirmDelete(building)" />
+                                        </span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        break;
+                    }
+                    <BitDataGrid @ref="grid"
+                                 TItem="Building"
+                                 OnLoadMore="LoadMore"
+                                 LoadMoreBatchSize="20"
+                                 KeyField="b => b.Id"
+                                 Height="100%"
+                                 Class="buildings-grid"
+                                 SelectionMode="BitSelectionMode.Single"
+                                 SelectedItems="selectedItems"
+                                 SelectedItemsChanged="OnGridSelectionChanged"
+                                 OnRowDoubleClick="OpenEdit"
+                                 AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]">
+                        <BitDataGridColumn TItem="Building" Property="b => b.Name" Title="@Localizer[nameof(WorkbenchStrings.BuildingName)]" RowHeader="true">
+                            <Template Context="building">
+                                <span class="name-cell">
+                                    <span class="type-dot" style="--data-color:@GetTypeColor(building.Type)"></span>
+                                    <span class="name-text">
+                                        <span class="name">@building.Name</span>
+                                        <span class="city">@building.City · @Localizer[$"Province{building.Province}"]</span>
+                                    </span>
+                                </span>
+                            </Template>
+                        </BitDataGridColumn>
+                        <BitDataGridColumn TItem="Building" Property="b => b.Type" Title="@Localizer[nameof(WorkbenchStrings.BuildingType)]" Width="130px" Visible="isNarrow is false">
+                            <Template Context="building">@Localizer[$"BuildingType{building.Type}"]</Template>
+                        </BitDataGridColumn>
+                        <BitDataGridColumn TItem="Building" Property="b => b.Year" Title="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" Align="BitTextAlign.End" Width="80px" Visible="isNarrow is false" />
+                        <BitDataGridColumn TItem="Building" Title="@AppLocalizer[nameof(AppStrings.Action)]" Width="92px" Sortable="false" Searchable="false" Exportable="false" Visible="canManage">
+                            <Template Context="building">
+                                <span class="row-actions">
+                                    <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Edit"
+                                               Title="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsEdit)]"
+                                               OnClick="() => OpenEdit(building)" />
+                                    <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete"
+                                               Title="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.BuildingsDelete)]"
+                                               OnClick="() => ConfirmDelete(building)" />
+                                </span>
+                            </Template>
+                        </BitDataGridColumn>
+                    </BitDataGrid>
+                    break;
+            }
+        </section>
+
+        <section class="map-pane" @onkeydown="OnMapKeyDown">
+            <BitMap @ref="map"
+                    TMapProvider="BitLeafletMapProvider"
+                    Provider="provider"
+                    Markers="markers"
+                    Clustering="clustering"
+                    OnReady="OnMapReady"
+                    OnDoubleClick="OnMapDoubleClick"
+                    OnMarkerClick="OnMarkerClick"
+                    OnMarkerDoubleClick="OnMarkerDoubleClick"
+                    OnViewChanged="OnMapViewChanged"
+                    MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly"
+                    Class="map" />
+            @if (canManage)
+            {
+                <div class="map-hint">
+                    <BitIcon IconName="@BitIconName.Info" Size="BitSize.Small" />
+                    <span>@Localizer[nameof(WorkbenchStrings.BuildingsMapHint)]</span>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@* Only once the store is restored, since the editor opens with the draft it holds. *@
+@if (isRestored)
+{
+    <BuildingEditor @ref="editor" OnSaved="OnSaved" />
+}

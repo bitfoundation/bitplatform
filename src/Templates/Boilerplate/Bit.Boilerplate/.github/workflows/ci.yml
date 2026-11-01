@@ -69,3 +69,18 @@ jobs:
         name: tests-artifact
         path: ./src/Tests/TestResults
         retention-days: 14
+#if (advancedTests == true)
+
+    - name: Test the Workbench
+      id: test-workbench
+      if: ${{ !cancelled() }}
+      run: cd src/WorkbenchTests && dotnet test
+
+    - name: Upload Workbench Tests Artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ failure() && steps.test-workbench.conclusion == 'failure' }}
+      with:
+        name: workbench-tests-artifact
+        path: ./src/WorkbenchTests/TestResults
+        retention-days: 14
+#endif

@@ -1,0 +1,10 @@
+@* [mirror] snack bar - keep in sync with: *@
+@* - src/Client/Boilerplate.Client.Core/Components/Layout/AppSnackBar.razor *@
+@inherits WorkbenchComponentBase
+
+<BitSnackBar @ref="snackBarRef"
+             Multiline
+             AutoDismiss
+             Class="snackbar"
+             Position="BitPosition.TopCenter"
+             AutoDismissTime="TimeSpan.FromSeconds(10)" />

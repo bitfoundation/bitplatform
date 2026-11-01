@@ -32,7 +32,7 @@
                 @ToolbarTemplate
                 @if (Editable && NewItemFactory is not null)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="AddNewRowAsync">@Strings.AddRowText</button>
+                    RenderToolbarItem(__builder, _addRowButton!);
                 }
                 @if (SearchActive)
                 {
@@ -66,26 +66,19 @@
             <div class="bit-dtg-toolbar-end">
                 @if (_filters.Count > 0)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="ClearFiltersFromToolbarAsync">@Strings.ClearFiltersText</button>
+                    RenderToolbarItem(__builder, _clearFiltersButton!);
                 }
                 @if (ShowCsvExport)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => ExportCsvAsync()">@Strings.ExportCsvText</button>
+                    RenderToolbarItem(__builder, _csvExportButton!);
                 }
                 @if (ShowExcelExport)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => ExportExcelAsync()">@Strings.ExportExcelText</button>
+                    RenderToolbarItem(__builder, _excelExportButton!);
                 }
                 @if (ShowColumnChooser)
                 {
-                    @* A disclosure, not a popup: the panel it shows is a group of checkboxes inline with the grid, so
-                       aria-expanded/aria-controls describe it and aria-haspopup (a menu, a listbox) would not. The
-                       dropdown arrow is decorative; aria-label keeps it out of the accessible name. *@
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser"
-                            @ref="_columnChooserButton"
-                            aria-expanded="@(_showColumnChooserPanel ? "true" : "false")"
-                            aria-controls="@_columnChooserPanelId"
-                            aria-label="@Strings.ColumnsText">@Strings.ColumnsText <span aria-hidden="true">▾</span></button>
+                    RenderToolbarItem(__builder, _columnChooserButton!);
                 }
             </div>
         </div>
@@ -167,15 +160,18 @@
                 <div class="bit-dtg-header" role="rowgroup">
                     @if (HasColumnGroups)
                     {
+                        @* Only a named banner heads the columns under it. Every header cell of a column is read out with
+                           its cells, and a column header with no name is announced as an unnamed one, so the cells left
+                           blank here (over the leading, ungrouped and command columns) are plain cells. *@
                         <div class="bit-dtg-row bit-dtg-group-header-row" role="row" aria-rowindex="1" style="grid-template-columns:var(--bit-dtg-template);">
-                            @RenderSpecialCells("bit-dtg-hcell", "columnheader")
+                            @RenderSpecialCells("bit-dtg-hcell")
                             @{ var groupColIndex = SpecialColumnCount + 1; }
                             @foreach (var span in ColumnGroupSpans())
                             {
                                 @* A banner covers several columns, which only aria-colspan tells assistive tech: without it, every
                                    header after the first banner would be mapped onto the wrong column. *@
                                 <div class="bit-dtg-hcell bit-dtg-center bit-dtg-group-header@(span.Name is null ? " bit-dtg-group-header-empty" : "")"
-                                     role="columnheader" aria-colindex="@groupColIndex" aria-colspan="@(span.Span > 1 ? span.Span : (int?)null)"
+                                     role="@(span.Name is null ? "gridcell" : "columnheader")" aria-colindex="@groupColIndex" aria-colspan="@(span.Span > 1 ? span.Span : (int?)null)"
                                      style="grid-column:span @span.Span;">
                                     @span.Name
                                 </div>
@@ -183,7 +179,7 @@
                             }
                             @if (HasCommandColumn)
                             {
-                                <div class="bit-dtg-hcell" role="columnheader" aria-colindex="@AriaCommandColIndex"></div>
+                                <div class="bit-dtg-hcell" role="gridcell" aria-colindex="@AriaCommandColIndex"></div>
                             }
                         </div>
                     }
@@ -344,17 +340,20 @@
                     @if (HasFilterRow)
                     {
                         @* The filter row is always the last header row, so its aria-rowindex is HeaderRowCount. *@
+                        @* Its cells hold controls, not names: the header row names the columns, and a column header here
+                           would be read out as a second header of every cell under it - the value of its editor, or no
+                           name at all where it has none. So, like the footer's, every cell of it is a plain cell. *@
                         <div class="bit-dtg-row bit-dtg-filter-row @Classes?.FilterRow" role="row" aria-rowindex="@HeaderRowCount" style="grid-template-columns:var(--bit-dtg-template);@Styles?.FilterRow">
-                            @RenderSpecialCells("bit-dtg-hcell", "columnheader")
+                            @RenderSpecialCells("bit-dtg-hcell")
                             @foreach (var slot in ColumnSlots)
                             {
                                 if (slot.Column is null)
                                 {
-                                    @PlaceholderCell("bit-dtg-hcell", "columnheader")
+                                    @PlaceholderCell("bit-dtg-hcell", "gridcell")
                                     continue;
                                 }
                                 var column = slot.Column;
-                                <div class="bit-dtg-hcell@(FrozenClass(column))" role="columnheader" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
+                                <div class="bit-dtg-hcell@(FrozenClass(column))" role="gridcell" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
                                     @if (ColumnFilterable(column))
                                     {
                                         @RenderFilterEditor(column)
@@ -363,7 +362,7 @@
                             }
                             @if (HasCommandColumn)
                             {
-                                <div class="bit-dtg-hcell" role="columnheader" aria-colindex="@AriaCommandColIndex"></div>
+                                <div class="bit-dtg-hcell" role="gridcell" aria-colindex="@AriaCommandColIndex"></div>
                             }
                         </div>
                     }
@@ -507,7 +506,7 @@
                     @* The footer keeps the pinned columns pinned like every other row: its totals stay under the columns
                        they add up while the rest scrolls. *@
                     <div class="bit-dtg-row bit-dtg-footer-row @Classes?.FooterRow" role="row" aria-rowindex="@FooterAriaRowIndex" style="grid-template-columns:var(--bit-dtg-template);@Styles?.FooterRow">
-                        @RenderSpecialCells("bit-dtg-cell", "gridcell")
+                        @RenderSpecialCells("bit-dtg-cell")
                         @foreach (var slot in ColumnSlots)
                         {
                             if (slot.Column is null)
@@ -591,6 +590,48 @@
         }
     }
 
+    // A button of the toolbar (see UpdateToolbarButtons). With ToolbarIconOnly it is its icon alone, and its text - still
+    // its accessible name - is shown by a tooltip on hover, on keyboard focus and on a touch, where a title would show
+    // to the mouse alone. The tooltip leaves itself out of the accessibility tree, which has the name already.
+    private void RenderToolbarItem(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, ToolbarButton button)
+    {
+        if (ToolbarIconOnly)
+        {
+            <BitTooltip Text="@button.Text(Strings)" Relationship="BitTooltipRelationship.None" Anchor="@button.Anchor" />
+        }
+        else
+        {
+            RenderToolbarButton(__builder, button);
+        }
+    }
+
+    // The Columns button is a disclosure, not a popup: the panel it shows is a group of checkboxes inline with the grid,
+    // so aria-expanded/aria-controls describe it and aria-haspopup (a menu, a listbox) would not. Its dropdown arrow is
+    // decorative; aria-label keeps it out of the accessible name.
+    private void RenderToolbarButton(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, ToolbarButton button)
+    {
+        var text = button.Text(Strings);
+        <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="@button.CssClass"
+                aria-label="@(ToolbarIconOnly || button.Disclosure ? text : null)"
+                aria-expanded="@(button.Disclosure ? (_showColumnChooserPanel ? "true" : "false") : null)"
+                aria-controls="@(button.Disclosure ? _columnChooserPanelId : null)"
+                @ref="button.Element"
+                @onclick="button.OnClick">
+            @if (button.IconClass is not null)
+            {
+                <i class="@button.IconClass" aria-hidden="true">@button.IconContent</i>
+            }
+            @if (ToolbarIconOnly is false)
+            {
+                @text
+            }
+            @if (button.Disclosure)
+            {
+                <span aria-hidden="true">▾</span>
+            }
+        </button>
+    }
+
     // The skeleton row standing in for a row still being read, cached: it is rendered once per row of a window.
     private RenderFragment? _placeholderRow;
     private RenderFragment PlaceholderRow => _placeholderRow ??= RenderPlaceholderRow;
@@ -607,24 +648,25 @@
 
     // The empty cells a row with nothing to say under the row-number, reorder, detail and selection columns (the
     // header banners, the filter row, the footer) still owes them: pinned like those columns' own cells, and numbered.
-    private RenderFragment RenderSpecialCells(string cssClass, string role) => __builder =>
+    // They are plain cells in every row, a header one too: a column header with no name is announced as an unnamed one.
+    private RenderFragment RenderSpecialCells(string cssClass) => __builder =>
     {
         var index = 0;
         if (HasRowNumberColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@RowNumberStickyStyle" role="@role" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@RowNumberStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
         }
         if (HasReorderColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@ReorderStickyStyle" role="@role" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@ReorderStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
         }
         if (HasDetailColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@DetailStickyStyle" role="@role" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@DetailStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
         }
         if (HasSelectColumn)
         {
-            <div class="@cssClass bit-dtg-sticky" style="@SelectStickyStyle" role="@role" aria-colindex="@(++index)"></div>
+            <div class="@cssClass bit-dtg-sticky" style="@SelectStickyStyle" role="gridcell" aria-colindex="@(++index)"></div>
         }
     };
 
@@ -1055,7 +1097,7 @@
 
         CloseColumnChooser();
 
-        try { await _columnChooserButton.FocusAsync(); }
+        try { if (_columnChooserButton is { } button) await button.Element.FocusAsync(); }
         catch (JSException) { }
         catch (JSDisconnectedException) { }
         catch (InvalidOperationException) { }

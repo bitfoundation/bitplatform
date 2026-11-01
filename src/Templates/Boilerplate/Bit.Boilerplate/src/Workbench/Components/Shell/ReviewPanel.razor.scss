@@ -1,0 +1,227 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.review {
+    display: flex;
+    flex-direction: column;
+}
+
+section {
+    gap: 0.625rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+
+    &.threads {
+        border-bottom: none;
+    }
+}
+
+// The titles are BitText components, reached through their Class.
+::deep .section-title {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.segments {
+    gap: 0.375rem;
+    display: grid;
+
+    &.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &.four {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    // The segments are BitButtons; this lets them shrink to equal columns.
+    ::deep .segment {
+        min-width: 0;
+        padding-inline: 0.25rem;
+    }
+}
+
+.agent {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    color: $bit-color-foreground-secondary;
+
+    .agent-dot {
+        width: 8px;
+        height: 8px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background-color: $bit-color-foreground-disabled;
+    }
+
+    &.active {
+        color: $bit-color-foreground-primary;
+
+        .agent-dot {
+            background-color: $bit-color-success;
+            box-shadow: 0 0 0 3px color-mix(in srgb, #{$bit-color-success} 25%, transparent);
+        }
+    }
+}
+
+.live {
+    background-color: color-mix(in srgb, #{$bit-color-primary} 7%, transparent);
+
+    ::deep .section-title {
+        gap: 0.375rem;
+        display: flex;
+        align-items: center;
+    }
+}
+
+.composer {
+    background-color: color-mix(in srgb, #{$bit-color-primary} 5%, transparent);
+}
+
+.composer-actions,
+.thread-actions {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+::deep .empty {
+    padding-block: 0.5rem;
+}
+
+.thread {
+    gap: 0.5rem;
+    display: flex;
+    padding: 0.625rem;
+    border-radius: 12px;
+    flex-direction: column;
+    border: 1px solid $bit-color-border-tertiary;
+    background-color: $bit-color-background-primary;
+
+    &.selected {
+        border-color: $bit-color-primary;
+    }
+}
+
+.thread-head {
+    gap: 0.625rem;
+    padding: 0;
+    border: none;
+    display: flex;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: start;
+    align-items: flex-start;
+    background: transparent;
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+        outline-offset: 2px;
+    }
+}
+
+.number {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    // A pin shape, like the comment markers on the page.
+    border-radius: 50% 50% 50% 4px;
+    align-items: center;
+    justify-content: center;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
+
+    &.status-working {
+        color: $bit-color-warning-text;
+        background-color: $bit-color-warning;
+    }
+
+    &.status-done {
+        color: $bit-color-success-text;
+        background-color: $bit-color-success;
+    }
+}
+
+.thread-title {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.thread-element {
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.thread-view,
+.thread-status,
+.message-time {
+    font-size: 12px;
+    color: $bit-color-foreground-secondary;
+}
+
+.thread-status {
+    flex-shrink: 0;
+}
+
+.messages {
+    gap: 0.375rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    display: flex;
+    padding: 0.5rem 0.625rem;
+    border-radius: 10px;
+    flex-direction: column;
+    background-color: $bit-color-background-secondary;
+
+    &.from-agent {
+        background-color: color-mix(in srgb, #{$bit-color-primary} 9%, transparent);
+    }
+}
+
+.message-author {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 12px;
+    font-weight: 600;
+    align-items: baseline;
+}
+
+.message-text {
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.tasks {
+    margin: 0;
+    gap: 0.25rem;
+    display: flex;
+    padding-inline: 0.25rem;
+    flex-direction: column;
+    list-style: none;
+
+    li {
+        gap: 0.5rem;
+        display: flex;
+        font-size: 13px;
+        align-items: baseline;
+
+        &.done {
+            color: $bit-color-foreground-secondary;
+            text-decoration: line-through;
+        }
+    }
+}

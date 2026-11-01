@@ -1,0 +1,250 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.workbench {
+    --wb-nav-width: 264px;
+    --wb-inspector-width: 312px;
+    height: 100dvh;
+    display: grid;
+    overflow: hidden;
+    grid-template-rows: minmax(52px, auto) minmax(0, 1fr);
+    grid-template-columns: var(--wb-nav-width) minmax(0, 1fr) var(--wb-inspector-width);
+    grid-template-areas: "top top top" "nav canvas inspector";
+
+    // Below lg the page list column folds away to give the views the room.
+    @include lt-lg {
+        --wb-nav-width: 0px;
+        --wb-inspector-width: 300px;
+    }
+
+    // The top bar's toggles fold either column away.
+    &.nav-collapsed {
+        --wb-nav-width: 0px;
+    }
+
+    &.inspector-collapsed {
+        --wb-inspector-width: 0px;
+    }
+}
+
+// Wraps onto a second row on a tablet instead of pushing the last buttons out of reach.
+.topbar {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    grid-area: top;
+    padding: 0.375rem 0.75rem;
+    align-items: center;
+    background-color: $bit-color-background-primary;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.brand {
+    gap: 0.5rem;
+    display: flex;
+    font-size: 15px;
+    font-weight: 700;
+    align-items: center;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    color: $bit-color-foreground-primary;
+}
+
+.crumb-separator {
+    color: $bit-color-foreground-tertiary;
+}
+
+::deep .crumb-title {
+    min-width: 0;
+    color: $bit-color-foreground-secondary;
+}
+
+.sidebar {
+    overflow-y: auto;
+    background-color: $bit-color-background-primary;
+}
+
+.navigator-column {
+    grid-area: nav;
+    border-inline-end: 1px solid $bit-color-border-tertiary;
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.inspector-column {
+    grid-area: inspector;
+    border-inline-start: 1px solid $bit-color-border-tertiary;
+}
+
+.nav-collapsed .navigator-column,
+.inspector-collapsed .inspector-column {
+    display: none;
+}
+
+// The page list is always folded away below lg, so its toggle has nothing to do there.
+::deep .navigator-toggle {
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.page-status {
+    font-size: 11px;
+    padding: 1px 8px;
+    flex-shrink: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    border-radius: 999px;
+    color: $bit-color-foreground-secondary;
+    border: 1px solid $bit-color-border-secondary;
+
+    &.status-inreview {
+        color: $bit-color-warning;
+        border-color: color-mix(in srgb, #{$bit-color-warning} 45%, transparent);
+    }
+
+    &.status-approved,
+    &.status-built {
+        color: $bit-color-success;
+        border-color: color-mix(in srgb, #{$bit-color-success} 45%, transparent);
+    }
+}
+
+.modes {
+    gap: 2px;
+    padding: 2px;
+    display: flex;
+    border-radius: 8px;
+    margin-inline-end: 0.5rem;
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+// Stays above the column's content while it scrolls.
+.column-tabs {
+    top: 0;
+    z-index: 1;
+    display: flex;
+    position: sticky;
+    background-color: $bit-color-background-primary;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+.column-tab {
+    flex: 1;
+    gap: 0.375rem;
+    border: none;
+    display: flex;
+    font: inherit;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0.75rem 0.5rem;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: $bit-color-foreground-secondary;
+    border-bottom: 2px solid transparent;
+
+    &.active {
+        color: $bit-color-primary;
+        border-bottom-color: $bit-color-primary;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+        outline-offset: -2px;
+    }
+}
+
+.tab-count {
+    font-size: 11px;
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
+}
+
+.canvas {
+    gap: 1rem;
+    display: flex;
+    padding: 1.5rem;
+    overflow: auto;
+    grid-area: canvas;
+    align-items: stretch;
+    background-color: $bit-color-background-secondary;
+    background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, #{$bit-color-foreground-primary} 14%, transparent) 1px, transparent 0);
+    background-size: 22px 22px;
+
+    &.single {
+        justify-content: center;
+
+        // A single view takes the canvas's width; ::deep because .pane is PreviewPane's element.
+        ::deep .pane {
+            width: 100%;
+        }
+    }
+
+    &.multi {
+        // safe: views wider than the canvas start at its edge instead of being cut off on both sides.
+        justify-content: safe center;
+
+        ::deep .pane-header {
+            min-height: 3.25rem;
+            align-content: center;
+        }
+    }
+}
+
+.inline-surface {
+    height: 100dvh;
+    overflow-y: auto;
+}
+
+// Clear of the app's bottom bar and the home indicator.
+.phone-layout ::deep .tools-button {
+    bottom: calc(#{$bit-env-inset-bottom} + 4.5rem);
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.45);
+}
+
+.phone-layout ::deep .tools-header {
+    width: 100%;
+}
+
+.pick-banner {
+    top: 0.75rem;
+    left: 50%;
+    gap: 0.5rem;
+    display: flex;
+    position: fixed;
+    // Over the app's own chrome, which the inline page draws in this same document.
+    z-index: $bit-zindex-modal;
+    align-items: center;
+    border-radius: 999px;
+    max-width: calc(100vw - 2rem);
+    transform: translateX(-50%);
+    padding-block: 0.25rem;
+    padding-inline: 1rem 0.25rem;
+    box-sizing: border-box;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-secondary;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.45);
+}
+
+.not-found {
+    gap: 1rem;
+    display: flex;
+    padding: 4rem 1rem;
+    align-items: center;
+    flex-direction: column;
+}
+
+.canvas-loading {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}

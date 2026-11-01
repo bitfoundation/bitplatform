@@ -30,6 +30,9 @@ public sealed class BitPdfXRef : IBitPdfXRef
     private readonly Dictionary<int, List<object?>> _objStmCache = new();
     private readonly HashSet<int> _pending = new();
     private const int MaxPendingFetches = 64;
+    // How many "trailer" words inside its own strings a recovered trailer dictionary is read on through.
+    private const int MaxTrailerKeywordsSpanned = 4;
+    private static readonly byte[] TrailerKeyword = "trailer"u8.ToArray();
 
     private BitPdfStandardSecurityHandler? _security;
     private int _encryptRefNum = -1;
@@ -644,39 +647,60 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
 
         BitPdfDict dict = stream.Dict;
-        int n = ToInt(dict.Get("N"));
         int first = ToInt(dict.Get("First"));
         byte[] data = BitPdfStreamDecoder.Decode(stream);
+        var header = ReadObjectStreamHeader(data, ToInt(dict.Get("N")), first);
 
-        // The header is N pairs of "objNum offset"; each needs at least ~4 bytes.
-        // Clamp the declared /N against the decoded length so a hostile /N cannot
-        // drive a huge allocation or multi-billion-iteration loop.
-        n = Math.Clamp(n, 0, data.Length / 4);
-
-        // Header: N pairs of "objNum offset".
-        var headerLexer = new BitPdfLexer(new BitPdfStream(data));
-        var offsets = new List<int>(n);
-        for (int i = 0; i < n; i++)
+        // Each object ends where the next one starts - the next by offset, not by header order, so
+        // an out-of-order header does not cut an object short. Only the first entry at an offset is
+        // given its object: two object numbers handed the one parse would be one node under two
+        // references, and every byte of the stream is still parsed at most once however the header
+        // is written.
+        int[] starts = [.. header.Select(pair => pair.Offset).Distinct().Order()];
+        var parsed = new HashSet<int>();
+        foreach (var (_, offset) in header)
         {
-            _ = headerLexer.GetObj();          // object number (unused for positional access)
-            object offTok = headerLexer.GetObj();
-            offsets.Add(offTok is double d ? (int)d : 0);
-        }
-
-        for (int i = 0; i < n; i++)
-        {
-            int objStart = first + offsets[i];
-            int length = i + 1 < n ? offsets[i + 1] - offsets[i] : data.Length - objStart;
-            if (objStart < 0 || objStart >= data.Length || length <= 0 || length > data.Length - objStart)
+            object? obj = null;
+            long objStart = (long)first + offset;
+            if (parsed.Add(offset) && offset >= 0 && objStart < data.Length)
             {
-                result.Add(null);
-                continue;
+                int next = Array.BinarySearch(starts, offset) + 1;
+                long objEnd = next < starts.Length ? Math.Min((long)first + starts[next], data.Length) : data.Length;
+                var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, (int)objStart, (int)(objEnd - objStart))), this);
+                obj = parser.GetObj();
             }
-            var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, objStart, length)), this);
-            result.Add(parser.GetObj());
+            result.Add(obj);
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// The "objNum offset" pairs of an object stream's header, read from the header alone (the bytes
+    /// before /First) and only up to the first pair that is not two numbers. A header that claims
+    /// more pairs than it holds then cannot have the objects' own bytes read as offsets. Both the
+    /// fetch and the recovery scan read it here, so they agree on which object each index holds.
+    /// </summary>
+    private static List<(int Num, int Offset)> ReadObjectStreamHeader(byte[] data, int n, int first)
+    {
+        int headerLength = Math.Clamp(first, 0, data.Length);
+
+        // Each pair takes at least 4 bytes ("0 0" and a separator; the last needs none). Clamp the
+        // declared /N against the header length so a hostile /N cannot drive a huge allocation or
+        // multi-billion-iteration loop.
+        n = Math.Clamp(n, 0, (headerLength + 1) / 4);
+
+        var pairs = new List<(int Num, int Offset)>(n);
+        var lexer = new BitPdfLexer(new BitPdfStream(data, 0, headerLength));
+        for (int i = 0; i < n; i++)
+        {
+            if (lexer.GetObj() is not double num || lexer.GetObj() is not double offset)
+            {
+                break;
+            }
+            pairs.Add(((int)num, (int)offset));
+        }
+        return pairs;
     }
 
     // ----- Recovery (pdf.js XRef.indexObjects equivalent) -----
@@ -782,18 +806,11 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 continue;
             }
-            int cnt = Math.Clamp(ToInt(s.Dict.Get("N")), 0, data.Length / 4);
-            var lexer = new BitPdfLexer(new BitPdfStream(data));
-            for (int idx = 0; idx < cnt; idx++)
+            var header = ReadObjectStreamHeader(data, ToInt(s.Dict.Get("N")), ToInt(s.Dict.Get("First")));
+            for (int idx = 0; idx < header.Count; idx++)
             {
-                if (lexer.GetObj() is not double dn)
-                {
-                    break;
-                }
-                _ = lexer.GetObj(); // offset (unused for positional access)
-                int objNum = (int)dn;
                 // Don't override a directly-scanned (uncompressed) definition.
-                _entries.TryAdd(objNum, new Entry { Type = EntryType.Compressed, Field2 = streamNum, Field3 = idx });
+                _entries.TryAdd(header[idx].Num, new Entry { Type = EntryType.Compressed, Field2 = streamNum, Field3 = idx });
             }
         }
     }
@@ -843,33 +860,63 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
     private BitPdfDict? FindTrailerDict()
     {
-        var kw = "trailer"u8.ToArray();
         BitPdfDict? result = null;
-        int start = 0;
-        while (start <= _reader.Length - kw.Length)
+        int i = _reader.IndexOf(TrailerKeyword, 0);
+        while (i >= 0)
         {
-            int i = _reader.IndexOf(kw, start);
-            if (i < 0)
+            // A candidate is read up to the next "trailer" keyword first. That keeps the scan linear
+            // however many candidates a file holds, and a broken candidate (an array or dictionary
+            // that is never closed) cannot run on through the real trailer written after it and
+            // take it down with it.
+            int next = _reader.IndexOf(TrailerKeyword, i + 1);
+            int end = next;
+            BitPdfDict? dict = ParseTrailerCandidate(i, end);
+
+            // The keyword that cut it short may be no more than a word in one of its own strings,
+            // though (a /Title, say): it is then read on through it, unless that keyword stands as
+            // a trailer of its own - as the one after a broken candidate does. A few such words at
+            // most, so a run of candidates that never parse still costs a fixed number of reads of
+            // each byte.
+            for (int spanned = 0; dict is null && end >= 0 && spanned < MaxTrailerKeywordsSpanned; spanned++)
             {
-                break;
-            }
-            start = i + 1;
-            var lexer = new BitPdfLexer(_source.CreateStream(i + kw.Length));
-            try
-            {
-                var parser = new BitPdfParser(lexer, this, _reader, allowStreams: false);
-                if (parser.GetObj() is BitPdfDict d)
+                int after = _reader.IndexOf(TrailerKeyword, end + 1);
+                if (ParseTrailerCandidate(end, after) is not null)
                 {
-                    result = d; // keep the last (most recent) trailer
+                    break;
                 }
+                end = after;
+                dict = ParseTrailerCandidate(i, end);
             }
-            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
+
+            if (dict is not null)
             {
-                // Ignore an unparseable trailer candidate.
+                result = dict; // keep the last (most recent) trailer
+                i = end;       // the keywords it was read on through are part of it
             }
-            start = Math.Max(start, lexer.Pos);
+            else
+            {
+                i = next;
+            }
         }
         return result;
+    }
+
+    // The dictionary the "trailer" keyword at `at` is followed by, read no further than `end` (the
+    // end of the file when negative); null when what follows is not one.
+    private BitPdfDict? ParseTrailerCandidate(int at, int end)
+    {
+        int bodyStart = at + TrailerKeyword.Length;
+        int bodyEnd = end >= 0 ? end : _reader.Length;
+        try
+        {
+            var lexer = new BitPdfLexer(_source.CreateStream(bodyStart, bodyEnd - bodyStart));
+            var parser = new BitPdfParser(lexer, this, _reader, allowStreams: false);
+            return parser.GetObj() as BitPdfDict;
+        }
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
+        {
+            return null; // an unparseable trailer candidate
+        }
     }
 
     private int ReadInt(ref int i, int n)

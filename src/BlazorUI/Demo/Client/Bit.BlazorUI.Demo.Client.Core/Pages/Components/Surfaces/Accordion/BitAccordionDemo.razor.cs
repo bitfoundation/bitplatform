@@ -115,7 +115,7 @@ public partial class BitAccordionDemo
             Name = "ExpanderTemplate",
             Type = "RenderFragment<bool>?",
             DefaultValue = "null",
-            Description = "Custom content in place of the expander icon, receiving the expanded state. It still turns over unless NoExpanderRotation is set, and HideExpanderIcon still removes it; HeaderTemplate replaces it with the rest of the header."
+            Description = "Custom content in place of the expander icon, receiving the expanded state. It still turns over unless NoExpanderRotation is set, and HideExpanderIcon still removes it; HeaderTemplate replaces it with the rest of the header. It is left out of the name of a header that has a Title or a Description, since aria-expanded already tells the state."
         },
         new()
         {
@@ -129,7 +129,7 @@ public partial class BitAccordionDemo
             Name = "HeaderAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the accessible label of the toggle button in the header, for a header whose own content does not name it - an icon-only HeaderTemplate, most of all."
+            Description = "Gets or sets the accessible label of the toggle button in the header, for a header whose own content does not name it - an icon-only HeaderTemplate, most of all. It replaces the name the Title and Description give the default header, so on a header that shows them it has to hold their text, starting with the title (WCAG 2.5.3, Label in Name)."
         },
         new()
         {
@@ -284,7 +284,7 @@ public partial class BitAccordionDemo
             Name = "TitleTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content to render in place of the Title, leaving the rest of the header - the icon, the description and the expander - as it is. Unlike HeaderTemplate, which replaces the whole header, this only takes the place of the title text."
+            Description = "The custom content to render in place of the Title, leaving the rest of the header - the icon, the description and the expander - as it is. Unlike HeaderTemplate, which replaces the whole header, this only takes the place of the title text. What it renders names the header, the heading and the panel, so it has to render the title text whenever it is set."
         },
         new()
         {

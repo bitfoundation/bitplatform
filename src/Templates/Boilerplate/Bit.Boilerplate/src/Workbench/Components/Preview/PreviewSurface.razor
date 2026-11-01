@@ -1,0 +1,22 @@
+@inherits WorkbenchComponentBase
+
+@if (ShowStatusBar && Scenario.DevicePreset.IsHandheld && Scenario.DevicePreset.GetSafeArea(Scenario.Rotated).Top > 0)
+{
+    <DeviceStatusBar Device="Scenario.DevicePreset" />
+}
+
+@if (Scenario.Chrome)
+{
+    <ChromeShell Page="Page">
+        <PreviewPageView Page="Page" />
+    </ChromeShell>
+}
+else
+{
+    <div class="bare-surface">
+        <PreviewPageView Page="Page" />
+    </div>
+}
+
+@* The app's snack bars, which the page's messages show in. *@
+<ChromeSnackBar />

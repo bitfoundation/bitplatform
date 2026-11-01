@@ -1,0 +1,90 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.checks {
+    display: flex;
+    flex-direction: column;
+}
+
+section {
+    gap: 0.625rem;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+}
+
+// The titles are BitText components, reached through their Class.
+::deep .section-title {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.run {
+    gap: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.finding {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 13px;
+    align-items: baseline;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed $bit-color-border-tertiary;
+}
+
+.finding-text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.finding-actions {
+    gap: 0.5rem;
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+
+.count,
+.example {
+    font-size: 12px;
+    color: $bit-color-foreground-secondary;
+}
+
+.example {
+    display: block;
+}
+
+.impact {
+    font-size: 11px;
+    padding: 1px 8px;
+    font-weight: 600;
+    border-radius: 999px;
+    color: $bit-color-foreground-secondary;
+    background-color: $bit-color-background-secondary;
+
+    &.impact-critical,
+    &.impact-serious {
+        color: $bit-color-error-text;
+        background-color: $bit-color-error;
+    }
+
+    &.impact-moderate {
+        color: $bit-color-warning-text;
+        background-color: $bit-color-warning;
+    }
+}
+
+.swatch {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    align-self: center;
+    border-radius: 4px;
+    // The color the check found, set inline on each finding.
+    background-color: var(--wb-swatch);
+    border: 1px solid $bit-color-border-secondary;
+}

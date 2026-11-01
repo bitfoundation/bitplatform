@@ -460,7 +460,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         // Independent of the scroll position, so a stale report still has them right.
         ApplyEdges(headSize, tailSize);
 
-        if (crossSize >= 0 && Math.Abs(crossSize - _crossSize) > 0.5)
+        if (IsCrossSize(crossSize) && Math.Abs(crossSize - _crossSize) > 0.5)
         {
             _crossSize = crossSize;
             if (ComputeLanes() != _lanes)
@@ -924,7 +924,10 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private void ApplyMetrics(BitVirtualizeMetrics metrics)
     {
-        _crossSize = metrics.CrossSize;
+        if (IsCrossSize(metrics.CrossSize))
+        {
+            _crossSize = metrics.CrossSize;
+        }
         UpdateLayout();
         _viewportSize = metrics.ViewportSize;
         _realScrollOffset = metrics.ScrollOffset;
@@ -946,11 +949,16 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         }
     }
 
-    // n lanes of MinLaneSize take n * MinLaneSize plus the n - 1 gaps between them.
+    // A cross size the script reports is taken only when it is a number of pixels; any other (negative when unknown, or
+    // not finite) leaves the last one in place, whichever report it came in.
+    private static bool IsCrossSize(double value) => value >= 0 && double.IsFinite(value);
+
+    // n lanes of MinLaneSize take n * MinLaneSize plus the n - 1 gaps between them. Either way the count is kept within
+    // one rendered window: a row wider than that could never be drawn whole, and the track arithmetic would overflow.
     private int ComputeLanes() =>
         MinLaneSize is > 0f && _crossSize > 0
-            ? Math.Max(1, (int)Math.Floor((_crossSize + GapSize) / (MinLaneSize.Value + GapSize)))
-            : Math.Max(1, Lanes);
+            ? Math.Max(1, (int)Math.Min(Math.Floor((_crossSize + GapSize) / (MinLaneSize.Value + GapSize)), MaxRenderedItems))
+            : Math.Clamp(Lanes, 1, MaxRenderedItems);
 
     // A change of the orientation invalidates the sizes measured along the old axis, one of the lanes the sizes of the
     // tracks, which then hold other items, and one of the gap the strides the tracks are kept with. Another number of

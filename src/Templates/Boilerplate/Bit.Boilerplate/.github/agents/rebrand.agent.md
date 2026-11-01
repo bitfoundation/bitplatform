@@ -278,8 +278,8 @@ or list it as a follow-up.
 Drive the running web app as the **run-app** skill (`.github/agents/run-app.agent.md`) describes, set up so it cannot
 mislead you:
 
-- **Before the first change**, capture the key cells of the matrix in 7.1 and a snapshot of every `--bit-*` token, in
-  both schemes.
+- **Before the first change**, capture the key cells of the matrix in 7.1, the Workbench's Theme and components page,
+  and a snapshot of every `--bit-*` token, in both schemes.
 - **Disable the HTTP cache** for the session: a stale stylesheet, font or image can survive into the next round.
 - **Load each scheme natively**: set the persisted theme preference before navigating rather than toggling after load,
   which leaves stateful UI such as the theme toggle showing the old state.
@@ -308,14 +308,19 @@ buttons truncate first:
 | First visit | empty storage: the consent banner and any other first-run UI, which a reused session never shows again |
 | Preferences | `prefers-reduced-motion: reduce` and `forced-colors: active`, once each |
 
-Real input - Tab, pointer, typing, submitting - is the most faithful way into a state. For a state that is awkward to
-reach, force it for a capture, or render a temporary specimen of a component family in all its states and revert it
-before you finish. Automation cannot produce browser autofill: check that its styling is in place, and list "look at
-an autofilled sign-in" as a hand check.
+Real input - Tab, pointer, typing, submitting - is the most faithful way into a state on the app's own pages. For the
+component families themselves, the Workbench's **Theme and components** page is the specimen, run as the **workbench**
+skill (`.github/agents/workbench.agent.md`) describes: every bit component the app uses in each of its states, with
+hover, focus and pressed drawn without touching the control, and each overlay opened by the page's Open overlay
+switch. Look at its screenshots in every round, in both schemes, at phone and desktop widths and in an RTL culture,
+cell by cell. A component the app uses that the page doesn't show yet goes onto it first, in its states. For any other
+state that is awkward to reach, force it for a capture. Automation cannot produce browser autofill: check that its
+styling is in place, and list "look at an autofilled sign-in" as a hand check.
 
 Short on time? These cells find the most: the dark scheme with a selected nav item, the pointer off it and on it; the
 new menu item in both menus and the not-found page it opens; the Tab walk through sign-in; filled, invalid and
-placeholder fields; an open dropdown and a dialog; home and sign-in at phone width and in RTL.
+placeholder fields; an open dropdown and a dialog; the Theme and components page in dark; home and sign-in at phone
+width and in RTL.
 
 ### 7.2 Measure contrast instead of judging it
 
@@ -323,7 +328,8 @@ Screenshots are for judgment; contrast is for measurement. In each state, measur
 input value, placeholder, icon, badge and SVG shape against the backdrop actually behind it, with translucent layers
 composited, and list everything below WCAG AA, worst first. Disabled UI is exempt, and anything over a gradient or an
 image is judged by eye. Re-run it after every fix, in the states the fix touches: an empty list in every state is the
-bar.
+bar. The Workbench's checks measure a page's contrast for you, so run them on the Theme and components page in both
+schemes in every round.
 
 ### 7.3 Focus
 
@@ -368,6 +374,8 @@ pass.
   deviation.
 - Every Tab stop shows a visible, unclipped focus indicator, in both schemes.
 - Rest, hover, selected, selected + hover and selected + focus are told apart for every selectable component in use.
+- Every cell of the Workbench's Theme and components page, and every overlay its Open overlay switch opens, looks
+  intentional in both schemes, at phone and desktop widths and in RTL, and its checks show nothing the rebrand brought.
 - Autofill, text selection and native widgets are styled for both schemes.
 - The new menu item sits in both menus, named in the reference's vocabulary and carrying its navigation features, and
   opens the re-skinned not-found page.
@@ -389,7 +397,8 @@ written in, and hand that file to the user:
 
 - The decisions a designer would want to revisit first: the role mapping, the base preset, font substitutes, the dark
   palette, the new menu item's name, and everything marked *derived*.
-- Before, after and reference captures of the key surfaces and states, in both schemes.
+- Before, after and reference captures of the key surfaces and states, in both schemes, the Workbench's Theme and
+  components page among them.
 - Deviations from the reference, and why (accessibility, platform limits, files you couldn't get).
 - **Licenses**: every logo, font, image or icon that belongs to someone else, and what its license needs before
   anything ships.

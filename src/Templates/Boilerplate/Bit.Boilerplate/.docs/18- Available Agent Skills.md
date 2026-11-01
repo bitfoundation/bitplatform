@@ -17,6 +17,7 @@ start of a session and loads the skill when a task matches it.
 | `run-app` | You want to see a change in the running app, on the web, Windows or Android. | `/run-app and show me the orders page on a phone` |
 | `review` | Before a pull request: it checks the branch's changes against the project's conventions and reports, without changing code. | `/review` |
 | `bitify-ui` | A page uses raw HTML and CSS that should become Bit.BlazorUI components and theme-aware styles. | `/bitify-ui UserProfile.razor` |
+| `workbench` | A new page should be designed and agreed on before the app builds it: sample data, every device, theme, language and data state, and store screenshots. | `/workbench design an order history page` |
 | `localize-strings` | Text written as `Localizer["..."]` literals should move into `AppStrings.resx` and get translated, usually before a push. | `/localize-strings Dashboard.razor` |
 | `rebrand` | The app should look like a brand, a site, a Figma file or a mood: colors, fonts, logo, home page and navigation, in light and dark. | `/rebrand to match our new brand guide` |
 | `port` | An existing app, in any language or with no source left, should be rebuilt on this project with the same features. | `/port our old Xamarin point of sale` |

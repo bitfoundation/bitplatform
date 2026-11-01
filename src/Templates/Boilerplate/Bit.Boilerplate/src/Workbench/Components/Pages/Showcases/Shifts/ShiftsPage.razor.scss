@@ -1,0 +1,130 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.shifts {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.shifts-header {
+    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.titles {
+    display: flex;
+    flex-direction: column;
+
+    ::deep .title {
+        font-weight: 700;
+    }
+}
+
+.roles {
+    gap: 0.5rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.role {
+    gap: 0.375rem;
+    display: flex;
+    font-size: 0.8125rem;
+    align-items: center;
+    color: $bit-color-foreground-secondary;
+}
+
+.filters {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+
+    > ::deep * {
+        flex: 1 1 10rem;
+        min-width: 0;
+    }
+}
+
+.role-item {
+    gap: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.role-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background-color: var(--data-color);
+}
+
+.staff {
+    gap: 0.625rem;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.staff-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-name {
+    overflow: hidden;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.staff-role {
+    font-size: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: $bit-color-foreground-secondary;
+}
+
+// Today's labels in the timeline header use the primary text color.
+.shifts ::deep .today > .bit-bfc-tl-time-cell-label {
+    color: $bit-color-foreground-primary;
+}
+
+// A narrower staff column on phones leaves room for the hours.
+@include lt-sm {
+    .shifts ::deep .bit-bfc-tl-corner,
+    .shifts ::deep .bit-bfc-tl-resource-cell {
+        width: 72px !important;
+        padding-inline: 0.25rem;
+    }
+
+    .shifts ::deep .bit-bfc-tl-corner {
+        font-size: 10px;
+        letter-spacing: 0;
+        justify-content: center;
+    }
+
+    .staff {
+        gap: 0.25rem;
+        flex-direction: column;
+    }
+
+    .staff-text {
+        max-width: 100%;
+        align-items: center;
+    }
+
+    .staff-name {
+        font-size: 11px;
+        max-width: 100%;
+    }
+
+    .staff-role {
+        display: none;
+    }
+}

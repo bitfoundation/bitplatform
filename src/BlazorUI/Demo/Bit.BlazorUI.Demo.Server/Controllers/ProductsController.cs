@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.OData.Query.Validator;
+using Microsoft.OData;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;
 
@@ -8,8 +9,12 @@ public partial class ProductsController : AppControllerBase
 {
     private static readonly Random _random = new Random();
 
+    // $top is applied by hand below (after the count), so it is bounded here: without MaxTop a single
+    // request could ask for every one of the half a million rows. 1000 is past any window the demos'
+    // virtualized lists and grids ask for.
     private static readonly ODataValidationSettings _validationSettings = new()
     {
+        MaxTop = 1000,
         AllowedFunctions = AllowedFunctions.AllFunctions & ~AllowedFunctions.MatchesPattern
     };
 
@@ -18,9 +23,17 @@ public partial class ProductsController : AppControllerBase
         .ToArray();
 
     [HttpGet]
-    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
-        odataQuery.Validate(_validationSettings);
+        // A query past the limits is the client's mistake: a 400 that says why, not a 500.
+        try
+        {
+            odataQuery.Validate(_validationSettings);
+        }
+        catch (ODataException exception)
+        {
+            return BadRequest(exception.Message);
+        }
 
         var query = _products.AsQueryable();
 
@@ -33,7 +46,7 @@ public partial class ProductsController : AppControllerBase
 
         query = query.Take(odataQuery.Top?.Value ?? 50);
 
-        return new PagedResult<ProductDto>(query.ToArray(), totalCount);
+        return Ok(new PagedResult<ProductDto>(query.ToArray(), totalCount));
     }
 
     private static readonly List<CategoryOrProductDto> _categoriesProducts = new();
@@ -62,14 +75,21 @@ public partial class ProductsController : AppControllerBase
     }
 
     [HttpGet]
-    public async Task<PagedResult<CategoryOrProductDto>> GetCategoriesAndProducts(ODataQueryOptions<CategoryOrProductDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<CategoryOrProductDto>>> GetCategoriesAndProducts(ODataQueryOptions<CategoryOrProductDto> odataQuery, CancellationToken cancellationToken)
     {
         //note:if want to fetch data from DB:
         // var query = _dbContext.Categories.Select(cat => new CategoryOrProductDto { CategoryId = cat.Id, Name = cat.Name })
         // .Union(_dbContext.Products.Select(prd => new CategoryOrProductDto { ProductId = prd.Id, Name = prd.Name, Price = prd.Price, CategoryId = prd.CategoryId })
         // .OrderBy(catOrPrd => catOrPrd.CategoryId);
 
-        odataQuery.Validate(_validationSettings);
+        try
+        {
+            odataQuery.Validate(_validationSettings);
+        }
+        catch (ODataException exception)
+        {
+            return BadRequest(exception.Message);
+        }
 
         var query = _categoriesProducts.AsQueryable();
 
@@ -82,6 +102,6 @@ public partial class ProductsController : AppControllerBase
 
         query = query.Take(odataQuery.Top?.Value ?? 10);
 
-        return new PagedResult<CategoryOrProductDto>(query.ToArray(), totalCount);
+        return Ok(new PagedResult<CategoryOrProductDto>(query.ToArray(), totalCount));
     }
 }

@@ -1,0 +1,103 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.assistant {
+    gap: 1rem;
+    display: flex;
+    min-height: 26rem;
+    // Fills the height the app's chrome leaves, so the messages scroll instead of the page.
+    height: calc(#{$bit-env-height-available} - 5.75rem);
+
+    @include lt-md {
+        height: calc(#{$bit-env-height-available} - 9.25rem);
+    }
+
+    &.bare {
+        height: calc(#{$bit-env-height-available} - 2rem);
+    }
+}
+
+.history {
+    width: 15rem;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding-inline-end: 1rem;
+    border-inline-end: 1px solid $bit-color-border-tertiary;
+
+    @include lt-md {
+        display: none;
+    }
+}
+
+.history-sheet {
+    padding: 0.5rem;
+}
+
+// Keeps the panel clear of the device's notch and home indicator.
+::deep .history-panel {
+    top: $bit-env-inset-top;
+    bottom: $bit-env-inset-bottom;
+    height: $bit-env-height-available;
+}
+
+.chat {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    --bit-AiMessageList-padding: 0.75rem 1rem 1rem;
+
+    @include lt-md {
+        --bit-AiEmptyState-padding: 0.5rem;
+    }
+
+    @include lt-sm {
+        --bit-AiChat-footer-padding: 0 0.25rem 0.25rem;
+        --bit-AiMessageList-padding: 0.5rem 0.25rem 0.75rem;
+    }
+}
+
+.chat-header {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    padding-bottom: 0.375rem;
+    border-bottom: 1px solid $bit-color-border-tertiary;
+
+    ::deep .history-toggle {
+        @include gt-sm {
+            display: none;
+        }
+    }
+
+    ::deep .model {
+        flex-shrink: 0;
+    }
+}
+
+.chat-title {
+    flex: 1;
+    margin: 0;
+    min-width: 0;
+    font-size: inherit;
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.placeholder {
+    gap: 1.125rem;
+    display: flex;
+    flex-direction: column;
+
+    ::deep .shimmer-user {
+        align-self: flex-end;
+    }
+}
+
+::deep .disclaimer {
+    display: block;
+    margin-top: 0.375rem;
+    text-align: center;
+}

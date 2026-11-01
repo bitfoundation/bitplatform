@@ -147,10 +147,51 @@ public class TemplateTests
     [DataRow("Contoso.Shop")]
     [DataRow("SalesModule")]
     [DataRow("TodoSample")]
+    [DataRow("WorkbenchDemo")]
     [DataRow("MyCompany.TestProject")]
     public void TheDemosNames_Should_NotClashWithTheTemplatesTypes(string name)
     {
-        Assert.IsNull(ProjectName.Validate(name, TypeNames.Template));
+        Assert.IsNull(ProjectName.Validate(name, TypeNames.Template, NamespaceNames.Template));
+    }
+
+    [TestMethod]
+    [DataRow("Client")]
+    [DataRow("Server")]
+    [DataRow("Shared")]
+    [DataRow("Core")]
+    [DataRow("Workbench")]
+    [DataRow("Components.Shop")]
+    public async Task ANameThatStartsWithANamespaceOfTheTemplate_Should_BeRefused(string name)
+    {
+        using var host = new TestHost();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", name, "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, $"'{name.Split('.')[0]}' is also the name of a namespace inside the project");
+        StringAssert.Contains(host.FlatOutput, $"bit new My{name}");
+    }
+
+    [TestMethod]
+    [DataRow("Contoso.Client")]
+    [DataRow("Contoso.Server.Shop")]
+    public void ANamespaceOfTheTemplateAfterTheFirstPart_Should_Pass(string name)
+    {
+        Assert.IsNull(ProjectName.Validate(name, TypeNames.Template, NamespaceNames.Template));
+    }
+
+    [TestMethod]
+    public void AFirstPartThatComesTwice_Should_BeRefused()
+    {
+        StringAssert.Contains(ProjectName.Validate("Contoso.Contoso"), "comes twice");
+        StringAssert.Contains(ProjectName.Validate("Contoso.Shop.Contoso"), "comes twice");
+        Assert.AreEqual("MyContoso.Contoso", ProjectName.Suggest("contoso.contoso"));
+    }
+
+    [TestMethod]
+    public void TheTemplatesNamespaces_Should_ComeFromItsFolders()
+    {
+        CollectionAssert.IsSubsetOf(new[] { "Client", "Server", "Shared", "Core", "Web", "Api", "Components", "Workbench" }, NamespaceNames.Template.ToArray());
+        Assert.IsFalse(NamespaceNames.Template.Contains("Boilerplate"));
+        Assert.IsFalse(NamespaceNames.Template.Contains("src"));
     }
 
     [TestMethod]
@@ -174,6 +215,8 @@ public class TemplateTests
 
         Assert.IsTrue(TypeNames.FromPackage(folder).Contains("Shop"));
         Assert.IsTrue(TypeNames.FromPackage(package).Contains("Shop"));
+        Assert.IsTrue(NamespaceNames.FromPackage(folder).Contains("Shop"));
+        Assert.IsTrue(NamespaceNames.FromPackage(package).Contains("Shop"));
     }
 
     [TestMethod]

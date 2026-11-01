@@ -1,0 +1,58 @@
+@inherits WorkbenchComponentBase
+
+<div class="flows">
+    <section>
+        <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Flows)]</BitText>
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsHint)]</BitText>
+        @if (session.Flows.Count == 0)
+        {
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsEmpty)]</BitText>
+        }
+        @foreach (var flow in session.Flows)
+        {
+            <a class="flow-link" href="@WorkbenchUrls.Flow(flow.Id)">
+                <BitIcon IconName="@BitIconName.Flow" Size="BitSize.Small" />
+                <span class="flow-name" dir="auto">@flow.Name</span>
+                <span class="flow-count">@Localizer[nameof(WorkbenchStrings.ScreenCount), flow.Screens.Length]</span>
+            </a>
+        }
+    </section>
+
+    @* Adding a screen writes to the review, so only this machine gets the form *@
+    @if (session.CanWrite)
+    {
+        <section>
+            <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.AddToFlow)]</BitText>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AddToFlowHint)]</BitText>
+            <BitDropdown Items="flowItems"
+                         Value="@TargetFlowId"
+                         ValueChanged="(string? id) => targetFlowId = id"
+                         Label="@Localizer[nameof(WorkbenchStrings.Flow)]"
+                         Responsive
+                         FitWidth />
+            @if (TargetFlowId == NewFlowValue)
+            {
+                <BitTextField @bind-Value="newFlowName" Label="@Localizer[nameof(WorkbenchStrings.NewFlowName)]" MaxLength="80" />
+            }
+            <BitTextField @bind-Value="note" Label="@Localizer[nameof(WorkbenchStrings.ScreenNote)]" MaxLength="300" />
+            @if (TargetFlow is { Screens.Length: > 0 })
+            {
+                <BitTextField @bind-Value="linkLabel"
+                              Label="@Localizer[nameof(WorkbenchStrings.ArrowFromLast)]"
+                              Placeholder="@Localizer[nameof(WorkbenchStrings.ArrowLabelPlaceholder)]"
+                              MaxLength="120" />
+            }
+            <BitButton IconName="@BitIconName.Add" Disabled="CanAdd is false" OnClick="Add">@Localizer[nameof(WorkbenchStrings.AddThisView)]</BitButton>
+            @if (addedFlowId is { } added)
+            {
+                <BitLink Href="@WorkbenchUrls.Flow(added)">@Localizer[nameof(WorkbenchStrings.OpenBoard)]</BitLink>
+            }
+        </section>
+    }
+    else
+    {
+        <section>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsReadOnly)]</BitText>
+        </section>
+    }
+</div>

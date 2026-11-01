@@ -1,6 +1,9 @@
 [mcp_servers.bitplatform]
 url = "https://bitplatform.dev/mcp?v=11.0.0"
 
+[mcp_servers.workbench]
+url = "http://localhost:6030/mcp"
+
 [mcp_servers.dev-mcp-test]
 url = "https://use-your-test-api-server-url-here.com/dev-mcp"
 

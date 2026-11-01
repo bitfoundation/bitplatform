@@ -27,7 +27,7 @@ on:
         type: boolean
         default: true
       prerelease_packages:
-        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, and the platform and sales websites)
+        description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, Workbench, and the platform and sales websites)
         type: boolean
         default: false
 
@@ -217,6 +217,19 @@ jobs:
       windows: ${{ inputs.windows }}
       android: ${{ inputs.android }}
       ios: ${{ inputs.ios }}
+      prerelease_packages: ${{ inputs.prerelease_packages }}
+
+  workbench_demo:
+    name: workbench demo
+    if: inputs.server
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/workbench-demo.cd.yml
+    secrets: inherit
+    with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
 
   todo_sample:
