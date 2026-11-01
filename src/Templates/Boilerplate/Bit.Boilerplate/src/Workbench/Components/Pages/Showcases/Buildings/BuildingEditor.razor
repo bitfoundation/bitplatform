@@ -4,7 +4,7 @@
     @if (model is not null && editContext is not null)
     {
         <div class="editor">
-        <EditForm EditContext="editContext" OnSubmit="Submit" class="editor-form">
+        <EditForm EditContext="editContext" OnSubmit="Submit" class="editor-form" novalidate>
             <header class="editor-header">
                 <span class="editor-icon"><BitIcon IconName="@(isNew ? BitIconName.Add : BitIconName.Edit)" /></span>
                 <BitText Typography="BitTypography.H6">@Localizer[isNew ? nameof(WorkbenchStrings.BuildingsAddTitle) : nameof(WorkbenchStrings.BuildingsEditTitle)]</BitText>
@@ -29,7 +29,7 @@
                     <BitDropdown Label="@Localizer[nameof(WorkbenchStrings.BuildingType)]" Items="typeItems" @bind-Value="model.Type" Responsive />
                 </div>
                 <div class="field">
-                    <BitNumberField Label="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" @bind-Value="model.Year" Min="1000" Max="@maxYear" />
+                    <BitNumberField Label="@Localizer[nameof(WorkbenchStrings.BuildingYear)]" @bind-Value="model.Year" />
                     <ValidationMessage For="() => model.Year" />
                 </div>
                 <div class="field">

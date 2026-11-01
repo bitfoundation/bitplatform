@@ -9,6 +9,8 @@ public partial class WorkbenchScenarioState
     private int pendingLoads;
     private long lastActivityTicks = DateTimeOffset.UtcNow.UtcTicks;
     private readonly ConcurrentDictionary<string, int> attempts = [];
+    // In Mixed, the state each source took, in the order the page first asked for them.
+    private readonly ConcurrentDictionary<string, WorkbenchDataState> mixedStates = [];
 
     public WorkbenchScenario Scenario { get; private set; } = new();
 
@@ -47,24 +49,21 @@ public partial class WorkbenchScenarioState
         }
     }
 
-    /// <summary>A data source's state; in Mixed, a hash of the source's name picks error, empty or live, the same on every run.</summary>
+    /// <summary>
+    /// A data source's state. In Mixed, the sources take error, empty and live in turn, in the order the page first asks for
+    /// them, so a page of three or more shows all three, and a load of the same page in the same layout gets the same ones.
+    /// </summary>
     public WorkbenchDataState ResolveState(string source)
     {
         if (Scenario.Data is not WorkbenchDataState.Mixed)
             return Scenario.Data;
 
-        var hash = 0;
-        foreach (var c in source)
-        {
-            hash = unchecked(hash * 31 + c);
-        }
-
-        return Math.Abs(hash % 4) switch
+        return mixedStates.GetOrAdd(source, _ => (mixedStates.Count % 3) switch
         {
             0 => WorkbenchDataState.Error,
             1 => WorkbenchDataState.Empty,
             _ => WorkbenchDataState.Live
-        };
+        });
     }
 
     /// <summary>

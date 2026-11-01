@@ -114,23 +114,27 @@ public class BuildingsUITests : WorkbenchPageTest
     }
 
     [TestMethod]
-    public async Task TheEditor_Should_RefuseABuildingWithoutANameOrOutsideTheCountry()
+    public async Task TheEditor_Should_RefuseABuildingWithoutANameWithAWrongYearOrOutsideTheCountry()
     {
         await OpenPreview("buildings", "?device=desktop-1536");
 
         await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsAdd }).ClickAsync();
+        await Page.GetByLabel(WorkbenchStrings.BuildingName, new() { Exact = true }).FillAsync("   ");
         await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Save, Exact = true }).ClickAsync();
 
-        await Expect(Page.GetByLabel(WorkbenchStrings.BuildingName, new() { Exact = true })).ToHaveJSPropertyAsync("validity.valid", false);
+        await Expect(Page.GetByText(WorkbenchStrings.BuildingsNameRequired)).ToBeVisibleAsync();
+        await Expect(Page.GetByText(WorkbenchStrings.BuildingsCityRequired)).ToBeVisibleAsync();
         await Expect(Page.GetByText(WorkbenchStrings.BuildingsAddTitle)).ToBeVisibleAsync();
 
         await Page.GetByLabel(WorkbenchStrings.BuildingName, new() { Exact = true }).FillAsync("Cologne Cathedral");
         await Page.GetByLabel(WorkbenchStrings.BuildingCity, new() { Exact = true }).FillAsync("Cologne");
+        await Page.GetByLabel(WorkbenchStrings.BuildingYear, new() { Exact = true }).FillAsync("500");
         await Page.GetByLabel(WorkbenchStrings.BuildingLatitude, new() { Exact = true }).FillAsync("50.9413");
         await Page.GetByLabel(WorkbenchStrings.BuildingLongitude, new() { Exact = true }).FillAsync("6.9583");
         await Page.GetByLabel(WorkbenchStrings.BuildingLongitude, new() { Exact = true }).PressAsync("Tab");
         await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Save, Exact = true }).ClickAsync();
 
+        await Expect(Page.GetByText(WorkbenchStrings.BuildingsYearInvalid)).ToBeVisibleAsync();
         await Expect(Page.Locator(".editor-modal").GetByText(WorkbenchStrings.BuildingsOutsideBody)).ToBeVisibleAsync();
         await Expect(Subtitle(seedCount, 12)).ToBeVisibleAsync();
     }

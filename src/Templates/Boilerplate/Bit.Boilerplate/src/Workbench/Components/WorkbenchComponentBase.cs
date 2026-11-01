@@ -34,6 +34,9 @@ public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposabl
     /// <summary>The settings of the view this component renders in: device, theme, data state, user and so on.</summary>
     protected WorkbenchScenario Scenario => ScenarioState.Scenario;
 
+    /// <summary>A page's own heading: an h2 under the app's header, which names the page in the h1, and the h1 without it.</summary>
+    protected string PageHeadingElement => Scenario.Chrome ? "h2" : "h1";
+
     protected bool IsPrerendering => RendererInfo.IsInteractive is false;
 
     /// <summary>Completes once the Blex stores hold what the browser saved for this view; at once while prerendering.</summary>

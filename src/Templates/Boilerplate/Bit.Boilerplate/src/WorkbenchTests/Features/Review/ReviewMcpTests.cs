@@ -49,7 +49,7 @@ public class ReviewMcpTests
         var tools = (await client.ListToolsAsync(cancellationToken: TestContext.CancellationToken)).Select(t => t.Name).Order().ToArray();
 
         Assert.AreSequenceEqual(new[] { "get_comment_screenshot", "get_review", "reply_to_comment", "save_flow", "set_comment_status", "set_comment_tasks", "set_page_status", "wait_for_review" }, tools);
-        Assert.AreEqual("workbench", client.ServerInfo.Name);
+        Assert.AreEqual("workbench", client.ServerInfo?.Name);
     }
 
     [TestMethod]

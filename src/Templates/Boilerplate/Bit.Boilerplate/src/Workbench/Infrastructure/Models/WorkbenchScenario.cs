@@ -106,6 +106,9 @@ public sealed partial record WorkbenchScenario
 
         string? Read(string key) => values.TryGetValue(key, out var value) && string.IsNullOrWhiteSpace(value) is false ? value.ToString() : null;
 
+        // An enum value given by its member's name, in any case; a number or a list of names names none.
+        T? Member<T>(string key) where T : struct, Enum => Enum.GetNames<T>().FirstOrDefault(name => string.Equals(name, Read(key), StringComparison.OrdinalIgnoreCase)) is { } name ? Enum.Parse<T>(name) : null;
+
         var caption = Read("caption")?.Trim();
         var device = Read("device");
         var (width, height) = ReadSize(Read("size"));
@@ -115,23 +118,23 @@ public sealed partial record WorkbenchScenario
 
         var scenario = new WorkbenchScenario
         {
-            Data = Enum.TryParse<WorkbenchDataState>(Read("data"), ignoreCase: true, out var data) ? data : defaults.Data,
-            Theme = Enum.TryParse<WorkbenchThemeMode>(Read("theme"), ignoreCase: true, out var theme) ? theme : defaults.Theme,
+            Data = Member<WorkbenchDataState>("data") ?? defaults.Data,
+            Theme = Member<WorkbenchThemeMode>("theme") ?? defaults.Theme,
             Culture = CultureInfoManager.GetCultureInfo(Read("culture"))?.Name,
             Chrome = bool.TryParse(Read("chrome"), out var chrome) ? chrome : defaults.Chrome,
-            Auth = Enum.TryParse<WorkbenchAuthState>(Read("auth"), ignoreCase: true, out var auth) ? auth : defaults.Auth,
+            Auth = Member<WorkbenchAuthState>("auth") ?? defaults.Auth,
             User = int.TryParse(Read("user"), NumberStyles.None, CultureInfo.InvariantCulture, out var user) && user < WorkbenchDemoUsers.All.Count ? user : defaults.User,
             Device = string.Equals(device, DevicePresets.CustomKey, StringComparison.OrdinalIgnoreCase) ? DevicePresets.CustomKey : DevicePresets.Find(device).Key,
             Rotated = bool.TryParse(Read("rotated"), out var rotated) ? rotated : defaults.Rotated,
             Frame = bool.TryParse(Read("frame"), out var frame) ? frame : defaults.Frame,
-            Backdrop = Enum.TryParse<WorkbenchBackdrop>(Read("backdrop"), ignoreCase: true, out var backdrop) ? backdrop : null,
+            Backdrop = Member<WorkbenchBackdrop>("backdrop"),
             Caption = caption is null ? null : caption[..Math.Min(caption.Length, MaxCaptionLength)],
             Variant = Read("variant") is { } variant && TokenRegex().IsMatch(variant) ? variant : null,
             Switches = WriteSwitches(switches),
             Accent = ReadAccent(Read("accent")),
             TextScale = int.TryParse(Read("text"), NumberStyles.None, CultureInfo.InvariantCulture, out var text) && TextScales.Contains(text) ? text : defaults.TextScale,
             ReducedMotion = Read("motion") is "reduce",
-            Vision = Enum.TryParse<WorkbenchVision>(Read("vision"), ignoreCase: true, out var vision) ? vision : null
+            Vision = Member<WorkbenchVision>("vision")
         };
 
         // A custom device takes its size from the size key and keeps its rotation.

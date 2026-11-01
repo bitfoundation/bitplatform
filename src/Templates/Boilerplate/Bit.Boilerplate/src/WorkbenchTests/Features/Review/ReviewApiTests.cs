@@ -240,7 +240,7 @@ public class ReviewApiTests
             agent = "Claude Code",
             screens = new[]
             {
-                new { key = "week", page = "shifts", query = "", note = "The week", taps = Array.Empty<string>() },
+                new { key = "week", page = "shifts", query = "", note = (string?)"The week", taps = Array.Empty<string>() },
                 new { key = "dark", page = "shifts", query = "?theme=dark", note = (string?)null, taps = Array.Empty<string>() }
             },
             links = new[] { new { from = "week", to = "dark", label = "Switch to dark", tap = (string?)null } }

@@ -60,7 +60,7 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
 
         await Expect(View().Locator("html")).ToHaveAttributeAsync("dir", "rtl");
         await Expect(View().Locator("html")).ToHaveAttributeAsync("lang", "fa-IR");
-        await Expect(View().GetByRole(AriaRole.Heading, new() { Name = heading, Level = 1 }).First).ToBeVisibleAsync();
+        await Expect(View().GetByRole(AriaRole.Heading, new() { Name = heading, Level = 2 }).First).ToBeVisibleAsync();
         await Expect(Page.Locator("html")).Not.ToHaveAttributeAsync("dir", "rtl");
     }
 

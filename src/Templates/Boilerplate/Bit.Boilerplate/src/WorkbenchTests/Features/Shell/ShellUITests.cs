@@ -11,7 +11,7 @@ public class ShellUITests : WorkbenchPageTest
         await OpenWorkbench("theme");
 
         await Expect(Page).ToHaveTitleAsync($"{WorkbenchStrings.ThemePageTitle} · {WorkbenchStrings.WorkbenchTitle}");
-        await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 1 }).First).ToBeVisibleAsync();
+        await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 2 }).First).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Group, new() { Name = DevicePresets.Default.Name })).ToBeVisibleAsync();
     }
 

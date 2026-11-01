@@ -8,8 +8,6 @@ namespace Boilerplate.Workbench.Components.Pages.Showcases.Buildings;
 /// </summary>
 public partial class BuildingEditor
 {
-    private readonly string maxYear = DateTime.Now.Year.ToString(CultureInfo.InvariantCulture);
-
     private bool isOpen;
     private bool isNew;
     private bool isSaving;

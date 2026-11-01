@@ -84,21 +84,21 @@ public class WorkbenchScenarioStateTests
     }
 
     [TestMethod]
-    public void Mixed_Should_GiveEverySourceAStateOfItsOwnTheSameOnEveryRun()
+    public void Mixed_Should_GiveTheSourcesErrorEmptyAndLiveInTurnTheSameOnEveryRun()
     {
         var state = In(WorkbenchDataState.Mixed);
+        var again = In(WorkbenchDataState.Mixed);
 
-        var sources = PosWidgetSources.Concat(["buildings.list", "assistant.conversations", "shifts.week", "settings.profile", "settings.sessions"]).ToArray();
-        var resolved = sources.ToDictionary(source => source, state.ResolveState);
+        var resolved = PosWidgetSources.Select(state.ResolveState).ToArray();
 
-        foreach (var source in sources)
+        CollectionAssert.AreEqual(resolved, PosWidgetSources.Select(again.ResolveState).ToArray(), "A page asking for the same sources in the same order gets the same states.");
+        CollectionAssert.AreEqual(resolved, PosWidgetSources.Select(state.ResolveState).ToArray(), "A source keeps its state when it loads again.");
+        CollectionAssert.AreEqual(new[] { WorkbenchDataState.Error, WorkbenchDataState.Empty, WorkbenchDataState.Live }, resolved[..3]);
+
+        foreach (var kind in new[] { WorkbenchDataState.Error, WorkbenchDataState.Empty, WorkbenchDataState.Live })
         {
-            Assert.AreEqual(resolved[source], In(WorkbenchDataState.Mixed).ResolveState(source), $"{source} changes state between runs.");
-            Assert.IsTrue(resolved[source] is WorkbenchDataState.Live or WorkbenchDataState.Empty or WorkbenchDataState.Error);
+            Assert.AreEqual(PosWidgetSources.Length / 3, resolved.Count(s => s == kind), $"The POS dashboard shows {kind} on a third of its widgets.");
         }
-
-        Assert.IsTrue(resolved.Values.ToHashSet().SetEquals([WorkbenchDataState.Live, WorkbenchDataState.Empty, WorkbenchDataState.Error]));
-        Assert.IsGreaterThan(1, PosWidgetSources.Select(state.ResolveState).Distinct().Count(), "The POS dashboard's widgets show more than one state at once.");
     }
 
     [TestMethod]

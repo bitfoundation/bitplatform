@@ -60,6 +60,8 @@ public class WorkbenchScenarioTests
     [DataRow("?chrome=perhaps&rotated=1&frame=yes")]
     [DataRow("?user=99&text=150&culture=xx-XX&device=nokia-3310")]
     [DataRow("?user=-1&text=-100&accent=red&variant=Not%20A%20Token")]
+    [DataRow("?data=42&theme=7&auth=1&backdrop=3&vision=2")]
+    [DataRow("?data=live,error&theme=-1")]
     public void AnInvalidValue_Should_KeepItsDefault(string query)
     {
         var scenario = WorkbenchScenario.Parse(query);
