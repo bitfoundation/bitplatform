@@ -699,11 +699,13 @@ Smart case: a query in lower case matches case-insensitively, one with an upper-
 are kept and highlighted with `<mark>`; a highlight never splits a character from its combining accents or an emoji
 from its other half.
 
-The dynamic programming fills (term length + 1) x (field length + 1) cells. Past `BaletteFuzzyMatcher.MaxCells`
-(1,048,576) - a term against a very long description - the matcher aligns greedily instead, as fzf does: the first
-stretch of the field that holds the term, scored the same way, in linear time. The term is still found and highlighted;
-the alignment is just not always the best one. A query is at most `BaletteQuery.MaxLength` (256) characters: the
-palette's input stops there, and a longer query passed in by code matches nothing (`BaletteQuery.IsTooLong`).
+A field longer than `BaletteFuzzyMatcher.MaxOptimalLength` (4,096 characters) - a long description - is aligned
+greedily instead, as fzf does: the first stretch of the field that holds the term, scored by the same rules, in linear
+time and without buffers. The term is still found and highlighted; the alignment is just not always the best one. The
+choice depends on the field alone, so a field keeps its alignment, and its place, as the query grows. A query is
+searched up to `BaletteQuery.MaxLength` (256) characters, the spaces around it aside; a longer one matches no command
+(`BaletteQuery.IsTooLong`), but it is not cut short: `AlwaysShow` commands are still listed, and async sources and
+handlers (`ctx.Query`) still get all of it.
 
 ### Text as people type it
 
@@ -738,7 +740,8 @@ A query that matches nothing is tried once more allowing a typo per term - a mis
 a term of 4 to 7 characters, two from 8 on - so `settigns` finds "Settings". Only a query that found nothing is
 retried, so this never adds noise to one that works; such results are announced and marked "No exact matches.
 Showing close ones." (`BaletteStrings.ApproximateResults`), and `BaletteMatch.IsApproximate` says so to templates. Turn
-it off with `options.TypoTolerance = false` or `TypoTolerance="false"`.
+it off with `options.TypoTolerance = false` or `TypoTolerance="false"`. A field is read a machine word at a time, so a
+typo is found in a long description too; a term longer than 64 characters gets no second chance.
 
 ### Field weights
 
@@ -1318,11 +1321,13 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
 - **Visibility is not authorization.** `VisibleWhen` and `Disabled` shape the UI; the server must still check every
   action a handler asks it to perform.
 - Stored history is validated when it is read: entries a hand-edited or corrupt `localStorage` holds are dropped.
-- **Search is bounded.** A query is at most `BaletteQuery.MaxLength` (256) characters, and no field comparison fills
-  more than `BaletteFuzzyMatcher.MaxCells` cells - a longer one is aligned greedily, and gets no typo-tolerant second
-  chance - so a pasted wall of text or a huge field cannot make a keystroke allocate gigabytes (on Blazor Server, on
-  the server). Search work still grows with the length of the fields you give it: keep descriptions to what a palette
-  row needs, and search large documents through an async source backed by a real index.
+- **Search is bounded.** A query is searched up to `BaletteQuery.MaxLength` (256) characters; a field up to
+  `BaletteFuzzyMatcher.MaxOptimalLength` (4,096) characters is aligned in at most (256 + 1) x (4,096 + 1) steps, a
+  longer one greedily in one pass, and the typo-tolerant second chance reads a field a machine word at a time - so
+  neither a pasted wall of text nor a huge field makes a keystroke allocate more than the matcher's per-thread buffers,
+  a couple of hundred kilobytes at most (on Blazor Server, on the server), and nothing they hold is shared outside it.
+  Search work still grows with the length of the fields you give it: keep descriptions to what a palette row needs,
+  and search large documents through an async source backed by a real index.
 
 ## Options
 
@@ -1364,10 +1369,10 @@ A palette runs its search on every keystroke, so the hot path is written for it:
   to change it (or call `Refresh()` after changing one in place). Global shortcuts are re-evaluated when the snapshot
   changes, when the palette opens or closes, after a command ran and on `Refresh()` - not while typing.
 - The query is parsed into terms once per keystroke, not once per command.
-- The matcher allocates nothing per field: it reuses per-thread buffers, rejects non-subsequences before the
-  dynamic programming starts, and avoids LINQ. A field too long for those buffers borrows from `ArrayPool<T>.Shared`
-  and gives back, so long descriptions leave no large-object garbage behind; one past `BaletteFuzzyMatcher.MaxCells`
-  is aligned greedily in linear time.
+- The matcher allocates nothing per field but the highlighted positions: it reuses per-thread buffers, keeps one row
+  of scores and a bit per cell for the backtrace, rejects non-subsequences before the dynamic programming starts, and
+  avoids LINQ. A field past `BaletteFuzzyMatcher.MaxOptimalLength` needs no buffers at all: it is aligned greedily in
+  one pass that stops where the term ends.
 - Ranking only sorts what it keeps: with `MaxResults` it holds the best rows in a heap and sorts those.
 - Results from async sources reuse the registry's matches for the same query instead of matching again.
 - On WebAssembly a search that took longer than a frame lets the keystroke paint first and folds fast typing into

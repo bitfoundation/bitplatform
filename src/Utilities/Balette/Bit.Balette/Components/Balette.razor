@@ -120,8 +120,7 @@ else
                         </span>
                         @* @bind rather than value + @oninput: only a binding tells the renderer what the field holds when each key's
                            event arrives, so on Blazor Server a render answering an earlier key never writes its older value over
-                           the keys typed since ("th" turned back into "t", then "teme"). A query stops at BaletteQuery.MaxLength,
-                           past which it would match nothing; a prompt's answer is not a query and has no such limit. *@
+                           the keys typed since ("th" turned back into "t", then "teme"). *@
                         <input @ref="_inputEl"
                                class="bit-balette-input"
                                data-balette="input"
@@ -141,7 +140,6 @@ else
                                aria-invalid="@(_promptError is not null ? "true" : null)"
                                aria-describedby="@(_promptError is not null ? $"{_id}-prompt-error" : null)"
                                placeholder="@EffectivePlaceholder"
-                               maxlength="@(frame.Prompt is null ? (int?)BaletteQuery.MaxLength : null)"
                                @bind="_query"
                                @bind:event="oninput"
                                @bind:after="OnInputAsync" />

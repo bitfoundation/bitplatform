@@ -285,6 +285,33 @@ public class McpSearchLabTests
     }
 
     [TestMethod]
+    public async Task A_query_is_too_long_where_the_palettes_is_after_a_modes_prefix()
+    {
+        // In the '>' mode the palette parses what follows the prefix, so the prefix does not count toward the limit.
+        var atLimit = await InspectAsync(">" + new string('s', BaletteQuery.MaxLength));
+
+        Assert.IsGreaterThan(0, atLimit.Searched);
+
+        var refused = await InspectAsync(">" + new string('s', BaletteQuery.MaxLength + 1));
+
+        Assert.AreEqual(0, refused.Searched);
+        Assert.IsTrue(refused.Notes[0].Contains("mode's prefix", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task A_query_argument_past_what_the_lab_reads_is_refused_before_it_is_parsed()
+    {
+        var atLimit = await InspectAsync(new string(' ', BaletteSearchLab.MaxQueryLength - 1) + "s", """["Settings"]""");
+
+        Assert.AreEqual(1, atLimit.Matched);
+
+        var refused = await InspectAsync(new string(' ', BaletteSearchLab.MaxQueryLength) + "s", """["Settings"]""");
+
+        Assert.AreEqual(0, refused.Searched);
+        Assert.IsTrue(refused.Notes[0].Contains("the lab reads at most", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public async Task Commands_past_the_limit_are_explained_rather_than_searched()
     {
         var atLimit = await InspectAsync("s", new string('s', BaletteSearchLab.MaxCommandsLength));

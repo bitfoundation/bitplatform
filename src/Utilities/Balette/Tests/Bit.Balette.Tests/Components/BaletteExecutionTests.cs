@@ -232,17 +232,35 @@ public class BaletteExecutionTests : BunitContext
     }
 
     [TestMethod]
-    public async Task A_query_stops_at_the_longest_one_searched_and_a_prompts_answer_does_not()
+    public async Task A_query_too_long_to_match_still_reaches_sources_and_handlers_whole()
     {
-        _service.Register(BaletteCmd.New("Write a note…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
-            "Note", _ => Task.FromResult(BaletteCommandResult.Close)))));
-        var cut = await OpenAsync();
+        var question = string.Join(' ', Enumerable.Repeat("why does the arm64 build fail on the release branch", 6));
+        string? asked = null;
+        string? feedback = null;
+        _service.RegisterSource(new BaletteDelegateSource("Answers", (q, ct) =>
+        {
+            asked = q;
+            return Task.FromResult<IReadOnlyList<BaletteCommand>>([BaletteCmd.New("Fixing arm64 builds").Id("answer").Build()]);
+        }));
+        _service.Register(BaletteCmd.New("Feedback: couldn't find a command?").Id("feedback").AlwaysShow()
+            .Handler(ctx => { feedback = ctx.Query; return Task.FromResult(BaletteCommandResult.Close); }));
+        var cut = await OpenAsync(question);
 
-        Assert.AreEqual($"{BaletteQuery.MaxLength}", cut.Find("[data-balette=input]").GetAttribute("maxlength"));
+        // Nothing caps the input: the query matches no command, but the source searches it and the handler gets it whole.
+        Assert.IsGreaterThan(BaletteQuery.MaxLength, question.Length);
+        Assert.IsNull(cut.Find("[data-balette=input]").GetAttribute("maxlength"));
+        cut.WaitForAssertion(() => CollectionAssert.AreEquivalent(new[] { "feedback", "answer" }, ItemIds(cut)));
+        Assert.AreEqual(question, asked);
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Home", false, false, false, false));
+        for (var i = 0; i < ItemIds(cut).IndexOf("feedback"); i++)
+        {
+            await Press(cut, "ArrowDown");
+        }
 
         await Press(cut, "Enter");
 
-        Assert.IsNull(cut.Find("[data-balette=input]").GetAttribute("maxlength"));
+        Assert.AreEqual(question, feedback);
     }
 
     [TestMethod]
