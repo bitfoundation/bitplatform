@@ -33,6 +33,8 @@ internal static class BcrdtUpdateCodec
     private const byte ParentIsRootName = 1;
     private const byte ParentIsItemId = 0;
 
+    internal const long MaxClockGap = 4L * int.MaxValue;
+
     /// <summary>Writes the block groups a peer is missing, given what it already has.</summary>
     public static void WriteClientBlocks(ref BcrdtBufferWriter writer, BcrdtStructStore store, BcrdtStateVector remoteState)
     {
@@ -149,6 +151,23 @@ internal static class BcrdtUpdateCodec
             foreach (BcrdtAbstractStruct block in group.Blocks)
             {
                 if (block is BcrdtItem { Parent: string rootName } item) item.Parent = doc.GetOrCreateUntypedRoot(rootName);
+            }
+        }
+    }
+
+    public static void RefuseFarClocks(Dictionary<ulong, BcrdtClientBlocks> groups, BcrdtStructStore store)
+    {
+        foreach ((ulong client, BcrdtClientBlocks group) in groups)
+        {
+            long reach = store.GetState(client);
+            foreach (BcrdtAbstractStruct block in group.Blocks)
+            {
+                if (block is BcrdtSkip) continue;
+                if (block.Id.Clock - reach > MaxClockGap)
+                {
+                    throw new BcrdtFormatException($"Block at {block.Id} is {block.Id.Clock - reach} clocks past the content before it.");
+                }
+                reach = Math.Max(reach, block.Id.Clock + block.Length);
             }
         }
     }

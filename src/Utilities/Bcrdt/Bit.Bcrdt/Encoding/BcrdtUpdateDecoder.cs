@@ -37,6 +37,7 @@ public static class BcrdtUpdateDecoder
         var reader = new BcrdtBufferReader(update);
         Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
         BcrdtDeleteSet deleteSet = BcrdtDeleteSet.Read(ref reader);
+        BcrdtUpdateCodec.RefuseFarClocks(groups, doc.Store);
 
         Exception? integrationFailure = null;
 
@@ -131,7 +132,7 @@ public static class BcrdtUpdateDecoder
                     pendingMissing.Set(client, clock);
                 }
             }
-            store.PendingUpdate = BcrdtUpdateOperations.Merge(store.PendingUpdate!, deferred.Update);
+            store.PendingUpdate = BcrdtUpdateOperations.Merge([store.PendingUpdate!, deferred.Update], long.MaxValue);
         }
 
         return retry;
@@ -224,7 +225,6 @@ public static class BcrdtUpdateDecoder
                 {
                     deferred[client] = [blocked];
                 }
-                remainingClients.Remove(client);
             }
             stack.Clear();
         }
@@ -236,7 +236,6 @@ public static class BcrdtUpdateDecoder
                 group.Blocks.Clear();
                 group.Position = 0;
             }
-            remainingClients.Remove(client);
             clockCache.Remove(client);
         }
 
