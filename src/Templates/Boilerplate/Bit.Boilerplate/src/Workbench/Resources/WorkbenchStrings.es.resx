@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>El banco de trabajo ejecuta las páginas de tu app con datos de ejemplo para que puedas diseñar cada estado, verlo en cada dispositivo y exportar capturas listas para las tiendas, con los mismos componentes y el mismo tema que tu app.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Abrir el tablero de ventas</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Empieza aquí</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>¿Por qué un banco de trabajo?</value>

@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>De werkbank draait de pagina's van je app op voorbeeldgegevens, zodat je elke toestand ontwerpt, op elk apparaat bekijkt en schermafbeeldingen voor de stores maakt, met dezelfde componenten en hetzelfde thema als je app.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Open het kassadashboard</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Begin hier</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Waarom een werkbank?</value>

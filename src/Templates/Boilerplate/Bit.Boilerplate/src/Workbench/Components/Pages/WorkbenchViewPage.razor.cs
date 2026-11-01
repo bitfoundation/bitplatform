@@ -709,10 +709,15 @@ public partial class WorkbenchViewPage
         WorkbenchComponentSources.Updated -= OnCodeUpdated;
         reference?.Dispose();
 
-        // A guide left running would keep pointing at a shell that is gone.
+        // A guide left running would keep pointing at a shell that is gone; the tour goes on when this is its way to the Flows page.
+        var isTourOnItsWay = bonboardingService.FindSession(TourId) is not null && IsOnFlowsPage;
+
         try
         {
-            await bonboardingService.StopAllAsync();
+            if (isTourOnItsWay is false)
+            {
+                await bonboardingService.StopAllAsync();
+            }
         }
         catch (JSDisconnectedException)
         {

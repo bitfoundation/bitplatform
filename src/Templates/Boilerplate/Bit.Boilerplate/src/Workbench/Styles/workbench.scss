@@ -103,4 +103,33 @@ html:has(> .wb-body),
     --bit-bonboarding-accent-text: var(--bit-clr-pri-text);
     --bit-bonboarding-accent-hover: var(--bit-clr-pri-hover);
     --bit-bonboarding-accent-active: var(--bit-clr-pri-active);
+    --bit-bonboarding-accent-soft: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);
+    --bit-bonboarding-spotlight-glow: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
+    --bit-bonboarding-radius: var(--bit-shp-brd-radius);
+    --bit-bonboarding-radius-sm: var(--bit-shp-brd-radius);
+}
+
+// A spotlight is one rectangle, so in the tour's Data step all of it but the phone and the Data section gets the screen's dim.
+body:has(.tour-states) {
+    .canvas,
+    #wb-inspector {
+        box-shadow: inset 0 0 0 100vmax rgba(0, 0, 0, 0.6);
+    }
+
+    .pane-header,
+    .breakpoints,
+    .column-tabs,
+    #wb-column-panel section:not([data-bonboarding-anchor="data-states"]) {
+        opacity: 0.15;
+        pointer-events: none;
+    }
+
+    [data-bonboarding-anchor="data-states"] {
+        background-color: var(--bit-clr-bg-pri);
+    }
+
+    .bit-bonboarding-root {
+        --bit-bonboarding-spotlight-ring: transparent;
+        --bit-bonboarding-spotlight-glow: transparent;
+    }
 }

@@ -19,21 +19,13 @@
             </Bmotion>
             <Bmotion Initial="Bm.To(opacity: 0, y: 16)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Enter(3)">
                 <div class="hero-actions">
+                    @* Opens the first page with the tour of the Workbench over it; a phone gets just the page. *@
                     @if (HeroPage is { } heroPage)
                     {
-                        <BitButton Size="BitSize.Large" IconName="@heroPage.IconName" Href="@WorkbenchUrls.Workbench(heroPage.Key)">
-                            @Localizer[heroPage.Key == "pos-dashboard" ? nameof(WorkbenchStrings.HomeOpenFirstPage) : nameof(WorkbenchStrings.HomeCtaOpen)]
+                        <BitButton Size="BitSize.Large" IconName="@BitIconName.Rocket" Href="@WorkbenchUrls.Tour(heroPage.Key)">
+                            @Localizer[nameof(WorkbenchStrings.HomeStartHere)]
                         </BitButton>
                     }
-                    @if (HeroPage is { } tourPage)
-                    {
-                        <BitButton Size="BitSize.Large" Variant="BitVariant.Outline" IconName="@BitIconName.Help" Class="tour-button" Href="@WorkbenchUrls.Tour(tourPage.Key)">
-                            @Localizer[nameof(WorkbenchStrings.TourStart)]
-                        </BitButton>
-                    }
-                    <BitButton Size="BitSize.Large" Variant="BitVariant.Outline" Href="#why">
-                        @Localizer[nameof(WorkbenchStrings.HomeWhyButton)]
-                    </BitButton>
                 </div>
             </Bmotion>
             <Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)" Transition="Enter(4)">

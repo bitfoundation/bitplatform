@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>L’établi exécute les pages de votre application sur des données d’exemple, pour que vous puissiez concevoir chaque état, le voir sur chaque appareil et exporter des captures prêtes pour les boutiques, avec les mêmes composants et le même thème que votre application.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Ouvrir le tableau de bord des ventes</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Commencer ici</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Pourquoi un établi ?</value>

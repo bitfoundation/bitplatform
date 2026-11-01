@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>Die Werkbank führt die Seiten Ihrer App mit Beispieldaten aus, damit Sie jeden Zustand gestalten, auf jedem Gerät ansehen und Store-fertige Screenshots exportieren können, mit denselben Komponenten und demselben Design, mit denen Ihre App ausgeliefert wird.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Kassen-Dashboard öffnen</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Hier starten</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Warum eine Werkbank?</value>

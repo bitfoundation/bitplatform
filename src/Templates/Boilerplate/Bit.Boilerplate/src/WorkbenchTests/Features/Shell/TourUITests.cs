@@ -22,7 +22,7 @@ public class TourUITests : WorkbenchPageTest
     public async Task TheTour_Should_ShowEachFeatureAndPutTheViewsBack()
     {
         await Page.GotoAsync(Server.Address.ToString());
-        await Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+        await Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }).ClickAsync();
 
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
 
@@ -31,10 +31,12 @@ public class TourUITests : WorkbenchPageTest
         await Advance(WorkbenchStrings.HomeWhyDevicesTitle);
         await Expect(Views).ToHaveCountAsync(2);
         await Expect(Page.Locator(".canvas").GetByText("Galaxy Tab S9").First).ToBeVisibleAsync();
+        await Expect(Page.Locator(".canvas").GetByText("1024×640", new() { Exact = false })).ToBeVisibleAsync();
 
         await Advance(WorkbenchStrings.HomeWhyStatesTitle);
         await Expect(Views).ToHaveCountAsync(1);
         await Expect(Page).ToHaveURLAsync(new Regex("data=loading"));
+        await Expect(Page.Locator("[data-bonboarding-anchor='data-states']")).ToBeInViewportAsync();
 
         await Advance(WorkbenchStrings.HomeWhyStoresTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("backdrop=ocean"));
@@ -46,9 +48,11 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
 
         await Advance(WorkbenchStrings.Flows);
-        await Expect(Page.Locator("#wb-tab-flows")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Page).ToHaveURLAsync(new Regex("/flows$"));
 
         await Advance(WorkbenchStrings.HomeWhySafeTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
+
         await Advance(WorkbenchStrings.HomeWhyCustomizeTitle);
 
         await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourDone, Exact = true }).ClickAsync();
@@ -74,5 +78,56 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Views).ToHaveCountAsync(1);
         await Expect(Page).ToHaveURLAsync(new Regex("theme=dark.*device=desktop-1536"));
+    }
+
+    [TestMethod]
+    public async Task LeavingTheTourOnTheFlowsPage_Should_GoBackToTheViewsItStartedFrom()
+    {
+        await OpenWorkbench("shifts", "?device=desktop-1536&theme=dark");
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+
+        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows })
+        {
+            await Advance(title);
+        }
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/flows$"));
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }).ClickAsync();
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await Advance(WorkbenchStrings.Flows);
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts.*theme=dark.*device=desktop-1536"));
+    }
+
+    [TestMethod]
+    public async Task StartHereOnAPhone_Should_OpenThePageWithoutTheTour()
+    {
+        await Page.SetViewportSizeAsync(390, 800);
+        await Page.GotoAsync(Server.Address.ToString());
+
+        await Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }).ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
+        await Expect(Page.Locator(".inline-surface")).ToBeVisibleAsync();
+        await Expect(Popover).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task TheGuides_Should_FollowTheAppsButtonsAndColors()
+    {
+        await OpenWorkbench("shifts");
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+        await Expect(Next).ToHaveClassAsync(new Regex("bit-btn"));
+
+        await Page.EvaluateAsync("document.documentElement.style.setProperty('--bit-clr-pri', 'rgb(200, 0, 120)')");
+
+        await Expect(Next).ToHaveCSSAsync("background-color", "rgb(200, 0, 120)");
     }
 }

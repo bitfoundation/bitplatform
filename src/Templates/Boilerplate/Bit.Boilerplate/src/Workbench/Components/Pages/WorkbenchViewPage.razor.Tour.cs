@@ -8,8 +8,10 @@ namespace Boilerplate.Workbench.Components.Pages;
 /// </summary>
 public partial class WorkbenchViewPage
 {
+    private const string TourId = "workbench-tour";
     private const string TourTabletDevice = "galaxy-tab-s9";
     private const string TourStoreDevice = "store-apple-iphone-69";
+    private const string TourDataStatesAnchor = "data-states";
 
     private Task StartTour() => bonboardingService.StartAsync(CreateTour());
 
@@ -22,7 +24,7 @@ public partial class WorkbenchViewPage
 
         return new()
         {
-            Id = "workbench-tour",
+            Id = TourId,
             Persist = false,
             MissingTarget = BonboardingMissingTargetBehavior.Center,
             OnStarted = _ =>
@@ -43,6 +45,11 @@ public partial class WorkbenchViewPage
                 SetMode(modeBefore);
                 store.ShowColumn(columnBefore);
                 store.ShowViews(viewsBefore);
+
+                if (IsOnFlowsPage)
+                {
+                    BackToTheViews();
+                }
 
                 return ValueTask.CompletedTask;
             },
@@ -69,19 +76,28 @@ public partial class WorkbenchViewPage
                     Title = nameof(WorkbenchStrings.HomeWhyDevicesTitle),
                     Description = nameof(WorkbenchStrings.HomeWhyDevicesText),
                     Placement = BonboardingPlacement.InlineStart,
-                    OnBeforeShow = _ => ShowInTour(() => store.ShowViews([phone, phone with { Device = TourTabletDevice, Theme = WorkbenchThemeMode.Dark }])),
+                    OnBeforeShow = _ => ShowInTour(() => store.ShowViews([phone, phone with { Device = TourTabletDevice, Rotated = true, Theme = WorkbenchThemeMode.Dark }])),
                     OnBeforeLeave = _ => ShowInTour(() => store.RemovePane(store.Panes[^1].Id))
                 },
                 new BonboardingStepDefinition
                 {
                     Id = "states",
                     Target = BonboardingStepTarget.Css(".canvas"),
-                    AdditionalTargets = [BonboardingStepTarget.Css("#wb-inspector")],
+                    AdditionalTargets = [BonboardingStepTarget.Anchor(TourDataStatesAnchor)],
                     Title = nameof(WorkbenchStrings.HomeWhyStatesTitle),
                     Description = nameof(WorkbenchStrings.HomeWhyStatesText),
                     Placement = BonboardingPlacement.InlineStart,
                     Interaction = BonboardingInteractionMode.TargetOnly,
-                    OnBeforeShow = _ => ShowInTour(() => store.ChangeScenario(phone with { Data = WorkbenchDataState.Loading })),
+                    // workbench.scss dims all of the spotlight's rectangle but the phone and the Data section, by this much.
+                    PopoverClass = "tour-states",
+                    OverlayOpacity = 0.6,
+                    SpotlightPadding = 0,
+                    SpotlightRadius = 0,
+                    OnBeforeShow = async _ =>
+                    {
+                        store.ChangeScenario(phone with { Data = WorkbenchDataState.Loading });
+                        await JSRuntime.InvokeVoidAsync("workbench.scrollIntoSight", $"[data-bonboarding-anchor='{TourDataStatesAnchor}']");
+                    },
                     OnBeforeLeave = _ => ShowInTour(() => store.ChangeScenario(phone))
                 },
                 new BonboardingStepDefinition
@@ -116,17 +132,20 @@ public partial class WorkbenchViewPage
                     Description = nameof(WorkbenchStrings.HomeWhyLiveText),
                     Placement = BonboardingPlacement.InlineStart,
                     OnBeforeShow = _ => ShowInTour(() => SetMode(WorkbenchModes.Comment)),
-                    OnBeforeLeave = _ => ShowInTour(() => SetMode(WorkbenchModes.Browse))
+                    OnBeforeLeave = _ => ShowInTour(() =>
+                    {
+                        SetMode(WorkbenchModes.Browse);
+                        store.ShowColumn(WorkbenchModes.ViewColumn);
+                    })
                 },
                 new BonboardingStepDefinition
                 {
                     Id = "flows",
-                    Target = BonboardingStepTarget.Css("#wb-inspector"),
+                    Route = WorkbenchUrls.Flows,
+                    Target = BonboardingStepTarget.Css(".flow-list"),
                     Title = nameof(WorkbenchStrings.Flows),
-                    Description = nameof(WorkbenchStrings.FlowsHint),
-                    Placement = BonboardingPlacement.InlineStart,
-                    OnBeforeShow = _ => ShowInTour(() => store.ShowColumn(WorkbenchModes.FlowsColumn)),
-                    OnBeforeLeave = _ => ShowInTour(() => store.ShowColumn(WorkbenchModes.ViewColumn))
+                    Description = nameof(WorkbenchStrings.AllFlowsHint),
+                    OnBeforeLeave = _ => ShowInTour(BackToTheViews)
                 },
                 new BonboardingStepDefinition
                 {
@@ -143,6 +162,10 @@ public partial class WorkbenchViewPage
             }
         };
     }
+
+    private bool IsOnFlowsPage => BonboardingRouteMatcher.Matches(WorkbenchUrls.Flows, NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+
+    private void BackToTheViews() => NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(pageInfo!.Key)}{store.QueryString}");
 
     private static ValueTask ShowInTour(Action show)
     {

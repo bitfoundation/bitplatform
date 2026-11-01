@@ -596,6 +596,11 @@ host.workbench = {
         }
     },
 
+    /** Scrolls an element of the shell into sight, for a guide that points at it along with something else. */
+    scrollIntoSight(selector: string) {
+        document.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
+    },
+
     /** Tells the shell the view moved to another Workbench page. */
     reportPage(pageKey: string) {
         if (window.parent !== window) {

@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>工作台用示例数据运行您应用的页面，让您可以设计每种状态、在每种设备上查看，并导出可直接提交应用商店的截图，所用组件和主题与您的应用完全相同。</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>打开 POS 仪表板</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>从这里开始</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>为什么需要工作台？</value>

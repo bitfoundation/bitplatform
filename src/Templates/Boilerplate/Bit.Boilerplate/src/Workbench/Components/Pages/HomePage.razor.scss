@@ -68,13 +68,6 @@
     flex-wrap: wrap;
 }
 
-// The tour points at the shell's columns, which a phone doesn't have.
-::deep .tour-button {
-    @include lt-sm {
-        display: none;
-    }
-}
-
 .facts {
     margin: 0;
     padding: 0;

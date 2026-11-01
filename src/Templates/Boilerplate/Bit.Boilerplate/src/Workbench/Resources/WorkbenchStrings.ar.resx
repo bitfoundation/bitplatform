@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>تشغّل منضدة العمل صفحات تطبيقك ببيانات نموذجية، لتتمكن من تصميم كل حالة ومعاينتها على كل جهاز وتصدير لقطات شاشة جاهزة للمتاجر، بنفس المكونات والمظهر اللذين يأتي بهما تطبيقك.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>فتح لوحة تحكم نقاط البيع</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>ابدأ من هنا</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>لماذا منضدة عمل؟</value>

@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>The workbench runs your app's pages on sample data, so you can design every state, see it on every device and export store-ready screenshots, with the same components and theme your app ships with.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Open the POS dashboard</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Start here</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Why a workbench?</value>

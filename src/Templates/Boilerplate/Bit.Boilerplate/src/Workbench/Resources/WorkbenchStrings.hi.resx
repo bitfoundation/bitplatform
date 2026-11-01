@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>वर्कबेंच आपके ऐप के पेजों को सैंपल डेटा पर चलाती है, ताकि आप हर स्थिति डिज़ाइन कर सकें, उसे हर डिवाइस पर देख सकें और स्टोर के लिए तैयार स्क्रीनशॉट एक्सपोर्ट कर सकें, उन्हीं कंपोनेंट और थीम के साथ जिनके साथ आपका ऐप आता है।</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>POS डैशबोर्ड खोलें</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>यहाँ से शुरू करें</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>वर्कबेंच क्यों?</value>

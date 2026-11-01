@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>Arbetsbänken kör appens sidor med exempeldata, så att du kan designa varje läge, se det på alla enheter och exportera skärmbilder redo för appbutikerna, med samma komponenter och tema som din app levereras med.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Öppna kassaöversikten</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Börja här</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Varför en arbetsbänk?</value>

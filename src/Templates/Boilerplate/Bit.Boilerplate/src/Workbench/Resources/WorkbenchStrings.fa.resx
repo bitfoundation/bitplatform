@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>میز کار صفحه‌های برنامه شما را با داده نمونه اجرا می‌کند تا هر حالتی را طراحی کنید، روی هر دستگاهی ببینید و اسکرین‌شات آماده فروشگاه بگیرید، با همان کامپوننت‌ها و پوسته‌ای که برنامه‌تان دارد.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>باز کردن داشبورد فروشگاه</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>از اینجا شروع کنید</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>چرا میز کار؟</value>
