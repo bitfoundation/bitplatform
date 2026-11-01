@@ -357,6 +357,33 @@ public class McpInspectStoreTests
     }
 
     [TestMethod]
+    public async Task A_constant_doubled_across_the_sections_of_a_switch_is_refused_too()
+    {
+        // A local of one section is in scope in every other section of the same switch, which is not a block around it.
+        var sections = string.Concat(Enumerable.Range(1, 24).Select(i => $"            case {i}: const string C{i} = C{i - 1} + C{i - 1}; return C{i};\n"));
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class LabelStore
+            {
+                [BlexState] private int _count;
+
+                private static string Label(int level)
+                {
+                    switch (level)
+                    {
+                        case 0: const string C0 = "ab"; return C0;
+            {{sections}}
+                        default: return "";
+                    }
+                }
+            }
+            """);
+
+        AssertRefused(result, "a constant in this source is longer than");
+    }
+
+    [TestMethod]
     public async Task Constants_that_name_one_another_in_a_cycle_are_refused()
     {
         var result = await InspectAsync("""
@@ -482,6 +509,28 @@ public class McpInspectStoreTests
         Assert.IsFalse(result.IsValid);
         Assert.HasCount(BlexStoreInspector.MaxReportedDiagnostics, result.Diagnostics);
         Assert.Contains(note => note.StartsWith($"Only the first {BlexStoreInspector.MaxReportedDiagnostics} of {count} diagnostics", StringComparison.Ordinal), result.Notes);
+    }
+
+    [TestMethod]
+    public async Task An_error_past_the_cap_still_makes_the_store_invalid()
+    {
+        // The generator's warnings are listed first, so they fill the cap and the compiler error after them is only counted.
+        var effects = string.Concat(Enumerable.Range(0, BlexStoreInspector.MaxReportedDiagnostics + 10).Select(i =>
+            $"    [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)] private async Task OnSearch{i}(string text) => await Task.Delay(1);\n"));
+
+        var result = await InspectAsync($$"""
+            [BlexStore]
+            public partial class SearchStore
+            {
+                [BlexState] private int _count;
+            {{effects}}
+                [BlexAction] private void OnIncrement() => Count += Missing;
+            }
+            """);
+
+        Assert.HasCount(BlexStoreInspector.MaxReportedDiagnostics, result.Diagnostics);
+        Assert.IsTrue(result.Diagnostics.All(d => d.Id == "BLEX009" && d.Severity == "Warning"), "The listed diagnostics are not only the warnings.");
+        Assert.IsFalse(result.IsValid, "An error left out of the listing is not held against the store.");
     }
 
     [TestMethod]

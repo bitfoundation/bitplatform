@@ -330,6 +330,9 @@ public static class BlexStoreInspector
         finally
         {
             Stop(worker);
+
+            // Gone before InspectAsync frees its slot, so no more workers run than the gate lets in.
+            await WaitForExitAsync(worker);
         }
 
         // It ends with the worker; one that could not be killed is not waited on.
@@ -348,7 +351,7 @@ public static class BlexStoreInspector
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var exitCode = worker.WaitForExit(WorkerMargin) ? worker.ExitCode : (int?)null;
+        var exitCode = worker.HasExited ? worker.ExitCode : (int?)null;
 
         logger.LogWarning("The store inspection worker stopped without an answer (exit code {ExitCode}): {Errors}", exitCode, errorOutput);
 
@@ -473,6 +476,21 @@ public static class BlexStoreInspector
         catch (InvalidOperationException)
         {
             // It exited in between.
+        }
+    }
+
+    /// <summary>Waits for a stopped worker to exit, no longer than <see cref="WorkerMargin"/>.</summary>
+    private static async Task WaitForExitAsync(Process worker)
+    {
+        using var waiting = new CancellationTokenSource(WorkerMargin);
+
+        try
+        {
+            await worker.WaitForExitAsync(waiting.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // One that could not be killed does not hold a slot for good.
         }
     }
 
@@ -632,7 +650,8 @@ public static class BlexStoreInspector
     /// a constant declared here by that constant's own measure - so <c>const string B = A + A;</c> measures twice
     /// <c>A</c>, as folding would make it. A name stands for every constant it could mean: a local of a block around
     /// it, a field of a type around it or of one of their base types or of a <c>using static</c> type - or, qualified,
-    /// a field of the type it is qualified with, or of its base types. Types are told apart by name alone, so a
+    /// a field of the type it is qualified with, or of its base types. An unqualified name none of these declare stands
+    /// for every constant so spelled. Types are told apart by name alone, so a
     /// name can stand for more constants than it means, never for fewer: the measure can overcount, not undercount.
     /// </para>
     /// <para>
@@ -875,6 +894,9 @@ public static class BlexStoreInspector
                     .Distinct()];
 
                 if (candidates.Length == 0) candidates = [.. staticallyImported.SelectMany(type => Declared(type, spelling)).Distinct()];
+
+                // A scope these miss - a local of another section of the same switch, say - is overcounted, not dropped.
+                if (candidates.Length == 0) candidates = [.. spelled[spelling]];
             }
 
             return resolved[name] = candidates;
