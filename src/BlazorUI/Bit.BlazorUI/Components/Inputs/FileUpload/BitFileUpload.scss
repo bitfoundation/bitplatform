@@ -755,10 +755,11 @@ $upl-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
 }
 
 // A value the form's validation rejects turns the role to the error one, the way an explicit Color would, and ahead
-// of one: the state the input is in outranks the look it was given, as the disabled state does.
+// of one: the state the input is in outranks the look it was given, as the disabled state does. The text it reads on the
+// page keeps the error role's fg: the public variable is a fill and a ring color, which as text could fall under 4.5:1.
 .bit-upl.bit-inv:not(.bit-dis) {
     --bit-upl-clr: var(--bit-FileUpload-invalid-color, #{$clr-err});
-    --bit-upl-clr-fg: var(--bit-FileUpload-invalid-color, #{$clr-err-fg});
+    --bit-upl-clr-fg: #{$clr-err-fg};
     --bit-upl-clr-txt: #{$clr-err-text};
     --bit-upl-clr-hover: #{$clr-err-hover};
     --bit-upl-clr-active: #{$clr-err-active};

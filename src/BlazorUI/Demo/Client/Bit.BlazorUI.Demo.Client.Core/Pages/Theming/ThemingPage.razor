@@ -459,7 +459,7 @@ await BitThemeManager.SetThemePairAsync(BitThemePresets.MaterialLight, BitThemeP
                 </ul>
 
                 <BitText>
-                    Two roles carry a documented exception: <code>sec</code> and <code>wrn</code> are a vivid orange and a warning amber, and no tone of those hues clears 4.5:1 as <i>text on a white page</i> while still reading as itself - the same tension Fluent resolves by shipping separate fill and foreground tokens. They are fully compliant as fills; when you need them as text or as a meaningful icon on a light surface, use their <code>-dark</code> tones, which clear the 3:1 non-text floor.
+                    Two roles carry a documented exception: <code>sec</code> and <code>wrn</code> are a vivid orange and a warning amber, and no tone of those hues clears 4.5:1 as <i>text on a white page</i> while still reading as itself - the same tension Fluent resolves by shipping separate fill and foreground tokens. They are fully compliant as fills; when you need them as text, use their <code>-fg</code> tones, which clear <b>4.5:1</b> over <code>bg-pri</code> and <code>bg-sec</code>. Their <code>-dark</code> tones are for a meaningful icon or a fill on a light surface, where they clear the 3:1 non-text floor - never for text.
                 </BitText>
 
                 <BitText>
