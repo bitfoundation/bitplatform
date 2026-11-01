@@ -158,8 +158,11 @@ public record BdndDropTargetReportDto
     /// <summary>The target's id in the scenario.</summary>
     public required string Id { get; init; }
 
-    /// <summary>The id of the target this one is nested in, or null for a root target.</summary>
-    public string? Parent { get; init; }
+    /// <summary>
+    /// The position in <c>Targets</c> of the target this one is nested in, or null for a root target. A
+    /// position rather than an id: ids may repeat, and a parent's id would be repeated for every child.
+    /// </summary>
+    public int? ParentIndex { get; init; }
 
     /// <summary>How many targets this one is nested in (0 for a root).</summary>
     public required int Depth { get; init; }

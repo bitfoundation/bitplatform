@@ -35,9 +35,27 @@ public static partial class BdndDropLab
     /// <summary>How deep targets may nest; a page nesting them deeper than this is not the page in question.</summary>
     public const int MaxDepth = 32;
 
-    /// <summary>The most items one note lists by id before it says how many more there are.</summary>
-    private const int MaxListed = 8;
+    /// <summary>
+    /// The longest target id or item type this tool reads, in UTF-8 bytes. Both are names a page gives its
+    /// own targets and items, and the report repeats them - an id in the hover path, the drop order and the
+    /// notes, the dragged type in a note for each hovered target - so one long name would make the report
+    /// many times the size of the scenario.
+    /// </summary>
+    public const int MaxNameBytes = 256;
 
+    /// <summary>
+    /// The longest result this tool reads, in UTF-8 bytes. The report repeats a result as the one its
+    /// target published, the one OnEnd received and in the note on an outer result replacing an inner one.
+    /// </summary>
+    public const int MaxResultBytes = 1024;
+
+    /// <summary>The most items one note lists by id, and the most notes of one kind, before it says how many more there are.</summary>
+    internal const int MaxListed = 8;
+
+    /// <summary>
+    /// The longest name compared for a typo. A name past this is not one anyone misspells by a letter or
+    /// two, and the comparison would cost the product of the two lengths.
+    /// </summary>
     private const int MaxNearMissLength = 128;
 
     /// <summary>
@@ -118,9 +136,7 @@ public static partial class BdndDropLab
 
         using (document)
         {
-            var readingNotes = new List<string>();
-
-            var error = ReadScenario(document.RootElement, readingNotes, out var scenario);
+            var error = ReadScenario(document.RootElement, out var scenario);
 
             if (error is not null) return Invalid(inputBytes, error);
 
@@ -135,7 +151,7 @@ public static partial class BdndDropLab
                 return Invalid(inputBytes, "The drag did not settle in time - the components never finished reacting to it. That is a bug in the library or in this tool, not in the scenario.");
             }
 
-            return Report(inputBytes, scenario, outcome, readingNotes);
+            return Report(inputBytes, scenario, outcome);
         }
     }
 
@@ -149,10 +165,15 @@ public static partial class BdndDropLab
 
     // ---- Reading the scenario ---------------------------------------------------------
 
-    private sealed record Scenario(BdndDropHost.Drag Drag, string RawType, List<Target> Roots, List<Target> All, List<Target> HoverChain);
+    /// <param name="DragSettingsIgnored">A native drag that was given canDrag or dropEffect, which only a BdndDraggable reads.</param>
+    /// <param name="Ignored">The properties the scenario gave that this tool does not read, in document order.</param>
+    private sealed record Scenario(BdndDropHost.Drag Drag, string RawType, List<Target> Roots, List<Target> All, List<Target> HoverChain, bool DragSettingsIgnored, List<IgnoredProperty> Ignored);
+
+    /// <summary>A property this tool does not read, and the one it reads that the name is a typo of, if any.</summary>
+    private sealed record IgnoredProperty(string Name, string Owner, string[] Known, string? Close);
 
     /// <summary>Reads the scenario, or says - with the JSON path - what is wrong with it.</summary>
-    private static string? ReadScenario(JsonElement root, List<string> readingNotes, out Scenario? scenario)
+    private static string? ReadScenario(JsonElement root, out Scenario? scenario)
     {
         scenario = null;
 
@@ -161,7 +182,9 @@ public static partial class BdndDropLab
             return "A scenario is a JSON object with a \"draggable\", a \"targets\" array and a \"hover\" - call InspectBdndDrop with no json for a sample.";
         }
 
-        NoteUnknownProperties(root, _rootProperties, "the scenario", readingNotes);
+        var ignored = new List<IgnoredProperty>();
+
+        NoteUnknownProperties(root, _rootProperties, "the scenario", ignored);
 
         if (TryGet(root, "draggable", out var draggable) is false || draggable.ValueKind != JsonValueKind.Object)
         {
@@ -170,14 +193,22 @@ public static partial class BdndDropLab
                 : "The scenario needs a \"draggable\" object with the item's \"type\" - the BdndDraggable's Type, e.g. { \"type\": \"card\" }.";
         }
 
-        NoteUnknownProperties(draggable, _draggableProperties, "draggable", readingNotes);
+        NoteUnknownProperties(draggable, _draggableProperties, "draggable", ignored);
 
-        if (TryGet(draggable, "type", out var typeElement) is false || typeElement.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(typeElement.GetString()))
+        var rawType = TryGet(draggable, "type", out var typeElement) && typeElement.ValueKind == JsonValueKind.String ? typeElement.GetString() : null;
+
+        if (string.IsNullOrWhiteSpace(rawType))
         {
             return "draggable.type is required: it is BdndDraggable.Type ([EditorRequired]), the string every drop target matches against its Accept list.";
         }
 
-        var rawType = typeElement.GetString()!;
+        var typeTooLong = TooLong(rawType, "draggable.type", MaxNameBytes, "item types");
+
+        if (typeTooLong is not null)
+        {
+            return typeTooLong;
+        }
+
         var resolvedType = Resolve(rawType);
         var native = Native(resolvedType);
 
@@ -197,10 +228,7 @@ public static partial class BdndDropLab
             dropEffect = effectElement.GetString()!;
         }
 
-        if (native is not null && (TryGet(draggable, "canDrag", out _) || TryGet(draggable, "dropEffect", out _)))
-        {
-            readingNotes.Add("canDrag and dropEffect were ignored: they configure a BdndDraggable, and a native drag comes from outside the app, where no BdndDraggable is involved.");
-        }
+        var dragSettingsIgnored = native is not null && (TryGet(draggable, "canDrag", out _) || TryGet(draggable, "dropEffect", out _));
 
         var all = new List<Target>();
         var roots = new List<Target>();
@@ -209,7 +237,7 @@ public static partial class BdndDropLab
         {
             if (targets.ValueKind != JsonValueKind.Array) return "\"targets\" must be an array of drop targets, each { \"id\": ..., \"accept\": [...], \"children\": [...] }.";
 
-            var error = ReadTargets(targets, "targets", null, 0, all, roots, readingNotes);
+            var error = ReadTargets(targets, "targets", null, 0, all, roots, ignored);
             if (error is not null) return error;
         }
 
@@ -223,12 +251,12 @@ public static partial class BdndDropLab
 
         scenario = new Scenario(
             new BdndDropHost.Drag(resolvedType, native?.Token, canDrag, dropEffect),
-            rawType, roots, all, chain);
+            rawType, roots, all, chain, dragSettingsIgnored, ignored);
 
         return null;
     }
 
-    private static string? ReadTargets(JsonElement array, string path, Target? parent, int depth, List<Target> all, List<Target> siblings, List<string> readingNotes)
+    private static string? ReadTargets(JsonElement array, string path, Target? parent, int depth, List<Target> all, List<Target> siblings, List<IgnoredProperty> ignored)
     {
         var position = 0;
 
@@ -243,11 +271,20 @@ public static partial class BdndDropLab
 
             if (all.Count >= MaxTargets) return $"The scenario declares more than {MaxTargets} targets; this tool runs up to {MaxTargets} of them.";
 
-            NoteUnknownProperties(element, _targetProperties, at, readingNotes);
+            NoteUnknownProperties(element, _targetProperties, at, ignored);
 
-            if (TryGet(element, "id", out var idElement) is false || idElement.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(idElement.GetString()))
+            var id = TryGet(element, "id", out var idElement) && idElement.ValueKind == JsonValueKind.String ? idElement.GetString() : null;
+
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return $"{at}.id is required: every target needs an id - it is what \"hover\" names and what the report lists.";
+            }
+
+            var idTooLong = TooLong(id, $"{at}.id", MaxNameBytes, "target ids");
+
+            if (idTooLong is not null)
+            {
+                return idTooLong;
             }
 
             var accept = new List<string>();
@@ -275,13 +312,20 @@ public static partial class BdndDropLab
             string? result = null;
             if (TryGet(element, "result", out var resultElement) && resultElement.ValueKind != JsonValueKind.Null)
             {
-                result = resultElement.ValueKind == JsonValueKind.String ? resultElement.GetString() : resultElement.GetRawText();
+                result = resultElement.ValueKind == JsonValueKind.String ? resultElement.GetString()! : resultElement.GetRawText();
+
+                var resultTooLong = TooLong(result, $"{at}.result", MaxResultBytes, "results");
+
+                if (resultTooLong is not null)
+                {
+                    return resultTooLong;
+                }
             }
 
             var target = new Target
             {
                 Index = all.Count,
-                Id = idElement.GetString()!,
+                Id = id,
                 Parent = parent,
                 Depth = depth,
                 // The component combines Accept and AcceptTypes and drops duplicates; so does this.
@@ -297,7 +341,7 @@ public static partial class BdndDropLab
             {
                 if (children.ValueKind != JsonValueKind.Array) return $"{at}.children must be an array of drop targets.";
 
-                var error = ReadTargets(children, $"{at}.children", target, depth + 1, all, target.Children, readingNotes);
+                var error = ReadTargets(children, $"{at}.children", target, depth + 1, all, target.Children, ignored);
                 if (error is not null) return error;
             }
         }
@@ -311,8 +355,7 @@ public static partial class BdndDropLab
 
         if (element.ValueKind == JsonValueKind.String && allowSingle)
         {
-            if (string.IsNullOrEmpty(element.GetString()) is false) types.Add(Resolve(element.GetString()!));
-            return null;
+            return AddType(element.GetString()!, path, types);
         }
 
         if (element.ValueKind != JsonValueKind.Array)
@@ -322,15 +365,46 @@ public static partial class BdndDropLab
                 : $"{path} must be an array of item types, e.g. [\"card\", \"column\"].";
         }
 
+        var position = 0;
+
         foreach (var item in element.EnumerateArray())
         {
             if (item.ValueKind != JsonValueKind.String) return $"{path} holds {item.GetRawText()}, which is not an item type: every entry is a string.";
 
-            // The component skips empty entries, and so does this.
-            if (string.IsNullOrEmpty(item.GetString()) is false) types.Add(Resolve(item.GetString()!));
+            var error = AddType(item.GetString()!, $"{path}[{position++}]", types);
+
+            if (error is not null)
+            {
+                return error;
+            }
         }
 
         return null;
+    }
+
+    private static string? AddType(string type, string path, List<string> types)
+    {
+        var tooLong = TooLong(type, path, MaxNameBytes, "item types");
+
+        // The component skips empty entries, and so does this.
+        if (tooLong is null && type.Length > 0)
+        {
+            types.Add(Resolve(type));
+        }
+
+        return tooLong;
+    }
+
+    /// <summary>
+    /// Refuses a string the report repeats when it is past <paramref name="max"/> UTF-8 bytes - the unit the
+    /// limit on the whole scenario is in, and one the message can state exactly, where a count of
+    /// "characters" would be off for an emoji or an accented letter.
+    /// </summary>
+    private static string? TooLong(string value, string path, int max, string what)
+    {
+        var bytes = Encoding.UTF8.GetByteCount(value);
+
+        return bytes > max ? $"{path} is {bytes} bytes; this tool reads {what} of up to {max} bytes." : null;
     }
 
     /// <summary>The target under the pointer: one id, or a path of ids from an outer target to it.</summary>
@@ -396,17 +470,15 @@ public static partial class BdndDropLab
             : $"\"hover\" names '{id}', which is not the id of any target. The ids are: {List(all.Select(target => target.Id).Distinct(StringComparer.Ordinal).ToArray())}.";
     }
 
-    private static void NoteUnknownProperties(JsonElement element, string[] known, string owner, List<string> readingNotes)
+    private static void NoteUnknownProperties(JsonElement element, string[] known, string owner, List<IgnoredProperty> ignored)
     {
         foreach (var property in element.EnumerateObject())
         {
-            if (known.Contains(property.Name, StringComparer.OrdinalIgnoreCase)) continue;
+            var name = property.Name;
 
-            var close = known.FirstOrDefault(name => IsNearMiss(name, property.Name));
+            if (known.Contains(name, StringComparer.OrdinalIgnoreCase)) continue;
 
-            readingNotes.Add(close is null
-                ? $"'{property.Name}' is not a property of {owner} and was ignored; it takes {string.Join(", ", known)}."
-                : $"'{property.Name}' is not a property of {owner} and was ignored - did you mean '{close}'?");
+            ignored.Add(new IgnoredProperty(name, owner, known, known.FirstOrDefault(other => IsNearMiss(other, name))));
         }
     }
 
@@ -447,7 +519,7 @@ public static partial class BdndDropLab
 
     // ---- The report -----------------------------------------------------------------
 
-    private static BdndDropReportDto Report(int inputBytes, Scenario scenario, BdndDropHost.Outcome outcome, List<string> readingNotes)
+    private static BdndDropReportDto Report(int inputBytes, Scenario scenario, BdndDropHost.Outcome outcome)
     {
         var hovered = scenario.HoverChain.ToHashSet();
         var drops = outcome.Drops.Select((drop, index) => (Drop: drop, Order: index + 1)).ToDictionary(entry => entry.Drop.Target.Index);
@@ -460,7 +532,7 @@ public static partial class BdndDropLab
             return new BdndDropTargetReportDto
             {
                 Id = target.Id,
-                Parent = target.Parent?.Id,
+                ParentIndex = target.Parent?.Index,
                 Depth = target.Depth,
                 Accept = target.Accept,
                 Hovered = hovered.Contains(target),
@@ -478,7 +550,12 @@ public static partial class BdndDropLab
 
         Explain(scenario, outcome, targets, notes);
 
-        notes.AddRange(readingNotes);
+        // A typo of a property this tool reads is what explains an outcome, so typos come first, wherever they are in the document.
+        AddEach(notes, scenario.Ignored.OrderBy(property => property.Close is null),
+            property => property.Close is null
+                ? $"'{property.Name}' is not a property of {property.Owner} and was ignored; it takes {string.Join(", ", property.Known)}."
+                : $"'{property.Name}' is not a property of {property.Owner} and was ignored - did you mean '{property.Close}'?",
+            "ignored property", "ignored properties", "fix the ones above and run the scenario again to see the rest");
 
         var native = scenario.Drag.NativeToken is not null;
 
@@ -507,10 +584,9 @@ public static partial class BdndDropLab
         var shown = Quote(scenario.RawType);
         var report = scenario.All.Zip(reports).ToDictionary(pair => pair.First, pair => pair.Second);
 
-        foreach (var exception in outcome.Exceptions.Take(MaxListed))
-        {
-            notes.Add($"Bit.Bdnd threw while running this drag - {exception.GetType().Name}: {exception.Message} That is a bug in the library, not in the scenario.");
-        }
+        AddEach(notes, outcome.Exceptions,
+            exception => $"Bit.Bdnd threw while running this drag - {exception.GetType().Name}: {exception.Message} That is a bug in the library, not in the scenario.",
+            "exception", "exceptions");
 
         if (scenario.Drag.NativeToken is { } token)
         {
@@ -530,15 +606,13 @@ public static partial class BdndDropLab
 
         ExplainTypes(scenario, notes);
 
-        foreach (var target in scenario.All.Where(target => target.Accept.Length == 0).Take(MaxListed))
-        {
-            notes.Add($"'{target.Id}' accepts nothing (no accept or acceptTypes): it never reports IsOver or CanDrop and never gets OnDrop. Give it Accept or AcceptTypes.");
-        }
+        AddEach(notes, scenario.All.Where(target => target.Accept.Length == 0),
+            target => $"'{target.Id}' accepts nothing (no accept or acceptTypes): it never reports IsOver or CanDrop and never gets OnDrop. Give it Accept or AcceptTypes.",
+            "target that accepts nothing", "targets that accept nothing");
 
-        foreach (var group in scenario.All.GroupBy(target => target.Id, StringComparer.Ordinal).Where(group => group.Count() > 1).Take(MaxListed))
-        {
-            notes.Add($"The id '{group.Key}' is used by {group.Count()} targets; \"hover\" resolves it to the first one in document order. Give each target its own id.");
-        }
+        AddEach(notes, scenario.All.GroupBy(target => target.Id, StringComparer.Ordinal).Where(group => group.Count() > 1),
+            group => $"The id '{group.Key}' is used by {group.Count()} targets; \"hover\" resolves it to the first one in document order. Give each target its own id.",
+            "repeated id", "repeated ids");
 
         if (scenario.Drag.NativeToken is null && outcome.EffectAllowed is { } effect)
         {
@@ -648,6 +722,11 @@ public static partial class BdndDropLab
         notes.Add($"{Quote(scenario.RawType)} is a native type (BdndNativeTypes.{native.Name}, DataTransfer type '{token}'): this is {native.Source}, which no BdndDraggable " +
                   "starts - so there is no OnBegin or OnEnd, and the drop arrives through OnNativeDrop, never OnDrop.");
 
+        if (scenario.DragSettingsIgnored)
+        {
+            notes.Add("canDrag and dropEffect were ignored: they configure a BdndDraggable, and a native drag comes from outside the app, where no BdndDraggable is involved.");
+        }
+
         if (chain.Count == 0)
         {
             notes.Add("Nothing was hovered, so the drag left without a drop: OnNativeDrop ran nowhere.");
@@ -698,29 +777,41 @@ public static partial class BdndDropLab
             notes.Add($"No target accepts {Quote(type)}: a target reacts only to item types in its Accept/AcceptTypes, compared as strings, case included.");
         }
 
-        var listed = 0;
+        var native = scenario.Drag.NativeToken is null ? null : Native(type);
 
-        foreach (var target in scenario.All)
+        var misses = scenario.All
+            .SelectMany(target => target.Accept.Where(accepted => accepted != type).Select(accepted => (Target: target, Accepted: accepted, InApp: native is not null && PlainNativeName(accepted, native.Value.Name))))
+            .Where(miss => miss.InApp || IsNearMiss(miss.Accepted, type));
+
+        AddEach(notes, misses,
+            miss => miss.InApp
+                ? $"'{miss.Target.Id}' accepts '{miss.Accepted}' - an in-app type name. A native drag only matches BdndNativeTypes.{native!.Value.Name} (\"{native.Value.Constant}\"): write Accept=\"@BdndNativeTypes.{native.Value.Name}\"."
+                : $"'{miss.Target.Id}' accepts '{miss.Accepted}', which is not {Quote(type)}: item types are compared ordinally, case included - a typo here leaves the target dark for this item.",
+            "accept entry that nearly matches", "accept entries that nearly match");
+    }
+
+    /// <summary>
+    /// A note for each of the first <see cref="MaxListed"/> items, then one that says how many more there are:
+    /// a scenario can repeat one mistake hundreds of times, and a note for each would bury the rest of the
+    /// report and make it many times the size of the scenario.
+    /// </summary>
+    private static void AddEach<T>(List<string> notes, IEnumerable<T> items, Func<T, string> note, string one, string many, string? advice = null)
+    {
+        var count = 0;
+
+        foreach (var item in items)
         {
-            foreach (var accepted in target.Accept.Where(accepted => accepted != type))
+            if (count++ < MaxListed)
             {
-                string? why = null;
-
-                if (scenario.Drag.NativeToken is not null && Native(type) is { } native && PlainNativeName(accepted, native.Name))
-                {
-                    why = $"'{target.Id}' accepts '{accepted}' - an in-app type name. A native drag only matches BdndNativeTypes.{native.Name} (\"{native.Constant}\"): write Accept=\"@BdndNativeTypes.{native.Name}\".";
-                }
-                else if (IsNearMiss(accepted, type))
-                {
-                    why = $"'{target.Id}' accepts '{accepted}', which is not {Quote(type)}: item types are compared ordinally, case included - a typo here leaves the target dark for this item.";
-                }
-
-                if (why is null) continue;
-
-                notes.Add(why);
-
-                if (++listed >= MaxListed) return;
+                notes.Add(note(item));
             }
+        }
+
+        var rest = count - MaxListed;
+
+        if (rest > 0)
+        {
+            notes.Add($"{rest} more {(rest == 1 ? $"{one} is" : $"{many} are")} not listed{(advice is null ? null : $" - {advice}")}.");
         }
     }
 
@@ -743,7 +834,8 @@ public static partial class BdndDropLab
     /// <summary>
     /// Two names close enough to be a typo of each other: the same but for case, or one or two edits
     /// apart (one for short names) - "Card" for "card", "cards" for "card", "colum" for "column", and
-    /// two swapped letters count as one edit, "alpah" for "alpha".
+    /// two swapped letters count as one edit, "alpah" for "alpha". Past <see cref="MaxNearMissLength"/>
+    /// only the case is compared.
     /// </summary>
     private static bool IsNearMiss(string a, string b)
     {
@@ -758,7 +850,11 @@ public static partial class BdndDropLab
         return Distance(a.ToLowerInvariant(), b.ToLowerInvariant(), edits) <= edits;
     }
 
-    /// <summary>The optimal string alignment distance: insertions, deletions, substitutions and swaps of two neighbours.</summary>
+    /// <summary>
+    /// The optimal string alignment distance: insertions, deletions, substitutions and swaps of two neighbours.
+    /// Only a distance up to <paramref name="max"/> is worked out exactly; anything further is
+    /// <paramref name="max"/> + 1.
+    /// </summary>
     private static int Distance(string a, string b, int max)
     {
         if (Math.Abs(a.Length - b.Length) > max) return max + 1;
@@ -795,7 +891,8 @@ public static partial class BdndDropLab
             (twoBack, previous, current) = (previous, current, twoBack);
         }
 
-        return previous[b.Length];
+        // Off the band every cell counts as max + 1, which keeps a distance up to max exact but lets a farther one come out anywhere above it.
+        return Math.Min(previous[b.Length], max + 1);
     }
 
     private static bool TryGet(JsonElement element, string name, out JsonElement value)
