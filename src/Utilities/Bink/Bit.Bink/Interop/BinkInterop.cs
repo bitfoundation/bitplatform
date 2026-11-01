@@ -467,9 +467,11 @@ internal sealed class BinkInterop : IAsyncDisposable
             if (!string.IsNullOrEmpty(key)) client.OnKey(key, ctrl, shift, alt);
         }
 
-        // The start of a long editor text, sent in parts ahead of the key that ends the edit.
+        // The start of a long editor text, sent in parts ahead of the key that ends the edit, and the element the editor
+        // was open for when the first part arrived.
         private StringBuilder? _textParts;
         private bool _textPartsRefused;
+        private Guid? _textPartsElementId;
 
         /// <summary>
         /// Receives part of the inline text editor's value ahead of <see cref="OnTextEditorKey"/>, for a value too long
@@ -482,7 +484,13 @@ internal sealed class BinkInterop : IAsyncDisposable
         public void OnTextEditorTextPart(string part)
         {
             if (string.IsNullOrEmpty(part) || _textPartsRefused) return;
-            _textParts ??= new StringBuilder();
+            if (_textParts is null)
+            {
+                // The parts belong to the editor that sent them, even if another one is open by the time their key is
+                // handled.
+                _textParts = new StringBuilder();
+                _textPartsElementId = client.TextEditorElementId;
+            }
             // More than an element holds is dropped rather than collected, so parts never followed by a key cannot
             // grow without end.
             if (part.Length > BinkTextElement.MaxLength - _textParts.Length)
@@ -500,9 +508,12 @@ internal sealed class BinkInterop : IAsyncDisposable
         {
             StringBuilder? parts = _textParts;
             bool refused = _textPartsRefused;
+            Guid? partsElementId = _textPartsElementId;
             _textParts = null;
             _textPartsRefused = false;
-            if (string.IsNullOrEmpty(key) || client.TextEditorElementId is not { } elementId) return;
+            _textPartsElementId = null;
+            Guid? editor = parts is not null || refused ? partsElementId : client.TextEditorElementId;
+            if (string.IsNullOrEmpty(key) || editor is not { } elementId) return;
             // A cancel does not need the text. A text longer than an element holds is not committed, and the editor
             // stays open with it.
             if (key == "Escape") value = string.Empty;

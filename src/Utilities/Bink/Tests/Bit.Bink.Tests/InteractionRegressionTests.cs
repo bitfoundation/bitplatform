@@ -382,6 +382,36 @@ public sealed class BrowserContractRegressionTests : BunitContext
     }
 
     [TestMethod]
+    public async Task Parts_go_to_the_editor_open_when_they_arrived_even_if_another_opened_before_their_key()
+    {
+        var typedIn = new BinkTextElement(new Vector2(40, 40), "Hello") { Size = new Vector2(120, 30) };
+        var other = new BinkTextElement(new Vector2(400, 40), "Other") { Size = new Vector2(120, 30) };
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p.Add(c => c.Tool, new BinkTextTool()));
+        await canvas.InvokeAsync(() =>
+        {
+            canvas.Instance.CurrentDocument.AddElement(typedIn);
+            canvas.Instance.CurrentDocument.AddElement(other);
+        });
+        Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 50, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 50, 50));
+        canvas.WaitForAssertion(() => Assert.AreEqual(typedIn.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId));
+
+        // The editor on the other text opens between the parts and the key that ends the first edit.
+        string start = new('x', 4096);
+        var callbacks = new BinkInterop.InteropCallbacks(canvas.Instance);
+        await canvas.InvokeAsync(() => callbacks.OnTextEditorTextPart(start));
+        Send(canvas, Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Down, 420, 50), Sample(1, BinkPointerKind.Mouse, BinkPointerPhase.Up, 420, 50));
+        canvas.WaitForAssertion(() => Assert.AreEqual(other.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId));
+        await canvas.InvokeAsync(() => callbacks.OnTextEditorKey("Enter", "tail"));
+
+        canvas.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(start + "tail", ((BinkTextElement)canvas.Instance.CurrentDocument.GetElement(typedIn.Id)).Text);
+            Assert.AreEqual("Other", ((BinkTextElement)canvas.Instance.CurrentDocument.GetElement(other.Id)).Text);
+            Assert.AreEqual(other.Id, ((IBinkInteropClient)canvas.Instance).TextEditorElementId, "The editor now open is left alone.");
+        });
+    }
+
+    [TestMethod]
     public async Task A_stream_over_the_limit_is_refused_as_too_large()
     {
         // The runtime refuses it with an ArgumentOutOfRangeException; every caller handles "too large" as an IOException.
