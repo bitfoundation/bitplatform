@@ -1909,10 +1909,10 @@
         <value>Todos los roles</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Personalízalo con IA</value>
+        <value>Personaliza el propio banco de trabajo con IA</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>El banco de trabajo también forma parte de tu app. Pide a tu agente de IA que cambie sus funciones o que añada las herramientas, los dispositivos y los estados que tu equipo necesita.</value>
+        <value>Puedes cambiar la propia herramienta, no solo sus páginas. Pide a tu agente de IA que cambie las funciones del banco de trabajo o que añada las herramientas, los dispositivos y los estados que tu equipo necesita.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Nadie</value>

@@ -1909,10 +1909,10 @@
         <value>همه نقش‌ها</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>با هوش مصنوعی شخصی‌اش کنید</value>
+        <value>خود میز کار را با هوش مصنوعی شخصی کنید</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>خود میز کار هم بخشی از اپ شماست. از عامل هوش مصنوعی‌تان بخواهید امکاناتش را تغییر دهد یا ابزارها، دستگاه‌ها و حالت‌هایی را که تیمتان لازم دارد اضافه کند.</value>
+        <value>می‌توانید خود این ابزار را هم تغییر دهید، نه فقط صفحه‌هایش را. از عامل هوش مصنوعی‌تان بخواهید امکانات میز کار را تغییر دهد یا ابزارها، دستگاه‌ها و حالت‌هایی را که تیمتان لازم دارد اضافه کند.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>هیچ‌کس</value>

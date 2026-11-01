@@ -1909,10 +1909,10 @@
         <value>全部角色</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>用 AI 定制它</value>
+        <value>用 AI 定制工作台本身</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>工作台本身也是你应用的一部分。让你的 AI 智能体修改它的功能，或者添加团队需要的工具、设备和状态。</value>
+        <value>可以修改的不只是其中的页面，还有这个工具本身。让你的 AI 智能体修改工作台的功能，或者添加团队需要的工具、设备和状态。</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>无人</value>

@@ -13,6 +13,7 @@ public partial class WorkbenchViewPage
     private const string TourTabletDevice = "galaxy-tab-s9";
     private const string TourStoreDevice = "store-apple-iphone-69";
     private const string TourDataStatesAnchor = "data-states";
+    private const string TourComponentsPage = "shifts";
 
     private bool IsTouring => bonboardingService.FindSession(TourId) is not null;
 
@@ -31,6 +32,12 @@ public partial class WorkbenchViewPage
         var phone = new WorkbenchScenario();
         // The building sample shows what a flow is; without its page, the list of flows does.
         var flowsUrl = reviewSession.AllFlows.Any(flow => flow.Id == WorkbenchSampleFlows.BuildingsId) ? WorkbenchUrls.Flow(WorkbenchSampleFlows.BuildingsId) : WorkbenchUrls.Flows;
+        var pageBefore = pageInfo!.Key;
+        // Another page than the one the tour starts on, for a change; without it, that page.
+        var componentsPage = WorkbenchPageCatalog.Find(TourComponentsPage)?.Key ?? pageBefore;
+
+        // Replaces the address, as the phone's Back from a page the tour opened by itself would lead nowhere useful.
+        void ShowPage(string pageKey) => NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(pageKey)}{store.QueryString}", replace: true);
 
         BonboardingTourDefinition tour = new()
         {
@@ -61,9 +68,9 @@ public partial class WorkbenchViewPage
                 store.ShowColumn(columnBefore);
                 store.ShowViews(viewsBefore);
 
-                if (IsOnFlowsPage)
+                if (IsOnFlowsPage || BonboardingRouteMatcher.Matches(WorkbenchUrls.Workbench(componentsPage), NavigationManager.ToBaseRelativePath(NavigationManager.Uri)))
                 {
-                    BackToTheViews();
+                    ShowPage(pageBefore);
                 }
 
                 try
@@ -143,8 +150,16 @@ public partial class WorkbenchViewPage
                     Description = nameof(WorkbenchStrings.HomeWhyRealText),
                     Placement = BonboardingPlacement.InlineStart,
                     Interaction = BonboardingInteractionMode.TargetOnly,
-                    OnBeforeShow = _ => ShowInTour(() => SetMode(WorkbenchModes.Inspect)),
-                    OnBeforeLeave = _ => ShowInTour(() => SetMode(WorkbenchModes.Browse))
+                    OnBeforeShow = _ => ShowInTour(() =>
+                    {
+                        ShowPage(componentsPage);
+                        SetMode(WorkbenchModes.Inspect);
+                    }),
+                    OnBeforeLeave = _ => ShowInTour(() =>
+                    {
+                        SetMode(WorkbenchModes.Browse);
+                        ShowPage(pageBefore);
+                    })
                 },
                 new BonboardingStepDefinition
                 {
@@ -170,7 +185,7 @@ public partial class WorkbenchViewPage
                     Title = nameof(WorkbenchStrings.Flows),
                     Description = nameof(WorkbenchStrings.AllFlowsHint),
                     Placement = BonboardingPlacement.InlineStart,
-                    OnBeforeLeave = _ => ShowInTour(BackToTheViews)
+                    OnBeforeLeave = _ => ShowInTour(() => ShowPage(pageBefore))
                 },
                 new BonboardingStepDefinition
                 {
@@ -207,8 +222,6 @@ public partial class WorkbenchViewPage
     }
 
     private bool IsOnFlowsPage => BonboardingRouteMatcher.Matches($"{WorkbenchUrls.Flows}*", NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
-
-    private void BackToTheViews() => NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(pageInfo!.Key)}{store.QueryString}");
 
     private static ValueTask ShowInTour(Action show)
     {

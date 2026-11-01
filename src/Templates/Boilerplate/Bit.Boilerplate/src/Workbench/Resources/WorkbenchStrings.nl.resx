@@ -1909,10 +1909,10 @@
         <value>Alle rollen</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Pas hem aan met AI</value>
+        <value>Pas de werkbank zelf aan met AI</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>De werkbank hoort ook bij je app. Vraag je AI-agent om de functies te veranderen of de tools, apparaten en toestanden toe te voegen die je team nodig heeft.</value>
+        <value>Je kunt de tool zelf veranderen, niet alleen de pagina's erin. Vraag je AI-agent om de functies van de werkbank te veranderen of de tools, apparaten en toestanden toe te voegen die je team nodig heeft.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Niemand</value>

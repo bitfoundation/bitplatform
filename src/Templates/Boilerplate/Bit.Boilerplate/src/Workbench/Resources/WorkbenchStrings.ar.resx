@@ -1909,10 +1909,10 @@
         <value>كل الأدوار</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>خصّصها بالذكاء الاصطناعي</value>
+        <value>خصّص منضدة العمل نفسها بالذكاء الاصطناعي</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>منضدة العمل جزء من تطبيقك أيضاً. اطلب من وكيل الذكاء الاصطناعي تغيير ميزاتها أو إضافة الأدوات والأجهزة والحالات التي يحتاجها فريقك.</value>
+        <value>يمكنك تغيير الأداة نفسها، لا صفحاتها فقط. اطلب من وكيل الذكاء الاصطناعي تغيير ميزات منضدة العمل أو إضافة الأدوات والأجهزة والحالات التي يحتاجها فريقك.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>لا أحد</value>

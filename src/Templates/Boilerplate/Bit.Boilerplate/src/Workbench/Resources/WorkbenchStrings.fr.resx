@@ -1909,10 +1909,10 @@
         <value>Tous les rôles</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Personnalisez-le avec l’IA</value>
+        <value>Personnalisez l’établi lui-même avec l’IA</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>L’établi fait aussi partie de votre application. Demandez à votre agent IA de changer ses fonctions ou d’ajouter les outils, appareils et états dont votre équipe a besoin.</value>
+        <value>Vous pouvez modifier l’outil lui-même, pas seulement ses pages. Demandez à votre agent IA de changer les fonctions de l’établi ou d’ajouter les outils, appareils et états dont votre équipe a besoin.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Personne</value>

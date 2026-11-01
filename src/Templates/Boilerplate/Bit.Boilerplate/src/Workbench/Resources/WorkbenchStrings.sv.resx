@@ -1909,10 +1909,10 @@
         <value>Alla roller</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Anpassa den med AI</value>
+        <value>Anpassa själva arbetsbänken med AI</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>Arbetsbänken är också en del av din app. Be din AI-agent att ändra dess funktioner eller lägga till de verktyg, enheter och tillstånd som ditt team behöver.</value>
+        <value>Du kan ändra själva verktyget, inte bara sidorna i det. Be din AI-agent att ändra arbetsbänkens funktioner eller lägga till de verktyg, enheter och tillstånd som ditt team behöver.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Ingen</value>

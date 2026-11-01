@@ -43,9 +43,12 @@ public class TourUITests : WorkbenchPageTest
 
         await Advance(WorkbenchStrings.HomeWhyRealTitle);
         await Expect(Mode(WorkbenchStrings.ModeInspect)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
+        await Expect(View().Locator(".shifts")).ToBeVisibleAsync();
 
         await Advance(WorkbenchStrings.HomeWhyLiveTitle);
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
 
         await Advance(WorkbenchStrings.Flows);
         await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
@@ -79,6 +82,27 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Views).ToHaveCountAsync(1);
         await Expect(Page).ToHaveURLAsync(new Regex("theme=dark.*device=desktop-1536"));
+    }
+
+    [TestMethod]
+    public async Task LeavingTheTourOnTheShiftPlanner_Should_GoBackToThePageItStartedFrom()
+    {
+        await OpenWorkbench("pos-dashboard", "?device=desktop-1536");
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+
+        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle })
+        {
+            await Advance(title);
+        }
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard.*device=desktop-1536"));
+        await Expect(Mode(WorkbenchStrings.ModeBrowse)).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
     [TestMethod]
@@ -152,6 +176,7 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Mode(WorkbenchStrings.ModeInspect)).ToHaveAttributeAsync("aria-pressed", "true");
         await ExpectAboveTheCard(Page.Locator(".modes"));
         await ExpectAboveTheCard(Page.Locator("#wb-inspector"));
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
 
         await Advance(WorkbenchStrings.HomeWhyLiveTitle);
         await ExpectAboveTheCard(Page.Locator("#wb-inspector"));

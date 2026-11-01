@@ -1909,10 +1909,10 @@
         <value>All roles</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Customize it with AI</value>
+        <value>Customize Workbench itself with AI</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>The workbench is part of your app too. Ask your AI agent to change its features, or to add the tools, devices and states your team needs.</value>
+        <value>You can change the tool itself, not only the pages in it. Ask your AI agent to change the Workbench's features, or to add the tools, devices and states your team needs.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>No one</value>

@@ -1909,10 +1909,10 @@
         <value>सभी भूमिकाएँ</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>AI से इसे अपने हिसाब से बदलें</value>
+        <value>AI से वर्कबेंच को ही अपने हिसाब से बदलें</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>वर्कबेंच भी आपके ऐप का हिस्सा है। अपने AI एजेंट से इसकी सुविधाएँ बदलने या वे टूल, डिवाइस और स्थितियाँ जोड़ने को कहें जिनकी आपकी टीम को ज़रूरत है।</value>
+        <value>सिर्फ़ इसके पेज ही नहीं, यह टूल भी आप बदल सकते हैं। अपने AI एजेंट से वर्कबेंच की सुविधाएँ बदलने या वे टूल, डिवाइस और स्थितियाँ जोड़ने को कहें जिनकी आपकी टीम को ज़रूरत है।</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>कोई नहीं</value>

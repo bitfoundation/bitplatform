@@ -1909,10 +1909,10 @@
         <value>Alle Rollen</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Mit KI anpassen</value>
+        <value>Die Werkbank selbst mit KI anpassen</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>Die Werkbank gehört auch zu Ihrer App. Bitten Sie Ihren KI-Agenten, ihre Funktionen zu ändern oder die Werkzeuge, Geräte und Zustände hinzuzufügen, die Ihr Team braucht.</value>
+        <value>Sie können das Werkzeug selbst ändern, nicht nur die Seiten darin. Bitten Sie Ihren KI-Agenten, die Funktionen der Werkbank zu ändern oder die Werkzeuge, Geräte und Zustände hinzuzufügen, die Ihr Team braucht.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Niemand</value>
