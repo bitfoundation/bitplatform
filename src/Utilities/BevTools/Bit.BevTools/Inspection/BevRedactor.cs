@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -91,12 +92,18 @@ public sealed partial class BevRedactor
     /// WebAssembly assembly, an optional dependency); that constructor is skipped and the others still count, and the
     /// answer is cached like any other, so inspecting the object neither fails nor pays for the failure again. A record's
     /// positional constructor is not the one skipped while its properties can be read: its parameter types are theirs.
+    /// Only a record makes properties of its parameters; a class's property of the same name and type can hold anything.
     /// </summary>
     private static (string Name, Type Type)[] SensitiveParametersOf(Type type)
     {
         ConstructorInfo[] constructors;
         try
         {
+            if (!IsRecord(type))
+            {
+                return [];
+            }
+
             constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         }
         catch
@@ -125,6 +132,14 @@ public sealed partial class BevRedactor
 
         return sensitive?.ToArray() ?? [];
     }
+
+    /// <summary>
+    /// A record class or struct: every one declares an <c>==</c> the compiler generates, and none may declare its own,
+    /// while no other type gets one from the compiler.
+    /// </summary>
+    private static bool IsRecord(Type type) =>
+        type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Any(m => m.Name == "op_Equality" && m.IsDefined(typeof(CompilerGeneratedAttribute), false));
 
     /// <summary>
     /// True when a value is a credential by its shape, whatever the member, key or header holding it is called: a JSON

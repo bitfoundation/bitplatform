@@ -157,12 +157,17 @@ public sealed class BevToolsLoader : IDisposable
             {
                 // A failing check is a refusal, never an opening: the callback is a security control. Problem goes to
                 // whoever pressed the button, whom the callback did not accept, so it names the exception and the log
-                // holds the rest.
+                // holds the rest - said only once the log has it, so nobody searches a log that has no logger.
+                var logged = false;
                 if (logFailure)
                 {
                     try
                     {
-                        _services.GetService<ILoggerFactory>()?.CreateLogger("Bit.BevTools").LogWarning(ex, "BitBevToolsLoaderOptions.Authorize threw; BevTools stays closed.");
+                        if (_services.GetService<ILoggerFactory>() is { } loggerFactory)
+                        {
+                            loggerFactory.CreateLogger("Bit.BevTools").LogWarning(ex, "BitBevToolsLoaderOptions.Authorize threw; BevTools stays closed.");
+                            logged = true;
+                        }
                     }
                     catch
                     {
@@ -170,7 +175,7 @@ public sealed class BevToolsLoader : IDisposable
                     }
                 }
 
-                return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + (logFailure ? " (logged)." : ".");
+                return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + (logged ? " (logged)." : ".");
             }
         }
     }

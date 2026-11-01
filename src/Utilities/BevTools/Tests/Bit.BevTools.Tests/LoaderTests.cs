@@ -533,6 +533,25 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_throwing_Authorize_is_not_said_to_be_logged_where_nothing_logs_it()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => throw new InvalidOperationException("no user");
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "Authorize threw InvalidOperationException");
+        Assert.IsFalse(loader.Problem!.Contains("(logged)", StringComparison.Ordinal), loader.Problem);
+    }
+
+    [TestMethod]
     public async Task A_failure_of_BevTools_before_it_asks_Authorize_is_not_blamed_on_the_callback()
     {
         var asked = 0;

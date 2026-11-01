@@ -172,6 +172,15 @@ public class AppModelTests : BunitContext
         Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Http, Category = "http", Title = "GET /api/items", DurationMs = 12, ParentEventId = ui });
         Session.RenderTracker.CloseBatch();
 
+        // A batch that ends with a render too short to measure: drawn a microsecond long, it must not run past the span.
+        const long instantBatch = 9_999;
+        var start = System.Diagnostics.Stopwatch.GetTimestamp();
+        var measured = new BevRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = start, BatchId = instantBatch };
+        var instant = new BevRenderSample { Sequence = 2, At = measured.At, StartTicks = start + System.Diagnostics.Stopwatch.Frequency / 50_000, BatchId = instantBatch };
+        Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.RenderBatch, Category = "render-batch", Title = "Render batch #" + instantBatch, StartTicks = start, Timestamp = measured.At, Data = new Dictionary<string, object?> { ["batch"] = instantBatch } });
+        Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Measured", DurationMs = 0.01, StartTicks = measured.StartTicks, Timestamp = measured.At, Data = new RenderEventData(measured, 1) });
+        Session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Instant", DurationMs = 0, StartTicks = instant.StartTicks, Timestamp = instant.At, Data = new RenderEventData(instant, 1) });
+
         using var trace = JsonDocument.Parse(BevTraceExporter.ToChromeTrace(Session));
 
         var events = trace.RootElement.GetProperty("traceEvents").EnumerateArray().ToList();
@@ -180,7 +189,7 @@ public class AppModelTests : BunitContext
         var batches = renderer.Where(e => e.GetProperty("cat").GetString() == "render-batch").ToList();
         var renders = renderer.Where(e => e.GetProperty("cat").GetString() == "render").ToList();
         Assert.IsNotEmpty(batches);
-        Assert.HasCount(4, renders, "two components, rendered twice each");
+        Assert.HasCount(4 + 2, renders, "two components, rendered twice each, and the two recorded here");
         foreach (var render in renders)
         {
             var ts = render.GetProperty("ts").GetDouble();
@@ -188,9 +197,16 @@ public class AppModelTests : BunitContext
                 "every render lies inside a batch span on the renderer track");
         }
 
+        var instantSpan = batches.Single(b => b.GetProperty("name").GetString() == "Render batch #" + instantBatch);
+        var instantRender = renders.Single(r => r.GetProperty("name").GetString() == "Instant");
+        Assert.AreEqual(1, instantRender.GetProperty("dur").GetDouble());
+        Assert.IsLessThanOrEqualTo(End(instantSpan), End(instantRender), "the zero-length render ends at or before its batch");
+
         Assert.Contains(e => e.GetProperty("ph").GetString() == "X" && e.GetProperty("name").GetString() == "GET /api/items", events);
         Assert.Contains(e => e.GetProperty("ph").GetString() == "s", events);
         Assert.Contains(e => e.GetProperty("ph").GetString() == "M" && e.GetProperty("args").GetProperty("name").GetString()!.StartsWith("BevTools session #", StringComparison.Ordinal), events);
+
+        static double End(JsonElement slice) => slice.GetProperty("ts").GetDouble() + slice.GetProperty("dur").GetDouble();
     }
 
     [TestMethod]

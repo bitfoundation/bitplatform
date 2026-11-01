@@ -47,6 +47,12 @@ public class ObjectInspectorTests
     // Its Code binds to the property Ticket declares, so the attribute sits on a constructor of another type than the property's.
     private sealed record GateTicket(string Holder, [BevToolsSensitive] string Code) : Ticket(Holder, Code);
 
+    // Not a record: its parameter makes no property, and the Code it declares holds something else.
+    private sealed class Lock([BevToolsSensitive] string Code)
+    {
+        public string Code { get; } = "#" + Code.Length;
+    }
+
     [TestMethod]
     public void ToString_is_not_shown_for_a_type_with_an_ignored_or_sensitive_member()
     {
@@ -66,6 +72,15 @@ public class ObjectInspectorTests
         var children = inspector.Children(new Pass("ada", "opaque-code"), "");
         Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == nameof(Pass.Code)).Kind);
         Assert.AreEqual("\"ada\"", children.Single(c => c.Name == nameof(Pass.Holder)).Display);
+        Assert.AreEqual(BevRedactor.RedactedValue, inspector.Flatten(new Pass("ada", "opaque-code"))[nameof(Pass.Code)]);
+    }
+
+    [TestMethod]
+    public void A_sensitive_constructor_parameter_of_a_class_does_not_redact_a_property_of_the_same_name()
+    {
+        var children = Create().Children(new Lock("opaque-code"), "");
+
+        Assert.AreEqual("\"#11\"", children.Single(c => c.Name == nameof(Lock.Code)).Display);
     }
 
     [TestMethod]
