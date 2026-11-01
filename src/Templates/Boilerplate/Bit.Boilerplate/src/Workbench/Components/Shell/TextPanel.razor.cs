@@ -2,7 +2,7 @@ namespace Boilerplate.Workbench.Components.Shell;
 
 /// <summary>
 /// The Edit text panel: the text picked on the page, the resource entries that render it and its value in every
-/// language, saved straight into the resource files on this machine or sent to the agent as a request.
+/// language, saved straight into the resource files in dev mode or sent to the agent as a request.
 /// </summary>
 public partial class TextPanel
 {
@@ -19,7 +19,7 @@ public partial class TextPanel
     /// <summary>The resource entries whose value is the picked text; more than one shows a key picker.</summary>
     [Parameter] public WorkbenchTextMatch[] Matches { get; set; } = [];
 
-    /// <summary>Whether the translations can be written into the files: on this machine, with the project folder found.</summary>
+    /// <summary>Whether the translations can be written into the files: in dev mode on this machine, with the project folder found.</summary>
     [Parameter] public bool CanSave { get; set; }
 
     /// <summary>The view's culture, whose translation is listed first.</summary>
@@ -31,6 +31,9 @@ public partial class TextPanel
 
     /// <summary>The selected entry as resource/key, the value the key picker uses.</summary>
     private string? SelectedId => selected is null ? null : $"{selected.Resource}/{selected.Key}";
+
+    /// <summary>Whether a change to the texts could go nowhere: neither into the files nor to the agent.</summary>
+    private bool IsReadOnly => CanSave is false && OnAskAgent.HasDelegate is false;
 
     private bool IsChanged => translations.Any(t => (values.GetValueOrDefault(t.Culture) ?? string.Empty) != (t.Value ?? string.Empty));
 

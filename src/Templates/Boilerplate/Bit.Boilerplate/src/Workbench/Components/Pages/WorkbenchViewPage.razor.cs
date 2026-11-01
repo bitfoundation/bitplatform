@@ -207,8 +207,8 @@ public partial class WorkbenchViewPage
     }
 
     /// <summary>
-    /// Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode. Inspect mode opens the first tab,
-    /// where the picked component's panel shows.
+    /// Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode, with the page back to use. Inspect
+    /// mode opens the first tab, where the picked component's panel shows.
     /// </summary>
     private void SetMode(string mode)
     {
@@ -217,7 +217,9 @@ public partial class WorkbenchViewPage
             store.ShowColumn(WorkbenchModes.ReviewColumn);
 
             if (reviewSession.CanWrite is false)
-                return;
+            {
+                mode = WorkbenchModes.Browse;
+            }
         }
 
         if (mode is WorkbenchModes.Inspect)

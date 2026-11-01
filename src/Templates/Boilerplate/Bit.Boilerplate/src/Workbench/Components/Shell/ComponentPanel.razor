@@ -1,7 +1,13 @@
 @inherits WorkbenchComponentBase
 
 <div class="component-panel">
-    @if (store.IsComponentNoteDismissed is false)
+    @if (CanSave is false)
+    {
+        <div class="note">
+            <BitMessage Color="BitColor.Warning" Multiline>@Localizer[nameof(WorkbenchStrings.ChangesNeedDevMode)]</BitMessage>
+        </div>
+    }
+    else if (store.IsComponentNoteDismissed is false)
     {
         <div class="note">
             <BitMessage Color="BitColor.Info" Multiline Dismissible DismissAriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" OnDismiss="store.DismissComponentNote">
@@ -25,16 +31,12 @@
             @if (Info.Tag is { } tag)
             {
                 <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="source" Title="@tag.File">@FileName(tag.File):@tag.Line</BitText>
-                @if (CanSave is false)
-                {
-                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentReadOnlyRemote)]</BitText>
-                }
             }
             else if (Info.DrawnBy is { } drawnBy)
             {
                 <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentDrawnBy), drawnBy]</BitText>
             }
-            else
+            else if (CanSave)
             {
                 <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ComponentTagNotFound)]</BitText>
             }
@@ -103,9 +105,12 @@
         {
             <section>
                 <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.ComponentCssVariables)]</BitText>
-                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
-                    @Localizer[CanEditVariables ? nameof(WorkbenchStrings.ComponentVariablesHint) : nameof(WorkbenchStrings.ComponentVariablesReadOnly)]
-                </BitText>
+                @if (CanSave)
+                {
+                    <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                        @Localizer[CanEditVariables ? nameof(WorkbenchStrings.ComponentVariablesHint) : nameof(WorkbenchStrings.ComponentVariablesReadOnly)]
+                    </BitText>
+                }
                 @foreach (var variable in variables)
                 {
                     @if (variable.IsOwn is false && variables.FirstOrDefault(v => v.IsOwn is false) == variable)

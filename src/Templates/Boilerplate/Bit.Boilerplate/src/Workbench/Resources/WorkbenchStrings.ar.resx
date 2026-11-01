@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>يحفظ في ملفات الترجمة ويعيد تحميل العروض. ويرى وكيلك التغيير في git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>يعمل حفظ النص عندما تُشغَّل منضدة العمل من المشروع على حاسوبك.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>غيّر النص {0} · {1}:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>تعاون مباشر مع الذكاء الاصطناعي</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>على الحاسوب الذي يشغّل منضدة العمل، يصل التعليق المثبّت على الصفحة مباشرةً إلى وكيل الذكاء الاصطناعي الخاص بالمطوّر: فيغيّر الصفحة ويردّ هنا ويضع على التعليق علامة الإنجاز أمام عينيك. ومن أي مكان آخر تكون المراجعة للقراءة فقط، حتى لا يتمكن أحد من الوصول إلى ذلك الوكيل عبر رابط مشترك.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>الوكيل غير متصل</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>لا توجد تعليقات بعد.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>تُرسم المسارات على الحاسوب الذي يشغّل منضدة العمل. وهنا يمكنك فتحها والمرور بها.</value>
+        <value>تُرسم المسارات في وضع التطوير، أي عندما يشغّل وكيل الذكاء الاصطناعي منضدة العمل. ويمكنك هنا فتح الموجود منها والمرور به.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>راجع مباشرةً مع وكيل الذكاء الاصطناعي الخاص بك</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>هذا ليس مكوّن bit BlazorUI، أو لم يعد في الصفحة، لذا لا توجد معاملات لعرضها.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>لا تُحفَظ التغييرات إلا عندما تُشغَّل منضدة العمل من المشروع على حاسوبك.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>يرسم {0} هذا الجزء بنفسه، لذا يتغيّر عبر معاملات {0}.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>حُفظ في {0}. سيُظهره Hot reload بعد لحظة.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>حُفظ في {0}. أعد تشغيل التطبيق لتراه.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>تعذّر حفظ التغيير؛ ربما تحرّك وسمه. انقر المكوّن مرة أخرى.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>القيم المقترحة</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>لا تُطبَّق التغييرات إلا في وضع التطوير، أي عندما يشغّل وكيل الذكاء الاصطناعي منضدة العمل من مشروعك.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>في وضع التطوير، أي عندما يشغّل وكيل الذكاء الاصطناعي منضدة العمل من مشروعك، يصل التعليق المثبّت على الصفحة إليه مباشرةً: فيغيّر الصفحة ويردّ هنا ويضع على التعليق علامة الإنجاز أمام عينيك. وفي أي مكان آخر تكون المراجعة للقراءة فقط، حتى لا يتمكن أحد من الوصول إلى ذلك الوكيل عبر رابط مشترك.</value>
     </data>
 </root>

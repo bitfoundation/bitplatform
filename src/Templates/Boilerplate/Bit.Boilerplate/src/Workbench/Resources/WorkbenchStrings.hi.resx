@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>अनुवाद फ़ाइलों में सहेजता है और व्यू फिर से लोड करता है। आपका एजेंट यह बदलाव git में देखता है।</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>टेक्स्ट सहेजना तभी काम करता है जब वर्कबेंच आपकी अपनी मशीन पर प्रोजेक्ट से चल रही हो।</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>टेक्स्ट {0} · {1} बदलें:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>AI के साथ लाइव सहयोग</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>जिस मशीन पर वर्कबेंच चल रही है, वहाँ पेज पर पिन की गई टिप्पणी सीधे डेवलपर के AI एजेंट तक पहुँचती है: वह पेज बदलता है, यहीं जवाब देता है और आपकी आँखों के सामने टिप्पणी पर सही का निशान लगा देता है। किसी और जगह से रिव्यू सिर्फ़ पढ़ने के लिए होता है, ताकि शेयर किए गए लिंक से कोई भी उस एजेंट तक न पहुँच सके।</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>एजेंट ऑफ़लाइन है</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>अभी कोई टिप्पणी नहीं।</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>फ़्लो उस मशीन पर बनाए जाते हैं जिस पर वर्कबेंच चल रही है। यहाँ आप उन्हें खोलकर देख सकते हैं।</value>
+        <value>फ़्लो डेवलपमेंट मोड में बनाए जाते हैं, जब आपका AI एजेंट वर्कबेंच चलाता है। जो फ़्लो मौजूद हैं, उन्हें आप यहाँ खोलकर देख सकते हैं।</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>अपने AI एजेंट के साथ लाइव रिव्यू करें</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>यह bit BlazorUI कंपोनेंट नहीं है, या अब पेज पर नहीं है, इसलिए दिखाने को कोई पैरामीटर नहीं है।</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>बदलाव तभी सहेजे जा सकते हैं जब वर्कबेंच आपकी अपनी मशीन पर प्रोजेक्ट से चल रही हो।</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} यह हिस्सा ख़ुद बनाता है, इसलिए यह {0} के पैरामीटर से बदलता है।</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>{0} में सहेजा गया। Hot reload इसे थोड़ी देर में दिखा देगा।</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>{0} में सहेजा गया। इसे देखने के लिए ऐप फिर से शुरू करें।</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>बदलाव सहेजा नहीं जा सका; शायद इसका टैग खिसक गया है। कंपोनेंट पर फिर से क्लिक करें।</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>सुझाए गए मान</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>बदलाव सिर्फ़ डेवलपमेंट मोड में लागू होते हैं, जब आपका AI एजेंट आपके प्रोजेक्ट से वर्कबेंच चलाता है।</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>डेवलपमेंट मोड में, जब आपका AI एजेंट आपके प्रोजेक्ट से वर्कबेंच चलाता है, पेज पर पिन की गई टिप्पणी सीधे उस तक पहुँचती है: वह पेज बदलता है, यहीं जवाब देता है और आपकी आँखों के सामने टिप्पणी पर सही का निशान लगा देता है। बाकी हर जगह रिव्यू सिर्फ़ पढ़ने के लिए होता है, ताकि शेयर किए गए लिंक से कोई भी उस एजेंट तक न पहुँच सके।</value>
     </data>
 </root>

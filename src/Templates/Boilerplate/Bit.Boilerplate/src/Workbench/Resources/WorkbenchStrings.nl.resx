@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Slaat op in de vertaalbestanden en laadt de weergaven opnieuw. Je agent ziet de wijziging in git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Tekst opslaan werkt als de werkbank vanuit het project op je eigen computer draait.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Wijzig de tekst {0} · {1}:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>Live samenwerken met AI</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>Op de computer waarop de werkbank draait, gaat een opmerking die je op de pagina vastzet rechtstreeks naar de AI-agent van de ontwikkelaar: die past de pagina aan, antwoordt hier meteen en vinkt de opmerking af terwijl je toekijkt. Vanaf elke andere plek is de beoordeling alleen-lezen, zodat niemand die agent via een gedeelde link kan bereiken.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>De agent is offline</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>Nog geen opmerkingen.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows worden getekend op de computer waarop de werkbank draait. Hier kun je ze openen en doorlopen.</value>
+        <value>Flows worden getekend in de ontwikkelmodus, wanneer je AI-agent de werkbank uitvoert. Bestaande flows kun je hier openen en doorlopen.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live beoordelen met je AI-agent</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Dit is geen bit BlazorUI-component, of het staat niet meer op de pagina, dus er zijn geen parameters om te tonen.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Wijzigingen kunnen alleen worden opgeslagen als de werkbank vanuit het project op je eigen computer draait.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} tekent dit deel zelf, dus het verandert via de parameters van {0}.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Opgeslagen in {0}. Hot reload toont het zo meteen.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Opgeslagen in {0}. Start de app opnieuw om het te zien.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>De wijziging kon niet worden opgeslagen; de tag is misschien verplaatst. Klik opnieuw op het component.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Voorgestelde waarden</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>Wijzigingen kun je alleen toepassen in de ontwikkelmodus, wanneer je AI-agent de werkbank vanuit je project uitvoert.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>In de ontwikkelmodus, wanneer je AI-agent de werkbank vanuit je project uitvoert, gaat een opmerking die je op de pagina vastzet rechtstreeks naar die agent: die past de pagina aan, antwoordt hier meteen en vinkt de opmerking af terwijl je toekijkt. Overal elders is de beoordeling alleen-lezen, zodat niemand die agent via een gedeelde link kan bereiken.</value>
     </data>
 </root>

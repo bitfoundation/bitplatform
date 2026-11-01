@@ -5,7 +5,7 @@ namespace Boilerplate.Workbench.Components.Pages;
 
 /// <summary>
 /// /flows lists the flows of the review; /flows/{id} draws one as a Bit.Blow board of live screens joined by arrows,
-/// which this machine can rearrange, link and label, and anyone can present screen by screen.
+/// which dev mode can rearrange, link and label, and anyone can present screen by screen.
 /// </summary>
 public partial class FlowsPage
 {

@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>در فایل‌های ترجمه ذخیره می‌کند و نماها را دوباره بارگذاری می‌کند. عاملتان تغییر را در git می‌بیند.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>ذخیره متن فقط وقتی کار می‌کند که میز کار از پروژه روی سیستم خودتان اجرا شود.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>متن {0} · {1} را عوض کن:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>همکاری زنده با هوش مصنوعی</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>روی سیستمی که میز کار را اجرا می‌کند، نظری که روی صفحه سنجاق شود مستقیم به عامل هوش مصنوعی توسعه‌دهنده می‌رسد: صفحه را تغییر می‌دهد، همین‌جا جواب می‌دهد و جلوی چشم شما آن نظر را انجام‌شده علامت می‌زند. از هر جای دیگری بازبینی فقط‌خواندنی است تا هیچ‌کس نتواند از راه یک پیوند اشتراکی به آن عامل برسد.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>عامل آفلاین است</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>هنوز نظری نیست.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>مسیرها روی سیستمی کشیده می‌شوند که میز کار را اجرا می‌کند. این‌جا می‌توانید بازشان کنید و مرورشان کنید.</value>
+        <value>مسیرها در حالت توسعه کشیده می‌شوند، یعنی وقتی عامل هوش مصنوعی شما میز کار را اجرا می‌کند. مسیرهای موجود این‌جا باز می‌شوند تا مرورشان کنید.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>بازبینی زنده با عامل هوش مصنوعی‌تان</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>این یک کامپوننت bit BlazorUI نیست، یا دیگر در صفحه نیست، پس پارامتری برای نشان دادن ندارد.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>تغییرها فقط وقتی ذخیره می‌شوند که میز کار از پروژه روی سیستم خودتان اجرا شود.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} این بخش را خودش می‌سازد، پس از راه پارامترهای {0} تغییر می‌کند.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>در {0} ذخیره شد. Hot reload تا لحظه‌ای دیگر نشانش می‌دهد.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>در {0} ذخیره شد. برای دیدنش برنامه را دوباره اجرا کنید.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>تغییر ذخیره نشد؛ شاید تگ آن جابه‌جا شده باشد. دوباره روی کامپوننت کلیک کنید.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>مقدارهای پیشنهادی</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>تغییرها فقط در حالت توسعه اعمال می‌شوند، یعنی وقتی عامل هوش مصنوعی شما میز کار را از روی پروژه‌تان اجرا می‌کند.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>در حالت توسعه، یعنی وقتی عامل هوش مصنوعی شما میز کار را از روی پروژه‌تان اجرا می‌کند، نظری که روی صفحه سنجاق شود مستقیم به آن عامل می‌رسد: صفحه را تغییر می‌دهد، همین‌جا جواب می‌دهد و جلوی چشم شما آن نظر را انجام‌شده علامت می‌زند. هر جای دیگری بازبینی فقط‌خواندنی است تا هیچ‌کس نتواند از راه یک پیوند اشتراکی به آن عامل برسد.</value>
     </data>
 </root>

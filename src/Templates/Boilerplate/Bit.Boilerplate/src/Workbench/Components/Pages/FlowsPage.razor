@@ -60,7 +60,7 @@
     }
     else if (Flow is { } flow)
     {
-        @* Only this machine may change the board; elsewhere it can be panned, zoomed and presented. *@
+        @* Only dev mode may change the board; elsewhere it can be panned, zoomed and presented. *@
         <main class="board @(reviewSession.CanWrite ? null : "read-only")">
             <BlowCanvas @ref="canvas"
                         Class="flow-board"
@@ -213,7 +213,7 @@
             }
             @if (reviewSession.Flows.Count == 0)
             {
-                <p class="empty">@Localizer[nameof(WorkbenchStrings.FlowsEmpty)]</p>
+                <p class="empty">@Localizer[reviewSession.CanWrite ? nameof(WorkbenchStrings.FlowsEmpty) : nameof(WorkbenchStrings.FlowsReadOnly)]</p>
             }
             <div class="flow-cards">
                 @foreach (var item in reviewSession.Flows)

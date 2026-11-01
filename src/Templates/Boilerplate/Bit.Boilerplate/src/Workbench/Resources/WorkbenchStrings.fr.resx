@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Enregistre dans les fichiers de traduction et recharge les vues. Votre agent voit la modification dans git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>L’enregistrement du texte fonctionne quand l’établi s’exécute depuis le projet sur votre propre machine.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Modifie le texte {0} · {1} :</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>Collaboration en direct avec l’IA</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>Sur la machine qui exécute l’établi, un commentaire épinglé sur la page part directement vers l’agent IA du développeur : il modifie la page, répond ici même et coche le commentaire sous vos yeux. Depuis n’importe quel autre endroit, la révision est en lecture seule, pour que personne ne puisse atteindre cet agent via un lien partagé.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>L’agent est hors ligne</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>Aucun commentaire pour l’instant.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Les parcours se dessinent sur la machine qui exécute l’établi. Ici, vous pouvez les ouvrir et les parcourir.</value>
+        <value>Les parcours se dessinent en mode développement, lorsque votre agent IA exécute l’établi. Ici, vous pouvez ouvrir et parcourir ceux qui existent.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Révisez en direct avec votre agent IA</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Ce n’est pas un composant bit BlazorUI, ou il n’est plus sur la page : il n’y a donc aucun paramètre à afficher.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Les changements ne s’enregistrent que lorsque l’établi s’exécute depuis le projet sur votre propre machine.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} dessine cette partie lui-même : elle se modifie donc via les paramètres de {0}.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Enregistré dans {0}. Le hot reload l’affichera dans un instant.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Enregistré dans {0}. Redémarrez l’application pour le voir.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>Le changement n’a pas pu être enregistré ; sa balise a peut-être bougé. Cliquez de nouveau sur le composant.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Valeurs suggérées</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>Les modifications ne s’appliquent qu’en mode développement, lorsque votre agent IA exécute l’établi depuis votre projet.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>En mode développement, lorsque votre agent IA exécute l’établi depuis votre projet, un commentaire épinglé sur la page lui parvient directement : il modifie la page, répond ici même et coche le commentaire sous vos yeux. Partout ailleurs, la révision est en lecture seule, pour que personne ne puisse atteindre cet agent via un lien partagé.</value>
     </data>
 </root>

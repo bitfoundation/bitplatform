@@ -4,7 +4,7 @@
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Flows)]</BitText>
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsHint)]</BitText>
-        @if (session.Flows.Count == 0)
+        @if (session.Flows.Count == 0 && session.CanWrite)
         {
             <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsEmpty)]</BitText>
         }
@@ -18,7 +18,7 @@
         }
     </section>
 
-    @* Adding a screen writes to the review, so only this machine gets the form *@
+    @* Adding a screen writes to the review, so only dev mode gets the form *@
     @if (session.CanWrite)
     {
         <section>

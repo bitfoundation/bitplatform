@@ -1,6 +1,13 @@
 @inherits WorkbenchComponentBase
 
 <div class="text-panel">
+    @if (IsReadOnly)
+    {
+        <div class="note">
+            <BitMessage Color="BitColor.Warning" Multiline>@Localizer[nameof(WorkbenchStrings.ChangesNeedDevMode)]</BitMessage>
+        </div>
+    }
+
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.EditText)]</BitText>
         @if (Text is null)
@@ -44,6 +51,7 @@
                               Value="@values[translation.Culture]"
                               ValueChanged="(string? value) => values[translation.Culture] = value"
                               Immediate
+                              ReadOnly="IsReadOnly"
                               Multiline="(translation.Value?.Length ?? 0) > 60"
                               Rows="3"
                               Dir="@(CultureInfoManager.GetCultureInfo(translation.Culture)?.TextInfo.IsRightToLeft is true ? BitDir.Rtl : BitDir.Ltr)" />
@@ -58,7 +66,10 @@
                     <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Comment" Disabled="IsChanged is false" OnClick="Ask">@Localizer[nameof(WorkbenchStrings.AskTheAgent)]</BitButton>
                 }
             </div>
-            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[CanSave ? nameof(WorkbenchStrings.SaveTranslationsHint) : nameof(WorkbenchStrings.SaveTranslationsRemoteHint)]</BitText>
+            @if (CanSave)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.SaveTranslationsHint)]</BitText>
+            }
         </section>
     }
 </div>

@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Guarda en los archivos de traducción y recarga las vistas. Tu agente ve el cambio en git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Guardar texto funciona cuando el banco de trabajo se ejecuta desde el proyecto en tu propio equipo.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Cambia el texto {0} · {1}:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>Colaboración en vivo con IA</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>En el equipo donde se ejecuta el banco de trabajo, un comentario fijado en la página llega directamente al agente de IA del desarrollador: cambia la página, responde aquí mismo y marca el comentario como hecho mientras lo ves. Desde cualquier otro lugar, la revisión es de solo lectura, para que nadie pueda llegar a ese agente a través de un enlace compartido.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>El agente está desconectado</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>Aún no hay comentarios.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Los flujos se dibujan en el equipo donde se ejecuta el banco de trabajo. Aquí puedes abrirlos y recorrerlos.</value>
+        <value>Los flujos se dibujan en modo de desarrollo, cuando tu agente de IA ejecuta el banco de trabajo. Aquí puedes abrir y recorrer los que existan.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Revisa en vivo con tu agente de IA</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Esto no es un componente de bit BlazorUI, o ya no está en la página, así que no hay parámetros que mostrar.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Los cambios solo se pueden guardar cuando el banco de trabajo se ejecuta desde el proyecto en tu propio equipo.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} dibuja esta parte por sí mismo, así que cambia con los parámetros de {0}.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Guardado en {0}. Hot reload lo mostrará en un momento.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Guardado en {0}. Reinicia la aplicación para verlo.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>No se pudo guardar el cambio; puede que su etiqueta se haya movido. Vuelve a hacer clic en el componente.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Valores sugeridos</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>Los cambios solo se aplican en modo de desarrollo, cuando tu agente de IA ejecuta el banco de trabajo desde tu proyecto.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>En modo de desarrollo, cuando tu agente de IA ejecuta el banco de trabajo desde tu proyecto, un comentario fijado en la página le llega directamente: cambia la página, responde aquí mismo y marca el comentario como hecho mientras lo ves. En cualquier otro caso, la revisión es de solo lectura, para que nadie pueda llegar a ese agente a través de un enlace compartido.</value>
     </data>
 </root>

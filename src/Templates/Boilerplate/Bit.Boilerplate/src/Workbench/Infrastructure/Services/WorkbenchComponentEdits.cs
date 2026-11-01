@@ -4,10 +4,11 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// Writes a parameter changed in the component panel into its tag in the .razor file, as text, so the rest of the file stays
-/// as it was; dotnet watch then hot reloads the change into the views. Only requests from this machine may write.
+/// as it was; dotnet watch then hot reloads the change into the views. Only requests in dev mode, from this machine, may write.
 /// </summary>
 public sealed partial class WorkbenchComponentEdits
 {
+    [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
     // How long a removal waits for hot reload to apply the default it writes first; a change that doesn't compile never applies.
@@ -17,9 +18,6 @@ public sealed partial class WorkbenchComponentEdits
 
     /// <summary>Whether the project folder, and with it the .razor files, is on this machine.</summary>
     public bool CanWriteFiles => WorkbenchFolders.Source is not null;
-
-    /// <summary>Whether dotnet watch runs the Workbench, so a saved change shows without a restart.</summary>
-    public static bool IsHotReloading => Environment.GetEnvironmentVariable("DOTNET_WATCH") is "1";
 
     /// <summary>Sets a parameter to a value; null takes the attribute away, so the component's default, as the panel read it, applies again.</summary>
     public Task<bool> Set(string component, WorkbenchComponentTag tag, string parameter, string? value, string? defaultValue)
@@ -49,14 +47,14 @@ public sealed partial class WorkbenchComponentEdits
     }
 
     /// <summary>
-    /// Replaces, adds or takes away the parameter's attribute in the tag. Returns false when the request isn't from this
-    /// machine, the tag is gone, or code sets the parameter, which only the code's author may change.
+    /// Replaces, adds or takes away the parameter's attribute in the tag. Returns false when the request may not change the
+    /// code, the tag is gone, or code sets the parameter, which only the code's author may change.
     /// Hot reload leaves a parameter a tag stops setting at the value it last had, so before an attribute goes, the reset
     /// attribute sets the default and the views get it; the components then keep it once the attribute is gone.
     /// </summary>
     private async Task<bool> Write(string component, WorkbenchComponentTag tag, PropertyInfo property, string? attribute, string? reset)
     {
-        if (IsLocalRequest is false || WorkbenchRazorFiles.FullPath(tag.File) is not { } path)
+        if (CanChange is false || WorkbenchRazorFiles.FullPath(tag.File) is not { } path)
             return false;
 
         var fileLock = fileLocks.GetOrAdd(path, _ => new(1, 1));
@@ -65,7 +63,7 @@ public sealed partial class WorkbenchComponentEdits
 
         try
         {
-            if (reset is not null && IsHotReloading && await ResetFirst(path, component, tag, property, reset) is false)
+            if (reset is not null && await ResetFirst(path, component, tag, property, reset) is false)
                 return false;
 
             return await Change(path, component, tag, property, attribute, onlyReplace: false) is not null;
@@ -203,6 +201,6 @@ public sealed partial class WorkbenchComponentEdits
         return text[..start] + text[attribute.End..];
     }
 
-    /// <summary>Whether the current request, or the circuit it started, came from this machine.</summary>
-    private bool IsLocalRequest => httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.IsLocal(context);
+    /// <summary>Whether the current request, or the circuit it started, may change the code.</summary>
+    private bool CanChange => httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.CanChange(context, configuration);
 }

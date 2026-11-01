@@ -11,6 +11,7 @@ public class WorkbenchTextTests
     {
         var services = new ServiceCollection();
 
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection([new("DOTNET_WATCH", "1")]).Build());
         services.AddSingleton<IHttpContextAccessor>(new FixedHttpContextAccessor(isLocal));
         services.AddSingleton<WorkbenchTextEdits>();
 

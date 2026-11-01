@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Speichert in die Übersetzungsdateien und lädt die Ansichten neu. Ihr Agent sieht die Änderung in git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Text lässt sich speichern, wenn die Werkbank aus dem Projekt auf Ihrem eigenen Rechner läuft.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Ändere den Text {0} · {1}:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>Live-Zusammenarbeit mit KI</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>Auf dem Rechner, auf dem die Werkbank läuft, geht ein auf der Seite angehefteter Kommentar direkt an den KI-Agenten des Entwicklers: Er ändert die Seite, antwortet gleich hier und hakt den Kommentar ab, während Sie zusehen. Von überall sonst ist das Review schreibgeschützt, damit niemand über einen geteilten Link an diesen Agenten gelangt.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Der Agent ist offline</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>Noch keine Kommentare.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Abläufe werden auf dem Rechner gezeichnet, auf dem die Werkbank läuft. Hier können Sie sie öffnen und durchgehen.</value>
+        <value>Abläufe werden im Entwicklungsmodus gezeichnet, wenn Ihr KI-Agent die Werkbank startet. Vorhandene können Sie hier öffnen und durchgehen.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live mit Ihrem KI-Agenten prüfen</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Das ist keine bit BlazorUI-Komponente, oder sie ist nicht mehr auf der Seite, daher gibt es keine Parameter zu zeigen.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Änderungen lassen sich nur speichern, wenn die Werkbank aus dem Projekt auf Ihrem eigenen Rechner läuft.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} zeichnet diesen Teil selbst, daher ändert er sich über die Parameter von {0}.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>In {0} gespeichert. Hot Reload zeigt es gleich.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>In {0} gespeichert. Starten Sie die App neu, um es zu sehen.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>Die Änderung konnte nicht gespeichert werden; ihr Tag hat sich vielleicht verschoben. Klicken Sie erneut auf die Komponente.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Vorgeschlagene Werte</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>Änderungen lassen sich nur im Entwicklungsmodus übernehmen, wenn Ihr KI-Agent die Werkbank aus Ihrem Projekt startet.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>Im Entwicklungsmodus, wenn Ihr KI-Agent die Werkbank aus Ihrem Projekt startet, geht ein auf der Seite angehefteter Kommentar direkt an ihn: Er ändert die Seite, antwortet gleich hier und hakt den Kommentar ab, während Sie zusehen. Überall sonst ist das Review schreibgeschützt, damit niemand über einen geteilten Link an diesen Agenten gelangt.</value>
     </data>
 </root>

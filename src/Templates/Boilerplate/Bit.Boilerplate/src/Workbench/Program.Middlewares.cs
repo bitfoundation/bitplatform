@@ -55,10 +55,10 @@ public static partial class Program
                 }
             });
 
-            // The agent's endpoints answer only requests made on this machine; anyone else gets a 404.
+            // The agent's endpoints answer only in dev mode, for requests made on this machine; anyone else gets a 404.
             app.UseWhen(context => context.Request.Path.StartsWithSegments("/api/review") || context.Request.Path.StartsWithSegments("/mcp"), local => local.Use(async (context, next) =>
             {
-                if (WorkbenchLocalRequests.IsLocal(context) is false)
+                if (WorkbenchLocalRequests.CanChange(context, app.Configuration) is false)
                 {
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
                     return;

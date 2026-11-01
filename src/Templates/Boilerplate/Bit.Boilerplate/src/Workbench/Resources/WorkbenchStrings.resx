@@ -2214,9 +2214,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Saves into the translation files and reloads the views. Your agent sees the change in git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Saving text works when the Workbench runs from the project on your own computer.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Change the text {0} · {1}:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>Live collaboration with AI</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>On the computer that runs the Workbench, a comment pinned on the page goes straight to the developer's AI agent: it changes the page, answers right here and ticks the comment off while you watch. From anywhere else the review is read-only, so nobody can reach that agent through a shared link.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Agent is offline</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>No comments yet.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows are drawn on the computer that runs the Workbench. Here you can open them and walk through them.</value>
+        <value>Flows are drawn in dev mode, when your AI agent runs the Workbench. Any that exist open here to walk through.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Review live with your AI agent</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>This isn't a bit BlazorUI component, or it's no longer on the page, so there are no parameters to show.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Changes can be saved only when the Workbench runs from the project on your own computer.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} draws this part itself, so it changes through {0}'s parameters.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Saved to {0}. Hot reload shows it in a moment.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Saved to {0}. Restart the app to see it.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>The change couldn't be saved; its tag may have moved. Click the component again.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Suggested values</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>Changes can be applied only in dev mode, when your AI agent runs the Workbench from your project.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>In dev mode, when your AI agent runs the Workbench from your project, a comment pinned on the page goes straight to it: it changes the page, answers right here and ticks the comment off while you watch. Anywhere else the review is read-only, so nobody can reach that agent through a shared link.</value>
     </data>
 </root>

@@ -168,7 +168,6 @@ public class ReviewUITests : WorkbenchPageTest
 
         await Expect(Page.Locator(".text-panel")).ToContainTextAsync($"“{WorkbenchStrings.ShiftsHeading}”");
         await Expect(Page.Locator(".text-panel .key")).ToHaveTextAsync($"{nameof(WorkbenchStrings)} · {nameof(WorkbenchStrings.ShiftsHeading)}");
-        await Expect(Page.GetByText(WorkbenchStrings.SaveTranslationsRemoteHint)).ToBeVisibleAsync();
 
         var text = $"Weekly schedule {Guid.NewGuid():N}";
 

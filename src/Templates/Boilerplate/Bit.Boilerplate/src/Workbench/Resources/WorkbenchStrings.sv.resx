@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Sparar i översättningsfilerna och laddar om vyerna. Din agent ser ändringen i git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Att spara text fungerar när arbetsbänken körs från projektet på din egen dator.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Ändra texten {0} · {1}:</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>Livesamarbete med AI</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>På datorn som kör arbetsbänken går en kommentar som fästs på sidan raka vägen till utvecklarens AI-agent: den ändrar sidan, svarar direkt här och bockar av kommentaren medan du ser på. Från alla andra platser är granskningen skrivskyddad, så att ingen kan nå den agenten via en delad länk.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Agenten är offline</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>Inga kommentarer än.</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flöden ritas på datorn som kör arbetsbänken. Här kan du öppna dem och gå igenom dem.</value>
+        <value>Flöden ritas i utvecklingsläge, när din AI-agent kör arbetsbänken. Befintliga flöden kan du öppna och gå igenom här.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Granska live med din AI-agent</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Det här är ingen bit BlazorUI-komponent, eller så finns den inte längre på sidan, så det finns inga parametrar att visa.</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Ändringar kan bara sparas när arbetsbänken körs från projektet på din egen dator.</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} ritar den här delen själv, så den ändras via parametrarna för {0}.</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Sparat i {0}. Hot reload visar det om ett ögonblick.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Sparat i {0}. Starta om appen för att se det.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>Ändringen kunde inte sparas; taggen kan ha flyttats. Klicka på komponenten igen.</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Föreslagna värden</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>Ändringar kan bara tillämpas i utvecklingsläge, när din AI-agent kör arbetsbänken från ditt projekt.</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>I utvecklingsläge, när din AI-agent kör arbetsbänken från ditt projekt, går en kommentar som fästs på sidan raka vägen till den: den ändrar sidan, svarar direkt här och bockar av kommentaren medan du ser på. Överallt annars är granskningen skrivskyddad, så att ingen kan nå den agenten via en delad länk.</value>
     </data>
 </root>

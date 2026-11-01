@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>保存到翻译文件并重新加载视图。您的智能体会在 git 中看到这项更改。</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>只有当工作台从您自己电脑上的项目运行时，才能保存文本。</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>修改文本 {0} · {1}：</value>
     </data>
@@ -2373,9 +2370,6 @@
     <data name="LiveReviewTitle" xml:space="preserve">
         <value>与 AI 实时协作</value>
     </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>在运行工作台的电脑上，钉在页面上的评论会直接发给开发者的 AI 智能体：它会修改页面、就在这里回复，并在您眼前将评论勾选为已完成。在其他任何地方，评审都是只读的，因此没有人能通过共享链接接触到这个智能体。</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>智能体离线</value>
     </data>
@@ -2383,7 +2377,7 @@
         <value>还没有评论。</value>
     </data>
     <data name="FlowsReadOnly" xml:space="preserve">
-        <value>流程需要在运行工作台的电脑上绘制。在这里，您可以打开并浏览它们。</value>
+        <value>流程需要在开发模式下绘制，也就是由您的 AI 智能体运行工作台时。在这里，您可以打开并浏览已有的流程。</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>与您的 AI 智能体实时评审</value>
@@ -2736,9 +2730,6 @@
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>这不是 bit BlazorUI 组件，或者它已不在页面上，因此没有可显示的参数。</value>
     </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>只有当工作台从您自己电脑上的项目运行时，才能保存修改。</value>
-    </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>这一部分由 {0} 自己绘制，因此要通过 {0} 的参数来修改。</value>
     </data>
@@ -2781,9 +2772,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>已保存到 {0}。热重载稍后会显示它。</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>已保存到 {0}。重新启动应用即可看到。</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>无法保存修改；它的标签可能已移动。请再次点击该组件。</value>
     </data>
@@ -2801,5 +2789,11 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>建议的值</value>
+    </data>
+    <data name="ChangesNeedDevMode" xml:space="preserve">
+        <value>只有在开发模式下才能应用更改，也就是由您的 AI 智能体从项目运行工作台时。</value>
+    </data>
+    <data name="LiveReviewReadOnly" xml:space="preserve">
+        <value>在开发模式下，也就是由您的 AI 智能体从项目运行工作台时，钉在页面上的评论会直接发给它：它会修改页面、就在这里回复，并在您眼前将评论勾选为已完成。在其他任何地方，评审都是只读的，因此没有人能通过共享链接接触到这个智能体。</value>
     </data>
 </root>

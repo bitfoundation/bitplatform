@@ -4,11 +4,12 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// One circuit's copy of the review document, synced through the relay: the threads, page statuses, flows and the agent.
-/// It writes only for requests made on this machine; opened from anywhere else, the review is read-only.
+/// It writes only in dev mode, for requests made on this machine; anywhere else, the review is read-only.
 /// </summary>
 public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 {
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
+    [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IBcrdtCollaborationService collaboration = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
 
@@ -19,8 +20,8 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     /// <summary>Raised after the document changes, whoever changed it.</summary>
     public event Action? Changed;
 
-    /// <summary>Whether this circuit's request came from this machine, decided once per circuit.</summary>
-    public bool CanWrite => canWrite ??= httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.IsLocal(context);
+    /// <summary>Whether this circuit may write: in dev mode, with its request from this machine, decided once per circuit.</summary>
+    public bool CanWrite => canWrite ??= httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.CanChange(context, configuration);
 
     public bool IsOpen => document is not null;
 
