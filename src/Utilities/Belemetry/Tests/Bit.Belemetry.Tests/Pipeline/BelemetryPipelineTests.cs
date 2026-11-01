@@ -550,6 +550,55 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task WithoutUserTracking_ALogMessage_DoesNotRenderAUserId()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        var logger = host.StartLogging().CreateLogger("MyApp.Checkout");
+
+        logger.LogInformation("Paid by {user.id}", "u-42");
+        host.Consent.Decide(BelemetryFeatures.All);
+        logger.LogInformation("Paid by {user.id}", "u-42");
+        // The decision wakes the export loop, which may still be sending the first record.
+        await host.FlushUntilAsync(() => host.Memory.Logs.Count == 2);
+
+        var hidden = host.Memory.Logs.Single(l => l.Body == "Paid by {user.id}");
+        Assert.IsFalse(hidden.Attributes.Contains("user.id"), "The rendered message would carry the id the record may not.");
+        Assert.AreEqual("u-42", host.Memory.Logs.Single(l => l.Body == "Paid by u-42").Attributes["user.id"]);
+    }
+
+    [TestMethod]
+    public async Task WithoutUserTracking_NoSpanEventOrLinkCarriesAUserId()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All);
+
+        static BelemetrySpan SpanWithIds(string name)
+        {
+            var span = Records.Span(name: name);
+            var e = new BelemetrySpanEvent { Name = "checkout" };
+            e.Attributes.Set("user.id", "u-42").Set("step", "pay");
+            span.Events.Add(e);
+            var link = new BelemetrySpanLink { TraceId = Records.LinkTraceId, SpanId = Records.LinkSpanId };
+            link.Attributes.Set("enduser.pseudo.id", "p-1");
+            span.Links.Add(link);
+            return span;
+        }
+
+        host.Pipeline.Enqueue(SpanWithIds("queued"));
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        host.Pipeline.Enqueue(SpanWithIds("after"));
+        await host.FlushAsync();
+
+        var spans = host.Memory.Spans.ToList();
+        Assert.HasCount(2, spans);
+        foreach (var span in spans)
+        {
+            Assert.IsFalse(span.Events.Single().Attributes.Contains("user.id"), span.Name);
+            Assert.AreEqual("pay", span.Events.Single().Attributes["step"]);
+            Assert.IsFalse(span.Links.Single().Attributes.Contains("enduser.pseudo.id"), span.Name);
+        }
+    }
+
+    [TestMethod]
     public async Task ExportLoop_RunsOffTheStartersContext()
     {
         // The pipeline starts with the first resolution of the logger factory - on a MAUI/WPF UI thread, or inside a

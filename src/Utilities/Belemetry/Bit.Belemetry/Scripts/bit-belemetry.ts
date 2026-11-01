@@ -237,6 +237,7 @@ function init(input: BelemetryConfig | null | undefined): State {
             const exporter = exporterFor(s, url);
             return exporter ? exporter.headers : null;
         },
+        revocations: () => s.consent.revocations,
     });
     const exporters = createExporters(config, transport);
     const pipeline = new Pipeline(config, consent, session, buildResource(config));

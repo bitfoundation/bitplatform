@@ -78,7 +78,15 @@ internal sealed class BelemetryHttpSender : IDisposable
     /// Delivers <paramref name="request"/>, retrying transient failures in-process a couple of times, and says what
     /// became of it: the outcome, what is still undelivered, and the records accepted and refused for good.
     /// </summary>
-    public async Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, CancellationToken cancellationToken)
+    public Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, CancellationToken cancellationToken) =>
+        SendWithResultAsync(exporter, request, retry, withdrawn: null, cancellationToken);
+
+    /// <summary>
+    /// Delivers <paramref name="request"/> as <see cref="SendWithResultAsync(IBelemetryHttpExporter, BelemetryHttpRequest, bool, CancellationToken)"/>
+    /// does, and gives it up as <see cref="BelemetrySendOutcome.Failed"/>, without another attempt, once
+    /// <paramref name="withdrawn"/> says it may no longer be sent (consent was revoked after it was built).
+    /// </summary>
+    public async Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, Func<bool>? withdrawn, CancellationToken cancellationToken)
     {
         var attempts = retry ? Backoff.Length + 1 : 1;
         var extended = false;
@@ -90,6 +98,8 @@ internal sealed class BelemetryHttpSender : IDisposable
 
         for (var attempt = 0; attempt < attempts; attempt++)
         {
+            if (withdrawn?.Invoke() is true) break;
+
             TimeSpan? retryAfter = null;
 
             try

@@ -412,7 +412,8 @@ How it behaves:
   `Consent.PendingLimit`) and sent if the user grants them, dropped if not.
 - **Revoking is immediate.** Queued records of a revoked feature are discarded, and its device storage is cleared:
   revoking any feature clears the offline queue (a stored request can hold that feature's records), `Sessions` the
-  stored session, `UserTracking` the pseudo id and user id, which also leave the records still queued.
+  stored session, `UserTracking` the pseudo id and user id, which also leave the records still queued. A request
+  already waiting for a retry is dropped rather than retried or stored, for the same reason.
 - **The choice is remembered** (`Consent.Persist`, default on) in `localStorage` (and in a file in Hybrid apps) -
   recording the choice itself is strictly necessary. Other open tabs of the app adopt it as it is made, so a banner
   answered in one tab closes in the rest, and a revoke there stops them sending too.
@@ -452,6 +453,10 @@ await Belemetry.FlushAsync();
 
 On WebAssembly and Hybrid these go through the .NET pipeline; on Blazor Server they are routed through the user's
 browser, so their consent applies.
+
+The user ids are consent's to add: without `UserTracking`, a `user.id` or `enduser.pseudo.id` passed as an attribute,
+a log scope or a structured log value is dropped (from span events and links too), and a log message that would render
+one is exported with its template as the body (`Paid by {user.id}`).
 
 ---
 

@@ -328,11 +328,64 @@ describe('Transport', () => {
 
     it('reads at most 4 MB of an Azure 206 response', async () => {
         const items = [{ a: 0 }, { a: 1 }];
-        const padding = 'x'.repeat(4 * 1024 * 1024);
-        const fetch = mockFetch({ status: 206, body: JSON.stringify({ errors: [{ index: 1, statusCode: 500 }], padding }) }, 200);
+        const chunk = encodeUtf8('x'.repeat(64 * 1024));
+        const total = 8 * 1024 * 1024;
+        let read = 0;
+        // Counts what the reader pulls: a body read whole before the size check would pull all of it.
+        const body = new ReadableStream({
+            pull(controller) {
+                if (read >= total) {
+                    controller.close();
+                    return;
+                }
+                read += chunk.length;
+                controller.enqueue(chunk);
+            },
+        });
+        const fetch = mockFetch({ status: 206, body }, 200);
         vi.stubGlobal('fetch', fetch);
         await transport().send(request({ exporter: 'azureMonitor', contentType: 'application/json', body: encodeUtf8(JSON.stringify(items)) }));
         expect(fetch.calls).toHaveLength(1);
+        expect(read).toBeLessThan(total);
+        // The stream may pull a chunk ahead of the one that crosses the limit.
+        expect(read).toBeLessThanOrEqual(4 * 1024 * 1024 + 2 * chunk.length);
+    });
+
+    it('neither retries nor stores a request once consent is revoked while it waits', async () => {
+        const fetch = mockFetch(503);
+        vi.stubGlobal('fetch', fetch);
+        let revocations = 0;
+        // The revoke lands during the backoff, and clears the stored requests as it does.
+        await transport({ revocations: () => revocations, sleep: () => (revocations++, Promise.resolve()) }).send(request());
+        expect(fetch.calls).toHaveLength(1);
+        expect(loadPersisted()).toEqual([]);
+    });
+
+    it('does not store a resent request again once consent is revoked while it is sent', async () => {
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([storedRequest(1)]));
+        let revocations = 0;
+        vi.stubGlobal('fetch', async () => {
+            revocations++;
+            localStorage.removeItem('bit-belemetry-queue');
+            return new Response(null, { status: 503 });
+        });
+        await transport({ revocations: () => revocations }).resendPersisted();
+        expect(loadPersisted()).toEqual([]);
+    });
+
+    it('does not put a request being resent back into storage once consent is revoked', async () => {
+        const big = toBase64(new Uint8Array(70 * 1024));
+        localStorage.setItem('bit-belemetry-queue', JSON.stringify([storedRequest(1, { body: big })]));
+        let release;
+        vi.stubGlobal('fetch', () => new Promise(resolve => (release = () => resolve(new Response(null, { status: 200 })))));
+        let revocations = 0;
+        const t = transport({ revocations: () => revocations });
+        const pass = t.resendPersisted();
+        revocations++;
+        t.pageHidden();
+        expect(loadPersisted()).toEqual([]);
+        release();
+        await pass;
     });
 
     it('parses Retry-After', () => {

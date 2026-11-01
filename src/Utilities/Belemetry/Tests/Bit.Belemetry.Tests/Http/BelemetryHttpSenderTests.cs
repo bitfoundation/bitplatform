@@ -119,6 +119,27 @@ public class BelemetryHttpSenderTests
     }
 
     [TestMethod]
+    public async Task AWithdrawnRequest_IsNotRetried()
+    {
+        var handler = new FakeHttpMessageHandler { Fallback = HttpStatusCode.BadGateway };
+        var withdrawn = false;
+        handler.Enqueue(HttpStatusCode.BadGateway, _ => withdrawn = true);
+        using var sender = CreateSender(handler);
+        var exporter = Otlp();
+
+        var result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, () => withdrawn, CancellationToken.None);
+
+        Assert.AreEqual(BelemetrySendOutcome.Failed, result.Outcome);
+        Assert.HasCount(1, handler.Requests, "Consent was revoked while it waited: it may hold records of the revoked feature.");
+
+        handler.Requests.Clear();
+        result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, () => true, CancellationToken.None);
+
+        Assert.AreEqual(BelemetrySendOutcome.Failed, result.Outcome);
+        Assert.IsEmpty(handler.Requests, "Revoked before its first attempt (it waited for another export): never sent.");
+    }
+
+    [TestMethod]
     [DataRow(HttpStatusCode.BadRequest)]
     [DataRow(HttpStatusCode.Unauthorized)]
     [DataRow(HttpStatusCode.NotFound)]

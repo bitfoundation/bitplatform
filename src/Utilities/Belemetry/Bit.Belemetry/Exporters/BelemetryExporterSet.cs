@@ -69,13 +69,22 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
         foreach (var live in _liveMetrics) live.Start(_pipeline, stopping);
     }
 
-    public async Task ExportAsync(BelemetryBatch batch, bool persistenceAllowed, CancellationToken cancellationToken)
+    /// <param name="batch">The batch.</param>
+    /// <param name="persistenceAllowed">Whether what cannot be delivered may be stored.</param>
+    /// <param name="revocations">
+    /// <see cref="BelemetryPipeline.Revocations"/> when the batch left the queue: after a revoke its requests are
+    /// neither retried nor stored, as they may hold records of the revoked feature.
+    /// </param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    public async Task ExportAsync(BelemetryBatch batch, bool persistenceAllowed, int revocations, CancellationToken cancellationToken)
     {
+        bool Withdrawn() => _pipeline.Revocations != revocations;
+
         foreach (var exporter in _httpExporters)
         {
             foreach (var created in exporter.CreateRequests(WithMinimumSeverity(batch, exporter.MinimumSeverity)))
             {
-                var sent = await _sender.SendWithResultAsync(exporter, created, retry: true, cancellationToken);
+                var sent = await _sender.SendWithResultAsync(exporter, created, retry: true, Withdrawn, cancellationToken);
                 _pipeline.Self.Exported(exporter.Name, "delivered", sent.Delivered);
                 _pipeline.Self.Exported(exporter.Name, "rejected", sent.Rejected);
                 if (sent.Outcome != BelemetrySendOutcome.Failed) continue;
@@ -83,7 +92,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 // After a partial success only the items to retry are left to store: the accepted ones are in.
                 var request = sent.Remaining;
                 var result = "failed";
-                if (persistenceAllowed && Store is not null)
+                if (persistenceAllowed && Store is not null && Withdrawn() is false)
                 {
                     try
                     {
@@ -163,10 +172,14 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
             return;
         }
 
+        var revocations = _pipeline.Revocations;
         var stored = await Store.LoadAsync(50, cancellationToken);
         HashSet<string>? unreachable = null;
         foreach (var request in stored)
         {
+            // Revoked mid-pass: the stored requests are cleared, and must not be sent or come back.
+            if (_pipeline.Revocations != revocations) return;
+
             var exporter = _httpExporters.FirstOrDefault(e => e.Name == request.Exporter);
             if (exporter is null || exporter.PostsTo(request.Url) is false)
             {
@@ -191,7 +204,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 // Partly delivered: keep only what is left, or the accepted items would be resent every pass. The
                 // backend answered, so the rest of its backlog still goes.
                 await Store.DeleteAsync(request.Id, cancellationToken);
-                await Store.SaveAsync(sent.Remaining, cancellationToken);
+                if (_pipeline.Revocations == revocations) await Store.SaveAsync(sent.Remaining, cancellationToken);
             }
             else
             {

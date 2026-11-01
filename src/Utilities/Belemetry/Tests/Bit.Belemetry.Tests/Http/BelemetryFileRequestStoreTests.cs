@@ -322,6 +322,95 @@ public class BelemetryFileRequestStoreTests
         Assert.IsEmpty(StoredFiles());
     }
 
+    [TestMethod]
+    public async Task Pipeline_DropsAStoredRequest_ForAnOldPathOnTheSameHost()
+    {
+        var sent = new List<string>();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new BelemetryHttpMessageHandlerProvider(new ByHost(sent, down: "none.test")));
+        services.AddBitBelemetryServices(o =>
+        {
+            TestHost.ApplyTestDefaults(o);
+            o.Persistence.Enabled = true;
+            o.Persistence.Directory = _directory;
+            o.AddOtlpExporter("http://new.test:4318", e => e.Headers["x-api-key"] = "key-2");
+        });
+        await using var provider = services.BuildServiceProvider();
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+        var request = Request();
+        request.Url = "http://new.test:4318/v1/old/logs";
+        await pipeline.Exporters.Store!.SaveAsync(request, CancellationToken.None);
+
+        await pipeline.Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
+
+        Assert.IsEmpty(sent, "The current key must not go to an old path on the same host.");
+        Assert.IsEmpty(StoredFiles());
+    }
+
+    [TestMethod]
+    public async Task Pipeline_ARevokeWhileARequestWaitsForItsRetry_NeitherRetriesNorStoresIt()
+    {
+        BelemetryConsentState consent = null!;
+        var handler = new FakeHttpMessageHandler { Fallback = HttpStatusCode.ServiceUnavailable };
+        handler.Enqueue(HttpStatusCode.ServiceUnavailable, r =>
+        {
+            r.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.Zero);
+            consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Interactions);
+        });
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler));
+        services.AddBitBelemetryServices(o =>
+        {
+            TestHost.ApplyTestDefaults(o);
+            o.Consent.Default = BelemetryFeatures.All;
+            o.Persistence.Enabled = true;
+            o.Persistence.Directory = _directory;
+            o.AddOtlpExporter("http://collector.test:4318", e => e.Signals = BelemetrySignals.Logs);
+        });
+        await using var provider = services.BuildServiceProvider();
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+        consent = provider.GetRequiredService<BelemetryConsentState>();
+
+        pipeline.Enqueue(Records.Log());
+        await pipeline.FlushAsync(false, CancellationToken.None);
+
+        Assert.HasCount(1, handler.Requests, "A request from before a revoke may hold the revoked feature's records: it is not retried.");
+        Assert.IsEmpty(StoredFiles(), "Nor is it stored after the revoke cleared the store.");
+    }
+
+    [TestMethod]
+    public async Task Pipeline_ARevokeDuringAResendPass_StopsIt()
+    {
+        BelemetryConsentState consent = null!;
+        var handler = new FakeHttpMessageHandler();
+        handler.Enqueue(HttpStatusCode.OK, _ => consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Interactions));
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler));
+        services.AddBitBelemetryServices(o =>
+        {
+            TestHost.ApplyTestDefaults(o);
+            o.Consent.Default = BelemetryFeatures.All;
+            o.Persistence.Enabled = true;
+            o.Persistence.Directory = _directory;
+            o.AddOtlpExporter("http://collector.test:4318");
+        });
+        await using var provider = services.BuildServiceProvider();
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+        consent = provider.GetRequiredService<BelemetryConsentState>();
+        var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 1000;
+        await pipeline.Exporters.Store!.SaveAsync(Request(time - 2), CancellationToken.None);
+        await pipeline.Exporters.Store!.SaveAsync(Request(time - 1), CancellationToken.None);
+
+        await pipeline.Exporters.RetryStoredAsync(persistenceAllowed: true, CancellationToken.None);
+
+        Assert.HasCount(1, handler.Requests, "A revoke clears the stored requests: the pass does not send the rest of them.");
+    }
+
     /// <summary>Answers 503 for one host and 200 for the others, recording the hosts it was sent to.</summary>
     private sealed class ByHost(List<string> sent, string down) : HttpMessageHandler
     {

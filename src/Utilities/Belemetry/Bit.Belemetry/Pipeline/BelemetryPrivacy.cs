@@ -55,6 +55,7 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
     /// <summary>Whether <paramref name="key"/> is one of <see cref="BelemetryPrivacyOptions.BlockedAttributes"/>: the enrichment step does not add a blocked id.</summary>
     public bool IsBlocked(string key) => _blocked.Count > 0 && _blocked.Contains(key);
 
+    /// <summary>Whether the value of <paramref name="key"/> never reaches the backend: the key is blocked or redacted.</summary>
     public bool HidesValue(string key) => IsBlocked(key) || Rule(key) == KeyRule.Redacted;
 
     /// <summary>

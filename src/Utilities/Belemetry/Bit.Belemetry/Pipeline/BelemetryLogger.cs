@@ -77,7 +77,7 @@ internal sealed class BelemetryLogger : ILogger
                         if (_options.IncludeMessageTemplate) record.Attributes.Set(BelemetrySemanticConventions.LogMessageTemplate, value);
                         continue;
                     }
-                    hidden |= value is not null && _pipeline.Privacy.HidesValue(key);
+                    hidden |= value is not null && _pipeline.HidesValue(key);
                     record.Attributes.Set(key, value);
                 }
 

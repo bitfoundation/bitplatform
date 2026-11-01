@@ -187,6 +187,16 @@ describe('ConsentManager', () => {
         expect(localStorage.getItem('bit-belemetry-queue')).toBeNull();
     });
 
+    it('counts the revocations, not the grants', () => {
+        const consent = new ConsentManager(config({ default: Features.Errors }));
+        consent.set(Features.All);
+        expect(consent.revocations).toBe(0);
+        consent.set(Features.All & ~Features.Interactions);
+        expect(consent.revocations).toBe(1);
+        consent.set(Features.All & ~Features.Interactions);
+        expect(consent.revocations).toBe(1);
+    });
+
     it('notifies listeners with the previous and next grant', () => {
         const consent = new ConsentManager(config({ default: Features.Errors }));
         const changes = [];

@@ -18,6 +18,12 @@ export class ConsentManager {
     private listeners: ConsentListener[] = [];
 
     /**
+     * How many times a feature was revoked. A request built before a revoke may hold the revoked feature's records, so
+     * once this count moves on it is neither retried nor stored (the stored ones are cleared).
+     */
+    revocations = 0;
+
+    /**
      * @param available The configured features (`config.features`). The grant never exceeds them: a grant of a
      * feature the configuration switched off is not recorded, and a default or restored decision is narrowed to them.
      */
@@ -110,6 +116,7 @@ export class ConsentManager {
 
     private changed(previous: number): void {
         const next = this.granted();
+        if (previous & ~next) this.revocations++;
         purgeStorage(previous & ~next);
         // After a decision nothing stays held. Before one (a new default), only what became granted leaves.
         const released = this.pending.filter(r => (next & r.feature) !== 0);
