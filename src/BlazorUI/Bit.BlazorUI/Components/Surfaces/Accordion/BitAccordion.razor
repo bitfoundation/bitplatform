@@ -23,6 +23,7 @@
            would be nested inside the button. *@
         <div role="heading"
              aria-level="@_HeadingLevel"
+             aria-labelledby="@_HeadingLabelledBy"
              style="@Styles?.Heading"
              class="bit-acd-hed @Classes?.Heading">
             <button @ref="_headerRef"
@@ -32,6 +33,7 @@
                     style="@Styles?.Header"
                     class="bit-acd-hdr @(_IsBusy ? "bit-acd-bsy" : "") @Classes?.Header"
                     aria-label="@HeaderAriaLabel"
+                    aria-labelledby="@_HeaderLabelledBy"
                     aria-expanded="@(IsExpanded ? "true" : "false")"
                     aria-controls="@_ContentId"
                     aria-disabled="@((Disabled || ReadOnly) ? "true" : null)"
@@ -63,7 +65,7 @@
                         @* Left out when there is nothing to put in it, the way the description below is: an empty
                            title box is still a flex item, and the gap it brings with it would open a hole in front
                            of the description of a header that carries one without a title. *@
-                        @if (TitleTemplate is not null || Title.HasValue())
+                        @if (_HasTitle)
                         {
                             <div id="@_TitleId" style="@Styles?.Title" class="bit-acd-ttl @Classes?.Title">
                                 @if (TitleTemplate is not null)
@@ -76,7 +78,7 @@
                                 }
                             </div>
                         }
-                        @if (Description.HasValue())
+                        @if (_HasDescription)
                         {
                             <div id="@_DescriptionId" style="@Styles?.Description" class="bit-acd-des @Classes?.Description">
                                 @Description

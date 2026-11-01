@@ -284,8 +284,9 @@
 
     <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            The header is a button in a heading, named by the <b>Title</b> followed by the <b>Description</b>; the panel is
-            a region it controls, named by the <b>Title</b> alone. <b>HeadingLevel</b> sets the heading depth (3 by default;
+            The header is a button in a heading, named by the <b>Title</b> followed by the <b>Description</b>, the text it shows
+            (an <b>ExpanderTemplate</b> is left out, since the expanded state is announced on its own); the heading and the
+            region the button controls are named by the <b>Title</b> alone. <b>HeadingLevel</b> sets the heading depth (3 by default;
             nested accordions go one deeper on their own). A closed panel is out of the tab order and the accessibility tree. <b>HeaderAriaLabel</b> names an
             icon-only header, <b>AriaLabel</b> names the accordion as a group, and <b>NoContentRegion</b> drops the landmark
             role for pages with many open panels.

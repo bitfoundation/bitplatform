@@ -2299,7 +2299,7 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionShouldNameTheHeaderByItsContentAndThePanelByTheTitle()
+    public void BitAccordionShouldNameTheHeaderByTheTitleAndTheDescriptionAndTheHeadingAndThePanelByTheTitle()
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
@@ -2313,13 +2313,28 @@ public class BitAccordionTests : BunitTestContext
         Assert.AreEqual("acd-ttl", com.Find(".bit-acd-ttl").GetAttribute("id"));
         Assert.AreEqual("acd-des", com.Find(".bit-acd-des").GetAttribute("id"));
         Assert.IsNull(header.GetAttribute("aria-label"));
-        Assert.IsNull(header.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-ttl acd-des", header.GetAttribute("aria-labelledby"));
         Assert.IsNull(header.GetAttribute("aria-describedby"));
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hed").GetAttribute("aria-labelledby"));
         Assert.AreEqual("acd-ttl", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
     }
 
     [TestMethod]
-    public void BitAccordionShouldNameThePanelByTheHeaderWithoutATitle()
+    public void BitAccordionShouldNameTheHeaderByTheTitleAloneWithoutADescription()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.Title, "General");
+        });
+
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hed").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldNameEverythingByTheDescriptionWithoutATitle()
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
@@ -2327,12 +2342,27 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.Description, "The general settings");
         });
 
+        Assert.AreEqual("acd-des", com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-des", com.Find(".bit-acd-hed").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-des", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldLeaveTheNamingToTheContentOfAHeaderWithNeitherATitleNorADescription()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.ExpanderTemplate, isExpanded => isExpanded ? "Less" : "More");
+        });
+
         Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+        Assert.IsNull(com.Find(".bit-acd-hed").GetAttribute("aria-labelledby"));
         Assert.AreEqual("acd-hdr", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
     }
 
     [TestMethod]
-    public void BitAccordionShouldNameThePanelByTheTitleTemplateToo()
+    public void BitAccordionShouldNameTheHeaderByTheTitleTemplateToo()
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
@@ -2340,8 +2370,45 @@ public class BitAccordionTests : BunitTestContext
             parameters.Add(p => p.TitleTemplate, "<b>General</b>");
         });
 
-        Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hed").GetAttribute("aria-labelledby"));
         Assert.AreEqual("acd-ttl", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldLeaveAnExpanderTemplateOutOfTheNameOfTheHeader()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.Title, "General");
+            parameters.Add(p => p.ExpanderTemplate, isExpanded => isExpanded ? "Less" : "More");
+        });
+
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual("true", com.Find(".bit-acd-hdr").GetAttribute("aria-expanded"));
+        Assert.AreEqual("acd-ttl", com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldKeepTheNameOfABusyHeader()
+    {
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.Id, "acd");
+            parameters.Add(p => p.Title, "General");
+            parameters.Add(p => p.Description, "The general settings");
+            parameters.Add(p => p.ExpanderTemplate, isExpanded => isExpanded ? "Less" : "More");
+            parameters.Add(p => p.Busy, true);
+        });
+
+        var header = com.Find(".bit-acd-hdr");
+
+        Assert.AreEqual("true", header.GetAttribute("aria-busy"));
+        Assert.AreEqual("acd-ttl acd-des", header.GetAttribute("aria-labelledby"));
     }
 
     [TestMethod]
@@ -2357,8 +2424,10 @@ public class BitAccordionTests : BunitTestContext
 
         var header = com.Find(".bit-acd-hdr");
 
+        Assert.AreEqual("General settings", header.GetAttribute("aria-label"));
         Assert.IsNull(header.GetAttribute("aria-labelledby"));
         Assert.IsNull(header.GetAttribute("aria-describedby"));
+        Assert.IsNull(com.Find(".bit-acd-hed").GetAttribute("aria-labelledby"));
         Assert.AreEqual("acd-hdr", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
     }
 
@@ -2369,10 +2438,12 @@ public class BitAccordionTests : BunitTestContext
         {
             parameters.Add(p => p.Id, "acd");
             parameters.Add(p => p.Title, "General");
+            parameters.Add(p => p.Description, "The general settings");
             parameters.Add(p => p.HeaderTemplate, _ => "<span>Custom</span>");
         });
 
         Assert.IsNull(com.Find(".bit-acd-hdr").GetAttribute("aria-labelledby"));
+        Assert.IsNull(com.Find(".bit-acd-hed").GetAttribute("aria-labelledby"));
         Assert.AreEqual("acd-hdr", com.Find(".bit-acd-con").GetAttribute("aria-labelledby"));
     }
 

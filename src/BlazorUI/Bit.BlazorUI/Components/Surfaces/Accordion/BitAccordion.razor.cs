@@ -188,6 +188,10 @@ public partial class BitAccordion : BitComponentBase
     /// still turned over as the panel opens unless <see cref="NoExpanderRotation"/> keeps it still, and
     /// <see cref="HideExpanderIcon"/> still removes it altogether. Unlike <see cref="HeaderTemplate"/>,
     /// which replaces the whole header and this along with it, it only takes the place of the expander.
+    /// <br />
+    /// It is left out of the name of the toggle of a header that has a <see cref="Title"/> or a
+    /// <see cref="Description"/> - the state it shows is announced by aria-expanded - and names it only where the
+    /// header shows neither of them.
     /// </remarks>
     [Parameter] public RenderFragment<bool>? ExpanderTemplate { get; set; }
 
@@ -208,6 +212,12 @@ public partial class BitAccordion : BitComponentBase
     /// Gets or sets the accessible label of the toggle button in the header, for a header whose own content
     /// does not name it - an icon-only <see cref="HeaderTemplate"/>, most of all.
     /// </summary>
+    /// <remarks>
+    /// It replaces the name the <see cref="Title"/> and the <see cref="Description"/> give the default header, so on a
+    /// header that shows either of them it has to hold their text, best of all starting with the title, or the button
+    /// is called something other than what it shows (WCAG 2.5.3, Label in Name) and a speech-input user saying the
+    /// visible title does not reach it. Such a header is named by its text already and needs no label at all.
+    /// </remarks>
     [Parameter] public string? HeaderAriaLabel { get; set; }
 
     /// <summary>
@@ -381,6 +391,11 @@ public partial class BitAccordion : BitComponentBase
     /// the icon, the description and the expander - as it is. Unlike <see cref="HeaderTemplate"/>, which
     /// replaces the whole header, this only takes the place of the title text.
     /// </summary>
+    /// <remarks>
+    /// What it renders is the title the toggle, the heading and the panel are named by, so it has to render the text of
+    /// the title every time it is set: one that renders nothing - while what it shows is still loading, say - leaves
+    /// the heading and the panel without a name. Leave it unset for that time, so <see cref="Title"/> names them.
+    /// </remarks>
     [Parameter] public RenderFragment? TitleTemplate { get; set; }
 
     /// <summary>
@@ -447,14 +462,31 @@ public partial class BitAccordion : BitComponentBase
     private string _TitleId => $"{_Id}-ttl";
     private string _DescriptionId => $"{_Id}-des";
 
-    // The toggle of the default header is named by its own content, the title and then the description the way they
-    // are shown, rather than by the title alone: a button whose name leaves out some of its visible text fails Label in
-    // Name (WCAG 2.5.3), and with the title first a speech-input user still reaches it by saying the title alone.
-    // The panel is named by the title alone, pointing at it directly, since pointing at the header would name it by the
-    // description as well. A HeaderAriaLabel names the header itself, and a HeaderTemplate draws a header this cannot
-    // see into, so under either of them the panel is named by the header.
-    private bool _NamesPanelByTitle => HeaderTemplate is null && HeaderAriaLabel is null && (TitleTemplate is not null || Title.HasValue());
-    private string _PanelLabelledBy => _NamesPanelByTitle ? _TitleId : _HeaderId;
+    private bool _HasTitle => TitleTemplate is not null || Title.HasValue();
+    private bool _HasDescription => Description.HasValue();
+
+    // The toggle of the default header is named by the title and then the description, the text it shows, pointing at
+    // the two of them rather than leaving the name to its content: a button whose name leaves out some of its visible
+    // text fails Label in Name (WCAG 2.5.3), and with the title first a speech-input user still reaches it by saying the
+    // title alone. Its content would bring the expander along as well - an ExpanderTemplate that reads "More" and then
+    // "Less", or the spinner standing in for it while busy - and a name that changes on every toggle, telling the state
+    // aria-expanded already tells, is not one a speech-input user can aim at. (A BitCard does it the other way, naming
+    // its stretched control by the title and describing it by the subtitle, because that control holds no text of its
+    // own: the subtitle is beside it rather than a part of its visible label, the way the description is here.)
+    // The heading and the panel are named by the title alone, pointing at it directly, so the outline of the page and
+    // its landmarks read the title of each section rather than the description along with it; with no title, the
+    // description is what names all three. A header that shows neither is left to name itself by its content, a
+    // HeaderAriaLabel names the header itself, and a HeaderTemplate draws a header this cannot see into, so under any
+    // of them the heading names itself and the panel is named by the header.
+    // Each of them points at the title and the description directly, since an aria-labelledby is not followed through
+    // another one, and goes by the same _HasTitle and _HasDescription the markup renders those two by, so it never
+    // points at an element that is not there.
+    private bool _NamesByText => HeaderTemplate is null && HeaderAriaLabel.HasValue() is false && (_HasTitle || _HasDescription);
+    private string? _HeaderLabelledBy => _NamesByText is false ? null
+                                       : _HasTitle && _HasDescription ? $"{_TitleId} {_DescriptionId}"
+                                       : _HasTitle ? _TitleId : _DescriptionId;
+    private string? _HeadingLabelledBy => _NamesByText ? (_HasTitle ? _TitleId : _DescriptionId) : null;
+    private string _PanelLabelledBy => _HeadingLabelledBy ?? _HeaderId;
 
     // Whether the collapsed panel is offered to find-in-page at all: only an accordion that can expand itself around
     // the match is, since the browser would otherwise reveal content inside a panel that stays shut.
