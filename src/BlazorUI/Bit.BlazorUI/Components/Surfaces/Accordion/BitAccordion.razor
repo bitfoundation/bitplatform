@@ -32,8 +32,6 @@
                     style="@Styles?.Header"
                     class="bit-acd-hdr @(_IsBusy ? "bit-acd-bsy" : "") @Classes?.Header"
                     aria-label="@HeaderAriaLabel"
-                    aria-labelledby="@(_NamesByTitle ? _TitleId : null)"
-                    aria-describedby="@(_DescribesByDescription ? _DescriptionId : null)"
                     aria-expanded="@(IsExpanded ? "true" : "false")"
                     aria-controls="@_ContentId"
                     aria-disabled="@((Disabled || ReadOnly) ? "true" : null)"

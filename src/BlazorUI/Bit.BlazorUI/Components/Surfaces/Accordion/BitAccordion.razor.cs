@@ -447,16 +447,14 @@ public partial class BitAccordion : BitComponentBase
     private string _TitleId => $"{_Id}-ttl";
     private string _DescriptionId => $"{_Id}-des";
 
-    // The default header names its toggle by the title alone and describes it by the description, rather than
-    // reading both out as one long name: the heading, the button and the panel are then all called what the title
-    // says, and the description is still read after them. A HeaderAriaLabel names the header itself, and a
-    // HeaderTemplate draws a header this cannot see into, so either of them leaves the naming as it was.
-    private bool _NamesByTitle => HeaderTemplate is null && HeaderAriaLabel is null && (TitleTemplate is not null || Title.HasValue());
-    private bool _DescribesByDescription => _NamesByTitle && Description.HasValue();
-
-    // The panel is named by what names the header: the title directly (an aria-labelledby is not followed through
-    // another one, so pointing at the header would name the panel by its whole content), the header otherwise.
-    private string _PanelLabelledBy => _NamesByTitle ? _TitleId : _HeaderId;
+    // The toggle of the default header is named by its own content, the title and then the description the way they
+    // are shown, rather than by the title alone: a button whose name leaves out some of its visible text fails Label in
+    // Name (WCAG 2.5.3), and with the title first a speech-input user still reaches it by saying the title alone.
+    // The panel is named by the title alone, pointing at it directly, since pointing at the header would name it by the
+    // description as well. A HeaderAriaLabel names the header itself, and a HeaderTemplate draws a header this cannot
+    // see into, so under either of them the panel is named by the header.
+    private bool _NamesPanelByTitle => HeaderTemplate is null && HeaderAriaLabel is null && (TitleTemplate is not null || Title.HasValue());
+    private string _PanelLabelledBy => _NamesPanelByTitle ? _TitleId : _HeaderId;
 
     // Whether the collapsed panel is offered to find-in-page at all: only an accordion that can expand itself around
     // the match is, since the browser would otherwise reveal content inside a panel that stays shut.
