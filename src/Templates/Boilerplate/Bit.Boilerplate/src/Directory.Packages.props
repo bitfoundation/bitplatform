@@ -10,7 +10,7 @@
         <PackageVersion Include="Bit.BlazorUI.Assets" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.BlazorUI.Extras" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.BlazorUI.AI" Version="11.0.0-pre-15" />
-        <PackageVersion Include="Bit.Bmage" Version="11.0.0-pre-15" />
+        <PackageVersion Include="Bit.Bmage.Blazor" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.BevTools" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.BevTools.Loader" Version="11.0.0-pre-15" />
         <PackageVersion Include="Bit.Bswup" Version="11.0.0-pre-15" />
