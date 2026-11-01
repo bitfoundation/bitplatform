@@ -197,7 +197,10 @@
             <strong>Revoking is immediate.</strong> Queued records of a revoked feature are discarded, and its
             device storage cleared: revoking any feature clears the offline queue (a stored request can hold that
             feature's records), <code>Sessions</code> the stored session, <code>UserTracking</code> the pseudo id and
-            the user id, which also leave the records still queued.
+            the user id, which also leave the records still queued. What already left the queue and holds a revoked
+            feature's records (or the user ids) is dropped too: not sent if it has not been yet, not retried, not stored -
+            and the other records of its batch go with it. A revoke of <code>Persistence</code> or <code>Sessions</code>,
+            which no record belongs to, drops nothing in flight.
         </li>
         <li>
             <strong>The choice is remembered</strong> (<code>Consent.Persist</code>, on by default) in

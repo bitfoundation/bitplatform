@@ -1,5 +1,7 @@
 ﻿import type { PersistenceConfig } from './config';
+import type { ConsentMark } from './consent';
 import { isRetryable, rebuildPartial, RETRYABLE_STATUS } from './exporters/azure';
+import { Features } from './features';
 import { newSpanId } from './ids';
 import { debug } from './log';
 import { countRequest } from './stats';
@@ -35,6 +37,11 @@ export interface TransportOptions {
     canPersist: () => boolean;
     /** Headers for a resent request; stored requests carry no headers (they may hold secrets). */
     headersFor?: (exporter: string, url: string) => Record<string, string> | null | undefined;
+    /**
+     * How many times any of the features was revoked so far (`ConsentManager.revocations`). A request built before a
+     * revoke of one of its features may hold that feature's records: it is neither sent, retried nor stored after it.
+     */
+    revocations?: (features: number) => number;
     sleep?: (ms: number) => Promise<void>;
 }
 
@@ -195,12 +202,15 @@ function post(request: OutgoingRequest, keepalive: boolean): Promise<Response> {
     }
 }
 
-/** What became of a request: accepted, refused for good, stored for later, or lost (no persistence). */
-type Outcome = 'delivered' | 'rejected' | 'kept' | 'dropped';
+/**
+ * What became of a request: accepted, refused for good, stored for later, lost (no persistence), or given up because a
+ * feature of its records was revoked after it was built.
+ */
+type Outcome = 'delivered' | 'rejected' | 'kept' | 'dropped' | 'withdrawn';
 
 /** How the attempts at a request ended, and what is still undelivered: after an Azure 206, only the items to retry. */
 interface Attempted {
-    outcome: 'delivered' | 'rejected' | 'failed';
+    outcome: 'delivered' | 'rejected' | 'failed' | 'withdrawn';
     remaining: OutgoingRequest;
 }
 
@@ -256,14 +266,18 @@ export class Transport {
     /** Whether the page is being unloaded for good: a keepalive request's fetch may fail then and still be sent. */
     private unloading = false;
     /** The stored request a resend pass is sending: out of storage until its outcome is known. */
-    private resent: { entry: PersistedRequest; keepalive: boolean; restored: boolean } | null = null;
+    private resent: { entry: PersistedRequest; keepalive: boolean; restored: boolean; mark: ConsentMark } | null = null;
 
     constructor(public options: TransportOptions) { }
 
-    /** Sends a request. During unload there is one keepalive attempt and no waiting. Never rejects. */
-    send(request: OutgoingRequest, unload = false): Promise<void> {
+    /**
+     * Sends a request. During unload there is one keepalive attempt and no waiting. Never rejects.
+     * @param mark The consent its records left the queue under; without one, a revoke of any feature from now on
+     * withdraws it.
+     */
+    send(request: OutgoingRequest, unload = false, mark?: ConsentMark): Promise<void> {
         // deliver() calls fetch before its first await, so during unload the request starts synchronously.
-        const promise: Promise<void> = this.deliver(request, unload).then(countRequest, e => debug('send failed', e)).then(() => {
+        const promise: Promise<void> = this.deliver(request, unload, mark || this.mark(Features.All)).then(countRequest, e => debug('send failed', e)).then(() => {
             const index = this.inflight.indexOf(promise);
             if (index >= 0) this.inflight.splice(index, 1);
         });
@@ -280,21 +294,33 @@ export class Transport {
         return this.options.persistence.enabled && this.options.canPersist();
     }
 
-    private async deliver(request: OutgoingRequest, unload: boolean): Promise<Outcome> {
+    private mark(features: number): ConsentMark {
+        return { features, revocations: this.options.revocations ? this.options.revocations(features) : 0 };
+    }
+
+    /** Whether one of the mark's features was revoked since: the request may hold the revoked feature's records. */
+    private withdrawn(mark: ConsentMark): boolean {
+        return this.mark(mark.features).revocations !== mark.revocations;
+    }
+
+    private async deliver(request: OutgoingRequest, unload: boolean, mark: ConsentMark): Promise<Outcome> {
         // A request that cannot have keepalive while the page unloads would be cancelled with the page: stored, it is
         // sent on the next visit. Without persistence a plain request is still worth it - the page may only be hidden.
-        if (unload && !fitsKeepalive(request) && this.canPersist()) return this.persist(request);
-        const result = await this.attempt(request, unload, MAX_ATTEMPTS);
-        return result.outcome === 'failed' ? this.persist(result.remaining) : result.outcome;
+        if (unload && !fitsKeepalive(request) && this.canPersist()) return this.persist(request, mark);
+        const result = await this.attempt(request, unload, MAX_ATTEMPTS, mark);
+        return result.outcome === 'failed' ? this.persist(result.remaining, mark) : result.outcome;
     }
 
     /**
      * Posts a request until it is delivered, refused for good, or out of attempts: retries with exponential backoff
-     * (and Retry-After), and narrows an Azure 206 to the items worth retrying. Calls fetch before its first await.
+     * (and Retry-After), and narrows an Azure 206 to the items worth retrying. Calls fetch before its first await. Gives
+     * up, as withdrawn, once a feature of `mark` is revoked: before any attempt, the first included - a request may have
+     * waited for its compression since its records left the queue.
      */
-    private async attempt(request: OutgoingRequest, unload: boolean, maxAttempts: number): Promise<Attempted> {
+    private async attempt(request: OutgoingRequest, unload: boolean, maxAttempts: number, mark: ConsentMark): Promise<Attempted> {
         let current = request;
         for (let attempt = 1; ; attempt++) {
+            if (this.withdrawn(mark)) return { outcome: 'withdrawn', remaining: current };
             const keepalive = fitsKeepalive(current);
             let response: Response | null = null;
             try {
@@ -340,8 +366,11 @@ export class Transport {
         }
     }
 
-    /** Stores a request for a later resend, if persistence is configured and consented; otherwise drops it. */
-    async persist(request: OutgoingRequest): Promise<Outcome> {
+    /**
+     * Stores a request for a later resend, if persistence is configured and consented and the request was not withdrawn
+     * (a feature of `mark` revoked since); otherwise drops it.
+     */
+    async persist(request: OutgoingRequest, mark: ConsentMark): Promise<Outcome> {
         if (!this.canPersist()) {
             debug('dropped request (no persistence)', request.url);
             return 'dropped';
@@ -349,6 +378,11 @@ export class Transport {
         let body: Uint8Array | null = request.raw || null;
         if (!body) body = !request.contentEncoding ? request.body : request.contentEncoding === 'gzip' ? await gunzip(request.body) : null;
         if (!body) return 'dropped';
+        // After the await: a revoke clears the stored requests, and one from before it must not come back.
+        if (this.withdrawn(mark)) {
+            debug('dropped request (consent revoked)', request.url);
+            return 'withdrawn';
+        }
         const list = loadPersisted();
         list.push({
             id: newSpanId(),
@@ -391,6 +425,8 @@ export class Transport {
             // Revoked mid-pass: the stored requests are cleared, and must not come back.
             if (!this.canPersist()) return;
             if (unreachable.indexOf(stored.url) >= 0) continue;
+            // Any revoke clears the stored requests, whichever feature it is of.
+            const mark = this.mark(Features.All);
             // Taken out of storage only as it is sent: the rest of the backlog survives the page going away mid-pass,
             // and another tab's pass cannot send it too (gone already when that tab got there first).
             const entry = takePersisted(stored.id, config);
@@ -409,10 +445,10 @@ export class Transport {
                 body,
                 time: entry.time,
             };
-            const resent = (this.resent = { entry, keepalive: fitsKeepalive(request), restored: false });
+            const resent = (this.resent = { entry, keepalive: fitsKeepalive(request), restored: false, mark });
             let result: Attempted;
             try {
-                result = await this.attempt(request, false, 1);
+                result = await this.attempt(request, false, 1, mark);
             } finally {
                 this.resent = null;
             }
@@ -425,7 +461,8 @@ export class Transport {
             // Partly accepted (an Azure 206), the backend is up: the rest of its backlog still goes. What is left is
             // stored again either way - counted as kept when it was first stored, it is counted again only if lost.
             if (result.remaining === request) unreachable.push(entry.url);
-            if ((await this.persist(result.remaining)) === 'dropped') countRequest('dropped');
+            const kept = await this.persist(result.remaining, mark);
+            if (kept !== 'kept') countRequest(kept);
         }
     }
 
@@ -438,7 +475,7 @@ export class Transport {
     pageHidden(unloading = false): void {
         if (unloading) this.unloading = true;
         const resent = this.resent;
-        if (!resent || resent.keepalive || resent.restored || !this.canPersist()) return;
+        if (!resent || resent.keepalive || resent.restored || !this.canPersist() || this.withdrawn(resent.mark)) return;
         resent.restored = true;
         savePersisted(loadPersisted().concat([resent.entry]), this.options.persistence);
     }

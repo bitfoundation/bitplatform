@@ -259,6 +259,7 @@ public class OtlpReceiverTests
         var budget = 8 * 1024 + 2 * OtlpJsonDecoder.MaxValueLength;
         Assert.IsTrue(record.Resource.Sum(a => a.Key.Length + a.Value.Length) <= budget, "Every record of a batch carries its resource into the feed.");
         Assert.IsTrue(record.Attributes.Sum(a => a.Key.Length + a.Value.Length) <= budget + 64);
+        Assert.IsTrue(record.Attributes.ContainsKey("k0"), "What fits in the budget is kept.");
         Assert.AreEqual(OtlpJsonDecoder.MaxValueLength + 3, record.Body!.Length);
         Assert.AreEqual("0123456789abcdef", record.SessionId, "A record past the budget still belongs to its session, not to the shared bucket.");
 

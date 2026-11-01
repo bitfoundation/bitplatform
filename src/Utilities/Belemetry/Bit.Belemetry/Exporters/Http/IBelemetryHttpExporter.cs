@@ -9,6 +9,10 @@ internal interface IBelemetryHttpExporter
     /// <summary>Serializes a batch into one request per signal it sends.</summary>
     IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch);
 
+    /// <summary>
+    /// Whether this exporter, as configured now, posts to <paramref name="url"/>: a stored request for another address
+    /// is dropped rather than sent there with the current headers.
+    /// </summary>
     bool PostsTo(string url);
 
     /// <summary>The headers every request carries; applied at send time, never persisted.</summary>

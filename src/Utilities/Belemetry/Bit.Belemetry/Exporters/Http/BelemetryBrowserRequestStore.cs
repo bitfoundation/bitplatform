@@ -15,6 +15,7 @@ internal sealed class BelemetryBrowserRequestStore(BelemetryBrowserBridgeRegistr
 
     public ValueTask DeleteAsync(string id, CancellationToken cancellationToken) => ValueTask.CompletedTask;
 
-    // The script clears its own queue when Persistence is revoked through setConsent.
+    // The script clears its own queue on any revoke, and gives up a request handed to it after a revoke it saw first
+    // (BelemetryHttpRequest.Features), so nothing of before the revoke is stored there again.
     public ValueTask ClearAsync() => ValueTask.CompletedTask;
 }

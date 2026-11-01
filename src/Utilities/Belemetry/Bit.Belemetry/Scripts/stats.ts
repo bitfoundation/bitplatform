@@ -10,7 +10,10 @@ export function countDropped(reason: string, count = 1): void {
     if (count > 0) dropped[reason] = (dropped[reason] || 0) + count;
 }
 
-/** Counts a request's outcome: delivered, rejected (refused for good), kept (stored for later), dropped (lost). */
+/**
+ * Counts a request's outcome: delivered, rejected (refused for good), kept (stored for later), dropped (lost), withdrawn
+ * (a feature of its records was revoked after it was built: neither sent again nor stored).
+ */
 export function countRequest(outcome: string): void {
     requests[outcome] = (requests[outcome] || 0) + 1;
 }

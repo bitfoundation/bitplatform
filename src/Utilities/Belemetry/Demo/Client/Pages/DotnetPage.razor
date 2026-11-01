@@ -202,7 +202,9 @@
                     <td>
                         Records handed to an exporter: <code>delivered</code>, <code>rejected</code> (refused for good,
                         including the items a partial success refused), <code>stored</code> (kept for a retry, and counted
-                        as <code>delivered</code> again when the retry succeeds), <code>failed</code> (lost)
+                        as <code>delivered</code> again when the retry succeeds), <code>failed</code> (lost),
+                        <code>withdrawn</code> (consent for a feature of its records was revoked after it left the queue:
+                        neither sent again nor stored)
                     </td>
                 </tr>
             </tbody>

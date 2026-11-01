@@ -344,7 +344,8 @@
         <code>BitBelemetry.getStats()</code> says what the script dropped since the page loaded and why
         (<code>not_consented</code>, <code>error_limit</code>, <code>queue_full</code>, <code>sampled_out</code>, ...)
         and what became of its requests (<code>delivered</code>, <code>rejected</code>, <code>kept</code> for a later
-        retry, <code>dropped</code>) - the first thing to look at when telemetry does not arrive. <code>queued</code> is
+        retry, <code>dropped</code>, <code>withdrawn</code> by a consent revoke) - the first thing to look at when
+        telemetry does not arrive. <code>queued</code> is
         what waits for the next export, and <code>pending</code> what is held until a consent decision. On the .NET
         side the same counts are metrics on the <code>Bit.Belemetry</code> meter, once it is added to
         <code>Metrics.Meters</code> (this demo does - see <a href="/dotnet">.NET instrumentation</a>).
