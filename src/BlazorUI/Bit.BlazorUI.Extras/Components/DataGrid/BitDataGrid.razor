@@ -338,7 +338,10 @@
                     {
                         @* The filter row is always the last header row, so its aria-rowindex is HeaderRowCount. *@
                         <div class="bit-dtg-row bit-dtg-filter-row @Classes?.FilterRow" role="row" aria-rowindex="@HeaderRowCount" style="grid-template-columns:var(--bit-dtg-template);@Styles?.FilterRow">
-                            @RenderSpecialCells("bit-dtg-hcell", "columnheader")
+                            @* A cell with no editor in it (under a column that can't be filtered, the command column or a
+                               leading one) has nothing to head its column with, and a column header with no name is one
+                               assistive tech announces as an unnamed header: it is a plain, empty cell instead. *@
+                            @RenderSpecialCells("bit-dtg-hcell", "gridcell")
                             @foreach (var slot in ColumnSlots)
                             {
                                 if (slot.Column is null)
@@ -347,8 +350,9 @@
                                     continue;
                                 }
                                 var column = slot.Column;
-                                <div class="bit-dtg-hcell@(FrozenClass(column))" role="columnheader" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
-                                    @if (ColumnFilterable(column))
+                                var filterable = ColumnFilterable(column);
+                                <div class="bit-dtg-hcell@(FrozenClass(column))" role="@(filterable ? "columnheader" : "gridcell")" aria-colindex="@AriaColIndex(slot.ColIndex)" style="@FrozenStyle(column)">
+                                    @if (filterable)
                                     {
                                         @RenderFilterEditor(column)
                                     }
@@ -356,7 +360,7 @@
                             }
                             @if (HasCommandColumn)
                             {
-                                <div class="bit-dtg-hcell" role="columnheader" aria-colindex="@AriaCommandColIndex"></div>
+                                <div class="bit-dtg-hcell" role="gridcell" aria-colindex="@AriaCommandColIndex"></div>
                             }
                         </div>
                     }

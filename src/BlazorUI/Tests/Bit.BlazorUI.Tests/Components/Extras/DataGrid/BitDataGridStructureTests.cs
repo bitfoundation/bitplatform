@@ -375,6 +375,26 @@ public class BitDataGridStructureTests : BunitTestContext
     }
 
     [TestMethod]
+    public void TheFilterRowHasNoColumnHeaderWithoutAnEditor()
+    {
+        var columns = Columns(Column<Row>("Name"), Column<Row>("Kind", c => c.Add("Filterable", false)), Column<Row>("Price"));
+        var component = RenderGrid(columns, p =>
+        {
+            p.Add(x => x.Filterable, true);
+            p.Add(x => x.Editable, true);
+            p.Add(x => x.ShowRowNumbers, true);
+            p.Add(x => x.SelectionMode, BitSelectionMode.Multiple);
+        });
+
+        var cells = component.FindAll(".bit-dtg-filter-row > [aria-colindex]");
+        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5", "6" }, cells.Select(c => c.GetAttribute("aria-colindex")).ToArray());
+        CollectionAssert.AreEqual(new[] { "gridcell", "gridcell", "columnheader", "gridcell", "columnheader", "gridcell" },
+            cells.Select(c => c.GetAttribute("role")).ToArray(),
+            "only the cells holding a filter editor head their column; the row-number, selection, unfilterable and command cells are plain cells");
+        Assert.IsTrue(cells.Where(c => c.GetAttribute("role") == "columnheader").All(c => c.QuerySelector(".bit-dtg-filter-input") is not null));
+    }
+
+    [TestMethod]
     public void ClearButtonsHandTheFocusOnInsteadOfDroppingIt()
     {
         var component = RenderGrid(configure: p =>
