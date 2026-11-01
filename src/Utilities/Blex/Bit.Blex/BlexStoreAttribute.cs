@@ -19,6 +19,16 @@ public sealed class BlexStoreAttribute : Attribute
     /// </summary>
     public bool Persist { get; set; }
 
+    /// <summary>
+    /// The version of this store's saved state, for a store marked <see cref="Persist"/>. When greater
+    /// than zero it is used for this store instead of <see cref="BlexPersistenceOptions.Version"/>: the
+    /// store's state is saved in a version envelope, and state saved under another version goes to
+    /// <see cref="BlexPersistenceOptions.Migrate"/> with the store's name and the saved version, or is
+    /// discarded when there is no migration. Raise it when the store's saved state no longer fits, and
+    /// the other stores keep theirs. Defaults to <c>0</c>: the store follows
+    /// <see cref="BlexPersistenceOptions.Version"/>. Cannot be negative (<c>BLEX024</c>), and has no
+    /// effect without <see cref="Persist"/> (<c>BLEX025</c>).
+    /// </summary>
     public int Version { get; set; }
 
     /// <summary>

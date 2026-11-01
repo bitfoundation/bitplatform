@@ -29,14 +29,24 @@ public sealed class BlexPersistenceOptions
     /// a version envelope; on load, a stored version that differs from this value is passed to
     /// <see cref="Migrate"/> (or discarded when no migration is registered). Bump this whenever a
     /// persisted store's shape changes. Defaults to <c>0</c> (no envelope, no version checking).
+    /// A store with a version of its own (<see cref="BlexStoreAttribute.Version"/>) uses that instead,
+    /// so this value only covers the stores without one.
     /// </summary>
     public int Version { get; set; }
 
     /// <summary>
-    /// Migration hook invoked when a persisted payload's version differs from <see cref="Version"/>.
-    /// Receives the store name, the stored version (<c>0</c> for pre-versioning payloads) and the
-    /// stored state; returns the migrated state, or <c>null</c> to discard the payload.
+    /// Migration hook invoked when a persisted payload's version differs from the store's version:
+    /// <see cref="BlexStoreAttribute.Version"/> for a store that has one, <see cref="Version"/> for
+    /// every other store. Receives the store name, the stored version (<c>0</c> for pre-versioning
+    /// payloads) and the stored state; returns the migrated state, or <c>null</c> to discard the payload.
     /// </summary>
+    /// <remarks>
+    /// One hook serves both kinds of version, so check the store name before the version: for a store
+    /// with a version of its own, the stored version is that store's version, not the app's. A payload
+    /// the store saved before it had a version of its own arrives with the app's version it was saved
+    /// under. A hook that hands back every other store's state unchanged also keeps the state of a
+    /// store whose own version was raised; return <c>null</c> for that store to drop it.
+    /// </remarks>
     public Func<string, int, JsonObject, JsonObject?>? Migrate { get; set; }
 
     /// <summary>

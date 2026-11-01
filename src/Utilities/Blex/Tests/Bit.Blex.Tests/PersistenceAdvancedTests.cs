@@ -220,6 +220,33 @@ public class PersistenceAdvancedTests
     }
 
     [TestMethod]
+    public async Task StoreVersion_StateSavedUnderTheAppVersion_GoesToMigrateWithTheAppVersion()
+    {
+        // Saved before the store had a version of its own: the version it arrives with is the app's.
+        var (_, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+        storage.Data["blex:layout"] = """{"__blexVersion":3,"state":{"View":"list"}}""";
+
+        var migrated = new List<(string, int)>();
+        var options = new BlexPersistenceOptions
+        {
+            Version = 3,
+            Migrate = (storeName, fromVersion, state) =>
+            {
+                migrated.Add((storeName, fromVersion));
+                return state;
+            },
+        };
+
+        await using var persistor = new BlexStatePersistor(manager, storage, options);
+        await persistor.StartAsync();
+
+        CollectionAssert.AreEqual(new[] { ("layout", 3) }, migrated);
+        Assert.AreEqual("list", layout.View); // a hook that hands state back keeps it
+    }
+
+    [TestMethod]
     public async Task Debounce_CoalescesBurstsIntoOneWrite()
     {
         var (store, manager, storage) = Setup();

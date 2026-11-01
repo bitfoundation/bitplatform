@@ -124,6 +124,27 @@
             </p>
         </Callout>
 
+        <h3 id="store-version">A store's own version</h3>
+        <p>
+            One <code>Version</code> for the whole app means that changing one store touches every other:
+            the app's version goes up, and <code>Migrate</code> has to hand the others' state back or they
+            lose it too. <code>[BlexStore(Persist = true, Version = 2)]</code> gives one store a version of
+            its own instead. It wins over <code>options.Version</code> for that store; state the store saved
+            under another version goes to <code>Migrate</code> with the store's name, or is dropped when
+            there is no <code>Migrate</code>. The other stores keep following <code>options.Version</code>,
+            and so does a store with <code>Version = 0</code>, the default.
+        </p>
+        <CodeBlock Code="@StoreVersion" />
+
+        <Callout Kind="Callout.CalloutKind.Warning" Title="One Migrate, two kinds of version">
+            <p>
+                For a store with a version of its own, <code>fromVersion</code> is that store's version - or,
+                for what it saved before it had one, the app's version it was saved under. Check the store
+                name before the version. A hook that hands every other store's state back unchanged keeps
+                this store's old state too: return <code>null</code> for it to drop that state.
+            </p>
+        </Callout>
+
         <h3 id="transient">Persisting only part of a store</h3>
         <p>
             Some state belongs to one visit: a search box's text, an "is the drawer open" flag, a cached
@@ -402,8 +423,8 @@
         new("string KeyPrefix", "Prepended to every store's key. Default <code>\"blex:\"</code>, giving <code>blex:settings</code>."),
         new("TimeSpan? DebounceInterval", "Coalesce a burst of actions into one write after this quiet period. Default <code>null</code> - write after every action."),
         new("TimeSpan? DebounceMaxDelay", "Upper bound on how long a debounced write may be postponed under a steady stream of actions. Only meaningful with <code>DebounceInterval</code>."),
-        new("int Version", "Schema version. Above zero, payloads are wrapped in a version envelope and checked on load. Default <code>0</code> - no envelope, no checking."),
-        new("Func&lt;string, int, JsonObject, JsonObject?&gt;? Migrate", "Called when a stored version differs from <code>Version</code>. Receives the store name, the stored version and the state; return the migrated state, or <code>null</code> to discard."),
+        new("int Version", "Schema version. Above zero, payloads are wrapped in a version envelope and checked on load. Default <code>0</code> - no envelope, no checking. A store with <a href=\"persistence#store-version\">a version of its own</a> uses that instead."),
+        new("Func&lt;string, int, JsonObject, JsonObject?&gt;? Migrate", "Called when a stored version differs from the store's version - its own, or <code>Version</code>. Receives the store name, the stored version and the state; return the migrated state, or <code>null</code> to discard."),
         new("Func&lt;string, JsonObject, JsonObject?&gt;? Partialize", "Projects each store's snapshot before it is written. Receives the store name and its state; return what to persist, or <code>null</code> to skip that store's write and leave storage as-is."),
         new("Action&lt;string, JsonObject?&gt;? OnRehydrated", "Called once per persistent store as its stored slice is applied. Receives the store name and the applied state, or <code>null</code> when nothing was stored."),
         new("bool SkipHydration", "Start saving without restoring. Call <code>RehydrateAsync()</code> to apply stored state later. Default <code>false</code>."),
@@ -497,6 +518,22 @@
                 return state;      // or null to discard the payload entirely
             };
         });
+        """;
+
+    private const string StoreVersion = """
+        // Raised when the saved layout no longer fits. The other stores keep their saved state.
+        [BlexStore(Name = "layout", Persist = true, Version = 2)]
+        public partial class LayoutStore
+        {
+            [BlexState] private string _view = "grid";
+        }
+
+        // Only needed to keep older layouts: without Migrate, they are dropped.
+        options.Migrate = (storeName, fromVersion, state) => storeName switch
+        {
+            "layout" when fromVersion < 2 => state["View"]?.GetValue<string>() == "table" ? null : state,
+            _ => state,
+        };
         """;
 
     private const string Transient = """

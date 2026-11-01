@@ -229,6 +229,22 @@ public sealed class BlexGenerator : IIncrementalGenerator
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor NegativeStoreVersion = new(
+        "BLEX024",
+        "Store version cannot be negative",
+        "Blex store '{0}' sets a negative Version; use 0 to have the store follow BlexPersistenceOptions.Version, or a positive number to give it a version of its own",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor VersionWithoutPersist = new(
+        "BLEX025",
+        "Store version has no effect without Persist",
+        "Blex store '{0}' sets Version but not Persist = true, so none of its state is saved and the version is never used; add Persist = true or remove Version",
+        "Bit.Blex.Generators",
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
     private static readonly DiagnosticDescriptor ConflictingBaseType = new(
         "BLEX016",
         "Store cannot have another base class",
@@ -372,6 +388,18 @@ public sealed class BlexGenerator : IIncrementalGenerator
             var rollbackArg = storeAttr.NamedArguments.FirstOrDefault(a => a.Key == "RollbackOnError").Value;
             if (rollbackArg.Value is bool rb)
                 rollbackOnError = rb;
+        }
+
+        // Either would otherwise be ignored without a word: a negative version falls back to the app's,
+        // and a store that saves nothing never reads its version.
+        if (version < 0)
+        {
+            Report(NegativeStoreVersion, classDecl.Identifier.GetLocation(), symbol.Name);
+            version = 0;
+        }
+        else if (version > 0 && !persist)
+        {
+            Report(VersionWithoutPersist, classDecl.Identifier.GetLocation(), symbol.Name);
         }
 
         var states = new List<BlexStateModel>();
@@ -611,9 +639,21 @@ public sealed class BlexGenerator : IIncrementalGenerator
             }
         }
 
+        // The base-class properties the generated partial overrides: Name always, the rest when the
+        // attributes ask for them (see Emit).
+        var overridden = new List<string> { "Name" };
+        if (persist)
+            overridden.Add("Persist");
+        if (version > 0)
+            overridden.Add("PersistVersion");
+        if (enforceActions)
+            overridden.Add("EnforcesActions");
+        if (states.Any(s => !s.Persist))
+            overridden.Add("TransientStateKeys");
+
         // A name collision would emit uncompilable code; report BLEX005 and emit nothing.
         var beforeDuplicates = diagnostics.Count;
-        var memberNames = DetectDuplicates(storeName, states, computeds, actions, effects, symbol, Report);
+        var memberNames = DetectDuplicates(storeName, states, computeds, actions, effects, overridden, symbol, Report);
         if (diagnostics.Count > beforeDuplicates)
             return Fail();
 
@@ -962,6 +1002,7 @@ public sealed class BlexGenerator : IIncrementalGenerator
         List<BlexComputedModel> computeds,
         List<BlexActionModel> actions,
         List<BlexEffectModel> effects,
+        List<string> overridden,
         INamedTypeSymbol symbol,
         System.Action<DiagnosticDescriptor, Location?, string[]> report)
     {
@@ -976,6 +1017,14 @@ public sealed class BlexGenerator : IIncrementalGenerator
         {
             if (!member.IsImplicitlyDeclared)
                 seen.Add(member.Name);
+        }
+
+        // An overridden property's name is reserved, so a store declaring it too (its own PersistVersion
+        // next to [BlexStore(Version = 2)]) is not caught by Check: look for it by name.
+        foreach (var name in overridden)
+        {
+            if (symbol.GetMembers(name).Any(m => !m.IsImplicitlyDeclared))
+                report(DuplicateMember, symbol.Locations.FirstOrDefault(), [storeName, name]);
         }
 
         void Check(string name)

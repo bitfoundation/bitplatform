@@ -79,6 +79,39 @@ public class DiagnosticTests
     }
 
     [TestMethod]
+    [DataRow("Persist = true, Version = 2", "public override int PersistVersion => 3;")]
+    [DataRow("Persist = true", "public override bool Persist => true;")]
+    [DataRow("EnforceActions = true", "protected override bool EnforcesActions => true;")]
+    [DataRow("", "public override string Name => \"s\";")]
+    public void OwnMemberNamedLikeAnOverriddenProperty_ReportsBLEX005(string arguments, string member)
+    {
+        // The generator overrides these too: without BLEX005 the build would fail inside generated code.
+        var result = GeneratorTestHelper.Run(Usings + $$"""
+            [BlexStoreAttribute({{arguments}})] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                {{member}}
+            }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX005"));
+    }
+
+    [TestMethod]
+    public void OwnPersistVersion_WithoutAStoreVersion_IsFine()
+    {
+        // The generator overrides PersistVersion only for [BlexStore(Version = n)]; a store can still write its own.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(Persist = true)] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                public override int PersistVersion => 3;
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX005"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
     public void NestedStore_ReportsBLEX006()
     {
         var result = GeneratorTestHelper.Run(Usings + """
@@ -402,6 +435,40 @@ public class DiagnosticTests
             }
             """);
         Assert.IsTrue(result.HasDiagnostic("BLEX023"));
+    }
+
+    [TestMethod]
+    public void NegativeStoreVersion_ReportsBLEX024()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(Persist = true, Version = -1)] public partial class S { [BlexStateAttribute] private int _x; }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX024"));
+        Assert.DoesNotContain("PersistVersion", result.SingleGenerated);
+    }
+
+    [TestMethod]
+    public void StoreVersionWithoutPersist_ReportsBLEX025()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(Version = 2)] public partial class S { [BlexStateAttribute] private int _x; }
+            """);
+        Assert.IsTrue(result.HasDiagnostic("BLEX025"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
+    [DataRow("Persist = true, Version = 2")]
+    [DataRow("Persist = true, Version = 0")]
+    [DataRow("Version = 0")]
+    public void StoreVersion_WithPersistOrZero_IsFine(string arguments)
+    {
+        var result = GeneratorTestHelper.Run(Usings + $$"""
+            [BlexStoreAttribute({{arguments}})] public partial class S { [BlexStateAttribute] private int _x; }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX024"));
+        Assert.IsFalse(result.HasDiagnostic("BLEX025"));
+        Assert.IsEmpty(result.CompileErrors());
     }
 
     [TestMethod]

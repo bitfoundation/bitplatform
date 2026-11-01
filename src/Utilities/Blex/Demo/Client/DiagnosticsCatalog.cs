@@ -422,6 +422,40 @@ public static class DiagnosticsCatalog
             [BlexEffect(TimeoutMilliseconds = 5000)]
             private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
             """),
+
+        new("BLEX024", "Store version cannot be negative", true,
+            "<code>[BlexStore(Version = n)]</code> gives a persisted store a version of its own. Only a positive one does: <code>0</code> means the store follows <code>BlexPersistenceOptions.Version</code>, and a negative one would quietly do the same, so the version you wrote would never be checked.",
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = -1)]   // BLEX024
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """,
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 1)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """),
+
+        new("BLEX025", "Store version has no effect without Persist", false,
+            "A store's <code>Version</code> versions the state it saves. A store without <code>Persist = true</code> saves nothing, so the version is never written or checked - usually <code>Persist = true</code> was left out.",
+            """
+            [BlexStore(Name = "layout", Version = 2)]                    // BLEX025
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """,
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 2)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """),
     ];
 
     /// <summary>The entry for one diagnostic id (case-insensitive), or <c>null</c>.</summary>

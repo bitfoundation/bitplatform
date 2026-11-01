@@ -731,7 +731,22 @@ builder.Services.AddBitBlexLocalStoragePersistence(options =>
 - **A store's own version** - `[BlexStore(Persist = true, Version = 2)]` versions one store's saved
   state on its own, so a store that changes doesn't take the others' saved state with it. It wins
   over `options.Version` for that store, and a stored version that differs goes to `options.Migrate`
-  with the store's name, or is discarded when there is none.
+  with the store's name, or is discarded when there is none. `Version = 0` (the default) follows
+  `options.Version`; a negative version (`BLEX024`) or one on a store without `Persist = true`
+  (`BLEX025`) is reported. The one `Migrate` now sees two kinds of version, so check the store name
+  first: for this store, `fromVersion` is its own version (or, for a payload saved before it had one,
+  the app's version it was saved under), and a hook that hands other stores' state back unchanged
+  keeps this store's too - return `null` for it to drop its old state:
+
+```csharp
+options.Migrate = (storeName, fromVersion, state) => storeName switch
+{
+    "layout" => null,                                     // [BlexStore(Version = 2)]: drop older layouts
+    "settings" when fromVersion < 2 => UpgradeSettings(state),
+    _ => state,
+};
+```
+
 - **Restore write-back** - undo/redo and DevTools time-travel write the restored state back to
   storage, so a reload never resurrects the pre-restore state.
 - **Ordered writes** - saves are serialized in dispatch order; a stale payload can't overwrite a
@@ -1299,7 +1314,8 @@ compiles cleanly and silently generates nothing at all · `BLEX019` negative
 `DebounceMilliseconds` · `BLEX020` a store member already named `Actions`, so the typed action
 descriptors are not generated (warning) · `BLEX021` two actions dispatched under one name ·
 `BLEX022` negative `RetryCount`/`RetryDelayMilliseconds`/`TimeoutMilliseconds` · `BLEX023`
-`TimeoutMilliseconds` on an effect without a `CancellationToken` parameter.
+`TimeoutMilliseconds` on an effect without a `CancellationToken` parameter · `BLEX024` a negative
+store `Version` · `BLEX025` a store `Version` without `Persist = true` (warning).
 
 ## Time-travel debugging
 
