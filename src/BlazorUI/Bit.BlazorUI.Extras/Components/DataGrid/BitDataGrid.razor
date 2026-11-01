@@ -32,7 +32,7 @@
                 @ToolbarTemplate
                 @if (Editable && NewItemFactory is not null)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="AddNewRowAsync">@Strings.AddRowText</button>
+                    RenderToolbarItem(__builder, _addRowButton!);
                 }
                 @if (SearchActive)
                 {
@@ -66,26 +66,19 @@
             <div class="bit-dtg-toolbar-end">
                 @if (_filters.Count > 0)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="ClearFiltersFromToolbarAsync">@Strings.ClearFiltersText</button>
+                    RenderToolbarItem(__builder, _clearFiltersButton!);
                 }
                 @if (ShowCsvExport)
                 {
-                    @RenderExportButton(Strings.ExportCsvText, BitIconInfo.From(CsvExportIcon, CsvExportIconName), CsvExportGlyph, () => ExportCsvAsync())
+                    RenderToolbarItem(__builder, _csvExportButton!);
                 }
                 @if (ShowExcelExport)
                 {
-                    @RenderExportButton(Strings.ExportExcelText, BitIconInfo.From(ExcelExportIcon, ExcelExportIconName), ExcelExportGlyph, () => ExportExcelAsync())
+                    RenderToolbarItem(__builder, _excelExportButton!);
                 }
                 @if (ShowColumnChooser)
                 {
-                    @* A disclosure, not a popup: the panel it shows is a group of checkboxes inline with the grid, so
-                       aria-expanded/aria-controls describe it and aria-haspopup (a menu, a listbox) would not. The
-                       dropdown arrow is decorative; aria-label keeps it out of the accessible name. *@
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser"
-                            @ref="_columnChooserButton"
-                            aria-expanded="@(_showColumnChooserPanel ? "true" : "false")"
-                            aria-controls="@_columnChooserPanelId"
-                            aria-label="@Strings.ColumnsText">@Strings.ColumnsText <span aria-hidden="true">▾</span></button>
+                    RenderToolbarItem(__builder, _columnChooserButton!);
                 }
             </div>
         </div>
@@ -591,53 +584,47 @@
         }
     }
 
-    // A toolbar export button: its text, or with ExportIconOnly its icon alone - the text then naming it for assistive
-    // tech and as its tooltip. An icon set for it shows beside the text as well; an icon-only button given none draws
-    // the built-in glyph, so it never renders empty.
-    private RenderFragment RenderExportButton(string text, BitIconInfo? icon, RenderFragment glyph, Func<Task> export) => __builder =>
+    // A button of the toolbar (see UpdateToolbarButtons). With ToolbarIconOnly it is its icon alone, and its text - still
+    // its accessible name - is shown by a tooltip on hover, on keyboard focus and on a touch, where a title would show
+    // to the mouse alone. The tooltip leaves itself out of the accessibility tree, which has the name already.
+    private void RenderToolbarItem(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, ToolbarButton button)
     {
-        <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button"
-                class="bit-dtg-btn@(ExportIconOnly ? " bit-dtg-btn-icon-only" : null)"
-                title="@(ExportIconOnly ? text : null)"
-                aria-label="@(ExportIconOnly ? text : null)"
-                @onclick="export">
-            @if (icon is { IsEmpty: false })
+        if (ToolbarIconOnly)
+        {
+            <BitTooltip Text="@button.Text(Strings)" Relationship="BitTooltipRelationship.None" Anchor="@button.Anchor" />
+        }
+        else
+        {
+            RenderToolbarButton(__builder, button);
+        }
+    }
+
+    // The Columns button is a disclosure, not a popup: the panel it shows is a group of checkboxes inline with the grid,
+    // so aria-expanded/aria-controls describe it and aria-haspopup (a menu, a listbox) would not. Its dropdown arrow is
+    // decorative; aria-label keeps it out of the accessible name.
+    private void RenderToolbarButton(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, ToolbarButton button)
+    {
+        var text = button.Text(Strings);
+        <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="@button.CssClass"
+                aria-label="@(ToolbarIconOnly || button.Disclosure ? text : null)"
+                aria-expanded="@(button.Disclosure ? (_showColumnChooserPanel ? "true" : "false") : null)"
+                aria-controls="@(button.Disclosure ? _columnChooserPanelId : null)"
+                @ref="button.Element"
+                @onclick="button.OnClick">
+            @if (button.IconClass is not null)
             {
-                <i class="bit-dtg-btn-ico @icon.GetCssClasses()" aria-hidden="true"></i>
+                <i class="@button.IconClass" aria-hidden="true">@button.IconContent</i>
             }
-            else if (ExportIconOnly)
-            {
-                @glyph
-            }
-            @if (ExportIconOnly is false)
+            @if (ToolbarIconOnly is false)
             {
                 @text
             }
+            @if (button.Disclosure)
+            {
+                <span aria-hidden="true">▾</span>
+            }
         </button>
-    };
-
-    // The built-in glyphs of the icon-only export buttons - a page of text lines for CSV, a page with a table for Excel.
-    // Inline SVG drawn in the text color rather than font icons, since the grid cannot count on an icon font being loaded.
-    private static readonly RenderFragment CsvExportGlyph = __builder =>
-    {
-        <svg class="bit-dtg-btn-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <path d="M9.5 1.5H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5Z" />
-            <path d="M9.5 1.5V5H13" />
-            <path d="M5.5 8h5M5.5 10.25h5M5.5 12.5h3" />
-        </svg>
-    };
-
-    private static readonly RenderFragment ExcelExportGlyph = __builder =>
-    {
-        <svg class="bit-dtg-btn-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <path d="M9.5 1.5H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5Z" />
-            <path d="M9.5 1.5V5H13" />
-            <rect x="5.5" y="7.5" width="5" height="5" rx="0.5" />
-            <path d="M5.5 10h5M8 7.5v5" />
-        </svg>
-    };
+    }
 
     // The skeleton row standing in for a row still being read, cached: it is rendered once per row of a window.
     private RenderFragment? _placeholderRow;
@@ -1103,7 +1090,7 @@
 
         CloseColumnChooser();
 
-        try { await _columnChooserButton.FocusAsync(); }
+        try { if (_columnChooserButton is { } button) await button.Element.FocusAsync(); }
         catch (JSException) { }
         catch (JSDisconnectedException) { }
         catch (InvalidOperationException) { }

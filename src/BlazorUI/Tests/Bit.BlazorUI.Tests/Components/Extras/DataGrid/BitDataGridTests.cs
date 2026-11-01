@@ -2496,92 +2496,183 @@ public class BitDataGridTests : BunitTestContext
         StringAssert.StartsWith((string)args[1]!, "﻿");
     }
 
-    // ------------------------------------------------------ Export buttons
+    // ----------------------------------------------------- Toolbar buttons
 
-    private static IReadOnlyList<IElement> ExportButtons(IRenderedComponent<BitDataGrid<TestRow>> component)
-        => component.FindAll(".bit-dtg-toolbar-end .bit-dtg-btn");
-
-    [TestMethod]
-    public void ExportButtonsShowTheirTextByDefault()
+    // Every button the toolbar has: Add row (Editable with a NewItemFactory), Clear filters (a filter on), the two
+    // exports and Columns, in the order they render.
+    private IRenderedComponent<BitDataGrid<TestRow>> RenderFullToolbar(Action<ComponentParameterCollectionBuilder<BitDataGrid<TestRow>>>? configure = null)
     {
         var component = RenderGrid(configure: parameters =>
         {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.NewItemFactory, () => new TestRow());
             parameters.Add(p => p.ShowCsvExport, true);
             parameters.Add(p => p.ShowExcelExport, true);
+            parameters.Add(p => p.ShowColumnChooser, true);
+            configure?.Invoke(parameters);
         });
 
-        var buttons = ExportButtons(component);
-        Assert.AreEqual(2, buttons.Count);
-        CollectionAssert.AreEqual(new[] { "Export CSV", "Export Excel" }, buttons.Select(b => b.TextContent.Trim()).ToArray());
+        component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Name", BitDataGridFilterOperator.Contains, "e")).GetAwaiter().GetResult();
+
+        return component;
+    }
+
+    private static IReadOnlyList<IElement> ToolbarButtons(IRenderedComponent<BitDataGrid<TestRow>> component)
+        => component.FindAll(".bit-dtg-toolbar .bit-dtg-btn");
+
+    private static readonly string[] ToolbarTexts = ["+ Add", "Clear filters", "Export CSV", "Export Excel", "Columns"];
+
+    [TestMethod]
+    public void ToolbarButtonsShowTheirTextByDefault()
+    {
+        var component = RenderFullToolbar();
+
+        var buttons = ToolbarButtons(component);
+        CollectionAssert.AreEqual(ToolbarTexts, buttons.Select(b => b.TextContent.Replace("▾", "").Trim()).ToArray());
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-toolbar .bit-ttp").Count, "a button showing its text needs no tooltip");
 
         foreach (var button in buttons)
         {
-            Assert.IsNull(button.GetAttribute("aria-label"), "the visible text already names the button");
-            Assert.IsNull(button.GetAttribute("title"));
-            Assert.IsNull(button.QuerySelector("svg, i"), "a text button gets no icon it was not given");
-            Assert.IsFalse(button.ClassList.Contains("bit-dtg-btn-icon-only"));
+            Assert.IsNull(button.QuerySelector("i"), "a text button gets no icon it was not given");
+            Assert.IsFalse(button.ClassList.Contains("bit-dtg-btn-compact"));
         }
+
+        // The visible text already names every button but Columns, whose name leaves its decorative arrow out.
+        CollectionAssert.AreEqual(new[] { null, null, null, null, "Columns" }, buttons.Select(b => b.GetAttribute("aria-label")).ToArray());
+        Assert.IsTrue(buttons[0].ClassList.Contains("bit-dtg-btn-primary"));
     }
 
     [TestMethod]
-    public void ExportIconOnlyNamesItsButtonsWithTheirLocalizedText()
+    public void ToolbarIconOnlyNamesEveryButtonWithItsLocalizedText()
     {
-        var component = RenderGrid(configure: parameters =>
+        var names = new[] { "Zeile hinzufügen", "Filter löschen", "CSV herunterladen", "Excel herunterladen", "Spalten" };
+        var component = RenderFullToolbar(parameters =>
         {
-            parameters.Add(p => p.ShowCsvExport, true);
-            parameters.Add(p => p.ShowExcelExport, true);
-            parameters.Add(p => p.ExportIconOnly, true);
-            parameters.Add(p => p.Strings, new BitDataGridStrings { ExportCsvText = "CSV herunterladen", ExportExcelText = "Excel herunterladen" });
+            parameters.Add(p => p.ToolbarIconOnly, true);
+            parameters.Add(p => p.Strings, new BitDataGridStrings
+            {
+                AddRowText = names[0],
+                ClearFiltersText = names[1],
+                ExportCsvText = names[2],
+                ExportExcelText = names[3],
+                ColumnsText = names[4],
+            });
         });
 
-        var buttons = ExportButtons(component);
-        Assert.AreEqual(2, buttons.Count);
+        var buttons = ToolbarButtons(component);
+        Assert.AreEqual(5, buttons.Count);
 
-        var names = new[] { "CSV herunterladen", "Excel herunterladen" };
+        var glyphs = new[] { "bit-icon--Add", "bit-icon-ex--ClearFilter", "bit-icon-ex--TextDocument", "bit-icon-ex--ExcelDocument", "bit-icon-ex--ColumnOptions" };
         for (var i = 0; i < buttons.Count; i++)
         {
             Assert.AreEqual(names[i], buttons[i].GetAttribute("aria-label"));
-            Assert.AreEqual(names[i], buttons[i].GetAttribute("title"));
-            Assert.AreEqual(string.Empty, buttons[i].TextContent.Trim(), "the text is hidden");
-            Assert.IsTrue(buttons[i].ClassList.Contains("bit-dtg-btn-icon-only"));
+            Assert.IsNull(buttons[i].GetAttribute("title"), "the tooltip shows the name, to the keyboard and a touch as well");
+            Assert.AreEqual(i == 4 ? "▾" : string.Empty, buttons[i].TextContent.Trim(), "the text is hidden");
+            Assert.IsTrue(buttons[i].ClassList.Contains("bit-dtg-btn-compact"));
 
             // No icon was given, so the built-in glyph keeps the button from rendering empty - hidden from assistive tech.
-            var glyph = buttons[i].QuerySelector("svg.bit-dtg-btn-svg")!;
+            var glyph = buttons[i].QuerySelector("i.bit-dtg-btn-ico")!;
             Assert.IsNotNull(glyph);
+            Assert.IsTrue(glyph.ClassList.Contains(glyphs[i]), glyph.ClassName);
             Assert.AreEqual("true", glyph.GetAttribute("aria-hidden"));
-            Assert.AreEqual("false", glyph.GetAttribute("focusable"));
+
+            // The tooltip around it shows the same text, and stays out of the accessibility tree that has it already.
+            var tooltip = buttons[i].Closest(".bit-ttp")!;
+            Assert.IsNotNull(tooltip);
+            Assert.AreEqual(names[i], tooltip.QuerySelector("[role=tooltip]")!.TextContent.Trim());
+            Assert.IsNull(tooltip.GetAttribute("aria-describedby"));
+            Assert.IsNull(tooltip.GetAttribute("aria-labelledby"));
         }
+
+        // Columns is still the disclosure of the chooser panel.
+        Assert.AreEqual("false", buttons[4].GetAttribute("aria-expanded"));
+        buttons[4].Click();
+        var chooser = ToolbarButtons(component)[4];
+        Assert.AreEqual("true", chooser.GetAttribute("aria-expanded"));
+        Assert.IsNotNull(component.Find($"#{chooser.GetAttribute("aria-controls")}"));
     }
 
     [TestMethod]
-    public void ExportIconsShowBesideTheTextOrInPlaceOfIt()
+    public void ToolbarIconsShowBesideTheTextOrInPlaceOfIt()
+    {
+        var component = RenderFullToolbar(parameters =>
+        {
+            parameters.Add(p => p.AddRowIcon, BitIconInfo.Mi("add_circle"));
+            parameters.Add(p => p.ClearFiltersIconName, "FilterSolid");
+            parameters.Add(p => p.CsvExportIconName, "Download");
+            parameters.Add(p => p.ExcelExportIcon, BitIconInfo.Css("fa-solid fa-file-excel"));
+            parameters.Add(p => p.ColumnChooserIconName, "TripleColumn");
+        });
+
+        var buttons = ToolbarButtons(component);
+        CollectionAssert.AreEqual(ToolbarTexts, buttons.Select(b => b.TextContent.Replace("▾", "").Replace("add_circle", "").Trim()).ToArray());
+
+        var icons = buttons.Select(b => b.QuerySelector("i.bit-dtg-btn-ico")!).ToArray();
+        CollectionAssert.AreEqual(new[]
+        {
+            "bit-dtg-btn-ico material-icons",
+            "bit-dtg-btn-ico bit-icon bit-icon--FilterSolid",
+            "bit-dtg-btn-ico bit-icon bit-icon--Download",
+            "bit-dtg-btn-ico fa-solid fa-file-excel",
+            "bit-dtg-btn-ico bit-icon bit-icon--TripleColumn",
+        }, icons.Select(i => i.ClassName).ToArray());
+
+        // A ligature set names its glyph in the element's text, so it is written inside the icon, which its classes alone
+        // would leave empty.
+        Assert.AreEqual("add_circle", icons[0].TextContent);
+        Assert.AreEqual(string.Empty, icons[1].TextContent);
+
+        component.Render(parameters => parameters.Add(p => p.ToolbarIconOnly, true));
+
+        buttons = ToolbarButtons(component);
+        Assert.AreEqual("add_circle", buttons[0].QuerySelector("i.material-icons")!.TextContent);
+        Assert.IsNotNull(buttons[2].QuerySelector("i.bit-icon--Download"));
+        Assert.IsNull(buttons[2].QuerySelector(".bit-icon-ex--TextDocument"), "the given icon replaces the built-in glyph");
+        Assert.AreEqual(string.Empty, buttons[2].TextContent.Trim());
+        Assert.AreEqual("Export CSV", buttons[2].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void AnEmptyToolbarIconFallsBackToItsNameOrTheBuiltInGlyph()
     {
         var component = RenderGrid(configure: parameters =>
         {
             parameters.Add(p => p.ShowCsvExport, true);
             parameters.Add(p => p.ShowExcelExport, true);
-            parameters.Add(p => p.CsvExportIconName, "TextDocument");
-            parameters.Add(p => p.ExcelExportIcon, BitIconInfo.Css("fa-solid fa-file-excel"));
+            parameters.Add(p => p.CsvExportIcon, new BitIconInfo());
+            parameters.Add(p => p.CsvExportIconName, "Download");
+            parameters.Add(p => p.ExcelExportIcon, new BitIconInfo { Prefix = "fa-" });
         });
 
-        var buttons = ExportButtons(component);
-        var csvIcon = buttons[0].QuerySelector("i.bit-dtg-btn-ico")!;
-        var excelIcon = buttons[1].QuerySelector("i.bit-dtg-btn-ico")!;
+        var buttons = ToolbarButtons(component);
 
-        Assert.IsTrue(csvIcon.ClassList.Contains("bit-icon") && csvIcon.ClassList.Contains("bit-icon--TextDocument"));
-        Assert.IsTrue(excelIcon.ClassList.Contains("fa-solid") && excelIcon.ClassList.Contains("fa-file-excel"));
-        Assert.AreEqual("true", csvIcon.GetAttribute("aria-hidden"));
-        Assert.AreEqual("Export CSV", buttons[0].TextContent.Trim());
-        Assert.AreEqual("Export Excel", buttons[1].TextContent.Trim());
+        // An instance naming no glyph is no icon: the name beside it is drawn, and a text button with nothing else shows none.
+        Assert.AreEqual("bit-dtg-btn-ico bit-icon bit-icon--Download", buttons[0].QuerySelector("i")!.ClassName);
+        Assert.IsNull(buttons[1].QuerySelector("i"));
 
-        component.Render(parameters => parameters.Add(p => p.ExportIconOnly, true));
+        component.Render(parameters => parameters.Add(p => p.ToolbarIconOnly, true));
 
-        buttons = ExportButtons(component);
-        Assert.IsNotNull(buttons[0].QuerySelector("i.bit-icon--TextDocument"));
-        Assert.IsNotNull(buttons[1].QuerySelector("i.fa-file-excel"));
-        Assert.IsNull(buttons[0].QuerySelector("svg"), "the given icon replaces the built-in glyph");
-        Assert.AreEqual(string.Empty, buttons[0].TextContent.Trim());
-        Assert.AreEqual("Export CSV", buttons[0].GetAttribute("aria-label"));
+        // An icon-only button given an empty icon draws the built-in glyph rather than an empty square.
+        buttons = ToolbarButtons(component);
+        Assert.IsNotNull(buttons[0].QuerySelector("i.bit-icon--Download"));
+        Assert.AreEqual("bit-dtg-btn-ico bit-icon-ex bit-icon-ex--ExcelDocument", buttons[1].QuerySelector("i")!.ClassName);
+    }
+
+    [TestMethod]
+    public void TheToolbarIconsFollowTheirParameters()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowCsvExport, true);
+            parameters.Add(p => p.ToolbarIconOnly, true);
+            parameters.Add(p => p.CsvExportIconName, "Download");
+        });
+
+        component.Render(parameters => parameters.Add(p => p.CsvExportIconName, "CloudDownload"));
+        Assert.IsNotNull(ToolbarButtons(component).Single().QuerySelector("i.bit-icon--CloudDownload"));
+
+        component.Render(parameters => parameters.Add(p => p.CsvExportIconName, (string?)null));
+        Assert.IsNotNull(ToolbarButtons(component).Single().QuerySelector("i.bit-icon-ex--TextDocument"));
     }
 
     [TestMethod]
@@ -2590,28 +2681,29 @@ public class BitDataGridTests : BunitTestContext
         var component = RenderGrid(configure: parameters =>
         {
             parameters.Add(p => p.ShowCsvExport, true);
-            parameters.Add(p => p.ExportIconOnly, true);
+            parameters.Add(p => p.ToolbarIconOnly, true);
             parameters.Add(p => p.ExportFileName, "orders");
         });
 
-        ExportButtons(component).Single().Click();
+        ToolbarButtons(component).Single().Click();
 
         var args = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.download"].Single().Arguments;
         Assert.AreEqual("orders.csv", args[0]);
     }
 
     [TestMethod]
-    public void ADisabledGridDisablesItsIconOnlyExportButtons()
+    public void ADisabledGridDisablesItsIconOnlyToolbarButtons()
     {
-        var component = RenderGrid(configure: parameters =>
+        var component = RenderFullToolbar(parameters =>
         {
-            parameters.Add(p => p.ShowCsvExport, true);
-            parameters.Add(p => p.ShowExcelExport, true);
-            parameters.Add(p => p.ExportIconOnly, true);
+            parameters.Add(p => p.ToolbarIconOnly, true);
             parameters.Add(p => p.Disabled, true);
         });
 
-        foreach (var button in ExportButtons(component))
+        var buttons = ToolbarButtons(component);
+        Assert.AreEqual(5, buttons.Count);
+
+        foreach (var button in buttons)
         {
             Assert.IsTrue(button.HasAttribute("disabled"));
             Assert.AreEqual("true", button.GetAttribute("aria-disabled"));

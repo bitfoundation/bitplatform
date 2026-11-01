@@ -255,21 +255,24 @@ public class BitDataGridParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDataGridShouldTakeTheExportIconsFromTheCascadeUnlessItSetsItsOwn()
+    public void BitDataGridShouldTakeTheToolbarIconsFromTheCascadeUnlessItSetsItsOwn()
     {
         var component = RenderWithParams(new BitDataGridParams
         {
             ShowCsvExport = true,
             ShowExcelExport = true,
-            ExportIconOnly = true,
+            ShowColumnChooser = true,
+            ToolbarIconOnly = true,
             CsvExportIcon = BitIconInfo.Css("cascaded-csv"),
-            ExcelExportIconName = "ExcelDocument",
+            ExcelExportIconName = "ExcelLogo",
+            ColumnChooserIconName = "TripleColumn",
         }, builder => builder.AddComponentParameter(3, nameof(BitDataGrid<Row>.ExcelExportIcon), BitIconInfo.Css("own-excel")));
 
         var buttons = component.FindAll(".bit-dtg-toolbar-end .bit-dtg-btn");
 
         Assert.AreEqual("Export CSV", buttons[0].GetAttribute("aria-label"));
         Assert.IsNotNull(buttons[0].QuerySelector("i.cascaded-csv"));
+        Assert.IsNotNull(buttons[2].QuerySelector("i.bit-icon--TripleColumn"));
 
         // The grid's own icon and the cascaded name are one setting, so the name does not land beside the icon.
         Assert.IsNotNull(buttons[1].QuerySelector("i.own-excel"));

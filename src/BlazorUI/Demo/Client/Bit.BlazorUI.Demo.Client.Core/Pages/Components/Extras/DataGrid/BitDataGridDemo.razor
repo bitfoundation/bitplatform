@@ -607,14 +607,17 @@
             </BitDataGrid>
             <br />
             <div>
-                <b>ExportIconOnly</b> renders the export buttons as icons for a compact toolbar, their text kept as the accessible name
-                and tooltip; <b>CsvExportIconName</b>/<b>ExcelExportIconName</b> (or <b>CsvExportIcon</b>/<b>ExcelExportIcon</b> for
-                an external icon library) pick the icons, shown beside the text when it is not hidden.
+                <b>ToolbarIconOnly</b> renders the toolbar's buttons as icons for a compact toolbar - the exports, Columns, Clear
+                filters (once a filter is on) and Add row - their text kept as the accessible name and shown in a tooltip on hover,
+                focus and touch. A button with no icon of its own draws a built-in one; <b>CsvExportIconName</b>,
+                <b>ExcelExportIconName</b>, <b>ColumnChooserIconName</b>, <b>ClearFiltersIconName</b> and <b>AddRowIconName</b>
+                (or their <b>...Icon</b> twins for an external icon library) pick another, also shown beside the text when it is not
+                hidden.
             </div>
             <br />
-            <BitDataGrid Items="@exportProducts" Height="300px" ShowSearchBox="true"
-                         ShowCsvExport="true" ShowExcelExport="true" ExportIconOnly="true" ExportFileName="products"
-                         CsvExportIconName="@BitIconName.TextDocument" ExcelExportIconName="@BitIconName.ExcelDocument">
+            <BitDataGrid Items="@exportProducts" Height="300px" ShowSearchBox="true" Filterable="true" ShowColumnChooser="true"
+                         ShowCsvExport="true" ShowExcelExport="true" ToolbarIconOnly="true" ExportFileName="products"
+                         CsvExportIconName="@BitIconName.Download">
                 <BitDataGridColumn Property="p => p.Name" Width="220px" />
                 <BitDataGridColumn Property="p => p.Category" Width="170px" />
                 <BitDataGridColumn Property="p => p.Price" Width="150px" Format="C2" Align="BitTextAlign.End" />

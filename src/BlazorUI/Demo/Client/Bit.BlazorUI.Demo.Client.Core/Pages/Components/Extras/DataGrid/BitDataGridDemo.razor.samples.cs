@@ -994,9 +994,9 @@ private readonly IQueryable<Product> queryableProducts = SampleData.Generate(400
     </BitDataGridColumn>
 </BitDataGrid>
 
-<BitDataGrid Items=""@exportProducts"" Height=""300px"" ShowSearchBox=""true""
-             ShowCsvExport=""true"" ShowExcelExport=""true"" ExportIconOnly=""true"" ExportFileName=""products""
-             CsvExportIconName=""@BitIconName.TextDocument"" ExcelExportIconName=""@BitIconName.ExcelDocument"">
+<BitDataGrid Items=""@exportProducts"" Height=""300px"" ShowSearchBox=""true"" Filterable=""true"" ShowColumnChooser=""true""
+             ShowCsvExport=""true"" ShowExcelExport=""true"" ToolbarIconOnly=""true"" ExportFileName=""products""
+             CsvExportIconName=""@BitIconName.Download"">
     <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
     <BitDataGridColumn Property=""p => p.Category"" Width=""170px"" />
     <BitDataGridColumn Property=""p => p.Price"" Width=""150px"" Format=""C2"" Align=""BitTextAlign.End"" />

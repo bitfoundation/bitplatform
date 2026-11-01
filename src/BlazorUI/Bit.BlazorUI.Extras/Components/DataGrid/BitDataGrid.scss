@@ -951,21 +951,18 @@ button.bit-dtg-htext {
     border-color: $clr-err;
 }
 
-/* An icon-only export button (ExportIconOnly) is a square of the control height; its text is its accessible name. */
-.bit-dtg-btn-icon-only {
-    padding: 0;
+/* A toolbar button of an icon-only toolbar (ToolbarIconOnly): its icon alone, a square of the control height - the
+   Columns button keeps its arrow beside it. Its text is its accessible name and its tooltip. */
+.bit-dtg-btn-compact {
+    padding: 0 spacing(0.75);
 }
 
-/* The icon of an export button: a font icon given through its Icon/IconName, or the built-in glyph. */
+/* The icon of a toolbar button - one given through its Icon/IconName, or the built-in glyph - sized as every glyph
+   inside a control is, so a given icon and a built-in one match whatever size the grid's text takes. */
 .bit-dtg-btn-ico {
     flex: 0 0 auto;
+    font-size: $siz-icon-md;
     line-height: 1;
-}
-
-.bit-dtg-btn-svg {
-    flex: 0 0 auto;
-    width: rem2(16px);
-    height: rem2(16px);
 }
 
 /* The command buttons share the row with the data, so they take the small control height. */
