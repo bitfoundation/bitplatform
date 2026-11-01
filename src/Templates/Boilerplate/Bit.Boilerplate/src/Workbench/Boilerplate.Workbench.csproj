@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net11.0</TargetFramework>
         <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+        <!-- The packages' XML documentation goes next to their assemblies, for Inspect mode's parameter tooltips. -->
+        <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
     </PropertyGroup>
 
     <ItemGroup>

@@ -113,7 +113,9 @@
                         <BitText Typography="BitTypography.Caption1" Class="group-title">@Localizer[nameof(WorkbenchStrings.ComponentThemeVariables)]</BitText>
                     }
                     <div class="variable">
-                        <span class="variable-name" title="@variable.Name">@ShortName(variable.Name)</span>
+                        <div class="variable-head" data-doc="@variable.Name">
+                            <span class="variable-name">@ShortName(variable.Name)</span>
+                        </div>
                         @if (IsColorVariable(variable))
                         {
                             <ColorField Value="@variable.Value"
@@ -125,6 +127,7 @@
                         {
                             <BitTextField Value="@variable.Value"
                                           ValueChanged="(string? value) => SetVariable(variable, value)"
+                                          InputHtmlAttributes="SuggestionsFor(variable.Name)"
                                           AriaLabel="@variable.Name"
                                           Disabled="CanEditVariables is false" />
                         }
@@ -133,11 +136,22 @@
             </section>
         }
     }
+
+    @* The values each kind of field suggests as it's typed in. *@
+    @foreach (var (kind, _, values) in WorkbenchValueSuggestions.Kinds)
+    {
+        <datalist id="@($"wb-suggest-{kind}")">
+            @foreach (var value in values)
+            {
+                <option value="@value"></option>
+            }
+        </datalist>
+    }
 </div>
 
 @code {
     /// <summary>A parameter's name, type and reset button.</summary>
-    private RenderFragment Head(WorkbenchComponentParameter parameter) => @<div class="parameter-head">
+    private RenderFragment Head(WorkbenchComponentParameter parameter) => @<div class="parameter-head" data-doc="@parameter.Description">
         <span class="parameter-name">@parameter.Name</span>
         <span class="parameter-type">@parameter.TypeName</span>
         @if (parameter.IsSet && CanEdit(parameter))
@@ -192,6 +206,7 @@
             <BitTextField Value="@parameter.Value"
                           ValueChanged="(string? value) => Set(parameter, string.IsNullOrEmpty(value) ? null : value)"
                           Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
+                          InputHtmlAttributes="@(parameter.Editor is WorkbenchParameterEditor.Text ? SuggestionsFor(parameter.Name) : null)"
                           AriaLabel="@parameter.Name"
                           Disabled="CanEdit(parameter) is false" />
         }

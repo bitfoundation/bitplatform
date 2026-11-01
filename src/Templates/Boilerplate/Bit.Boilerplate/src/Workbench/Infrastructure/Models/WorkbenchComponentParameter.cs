@@ -7,6 +7,9 @@ public sealed record WorkbenchComponentParameter
 
     public required string TypeName { get; init; }
 
+    /// <summary>The summary of its XML documentation, for the panel's tooltip.</summary>
+    public string? Description { get; init; }
+
     public WorkbenchParameterEditor Editor { get; init; }
 
     public string? Value { get; init; }

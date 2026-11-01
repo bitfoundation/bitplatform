@@ -143,6 +143,12 @@ public partial class ComponentPanel
 
     private static string FileName(string path) => path[(path.LastIndexOf('/') + 1)..];
 
+    /// <summary>The field attribute that ties it to the suggestions its name's kind has, like margin's; null for a name with none.</summary>
+    private static Dictionary<string, object>? SuggestionsFor(string name)
+    {
+        return WorkbenchValueSuggestions.KindOf(name) is { } kind ? new() { ["list"] = $"wb-suggest-{kind}" } : null;
+    }
+
     /// <summary>A variable's name without the --bit- every one of bit BlazorUI's starts with.</summary>
     private static string ShortName(string name) => name.StartsWith("--bit-", StringComparison.Ordinal) ? name["--bit-".Length..] : name;
 

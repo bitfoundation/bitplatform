@@ -31,8 +31,11 @@ public partial class WorkbenchViewPage
     private (string PaneId, string Query, string SnapshotId)? shownSnapshot;
     // The text clicked in Edit text mode and the resource entries it came from.
     private (string PaneId, string Text, WorkbenchTextMatch[] Matches, WorkbenchReviewAnchor Anchor)? pickedText;
-    // The component clicked in Inspect mode, null when it isn't a bit BlazorUI one, and the CSS variables its styles use.
-    private (string PaneId, WorkbenchComponentInfo? Info, WorkbenchCssVariable[] Variables)? pickedComponent;
+    // The component clicked in Inspect mode, null when it isn't a bit BlazorUI one, the CSS variables its styles use and the
+    // spot a comment on it is pinned to.
+    private (string PaneId, WorkbenchComponentInfo? Info, WorkbenchCssVariable[] Variables, WorkbenchReviewAnchor Anchor)? pickedComponent;
+    // The spot the Review tab last started a comment on, so going back to the tab doesn't start it again after a Cancel.
+    private WorkbenchReviewAnchor? draftedAnchor;
 
     private static readonly (string Mode, string IconName, string TextKey)[] modes =
     [
@@ -295,13 +298,36 @@ public partial class WorkbenchViewPage
 
     /// <summary>A component clicked in Inspect mode, as its view describes it, with the CSS variables its styles use.</summary>
     [JSInvokable]
-    public void BeginComponentEdit(string paneId, WorkbenchComponentInfo? info, WorkbenchCssVariable[] variables)
+    public void BeginComponentEdit(string paneId, WorkbenchComponentInfo? info, WorkbenchCssVariable[] variables, WorkbenchReviewAnchor anchor)
     {
-        pickedComponent = (paneId, info, variables);
+        pickedComponent = (paneId, info, variables, anchor);
 
         store.SelectPane(paneId);
 
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Opens a tab of the side column. The Review tab, opened while Inspect mode has a component picked, starts a comment
+    /// pinned to that component, ready to be typed, as the component is already known.
+    /// </summary>
+    private async Task ShowColumn(string column)
+    {
+        store.ShowColumn(column);
+
+        if (column is not WorkbenchModes.ReviewColumn || store.Mode != WorkbenchModes.Inspect || reviewSession.CanWrite is false
+            || pickedComponent is not { } picked || picked.Anchor == draftedAnchor)
+            return;
+
+        draftedAnchor = picked.Anchor;
+
+        var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", picked.PaneId);
+
+        if (IsDisposed)
+            return;
+
+        pendingComment = (picked.PaneId, picked.Anchor, state);
+        selectedThreadId = null;
     }
 
     /// <summary>Hot reload applied a change: the picked component is read again once the views have drawn it.</summary>
@@ -613,7 +639,7 @@ public partial class WorkbenchViewPage
         if (next < 0)
             return;
 
-        store.ShowColumn(columns[next].Column);
+        await ShowColumn(columns[next].Column);
 
         await columnTabs[next].FocusAsync();
     }

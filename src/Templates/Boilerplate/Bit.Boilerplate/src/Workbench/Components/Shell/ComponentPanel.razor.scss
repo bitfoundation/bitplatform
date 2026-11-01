@@ -94,6 +94,39 @@ section {
     flex-direction: column;
 }
 
+// A parameter's documentation, or a variable's full name, shown quickly under its name while the pointer is on it,
+// without taking the pointer from what's below.
+[data-doc] {
+    position: relative;
+
+    &::after {
+        top: 100%;
+        opacity: 0;
+        z-index: 2;
+        line-height: 1.4;
+        font-weight: 400;
+        inset-inline: 0;
+        position: absolute;
+        font-size: 0.75rem;
+        visibility: hidden;
+        white-space: normal;
+        pointer-events: none;
+        content: attr(data-doc);
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.5rem;
+        color: $bit-color-background-primary;
+        background: $bit-color-foreground-primary;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
+        transition: opacity 0.1s ease, visibility 0s linear 0.1s;
+    }
+
+    &:hover::after {
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 0.15s;
+    }
+}
+
 .variable-name {
     overflow: hidden;
     font-size: 0.75rem;

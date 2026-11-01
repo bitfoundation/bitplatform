@@ -196,7 +196,7 @@ else
                     <button type="button" role="tab" id="@($"wb-tab-{column}")" aria-controls="wb-column-panel"
                             class="column-tab @(isActive ? "active" : null)" aria-selected="@(isActive ? "true" : "false")" tabindex="@(isActive ? 0 : -1)"
                             @ref="columnTabs[tabIndex]"
-                            @onclick="() => store.ShowColumn(column)">
+                            @onclick="() => ShowColumn(column)">
                         @Localizer[column == WorkbenchModes.ViewColumn && store.Mode == WorkbenchModes.Inspect ? nameof(WorkbenchStrings.ComponentTab) : textKey]
                         @if (column == WorkbenchModes.ReviewColumn && OpenThreadCount > 0)
                         {

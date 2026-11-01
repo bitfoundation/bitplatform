@@ -206,7 +206,7 @@ function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
 
     if (mode === 'inspect') {
         onHover(frame, event);
-        inspect(frame, target);
+        inspect(frame, target, event.clientX, event.clientY);
         return;
     }
 
@@ -227,17 +227,23 @@ function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
     }
 }
 
-/** Reads the component under a click in Inspect mode from its view, and hands it with its CSS variables to the shell's panel. */
-function inspect(frame: HTMLIFrameElement, target: Element) {
+/**
+ * Reads the component under a click in Inspect mode from its view, and hands it with its CSS variables to the shell's
+ * panel, with the spot a comment on it would be pinned to; a read again, with no click, pins it to the component's middle.
+ */
+function inspect(frame: HTMLIFrameElement, target: Element, x?: number, y?: number) {
     const paneId = frame.dataset.paneId;
     const doc = frame.contentDocument;
     const found = componentRootOf(target);
+    const pinned = found?.root ?? target;
+    const rect = pinned.getBoundingClientRect();
+    const anchor = anchorOf(pinned, x ?? rect.left + rect.width / 2, y ?? rect.top + rect.height / 2);
 
     if (!paneId || !doc) return;
 
     if (!found?.root.id) {
         inspected = null;
-        host?.invoke('BeginComponentEdit', paneId, null, []);
+        host?.invoke('BeginComponentEdit', paneId, null, [], anchor);
         return;
     }
 
@@ -247,7 +253,7 @@ function inspect(frame: HTMLIFrameElement, target: Element) {
 
     Promise.resolve(preview?.workbench?.describeComponent(found.root.id))
         .catch(() => null)
-        .then(info => host?.invoke('BeginComponentEdit', paneId, info ?? null, info ? cssVariablesOf(doc, found.root, found.rootClass) : []));
+        .then(info => host?.invoke('BeginComponentEdit', paneId, info ?? null, info ? cssVariablesOf(doc, found.root, found.rootClass) : [], anchor));
 }
 
 /** Reads the last picked component again, after a change to its code reached the view. */

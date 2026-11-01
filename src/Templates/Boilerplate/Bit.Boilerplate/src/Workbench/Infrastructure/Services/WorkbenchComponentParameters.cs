@@ -115,6 +115,7 @@ public static class WorkbenchComponentParameters
             {
                 Name = property.Name,
                 TypeName = Friendly(property.PropertyType),
+                Description = WorkbenchComponentDocs.SummaryOf(property),
                 Editor = editor,
                 Value = value,
                 DefaultValue = editor is WorkbenchParameterEditor.ReadOnly or WorkbenchParameterEditor.Parts || defaults is null ? null : Display(ValueOf(property, defaults)),
