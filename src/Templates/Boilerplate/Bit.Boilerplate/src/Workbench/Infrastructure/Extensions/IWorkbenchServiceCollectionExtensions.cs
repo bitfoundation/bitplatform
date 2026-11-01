@@ -58,6 +58,11 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddSingleton<WorkbenchTextEdits>();
             services.AddTransient(typeof(IStringLocalizer<>), typeof(WorkbenchRecordingLocalizer<>));
 
+            // Inspect mode: each bit BlazorUI component is recorded as it's created, so a click in a view finds it, and its tag in the code takes parameter changes.
+            services.AddSingleton<WorkbenchComponentInstances>();
+            services.AddScoped<IComponentActivator, WorkbenchComponentActivator>();
+            services.AddSingleton<WorkbenchComponentEdits>();
+
             // The review: a Bcrdt document kept in App_Data/Reviews, synced to every circuit through the relay and served to the agent over MCP.
             services.AddSingleton<WorkbenchReviewAgent>();
             services.AddSingleton<WorkbenchReviewAttachments>();

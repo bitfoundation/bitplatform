@@ -197,7 +197,7 @@ else
                             class="column-tab @(isActive ? "active" : null)" aria-selected="@(isActive ? "true" : "false")" tabindex="@(isActive ? 0 : -1)"
                             @ref="columnTabs[tabIndex]"
                             @onclick="() => store.ShowColumn(column)">
-                        @Localizer[textKey]
+                        @Localizer[column == WorkbenchModes.ViewColumn && store.Mode == WorkbenchModes.Inspect ? nameof(WorkbenchStrings.ComponentTab) : textKey]
                         @if (column == WorkbenchModes.ReviewColumn && OpenThreadCount > 0)
                         {
                             <span class="tab-count">@OpenThreadCount</span>
@@ -234,6 +234,13 @@ else
                                  OnShow="ShowThread"
                                  OnSend="SendComment"
                                  OnCancel="CancelComment" />
+                }
+                else if (store.Mode == WorkbenchModes.Inspect)
+                {
+                    <ComponentPanel IsPicked="pickedComponent is not null"
+                                    Info="pickedComponent?.Info"
+                                    Variables="@(pickedComponent?.Variables ?? [])"
+                                    CanSave="reviewSession.CanWrite && componentEdits.CanWriteFiles" />
                 }
                 else
                 {

@@ -2724,4 +2724,79 @@
     <data name="MuteReplySound" xml:space="preserve">
         <value>एजेंट के जवाबों की आवाज़ बंद करें</value>
     </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>कंपोनेंट</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>सिर्फ़ छोटे बदलावों के लिए। बाकी सब रिव्यू टैब में लिखें, एजेंट संभाल लेगा।</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>किसी व्यू में कंपोनेंट पर क्लिक करें, ताकि उसके पैरामीटर देख और बदल सकें।</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>यह bit BlazorUI कंपोनेंट नहीं है, या अब पेज पर नहीं है, इसलिए दिखाने को कोई पैरामीटर नहीं है।</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>बदलाव तभी सहेजे जा सकते हैं जब वर्कबेंच आपकी अपनी मशीन पर प्रोजेक्ट से चल रही हो।</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>{0} यह हिस्सा ख़ुद बनाता है, इसलिए यह {0} के पैरामीटर से बदलता है।</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>कोड में इसका टैग नहीं मिला, इसलिए यहाँ इसके मान केवल पढ़ने के लिए हैं।</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>फ़िल्टर</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>पैरामीटर</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>विरासत में मिले पैरामीटर</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>स्टाइल और क्लास</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>CSS वेरिएबल</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>यहाँ रखा गया मान कंपोनेंट के Style में लिखा जाता है।</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>ये यहाँ तभी बदल सकते हैं जब कंपोनेंट का Style बदल सकता हो।</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>थीम से</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>कोड से तय</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>डिफ़ॉल्ट पर लौटाएँ</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>तय नहीं</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>{0} में सहेजा गया। Hot reload इसे थोड़ी देर में दिखा देगा।</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>{0} में सहेजा गया। इसे देखने के लिए ऐप फिर से शुरू करें।</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>बदलाव सहेजा नहीं जा सका; शायद इसका टैग खिसक गया है। कंपोनेंट पर फिर से क्लिक करें।</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>आइकन चुनें</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>आइकन खोजें</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>{0} और। छाँटने के लिए टाइप करें।</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>रंग चुनें</value>
+    </data>
 </root>

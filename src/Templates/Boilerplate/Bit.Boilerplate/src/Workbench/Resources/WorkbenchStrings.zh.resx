@@ -2724,4 +2724,79 @@
     <data name="MuteReplySound" xml:space="preserve">
         <value>关闭代理回复的提示音</value>
     </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>组件</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>仅用于快速修改。其他需求请写在“评审”标签页，智能体会处理。</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>在视图中点击一个组件，即可查看并修改它的参数。</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>这不是 bit BlazorUI 组件，或者它已不在页面上，因此没有可显示的参数。</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>只有当工作台从您自己电脑上的项目运行时，才能保存修改。</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>这一部分由 {0} 自己绘制，因此要通过 {0} 的参数来修改。</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>未在代码中找到它的标签，因此这里的值为只读。</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>筛选</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>参数</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>继承的参数</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>样式和类</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>CSS 变量</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>在此设置的值会写入组件的 Style。</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>只有当组件的 Style 可以修改时，这些才能在这里修改。</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>来自主题</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>由代码设置</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>恢复默认</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>未设置</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>已保存到 {0}。热重载稍后会显示它。</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>已保存到 {0}。重新启动应用即可看到。</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>无法保存修改；它的标签可能已移动。请再次点击该组件。</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>选择图标</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>搜索图标</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>还有 {0} 个。输入文字可缩小范围。</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>选择颜色</value>
+    </data>
 </root>

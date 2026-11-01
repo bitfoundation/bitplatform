@@ -2724,4 +2724,79 @@
     <data name="MuteReplySound" xml:space="preserve">
         <value>بی‌صدا کردن صدای پاسخ‌های عامل</value>
     </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>کامپوننت</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>فقط برای تغییرهای سریع. هر چیز دیگری را در زبانه بازبینی بنویسید تا عامل انجامش دهد.</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>روی یک کامپوننت در نما کلیک کنید تا پارامترهایش را ببینید و تغییر دهید.</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>این یک کامپوننت bit BlazorUI نیست، یا دیگر در صفحه نیست، پس پارامتری برای نشان دادن ندارد.</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>تغییرها فقط وقتی ذخیره می‌شوند که میز کار از پروژه روی سیستم خودتان اجرا شود.</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>{0} این بخش را خودش می‌سازد، پس از راه پارامترهای {0} تغییر می‌کند.</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>تگ آن در کد پیدا نشد، پس مقدارهایش اینجا فقط خواندنی‌اند.</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>فیلتر</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>پارامترها</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>پارامترهای ارث‌برده</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>استایل‌ها و کلاس‌ها</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>متغیرهای CSS</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>مقداری که اینجا بگذارید در Style کامپوننت نوشته می‌شود.</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>این‌ها فقط وقتی اینجا تغییر می‌کنند که Style کامپوننت قابل تغییر باشد.</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>از تم</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>تعیین‌شده با کد</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>برگشت به پیش‌فرض</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>تعیین‌نشده</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>در {0} ذخیره شد. Hot reload تا لحظه‌ای دیگر نشانش می‌دهد.</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>در {0} ذخیره شد. برای دیدنش برنامه را دوباره اجرا کنید.</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>تغییر ذخیره نشد؛ شاید تگ آن جابه‌جا شده باشد. دوباره روی کامپوننت کلیک کنید.</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>انتخاب آیکون</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>جستجوی آیکون‌ها</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>{0} مورد دیگر. برای محدود کردن، تایپ کنید.</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>انتخاب رنگ</value>
+    </data>
 </root>

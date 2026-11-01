@@ -2724,4 +2724,79 @@
     <data name="MuteReplySound" xml:space="preserve">
         <value>كتم صوت ردود الوكيل</value>
     </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>المكوّن</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>للتغييرات السريعة فقط. اكتب أي شيء آخر في تبويب المراجعة وسيتولّاه الوكيل.</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>انقر مكوّنًا في العرض لترى معاملاته وتغيّرها.</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>هذا ليس مكوّن bit BlazorUI، أو لم يعد في الصفحة، لذا لا توجد معاملات لعرضها.</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>لا تُحفَظ التغييرات إلا عندما تُشغَّل منضدة العمل من المشروع على حاسوبك.</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>يرسم {0} هذا الجزء بنفسه، لذا يتغيّر عبر معاملات {0}.</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>لم يُعثر على وسمه في الشيفرة، لذا قيمه للقراءة فقط هنا.</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>تصفية</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>المعاملات</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>المعاملات الموروثة</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>الأنماط والفئات</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>متغيرات CSS</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>القيمة التي تضبطها هنا تُكتب في Style المكوّن.</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>لا يمكن تغيير هذه هنا إلا عندما يمكن تغيير Style المكوّن.</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>من السمة</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>تضبطه الشيفرة</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>العودة إلى الافتراضي</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>غير مضبوط</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>حُفظ في {0}. سيُظهره Hot reload بعد لحظة.</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>حُفظ في {0}. أعد تشغيل التطبيق لتراه.</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>تعذّر حفظ التغيير؛ ربما تحرّك وسمه. انقر المكوّن مرة أخرى.</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>اختر أيقونة</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>ابحث في الأيقونات</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>{0} أخرى. اكتب لتضييقها.</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>اختر لونًا</value>
+    </data>
 </root>

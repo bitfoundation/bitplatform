@@ -1,5 +1,5 @@
 import { highlight, parseColor, runChecks } from './checks';
-import { cancelInlinePick, connectFrames, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+import { cancelInlinePick, connectFrames, inspectAgain, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
 import { cancelSpotPick, pickSpot } from './spots';
 import { forceStates } from './states';
 
@@ -611,6 +611,16 @@ host.workbench = {
     /** The resource entries whose text matches, for Edit text mode. */
     findTexts(text: string) {
         return callPreview<unknown[]>([], 'FindTexts', text);
+    },
+
+    /** The bit BlazorUI component whose root element has the id, with its parameters, for Inspect mode. */
+    describeComponent(elementId: string) {
+        return callPreview<unknown>(null, 'DescribeComponent', elementId);
+    },
+
+    /** Reads the component picked in Inspect mode again, once a change to its code reached the views. */
+    inspectAgain() {
+        inspectAgain();
     },
 
     /** Reloads every view and shows its loading state until it reports ready again. */

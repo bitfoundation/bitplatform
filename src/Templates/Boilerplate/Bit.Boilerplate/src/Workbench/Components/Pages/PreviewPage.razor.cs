@@ -26,6 +26,7 @@ public partial class PreviewPage
     [AutoInject] private BitAccentColorService accentColorService = default!;
     [AutoInject] private WorkbenchTextRecorder textRecorder = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
+    [AutoInject] private WorkbenchComponentInstances componentInstances = default!;
 
     [Parameter] public string? PageKey { get; set; }
 
@@ -94,6 +95,18 @@ public partial class PreviewPage
     /// <summary>The resource entries this preview rendered as the given text, for Edit text mode.</summary>
     [JSInvokable]
     public WorkbenchTextMatch[] FindTexts(string text) => textRecorder.Find(text, CultureInfo.CurrentUICulture.Name);
+
+    /// <summary>
+    /// The bit BlazorUI component of this preview whose root element has the id, with its parameters and its tag in the code,
+    /// for Inspect mode; null when it's gone. It runs here, on the preview's circuit, as it reads that circuit's render tree.
+    /// </summary>
+    [JSInvokable]
+    public WorkbenchComponentInfo? DescribeComponent(string elementId)
+    {
+        return componentInstances.Find(elementId) is { } component && WorkbenchComponentSources.RendererOf(component) == WorkbenchComponentSources.RendererOf(this)
+            ? WorkbenchComponentParameters.Describe(component, elementId)
+            : null;
+    }
 
     /// <summary>
     /// Waits until the start-up is over, no load is pending and nothing happened for 450 ms (a Loading scenario never

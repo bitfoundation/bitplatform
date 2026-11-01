@@ -31,6 +31,8 @@ public partial class WorkbenchViewPage
     private (string PaneId, string Query, string SnapshotId)? shownSnapshot;
     // The text clicked in Edit text mode and the resource entries it came from.
     private (string PaneId, string Text, WorkbenchTextMatch[] Matches, WorkbenchReviewAnchor Anchor)? pickedText;
+    // The component clicked in Inspect mode, null when it isn't a bit BlazorUI one, and the CSS variables its styles use.
+    private (string PaneId, WorkbenchComponentInfo? Info, WorkbenchCssVariable[] Variables)? pickedComponent;
 
     private static readonly (string Mode, string IconName, string TextKey)[] modes =
     [
@@ -60,6 +62,7 @@ public partial class WorkbenchViewPage
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
     [AutoInject] private WorkbenchTextEdits textEdits = default!;
+    [AutoInject] private WorkbenchComponentEdits componentEdits = default!;
     [AutoInject] private ILogger<WorkbenchViewPage> logger = default!;
 
     private string ReviewerName => store.ReviewerName ?? Localizer[nameof(WorkbenchStrings.Reviewer)];
@@ -96,6 +99,7 @@ public partial class WorkbenchViewPage
         OwnsSubscription(blexManager.SubscribeTo<WorkbenchStore>(_ => Apply()));
 
         reviewSession.Changed += OnReviewChanged;
+        WorkbenchComponentSources.Updated += OnCodeUpdated;
     }
 
     protected override void OnParametersSet()
@@ -199,7 +203,10 @@ public partial class WorkbenchViewPage
         await JSRuntime.InvokeVoidAsync("workbench.showPins", pins);
     }
 
-    /// <summary>Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode.</summary>
+    /// <summary>
+    /// Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode. Inspect mode opens the first tab,
+    /// where the picked component's panel shows.
+    /// </summary>
     private void SetMode(string mode)
     {
         if (mode is WorkbenchModes.Comment)
@@ -208,6 +215,15 @@ public partial class WorkbenchViewPage
 
             if (reviewSession.CanWrite is false)
                 return;
+        }
+
+        if (mode is WorkbenchModes.Inspect)
+        {
+            store.ShowColumn(WorkbenchModes.ViewColumn);
+        }
+        else
+        {
+            pickedComponent = null;
         }
 
         store.SetMode(mode);
@@ -276,6 +292,34 @@ public partial class WorkbenchViewPage
 
         StateHasChanged();
     }
+
+    /// <summary>A component clicked in Inspect mode, as its view describes it, with the CSS variables its styles use.</summary>
+    [JSInvokable]
+    public void BeginComponentEdit(string paneId, WorkbenchComponentInfo? info, WorkbenchCssVariable[] variables)
+    {
+        pickedComponent = (paneId, info, variables);
+
+        store.SelectPane(paneId);
+
+        StateHasChanged();
+    }
+
+    /// <summary>Hot reload applied a change: the picked component is read again once the views have drawn it.</summary>
+    private void OnCodeUpdated() => _ = InvokeAsync(async () =>
+    {
+        if (pickedComponent is null || store.Mode != WorkbenchModes.Inspect)
+            return;
+
+        try
+        {
+            await Task.Delay(400, CurrentCancellationToken);
+            await JSRuntime.InvokeVoidAsync("workbench.inspectAgain");
+        }
+        catch (Exception exception) when (exception is OperationCanceledException or JSDisconnectedException)
+        {
+            // The shell went away while it waited.
+        }
+    });
 
     // No callback for a read-only viewer, so the text panel hides its button that asks the agent.
     private EventCallback<string> AskAgentCallback => reviewSession.CanWrite ? EventCallback.Factory.Create<string>(this, AskAgentAboutText) : default;
@@ -577,6 +621,7 @@ public partial class WorkbenchViewPage
     public override async ValueTask DisposeAsync()
     {
         reviewSession.Changed -= OnReviewChanged;
+        WorkbenchComponentSources.Updated -= OnCodeUpdated;
         reference?.Dispose();
 
         await base.DisposeAsync();

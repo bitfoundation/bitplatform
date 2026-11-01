@@ -34,7 +34,8 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
   Text size, reduced motion and color blindness are a switch away too.
 - **Modes**: Comment pins a note on any spot of the page, Inspect names the component under the pointer with its size,
   spacing, font and the theme colors it uses, and Edit text changes a text in every language, straight into the
-  translation files.
+  translation files. A click in Inspect mode opens the component's parameters, the ones it inherits too, its styles
+  and classes and the CSS variables it uses: a change is written into its tag in the code, and hot reload shows it.
 - **Review**: the comments of every view as a list with a status for the page (draft, in review, approved, built). Your
   agent answers on each comment, shows its plan as a checklist and ticks it as it goes.
 - **Checks**: an accessibility check of the selected view (axe-core) and a search for colors that don't come from the

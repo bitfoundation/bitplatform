@@ -1,0 +1,41 @@
+@inherits WorkbenchComponentBase
+
+<div class="icon-field">
+    <div class="field-row">
+        <button type="button" class="preview" disabled="@Disabled" @onclick="Toggle"
+                title="@Localizer[nameof(WorkbenchStrings.IconPick)]" aria-label="@Localizer[nameof(WorkbenchStrings.IconPick)]"
+                aria-expanded="@(isOpen ? "true" : "false")">
+            @if (string.IsNullOrEmpty(Value) is false)
+            {
+                <i class="bit-icon bit-icon--@Value" aria-hidden="true"></i>
+            }
+        </button>
+        <BitTextField Value="@Value" ValueChanged="Change" AriaLabel="@AriaLabel" Placeholder="@Placeholder" Disabled="Disabled" />
+    </div>
+
+    @if (isOpen && Disabled is false)
+    {
+        <div class="picker">
+            <BitSearchBox @bind-Value="term"
+                          @bind-Value:after="Search"
+                          Immediate
+                          DebounceTime="150"
+                          AutoFocus
+                          Placeholder="@Localizer[nameof(WorkbenchStrings.IconSearch)]"
+                          AriaLabel="@Localizer[nameof(WorkbenchStrings.IconSearch)]" />
+            <div class="icons" role="listbox" aria-label="@Localizer[nameof(WorkbenchStrings.IconPick)]">
+                @foreach (var name in shown)
+                {
+                    <button type="button" role="option" class="icon @(name == Value ? "selected" : null)" title="@name"
+                            aria-label="@name" aria-selected="@(name == Value ? "true" : "false")" @onclick="() => Change(name)">
+                        <i class="bit-icon bit-icon--@name" aria-hidden="true"></i>
+                    </button>
+                }
+            </div>
+            @if (total > shown.Length)
+            {
+                <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.IconMore), total - shown.Length]</BitText>
+            }
+        </div>
+    }
+</div>

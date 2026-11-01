@@ -45,6 +45,8 @@ let pinsByPane: Record<string, Pin[]> = {};
 let pinFrame = 0;
 /** The click listener of an inline pick in progress. */
 let inlinePick: ((event: MouseEvent) => void) | null = null;
+/** The component last picked in Inspect mode, found again by its id, or by its place when hot reload made it anew. */
+let inspected: { paneId: string; elementId: string; selector: string } | null = null;
 
 /** Whether a mode is on in which a click picks an element instead of acting on the page. */
 const isPicking = () => mode === 'comment' || mode === 'inspect' || mode === 'text';
@@ -204,6 +206,7 @@ function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
 
     if (mode === 'inspect') {
         onHover(frame, event);
+        inspect(frame, target);
         return;
     }
 
@@ -222,6 +225,93 @@ function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
             .catch(() => [])
             .then(matches => host?.invoke('BeginTextEdit', paneId, text, matches ?? [], anchor));
     }
+}
+
+/** Reads the component under a click in Inspect mode from its view, and hands it with its CSS variables to the shell's panel. */
+function inspect(frame: HTMLIFrameElement, target: Element) {
+    const paneId = frame.dataset.paneId;
+    const doc = frame.contentDocument;
+    const found = componentRootOf(target);
+
+    if (!paneId || !doc) return;
+
+    if (!found?.root.id) {
+        inspected = null;
+        host?.invoke('BeginComponentEdit', paneId, null, []);
+        return;
+    }
+
+    inspected = { paneId, elementId: found.root.id, selector: selectorOf(found.root) };
+
+    const preview = frame.contentWindow as any;
+
+    Promise.resolve(preview?.workbench?.describeComponent(found.root.id))
+        .catch(() => null)
+        .then(info => host?.invoke('BeginComponentEdit', paneId, info ?? null, info ? cssVariablesOf(doc, found.root, found.rootClass) : []));
+}
+
+/** Reads the last picked component again, after a change to its code reached the view. */
+export function inspectAgain() {
+    const frame = inspected && paneFrames().find(f => f.dataset.paneId === inspected!.paneId);
+    const doc = frame?.contentDocument;
+    const element = inspected && (doc?.getElementById(inspected.elementId) ?? doc?.querySelector(inspected.selector));
+
+    if (frame && element) inspect(frame, element);
+}
+
+/** The root element of the component an element belongs to, with its root class. */
+function componentRootOf(element: Element) {
+    for (let current: Element | null = element; current; current = current.parentElement) {
+        const rootClass = Array.from(current.classList).find(name => componentNames[name]);
+        if (rootClass) return { root: current, rootClass };
+    }
+
+    return null;
+}
+
+/**
+ * The CSS variables a component's styles use, each with its value on the component: first the ones its rules set, then
+ * the theme's they only read. Its rules are the ones whose selector names its root class, alone or with a suffix.
+ */
+function cssVariablesOf(doc: Document, root: Element, rootClass: string) {
+    // Root classes are letters, digits and dashes, like bit-btn, so they need no escaping; .bit-btn-pri counts, .bit-btng doesn't.
+    const pattern = new RegExp(`\\.${rootClass}(?![\\w])`);
+    const own = new Set<string>();
+    const read = new Set<string>();
+
+    const visit = (rules: CSSRuleList) => {
+        for (const rule of Array.from(rules)) {
+            const styleRule = rule as CSSStyleRule;
+
+            if (styleRule.selectorText && pattern.test(styleRule.selectorText)) {
+                for (let i = 0; i < styleRule.style.length; i++) {
+                    if (styleRule.style[i].startsWith('--')) own.add(styleRule.style[i]);
+                }
+
+                const references = /var\(\s*(--[\w-]+)/g;
+                for (let match = references.exec(styleRule.style.cssText); match; match = references.exec(styleRule.style.cssText)) read.add(match[1]);
+            }
+
+            const nested = (rule as CSSGroupingRule).cssRules;
+            if (nested) visit(nested);
+        }
+    };
+
+    for (const sheet of Array.from(doc.styleSheets)) {
+        // The rules of a sheet from another origin can't be read, so it is skipped.
+        try {
+            visit(sheet.cssRules);
+        } catch {
+        }
+    }
+
+    const style = getComputedStyle(root);
+    const entry = (name: string, isOwn: boolean) => ({ name, value: style.getPropertyValue(name).trim(), isOwn });
+
+    return [
+        ...Array.from(own).sort().map(name => entry(name, true)),
+        ...Array.from(read).filter(name => !own.has(name)).sort().map(name => entry(name, false))
+    ];
 }
 
 /** The text a text edit starts from: the placeholder, the visible text or the accessible name. */

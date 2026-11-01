@@ -25,6 +25,7 @@ public partial class WorkbenchStore
     [BlexState] private bool _isReplySoundMuted;
     [BlexState] private bool _isNavigatorCollapsed;
     [BlexState] private bool _isInspectorCollapsed;
+    [BlexState] private bool _isComponentNoteDismissed;
 
     /// <summary>The selected view, or the first one when no view has the selected id.</summary>
     public WorkbenchPane SelectedPane => Panes.FirstOrDefault(p => p.Id == SelectedPaneId) ?? Panes[0];
@@ -110,6 +111,8 @@ public partial class WorkbenchStore
     [BlexAction] private void OnToggleNavigator() => IsNavigatorCollapsed = IsNavigatorCollapsed is false;
 
     [BlexAction] private void OnToggleInspector() => IsInspectorCollapsed = IsInspectorCollapsed is false;
+
+    [BlexAction] private void OnDismissComponentNote() => IsComponentNoteDismissed = true;
 
     [BlexAction] private void OnNameReviewer(string? name) => ReviewerName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
 

@@ -2724,4 +2724,79 @@
     <data name="MuteReplySound" xml:space="preserve">
         <value>Couper le son des réponses de l'agent</value>
     </data>
+    <data name="ComponentTab" xml:space="preserve">
+        <value>Composant</value>
+    </data>
+    <data name="ComponentPanelNote" xml:space="preserve">
+        <value>Pour les changements rapides seulement. Écrivez le reste dans l’onglet Révision, l’agent s’en occupe.</value>
+    </data>
+    <data name="ComponentPanelHint" xml:space="preserve">
+        <value>Cliquez sur un composant dans une vue pour voir ses paramètres et les modifier.</value>
+    </data>
+    <data name="ComponentNotReadable" xml:space="preserve">
+        <value>Ce n’est pas un composant bit BlazorUI, ou il n’est plus sur la page : il n’y a donc aucun paramètre à afficher.</value>
+    </data>
+    <data name="ComponentReadOnlyRemote" xml:space="preserve">
+        <value>Les changements ne s’enregistrent que lorsque l’établi s’exécute depuis le projet sur votre propre machine.</value>
+    </data>
+    <data name="ComponentDrawnBy" xml:space="preserve">
+        <value>{0} dessine cette partie lui-même : elle se modifie donc via les paramètres de {0}.</value>
+    </data>
+    <data name="ComponentTagNotFound" xml:space="preserve">
+        <value>Sa balise est introuvable dans le code : ses valeurs sont donc en lecture seule ici.</value>
+    </data>
+    <data name="ComponentFilter" xml:space="preserve">
+        <value>Filtrer</value>
+    </data>
+    <data name="ComponentParameters" xml:space="preserve">
+        <value>Paramètres</value>
+    </data>
+    <data name="ComponentInheritedParameters" xml:space="preserve">
+        <value>Paramètres hérités</value>
+    </data>
+    <data name="ComponentStyles" xml:space="preserve">
+        <value>Styles et classes</value>
+    </data>
+    <data name="ComponentCssVariables" xml:space="preserve">
+        <value>Variables CSS</value>
+    </data>
+    <data name="ComponentVariablesHint" xml:space="preserve">
+        <value>Une valeur définie ici est écrite dans le Style du composant.</value>
+    </data>
+    <data name="ComponentVariablesReadOnly" xml:space="preserve">
+        <value>Elles ne se modifient ici que si le Style du composant peut l’être.</value>
+    </data>
+    <data name="ComponentThemeVariables" xml:space="preserve">
+        <value>Du thème</value>
+    </data>
+    <data name="ComponentSetByCode" xml:space="preserve">
+        <value>Défini par le code</value>
+    </data>
+    <data name="ComponentReset" xml:space="preserve">
+        <value>Revenir à la valeur par défaut</value>
+    </data>
+    <data name="ComponentNotSet" xml:space="preserve">
+        <value>Non défini</value>
+    </data>
+    <data name="ComponentSavedHotReload" xml:space="preserve">
+        <value>Enregistré dans {0}. Le hot reload l’affichera dans un instant.</value>
+    </data>
+    <data name="ComponentSavedRestart" xml:space="preserve">
+        <value>Enregistré dans {0}. Redémarrez l’application pour le voir.</value>
+    </data>
+    <data name="ComponentSaveFailed" xml:space="preserve">
+        <value>Le changement n’a pas pu être enregistré ; sa balise a peut-être bougé. Cliquez de nouveau sur le composant.</value>
+    </data>
+    <data name="IconPick" xml:space="preserve">
+        <value>Choisir une icône</value>
+    </data>
+    <data name="IconSearch" xml:space="preserve">
+        <value>Rechercher des icônes</value>
+    </data>
+    <data name="IconMore" xml:space="preserve">
+        <value>{0} de plus. Tapez pour les filtrer.</value>
+    </data>
+    <data name="ColorPick" xml:space="preserve">
+        <value>Choisir une couleur</value>
+    </data>
 </root>
