@@ -19,6 +19,8 @@ public sealed class BlexStoreAttribute : Attribute
     /// </summary>
     public bool Persist { get; set; }
 
+    public int Version { get; set; }
+
     /// <summary>
     /// When <c>true</c>, the store's state can only change through its own actions: the generated
     /// state properties get <c>private</c> setters, so assigning one from outside the store is a

@@ -728,6 +728,10 @@ builder.Services.AddBitBlexLocalStoragePersistence(options =>
 });
 ```
 
+- **A store's own version** - `[BlexStore(Persist = true, Version = 2)]` versions one store's saved
+  state on its own, so a store that changes doesn't take the others' saved state with it. It wins
+  over `options.Version` for that store, and a stored version that differs goes to `options.Migrate`
+  with the store's name, or is discarded when there is none.
 - **Restore write-back** - undo/redo and DevTools time-travel write the restored state back to
   storage, so a reload never resurrects the pre-restore state.
 - **Ordered writes** - saves are serialized in dispatch order; a stale payload can't overwrite a

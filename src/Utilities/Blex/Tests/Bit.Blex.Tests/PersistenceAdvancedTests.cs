@@ -141,6 +141,85 @@ public class PersistenceAdvancedTests
     }
 
     [TestMethod]
+    public async Task StoreVersion_WrapsOnlyThatStore()
+    {
+        var (store, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+
+        await using (var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions()))
+        {
+            await persistor.StartAsync();
+            store.SetTheme("dark");
+            layout.SetView("list");
+            await persistor.FlushAsync();
+        }
+
+        var stored = JsonNode.Parse(storage.Data["blex:layout"])!.AsObject();
+        Assert.AreEqual(2, stored["__blexVersion"]!.GetValue<int>());
+        Assert.AreEqual("list", stored["state"]!["View"]!.GetValue<string>());
+        Assert.AreEqual("dark", JsonNode.Parse(storage.Data["blex:settings"])!["Theme"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public async Task StoreVersion_Mismatch_DiscardsOnlyThatStore()
+    {
+        var (store, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+        storage.Data["blex:settings"] = """{"Theme":"dark"}""";
+        storage.Data["blex:layout"] = """{"__blexVersion":1,"state":{"View":"list"}}""";
+
+        await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions());
+        await persistor.StartAsync();
+
+        Assert.AreEqual("dark", store.Theme);
+        Assert.AreEqual("grid", layout.View);
+    }
+
+    [TestMethod]
+    public async Task StoreVersion_Mismatch_RunsMigrationWithTheStoredVersion()
+    {
+        var (_, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+        storage.Data["blex:layout"] = """{"View":"table"}""";
+
+        var options = new BlexPersistenceOptions
+        {
+            Version = 5,
+            Migrate = (storeName, fromVersion, state) =>
+            {
+                Assert.AreEqual("layout", storeName);
+                Assert.AreEqual(0, fromVersion);
+                state["View"] = "list";
+                return state;
+            },
+        };
+
+        await using var persistor = new BlexStatePersistor(manager, storage, options);
+        await persistor.StartAsync();
+
+        Assert.AreEqual("list", layout.View);
+    }
+
+    [TestMethod]
+    public async Task StoreVersion_WinsOverTheAppVersion()
+    {
+        var (store, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+        storage.Data["blex:settings"] = """{"__blexVersion":3,"state":{"Theme":"dark"}}""";
+        storage.Data["blex:layout"] = """{"__blexVersion":2,"state":{"View":"list"}}""";
+
+        await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 3 });
+        await persistor.StartAsync();
+
+        Assert.AreEqual("dark", store.Theme);
+        Assert.AreEqual("list", layout.View);
+    }
+
+    [TestMethod]
     public async Task Debounce_CoalescesBurstsIntoOneWrite()
     {
         var (store, manager, storage) = Setup();
