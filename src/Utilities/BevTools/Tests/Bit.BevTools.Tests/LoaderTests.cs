@@ -493,6 +493,7 @@ public class LoaderTests : BunitContext
         Assert.IsFalse(await loader.IsAuthorizedAsync());
         Assert.IsFalse(await loader.OpenAsync());
         StringAssert.Contains(loader.Problem, throws ? "threw InvalidOperationException" : "did not accept");
+        Assert.IsFalse(loader.Problem!.Contains("no user", StringComparison.Ordinal), "the refused user is not shown what the callback threw");
         Assert.AreEqual(2, asked, "asked again on open, never answered from a cache");
         Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
     }

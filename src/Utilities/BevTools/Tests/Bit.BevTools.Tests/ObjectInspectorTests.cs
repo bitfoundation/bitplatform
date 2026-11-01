@@ -35,6 +35,10 @@ public class ObjectInspectorTests
 
     private readonly record struct Grant(string User, [property: BevToolsSensitive] string Handle);
 
+    private sealed record Pass(string Holder, [BevToolsSensitive] string Code);
+
+    private readonly record struct Badge(string Holder, [BevToolsSensitive] string Code);
+
     [TestMethod]
     public void ToString_is_not_shown_for_a_type_with_an_ignored_or_sensitive_member()
     {
@@ -42,6 +46,18 @@ public class ObjectInspectorTests
 
         Assert.IsFalse(inspector.Describe("account", new Account("ada", "do-not-show")).Display.Contains("do-not-show", StringComparison.Ordinal));
         Assert.IsFalse(inspector.Describe("grant", new Grant("ada", "opaque-handle")).Display.Contains("opaque-handle", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void A_sensitive_positional_parameter_redacts_the_property_the_record_makes_of_it()
+    {
+        var inspector = Create();
+
+        Assert.IsFalse(inspector.Describe("pass", new Pass("ada", "opaque-code")).Display.Contains("opaque-code", StringComparison.Ordinal));
+        Assert.IsFalse(inspector.Describe("badge", new Badge("ada", "opaque-code")).Display.Contains("opaque-code", StringComparison.Ordinal));
+        var children = inspector.Children(new Pass("ada", "opaque-code"), "");
+        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == nameof(Pass.Code)).Kind);
+        Assert.AreEqual("\"ada\"", children.Single(c => c.Name == nameof(Pass.Holder)).Display);
     }
 
     [TestMethod]

@@ -20,12 +20,14 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDemoServices();
 builder.Services.AddHttpContextAccessor();
+// The server calls its own API at the address of the request it serves, never at NavigationManager.BaseUri, which
+// ProductApi falls back to in the browser: in an interactive Server circuit that is whatever the browser sent when the
+// circuit started, so a visitor could point the server's requests at any host. Without a request there is no client.
 builder.Services.AddHttpClient("api").ConfigureHttpClient((services, client) =>
 {
-    if (services.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request is { } request)
-    {
-        client.BaseAddress = new Uri(UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, "/"));
-    }
+    var request = services.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request
+        ?? throw new InvalidOperationException("The demo API is called on the server only while it serves a request.");
+    client.BaseAddress = new Uri(UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, "/"));
 });
 
 // One line. An application leaves Enabled alone and BevTools turns itself on in Development only; this demo exists to

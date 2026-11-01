@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.BevTools;
@@ -9,7 +11,7 @@ namespace Bit.BevTools;
 /// </summary>
 public sealed partial class BevRedactor
 {
-    private static readonly Regex JwtPattern = new(@"(?<![A-Za-z0-9_-])ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.", RegexOptions.CultureInvariant);
+    private static readonly ConcurrentDictionary<Type, (string Name, Type Type)[]> SensitiveConstructorParameters = new();
 
     public const string RedactedValue = "«redacted»";
 
@@ -45,13 +47,28 @@ public sealed partial class BevRedactor
 
     public bool IsSensitive(MemberInfo member)
     {
-        if (Attribute.IsDefined(member, typeof(BevToolsSensitiveAttribute), inherit: true))
+        if (Attribute.IsDefined(member, typeof(BevToolsSensitiveAttribute), inherit: true)
+            || (member is PropertyInfo property && IsSensitivePositionalParameter(property)))
         {
             return true;
         }
 
         return IsSensitiveName(member.Name);
     }
+
+    /// <summary>
+    /// True for the property of a record's positional parameter marked <see cref="BevToolsSensitiveAttribute"/>:
+    /// <c>record Grant(string User, [BevToolsSensitive] string Handle)</c> puts the attribute on the constructor
+    /// parameter, not on the property the compiler generates from it, and that property is what BevTools reads.
+    /// </summary>
+    private static bool IsSensitivePositionalParameter(PropertyInfo property) =>
+        property.DeclaringType is { } type
+        && Array.Exists(SensitiveConstructorParameters.GetOrAdd(type, static t => t.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .SelectMany(c => c.GetParameters())
+                .Where(p => p.Name is not null && p.IsDefined(typeof(BevToolsSensitiveAttribute), false))
+                .Select(p => (p.Name!, p.ParameterType))
+                .ToArray()),
+            parameter => parameter.Name == property.Name && parameter.Type == property.PropertyType);
 
     /// <summary>
     /// True when a value is a credential by its shape, whatever the member, key or header holding it is called: a JSON
@@ -61,7 +78,7 @@ public sealed partial class BevRedactor
     /// Kept in step with <c>looksLikeSecret</c> in bit-bevtools.ts, which applies the same test to browser storage.
     /// </summary>
     public static bool LooksLikeSecret(string? value) =>
-        value is { Length: >= 8 } && (JwtPattern.IsMatch(value) || SecretShapes().IsMatch(value));
+        value is { Length: >= 8 } && (TryFindJwt(value, 0, out _, out _) || SecretShapes().IsMatch(value));
 
     /// <summary>
     /// Replaces the credentials inside free text - an exception or log message, a JavaScript error - with
@@ -75,7 +92,7 @@ public sealed partial class BevRedactor
             return text;
         }
 
-        text = JwtTokens().Replace(text, RedactedValue);
+        text = RedactJwts(text);
         text = BearerTokens().Replace(text, "${scheme} " + RedactedValue);
         text = PrivateKeyBlocks().Replace(text, RedactedValue);
         text = KeyValueSecrets().Replace(text, "${key}${sep}" + RedactedValue);
@@ -101,8 +118,69 @@ public sealed partial class BevRedactor
     [GeneratedRegex(@"\bBearer\s+(?!" + RedactedValue + @")[A-Za-z0-9._~+/=-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|(?:^|[\s;,{""'&?])(?:" + SecretKeyNames + @")[""']?\s*[:=]\s*[""']?(?:Bearer\s+)?" + SecretValue + "|" + ProviderTokenFormats, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex SecretShapes();
 
-    [GeneratedRegex(@"(?<![A-Za-z0-9_-])ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]*", RegexOptions.CultureInvariant)]
-    private static partial Regex JwtTokens();
+    private static string RedactJwts(string text)
+    {
+        if (!TryFindJwt(text, 0, out var start, out var end))
+        {
+            return text;
+        }
+
+        var result = new StringBuilder(text.Length);
+        var copied = 0;
+        do
+        {
+            result.Append(text, copied, start - copied).Append(RedactedValue);
+            copied = end;
+        }
+        while (TryFindJwt(text, end, out start, out end));
+
+        return result.Append(text, copied, text.Length - copied).ToString();
+    }
+
+    /// <summary>
+    /// Finds the first JSON Web Token at or after <paramref name="from"/>: "ey" and six or more base64url characters, a
+    /// dot, six or more, a dot, then the signature - what <c>ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]*</c>
+    /// matches. Scanned run by run instead: that pattern, tried from every "ey" of a long run ("eyey…"), takes quadratic
+    /// time, and anchoring it to the start of a run would miss a token right after an escape ("%3DeyJ…", "\neyJ…").
+    /// </summary>
+    private static bool TryFindJwt(string text, int from, out int start, out int end)
+    {
+        for (var header = from; header < text.Length;)
+        {
+            var headerEnd = Base64UrlRunEnd(text, header);
+            if (headerEnd - header >= 8 && headerEnd < text.Length && text[headerEnd] == '.')
+            {
+                var payloadEnd = Base64UrlRunEnd(text, headerEnd + 1);
+                if (payloadEnd - headerEnd - 1 >= 6 && payloadEnd < text.Length && text[payloadEnd] == '.')
+                {
+                    // Every "ey" of the run shares the same dot after it; the first one with six characters before that dot.
+                    var ey = text.IndexOf("ey", header, headerEnd - 6 - header, StringComparison.Ordinal);
+                    if (ey >= 0)
+                    {
+                        start = ey;
+                        end = Base64UrlRunEnd(text, payloadEnd + 1);
+                        return true;
+                    }
+                }
+            }
+
+            // The run after the dot can be the header of the next candidate.
+            header = headerEnd + 1;
+        }
+
+        start = end = -1;
+        return false;
+    }
+
+    private static int Base64UrlRunEnd(string text, int index)
+    {
+        while (index < text.Length && text[index] is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z') or (>= '0' and <= '9') or '_' or '-')
+        {
+            index++;
+        }
+
+        return index;
+    }
 
     [GeneratedRegex(@"(?<scheme>\bBearer)\s+[A-Za-z0-9._~+/=-]+", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex BearerTokens();

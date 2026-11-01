@@ -634,7 +634,7 @@ public static class BevSessionExporter
                 w.WriteStartObject("data");
                 foreach (var (key, value) in e.Data)
                 {
-                    WriteValue(w, key, value, inspector);
+                    WriteValue(w, key, value, inspector, capturedDisplays: e.Data is RenderEventData);
                 }
 
                 w.WriteEndObject();
@@ -1331,8 +1331,11 @@ public static class BevSessionExporter
     /// Writes an arbitrary <c>Data</c> value without ever throwing: primitives as themselves, everything else as the
     /// display the timeline panel shows for it. Both go through the inspector, so a sensitive key is redacted and an
     /// object with sensitive members is never written through its ToString (a record prints every member).
+    /// <paramref name="capturedDisplays"/> marks a render's data, whose lists of strings (changed parameters and fields)
+    /// are displays the session captured under its own ValueAccess and redacted then, so they are written item by item
+    /// as the panel shows them; any other list's items only Full access shows.
     /// </summary>
-    private static void WriteValue(Utf8JsonWriter w, string key, object? value, BevObjectInspector inspector)
+    private static void WriteValue(Utf8JsonWriter w, string key, object? value, BevObjectInspector inspector, bool capturedDisplays)
     {
         BevInspectedNode node;
         try
@@ -1384,7 +1387,7 @@ public static class BevSessionExporter
             case DateTime dt:
                 w.WriteString(key, dt);
                 break;
-            case IEnumerable<string> strings when inspector.ValueAccess == BevValueAccess.Full:
+            case IEnumerable<string> strings when inspector.ValueAccess == BevValueAccess.Full || capturedDisplays:
                 w.WriteStartArray(key);
                 foreach (var item in strings.Take(100))
                 {

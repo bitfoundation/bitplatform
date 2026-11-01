@@ -65,11 +65,12 @@ public static class BevTraceExporter
             WriteProcess(w, pid, session);
 
             // Renders nest inside their batch: the batch's span is the span of its renders, which is what one batch
-            // of renderer work occupied; its own event only carries the summed build time.
+            // of renderer work occupied; its own event only carries the summed build time. A render is drawn at least
+            // one microsecond long, and the span ends where the last one drawn does.
             var renders = events.Where(e => e.Kind == BevToolsEventKind.Render).ToArray();
             var spans = renders.Where(e => e.TryGetData("batch", out var b) && b is long)
                 .GroupBy(e => (long)e.Data!["batch"]!)
-                .ToDictionary(g => g.Key, g => (Start: g.Min(clock.Start), End: g.Max(e => clock.Start(e) + Micro(e.DurationMs ?? 0))));
+                .ToDictionary(g => g.Key, g => (Start: g.Min(clock.Start), End: g.Max(e => clock.Start(e) + RenderMicros(e))));
 
             foreach (var e in events)
             {
@@ -90,7 +91,7 @@ public static class BevTraceExporter
 
                         break;
                     case BevToolsEventKind.Render:
-                        Complete(w, e, pid, RendererTrack, clock.Start(e), Math.Max(Micro(e.DurationMs ?? 0), 1), session);
+                        Complete(w, e, pid, RendererTrack, clock.Start(e), RenderMicros(e), session);
                         break;
                     case BevToolsEventKind.UiEvent or BevToolsEventKind.Navigation:
                         Laned(w, e, pid, EventLanes, lanes, clock, slices, session);
@@ -281,9 +282,11 @@ public static class BevTraceExporter
                 }
                 else if (value is IReadOnlyList<string> { Count: > 0 } list)
                 {
-                    // Changed parameters and fields: already displays, and already redacted when they were captured.
+                    // A render's changed parameters and fields are displays the session captured under its own ValueAccess,
+                    // redacted then, so they are written as the panel shows them. Any other list of strings is an
+                    // extension's data, whose items only Full access shows.
                     var node = session.Inspector.DescribeMetadata(key, list);
-                    w.WriteString(key, node.Kind == BevNodeKind.Redacted || session.Inspector.ValueAccess != BevValueAccess.Full
+                    w.WriteString(key, node.Kind == BevNodeKind.Redacted || (session.Inspector.ValueAccess != BevValueAccess.Full && data is not RenderEventData)
                         ? node.Display
                         : string.Join("; ", list.Take(10).Select(item => item is null ? null : BevRedactor.RedactText(item))) + (list.Count > 10 ? " …" : ""));
                 }
@@ -388,6 +391,8 @@ public static class BevTraceExporter
     }
 
     private static double Micro(double ms) => ms * 1000;
+
+    private static double RenderMicros(BevToolsEvent render) => Math.Max(Micro(render.DurationMs ?? 0), 1);
 
     private static double Round(double value) => Math.Round(value, 3);
 

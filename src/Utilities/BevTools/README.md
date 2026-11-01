@@ -112,7 +112,8 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
 - **Registered at startup.** When `Bit.BevTools` is among the assemblies the app starts with and should run from the
   first render (`RegisterAtStartup`; Development by default), the loader registers it exactly as
   `AddBitBevToolsServices` does and `<BevToolsLoaderPanel />` renders the panel from the start; with `Authorize` set,
-  once an `OpenAsync` it accepted.
+  once an `OpenAsync` it accepted. Nothing opens the panel while a page prerenders, so with `Authorize` set the
+  *Prerendering* panel has no summary to show.
 - **Attached on demand.** Otherwise it installs hooks that cost next to nothing until BevTools is attached: a
   pass-through `IComponentActivator` (the renderer takes its activator when it is created, so this is the only way in
   without reflection), pass-through handlers in every `IHttpClientFactory` pipeline, the framework's ActivitySource and
@@ -125,7 +126,8 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
 - **Blazor Server.** In a process that serves many users, `CanOpen` is false outside Development unless
   `AllowInMultiUserHost` is set **together with** `Authorize`, a callback that decides who may open it: the panel would
   otherwise show whoever opens it the server side objects of their circuit. `OpenAsync` asks `Authorize` before
-  anything is loaded, on every open, and treats an exception as a refusal; `IsAuthorizedAsync()` lets the app show its
+  anything is loaded, on every open, and treats an exception as a refusal (`Problem` names the exception, the app's log
+  holds its message); `IsAuthorizedAsync()` lets the app show its
   button only to those people. Such a session reads no application values (`ValueAccess` is `None`, see
   [Security](#security)) unless the app says otherwise, and every attach writes a warning to the app's own log
   (category `Bit.BevTools`). WebAssembly and Blazor Hybrid only ever show users their own process.
@@ -324,7 +326,8 @@ trace, protocol, companion, extension - can show more:
 
 * Names: members, dictionary keys, headers, query and fragment parameters, storage keys and claim types matching the
   sensitive patterns (`password`, `token`, `authorization`, `cookie`, `connectionstring`, `apikey`, `secret`, …);
-  `[BevToolsSensitive]` on fields, properties and auto-properties; `[BevToolsIgnore]` hides members or whole components.
+  `[BevToolsSensitive]` on fields, properties, auto-properties and a record's positional parameters; `[BevToolsIgnore]`
+  hides members or whole components.
 * Shapes, whatever they are called: JSON Web Tokens, bearer tokens, PEM private keys, connection strings and key/value
   text carrying a password or key, and the token formats of AWS, GitHub, Slack, Stripe, Google and OpenAI-style keys.
   Free text - exception and log messages, JavaScript errors, stack traces - keeps its readable part

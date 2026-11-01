@@ -192,11 +192,36 @@ const REDACTED = "«redacted»";
 // A JSON Web Token is a credential whatever key it is stored under, and "user"/"profile"/"session" are far more
 // common key names for one than "token" is.
 function looksLikeSecret(value: string) {
-    if (/(?:^|[^A-Za-z0-9_-])ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\./.test(value)) return true;
+    if (containsJwt(value)) return true;
     if (/\bBearer\s+\S+/i.test(value)) return true;
     if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/i.test(value)) return true;
     if (/\b(?:AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[abposr]-[A-Za-z0-9-]{10,}|[rs]k_(?:live|test)_[A-Za-z0-9]{16,})\b/.test(value)) return true;
     return /(?:password|passwd|pwd|api[_-]?key|access[_-]?key|account[_-]?key|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|client[_-]?secret|connectionstring|token|secret|credential|cookie|private[_ -]?key)"?\s*[:=]/i.test(value);
+}
+
+// "ey" and six or more base64url characters, a dot, six or more, a dot: what /ey[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\./
+// matches, scanned run by run like BevRedactor does. That pattern, tried from every "ey" of a long run ("eyey…"), takes
+// quadratic time, and anchoring it to the start of a run would miss a token right after an escape ("%3DeyJ…", "\neyJ…").
+function containsJwt(value: string) {
+    const runEnd = (index: number) => {
+        for (let c = value.charCodeAt(index); (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c === 95 || c === 45; c = value.charCodeAt(++index));
+        return index;
+    };
+    for (let header = 0; header < value.length;) {
+        const headerEnd = runEnd(header);
+        if (headerEnd - header >= 8 && value[headerEnd] === ".") {
+            const payloadEnd = runEnd(headerEnd + 1);
+            if (payloadEnd - headerEnd - 1 >= 6 && value[payloadEnd] === ".") {
+                // Every "ey" of the run shares the same dot after it; any one with six characters before that dot.
+                for (let i = header; i <= headerEnd - 8; i++) {
+                    if (value[i] === "e" && value[i + 1] === "y") return true;
+                }
+            }
+        }
+        // The run after the dot can be the header of the next candidate.
+        header = headerEnd + 1;
+    }
+    return false;
 }
 
 function isSensitiveName(name: string) {
@@ -1033,7 +1058,7 @@ function installPageListeners() {
             message: String(e.message || (err && err.message) || "Unknown error").slice(0, 4000),
             source: e.filename ? (redactUrl(e.filename) + ":" + e.lineno + ":" + e.colno).slice(0, 4000) : null,
             stack: err && err.stack ? String(err.stack).slice(0, 4000) : null,
-            type: err && err.name ? err.name : "Error",
+            type: err && err.name ? String(err.name).slice(0, 200) : "Error",
         });
     }, true);
     on(window, "unhandledrejection", (e: PromiseRejectionEvent) => {

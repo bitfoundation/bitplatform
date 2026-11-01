@@ -57,6 +57,7 @@ public sealed class BevBrowserSnapshot
 public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? openPalette = null, Action<bool>? showRequested = null)
 {
     private const int MaxJsErrorTextLength = 4000;
+    private const int MaxJsErrorTypeLength = 200;
 
     private int _lastLargeMessageReported;
     private double _largeMessagesReportedUntil;
@@ -64,7 +65,8 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
     [JSInvokable]
     public void OnJsError(BevJsErrorPayload payload)
     {
-        if (payload.Message?.Length > MaxJsErrorTextLength || payload.Stack?.Length > MaxJsErrorTextLength || payload.Source?.Length > MaxJsErrorTextLength)
+        if (payload.Message?.Length > MaxJsErrorTextLength || payload.Stack?.Length > MaxJsErrorTextLength || payload.Source?.Length > MaxJsErrorTextLength
+            || payload.Type?.Length > MaxJsErrorTypeLength)
         {
             return;
         }
@@ -88,8 +90,9 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
                 break;
         }
 
-        // The hub redacts URLs already; a stack or message from page script is redacted here like every other message.
-        session.Errors.Record(null, source, payload.Message ?? "JavaScript error", exceptionType: payload.Type ?? "Error",
+        // The hub redacts URLs already; a stack or message from page script is redacted here like every other message,
+        // and so is the error's name, which page script sets as freely as its message.
+        session.Errors.Record(null, source, payload.Message ?? "JavaScript error", exceptionType: payload.Type is { } type ? BevRedactor.RedactText(type) : "Error",
             stackTrace: payload.Stack ?? (payload.Source is { } location ? session.Redactor.RedactUrl(location) : null));
     }
 
