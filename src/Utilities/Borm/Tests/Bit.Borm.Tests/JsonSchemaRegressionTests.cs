@@ -1357,7 +1357,7 @@ public class JsonSchemaRegressionTests
     {
         // Every keyword a field looks up walks past every keyword the schema has, known or not.
         var json = new StringBuilder("""{"$defs":{"E":{"type":"string",""");
-        for (var i = 0; i < 100_000; i++) json.Append("\"properties\":{},");
+        for (var i = 0; i < 100_000; i++) json.Append($"\"k{i}\":0,");
         json.Length--;
         json.Append("}},\"type\":\"object\",\"properties\":{");
         for (var f = 0; f < 5000; f++) json.Append($"\"f{f}\":{{\"$ref\":\"#/$defs/E\"}},");

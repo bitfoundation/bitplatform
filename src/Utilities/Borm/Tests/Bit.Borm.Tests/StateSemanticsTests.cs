@@ -151,13 +151,18 @@ public class SeedMinItemsTests
     [TestMethod]
     public void An_imported_minimum_of_millions_seeds_no_more_rows_than_a_draft_may_restore()
     {
-        const string json = """{"type":"object","properties":{"rows":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}}}}""";
+        const string json = """
+            {"type":"object","properties":{
+              "rows":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}},
+              "more":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}}}}
+            """;
         Assert.IsTrue(BormJsonSchemaImporter.TryImport(json, out var form, out var error), error);
 
         var clock = System.Diagnostics.Stopwatch.StartNew();
         var state = new BormState(form, new BormDictionaryDataAccessor());
 
-        Assert.AreEqual(BormDraft.MaxRows, state.ArrayCount("rows"));
+        // The lists share the limit rather than each taking it.
+        Assert.AreEqual(BormDraft.MaxRows, state.ArrayCount("rows") + state.ArrayCount("more"));
         Assert.IsFalse(state.IsFormDirty);
         Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(5), $"took {clock.Elapsed}");
     }

@@ -867,6 +867,19 @@ public class DataValidationRegressionTests
         Assert.IsFalse(store.LastWriteFailed);
         Assert.HasCount(4, tags.Tags);
         Assert.AreEqual("x", tags.Tags[3]);
+
+        // The limit itself: from one item, a gap of exactly MaxPadding is padded and one more is refused.
+        var atLimit = new DvTags();
+        var atLimitStore = new BormModelDataAccessor(atLimit);
+        atLimitStore.SetValue("Tags[1001]", "x");
+        Assert.IsFalse(atLimitStore.LastWriteFailed);
+        Assert.HasCount(1002, atLimit.Tags);
+
+        var pastLimit = new DvTags();
+        var pastLimitStore = new BormModelDataAccessor(pastLimit);
+        pastLimitStore.SetValue("Tags[1002]", "x");
+        Assert.IsTrue(pastLimitStore.LastWriteFailed);
+        Assert.AreSequenceEqual(["a"], pastLimit.Tags);
     }
 
     [TestMethod]

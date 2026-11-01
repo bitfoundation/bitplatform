@@ -2237,7 +2237,9 @@ public static class BormJsonSchemaImporter
                 // The branch's own keywords win over the definition it refers to, as they do anywhere.
                 if (TryGet(raw, "const", out var value) || TryGet(target, "const", out value))
                 {
-                    (choices ??= []).Add(new ConstChoice(value, ReadString(raw, "title") ?? ReadString(target, "title")));
+                    var title = ReadString(raw, "title") ?? ReadString(target, "title");
+                    if (title is not null) ChargeText(Encoding.UTF8.GetByteCount(title));
+                    (choices ??= []).Add(new ConstChoice(value, title));
                 }
                 else
                 {
