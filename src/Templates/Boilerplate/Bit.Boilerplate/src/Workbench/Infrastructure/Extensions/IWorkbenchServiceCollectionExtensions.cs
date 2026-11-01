@@ -71,7 +71,7 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddBitBcrdtServices(collaboration => collaboration.UseTransport<WorkbenchReviewRelay>().UseInMemoryStore());
             services.AddBitBcrdtDocumentHost(sp => new()
             {
-                Store = new BcrdtFileSystemDocumentStore(WorkbenchFolders.Reviews),
+                Store = WorkbenchFolders.Project is null ? new BcrdtInMemoryDocumentStore() : new BcrdtFileSystemDocumentStore(WorkbenchFolders.Reviews),
                 ValidateUpdate = context =>
                 {
                     // Wakes an agent waiting for comments; only the review document is accepted.

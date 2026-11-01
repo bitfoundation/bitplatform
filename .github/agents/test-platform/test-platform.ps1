@@ -1217,7 +1217,7 @@ function Start-AppHostRun([string] $appHost, [string] $aliveUrl, [string] $log) 
         }
 
         try {
-            if ((Invoke-WebRequest $aliveUrl -TimeoutSec 5 -SkipHttpErrorCheck).StatusCode -eq 200) {
+            if ((Select-String -LiteralPath $log -SimpleMatch 'Distributed application started' -Quiet) -and (Invoke-WebRequest $aliveUrl -TimeoutSec 5 -SkipHttpErrorCheck).StatusCode -eq 200) {
                 return [pscustomobject]@{ Process = $process; Seconds = [int]([DateTimeOffset]::Now - $started).TotalSeconds }
             }
         }

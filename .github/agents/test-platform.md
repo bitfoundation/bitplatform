@@ -71,9 +71,10 @@ answer, and repeat the plan back before starting:
    `-Long`; it draws on the usage limits of this machine's Claude Code login, about 40 minutes per model and as much
    again with `-Long`).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
-   latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
-   nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and
-   nothing else: start it, and any later one a fix needs, without asking.
+   latter needs a successful prerelease run on the branch under test first. It publishes to nuget.org
+   only what nuget.org doesn't have yet, package by package. At a version that is already there it builds packages
+   and publishes only a package id that is new at that version: start it, and any later one a fix needs, without
+   asking, and tell the user when the branch adds a package, since that one stays on nuget.org.
 4. **All CI**: the linked run, a new run on the branch (every job, or which ones), or none.
 5. **All CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
@@ -554,7 +555,8 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   change touches what differs between the .NET versions, run `aspire` once with each.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker's memory while the app runs.
   Start it in the background as soon as its packages exist and this machine has several GB free, and never next to
-  `devcontainer` or the Android stage. A second run can start once the first is in its idle wait. Its containers
+  `devcontainer`, `agents` or the Android stage: a new project's web app always takes the same port, so another
+  project's app can answer for this one. A second run can start once the first is in its idle wait. Its containers
   hold that memory, and Docker's VM keeps it for a while after they stop: IIS sites
   deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
   ms" in the Application log), which a CD reports as a failed health check.
@@ -566,6 +568,11 @@ Two things are expected and are not failures. `dotnet test` and a `dotnet run` o
 other's containers, since the test host picks random ports and the ports are part of the lifecycle key. And a run
 that was killed, as closing its terminal does, leaves DCP's own `tunnel-proxy-...` container behind, a few MB, which
 the next Aspire run removes and the idle stop doesn't touch.
+
+Containers that never stop, with the keeper still alive and no heartbeat in its state folder, mean Aspire's startup
+never finished: the hosted service that writes the heartbeat starts after it. A resource that waits for one nobody
+starts does that, and `aspire` then says a run wasn't up, since it counts a run as up only once its own log has
+Aspire's started line and the web app answers.
 
 A failure is fixed in the template like a CI failure, and the next `aspire -Sha` on the fix proves it.
 
