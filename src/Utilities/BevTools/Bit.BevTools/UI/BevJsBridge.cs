@@ -56,12 +56,19 @@ public sealed class BevBrowserSnapshot
 /// </summary>
 public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? openPalette = null, Action<bool>? showRequested = null)
 {
+    private const int MaxJsErrorTextLength = 4000;
+
     private int _lastLargeMessageReported;
     private double _largeMessagesReportedUntil;
 
     [JSInvokable]
     public void OnJsError(BevJsErrorPayload payload)
     {
+        if (payload.Message?.Length > MaxJsErrorTextLength || payload.Stack?.Length > MaxJsErrorTextLength || payload.Source?.Length > MaxJsErrorTextLength)
+        {
+            return;
+        }
+
         var source = payload.Type switch
         {
             "ResourceLoadError" => "resource",
@@ -231,6 +238,7 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
         foreach (var entry in batch)
         {
             session.Browser.JsToDotNetCalls++;
+            var error = entry.Error is null ? null : BevRedactor.RedactText(entry.Error);
             var record = new BevJsInteropRecord
             {
                 Id = session.Interop.NextId(),
@@ -245,14 +253,14 @@ public sealed class BevJsBridge(BevToolsSession session, Action toggle, Action? 
                 Kind = BevToolsEventKind.JsInterop,
                 Category = "js-interop",
                 Title = "← .NET " + record.Identifier,
-                Detail = (entry.Sync ? "sync" : "async") + ", " + entry.Args + " args" + (entry.Error is null ? "" : ", failed: " + entry.Error),
+                Detail = (entry.Sync ? "sync" : "async") + ", " + entry.Args + " args" + (error is null ? "" : ", failed: " + error),
                 Timestamp = record.At,
                 DurationMs = entry.DurationMs,
-                Severity = entry.Error is null ? BevToolsSeverity.Info : BevToolsSeverity.Error,
+                Severity = error is null ? BevToolsSeverity.Info : BevToolsSeverity.Error,
                 Data = new Dictionary<string, object?> { ["callId"] = record.Id },
             });
             session.Interop.Add(record);
-            session.Interop.Complete(record, entry.DurationMs, entry.Error is null, entry.Error);
+            session.Interop.Complete(record, entry.DurationMs, error is null, error);
         }
     }
 

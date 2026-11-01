@@ -283,6 +283,82 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public async Task Authorize_decides_who_sees_a_BevTools_registered_at_startup_too()
+    {
+        var accepted = false;
+        Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.Authorize = _ => ValueTask.FromResult(accepted);
+        });
+        var cut = RenderHost();
+        var loader = cut.Instance.Loader;
+
+        Assert.IsTrue(loader.IsActive);
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+        Assert.IsFalse(await loader.IsAuthorizedAsync());
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
+        StringAssert.Contains(loader.Problem, "did not accept");
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+
+        accepted = true;
+        Assert.IsTrue(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()), loader.Problem);
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(cut.FindAll(".bev-root")));
+
+        accepted = false;
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
+        StringAssert.Contains(loader.Problem, "did not accept");
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll(".bev-root")));
+    }
+
+    [TestMethod]
+    public async Task An_open_a_newer_open_overtook_does_not_act_on_its_authorization()
+    {
+        var first = new TaskCompletionSource<bool>();
+        var answers = new Queue<Task<bool>>(new[] { first.Task, Task.FromResult(false) });
+        Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.Authorize = _ => new ValueTask<bool>(answers.Dequeue());
+        });
+        var cut = RenderHost();
+        var loader = cut.Instance.Loader;
+
+        var overtaken = Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync());
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
+        first.SetResult(true);
+
+        Assert.IsFalse(await overtaken);
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+    }
+
+    [TestMethod]
+    public async Task Authorize_runs_as_BevTools_own_work()
+    {
+        var authorization = new TaskCompletionSource<bool>();
+        var resolved = new List<BevToolsSession?>();
+        Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.Authorize = async _ =>
+            {
+                resolved.Add(SessionResolver.Resolve());
+                await authorization.Task;
+                resolved.Add(SessionResolver.Resolve());
+                return true;
+            };
+        });
+        var cut = RenderHost();
+
+        var opening = Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync());
+        authorization.SetResult(true);
+
+        Assert.IsTrue(await opening);
+        Assert.HasCount(2, resolved);
+        Assert.IsTrue(resolved.All(session => session is null), "requests, logs and activities of the callback are not the app's, before or after it awaits");
+    }
+
+    [TestMethod]
     public void By_default_BevTools_registers_at_startup_in_Development_only()
     {
         var development = new ServiceCollection().AddSingleton<IHostEnvironment>(new StubEnvironment("Development")).AddBitBevToolsLoaderServices();
@@ -542,6 +618,8 @@ public class LoaderTests : BunitContext
         public bool TryAddServices(IServiceCollection services, BevToolsLoaderContext context, out string reason) => throw exception;
 
         public IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context) => throw exception;
+
+        public IDisposable BeginOwnWork() => throw exception;
     }
 
     private sealed class CountingActivator : IComponentActivator

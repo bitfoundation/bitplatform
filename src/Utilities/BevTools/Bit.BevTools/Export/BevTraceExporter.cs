@@ -282,7 +282,10 @@ public static class BevTraceExporter
                 else if (value is IReadOnlyList<string> { Count: > 0 } list)
                 {
                     // Changed parameters and fields: already displays, and already redacted when they were captured.
-                    w.WriteString(key, string.Join("; ", list.Take(10)) + (list.Count > 10 ? " …" : ""));
+                    var node = session.Inspector.DescribeMetadata(key, list);
+                    w.WriteString(key, node.Kind == BevNodeKind.Redacted || session.Inspector.ValueAccess != BevValueAccess.Full
+                        ? node.Display
+                        : string.Join("; ", list.Take(10).Select(item => item is null ? null : BevRedactor.RedactText(item))) + (list.Count > 10 ? " …" : ""));
                 }
             }
         }

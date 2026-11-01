@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -38,6 +39,7 @@ public sealed record BevInspectedNode(string Name, string? TypeName, string Disp
 public sealed class BevObjectInspector
 {
     private static readonly ConcurrentDictionary<Type, MemberInfo[]> MemberCache = new();
+    private static readonly ConcurrentDictionary<Type, bool> IgnoredMemberCache = new();
     private static readonly ConcurrentDictionary<Type, PropertyInfo?> PairNameCache = new();
     private static readonly ConcurrentDictionary<Type, string?> ConfigurationTypeCache = new();
     private readonly BevRedactor _redactor;
@@ -107,7 +109,7 @@ public sealed class BevObjectInspector
         }
         catch (Exception ex)
         {
-            return [new BevInspectedNode("error", null, "«" + ex.GetType().Name + ": " + ex.Message + "»", BevNodeKind.Error, path, false)];
+            return [new BevInspectedNode("error", null, "«" + ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message) + "»", BevNodeKind.Error, path, false)];
         }
 
         if (current is null)
@@ -221,9 +223,9 @@ public sealed class BevObjectInspector
             return new BevInspectedNode(name, typeName, "«max depth»", BevNodeKind.Special, path, false);
         }
 
-        if (TryFormatWithExtension(value, out var formatted))
+        if (access == BevValueAccess.Full && TryFormatWithExtension(value, out var formatted))
         {
-            return new BevInspectedNode(name, typeName, formatted!, BevNodeKind.Special, path, false);
+            return new BevInspectedNode(name, typeName, BevRedactor.RedactText(formatted!), BevNodeKind.Special, path, false);
         }
 
         if (value is string s)
@@ -253,6 +255,12 @@ public sealed class BevObjectInspector
         if (type.IsEnum)
         {
             return new BevInspectedNode(name, typeName, value.ToString() ?? "", BevNodeKind.Enum, path, false);
+        }
+
+        if (value is JsonElement { ValueKind: JsonValueKind.Object or JsonValueKind.Array } json)
+        {
+            var size = json.ValueKind == JsonValueKind.Object ? json.EnumerateObject().Count() + " properties" : json.GetArrayLength() + " items";
+            return new BevInspectedNode(name, typeName, access == BevValueAccess.Full ? JsonDisplay(json) : typeName + " (" + size + ")", BevNodeKind.Special, path, false);
         }
 
         if (TrySpecial(value, type, out var special))
@@ -402,8 +410,8 @@ public sealed class BevObjectInspector
             EventCallback ec => BevEventCallbacks.Describe(ec),
             Type t => "typeof(" + TypeNames.Short(t) + ")",
             Task task => "Task: " + task.Status,
-            Exception ex => ex.GetType().Name + ": " + ex.Message,
-            JsonElement je => je.ValueKind == JsonValueKind.String ? Quote(je.GetString() ?? "") : je.ToString(),
+            Exception ex => ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message),
+            JsonElement je => je.ValueKind == JsonValueKind.String ? StringDisplay(je.GetString() ?? "") : je.ToString(),
             ElementReference er => "ElementReference " + (string.IsNullOrEmpty(er.Id) ? "(unset)" : er.Id),
             IJSObjectReference => "IJSObjectReference",
             System.Linq.IQueryable q => "IQueryable<" + TypeNames.Short(q.ElementType) + "> (not enumerated: evaluating it would run the query)",
@@ -430,7 +438,7 @@ public sealed class BevObjectInspector
 
     private string Summarize(object value, Type type)
     {
-        if (type.IsValueType && type.GetMethod("ToString", Type.EmptyTypes)?.DeclaringType == type && !PairNameIsSensitive(value))
+        if (type.IsValueType && type.GetMethod("ToString", Type.EmptyTypes)?.DeclaringType == type && !PairNameIsSensitive(value) && !HasSensitiveMember(type))
         {
             var text = SafeToString(value);
             return BevRedactor.LooksLikeSecret(text) ? TypeNames.Short(type) + " (" + BevRedactor.RedactedValue + ")" : text;
@@ -459,6 +467,11 @@ public sealed class BevObjectInspector
     /// <summary>True when any member of the type would be redacted, in which case its ToString must not be shown.</summary>
     private bool HasSensitiveMember(Type type)
     {
+        if (HasIgnoredMember(type))
+        {
+            return true;
+        }
+
         foreach (var member in GetMembers(type))
         {
             if (_redactor.IsSensitive(member))
@@ -492,6 +505,83 @@ public sealed class BevObjectInspector
         return "\"" + s.Replace("\n", "\\n").Replace("\r", "") + "\"";
     }
 
+    private string StringDisplay(string s)
+    {
+        var redacted = BevRedactor.RedactText(s);
+        if (string.Equals(redacted, s, StringComparison.Ordinal))
+        {
+            return Quote(s);
+        }
+
+        return redacted == BevRedactor.RedactedValue || BevRedactor.LooksLikeSecret(redacted) ? BevRedactor.RedactedValue : Quote(redacted);
+    }
+
+    private string JsonDisplay(JsonElement json)
+    {
+        var text = new StringBuilder();
+        AppendJson(text, json, 0);
+        return text.Length > _maxString ? text.ToString(0, _maxString) + "…" : text.ToString();
+    }
+
+    private void AppendJson(StringBuilder text, JsonElement json, int depth)
+    {
+        if (json.ValueKind is (JsonValueKind.Object or JsonValueKind.Array) && (depth >= _maxDepth || text.Length > _maxString))
+        {
+            text.Append('…');
+            return;
+        }
+
+        var separator = "";
+        switch (json.ValueKind)
+        {
+            case JsonValueKind.Object:
+                text.Append('{');
+                foreach (var property in json.EnumerateObject())
+                {
+                    if (text.Length > _maxString)
+                    {
+                        break;
+                    }
+
+                    text.Append(separator).Append('"').Append(property.Name).Append("\": ");
+                    separator = ", ";
+                    if (_redactor.IsSensitiveName(property.Name))
+                    {
+                        text.Append(BevRedactor.RedactedValue);
+                    }
+                    else
+                    {
+                        AppendJson(text, property.Value, depth + 1);
+                    }
+                }
+
+                text.Append('}');
+                break;
+            case JsonValueKind.Array:
+                text.Append('[');
+                foreach (var item in json.EnumerateArray())
+                {
+                    if (text.Length > _maxString)
+                    {
+                        break;
+                    }
+
+                    text.Append(separator);
+                    separator = ", ";
+                    AppendJson(text, item, depth + 1);
+                }
+
+                text.Append(']');
+                break;
+            case JsonValueKind.String:
+                text.Append(StringDisplay(json.GetString() ?? ""));
+                break;
+            default:
+                text.Append(json.GetRawText());
+                break;
+        }
+    }
+
     private static string FormatPrimitive(object value) => value switch
     {
         DateTime dt => dt.ToString("O", CultureInfo.InvariantCulture),
@@ -517,14 +607,18 @@ public sealed class BevObjectInspector
     private static MemberInfo[] GetMembers(Type type) => MemberCache.GetOrAdd(type, static t =>
     {
         var props = t.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanRead && p.GetIndexParameters().Length == 0 && !p.IsDefined(typeof(BevToolsIgnoreAttribute), true))
+            .Where(p => p.CanRead && p.GetIndexParameters().Length == 0 && !Attribute.IsDefined(p, typeof(BevToolsIgnoreAttribute), true))
             .Where(p => p.GetMethod?.IsPublic == true)
             .Cast<MemberInfo>();
         var fields = t.GetFields(BindingFlags.Public | BindingFlags.Instance)
-            .Where(f => !f.IsDefined(typeof(BevToolsIgnoreAttribute), true))
+            .Where(f => !Attribute.IsDefined(f, typeof(BevToolsIgnoreAttribute), true))
             .Cast<MemberInfo>();
         return props.Concat(fields).ToArray();
     });
+
+    private static bool HasIgnoredMember(Type type) => IgnoredMemberCache.GetOrAdd(type, static t =>
+        t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Any(p => Attribute.IsDefined(p, typeof(BevToolsIgnoreAttribute), true))
+        || t.GetFields(BindingFlags.Public | BindingFlags.Instance).Any(f => Attribute.IsDefined(f, typeof(BevToolsIgnoreAttribute), true)));
 
     private static Type MemberType(MemberInfo member) => member is PropertyInfo p ? p.PropertyType : ((FieldInfo)member).FieldType;
 

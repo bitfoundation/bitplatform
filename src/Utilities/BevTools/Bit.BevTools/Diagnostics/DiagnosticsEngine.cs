@@ -168,7 +168,7 @@ internal sealed class DiagnosticsEngine
             }
             catch (Exception ex)
             {
-                produced.Add(new BevDiagnostic("bevtools.rule-failed", BevDiagnosticSeverity.Info, $"Rule {rule.Id} threw", ex.GetType().Name + ": " + ex.Message, Fingerprint: "rule-failed:" + rule.Id));
+                produced.Add(new BevDiagnostic("bevtools.rule-failed", BevDiagnosticSeverity.Info, $"Rule {rule.Id} threw", ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message), Fingerprint: "rule-failed:" + rule.Id));
             }
         }
 
