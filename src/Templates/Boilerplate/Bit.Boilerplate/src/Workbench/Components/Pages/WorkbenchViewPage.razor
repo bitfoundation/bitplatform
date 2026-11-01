@@ -77,8 +77,15 @@ else if (isSmallScreen)
 else
 {
     @* Wider screens: the page list, the views as iframes of /preview, and the tabs for the selected view. *@
-    <div class="workbench">
+    <div class="workbench @(store.IsNavigatorCollapsed ? "nav-collapsed" : null) @(store.IsInspectorCollapsed ? "inspector-collapsed" : null)">
         <header class="topbar">
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" Class="navigator-toggle"
+                       IconName="@NavigatorToggleIcon"
+                       Title="@Localizer[nameof(WorkbenchStrings.Pages)]"
+                       AriaLabel="@Localizer[nameof(WorkbenchStrings.Pages)]"
+                       aria-expanded="@(store.IsNavigatorCollapsed ? "false" : "true")"
+                       aria-controls="wb-navigator"
+                       OnClick="store.ToggleNavigator" />
             <a class="brand" href="/">
                 <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="26" height="26" />
                 <span>@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</span>
@@ -134,9 +141,17 @@ else
                        Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
                        AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
                        OnClick="ToggleShellTheme" />
+
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
+                       IconName="@InspectorToggleIcon"
+                       Title="@Localizer[nameof(WorkbenchStrings.Tools)]"
+                       AriaLabel="@Localizer[nameof(WorkbenchStrings.Tools)]"
+                       aria-expanded="@(store.IsInspectorCollapsed ? "false" : "true")"
+                       aria-controls="wb-inspector"
+                       OnClick="store.ToggleInspector" />
         </header>
 
-        <aside class="sidebar navigator-column">
+        <aside id="wb-navigator" class="sidebar navigator-column">
             <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" />
         </aside>
 
@@ -170,7 +185,7 @@ else
         </section>
 
         @* Edit text mode takes the column over from whichever tab is open. *@
-        <aside class="sidebar inspector-column">
+        <aside id="wb-inspector" class="sidebar inspector-column">
             @* Only the open tab is in the tab order; the arrow keys move between them. *@
             <div class="column-tabs" role="tablist" @onkeydown="OnColumnTabKeyDown">
                 @for (var index = 0; index < columns.Length; index++)

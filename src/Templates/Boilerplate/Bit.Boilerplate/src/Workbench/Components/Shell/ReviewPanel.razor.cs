@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Web;
+
 namespace Boilerplate.Workbench.Components.Shell;
 
 /// <summary>
@@ -199,6 +201,14 @@ public partial class ReviewPanel
 
         return OnCancel.InvokeAsync();
     }
+
+    /// <summary>Ctrl+Enter, or Cmd+Enter on a Mac, sends the comment.</summary>
+    private Task SendOnCtrlEnter(KeyboardEventArgs e) => IsSendKey(e) ? Send() : Task.CompletedTask;
+
+    /// <summary>Ctrl+Enter, or Cmd+Enter on a Mac, sends the reply.</summary>
+    private Task ReplyOnCtrlEnter(KeyboardEventArgs e, WorkbenchReviewThread thread) => IsSendKey(e) ? Reply(thread) : Task.CompletedTask;
+
+    private static bool IsSendKey(KeyboardEventArgs e) => e.Key is "Enter" && (e.CtrlKey || e.MetaKey);
 
     private async Task Reply(WorkbenchReviewThread thread)
     {

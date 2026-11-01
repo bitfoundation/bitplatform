@@ -64,6 +64,16 @@ public partial class WorkbenchViewPage
 
     private string ReviewerName => store.ReviewerName ?? Localizer[nameof(WorkbenchStrings.Reviewer)];
 
+    /// <summary>The page list's toggle: a pane on the start side, with an arrow that points the way it will move.</summary>
+    private string NavigatorToggleIcon => store.IsNavigatorCollapsed
+        ? (CurrentDir is BitDir.Rtl ? BitIconName.OpenPane : BitIconName.OpenPaneMirrored)
+        : (CurrentDir is BitDir.Rtl ? BitIconName.ClosePane : BitIconName.ClosePaneMirrored);
+
+    /// <summary>The side column's toggle: the same, on the end side.</summary>
+    private string InspectorToggleIcon => store.IsInspectorCollapsed
+        ? (CurrentDir is BitDir.Rtl ? BitIconName.OpenPaneMirrored : BitIconName.OpenPane)
+        : (CurrentDir is BitDir.Rtl ? BitIconName.ClosePaneMirrored : BitIconName.ClosePane);
+
     private int OpenThreadCount => pageInfo is null ? 0 : reviewSession.ThreadsOf(pageInfo.Key).Count(t => t.Status is not WorkbenchReviewStatus.Done);
 
     // The page was left while an await ran: what follows the await belongs to a view that is gone.

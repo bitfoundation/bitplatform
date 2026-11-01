@@ -23,6 +23,8 @@ public partial class WorkbenchStore
     [BlexState] private bool _replyNotifications;
     [BlexState] private bool _wasAskedToNotify;
     [BlexState] private bool _isReplySoundMuted;
+    [BlexState] private bool _isNavigatorCollapsed;
+    [BlexState] private bool _isInspectorCollapsed;
 
     /// <summary>The selected view, or the first one when no view has the selected id.</summary>
     public WorkbenchPane SelectedPane => Panes.FirstOrDefault(p => p.Id == SelectedPaneId) ?? Panes[0];
@@ -85,9 +87,29 @@ public partial class WorkbenchStore
 
     [BlexAction] private void OnSetZoom(string zoom) => Zoom = zoom;
 
-    [BlexAction] private void OnSetMode(string mode) => Mode = mode;
+    /// <summary>Sets the mode; Edit text works in the side column, so it opens the column if it was folded away.</summary>
+    [BlexAction]
+    private void OnSetMode(string mode)
+    {
+        Mode = mode;
 
-    [BlexAction] private void OnShowColumn(string column) => Column = column;
+        if (mode == WorkbenchModes.Text)
+        {
+            IsInspectorCollapsed = false;
+        }
+    }
+
+    /// <summary>Shows a tab of the side column, opening the column if it was folded away.</summary>
+    [BlexAction]
+    private void OnShowColumn(string column)
+    {
+        Column = column;
+        IsInspectorCollapsed = false;
+    }
+
+    [BlexAction] private void OnToggleNavigator() => IsNavigatorCollapsed = IsNavigatorCollapsed is false;
+
+    [BlexAction] private void OnToggleInspector() => IsInspectorCollapsed = IsInspectorCollapsed is false;
 
     [BlexAction] private void OnNameReviewer(string? name) => ReviewerName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
 

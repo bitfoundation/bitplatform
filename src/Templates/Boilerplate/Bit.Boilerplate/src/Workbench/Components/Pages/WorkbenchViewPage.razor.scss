@@ -2,16 +2,28 @@
 @import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
 
 .workbench {
+    --wb-nav-width: 264px;
+    --wb-inspector-width: 312px;
     height: 100dvh;
     display: grid;
     overflow: hidden;
     grid-template-rows: minmax(52px, auto) minmax(0, 1fr);
-    grid-template-columns: 264px minmax(0, 1fr) 312px;
+    grid-template-columns: var(--wb-nav-width) minmax(0, 1fr) var(--wb-inspector-width);
     grid-template-areas: "top top top" "nav canvas inspector";
 
     // Below lg the page list column folds away to give the views the room.
     @include lt-lg {
-        grid-template-columns: 0 minmax(0, 1fr) 300px;
+        --wb-nav-width: 0px;
+        --wb-inspector-width: 300px;
+    }
+
+    // The top bar's toggles fold either column away.
+    &.nav-collapsed {
+        --wb-nav-width: 0px;
+    }
+
+    &.inspector-collapsed {
+        --wb-inspector-width: 0px;
     }
 }
 
@@ -64,6 +76,18 @@
 .inspector-column {
     grid-area: inspector;
     border-inline-start: 1px solid $bit-color-border-tertiary;
+}
+
+.nav-collapsed .navigator-column,
+.inspector-collapsed .inspector-column {
+    display: none;
+}
+
+// The page list is always folded away below lg, so its toggle has nothing to do there.
+::deep .navigator-toggle {
+    @include lt-lg {
+        display: none;
+    }
 }
 
 .page-status {
