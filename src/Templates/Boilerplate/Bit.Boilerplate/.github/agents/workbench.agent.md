@@ -119,8 +119,8 @@ what the user approves is how the real page will look.
 
 <!--#if (aspire == true && cloudflare == true)-->
 - A link to the user's `localhost` works only on their machine. When they want to send the page to someone else (a
-  teammate, a client), start the app host's `workbench` resource. Its Cloudflare quick tunnel,
-  `cloudflare-tunnel-workbench`, starts with it and gets an `https://….trycloudflare.com` address: read it from the
+  teammate, a client), start the app host's `workbench` resource, then its Cloudflare quick tunnel,
+  `cloudflare-tunnel-workbench`. The tunnel gets an `https://….trycloudflare.com` address: read it from the
   Aspire dashboard or the Aspire MCP `list_resources` tool. A Workbench already running outside the app host holds the
   same port, so stop that one first.
 - Tell the user plainly: the link works only while their laptop is on and the app host keeps running; the address
