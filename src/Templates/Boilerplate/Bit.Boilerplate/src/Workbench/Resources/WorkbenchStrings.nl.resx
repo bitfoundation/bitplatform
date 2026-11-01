@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>Een kassadashboard met widgets die je kunt verplaatsen, vergroten, verbergen en opslaan.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sanne de Vries</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Winkel Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Druk</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Goedemiddag, Sanne</value>
+        <value>Goedemiddag, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Winkel</value>
@@ -1087,7 +1087,7 @@
         <value>Wie verkoopt vandaag het meest?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** staat bovenaan met **64 bestellingen** en € 1.180 omzet [1].</value>
+        <value>**Saleh** staat bovenaan met **64 bestellingen** en € 1.180 omzet [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Hier ken ik alleen de voorgestelde vragen. Probeer er een.</value>
@@ -1924,10 +1924,10 @@
         <value>Ingelogd als</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Globale beheerder</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Tenantbeheerder</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Ontwerpopties</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Live samenwerken met AI</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>De agent is offline</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Nog geen opmerkingen.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows worden getekend in de ontwikkelmodus, wanneer je AI-agent de werkbank uitvoert. Bestaande flows kun je hier openen en doorlopen.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Nog geen flows.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live beoordelen met je AI-agent</value>
@@ -2722,7 +2719,7 @@
         <value>Component</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Alleen voor snelle wijzigingen. Schrijf al het andere in het tabblad Beoordeling, dan regelt de agent het.</value>
+        <value>Alleen voor snelle/eenvoudige wijzigingen. Schrijf al het andere in het tabblad Beoordeling, dan regelt de agent het.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Klik op een component in een weergave om de parameters te zien en te wijzigen.</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>Voorgestelde waarden</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>Wijzigingen kun je alleen toepassen in de ontwikkelmodus, wanneer je AI-agent de werkbank vanuit je project uitvoert.</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>Agent is niet verbonden</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>In de ontwikkelmodus, wanneer je AI-agent de werkbank vanuit je project uitvoert, gaat een opmerking die je op de pagina vastzet rechtstreeks naar die agent: die past de pagina aan, antwoordt hier meteen en vinkt de opmerking af terwijl je toekijkt. Overal elders is de beoordeling alleen-lezen, zodat niemand die agent via een gedeelde link kan bereiken.</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Beperkte ervaring</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Je kunt rondkijken, van weergave wisselen en schermafbeeldingen maken. Om iets te wijzigen moet een AI-agent de Workbench uitvoeren.</value>
     </data>
 </root>

@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>一个 POS 仪表板，其中的小组件可以重新排列、调整大小、隐藏和保存。</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>莎拉·约翰逊</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>亚斯</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>达恩·菲瑟</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>萨利赫</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>尼卢法尔·拉希米</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>扎赫拉</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Amsterdam 门店</value>
@@ -583,7 +583,7 @@
         <value>繁忙</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>下午好，莎拉</value>
+        <value>下午好，亚斯</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>门店</value>
@@ -1087,7 +1087,7 @@
         <value>今天谁卖得最多？</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**达恩**以 **64 笔订单**、1,180 欧元的销售额领先 [1]。</value>
+        <value>**萨利赫**以 **64 笔订单**、1,180 欧元的销售额领先 [1]。</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>这里我只会回答推荐的问题。试试其中一个吧。</value>
@@ -1924,13 +1924,13 @@
         <value>登录身份</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>全局管理员</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>租户管理员</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
-        <value>演示</value>
+        <value>Demo</value>
     </data>
     <data name="ChecksTab" xml:space="preserve">
         <value>检测</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>设计方案</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>与 AI 实时协作</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>智能体离线</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>还没有评论。</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>流程需要在开发模式下绘制，也就是由您的 AI 智能体运行工作台时。在这里，您可以打开并浏览已有的流程。</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>还没有流程。</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>与您的 AI 智能体实时评审</value>
@@ -2722,7 +2719,7 @@
         <value>组件</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>仅用于快速修改。其他需求请写在“评审”标签页，智能体会处理。</value>
+        <value>仅用于快速/简单的修改。其他需求请写在“评审”标签页，智能体会处理。</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>在视图中点击一个组件，即可查看并修改它的参数。</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>建议的值</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>只有在开发模式下才能应用更改，也就是由您的 AI 智能体从项目运行工作台时。</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>智能体未连接</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>在开发模式下，也就是由您的 AI 智能体从项目运行工作台时，钉在页面上的评论会直接发给它：它会修改页面、就在这里回复，并在您眼前将评论勾选为已完成。在其他任何地方，评审都是只读的，因此没有人能通过共享链接接触到这个智能体。</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>功能受限</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>你可以浏览、切换视图和截图。要进行修改，需要由 AI 智能体运行 Workbench。</value>
     </data>
 </root>

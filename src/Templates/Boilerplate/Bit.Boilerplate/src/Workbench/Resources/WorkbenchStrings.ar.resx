@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>لوحة تحكم لنقاط البيع يمكن إعادة ترتيب أدواتها وتغيير حجمها وإخفاؤها وحفظها.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>سارة جونسون</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>ياس</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>دان فيسر</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>صالح</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>نيلوفر رحيمي</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>زهراء</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>فرع Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>مزدحم</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>مساء الخير يا سارة</value>
+        <value>مساء الخير يا ياس</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>الفرع</value>
@@ -1087,7 +1087,7 @@
         <value>من الأعلى مبيعًا اليوم؟</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>يتصدر **دان** بـ **64 طلبًا** ومبيعات بقيمة 1,180 يورو [1].</value>
+        <value>يتصدر **صالح** بـ **64 طلبًا** ومبيعات بقيمة 1,180 يورو [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>هنا أعرف الأسئلة المقترحة فقط. جرّب واحدًا منها.</value>
@@ -1924,13 +1924,13 @@
         <value>مسجّل الدخول باسم</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>المسؤول العام</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>مسؤول المستأجر</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
-        <value>تجريبي</value>
+        <value>Demo</value>
     </data>
     <data name="ChecksTab" xml:space="preserve">
         <value>التحقق</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>خيارات التصميم</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>تعاون مباشر مع الذكاء الاصطناعي</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>الوكيل غير متصل</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>لا توجد تعليقات بعد.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>تُرسم المسارات في وضع التطوير، أي عندما يشغّل وكيل الذكاء الاصطناعي منضدة العمل. ويمكنك هنا فتح الموجود منها والمرور به.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>لا توجد مسارات بعد.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>راجع مباشرةً مع وكيل الذكاء الاصطناعي الخاص بك</value>
@@ -2722,7 +2719,7 @@
         <value>المكوّن</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>للتغييرات السريعة فقط. اكتب أي شيء آخر في تبويب المراجعة وسيتولّاه الوكيل.</value>
+        <value>للتغييرات السريعة/البسيطة فقط. اكتب أي شيء آخر في تبويب المراجعة وسيتولّاه الوكيل.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>انقر مكوّنًا في العرض لترى معاملاته وتغيّرها.</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>القيم المقترحة</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>لا تُطبَّق التغييرات إلا في وضع التطوير، أي عندما يشغّل وكيل الذكاء الاصطناعي منضدة العمل من مشروعك.</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>الوكيل غير متصل</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>في وضع التطوير، أي عندما يشغّل وكيل الذكاء الاصطناعي منضدة العمل من مشروعك، يصل التعليق المثبّت على الصفحة إليه مباشرةً: فيغيّر الصفحة ويردّ هنا ويضع على التعليق علامة الإنجاز أمام عينيك. وفي أي مكان آخر تكون المراجعة للقراءة فقط، حتى لا يتمكن أحد من الوصول إلى ذلك الوكيل عبر رابط مشترك.</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>تجربة محدودة</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>يمكنك الاستكشاف وتبديل العروض والتقاط لقطات الشاشة. أما التغيير فيتطلب وكيل ذكاء اصطناعي يشغّل Workbench.</value>
     </data>
 </root>

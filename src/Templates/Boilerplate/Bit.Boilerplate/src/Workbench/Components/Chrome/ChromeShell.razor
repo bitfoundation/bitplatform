@@ -98,8 +98,8 @@
                 <BitNavBar FullWidth TItem="BitNavBarOption">
                     <BitNavBarOption Text="@AppLocalizer[nameof(AppStrings.Home)]" IconName="@BitIconName.Home" Url="#home" />
 
-                    @* The page in the view, unless the app's own bar already has it *@
-                    @if (Page.Key != "dashboard")
+                    @* The page in the view, unless the app's own bar already has it or a signed-out visitor can't open it *@
+                    @if (Page.Key != "dashboard" && (IsSignedIn || Page.NeedsSignIn is false))
                     {
                         <BitNavBarOption Text="@Localizer[Page.TitleKey]" IconName="@Page.IconName" Url="@currentPageUrl" />
                     }

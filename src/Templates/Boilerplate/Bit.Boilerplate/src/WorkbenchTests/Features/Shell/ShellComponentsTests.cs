@@ -29,6 +29,17 @@ public class ShellComponentsTests
     }
 
     [TestMethod]
+    public async Task AnEmptyFlowsTab_Should_SayThereAreNoneWithoutAskingARemoteViewerForAnAgent()
+    {
+        await using var ctx = WorkbenchBunit.Create(isLocal: false);
+
+        var cut = ctx.Render<FlowsPanel>(p => p.Add(x => x.PageKey, "shifts"));
+
+        Assert.Contains(WorkbenchStrings.NoFlowsYet, cut.Markup);
+        Assert.DoesNotContain(WorkbenchStrings.AddToFlow, cut.Markup);
+    }
+
+    [TestMethod]
     [DataRow("bortable", "pos-dashboard")]
     [DataRow("MAP", "buildings")]
     [DataRow("BitFullCalendar", "shifts")]

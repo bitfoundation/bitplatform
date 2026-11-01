@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+
 namespace Boilerplate.Workbench.Infrastructure.Models;
 
 /// <summary>
@@ -16,6 +18,9 @@ public sealed record WorkbenchPageInfo(string Key,
     public WorkbenchPageVariant[] Variants { get; init; } = [];
 
     public WorkbenchPageSwitch[] Switches { get; init; } = [];
+
+    /// <summary>True when the page has an [Authorize] rule, so a signed-out visitor gets the not-authorized page instead.</summary>
+    public bool NeedsSignIn => ComponentType.IsDefined(typeof(AuthorizeAttribute), inherit: true);
 
     /// <summary>The design option the scenario names, or the first one.</summary>
     public WorkbenchPageVariant? ResolveVariant(WorkbenchScenario scenario) => Variants.FirstOrDefault(v => v.Key == scenario.Variant) ?? Variants.FirstOrDefault();

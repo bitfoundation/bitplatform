@@ -5,9 +5,9 @@ public static class WorkbenchPhotos
 {
     private static readonly Dictionary<string, string> files = new()
     {
-        [nameof(WorkbenchStrings.DemoUserSarah)] = "sarah",
-        [nameof(WorkbenchStrings.DemoUserDaan)] = "daan",
-        [nameof(WorkbenchStrings.DemoUserNiloofar)] = "niloofar",
+        [nameof(WorkbenchStrings.DemoUserYas)] = "yas",
+        [nameof(WorkbenchStrings.DemoUserSaleh)] = "saleh",
+        [nameof(WorkbenchStrings.DemoUserZahra)] = "zahra",
         [nameof(WorkbenchStrings.PosStaffEmma)] = "emma",
         [nameof(WorkbenchStrings.PosStaffLucas)] = "lucas",
         [nameof(WorkbenchStrings.PosStaffMila)] = "mila",

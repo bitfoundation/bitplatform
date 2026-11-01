@@ -213,7 +213,7 @@
             }
             @if (reviewSession.Flows.Count == 0)
             {
-                <p class="empty">@Localizer[reviewSession.CanWrite ? nameof(WorkbenchStrings.FlowsEmpty) : nameof(WorkbenchStrings.FlowsReadOnly)]</p>
+                <p class="empty">@Localizer[reviewSession.CanWrite ? nameof(WorkbenchStrings.FlowsEmpty) : nameof(WorkbenchStrings.NoFlowsYet)]</p>
             }
             <div class="flow-cards">
                 @foreach (var item in reviewSession.Flows)

@@ -1,13 +1,7 @@
 @inherits WorkbenchComponentBase
 
 <div class="component-panel">
-    @if (CanSave is false)
-    {
-        <div class="note">
-            <BitMessage Color="BitColor.Warning" Multiline>@Localizer[nameof(WorkbenchStrings.ChangesNeedDevMode)]</BitMessage>
-        </div>
-    }
-    else if (store.IsComponentNoteDismissed is false)
+    @if (CanSave && store.IsComponentNoteDismissed is false)
     {
         <div class="note">
             <BitMessage Color="BitColor.Info" Multiline Dismissible DismissAriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" OnDismiss="store.DismissComponentNote">

@@ -18,8 +18,8 @@ are designed.
 Running under `dotnet watch` is the Workbench's dev mode, which is how its agent skill starts it. Only dev mode can change
 things: Inspect and Edit text write into the code, the review takes comments and flows, and the agent can connect. Any
 other copy, like a published demo or the plain `dotnet run` bit CLI starts, has no hot reload to show a change and no agent
-to answer a comment, so those stay read-only there. The rest works: the pages and their states, what a visitor changes
-on a page, which stays in their browser, screenshots and checks.
+to answer a comment, so those stay read-only there, and a small notice on every page says no agent is connected. The rest
+works: the pages and their states, what a visitor changes on a page, which stays in their browser, screenshots and checks.
 
 Screenshots are taken by a headless Chromium-based browser on the machine that runs the Workbench: Playwright's own
 Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To install Playwright's Chromium, run

@@ -49,6 +49,39 @@ public class ReadOnlyModeTests
     }
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow("workbench/shifts")]
+    [DataRow("flows")]
+    public async Task EveryWorkbenchPage_Should_SayNoAgentIsConnected(string url)
+    {
+        var server = await WorkbenchTestsInitializer.ReadOnlyServer;
+        using var client = server.CreateClient();
+
+        Assert.Contains(WorkbenchStrings.AgentNotConnected, await client.GetStringAsync(url, TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    public async Task APreview_Should_LeaveTheNoticeOutOfItsScreenshots()
+    {
+        var server = await WorkbenchTestsInitializer.ReadOnlyServer;
+        using var client = server.CreateClient();
+
+        Assert.DoesNotContain(WorkbenchStrings.AgentNotConnected, await client.GetStringAsync("preview/shifts", TestContext.CancellationToken));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("workbench/shifts")]
+    [DataRow("flows")]
+    public async Task DevMode_Should_ShowNoNotice(string url)
+    {
+        var server = await WorkbenchTestsInitializer.SharedServer;
+        using var client = server.CreateClient();
+
+        Assert.DoesNotContain(WorkbenchStrings.AgentNotConnected, await client.GetStringAsync(url, TestContext.CancellationToken));
+    }
+
+    [TestMethod]
     public async Task AVisitorsScreenshotAndChecks_Should_StillWork()
     {
         var server = await WorkbenchTestsInitializer.ReadOnlyServer;

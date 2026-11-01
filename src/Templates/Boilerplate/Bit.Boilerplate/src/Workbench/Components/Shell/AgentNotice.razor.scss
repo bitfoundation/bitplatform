@@ -1,0 +1,38 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.chip {
+    z-index: 20;
+    gap: 0.5rem;
+    bottom: 0.75rem;
+    display: flex;
+    position: fixed;
+    font-size: 12px;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.375rem 0.75rem;
+    inset-inline-start: 0.75rem;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-secondary;
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
+
+    // Clear of the app's bottom bar and the floating tools button.
+    @include lt-sm {
+        row-gap: 0;
+        flex-wrap: wrap;
+        bottom: 4.75rem;
+        max-width: calc(100% - 5.5rem);
+    }
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $bit-color-warning;
+}
+
+.limited {
+    color: $bit-color-foreground-secondary;
+}

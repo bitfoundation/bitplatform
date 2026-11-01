@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>एक POS डैशबोर्ड, जिसके विजेट को नए क्रम में लगाया, छोटा-बड़ा किया, छिपाया और सहेजा जा सकता है।</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>सारा जॉनसन</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>यास</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>डान विसर</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>सालेह</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>नीलोफ़र रहीमी</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>ज़हरा</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Amsterdam स्टोर</value>
@@ -583,7 +583,7 @@
         <value>व्यस्त</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>शुभ दोपहर, सारा</value>
+        <value>शुभ दोपहर, यास</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>स्टोर</value>
@@ -1087,7 +1087,7 @@
         <value>आज सबसे ज़्यादा किसने बेचा?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**डान** **64 ऑर्डर** और €1,180 की बिक्री के साथ सबसे आगे हैं [1]।</value>
+        <value>**सालेह** **64 ऑर्डर** और €1,180 की बिक्री के साथ सबसे आगे हैं [1]।</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>यहाँ मुझे सिर्फ़ सुझाए गए सवाल आते हैं। उनमें से कोई एक आज़माएँ।</value>
@@ -1924,13 +1924,13 @@
         <value>इस रूप में साइन इन</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>ग्लोबल एडमिन</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>टेनेंट एडमिन</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
-        <value>डेमो</value>
+        <value>Demo</value>
     </data>
     <data name="ChecksTab" xml:space="preserve">
         <value>जाँच</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>डिज़ाइन विकल्प</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>AI के साथ लाइव सहयोग</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>एजेंट ऑफ़लाइन है</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>अभी कोई टिप्पणी नहीं।</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>फ़्लो डेवलपमेंट मोड में बनाए जाते हैं, जब आपका AI एजेंट वर्कबेंच चलाता है। जो फ़्लो मौजूद हैं, उन्हें आप यहाँ खोलकर देख सकते हैं।</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>अभी कोई फ़्लो नहीं।</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>अपने AI एजेंट के साथ लाइव रिव्यू करें</value>
@@ -2722,7 +2719,7 @@
         <value>कंपोनेंट</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>सिर्फ़ छोटे बदलावों के लिए। बाकी सब रिव्यू टैब में लिखें, एजेंट संभाल लेगा।</value>
+        <value>सिर्फ़ तेज़/आसान बदलावों के लिए। बाकी सब रिव्यू टैब में लिखें, एजेंट संभाल लेगा।</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>किसी व्यू में कंपोनेंट पर क्लिक करें, ताकि उसके पैरामीटर देख और बदल सकें।</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>सुझाए गए मान</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>बदलाव सिर्फ़ डेवलपमेंट मोड में लागू होते हैं, जब आपका AI एजेंट आपके प्रोजेक्ट से वर्कबेंच चलाता है।</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>एजेंट कनेक्ट नहीं है</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>डेवलपमेंट मोड में, जब आपका AI एजेंट आपके प्रोजेक्ट से वर्कबेंच चलाता है, पेज पर पिन की गई टिप्पणी सीधे उस तक पहुँचती है: वह पेज बदलता है, यहीं जवाब देता है और आपकी आँखों के सामने टिप्पणी पर सही का निशान लगा देता है। बाकी हर जगह रिव्यू सिर्फ़ पढ़ने के लिए होता है, ताकि शेयर किए गए लिंक से कोई भी उस एजेंट तक न पहुँच सके।</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>सीमित अनुभव</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>आप देख सकते हैं, व्यू बदल सकते हैं और स्क्रीनशॉट ले सकते हैं। कुछ बदलने के लिए किसी AI एजेंट का Workbench चलाना ज़रूरी है।</value>
     </data>
 </root>

@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>A point-of-sale dashboard whose widgets can be rearranged, resized, hidden and saved.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Amsterdam store</value>
@@ -583,7 +583,7 @@
         <value>Busy</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Good afternoon, Sarah</value>
+        <value>Good afternoon, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Store</value>
@@ -1087,7 +1087,7 @@
         <value>Today's top seller?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** leads with **64 orders** and €1,180 in sales [1].</value>
+        <value>**Saleh** leads with **64 orders** and €1,180 in sales [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Here I only know the suggested questions. Try one of them.</value>
@@ -1924,10 +1924,10 @@
         <value>Signed in as</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Global admin</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Tenant admin</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2367,17 +2367,14 @@
     <data name="ThemeTab" xml:space="preserve">
         <value>Tab {0}</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Live collaboration with AI</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Agent is offline</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>No comments yet.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows are drawn in dev mode, when your AI agent runs the Workbench. Any that exist open here to walk through.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>No flows yet.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Review live with your AI agent</value>
@@ -2722,7 +2719,7 @@
         <value>Component</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>For quick changes only. Write anything else in the Review tab and the agent takes care of it.</value>
+        <value>For quick/simple changes only. Write anything else in the Review tab and the agent takes care of it.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Click a component in a view to see its parameters and change them.</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>Suggested values</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>Changes can be applied only in dev mode, when your AI agent runs the Workbench from your project.</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>Agent is not connected</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>In dev mode, when your AI agent runs the Workbench from your project, a comment pinned on the page goes straight to it: it changes the page, answers right here and ticks the comment off while you watch. Anywhere else the review is read-only, so nobody can reach that agent through a shared link.</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Limited experience</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>You can look around, switch views and take screenshots. Changing anything needs an AI agent running the Workbench.</value>
     </data>
 </root>

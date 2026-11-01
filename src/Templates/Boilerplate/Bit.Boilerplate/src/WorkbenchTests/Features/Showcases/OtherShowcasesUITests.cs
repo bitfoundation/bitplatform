@@ -39,6 +39,25 @@ public class OtherShowcasesUITests : WorkbenchPageTest
     }
 
     [TestMethod]
+    public async Task TheSideMenu_Should_OfferASignedOutVisitorOnlyTheThemePage()
+    {
+        await OpenPreview("theme", "?device=desktop-1536&auth=signedout");
+
+        var menu = Page.Locator(".nav-panel");
+
+        await Expect(menu.GetByText(WorkbenchStrings.ThemePageTitle, new() { Exact = true })).ToBeVisibleAsync();
+
+        foreach (var title in new[] { WorkbenchStrings.PosDashboardTitle, WorkbenchStrings.BuildingsTitle, WorkbenchStrings.AssistantTitle, WorkbenchStrings.ShiftsTitle })
+        {
+            await Expect(menu.GetByText(title, new() { Exact = true })).ToHaveCountAsync(0);
+        }
+
+        await OpenPreview("theme", "?device=desktop-1536");
+
+        await Expect(menu.GetByText(WorkbenchStrings.ShiftsTitle, new() { Exact = true })).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
     public async Task TheSettingsCopy_Should_AskASignedOutVisitorToSignIn()
     {
         await OpenPreview("settings", "?device=desktop-1536&auth=signedout");
@@ -48,7 +67,7 @@ public class OtherShowcasesUITests : WorkbenchPageTest
         await OpenPreview("settings", "?device=desktop-1536");
 
         await Expect(Page.GetByText(AppStrings.YouAreNotAuthorized)).ToHaveCountAsync(0);
-        await Expect(Page.GetByText(WorkbenchStrings.DemoUserSarah).First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(WorkbenchStrings.DemoUserYas).First).ToBeVisibleAsync();
     }
 
     [TestMethod]

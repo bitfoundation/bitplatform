@@ -1,0 +1,10 @@
+@inherits WorkbenchComponentBase
+
+@if (reviewSession.CanWrite is false)
+{
+    <div class="chip" role="status" title="@Localizer[nameof(WorkbenchStrings.AgentNotConnectedHint)]">
+        <span class="dot"></span>
+        <span>@Localizer[nameof(WorkbenchStrings.AgentNotConnected)]</span>
+        <span class="limited">@Localizer[nameof(WorkbenchStrings.LimitedExperience)]</span>
+    </div>
+}

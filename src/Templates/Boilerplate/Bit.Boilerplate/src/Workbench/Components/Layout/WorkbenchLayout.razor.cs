@@ -4,7 +4,7 @@ namespace Boilerplate.Workbench.Components.Layout;
 
 /// <summary>
 /// The layout of the Workbench's own pages, every page but the previews. It also hosts the reply notifier, so the
-/// agent's replies are announced on any of them.
+/// agent's replies are announced on any of them, and the notice that no agent is connected.
 /// </summary>
 public partial class WorkbenchLayout
 {

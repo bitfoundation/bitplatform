@@ -146,7 +146,6 @@ public class ReviewUITests : WorkbenchPageTest
 
         await page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ModeComment, Exact = true }).ClickAsync();
 
-        await Expect(page.GetByText(WorkbenchStrings.LiveReviewTitle)).ToBeVisibleAsync();
         await Expect(page.GetByText(WorkbenchStrings.AgentOffline)).ToBeVisibleAsync();
         await Expect(page.Locator("article.thread").Filter(new() { HasText = text })).ToBeVisibleAsync();
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ModeComment, Exact = true })).ToHaveAttributeAsync("aria-pressed", "false");

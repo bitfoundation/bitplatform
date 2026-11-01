@@ -2,15 +2,15 @@
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
-/// The sample accounts a view can be signed in as (a global admin, a store manager and a demo user) and the sample tenants.
+/// The sample accounts a view can be signed in as (a global admin, a tenant admin and a demo user) and the sample tenants.
 /// </summary>
 public static class WorkbenchDemoUsers
 {
     public static IReadOnlyList<WorkbenchDemoUser> All { get; } =
     [
-        new(nameof(WorkbenchStrings.DemoUserSarah), "sarah@hq.example.com", AppRoles.GlobalAdmin),
-        new(nameof(WorkbenchStrings.DemoUserDaan), "daan@amsterdam.example.com", StoreManagerRole),
-        new(nameof(WorkbenchStrings.DemoUserNiloofar), "niloofar@visitor.example.com", AppRoles.Demo),
+        new(nameof(WorkbenchStrings.DemoUserYas), "yas@bitplatform.dev", AppRoles.GlobalAdmin),
+        new(nameof(WorkbenchStrings.DemoUserSaleh), "saleh@bitplatform.dev", StoreManagerRole),
+        new(nameof(WorkbenchStrings.DemoUserZahra), "zahra@bitplatform.dev", AppRoles.Demo),
     ];
 
     public static IReadOnlyList<string> TenantKeys { get; } =

@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>En kassaöversikt med widgetar som kan flyttas om, storleksändras, döljas och sparas.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Butik Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Hektiskt</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>God eftermiddag, Sarah</value>
+        <value>God eftermiddag, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Butik</value>
@@ -1087,7 +1087,7 @@
         <value>Vem säljer mest i dag?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** leder med **64 beställningar** och 1 180 € i försäljning [1].</value>
+        <value>**Saleh** leder med **64 beställningar** och 1 180 € i försäljning [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Här kan jag bara de föreslagna frågorna. Prova en av dem.</value>
@@ -1924,10 +1924,10 @@
         <value>Inloggad som</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Global administratör</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Tenantadministratör</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Designalternativ</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Livesamarbete med AI</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Agenten är offline</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Inga kommentarer än.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flöden ritas i utvecklingsläge, när din AI-agent kör arbetsbänken. Befintliga flöden kan du öppna och gå igenom här.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Inga flöden än.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Granska live med din AI-agent</value>
@@ -2722,7 +2719,7 @@
         <value>Komponent</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Bara för snabba ändringar. Skriv allt annat i fliken Granskning så tar agenten hand om det.</value>
+        <value>Bara för snabba/enkla ändringar. Skriv allt annat i fliken Granskning så tar agenten hand om det.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Klicka på en komponent i en vy för att se och ändra dess parametrar.</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>Föreslagna värden</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>Ändringar kan bara tillämpas i utvecklingsläge, när din AI-agent kör arbetsbänken från ditt projekt.</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>Agenten är inte ansluten</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>I utvecklingsläge, när din AI-agent kör arbetsbänken från ditt projekt, går en kommentar som fästs på sidan raka vägen till den: den ändrar sidan, svarar direkt här och bockar av kommentaren medan du ser på. Överallt annars är granskningen skrivskyddad, så att ingen kan nå den agenten via en delad länk.</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Begränsad upplevelse</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Du kan titta runt, byta vy och ta skärmbilder. För att ändra något måste en AI-agent köra Workbench.</value>
     </data>
 </root>

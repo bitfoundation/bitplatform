@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>Un tablero de punto de venta cuyos widgets se pueden reorganizar, cambiar de tamaño, ocultar y guardar.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Sucursal de Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Concurrido</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Buenas tardes, Sarah</value>
+        <value>Buenas tardes, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Sucursal</value>
@@ -1087,7 +1087,7 @@
         <value>¿Quién vende más hoy?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** va en cabeza con **64 pedidos** y 1.180 € en ventas [1].</value>
+        <value>**Saleh** va en cabeza con **64 pedidos** y 1.180 € en ventas [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Aquí solo conozco las preguntas sugeridas. Prueba una de ellas.</value>
@@ -1924,10 +1924,10 @@
         <value>Sesión iniciada como</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Administrador global</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Administrador del inquilino</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Opciones de diseño</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Colaboración en vivo con IA</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>El agente está desconectado</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Aún no hay comentarios.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Los flujos se dibujan en modo de desarrollo, cuando tu agente de IA ejecuta el banco de trabajo. Aquí puedes abrir y recorrer los que existan.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Aún no hay flujos.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Revisa en vivo con tu agente de IA</value>
@@ -2722,7 +2719,7 @@
         <value>Componente</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Solo para cambios rápidos. Escribe cualquier otra cosa en la pestaña Revisión y el agente se encarga.</value>
+        <value>Solo para cambios rápidos/sencillos. Escribe cualquier otra cosa en la pestaña Revisión y el agente se encarga.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Haz clic en un componente de una vista para ver sus parámetros y cambiarlos.</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>Valores sugeridos</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>Los cambios solo se aplican en modo de desarrollo, cuando tu agente de IA ejecuta el banco de trabajo desde tu proyecto.</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>El agente no está conectado</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>En modo de desarrollo, cuando tu agente de IA ejecuta el banco de trabajo desde tu proyecto, un comentario fijado en la página le llega directamente: cambia la página, responde aquí mismo y marca el comentario como hecho mientras lo ves. En cualquier otro caso, la revisión es de solo lectura, para que nadie pueda llegar a ese agente a través de un enlace compartido.</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Experiencia limitada</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Puedes explorar, cambiar de vista y hacer capturas. Para cambiar algo hace falta un agente de IA que ejecute el Workbench.</value>
     </data>
 </root>

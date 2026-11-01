@@ -92,13 +92,13 @@ public partial class ChromeShell
             }
         ];
 
-        // The showcases, which the app doesn't have, get a group of their own.
+        // The showcases, which the app doesn't have, get a group of their own, without the ones a signed-out visitor can't open.
         navPanelItems.Add(new()
         {
             Text = Localizer[nameof(WorkbenchStrings.NavShowcases)],
             IconName = BitIconName.Tiles,
             IsExpanded = true,
-            ChildItems = [.. WorkbenchPageCatalog.Pages.Where(page => page.CategoryKey != nameof(WorkbenchStrings.CategoryAppPages)).Select(page => new BitNavItem
+            ChildItems = [.. WorkbenchPageCatalog.Pages.Where(page => page.CategoryKey != nameof(WorkbenchStrings.CategoryAppPages) && (authUser.IsAuthenticated() || page.NeedsSignIn is false)).Select(page => new BitNavItem
             {
                 Text = Localizer[page.TitleKey],
                 IconName = page.IconName,

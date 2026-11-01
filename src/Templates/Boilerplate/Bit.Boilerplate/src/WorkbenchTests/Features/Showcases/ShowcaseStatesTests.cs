@@ -126,11 +126,19 @@ public class ShowcaseStatesTests
     }
 
     [TestMethod]
-    public async Task APageThatNeedsSignIn_Should_ShowTheAppsNotAuthorizedPageWhenSignedOut()
+    [DataRow("settings")]
+    [DataRow("pos-dashboard")]
+    [DataRow("buildings")]
+    [DataRow("assistant")]
+    [DataRow("shifts")]
+    //#if (module == "Admin")
+    [DataRow("dashboard")]
+    //#endif
+    public async Task APageThatNeedsSignIn_Should_ShowTheAppsNotAuthorizedPageWhenSignedOut(string pageKey)
     {
         await using var ctx = WorkbenchBunit.Create();
 
-        var cut = Render(ctx, "settings", new() { Auth = WorkbenchAuthState.SignedOut });
+        var cut = Render(ctx, pageKey, new() { Auth = WorkbenchAuthState.SignedOut });
 
         cut.WaitForAssertion(() => Assert.Contains(AppStrings.YouAreNotAuthorized, cut.Markup), timeout);
     }

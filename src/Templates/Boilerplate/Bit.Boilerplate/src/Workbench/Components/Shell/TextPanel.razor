@@ -1,13 +1,6 @@
 @inherits WorkbenchComponentBase
 
 <div class="text-panel">
-    @if (IsReadOnly)
-    {
-        <div class="note">
-            <BitMessage Color="BitColor.Warning" Multiline>@Localizer[nameof(WorkbenchStrings.ChangesNeedDevMode)]</BitMessage>
-        </div>
-    }
-
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.EditText)]</BitText>
         @if (Text is null)

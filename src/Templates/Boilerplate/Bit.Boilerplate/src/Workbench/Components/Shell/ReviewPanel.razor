@@ -2,14 +2,6 @@
 
 <div class="review">
     @* Outside dev mode, the review is read-only and the agent shows as offline *@
-    @if (session.CanWrite is false)
-    {
-        <section class="live">
-            <BitText Typography="BitTypography.Subtitle2" Class="section-title"><BitIcon IconName="@BitIconName.ChatBot" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.LiveReviewTitle)]</BitText>
-            <BitText Typography="BitTypography.Caption1">@Localizer[nameof(WorkbenchStrings.LiveReviewReadOnly)]</BitText>
-        </section>
-    }
-
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.PageStatus)]</BitText>
         @if (session.CanWrite)

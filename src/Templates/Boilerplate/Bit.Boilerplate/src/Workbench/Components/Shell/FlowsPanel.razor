@@ -4,9 +4,9 @@
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.Flows)]</BitText>
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsHint)]</BitText>
-        @if (session.Flows.Count == 0 && session.CanWrite)
+        @if (session.Flows.Count == 0)
         {
-            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsEmpty)]</BitText>
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[session.CanWrite ? nameof(WorkbenchStrings.FlowsEmpty) : nameof(WorkbenchStrings.NoFlowsYet)]</BitText>
         }
         @foreach (var flow in session.Flows)
         {
@@ -47,12 +47,6 @@
             {
                 <BitLink Href="@WorkbenchUrls.Flow(added)">@Localizer[nameof(WorkbenchStrings.OpenBoard)]</BitLink>
             }
-        </section>
-    }
-    else
-    {
-        <section>
-            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.FlowsReadOnly)]</BitText>
         </section>
     }
 </div>

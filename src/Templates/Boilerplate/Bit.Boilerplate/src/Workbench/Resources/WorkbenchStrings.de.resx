@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>Ein Kassen-Dashboard, dessen Widgets sich verschieben, in der Größe ändern, ausblenden und speichern lassen.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Filiale Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Viel los</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Guten Tag, Sarah</value>
+        <value>Guten Tag, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Filiale</value>
@@ -1087,7 +1087,7 @@
         <value>Wer verkauft heute am meisten?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** liegt mit **64 Bestellungen** und 1.180 € Umsatz vorn [1].</value>
+        <value>**Saleh** liegt mit **64 Bestellungen** und 1.180 € Umsatz vorn [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Hier kenne ich nur die vorgeschlagenen Fragen. Probieren Sie eine davon.</value>
@@ -1924,10 +1924,10 @@
         <value>Angemeldet als</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Globaler Admin</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Mandanten-Admin</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Designvarianten</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Live-Zusammenarbeit mit KI</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Der Agent ist offline</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Noch keine Kommentare.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Abläufe werden im Entwicklungsmodus gezeichnet, wenn Ihr KI-Agent die Werkbank startet. Vorhandene können Sie hier öffnen und durchgehen.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Noch keine Abläufe.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live mit Ihrem KI-Agenten prüfen</value>
@@ -2722,7 +2719,7 @@
         <value>Komponente</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Nur für schnelle Änderungen. Alles andere schreiben Sie in den Tab „Review“, der Agent kümmert sich darum.</value>
+        <value>Nur für schnelle/einfache Änderungen. Alles andere schreiben Sie in den Tab „Review“, der Agent kümmert sich darum.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Klicken Sie in einer Ansicht auf eine Komponente, um ihre Parameter zu sehen und zu ändern.</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>Vorgeschlagene Werte</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>Änderungen lassen sich nur im Entwicklungsmodus übernehmen, wenn Ihr KI-Agent die Werkbank aus Ihrem Projekt startet.</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>Agent ist nicht verbunden</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>Im Entwicklungsmodus, wenn Ihr KI-Agent die Werkbank aus Ihrem Projekt startet, geht ein auf der Seite angehefteter Kommentar direkt an ihn: Er ändert die Seite, antwortet gleich hier und hakt den Kommentar ab, während Sie zusehen. Überall sonst ist das Review schreibgeschützt, damit niemand über einen geteilten Link an diesen Agenten gelangt.</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Eingeschränkte Nutzung</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Sie können sich umsehen, Ansichten wechseln und Screenshots machen. Für Änderungen muss ein KI-Agent die Workbench ausführen.</value>
     </data>
 </root>

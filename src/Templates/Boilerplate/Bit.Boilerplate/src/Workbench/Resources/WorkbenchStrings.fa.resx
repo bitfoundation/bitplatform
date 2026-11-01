@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>داشبورد صندوق فروش با ویجت‌هایی که می‌شود جابه‌جا، کوچک و بزرگ، پنهان و ذخیره کرد.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>سارا محمدی</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>یاس</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>داوود کریمی</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>صالح</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>نیلوفر رحیمی</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>زهرا</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>شعبه آمستردام</value>
@@ -583,7 +583,7 @@
         <value>شلوغ</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>عصر بخیر، سارا</value>
+        <value>عصر بخیر، یاس</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>شعبه</value>
@@ -1087,7 +1087,7 @@
         <value>پرفروش‌ترین امروز کیست؟</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**دان** با **۶۴ سفارش** و ۱٬۱۸۰ یورو فروش جلوتر است [1].</value>
+        <value>**صالح** با **۶۴ سفارش** و ۱٬۱۸۰ یورو فروش جلوتر است [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>اینجا فقط پرسش‌های پیشنهادی را بلدم. یکی از آن‌ها را امتحان کنید.</value>
@@ -1924,13 +1924,13 @@
         <value>واردشده با</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>مدیر کل</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>مدیر مستأجر</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
-        <value>دمو</value>
+        <value>Demo</value>
     </data>
     <data name="ChecksTab" xml:space="preserve">
         <value>بررسی‌ها</value>
@@ -2367,17 +2367,14 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>گزینه‌های طراحی</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>همکاری زنده با هوش مصنوعی</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>عامل آفلاین است</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>هنوز نظری نیست.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>مسیرها در حالت توسعه کشیده می‌شوند، یعنی وقتی عامل هوش مصنوعی شما میز کار را اجرا می‌کند. مسیرهای موجود این‌جا باز می‌شوند تا مرورشان کنید.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>هنوز مسیری نیست.</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>بازبینی زنده با عامل هوش مصنوعی‌تان</value>
@@ -2722,7 +2719,7 @@
         <value>کامپوننت</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>فقط برای تغییرهای سریع. هر چیز دیگری را در زبانه بازبینی بنویسید تا عامل انجامش دهد.</value>
+        <value>فقط برای تغییرهای سریع/ساده. هر چیز دیگری را در زبانه بازبینی بنویسید تا عامل انجامش دهد.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>روی یک کامپوننت در نما کلیک کنید تا پارامترهایش را ببینید و تغییر دهید.</value>
@@ -2790,10 +2787,13 @@
     <data name="SuggestShow" xml:space="preserve">
         <value>مقدارهای پیشنهادی</value>
     </data>
-    <data name="ChangesNeedDevMode" xml:space="preserve">
-        <value>تغییرها فقط در حالت توسعه اعمال می‌شوند، یعنی وقتی عامل هوش مصنوعی شما میز کار را از روی پروژه‌تان اجرا می‌کند.</value>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>عامل متصل نیست</value>
     </data>
-    <data name="LiveReviewReadOnly" xml:space="preserve">
-        <value>در حالت توسعه، یعنی وقتی عامل هوش مصنوعی شما میز کار را از روی پروژه‌تان اجرا می‌کند، نظری که روی صفحه سنجاق شود مستقیم به آن عامل می‌رسد: صفحه را تغییر می‌دهد، همین‌جا جواب می‌دهد و جلوی چشم شما آن نظر را انجام‌شده علامت می‌زند. هر جای دیگری بازبینی فقط‌خواندنی است تا هیچ‌کس نتواند از راه یک پیوند اشتراکی به آن عامل برسد.</value>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>تجربه محدود</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>می‌توانید بگردید، نماها را عوض کنید و اسکرین‌شات بگیرید. برای تغییر دادن، باید یک عامل هوش مصنوعی Workbench را اجرا کند.</value>
     </data>
 </root>
