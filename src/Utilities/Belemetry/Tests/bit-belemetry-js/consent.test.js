@@ -195,6 +195,8 @@ describe('ConsentManager', () => {
         expect(consent.revocations(Features.All)).toBe(1);
         consent.set(Features.All & ~Features.Interactions);
         expect(consent.revocations(Features.All)).toBe(1);
+        consent.set(Features.All & ~Features.Interactions & ~Features.Logs);
+        expect(consent.revocations(Features.All)).toBe(2);
     });
 
     it('counts the revocations per feature, so a mark moves only with its own features', () => {

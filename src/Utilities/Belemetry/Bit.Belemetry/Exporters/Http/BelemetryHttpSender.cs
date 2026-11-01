@@ -108,6 +108,9 @@ internal sealed class BelemetryHttpSender : IDisposable
                 timeout.CancelAfter(exporter.Timeout > TimeSpan.Zero ? exporter.Timeout : TimeSpan.FromSeconds(10));
 
                 using var message = await CreateMessageAsync(exporter, request, timeout.Token);
+                // The exporter may have awaited its credentials (PrepareAsync), and a revoke may have landed meanwhile.
+                if (mark?.IsWithdrawn is true) return new(BelemetrySendOutcome.Withdrawn, request, delivered, rejected);
+
                 // The headers only: a body is read by ReadBodyAsync, within MaxResponseBytes, instead of whole by HttpClient.
                 using var response = await Client(grpc).SendAsync(message, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
                 var status = (int)response.StatusCode;

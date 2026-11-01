@@ -446,8 +446,13 @@ export function attachDotNet(dotNetRef: DotNetRef, options?: AttachOptions | nul
 
 function sendRequestsCore(requests: DotNetRequest[] | null | undefined, unload: boolean): Promise<void> {
     if (!Array.isArray(requests) || !requests.length) return Promise.resolve();
-    // Before start there is no consent state, so nothing may be persisted.
-    const transport = state ? state.transport : new Transport({ persistence: resolveConfig().persistence, canPersist: () => false });
+    // Before start there is no consent state, so nothing may be persisted. A start while it retries brings one: a revoke
+    // from then on withdraws the request.
+    const transport = state ? state.transport : new Transport({
+        persistence: resolveConfig().persistence,
+        canPersist: () => false,
+        revocations: features => (state ? state.consent.revocations(features) : 0),
+    });
     const sends: Promise<void>[] = [];
     for (const request of requests) {
         try {

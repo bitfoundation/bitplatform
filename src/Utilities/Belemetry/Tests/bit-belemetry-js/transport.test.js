@@ -351,6 +351,19 @@ describe('Transport', () => {
         expect(read).toBeLessThanOrEqual(4 * 1024 * 1024 + 2 * chunk.length);
     });
 
+    it('reads an Azure 206 response of exactly 4 MB, and retries its failed items', async () => {
+        const items = [{ a: 0 }, { a: 1 }];
+        const head = '{"itemsReceived":2,"itemsAccepted":1,"errors":[{"index":1,"statusCode":503}],"padding":"';
+        const tail = '"}';
+        const body = head + 'x'.repeat(4 * 1024 * 1024 - head.length - tail.length) + tail;
+        expect(encodeUtf8(body).length).toBe(4 * 1024 * 1024);
+        const fetch = mockFetch({ status: 206, body }, 200);
+        vi.stubGlobal('fetch', fetch);
+        await transport().send(request({ exporter: 'azureMonitor', contentType: 'application/json', body: encodeUtf8(JSON.stringify(items)) }));
+        expect(fetch.calls).toHaveLength(2);
+        expect(JSON.parse(new TextDecoder().decode(fetch.calls[1].init.body))).toEqual([{ a: 1 }]);
+    });
+
     it('neither retries nor stores a request once consent is revoked while it waits', async () => {
         const fetch = mockFetch(503);
         vi.stubGlobal('fetch', fetch);
