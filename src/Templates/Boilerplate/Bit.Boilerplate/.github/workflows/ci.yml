@@ -35,7 +35,7 @@ jobs:
       run: dotnet format whitespace --folder . --verify-no-changes
 
     - name: Set up and build with bit setup
-      uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+      uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
       with:
         arguments: --platforms android --no-browsers -p:EnforceCodeStyleInBuild=true
 
@@ -56,7 +56,7 @@ jobs:
         global-json-file: global.json
 
     - name: Prepare this machine and build with bit setup
-      uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-15
+      uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
 
     - name: Test
       id: test
