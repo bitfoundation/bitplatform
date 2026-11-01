@@ -28,8 +28,10 @@ public sealed record BinkPngExportOptions : BinkExportOptions
     /// touched; past it the export throws <see cref="InvalidOperationException"/>. Unlimited by default. A server
     /// exporting documents it did not write sets it, since a document built to be expensive can otherwise keep one
     /// export busy for minutes; a page of handwriting at screen size needs well under a hundred million. An embedded
-    /// image counts by the area it is drawn over, judged before it is decoded, so one whose data turns out to be
-    /// unreadable fails the export instead of being skipped. A browser export does not rasterize in .NET and ignores it.
+    /// image counts by the area it is drawn over, judged before it is decoded: one that would go past what is left of
+    /// the budget fails the export even if its data turns out to be unreadable, while an unreadable one within it is
+    /// skipped and reported in <see cref="BinkPngExportResult.SkippedImages"/>. A browser export does not rasterize in
+    /// .NET and ignores it.
     /// </summary>
     public long MaxRasterWork { get; init; } = long.MaxValue;
 
