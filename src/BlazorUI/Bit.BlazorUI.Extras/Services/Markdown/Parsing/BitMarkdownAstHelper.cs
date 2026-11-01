@@ -58,13 +58,29 @@ public static class BitMarkdownAstHelper
     /// </summary>
     internal static void RemoveAll<TNode>(IList<BitMarkdownNode> list) where TNode : BitMarkdownNode
     {
+        // Nothing before the first match moves, so a list holding none is only read.
         int kept = 0;
-        for (int i = 0; i < list.Count; i++)
+        while (kept < list.Count && list[kept] is not TNode) kept++;
+
+        for (int i = kept + 1; i < list.Count; i++)
         {
             if (list[i] is not TNode) list[kept++] = list[i];
         }
 
         for (int i = list.Count - 1; i >= kept; i--) list.RemoveAt(i);
+    }
+
+    /// <summary>
+    /// Overwrites <paramref name="list"/> with <paramref name="nodes"/> slot by slot, growing or shrinking it only at its
+    /// end, so a list rewritten in one pass is not shifted once per node spliced into or out of it.
+    /// </summary>
+    internal static void ReplaceContents(IList<BitMarkdownNode> list, List<BitMarkdownNode> nodes)
+    {
+        int shared = Math.Min(list.Count, nodes.Count);
+        for (int i = 0; i < shared; i++) list[i] = nodes[i];
+
+        for (int i = list.Count - 1; i >= nodes.Count; i--) list.RemoveAt(i);
+        for (int i = shared; i < nodes.Count; i++) list.Add(nodes[i]);
     }
 
     /// <summary>

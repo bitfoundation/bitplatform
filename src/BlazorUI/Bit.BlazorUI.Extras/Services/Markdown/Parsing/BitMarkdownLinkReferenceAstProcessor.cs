@@ -54,57 +54,75 @@ public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcess
     // Replaces every link in the collection (at any depth) with its own children.
     private static void Unnest(IList<BitMarkdownNode> children)
     {
+        // Rebuilt in one pass once a link is taken out, so a list of many links is not shifted
+        // once per link. The nodes still to place sit on a stack, last on top.
+        List<BitMarkdownNode>? rebuilt = null;
+        var pending = new Stack<BitMarkdownNode>();
         for (int i = 0; i < children.Count; i++)
         {
-            if (children[i] is not BitMarkdownLinkNode nested)
+            pending.Push(children[i]);
+            while (pending.TryPop(out var node))
             {
-                foreach (var list in children[i].ChildLists) Unnest(list);
-                continue;
-            }
+                if (node is BitMarkdownLinkNode nested)
+                {
+                    rebuilt ??= new List<BitMarkdownNode>(children.Take(i));
+                    // Placed in its stead, ahead of what follows: the content may hold links of its own.
+                    for (int c = nested.Children.Count - 1; c >= 0; c--) pending.Push(nested.Children[c]);
+                    continue;
+                }
 
-            children.RemoveAt(i);
-            int at = i;
-            foreach (var child in nested.Children) children.Insert(at++, child);
-            // Deliberately not advancing: the spliced-in content may hold links of its own.
-            i--;
+                foreach (var list in node.ChildLists) Unnest(list);
+                rebuilt?.Add(node);
+            }
         }
+
+        if (rebuilt is not null) BitMarkdownAstHelper.ReplaceContents(children, rebuilt);
     }
 
     private static void Resolve(IList<BitMarkdownNode> list, Dictionary<string, BitMarkdownLinkReferenceDefinitionNode> definitions,
         Dictionary<BitMarkdownLinkReferenceDefinitionNode, string> imageUrls, ref int remaining)
     {
-        int i = 0;
-        while (i < list.Count)
+        // Rebuilt in one pass once a reference is put back as text, so a list of many of them is
+        // not shifted once per reference. The nodes still to place sit on a stack, last on top.
+        List<BitMarkdownNode>? rebuilt = null;
+        var pending = new Stack<BitMarkdownNode>();
+        for (int i = 0; i < list.Count; i++)
         {
-            if (list[i] is not BitMarkdownLinkReferenceNode reference)
+            pending.Push(list[i]);
+            while (pending.TryPop(out var node))
             {
-                i++;
-                continue;
-            }
-
-            if (definitions.TryGetValue(reference.Label, out var definition))
-            {
-                var url = reference.IsImage ? ImageUrl(definition, imageUrls) : definition.Url;
-                if (url.Length <= remaining)
+                if (node is not BitMarkdownLinkReferenceNode reference)
                 {
-                    remaining -= url.Length;
-                    list[i] = Build(reference, definition, url);
-                    i++;
+                    rebuilt?.Add(node);
                     continue;
                 }
-            }
 
-            // No such definition: put the source text back, so "[not a link]" reads exactly
-            // as it was written and a task marker like "[ ]" survives for the task-list
-            // processor once the neighbouring text runs are merged again below.
-            list.RemoveAt(i);
-            int at = i;
-            list.Insert(at++, new BitMarkdownTextNode(reference.RawPrefix));
-            foreach (var child in reference.Children) list.Insert(at++, child);
-            list.Insert(at, new BitMarkdownTextNode(reference.RawSuffix));
-            // Deliberately not advancing: the spliced-in children may themselves hold
-            // references that this pass has not visited yet.
+                if (definitions.TryGetValue(reference.Label, out var definition))
+                {
+                    var url = reference.IsImage ? ImageUrl(definition, imageUrls) : definition.Url;
+                    if (url.Length <= remaining)
+                    {
+                        remaining -= url.Length;
+                        // Until something has been put back, the node is list[i] itself.
+                        if (rebuilt is null) list[i] = Build(reference, definition, url);
+                        else rebuilt.Add(Build(reference, definition, url));
+                        continue;
+                    }
+                }
+
+                // No such definition: put the source text back, so "[not a link]" reads exactly
+                // as it was written and a task marker like "[ ]" survives for the task-list
+                // processor once the neighbouring text runs are merged again below. The children
+                // go back ahead of what follows, since they may themselves hold references that
+                // this pass has not visited yet.
+                rebuilt ??= new List<BitMarkdownNode>(list.Take(i));
+                pending.Push(new BitMarkdownTextNode(reference.RawSuffix));
+                for (int c = reference.Children.Count - 1; c >= 0; c--) pending.Push(reference.Children[c]);
+                pending.Push(new BitMarkdownTextNode(reference.RawPrefix));
+            }
         }
+
+        if (rebuilt is not null) BitMarkdownAstHelper.ReplaceContents(list, rebuilt);
     }
 
     private static string ImageUrl(BitMarkdownLinkReferenceDefinitionNode definition, Dictionary<BitMarkdownLinkReferenceDefinitionNode, string> imageUrls)

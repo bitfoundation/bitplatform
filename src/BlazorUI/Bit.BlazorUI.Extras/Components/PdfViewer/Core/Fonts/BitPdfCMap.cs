@@ -12,7 +12,9 @@ namespace Bit.BlazorUI;
 public sealed class BitPdfCMap
 {
     private readonly List<(long Lo, long Hi, int Cid)> _ranges = new();
-    private readonly Dictionary<long, int> _chars = new();
+    // Each single mapping keeps how many ranges were written before it: a range written after it
+    // overrides it, as a later entry does in a CMap read in stream order.
+    private readonly Dictionary<long, (int Cid, int RangesBefore)> _chars = new();
     private (long Lo, long Hi, int Owner)[]? _segments;
 
     /// <summary>The byte length of a character code (1 or 2 for the common cases).</summary>
@@ -31,12 +33,17 @@ public sealed class BitPdfCMap
         {
             return (int)code;
         }
-        if (_chars.TryGetValue(code, out int cid))
+        bool hasChar = _chars.TryGetValue(code, out var single);
+        if (hasChar && single.RangesBefore == _ranges.Count)
         {
-            return cid;
+            return single.Cid;
         }
         _segments ??= BitPdfRangeIndex.Build(_ranges.Count, i => (_ranges[i].Lo, _ranges[i].Hi));
         int owner = BitPdfRangeIndex.Find(_segments, code);
+        if (hasChar && owner < single.RangesBefore)
+        {
+            return single.Cid;
+        }
         if (owner >= 0)
         {
             var (lo, _, start) = _ranges[owner];
@@ -157,7 +164,7 @@ public sealed class BitPdfCMap
                     BitPdfString s => (int)ToCode(s.Bytes),
                     _ => 0,
                 };
-                cmap._chars[ToCode(code.Bytes)] = cid;
+                cmap._chars[ToCode(code.Bytes)] = (cid, cmap._ranges.Count);
             }
         }
     }

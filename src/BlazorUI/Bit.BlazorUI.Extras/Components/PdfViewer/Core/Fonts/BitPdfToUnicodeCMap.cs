@@ -12,19 +12,26 @@ public sealed class BitPdfToUnicodeCMap
 {
     private const int MaxRangeDestinationBytes = 512;
 
-    private readonly Dictionary<int, string> _single = new();
+    // Each single mapping keeps how many ranges were written before it: a range written after it
+    // overrides it, as a later entry does in a CMap read in stream order.
+    private readonly Dictionary<int, (string Dst, int RangesBefore)> _single = new();
     private readonly List<(int Lo, int Hi, string Dst)> _ranges = new();
     private (long Lo, long Hi, int Owner)[]? _segments;
 
     /// <summary>Looks up the Unicode text for <paramref name="code"/>, or <c>null</c> if unmapped.</summary>
     public string? Lookup(int code)
     {
-        if (_single.TryGetValue(code, out var s))
+        bool hasSingle = _single.TryGetValue(code, out var single);
+        if (hasSingle && single.RangesBefore == _ranges.Count)
         {
-            return s;
+            return single.Dst;
         }
         _segments ??= BitPdfRangeIndex.Build(_ranges.Count, i => (_ranges[i].Lo, _ranges[i].Hi));
         int owner = BitPdfRangeIndex.Find(_segments, code);
+        if (hasSingle && owner < single.RangesBefore)
+        {
+            return single.Dst;
+        }
         if (owner < 0)
         {
             return null;
@@ -83,7 +90,7 @@ public sealed class BitPdfToUnicodeCMap
             object dst = lexer.GetObj();
             if (src is BitPdfString s && dst is BitPdfString d)
             {
-                _single[CodeFromHex(s)] = Utf16Be(d);
+                _single[CodeFromHex(s)] = (Utf16Be(d), _ranges.Count);
             }
         }
     }
@@ -120,7 +127,7 @@ public sealed class BitPdfToUnicodeCMap
                 {
                     if (arr[i] is BitPdfString item)
                     {
-                        _single[loCode + i] = Utf16Be(item);
+                        _single[loCode + i] = (Utf16Be(item), _ranges.Count);
                     }
                 }
             }

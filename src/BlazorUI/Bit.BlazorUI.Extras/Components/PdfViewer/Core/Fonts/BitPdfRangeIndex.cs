@@ -4,9 +4,9 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Flattens a list of code ranges, which may overlap, into sorted and disjoint segments. Each
-/// segment is owned by the earliest range that covers it - the one a first-match scan of the
-/// list in order would return - so a lookup is a binary search rather than a scan of every
-/// range for every code.
+/// segment is owned by the latest range that covers it - the one left in place by a reader that
+/// writes every range into one map in stream order, as pdf.js does, so a later entry corrects an
+/// earlier one - and a lookup is a binary search rather than a scan of every range for every code.
 /// </summary>
 internal static class BitPdfRangeIndex
 {
@@ -35,7 +35,7 @@ internal static class BitPdfRangeIndex
             {
                 if (points[p].Start)
                 {
-                    active.Enqueue(points[p].Index, points[p].Index);
+                    active.Enqueue(points[p].Index, -points[p].Index); // the latest range on top
                 }
                 else
                 {

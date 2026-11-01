@@ -182,6 +182,71 @@ public class BitPdfXRefTests
     }
 
     [TestMethod]
+    public void AnObjectStreamWhoseHeaderClaimsPairsItDoesNotHoldShouldNotReadOffsetsOutOfItsObjects()
+    {
+        // /N counts two pairs more than the header holds. Read on past /First, they would be "<< /Kids" and
+        // "[ 3": a made-up offset of 3 that cut the first object (the page tree) short after three bytes.
+        var file = new BitPdfEngineTestFile("%PDF-1.5\n");
+        file.Stream(4, BitPdfEngineTestFile.ShowText("Header only"));
+        var (data, first) = ObjectStream(
+            (2, "<< /Kids [3 0 R] /Count 1 /Type /Pages >>"),
+            (1, "<< /Type /Catalog /Pages 2 0 R >>"),
+            (3, PageBody),
+            (5, FontBody),
+            (6, "<< /Title (Header only) >>"));
+        file.Stream(7, data, $"/Type /ObjStm /N 7 /First {first}");
+        file.XRefStream(8, "/Root 1 0 R /Info 6 0 R",
+        [
+            (0, 0, 0, 65535),
+            (1, 2, 7, 1),
+            (2, 2, 7, 0),
+            (3, 2, 7, 2),
+            (4, 1, file.Offsets[4], 0),
+            (5, 2, 7, 3),
+            (6, 2, 7, 4),
+            (7, 1, file.Offsets[7], 0),
+        ]);
+
+        var document = BitPdfDocument.Load(file.ToArray());
+
+        Assert.AreEqual("Header only", PageText(document));
+        Assert.AreEqual("Header only", document.Metadata.Title);
+    }
+
+    [TestMethod]
+    public void AnObjectStreamThatListsAnOffsetTwiceShouldGiveItsObjectToTheFirstEntryOnly()
+    {
+        // Object 6 is listed at object 5's offset too. Handed the same parse, the two numbers would be
+        // one node under two references.
+        var file = new BitPdfEngineTestFile("%PDF-1.5\n");
+        file.Stream(4, BitPdfEngineTestFile.ShowText("Shared offset"));
+        var (data, first) = ObjectStream(
+            (1, "<< /Type /Catalog /Pages 2 0 R >>"),
+            (2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>"),
+            (3, PageBody),
+            (5, FontBody));
+        string extra = $"6 {data[..first].Split(' ')[7]} ";
+        file.Stream(7, data[..first] + extra + data[first..], $"/Type /ObjStm /N 5 /First {first + extra.Length}");
+        file.XRefStream(8, "/Root 1 0 R",
+        [
+            (0, 0, 0, 65535),
+            (1, 2, 7, 0),
+            (2, 2, 7, 1),
+            (3, 2, 7, 2),
+            (4, 1, file.Offsets[4], 0),
+            (5, 2, 7, 3),
+            (6, 2, 7, 4),
+            (7, 1, file.Offsets[7], 0),
+        ]);
+
+        var document = BitPdfDocument.Load(file.ToArray());
+
+        Assert.AreEqual("Shared offset", PageText(document));
+        Assert.IsTrue(BitPdfPrimitives.IsName(((BitPdfDict)document.XRef.Fetch(new BitPdfRef(5, 0))!).Get("BaseFont"), "Helvetica"));
+        Assert.IsNull(document.XRef.Fetch(new BitPdfRef(6, 0)));
+    }
+
+    [TestMethod]
     public void AnXRefStreamWithNonContiguousIndexSubsectionsShouldResolveEachOne()
     {
         var file = new BitPdfEngineTestFile("%PDF-1.5\n");
@@ -356,6 +421,24 @@ public class BitPdfXRefTests
         var file = Base("Recovered", out int[] objects);
         file.Obj(7, "[1 2] % a trailer [ that is never closed");
         file.XRefTable("/Size 8 /Root 1 0 R /Info 6 0 R", [.. objects, 7]);
+        string text = Encoding.Latin1.GetString(file.ToArray());
+        int at = text.LastIndexOf("startxref\n", StringComparison.Ordinal) + "startxref\n".Length;
+        byte[] broken = Encoding.Latin1.GetBytes(text[..at] + "999999" + text[text.IndexOf('\n', at)..]);
+
+        var document = BitPdfDocument.Load(broken);
+
+        Assert.IsTrue(document.Warnings.Count > 0);
+        Assert.AreEqual("Recovered", PageText(document));
+        Assert.AreEqual("Original title", document.Metadata.Title);
+    }
+
+    [TestMethod]
+    public void ARecoveryScanShouldReadATrailerOnThroughTheWordTrailerInItsOwnStrings()
+    {
+        // Read only up to the next "trailer", the dictionary would end inside its own /ID strings and so
+        // never close, taking its /Info with it.
+        var file = Base("Recovered", out int[] objects);
+        file.XRefTable("/Size 7 /Root 1 0 R /Info 6 0 R /ID [(a trailer id) (a trailer id)]", objects);
         string text = Encoding.Latin1.GetString(file.ToArray());
         int at = text.LastIndexOf("startxref\n", StringComparison.Ordinal) + "startxref\n".Length;
         byte[] broken = Encoding.Latin1.GetBytes(text[..at] + "999999" + text[text.IndexOf('\n', at)..]);

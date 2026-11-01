@@ -447,12 +447,14 @@ public partial class BitMarkdownViewer : BitComponentBase
 
                     // Split out of the text runs (and its expansion entity-decoded) while the
                     // document was being parsed, so neither went through the text node case above.
+                    // Replaced only when something was stripped: the sanitizer hands back the very
+                    // string it was given when there is nothing to strip.
                     case BitMarkdownAbbreviationNode abbreviation:
-                        list[i] = new BitMarkdownAbbreviationNode
-                        {
-                            Text = BitMarkdownTextSanitizer.StripBidiControlCharacters(abbreviation.Text),
-                            Title = BitMarkdownTextSanitizer.StripBidiControlCharacters(abbreviation.Title)
-                        };
+                        var abbreviationText = BitMarkdownTextSanitizer.StripBidiControlCharacters(abbreviation.Text);
+                        var abbreviationTitle = BitMarkdownTextSanitizer.StripBidiControlCharacters(abbreviation.Title);
+                        if (ReferenceEquals(abbreviationText, abbreviation.Text) && ReferenceEquals(abbreviationTitle, abbreviation.Title)) break;
+
+                        list[i] = new BitMarkdownAbbreviationNode { Text = abbreviationText, Title = abbreviationTitle };
                         break;
                 }
             }
