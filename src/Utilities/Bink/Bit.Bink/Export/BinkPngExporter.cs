@@ -23,6 +23,16 @@ public sealed record BinkPngExportOptions : BinkExportOptions
     /// </summary>
     public long MaxPixels { get; init; } = 80_000_000;
 
+    /// <summary>
+    /// Maximum rasterizing work for <see cref="BinkPngExporter"/>, counted in edge tests, sorted crossings and pixels
+    /// touched; past it the export throws <see cref="InvalidOperationException"/>. Unlimited by default. A server
+    /// exporting documents it did not write sets it, since a document built to be expensive can otherwise keep one
+    /// export busy for minutes; a page of handwriting at screen size needs well under a hundred million. An embedded
+    /// image counts by the area it is drawn over, judged before it is decoded: one that would go past what is left of
+    /// the budget fails the export even if its data turns out to be unreadable, while an unreadable one within it is
+    /// skipped and reported in <see cref="BinkPngExportResult.SkippedImages"/>. A browser export does not rasterize in
+    /// .NET and ignores it.
+    /// </summary>
     public long MaxRasterWork { get; init; } = long.MaxValue;
 
     /// <summary>PNG compression level.</summary>

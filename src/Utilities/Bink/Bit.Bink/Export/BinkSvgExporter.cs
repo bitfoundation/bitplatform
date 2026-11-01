@@ -125,6 +125,12 @@ public sealed record BinkSvgExportOptions : BinkExportOptions
     /// <summary>Scale factor applied through the <c>width</c>/<c>height</c> attributes; the view box is unchanged.</summary>
     public float Scale { get; init; } = 1f;
 
+    /// <summary>
+    /// Maximum length of the output, in characters; past it the export throws <see cref="InvalidOperationException"/>
+    /// instead of writing more. Unlimited by default. An embedded image is written in full wherever it is drawn, so a
+    /// document that shows one picture many times exports to far more text than it holds; a server exporting
+    /// documents it did not write sets this.
+    /// </summary>
     public long MaxLength { get; init; } = long.MaxValue;
 }
 

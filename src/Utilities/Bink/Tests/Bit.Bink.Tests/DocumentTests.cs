@@ -68,6 +68,24 @@ public class DocumentTests
     }
 
     [TestMethod]
+    public void Reordering_an_element_to_where_it_already_is_changes_nothing()
+    {
+        var document = new BinkDocument();
+        BinkStroke[] strokes = [.. Enumerable.Range(0, 3).Select(i => TestData.Stroke(new Vector2(i, i), new Vector2(i + 10, i + 10)))];
+        foreach (BinkStroke stroke in strokes) document.AddElement(stroke);
+        Guid layer = document.Layers[0].Id;
+
+        // Its own index, the top for the last element, and indexes clamped onto the ends.
+        document.Apply(new BinkReorderElementOperation(strokes[1].Id, layer, 1));
+        document.Apply(new BinkReorderElementOperation(strokes[2].Id, layer, null));
+        document.Apply(new BinkReorderElementOperation(strokes[2].Id, layer, 99));
+        document.Apply(new BinkReorderElementOperation(strokes[0].Id, layer, -5));
+
+        CollectionAssert.AreEqual(strokes.Select(s => s.Id).ToArray(), document.Layers[0].Elements.Select(e => e.Id).ToArray());
+        for (int i = 0; i < strokes.Length; i++) Assert.AreEqual(i, document.Layers[0].IndexOf(strokes[i].Id));
+    }
+
+    [TestMethod]
     public void RemoveLayer_refuses_to_remove_the_last_layer()
     {
         var document = new BinkDocument();

@@ -75,6 +75,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     private BinkDocument? _previousDocumentParameter;
     private BinkViewport _previousViewportParameter = BinkViewport.Identity;
     private TextEditorState? _textEditor;
+    private readonly List<TextCommit> _textCommits = [];
     private BinkStroke? _lastAddedStroke;
     private bool _watchForAddedStroke;
     private ElementReference _textEditorElement;
@@ -1003,6 +1004,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             SetTool(Tool);
         }
 
+        if (ReadOnly) SettleTextCommits();
         if (ReadOnly && _textEditor is not null && _activeTool is BinkTextTool editing)
         {
             editing.CancelEdit(_toolContext);
@@ -1203,6 +1205,9 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     private void CancelActiveGesture()
     {
         if (_activeTool is null) return;
+        // Text the editor already reported is kept, as when the tool changes: cancelling the edit would remove a box
+        // placed for it. Settled before a new document is attached, so it stays in the document it was typed into.
+        SettleTextCommits();
         _activeTool.Deactivate(_toolContext);
         _activeTool.Activate(_toolContext);
         _history?.EndOpenGroups();
@@ -1304,6 +1309,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         ArgumentNullException.ThrowIfNull(tool);
         if (ReferenceEquals(tool, _activeTool)) return;
+        SettleTextCommits();
         DetachTextTool();
         _activeTool.Deactivate(_toolContext);
         _activeTool = tool;
@@ -1983,6 +1989,20 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     private sealed record TextEditorState(Guid ElementId, string Text, string Style);
 
     /// <summary>
+    /// Text the editor reported for an element, applied once the browser has measured it. It is pending while it is in
+    /// <see cref="_textCommits"/>; <see cref="SettleTextCommits"/> takes it off when it applies it without the
+    /// measurement.
+    /// </summary>
+    private sealed class TextCommit(BinkTextTool tool, Guid elementId, string text)
+    {
+        public BinkTextTool Tool { get; } = tool;
+
+        public Guid ElementId { get; } = elementId;
+
+        public string Text { get; } = text;
+    }
+
+    /// <summary>
     /// Text editing is the one interaction a canvas cannot own. A real text control is needed for selection,
     /// input methods, autocorrect, dictation and screen readers, so <see cref="BinkTextTool"/> asks the component to
     /// place one over the element and the component reports the result back.
@@ -2089,10 +2109,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     /// </summary>
     /// <param name="key">What ended the edit.</param>
     /// <param name="value">The editor's text.</param>
-    /// <param name="elementId">
-    /// The element the editor was open for when the browser sent this. A long text is read as a stream first, and by
-    /// then the user may have clicked another text element, whose editor must not receive this text.
-    /// </param>
+    /// <param name="elementId">The element the editor was open for when the browser sent this.</param>
     void IBinkInteropClient.OnTextEditorKey(string key, string value, Guid elementId)
     {
         if (_disposed || _activeTool is not BinkTextTool tool) return;
@@ -2109,24 +2126,76 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return;
         }
 
+        // An edit that ends while the canvas is read-only changes nothing. One that ended before was settled when the
+        // canvas became read-only.
+        if (ReadOnly) return;
         if (current) _textEditor = _textEditor! with { Text = value };
         // The element is fixed now, not after the measuring round trip, for the same reason.
         BinkTextStyle? style = _document.TryGetElement(elementId, out BinkElement? element) && element is BinkTextElement text ? text.Style : null;
-        _ = InvokeAsync(() => CommitTextAsync(tool, elementId, style, value));
+        var commit = new TextCommit(tool, elementId, value);
+        _textCommits.Add(commit);
+        _ = InvokeAsync(() => CommitTextAsync(commit, style));
     }
 
-    private async Task CommitTextAsync(BinkTextTool tool, Guid elementId, BinkTextStyle? style, string value)
+    private async Task CommitTextAsync(TextCommit commit, BinkTextStyle? style)
     {
-        Vector2? measured = style is { } measuredStyle ? await MeasureTextAsync(value, measuredStyle).ConfigureAwait(true) : null;
+        Vector2? measured;
+        bool settled;
+        try
+        {
+            measured = style is { } measuredStyle ? await MeasureTextAsync(commit.Text, measuredStyle).ConfigureAwait(true) : null;
+        }
+        finally
+        {
+            // Taken off even when measuring fails (the interop call timed out): left pending, it would be applied by a
+            // later settle over whatever the element holds by then, and a browser that never answers would grow the
+            // list without end. One already taken off was settled meanwhile.
+            settled = !_textCommits.Remove(commit);
+        }
         // Measuring is a browser round trip. On Blazor Server the user can navigate away during it, and writing
-        // to a disposed document and history manager afterwards would throw on a fire-and-forget task.
-        if (_disposed || ReadOnly) return;
-        tool.CommitEdit(_toolContext, elementId, value, measured);
+        // to a disposed document and history manager afterwards would throw on a fire-and-forget task. A commit
+        // settled meanwhile has been applied already.
+        if (_disposed || settled || ReadOnly) return;
+        commit.Tool.CommitEdit(_toolContext, commit.ElementId, commit.Text, measured);
         // The editor closes only if it is still the one this text was typed into.
-        if (_textEditor?.ElementId == elementId) _textEditor = null;
+        if (_textEditor?.ElementId == commit.ElementId) _textEditor = null;
         _uiDirty = true;
         await RenderDirtyAsync().ConfigureAwait(true);
         if (_textEditor is null) await RestoreFocusAsync().ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Applies the commits the editor has reported without waiting for their measurements. Measuring is a round trip
+    /// on Blazor Server, and the click that ended the edit arrives meanwhile: when it makes the canvas read-only or
+    /// switches tools, cancelling the edit would lose text typed while editing was allowed, together with a box
+    /// placed for it. Without a measurement the text is sized by estimate, as it is for a host that cannot measure.
+    /// </summary>
+    private void SettleTextCommits()
+    {
+        // An element's commits all leave the list before its text is applied, so a settle that applying causes (a
+        // DocumentChanged handler switching tools) finds only what is still pending.
+        while (_textCommits.Count > 0)
+        {
+            Guid elementId = _textCommits[0].ElementId;
+            // A blur and an Enter can both be on their way for one box; the text reported last is what the user saw.
+            TextCommit latest = _textCommits.FindLast(c => c.ElementId == elementId)!;
+            _textCommits.RemoveAll(c => c.ElementId == elementId);
+            latest.Tool.CommitEdit(_toolContext, latest.ElementId, latest.Text, EstimateTextSize(latest));
+        }
+    }
+
+    /// <summary>
+    /// The size of a commit's text, estimated from the element's style. An element edited before keeps its size when
+    /// none is given, and that size was measured for its old text: hit testing, the selection box and export would
+    /// all use bounds made for different text.
+    /// </summary>
+    private Vector2? EstimateTextSize(TextCommit commit)
+    {
+        // Text the element refuses is reported by CommitEdit; there is nothing to size.
+        if (commit.Text.Length > BinkTextElement.MaxLength) return null;
+        return _document.TryGetElement(commit.ElementId, out BinkElement? element) && element is BinkTextElement text
+            ? (text with { Text = commit.Text, Size = null }).EstimateSize()
+            : null;
     }
 
     private async Task<Vector2?> MeasureTextAsync(string text, BinkTextStyle style)
@@ -2294,8 +2363,12 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
                 if (!seen.Add(image.Source.Uri) || !requested.Add(image.Source.Uri)) continue;
                 long pixels = ImagePixels(image.Source);
                 if (pixels > remaining) continue;
-                remaining -= pixels;
-                await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(true);
+                // Short of a PNG header, the size is only what the document claims. The browser reads the real one as
+                // it loads the image, and does not keep one past what is left, so the export cannot draw it. An image
+                // the canvas already shows is drawn either way.
+                BinkImageMetrics? loaded = await _interop.LoadImageAsync(image.Source.Uri, remaining, cancellationToken).ConfigureAwait(true);
+                if (loaded is not null) pixels = (long)loaded.Width * loaded.Height;
+                if (pixels <= remaining) remaining -= pixels;
             }
         }
     }
@@ -2358,6 +2431,10 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (_disposed) return;
         _disposed = true;
         DetachTextTool();
+        // The click on a link that removes the page is what ended the edit, and the document belongs to the
+        // application, which keeps it. Applied while the history is still alive, and after the component is marked
+        // disposed and detached from the tool, so it neither re-renders the canvas nor raises the canvas's events.
+        SettleTextCommits();
         _activeTool?.Deactivate(_toolContext);
         if (_document is not null) _document.Changed -= OnDocumentChanged;
         if (_history is not null)

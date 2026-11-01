@@ -72,9 +72,10 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     private const long SmallImagePixels = 4096L * 4096;
 
     /// <summary>
-    /// A larger image is decoded only where it is drawn with at most this many source pixels per device pixel
-    /// (eight along each axis): beyond that nearly all of what is decoded is never sampled, and one compressible
-    /// file drawn as a thumbnail could take the whole decode budget.
+    /// A larger image is decoded only where it has at most this many pixels for each device pixel it covers in the
+    /// output (eight along each axis): beyond that nearly all of what is decoded is never sampled, and one
+    /// compressible file drawn as a thumbnail could take the whole decode budget. The whole image is decoded however
+    /// little of it is shown, so a crop, or a part outside the clip, does not count as covered.
     /// </summary>
     private const float MaxSourcePixelsPerDevicePixel = 64f;
 
@@ -107,6 +108,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     /// </summary>
     public long ImagePixelBudget { get; init; } = 80_000_000;
 
+    /// <summary>Rasterizing work this context may do; see <see cref="BinkPngExportOptions.MaxRasterWork"/>.</summary>
     internal long RasterWorkBudget { get; init; } = long.MaxValue;
 
     /// <summary>Number of text elements that could not be drawn.</summary>
@@ -230,14 +232,14 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
         int x1 = Math.Min((int)MathF.Ceiling(deviceRect.Right), _target.Width);
         int y1 = Math.Min((int)MathF.Ceiling(deviceRect.Bottom), _target.Height);
 
-        BinkPngCodec.DecodedImage? decoded = GetImage(image, destination, deviceRect);
+        long samples = x1 > x0 && y1 > y0 ? (long)(x1 - x0) * (y1 - y0) * BinkRasterizer.SubSamples : 0;
+        BinkPngCodec.DecodedImage? decoded = GetImage(image, destination, deviceRect, samples);
         if (decoded is null)
         {
             SkippedImages++;
             return;
         }
 
-        long samples = x1 > x0 && y1 > y0 ? (long)(x1 - x0) * (y1 - y0) * BinkRasterizer.SubSamples : 0;
         if (samples > RasterWorkBudget - _rasterWork) throw new InvalidOperationException(BinkRasterizer.WorkLimitMessage);
         _rasterWork += samples;
 
@@ -300,9 +302,12 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     /// Returns an embedded image's pixels, decoding it the first time it is drawn if it is within the limits:
     /// <see cref="MaxImagePixels"/>, what is left of <see cref="ImagePixelBudget"/>, and, for an image beyond
     /// <see cref="SmallImagePixels"/>, a density sensible for where it is drawn. The size is read from the header
-    /// first, so an image that is refused is never decompressed.
+    /// first, so an image that is refused is never decompressed, and neither is one whose drawing, which costs
+    /// <paramref name="work"/>, would fail the export on <see cref="RasterWorkBudget"/> anyway. Whether the data past
+    /// the header is readable is only known by decompressing it, so an image that would have been skipped as
+    /// undecodable fails the export too: a document is held to the work it asks for.
     /// </summary>
-    private BinkPngCodec.DecodedImage? GetImage(BinkImageSource image, BinkRect destination, BinkRect deviceRect)
+    private BinkPngCodec.DecodedImage? GetImage(BinkImageSource image, BinkRect destination, BinkRect deviceRect, long work)
     {
         byte[]? bytes = null;
         if (!_imageCache.TryGetValue(image.Uri, out CachedImage? entry))
@@ -323,6 +328,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
             double shown = Math.Min(deviceArea, (double)deviceRect.Width * deviceRect.Height);
             if (!(pixels <= MaxSourcePixelsPerDevicePixel * shown)) return null;
         }
+        if (work > RasterWorkBudget - _rasterWork) throw new InvalidOperationException(BinkRasterizer.WorkLimitMessage);
 
         if (bytes is null && !image.TryGetBytes(out bytes))
         {

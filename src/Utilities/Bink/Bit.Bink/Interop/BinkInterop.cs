@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -231,13 +232,16 @@ internal sealed class BinkInterop : IAsyncDisposable
     public ValueTask SetWetInkStyleAsync(BinkColor? color, float width, float opacity)
         => InvokeVoidAsync("setWetInkStyle", _id, color?.ToCss(), width, opacity);
 
-    /// <summary>Loads an image in the browser and returns its natural size.</summary>
-    public async Task<BinkImageMetrics?> LoadImageAsync(string uri, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Loads an image in the browser and returns its natural size. One newly loaded with more than
+    /// <paramref name="maxPixels"/> pixels is not kept, so nothing draws it until it is loaded again.
+    /// </summary>
+    public async Task<BinkImageMetrics?> LoadImageAsync(string uri, long? maxPixels = null, CancellationToken cancellationToken = default)
     {
         if (_module is null || _disposed) return null;
         try
         {
-            return await _module.InvokeAsync<BinkImageMetrics>("loadImage", cancellationToken, _id, uri).ConfigureAwait(false);
+            return await _module.InvokeAsync<BinkImageMetrics>("loadImage", cancellationToken, _id, uri, maxPixels).ConfigureAwait(false);
         }
         catch (JSException)
         {
@@ -463,46 +467,59 @@ internal sealed class BinkInterop : IAsyncDisposable
             if (!string.IsNullOrEmpty(key)) client.OnKey(key, ctrl, shift, alt);
         }
 
+        // The start of a long editor text, sent in parts ahead of the key that ends the edit, and the element the editor
+        // was open for when the first part arrived.
+        private StringBuilder? _textParts;
+        private bool _textPartsRefused;
+        private Guid? _textPartsElementId;
+
+        /// <summary>
+        /// Receives part of the inline text editor's value ahead of <see cref="OnTextEditorKey"/>, for a value too long
+        /// for one message, which a Blazor Server circuit refuses above 32 KB. The parts and the key are sent together
+        /// and handled in order, so the whole text reaches the canvas before anything the user did after ending the
+        /// edit, as a short one does. Read as a stream it arrived after the click that ended the edit, by when that
+        /// click could have made the canvas read-only or changed its tool, which cancelled the edit.
+        /// </summary>
+        [JSInvokable]
+        public void OnTextEditorTextPart(string part)
+        {
+            if (string.IsNullOrEmpty(part) || _textPartsRefused) return;
+            if (_textParts is null)
+            {
+                // The parts belong to the editor that sent them, even if another one is open by the time their key is
+                // handled.
+                _textParts = new StringBuilder();
+                _textPartsElementId = client.TextEditorElementId;
+            }
+            // More than an element holds is dropped rather than collected, so parts never followed by a key cannot
+            // grow without end.
+            if (part.Length > BinkTextElement.MaxLength - _textParts.Length)
+            {
+                _textParts = null;
+                _textPartsRefused = true;
+                return;
+            }
+            _textParts.Append(part);
+        }
+
         /// <summary>Reports a commit or cancel from the inline text editor, with its current value.</summary>
         [JSInvokable]
         public void OnTextEditorKey(string key, string value)
         {
-            if (!string.IsNullOrEmpty(key) && client.TextEditorElementId is { } elementId) client.OnTextEditorKey(key, value ?? string.Empty, elementId);
-        }
-
-        /// <summary>
-        /// Reports a commit or cancel from the inline text editor whose value is too long for one message, which a
-        /// Blazor Server circuit refuses above 32 KB, so it arrives as a stream.
-        /// </summary>
-        [JSInvokable]
-        public async Task OnTextEditorKeyStream(string key, IJSStreamReference value)
-        {
-            if (value is null) return;
-            // Which editor the text came from is fixed now. While it is read, the click that ended the edit is
-            // processed, and it can already have opened the editor on another text element.
-            Guid? editor = string.IsNullOrEmpty(key) ? null : client.TextEditorElementId;
-            if (editor is not { } elementId || key == "Escape")
-            {
-                // A cancel does not need the text, so it is applied at once, before anything else can happen.
-                if (editor is { } cancelled) client.OnTextEditorKey(key, string.Empty, cancelled);
-                await value.DisposeAsync().ConfigureAwait(true);
-                return;
-            }
-            string text;
-            try
-            {
-                // UTF-8 needs at most three bytes for each UTF-16 character.
-                text = await ReadTextAsync(value, BinkTextElement.MaxLength * 3L).ConfigureAwait(true);
-            }
-            catch (IOException)
-            {
-                return;
-            }
-            catch (JSDisconnectedException)
-            {
-                return;
-            }
-            client.OnTextEditorKey(key, text, elementId);
+            StringBuilder? parts = _textParts;
+            bool refused = _textPartsRefused;
+            Guid? partsElementId = _textPartsElementId;
+            _textParts = null;
+            _textPartsRefused = false;
+            _textPartsElementId = null;
+            Guid? editor = parts is not null || refused ? partsElementId : client.TextEditorElementId;
+            if (string.IsNullOrEmpty(key) || editor is not { } elementId) return;
+            // A cancel does not need the text. A text longer than an element holds is not committed, and the editor
+            // stays open with it.
+            if (key == "Escape") value = string.Empty;
+            else if (refused) return;
+            else if (parts is not null) value = parts.Append(value).ToString();
+            client.OnTextEditorKey(key, value ?? string.Empty, elementId);
         }
 
         /// <summary>

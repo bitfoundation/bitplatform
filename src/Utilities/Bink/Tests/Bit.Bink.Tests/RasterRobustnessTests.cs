@@ -157,9 +157,7 @@ public class RasterRobustnessTests
     [TestMethod]
     public void An_image_that_fails_to_decode_still_uses_its_share_of_the_budget()
     {
-        byte[] rows = new byte[400 * (400 * 4 + 1)];
-        rows[^(400 * 4 + 1)] = 9;
-        byte[] broken = CreatePng(400, 400, colorType: 6, rows: Compress(rows));
+        byte[] broken = CreateUndecodablePng();
         byte[] valid = TestData.CreatePng(400, 400, (_, _) => BinkColor.Black);
         var document = new BinkDocument(new BinkDocumentSettings { Width = 100, Height = 100 });
         document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(broken, "image/png", 400, 400), new BinkRect(0, 0, 50, 50)));
@@ -191,6 +189,31 @@ public class RasterRobustnessTests
         for (int i = 0; i < 1000; i++) document.AddElement(new BinkImageElement(source, new BinkRect(0, 0, 500, 500)) { Opacity = 0.5f });
 
         Assert.ThrowsExactly<InvalidOperationException>(() => BinkPngExporter.Render(document, new BinkPngExportOptions { MaxRasterWork = 10_000_000 }, out _, out _));
+    }
+
+    [TestMethod]
+    public void An_image_too_costly_to_draw_is_not_decoded_before_the_export_fails()
+    {
+        byte[] png = CreatePng(4000, 4000, colorType: 6, rows: CompressRows(4000, 4000, 4));
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 500, Height = 500 });
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(png, "image/png", 4000, 4000), new BinkRect(0, 0, 500, 500)));
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkPngExporter.Render(document, new BinkPngExportOptions { MaxRasterWork = 1_000_000 }, out _, out _));
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.IsLessThan(16L * 1024 * 1024, allocated, $"{allocated} bytes were allocated for an export that failed on its work limit");
+    }
+
+    [TestMethod]
+    public void An_image_that_fails_to_decode_still_fails_the_export_on_its_work_limit()
+    {
+        // Whether the data is readable is only known by decompressing it, which the work limit comes before.
+        byte[] png = CreateUndecodablePng();
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 500, Height = 500 });
+        document.AddElement(new BinkImageElement(BinkImageSource.FromBytes(png, "image/png", 400, 400), new BinkRect(0, 0, 500, 500)));
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkPngExporter.Render(document, new BinkPngExportOptions { MaxRasterWork = 1_000_000 }, out _, out _));
     }
 
     [TestMethod]
@@ -394,6 +417,14 @@ public class RasterRobustnessTests
             for (int y = 0; y < height; y++) zlib.Write(row);
         }
         return output.ToArray();
+    }
+
+    /// <summary>A 400 by 400 PNG with a valid header whose last row has an unknown filter type.</summary>
+    private static byte[] CreateUndecodablePng()
+    {
+        byte[] rows = new byte[400 * (400 * 4 + 1)];
+        rows[^(400 * 4 + 1)] = 9;
+        return CreatePng(400, 400, colorType: 6, rows: Compress(rows));
     }
 
     private static byte[] CreatePng(int width, int height, byte colorType, byte[] rows, byte[]? transparency = null)
