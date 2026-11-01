@@ -733,15 +733,18 @@ builder.Services.AddBitBlexLocalStoragePersistence(options =>
   over `options.Version` for that store, and a stored version that differs goes to `options.Migrate`
   with the store's name, or is discarded when there is none. `Version = 0` (the default) follows
   `options.Version`; a negative version (`BLEX024`) or one on a store without `Persist = true`
-  (`BLEX025`) is reported. The one `Migrate` now sees two kinds of version, so check the store name
-  first: for this store, `fromVersion` is its own version (or, for a payload saved before it had one,
-  the app's version it was saved under), and a hook that hands other stores' state back unchanged
-  keeps this store's too - return `null` for it to drop its old state:
+  (`BLEX025`) is reported. The store's versions are counted apart from the app's, so `Version = 2`
+  next to `options.Version = 2` is no clash: the store saves under an envelope of its own
+  (`{ "__blexStoreVersion": 2, "state": { … } }`), and what it saved before it had a version of its
+  own reaches `Migrate` as version `0`, whatever app version it was saved under. The one `Migrate`
+  now sees both kinds of version, so check the store name first (a scoped instance with a key arrives
+  as `"layout:{key}"`). A hook that hands other stores' state back unchanged keeps this store's too -
+  return `null` for it to drop its old state:
 
 ```csharp
-options.Migrate = (storeName, fromVersion, state) => storeName switch
+options.Migrate = (storeName, fromVersion, state) => storeName.Split(':')[0] switch
 {
-    "layout" => null,                                     // [BlexStore(Version = 2)]: drop older layouts
+    "layout" => null,                            // [BlexStore(Version = 2)]: drop layouts saved before v2
     "settings" when fromVersion < 2 => UpgradeSettings(state),
     _ => state,
 };
@@ -1315,7 +1318,9 @@ compiles cleanly and silently generates nothing at all · `BLEX019` negative
 descriptors are not generated (warning) · `BLEX021` two actions dispatched under one name ·
 `BLEX022` negative `RetryCount`/`RetryDelayMilliseconds`/`TimeoutMilliseconds` · `BLEX023`
 `TimeoutMilliseconds` on an effect without a `CancellationToken` parameter · `BLEX024` a negative
-store `Version` · `BLEX025` a store `Version` without `Persist = true` (warning).
+store `Version` · `BLEX025` a store `Version` without `Persist = true` (warning) · `BLEX026` a store
+member of its own that the generated code also overrides (`PersistVersion` next to `Version = n`,
+`SerializeState`, …).
 
 ## Time-travel debugging
 

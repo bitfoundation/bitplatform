@@ -456,6 +456,25 @@ public static class DiagnosticsCatalog
                 [BlexState] private string _view = "grid";
             }
             """),
+
+        new("BLEX026", "Store declares a member the generator overrides", true,
+            "The generated half of a store overrides some <code>BlexStoreBase</code> members: <code>Name</code>, <code>SerializeState</code> and <code>DeserializeState</code> always, and others when the store asks for them - <code>Persist</code> and <code>PersistVersion</code> for <code>Persist = true</code> and <code>Version = n</code>, and the members behind <code>EnforceActions</code>, <code>RollbackOnError</code>, transient state, computeds, cancellable effects and actions. A store that writes one of those itself would declare it twice, so the build would fail inside generated code. Say it through the attribute instead, or drop the attribute setting and keep your own override.",
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 2)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+
+                public override int PersistVersion => 3;                 // BLEX026
+            }
+            """,
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 3)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """),
     ];
 
     /// <summary>The entry for one diagnostic id (case-insensitive), or <c>null</c>.</summary>

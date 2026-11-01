@@ -29,3 +29,4 @@ BLEX022 | Bit.Blex.Generators | Error | Effect retry and timeout values cannot b
 BLEX023 | Bit.Blex.Generators | Error | Effect timeout needs a CancellationToken
 BLEX024 | Bit.Blex.Generators | Error | Store version cannot be negative
 BLEX025 | Bit.Blex.Generators | Warning | Store version has no effect without Persist
+BLEX026 | Bit.Blex.Generators | Error | Store declares a member the generator overrides

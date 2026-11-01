@@ -42,10 +42,12 @@ public sealed class BlexPersistenceOptions
     /// </summary>
     /// <remarks>
     /// One hook serves both kinds of version, so check the store name before the version: for a store
-    /// with a version of its own, the stored version is that store's version, not the app's. A payload
-    /// the store saved before it had a version of its own arrives with the app's version it was saved
-    /// under. A hook that hands back every other store's state unchanged also keeps the state of a
-    /// store whose own version was raised; return <c>null</c> for that store to drop it.
+    /// with a version of its own, the stored version is always one of that store's versions, never the
+    /// app's. A payload the store saved before it had a version of its own arrives as <c>0</c>, whatever
+    /// app version it was saved under. The store name is <see cref="IBlexStore.Name"/>, so a scoped
+    /// instance arrives under its scoped name, such as <c>"layout:42"</c>, not its declared one. A hook
+    /// that hands back every other store's state unchanged also keeps the state of a store whose own
+    /// version was raised; return <c>null</c> for that store to drop it.
     /// </remarks>
     public Func<string, int, JsonObject, JsonObject?>? Migrate { get; set; }
 

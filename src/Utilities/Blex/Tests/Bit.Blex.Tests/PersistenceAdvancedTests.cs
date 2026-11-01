@@ -156,7 +156,8 @@ public class PersistenceAdvancedTests
         }
 
         var stored = JsonNode.Parse(storage.Data["blex:layout"])!.AsObject();
-        Assert.AreEqual(2, stored["__blexVersion"]!.GetValue<int>());
+        Assert.AreEqual(2, stored["__blexStoreVersion"]!.GetValue<int>());
+        Assert.IsFalse(stored.ContainsKey("__blexVersion"));
         Assert.AreEqual("list", stored["state"]!["View"]!.GetValue<string>());
         Assert.AreEqual("dark", JsonNode.Parse(storage.Data["blex:settings"])!["Theme"]!.GetValue<string>());
     }
@@ -168,7 +169,7 @@ public class PersistenceAdvancedTests
         var layout = new LayoutStore();
         manager.Register(layout);
         storage.Data["blex:settings"] = """{"Theme":"dark"}""";
-        storage.Data["blex:layout"] = """{"__blexVersion":1,"state":{"View":"list"}}""";
+        storage.Data["blex:layout"] = """{"__blexStoreVersion":1,"state":{"View":"list"}}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions());
         await persistor.StartAsync();
@@ -210,7 +211,7 @@ public class PersistenceAdvancedTests
         var layout = new LayoutStore();
         manager.Register(layout);
         storage.Data["blex:settings"] = """{"__blexVersion":3,"state":{"Theme":"dark"}}""";
-        storage.Data["blex:layout"] = """{"__blexVersion":2,"state":{"View":"list"}}""";
+        storage.Data["blex:layout"] = """{"__blexStoreVersion":2,"state":{"View":"list"}}""";
 
         await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 3 });
         await persistor.StartAsync();
@@ -220,9 +221,9 @@ public class PersistenceAdvancedTests
     }
 
     [TestMethod]
-    public async Task StoreVersion_StateSavedUnderTheAppVersion_GoesToMigrateWithTheAppVersion()
+    public async Task StoreVersion_StateSavedUnderTheAppVersion_GoesToMigrateAsVersion0()
     {
-        // Saved before the store had a version of its own: the version it arrives with is the app's.
+        // Saved before the store had a version of its own: whatever the app's version was then, it is the store's 0.
         var (_, manager, storage) = Setup();
         var layout = new LayoutStore();
         manager.Register(layout);
@@ -242,8 +243,114 @@ public class PersistenceAdvancedTests
         await using var persistor = new BlexStatePersistor(manager, storage, options);
         await persistor.StartAsync();
 
-        CollectionAssert.AreEqual(new[] { ("layout", 3) }, migrated);
+        CollectionAssert.AreEqual(new[] { ("layout", 0) }, migrated);
         Assert.AreEqual("list", layout.View); // a hook that hands state back keeps it
+    }
+
+    [TestMethod]
+    public async Task StoreVersion_EqualToTheAppVersionItWasSavedUnder_StillGoesToMigrate()
+    {
+        // options.Version = 2 and [BlexStore(Version = 2)] share a number, not a meaning: the layout saved under
+        // the app's 2 predates its own version, so it is not taken as current.
+        var (_, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+        storage.Data["blex:layout"] = """{"__blexVersion":2,"state":{"View":"table"}}""";
+
+        var migrated = new List<(string, int)>();
+        var options = new BlexPersistenceOptions
+        {
+            Version = 2,
+            Migrate = (storeName, fromVersion, state) =>
+            {
+                migrated.Add((storeName, fromVersion));
+                return storeName == "layout" ? null : state;
+            },
+        };
+
+        await using var persistor = new BlexStatePersistor(manager, storage, options);
+        await persistor.StartAsync();
+
+        CollectionAssert.AreEqual(new[] { ("layout", 0) }, migrated);
+        Assert.AreEqual("grid", layout.View);
+    }
+
+    [TestMethod]
+    public async Task StoreVersion_EqualToTheAppVersion_WithoutMigrate_DiscardsWhatWasSavedUnderTheApps()
+    {
+        var (_, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+        storage.Data["blex:layout"] = """{"__blexVersion":2,"state":{"View":"table"}}""";
+
+        await using var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 2 });
+        await persistor.StartAsync();
+
+        Assert.AreEqual("grid", layout.View);
+    }
+
+    [TestMethod]
+    public async Task StoreVersion_EqualToTheAppVersion_RoundTripsItsOwnState()
+    {
+        var (store, manager, storage) = Setup();
+        var layout = new LayoutStore();
+        manager.Register(layout);
+
+        await using (var persistor = new BlexStatePersistor(manager, storage, new BlexPersistenceOptions { Version = 2 }))
+        {
+            await persistor.StartAsync();
+            store.SetTheme("dark");
+            layout.SetView("list");
+            await persistor.FlushAsync();
+        }
+
+        Assert.AreEqual(2, JsonNode.Parse(storage.Data["blex:settings"])!["__blexVersion"]!.GetValue<int>());
+        Assert.AreEqual(2, JsonNode.Parse(storage.Data["blex:layout"])!["__blexStoreVersion"]!.GetValue<int>());
+
+        var (store2, manager2, _) = (new SettingsStore(), new BlexManager(), 0);
+        var layout2 = new LayoutStore();
+        manager2.Register(store2);
+        manager2.Register(layout2);
+        var migrated = new List<(string, int)>();
+        await using var persistor2 = new BlexStatePersistor(manager2, storage, new BlexPersistenceOptions
+        {
+            Version = 2,
+            Migrate = (storeName, fromVersion, state) =>
+            {
+                migrated.Add((storeName, fromVersion));
+                return state;
+            },
+        });
+        await persistor2.StartAsync();
+
+        Assert.IsEmpty(migrated);
+        Assert.AreEqual("dark", store2.Theme);
+        Assert.AreEqual("list", layout2.View);
+    }
+
+    [TestMethod]
+    public async Task StoreVersion_DroppedAgain_SendsWhatWasSavedUnderItToMigrate()
+    {
+        // A store that goes back to the app's version: its own 2 is not the app's 2.
+        var (store, manager, storage) = Setup();
+        storage.Data["blex:settings"] = """{"__blexStoreVersion":2,"state":{"Theme":"dark"}}""";
+
+        var migrated = new List<(string, int)>();
+        var options = new BlexPersistenceOptions
+        {
+            Version = 2,
+            Migrate = (storeName, fromVersion, state) =>
+            {
+                migrated.Add((storeName, fromVersion));
+                return state;
+            },
+        };
+
+        await using var persistor = new BlexStatePersistor(manager, storage, options);
+        await persistor.StartAsync();
+
+        CollectionAssert.AreEqual(new[] { ("settings", 2) }, migrated);
+        Assert.AreEqual("dark", store.Theme);
     }
 
     [TestMethod]

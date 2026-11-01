@@ -132,16 +132,20 @@
             its own instead. It wins over <code>options.Version</code> for that store; state the store saved
             under another version goes to <code>Migrate</code> with the store's name, or is dropped when
             there is no <code>Migrate</code>. The other stores keep following <code>options.Version</code>,
-            and so does a store with <code>Version = 0</code>, the default.
+            and so does a store with <code>Version = 0</code>, the default. The store's versions are
+            counted apart from the app's - its state is saved as
+            <code>{ "__blexStoreVersion": 2, "state": { … } }</code> - so the two can share a number.
         </p>
         <CodeBlock Code="@StoreVersion" />
 
         <Callout Kind="Callout.CalloutKind.Warning" Title="One Migrate, two kinds of version">
             <p>
-                For a store with a version of its own, <code>fromVersion</code> is that store's version - or,
-                for what it saved before it had one, the app's version it was saved under. Check the store
-                name before the version. A hook that hands every other store's state back unchanged keeps
-                this store's old state too: return <code>null</code> for it to drop that state.
+                For a store with a version of its own, <code>fromVersion</code> is always one of that store's
+                versions: what it saved before it had one arrives as <code>0</code>, whatever the app's
+                version was then. Check the store name before the version - and a scoped instance with a key
+                arrives as <code>"layout:{key}"</code>, not <code>"layout"</code>. A hook that hands every
+                other store's state back unchanged keeps this store's old state too: give it an arm of its
+                own, and return <code>null</code> from it to drop that state.
             </p>
         </Callout>
 
@@ -528,10 +532,13 @@
             [BlexState] private string _view = "grid";
         }
 
-        // Only needed to keep older layouts: without Migrate, they are dropped.
-        options.Migrate = (storeName, fromVersion, state) => storeName switch
+        // The one Migrate from above, with an arm for the layout. A scoped layout with a key is "layout:{key}".
+        options.Migrate = (storeName, fromVersion, state) => storeName.Split(':')[0] switch
         {
-            "layout" when fromVersion < 2 => state["View"]?.GetValue<string>() == "table" ? null : state,
+            // The layout's own versions: 1, or 0 for what it saved before it had one. Keep all but the
+            // removed "table" view; without this arm, the hook would keep that too.
+            "layout" => state["View"]?.GetValue<string>() == "table" ? null : state,
+            "settings" when fromVersion < 2 => UpgradeSettings(state),   // the v1 to v2 step above
             _ => state,
         };
         """;

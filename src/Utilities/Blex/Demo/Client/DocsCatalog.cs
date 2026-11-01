@@ -167,7 +167,7 @@ public static class DocsCatalog
         [
             new("/persistence", "Persistence",
                 "Persist = true: rehydration on startup and on late registration, transient fields, debounced writes, versioning, migrations, sync across tabs and encrypted storage.",
-                "persistence persist localStorage sessionStorage rehydrate hydrate debounce version migrate store version PersistVersion BLEX024 BLEX025 SyncAcrossTabs IBlexStorage transient Persist = false late registration scoped Protector IBlexStateProtector encrypt encryption DataProtection tamper",
+                "persistence persist localStorage sessionStorage rehydrate hydrate debounce version migrate store version PersistVersion __blexStoreVersion BLEX024 BLEX025 BLEX026 SyncAcrossTabs IBlexStorage transient Persist = false late registration scoped Protector IBlexStateProtector encrypt encryption DataProtection tamper",
                 typeof(Pages.Persistence)),
             new("/history", "Undo & redo",
                 "BlexHistory: in-app undo and redo over the state tree or a chosen scope of it, with labels, jumps, grouping and filters.",
