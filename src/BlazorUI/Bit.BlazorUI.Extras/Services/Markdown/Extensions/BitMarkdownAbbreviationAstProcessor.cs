@@ -30,10 +30,7 @@ public sealed class BitMarkdownAbbreviationAstProcessor : BitMarkdownAstProcesso
                     definitions.TryAdd(definition.Label, definition.Title);
             }
 
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                if (list[i] is BitMarkdownAbbreviationDefinitionNode) list.RemoveAt(i);
-            }
+            BitMarkdownAstHelper.RemoveAll<BitMarkdownAbbreviationDefinitionNode>(list);
         });
 
         if (definitions.Count == 0) return;
@@ -45,17 +42,22 @@ public sealed class BitMarkdownAbbreviationAstProcessor : BitMarkdownAstProcesso
 
         BitMarkdownAstHelper.VisitChildLists(document, list =>
         {
+            // Rebuilt in one pass once a run is split, so a list of many runs is not shifted once per split.
+            List<BitMarkdownNode>? rebuilt = null;
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i] is not BitMarkdownTextNode text) continue;
+                var replacement = list[i] is BitMarkdownTextNode text ? Split(text.Text, terms, definitions) : null;
+                if (replacement is null)
+                {
+                    rebuilt?.Add(list[i]);
+                    continue;
+                }
 
-                var replacement = Split(text.Text, terms, definitions);
-                if (replacement is null) continue;
-
-                list.RemoveAt(i);
-                foreach (var node in replacement) list.Insert(i++, node);
-                i--;
+                rebuilt ??= new List<BitMarkdownNode>(list.Take(i));
+                rebuilt.AddRange(replacement);
             }
+
+            if (rebuilt is not null) BitMarkdownAstHelper.ReplaceContents(list, rebuilt);
         });
     }
 
