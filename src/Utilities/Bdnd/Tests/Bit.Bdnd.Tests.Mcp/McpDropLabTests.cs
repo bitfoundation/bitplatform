@@ -78,7 +78,8 @@ public class McpDropLabTests
         Assert.IsNull(done.DropOrder);
         Assert.IsFalse(attachments.CanDrop);
         CollectionAssert.AreEqual(new[] { BdndNativeTypes.File }, attachments.Accept);
-        Assert.AreEqual("board", done.Parent);
+        Assert.AreEqual(0, done.ParentIndex);
+        Assert.AreEqual("board", report.Targets![done.ParentIndex!.Value].Id);
         Assert.AreEqual(1, done.Depth);
     }
 
@@ -320,13 +321,19 @@ public class McpDropLabTests
     [TestMethod]
     public async Task Names_too_long_to_be_a_typo_are_not_compared()
     {
-        var name = new string('x', 100_000);
+        // As long as an id or a type may be, and past the length a typo is looked for at; "hover" has no limit of its own.
+        var name = new string('x', BdndDropLab.MaxNameBytes - 1);
 
         var hover = await InspectAsync(Scenario("card", name + "a", Target(name + "b", ["card"])));
+        var longHover = await InspectAsync(Scenario("card", new string('x', 100_000), Target(name + "b", ["card"])));
         var type = await InspectAsync(Scenario(name + "a", "zone", Target("zone", [name + "b"])));
 
         Assert.IsFalse(hover.Valid);
+        Assert.Contains("is not the id of any target", hover.Error!);
         Assert.DoesNotContain("Did you mean", hover.Error!);
+        Assert.IsFalse(longHover.Valid);
+        Assert.Contains("is not the id of any target", longHover.Error!);
+        Assert.DoesNotContain("Did you mean", longHover.Error!);
         Assert.IsTrue(type.Valid, type.Error);
         Assert.IsFalse(type.Notes.Any(note => note.Contains("a typo here", StringComparison.Ordinal)));
     }
@@ -356,41 +363,93 @@ public class McpDropLabTests
     }
 
     [TestMethod]
-    public async Task Ignored_properties_past_the_listing_limit_are_counted_rather_than_each_noted()
+    public async Task Ignored_properties_past_the_listing_limit_are_counted_and_a_typo_is_listed_first()
     {
         var draggable = new JsonObject { ["type"] = "card" };
         for (var i = 0; i < 1_000; i++) draggable[$"p{i}"] = 0;
 
-        var report = await InspectAsync(Scenario(draggable, "list", Target("list", ["card"])));
+        // The typo comes after a thousand stray properties in the document, and is the one that explains the outcome.
+        var target = new JsonObject { ["id"] = "list", ["acept"] = "card" };
+
+        var report = await InspectAsync(Scenario(draggable, "list", target));
 
         Assert.IsTrue(report.Valid, report.Error);
 
-        var noted = report.Notes.Count(note => note.Contains("is not a property of draggable", StringComparison.Ordinal));
+        var listed = report.Notes.Where(note => note.Contains("is not a property of", StringComparison.Ordinal)).ToArray();
 
-        Assert.IsTrue(noted is > 0 and < 1_000, $"{noted} properties were noted one by one.");
-        Assert.IsTrue(report.Notes.Any(note => note.StartsWith($"{1_000 - noted} more notes", StringComparison.Ordinal)));
+        Assert.HasCount(BdndDropLab.MaxListed, listed);
+        Assert.StartsWith("'acept' is not a property of targets[0] and was ignored - did you mean 'accept'?", listed[0]);
+        Assert.IsTrue(report.Notes.Any(note => note.StartsWith($"{1_001 - BdndDropLab.MaxListed} more ignored properties are not listed", StringComparison.Ordinal)), string.Join('\n', report.Notes));
+    }
+
+    [TestMethod]
+    public async Task One_ignored_property_past_the_listing_limit_is_counted_in_the_singular()
+    {
+        var draggable = new JsonObject { ["type"] = "card" };
+        for (var i = 0; i <= BdndDropLab.MaxListed; i++) draggable[$"p{i}"] = 0;
+
+        var report = await InspectAsync(Scenario(draggable, "list", Target("list", ["card"])));
+
+        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("1 more ignored property is not listed", StringComparison.Ordinal)), string.Join('\n', report.Notes));
+    }
+
+    [TestMethod]
+    public async Task A_native_drag_still_says_it_ignored_canDrag_past_the_listing_limit_of_ignored_properties()
+    {
+        var draggable = new JsonObject { ["type"] = "BdndNativeTypes.File", ["canDrag"] = false };
+        for (var i = 0; i < 100; i++) draggable[$"p{i}"] = 0;
+
+        var report = await InspectAsync(Scenario(draggable, "zone", Target("zone", ["BdndNativeTypes.File"])));
+
+        Assert.IsTrue(report.Valid, report.Error);
+        Assert.IsTrue(report.Notes.Any(note => note.StartsWith("canDrag and dropEffect were ignored", StringComparison.Ordinal)));
     }
 
     [TestMethod]
     public async Task An_id_at_the_length_limit_runs_and_one_past_it_is_refused_with_the_reason()
     {
-        var at = await InspectAsync(Scenario("card", null, Target(new string('x', BdndDropLab.MaxIdLength), ["card"])));
-        var past = await InspectAsync(Scenario("card", null, Target("board", ["card"], children: [Target(new string('x', BdndDropLab.MaxIdLength + 1), ["card"])])));
+        var at = await InspectAsync(Scenario("card", null, Target(new string('x', BdndDropLab.MaxNameBytes), ["card"])));
+        var past = await InspectAsync(Scenario("card", null, Target("board", ["card"], children: [Target(new string('x', BdndDropLab.MaxNameBytes + 1), ["card"])])));
+
+        // Two bytes each in UTF-8: half as many letters as the limit has bytes, plus one, is past it.
+        var wide = await InspectAsync(Scenario("card", null, Target(new string('é', BdndDropLab.MaxNameBytes / 2 + 1), ["card"])));
 
         Assert.IsTrue(at.Valid, at.Error);
         Assert.IsFalse(past.Valid);
-        Assert.Contains($"targets[0].children[0].id is {BdndDropLab.MaxIdLength + 1} characters", past.Error!);
+        Assert.Contains($"targets[0].children[0].id is {BdndDropLab.MaxNameBytes + 1} bytes", past.Error!);
+        Assert.IsFalse(wide.Valid);
+        Assert.Contains($"targets[0].id is {BdndDropLab.MaxNameBytes + 2} bytes", wide.Error!);
     }
 
     [TestMethod]
-    public async Task A_long_parent_id_is_refused_rather_than_repeated_for_every_child()
+    public async Task A_type_or_a_result_past_its_limit_is_refused_with_the_reason()
     {
+        var longType = new string('x', BdndDropLab.MaxNameBytes + 1);
+
+        var type = await InspectAsync(Scenario(longType, null, Target("list", ["card"])));
+        var accept = await InspectAsync(Scenario("card", null, Target("list", ["card", longType])));
+        var result = await InspectAsync(Scenario("card", null, Target("list", ["card"], result: new string('x', BdndDropLab.MaxResultBytes + 1))));
+        var resultAtLimit = await InspectAsync(Scenario("card", "list", Target("list", ["card"], result: new string('x', BdndDropLab.MaxResultBytes))));
+
+        Assert.Contains($"draggable.type is {BdndDropLab.MaxNameBytes + 1} bytes", type.Error!);
+        Assert.Contains($"targets[0].accept[1] is {BdndDropLab.MaxNameBytes + 1} bytes", accept.Error!);
+        Assert.Contains($"targets[0].result is {BdndDropLab.MaxResultBytes + 1} bytes", result.Error!);
+        Assert.IsTrue(resultAtLimit.Valid, resultAtLimit.Error);
+        Assert.AreEqual(BdndDropLab.MaxResultBytes, resultAtLimit.End!.DropResult!.Length);
+    }
+
+    [TestMethod]
+    public async Task A_parent_is_named_by_its_position_so_its_id_is_not_repeated_for_every_child()
+    {
+        var id = new string('x', BdndDropLab.MaxNameBytes);
         var children = Enumerable.Range(0, BdndDropLab.MaxTargets - 1).Select(i => Target($"c{i}", ["card"])).ToArray();
 
-        var report = await InspectAsync(Scenario("card", null, Target(new string('x', 200_000), ["card"], children: children)));
+        var report = await InspectAsync(Scenario("card", null, Target(id, ["card"], children: children)));
 
-        Assert.IsFalse(report.Valid);
-        Assert.IsNull(report.Targets);
+        Assert.IsTrue(report.Valid, report.Error);
+        Assert.HasCount(BdndDropLab.MaxTargets, report.Targets!);
+        Assert.IsNull(report.Targets![0].ParentIndex);
+        Assert.IsTrue(report.Targets.Skip(1).All(target => target.ParentIndex == 0));
     }
 
     [TestMethod]
