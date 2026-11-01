@@ -223,6 +223,7 @@ public class BitButtonE2ETests : E2ETestBase
 
         var main = await Token(token);
         var on = await Token(onToken);
+        var label = await Token(E2EColors.TextToken(suffix));
         var dis = await Token($"{token}-dis");
         var disText = await Token($"{token}-dis-text");
 
@@ -234,13 +235,15 @@ public class BitButtonE2ETests : E2ETestBase
 
         var outline = Btn($"color-outline-{name}");
         await Expect(outline).ToHaveClassAsync(HasClass($"bit-btn-{suffix}"));
-        await Expect(outline).ToHaveCSSAsync("color", main);
+        // The label of an unfilled variant sits on the page, so it is drawn in the role's text color; the outline keeps
+        // the main.
+        await Expect(outline).ToHaveCSSAsync("color", label);
         await Expect(outline).ToHaveCSSAsync("border-top-color", main);
         await Expect(outline).ToHaveCSSAsync("background-color", Transparent);
 
         var text = Btn($"color-text-{name}");
         await Expect(text).ToHaveClassAsync(HasClass($"bit-btn-{suffix}"));
-        await Expect(text).ToHaveCSSAsync("color", main);
+        await Expect(text).ToHaveCSSAsync("color", label);
         await Expect(text).ToHaveCSSAsync("border-top-color", Transparent);
 
         var disabled = Btn($"color-dis-{name}");
@@ -953,15 +956,17 @@ public class BitButtonE2ETests : E2ETestBase
     {
         await OpenAsync("/e2e/button");
 
-        var main = await Token("bg-ter");
         var on = await Token("fg-pri");
         var hover = await Token("bg-ter-hover");
 
+        // A background role's main is the page itself, so an unfilled label already reads the role's text color - the
+        // on-color it is paired with (role-text) - and FixedColor keeps that one under the pointer too.
+        var text = await Token(E2EColors.TextToken("tbg"));
         await Expect(Btn("fixed-outline")).ToHaveClassAsync(HasClass("bit-btn-fxc"));
         await Expect(Btn("fixed-outline")).ToHaveCSSAsync("color", on);
-        await Expect(Btn("notfixed-outline")).ToHaveCSSAsync("color", main);
+        await Expect(Btn("notfixed-outline")).ToHaveCSSAsync("color", text);
         await Expect(Btn("fixed-text")).ToHaveCSSAsync("color", on);
-        await Expect(Btn("notfixed-text")).ToHaveCSSAsync("color", main);
+        await Expect(Btn("notfixed-text")).ToHaveCSSAsync("color", text);
         await Expect(Btn("fixed-fill")).ToHaveCSSAsync("color", on);
 
         foreach (var id in new[] { "fixed-outline", "fixed-text", "fixed-fill" })

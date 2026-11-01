@@ -188,13 +188,15 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and are only
 // rendered for an explicit Color.
-// The border and the text of the borderless variants take the main color of the role, so an Outline
-// header reads as that role even though its background stays transparent.
+// The border of an Outline header takes the main color of the role, so it reads as that role even though its
+// background stays transparent. The text of the two borderless variants is read on the page rather than over the
+// role's fill, so it is drawn in the role's text color (role-text): a secondary or a warning main is picked to fill a
+// surface and falls under the 4.5:1 of body text on white.
 @each $role, $tokens in $bit-color-roles {
     .bit-hdr-#{$role} {
         --bit-hdr-bg: #{role($tokens, main)};
         --bit-hdr-on: #{role($tokens, on)};
-        --bit-hdr-fg: #{role($tokens, main)};
+        --bit-hdr-fg: #{role-text($role, $tokens)};
         --bit-hdr-brd: #{role($tokens, main)};
         --bit-hdr-bg-dis: #{role($tokens, dis)};
         --bit-hdr-fg-dis: #{role($tokens, dis-text)};

@@ -72,7 +72,7 @@
 // always carried the default would be indistinguishable from one that was asked for. The disabled state is
 // read before all of them, as before.
 
-$fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-height, lbl-fontsize, lbl-padding,
+$fin-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus, lbl-height, lbl-fontsize, lbl-padding,
                          itm-fontsize, fs-fontsize, prv-size, dzn-height, dzn-padding, dzn-ico-size, rbt-size,
                          ico-fontsize;
 
@@ -93,10 +93,13 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     flex-flow: column nowrap;
     font-family: $tg-font-family;
     max-width: var(--bit-FileInput-max-width, #{spacing(43.75)});
-    // The four role slots resolved once, so every state below reads a single name instead of repeating the
+    // The role slots resolved once, so every state below reads a single name instead of repeating the
     // whole fallback chain: the role an explicit Color publishes first, then the public variable, then the
-    // primary role an unset Color stands for.
+    // primary role an unset Color stands for. The label of an Outline or Text browse button is read on the page
+    // rather than over the role's fill, so it reads the role's text color (c-fg) where the rule and the fills
+    // read the main.
     --bit-fin-c: var(--bit-fin-clr, var(--bit-FileInput-color, #{$clr-pri}));
+    --bit-fin-c-fg: var(--bit-fin-clr-fg, var(--bit-FileInput-color, #{$clr-pri}));
     --bit-fin-c-txt: var(--bit-fin-clr-txt, var(--bit-FileInput-text-color, #{$clr-pri-text}));
     --bit-fin-c-hover: var(--bit-fin-clr-hover, var(--bit-FileInput-hover-color, #{$clr-pri-hover}));
     --bit-fin-c-active: var(--bit-fin-clr-active, var(--bit-FileInput-active-color, #{$clr-pri-active}));
@@ -241,7 +244,7 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     }
 
     .bit-fin-lbl {
-        color: var(--bit-fin-lbl-sfg, var(--bit-fin-c));
+        color: var(--bit-fin-lbl-sfg, var(--bit-fin-c-fg));
         border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));
         background-color: var(--bit-fin-lbl-sbg, transparent);
 
@@ -275,7 +278,7 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     }
 
     .bit-fin-lbl {
-        color: var(--bit-fin-lbl-sfg, var(--bit-fin-c));
+        color: var(--bit-fin-lbl-sfg, var(--bit-fin-c-fg));
         border-color: var(--bit-fin-lbl-sbr, transparent);
         background-color: var(--bit-fin-lbl-sbg, transparent);
 
@@ -569,10 +572,13 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and published
 // only by an explicit Color; an unset one is the primary role, which every read spells out after the public
-// variable.
+// variable. The label of an Outline or Text browse button is read on the page rather than over the role's fill, so
+// it is drawn in the role's text color (role-text) - a secondary or a warning main is picked to fill a surface and
+// falls under the 4.5:1 of body text on white - while the rule and the fills keep the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-fin-#{$role} {
         --bit-fin-clr: #{role($tokens, main)};
+        --bit-fin-clr-fg: #{role-text($role, $tokens)};
         --bit-fin-clr-txt: #{role($tokens, on)};
         --bit-fin-clr-hover: #{role($tokens, hover)};
         --bit-fin-clr-active: #{role($tokens, active)};
@@ -584,6 +590,7 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
 // and ahead of one: the state the input is in outranks the look it was given, as the disabled state does.
 .bit-fin.bit-inv:not(.bit-dis) {
     --bit-fin-clr: var(--bit-FileInput-invalid-color, #{$clr-err});
+    --bit-fin-clr-fg: var(--bit-FileInput-invalid-color, #{$clr-err-fg});
     --bit-fin-clr-txt: #{$clr-err-text};
     --bit-fin-clr-hover: #{$clr-err-hover};
     --bit-fin-clr-active: #{$clr-err-active};

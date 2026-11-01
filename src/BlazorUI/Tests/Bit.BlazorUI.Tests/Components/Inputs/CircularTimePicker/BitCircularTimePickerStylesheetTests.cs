@@ -30,7 +30,10 @@ public class BitCircularTimePickerStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-ctp-rl-text, var(--bit-CircularTimePicker-selected-number-color, ");
         StringAssert.Contains(stylesheet, "var(--bit-ctp-rl-clr, var(--bit-CircularTimePicker-selected-ampm-background, ");
         StringAssert.Contains(stylesheet, "var(--bit-ctp-rl-text, var(--bit-CircularTimePicker-selected-ampm-color, ");
-        StringAssert.Contains(stylesheet, "var(--bit-ctp-rl-clr, var(--bit-CircularTimePicker-action-color, ");
+        // The label of an action button is read on the callout rather than over the role's fill, so it takes the role's
+        // text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-ctp-abn {"), "color: var(--bit-ctp-rl-fg, var(--bit-CircularTimePicker-action-color, var(--bit-ctp-clr)));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-ctp-#{$role} {"), "--bit-ctp-rl-fg: #{role-text($role, $tokens)};");
         Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-ctp-#{$role} {").Contains("--bit-CircularTimePicker-"), "A role class reads a public variable ahead of its own color.");
 
         // So does an explicit Size, for every size a variable restyles.
@@ -60,7 +63,7 @@ public class BitCircularTimePickerStylesheetTests
         // and the callout - a sibling of the root, so it carries the classes itself - each start the values those
         // classes publish out unset, and the classes, declared further down at the same weight, still win on the
         // element carrying them.
-        foreach (var property in new[] { "--bit-ctp-rl-clr", "--bit-ctp-rl-text", "--bit-ctp-rl-focus", "--bit-ctp-inp-h", "--bit-ctp-inp-fs",
+        foreach (var property in new[] { "--bit-ctp-rl-clr", "--bit-ctp-rl-fg", "--bit-ctp-rl-text", "--bit-ctp-rl-focus", "--bit-ctp-inp-h", "--bit-ctp-inp-fs",
                                          "--bit-ctp-lbl-fs", "--bit-ctp-clk-size", "--bit-ctp-num-size", "--bit-ctp-txt-fontsize",
                                          "--bit-ctp-apb-fontsize", "--bit-ctp-apk-fontsize", "--bit-ctp-num-fontsize", "--bit-ctp-thb-size",
                                          "--bit-ctp-thb-size-min" })

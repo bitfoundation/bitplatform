@@ -128,12 +128,40 @@ public partial class BitButtonGroupStylesheetTests
         // A group can sit in the template of another one's button, which must not inherit the outer group's Color, Size
         // or Rounded: each root starts the values those classes publish out unset, and the classes - declared further
         // down at the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-btg-clr", "--bit-btg-clr-txt", "--bit-btg-clr-brd", "--bit-btg-clr-hover", "--bit-btg-clr-active",
+        foreach (var property in new[] { "--bit-btg-clr", "--bit-btg-clr-fg", "--bit-btg-clr-txt", "--bit-btg-clr-brd", "--bit-btg-clr-hover", "--bit-btg-clr-active",
                                          "--bit-btg-clr-focus", "--bit-btg-clr-dark", "--bit-btg-clr-dark-hover", "--bit-btg-clr-dark-active",
                                          "--bit-btg-clr-dis", "--bit-btg-clr-dis-text", "--bit-btg-itm-min-height", "--bit-btg-itm-pad-y",
                                          "--bit-btg-itm-padding", "--bit-btg-itm-fontsize", "--bit-btg-itm-bdg-fs", "--bit-btg-itm-iconsize", "--bit-btg-rad" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
+        }
+    }
+
+    [TestMethod,
+        DataRow("bit-btg-otl"),
+        DataRow("bit-btg-txt")]
+    public void BitButtonGroupShouldDrawTheLabelsOfAnUnfilledVariantInTheRoleTextColor(string variantClass)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The labels of an Outline or Text group sit on the page rather than on the role's fill, so they are drawn in the
+        // role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+        var group = SourceFiles.GetScssDeclarations(stylesheet, $"\n.{variantClass} {{");
+        StringAssert.Contains(group, "--bit-btg-itm-clr-txt: var(--bit-btg-clr-fg, var(--bit-btg-clr));");
+        StringAssert.Contains(group, "--bit-btg-dfl-txt: #{$clr-pri};");
+
+        // Only the labels: the focus ring keeps the role's main.
+        StringAssert.Contains(group, "--bit-btg-itm-clr-fcs: var(--bit-btg-clr);");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btg-#{$role} {"), "--bit-btg-clr-fg: #{role-text($role, $tokens)};");
+
+        // The surface roles are written out by hand, with the text color role-text gives them: the fg of the role map - the
+        // on-color a background or border role is paired with (its main is the page, or a hairline on it) and the main of a
+        // foreground one.
+        foreach (var (role, text) in new[] { ("pbg", "fg-pri"), ("sbg", "fg-pri"), ("tbg", "fg-pri"), ("pfg", "fg-pri"), ("sfg", "fg-sec"),
+                                             ("tfg", "fg-ter"), ("pbr", "fg-pri"), ("sbr", "fg-pri"), ("tbr", "fg-pri") })
+        {
+            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n.bit-btg-{role} {{"), $"--bit-btg-clr-fg: #{{$clr-{text}}};");
         }
     }
 

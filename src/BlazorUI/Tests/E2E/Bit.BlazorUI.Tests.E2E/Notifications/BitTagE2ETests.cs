@@ -334,15 +334,26 @@ public class BitTagE2ETests : E2ETestBase
         await Expect(fill).ToHaveCSSAsync("background-color", await Page.ResolveCssColorAsync("color-mix(in srgb, var(--bit-clr-pri-text) 20%, transparent)"));
         await Page.Mouse.UpAsync();
 
+        // An outlined tag answers with a wash of its role - the tint its text color is solved to be read on - rather than
+        // with the role's light tier, a pastel which in a dark palette is as light as the text.
+        // Its label keeps the primary main at rest, and reads the primary foreground over the wash, where the main drops
+        // under 4.5:1.
+        var main = await Page.ResolveColorAsync("--bit-clr-pri", "color");
+        var foreground = await Page.ResolveColorAsync("--bit-clr-pri-fg", "color");
         var outline = Content("click-dismiss");
+        await Expect(outline).ToHaveCSSAsync("color", main);
         await outline.HoverAsync();
-        await Expect(outline).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-light"));
+        await Expect(outline).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-tint"));
+        await Expect(outline).ToHaveCSSAsync("color", foreground);
         await Page.Mouse.DownAsync();
-        await Expect(outline).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-light-hover"));
+        await Expect(outline).ToHaveCSSAsync("background-color", await Page.ResolveCssColorAsync("color-mix(in srgb, var(--bit-clr-pri) 16%, transparent)"));
+        await Expect(outline).ToHaveCSSAsync("color", foreground);
         await Page.Mouse.UpAsync();
 
         await Dismiss("click-dismiss").HoverAsync();
-        await Expect(Dismiss("click-dismiss")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-light"));
+        await Expect(Dismiss("click-dismiss")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-tint"));
+        await Expect(Dismiss("click-dismiss")).ToHaveCSSAsync("color", foreground);
+        await Expect(outline).ToHaveCSSAsync("color", main);
     }
 
     [TestMethod]
@@ -365,8 +376,16 @@ public class BitTagE2ETests : E2ETestBase
         await Expect(check).ToHaveAttributeAsync("aria-hidden", "true");
         Assert.IsTrue((await check.BoxAsync()).Right <= (await Page.Locator("#sel-bound .bit-tag-lbl").BoxAsync()).Left + 0.5, "The checkmark leads the tag.");
 
-        // Selected outline: the light fill of the role.
-        await Expect(Root("sel-bound")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-light"));
+        // Selected outline: the tint of the role, with the role's foreground read on it - the primary main drops under
+        // 4.5:1 there.
+        await Expect(Root("sel-bound")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-tint"));
+        await Expect(Root("sel-bound")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("--bit-clr-pri-fg", "color"));
+
+        // The pointer still rests on it, laying its wash over the selection's - past the tint that foreground is solved for -
+        // so the label is leaned a step deeper there, and goes back to the tag's own once the pointer leaves.
+        await Expect(chip).ToHaveCSSAsync("color", await Page.ResolveCssColorAsync("color-mix(in srgb, var(--bit-clr-pri-fg) 85%, var(--bit-clr-fg-pri))", "color"));
+        await Page.Mouse.MoveAsync(0, 0);
+        await Expect(chip).ToHaveCSSAsync("color", await Page.ResolveColorAsync("--bit-clr-pri-fg", "color"));
 
         await chip.ClickAsync();
         await Expect(chip).ToHaveAttributeAsync("aria-pressed", "false");
@@ -617,13 +636,16 @@ public class BitTagE2ETests : E2ETestBase
         foreach (var (name, suffix, token) in NotificationsE2EHelpers.Colors)
         {
             var main = await Page.ResolveColorAsync(token);
+            var text = await Page.ResolveColorAsync($"--bit-clr-{E2EColors.TextToken(suffix)}");
 
             await Expect(Root($"clr-{name}")).ToHaveClassAsync(HasClass($"bit-tag-{suffix}"));
             await Expect(Root($"clr-{name}")).ToHaveCSSAsync("background-color", main);
             await Expect(Root($"clr-{name}")).ToHaveCSSAsync("color", await Page.ResolveColorAsync(OnTokens[suffix]));
             await Expect(Root($"clr-otl-{name}")).ToHaveCSSAsync("border-top-color", main);
-            await Expect(Root($"clr-otl-{name}")).ToHaveCSSAsync("color", main);
-            await Expect(Root($"clr-txt-{name}")).ToHaveCSSAsync("color", main);
+            // The text of an unfilled variant sits on the page, so it is drawn in the role's text color; the rule keeps
+            // the main.
+            await Expect(Root($"clr-otl-{name}")).ToHaveCSSAsync("color", text);
+            await Expect(Root($"clr-txt-{name}")).ToHaveCSSAsync("color", text);
             await Expect(Root($"clr-sel-{name}")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync($"{token}-active"));
         }
     }

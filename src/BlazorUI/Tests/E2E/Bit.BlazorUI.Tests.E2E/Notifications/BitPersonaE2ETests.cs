@@ -296,10 +296,13 @@ public class BitPersonaE2ETests : E2ETestBase
         await Expect(Coin("var-fill")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("--bit-clr-inf-text"));
         await Expect(Coin("var-outline")).ToHaveCSSAsync("background-color", Transparent);
         await Expect(Coin("var-outline")).ToHaveCSSAsync("border-top-color", info);
-        await Expect(Coin("var-outline")).ToHaveCSSAsync("color", info);
+
+        // The initials of an unfilled coin are read on the page, so they take the role's text color; the ring keeps the main.
+        var infoText = await Page.ResolveColorAsync($"--bit-clr-{E2EColors.TextToken("inf")}");
+        await Expect(Coin("var-outline")).ToHaveCSSAsync("color", infoText);
         await Expect(Coin("var-text")).ToHaveCSSAsync("background-color", Transparent);
         await Expect(Coin("var-text")).ToHaveCSSAsync("border-top-color", Transparent);
-        await Expect(Coin("var-text")).ToHaveCSSAsync("color", info);
+        await Expect(Coin("var-text")).ToHaveCSSAsync("color", infoText);
     }
 
     [TestMethod]
@@ -690,9 +693,11 @@ public class BitPersonaE2ETests : E2ETestBase
             await Expect(Coin($"clr-{name}")).ToHaveCSSAsync("background-color", main);
             await Expect(Coin($"clr-{name}")).ToHaveCSSAsync("color", await Page.ResolveColorAsync(CoinTextTokens[suffix]));
 
+            // The initials of an outlined coin are read on the page, so they are drawn in the role's text color; the ring
+            // keeps the main.
             await Expect(Coin($"clr-otl-{name}")).ToHaveCSSAsync("background-color", Transparent);
             await Expect(Coin($"clr-otl-{name}")).ToHaveCSSAsync("border-top-color", main);
-            await Expect(Coin($"clr-otl-{name}")).ToHaveCSSAsync("color", main);
+            await Expect(Coin($"clr-otl-{name}")).ToHaveCSSAsync("color", await Page.ResolveColorAsync($"--bit-clr-{E2EColors.TextToken(suffix)}"));
         }
     }
 

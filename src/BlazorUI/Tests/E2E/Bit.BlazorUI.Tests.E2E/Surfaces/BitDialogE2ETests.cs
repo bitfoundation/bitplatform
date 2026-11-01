@@ -1607,8 +1607,9 @@ public class BitDialogE2ETests : E2ETestBase
         await Expect(ok).ToHaveCSSAsync("background-color", error);
         await Expect(ok).ToHaveCSSAsync("border-top-left-radius", "9px");
 
+        // The label of the outlined Cancel button is read on the dialog's surface, so it is the role's text color.
         var cancel = Part("varscolor-dialog", ".bit-dlg-cnb");
-        await Expect(cancel).ToHaveCSSAsync("color", error);
+        await Expect(cancel).ToHaveCSSAsync("color", await ResolveColorAsync($"--bit-clr-{E2EColors.TextToken("err")}"));
         await Expect(cancel).ToHaveCSSAsync("background-color", "rgb(21, 22, 23)");
 
         // Under the pointer the role's hover fill wins over the hover variable as well.

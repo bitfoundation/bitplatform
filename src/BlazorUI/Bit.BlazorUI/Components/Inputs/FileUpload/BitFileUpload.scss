@@ -134,7 +134,7 @@
 // always carried the default would be indistinguishable from one that was asked for. The disabled state and
 // a rejected drag are read before all of them, as before.
 
-$upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tint-8, clr-tint-10, lbl-height,
+$upl-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus, clr-tint-8, clr-tint-10, lbl-height,
                          lbl-fontsize, lbl-padding, bab-height, bab-padding, itm-fontsize, fs-fontsize, prv-size,
                          btn-size, ico-fontsize;
 
@@ -283,7 +283,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
         // own style still reaches it.
         --bit-upl-dis-bg: var(--bit-FileUpload-outline-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
         --bit-upl-dis-brd: var(--bit-FileUpload-outline-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
-        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-outline-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
         border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-border-color, var(--bit-FileUpload-label-border-color, #{$clr-pri}))));
         background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-outline-label-background, var(--bit-FileUpload-label-background, transparent)));
 
@@ -315,7 +315,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
         // own style still reaches it.
         --bit-upl-dis-bg: var(--bit-FileUpload-text-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
         --bit-upl-dis-brd: var(--bit-FileUpload-text-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
-        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-text-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-text-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
         border-color: var(--bit-upl-lbl-sbr, var(--bit-FileUpload-text-label-border-color, var(--bit-FileUpload-label-border-color, transparent)));
         background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-text-label-background, var(--bit-FileUpload-label-background, transparent)));
 
@@ -505,7 +505,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 
 .bit-upl-psd {
     .bit-upl-us {
-        color: var(--bit-upl-clr, var(--bit-FileUpload-paused-color, #{$clr-pri}));
+        color: var(--bit-upl-clr-fg, var(--bit-FileUpload-paused-color, #{$clr-pri}));
     }
 }
 
@@ -692,7 +692,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
     min-height: var(--bit-upl-bab-height, #{$siz-ctrl-sm});
     font-size: var(--bit-upl-lbl-fontsize, #{$tg-fs-sm});
     padding: var(--bit-upl-bab-padding, #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm});
-    color: var(--bit-upl-clr, var(--bit-FileUpload-batch-action-color, #{$clr-pri}));
+    color: var(--bit-upl-clr-fg, var(--bit-FileUpload-batch-action-color, #{$clr-pri}));
     transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
@@ -737,10 +737,14 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and published
 // only by an explicit Color; an unset one is the primary role, which every read spells out after the public
 // variable. The two tints are the role laid over a surface - the drop area's hover and drag surface, and the
-// hovered action and batch buttons - published here so that they too are unset while the Color is.
+// hovered action and batch buttons - published here so that they too are unset while the Color is. The text read on
+// the page rather than over the role's fill - the label of an Outline or Text browse button, the batch buttons, a
+// paused file's status line - is drawn in the role's text color (role-text): a secondary or a warning main is picked
+// to fill a surface and falls under the 4.5:1 of body text on white. The icons, the outline and the fills keep the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-upl-#{$role} {
         --bit-upl-clr: #{role($tokens, main)};
+        --bit-upl-clr-fg: #{role-text($role, $tokens)};
         --bit-upl-clr-txt: #{role($tokens, on)};
         --bit-upl-clr-hover: #{role($tokens, hover)};
         --bit-upl-clr-active: #{role($tokens, active)};
@@ -751,9 +755,11 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 }
 
 // A value the form's validation rejects turns the role to the error one, the way an explicit Color would, and ahead
-// of one: the state the input is in outranks the look it was given, as the disabled state does.
+// of one: the state the input is in outranks the look it was given, as the disabled state does. The text it reads on the
+// page keeps the error role's fg: the public variable is a fill and a ring color, which as text could fall under 4.5:1.
 .bit-upl.bit-inv:not(.bit-dis) {
     --bit-upl-clr: var(--bit-FileUpload-invalid-color, #{$clr-err});
+    --bit-upl-clr-fg: #{$clr-err-fg};
     --bit-upl-clr-txt: #{$clr-err-text};
     --bit-upl-clr-hover: #{$clr-err-hover};
     --bit-upl-clr-active: #{$clr-err-active};

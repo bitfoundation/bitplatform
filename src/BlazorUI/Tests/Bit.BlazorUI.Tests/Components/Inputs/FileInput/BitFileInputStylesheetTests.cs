@@ -15,6 +15,26 @@ public class BitFileInputStylesheetTests
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "FileInput", "BitFileInput.scss");
 
     [TestMethod]
+    public void BitFileInputShouldDrawTheLabelOfAnUnfilledBrowseButtonInTheRoleTextColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The label of an Outline or Text browse button sits on the page rather than on the role's fill, so it is drawn in
+        // the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+        StringAssert.Contains(stylesheet, "--bit-fin-c-fg: var(--bit-fin-clr-fg, var(--bit-FileInput-color, #{$clr-pri}));");
+        foreach (var selector in new[] { "\n.bit-fin-otl {", "\n.bit-fin-txt {" })
+        {
+            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, selector), "color: var(--bit-fin-lbl-sfg, var(--bit-fin-c-fg));");
+        }
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-fin-#{$role} {"), "--bit-fin-clr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin.bit-inv:not(.bit-dis) {"), "--bit-fin-clr-fg: var(--bit-FileInput-invalid-color, #{$clr-err-fg});");
+
+        // Only the label: the rule keeps the role's main.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin-otl {"), "border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));");
+    }
+
+    [TestMethod]
     public void BitFileInputShouldLetAParameterWinOverItsPublicVariable()
     {
         var stylesheet = ReadStylesheet();
@@ -79,7 +99,7 @@ public class BitFileInputStylesheetTests
         // A file input can sit in a template of another one, which must not inherit the outer one's Color or Size:
         // each root starts the values those classes publish out unset, and the classes - declared further down at
         // the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-fin-clr", "--bit-fin-clr-txt", "--bit-fin-clr-hover", "--bit-fin-clr-active", "--bit-fin-clr-focus",
+        foreach (var property in new[] { "--bit-fin-clr", "--bit-fin-clr-fg", "--bit-fin-clr-txt", "--bit-fin-clr-hover", "--bit-fin-clr-active", "--bit-fin-clr-focus",
                                          "--bit-fin-lbl-height", "--bit-fin-lbl-fontsize", "--bit-fin-lbl-padding", "--bit-fin-itm-fontsize",
                                          "--bit-fin-fs-fontsize", "--bit-fin-prv-size", "--bit-fin-dzn-height", "--bit-fin-dzn-padding",
                                          "--bit-fin-dzn-ico-size", "--bit-fin-rbt-size", "--bit-fin-ico-fontsize" })

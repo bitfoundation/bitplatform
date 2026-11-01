@@ -88,7 +88,7 @@
 // while they are left unset: a class that always carried the default would be indistinguishable from one that was
 // asked for. The Gap parameter writes --bit-ButtonGroup-gap on the group itself, after its Style.
 
-$btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover,
+$btg-private-properties: clr, clr-fg, clr-txt, clr-brd, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover,
                          clr-dark-active, clr-dis, clr-dis-text, itm-min-height, itm-pad-y, itm-padding, itm-fontsize,
                          itm-bdg-fs, itm-iconsize, rad;
 
@@ -543,7 +543,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     --bit-btg-dfl-outer: #{$clr-pri};
     --bit-btg-itm-clr-bg: initial;
     --bit-btg-dfl-bg: transparent;
-    --bit-btg-itm-clr-txt: var(--bit-btg-clr);
+    --bit-btg-itm-clr-txt: var(--bit-btg-clr-fg, var(--bit-btg-clr));
     --bit-btg-dfl-txt: #{$clr-pri};
     --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd);
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
@@ -602,7 +602,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     --bit-btg-dfl-outer: transparent;
     --bit-btg-itm-clr-bg: initial;
     --bit-btg-dfl-bg: transparent;
-    --bit-btg-itm-clr-txt: var(--bit-btg-clr);
+    --bit-btg-itm-clr-txt: var(--bit-btg-clr-fg, var(--bit-btg-clr));
     --bit-btg-dfl-txt: #{$clr-pri};
     --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd);
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
@@ -671,10 +671,15 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 // Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss), the surface
 // ones written out below it. Published only by an explicit Color; an unset one is the primary role, which the
-// --bit-btg-dfl-* values and the fallbacks above spell out after the public variables.
+// --bit-btg-dfl-* values and the fallbacks above spell out after the public variables. The label of an Outline or Text
+// button is read on the page rather than over the role's fill, so it is drawn in the role's text color (role-text) - a
+// secondary or a warning main is picked to fill a surface and falls under the 4.5:1 of body text on white - while the
+// borders, the separators and the fills keep the main. The surface roles below publish the same text color by hand:
+// the fg of the role map, the on-color a background or border role is paired with and the main of a foreground one.
 @each $role, $tokens in $bit-semantic-color-roles {
     .bit-btg-#{$role} {
         --bit-btg-clr: #{role($tokens, main)};
+        --bit-btg-clr-fg: #{role-text($role, $tokens)};
         --bit-btg-clr-txt: #{role($tokens, on)};
         --bit-btg-clr-brd: #{role($tokens, dark)};
         --bit-btg-clr-hover: #{role($tokens, hover)};
@@ -691,6 +696,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-pbg {
     --bit-btg-clr: #{$clr-bg-pri};
+    --bit-btg-clr-fg: #{$clr-fg-pri};
     --bit-btg-clr-txt: #{$clr-fg-pri};
     --bit-btg-clr-brd: #{$clr-bg-pri};
     --bit-btg-clr-hover: #{$clr-bg-pri-hover};
@@ -705,6 +711,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-sbg {
     --bit-btg-clr: #{$clr-bg-sec};
+    --bit-btg-clr-fg: #{$clr-fg-pri};
     --bit-btg-clr-txt: #{$clr-fg-pri};
     --bit-btg-clr-brd: #{$clr-bg-sec};
     --bit-btg-clr-hover: #{$clr-bg-sec-hover};
@@ -719,6 +726,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-tbg {
     --bit-btg-clr: #{$clr-bg-ter};
+    --bit-btg-clr-fg: #{$clr-fg-pri};
     --bit-btg-clr-txt: #{$clr-fg-pri};
     --bit-btg-clr-brd: #{$clr-bg-ter};
     --bit-btg-clr-hover: #{$clr-bg-ter-hover};
@@ -733,6 +741,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-pfg {
     --bit-btg-clr: #{$clr-fg-pri};
+    --bit-btg-clr-fg: #{$clr-fg-pri};
     --bit-btg-clr-txt: #{$clr-bg-pri};
     --bit-btg-clr-brd: #{$clr-fg-pri};
     --bit-btg-clr-hover: #{$clr-fg-pri-hover};
@@ -747,6 +756,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-sfg {
     --bit-btg-clr: #{$clr-fg-sec};
+    --bit-btg-clr-fg: #{$clr-fg-sec};
     --bit-btg-clr-txt: #{$clr-bg-pri};
     --bit-btg-clr-brd: #{$clr-fg-sec};
     --bit-btg-clr-hover: #{$clr-fg-sec-hover};
@@ -761,6 +771,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-tfg {
     --bit-btg-clr: #{$clr-fg-ter};
+    --bit-btg-clr-fg: #{$clr-fg-ter};
     --bit-btg-clr-txt: #{$clr-bg-pri};
     --bit-btg-clr-brd: #{$clr-fg-ter};
     --bit-btg-clr-hover: #{$clr-fg-ter-hover};
@@ -775,6 +786,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-pbr {
     --bit-btg-clr: #{$clr-brd-pri};
+    --bit-btg-clr-fg: #{$clr-fg-pri};
     --bit-btg-clr-txt: #{$clr-fg-pri};
     --bit-btg-clr-brd: #{$clr-brd-pri};
     --bit-btg-clr-hover: #{$clr-brd-pri-hover};
@@ -789,6 +801,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-sbr {
     --bit-btg-clr: #{$clr-brd-sec};
+    --bit-btg-clr-fg: #{$clr-fg-pri};
     --bit-btg-clr-txt: #{$clr-bg-pri};
     --bit-btg-clr-brd: #{$clr-brd-sec};
     --bit-btg-clr-hover: #{$clr-brd-sec-hover};
@@ -803,6 +816,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
 .bit-btg-tbr {
     --bit-btg-clr: #{$clr-brd-ter};
+    --bit-btg-clr-fg: #{$clr-fg-pri};
     --bit-btg-clr-txt: #{$clr-bg-pri};
     --bit-btg-clr-brd: #{$clr-brd-ter};
     --bit-btg-clr-hover: #{$clr-brd-ter-hover};

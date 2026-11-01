@@ -422,32 +422,35 @@ public class BitTextE2ETests : E2ETestBase
         StringAssert.StartsWith(await ComputedStyleAsync("#txt-gradient-color", "background-image"), "radial-gradient");
     }
 
+    // A text is read on the page rather than over the role's fill, so it is painted in the role's text color (role-text)
+    // rather than in the main it fills with: the readable foreground shade of an accent role, the text a background or
+    // border role is paired with, a foreground role itself - and the primary main, the brand's link color.
     [TestMethod]
-    [DataRow("Primary", "pri", "--bit-clr-pri")]
-    [DataRow("Secondary", "sec", "--bit-clr-sec")]
-    [DataRow("Tertiary", "ter", "--bit-clr-ter")]
-    [DataRow("Info", "inf", "--bit-clr-inf")]
-    [DataRow("Success", "suc", "--bit-clr-suc")]
-    [DataRow("Warning", "wrn", "--bit-clr-wrn")]
-    [DataRow("SevereWarning", "swr", "--bit-clr-swr")]
-    [DataRow("Error", "err", "--bit-clr-err")]
-    [DataRow("PrimaryBackground", "pbg", "--bit-clr-bg-pri")]
-    [DataRow("SecondaryBackground", "sbg", "--bit-clr-bg-sec")]
-    [DataRow("TertiaryBackground", "tbg", "--bit-clr-bg-ter")]
-    [DataRow("PrimaryForeground", "pfg", "--bit-clr-fg-pri")]
-    [DataRow("SecondaryForeground", "sfg", "--bit-clr-fg-sec")]
-    [DataRow("TertiaryForeground", "tfg", "--bit-clr-fg-ter")]
-    [DataRow("PrimaryBorder", "pbr", "--bit-clr-brd-pri")]
-    [DataRow("SecondaryBorder", "sbr", "--bit-clr-brd-sec")]
-    [DataRow("TertiaryBorder", "tbr", "--bit-clr-brd-ter")]
-    public async Task Color_EveryValue_PaintsTheTextInItsRole(string color, string suffix, string token)
+    [DataRow("Primary", "pri")]
+    [DataRow("Secondary", "sec")]
+    [DataRow("Tertiary", "ter")]
+    [DataRow("Info", "inf")]
+    [DataRow("Success", "suc")]
+    [DataRow("Warning", "wrn")]
+    [DataRow("SevereWarning", "swr")]
+    [DataRow("Error", "err")]
+    [DataRow("PrimaryBackground", "pbg")]
+    [DataRow("SecondaryBackground", "sbg")]
+    [DataRow("TertiaryBackground", "tbg")]
+    [DataRow("PrimaryForeground", "pfg")]
+    [DataRow("SecondaryForeground", "sfg")]
+    [DataRow("TertiaryForeground", "tfg")]
+    [DataRow("PrimaryBorder", "pbr")]
+    [DataRow("SecondaryBorder", "sbr")]
+    [DataRow("TertiaryBorder", "tbr")]
+    public async Task Color_EveryValue_PaintsTheTextInItsRole(string color, string suffix)
     {
         await OpenAsync(Path);
 
         var text = Page.Locator($"#txt-color-{color}");
 
         await Expect(text).ToHaveClassAsync(HasClass($"bit-txt-{suffix}"));
-        await Expect(text).ToHaveCSSAsync("color", await ResolveAsync("color", $"var({token})"));
+        await Expect(text).ToHaveCSSAsync("color", await ResolveAsync("color", $"var(--bit-clr-{E2EColors.TextToken(suffix)})"));
     }
 
     [TestMethod]
@@ -591,7 +594,7 @@ public class BitTextE2ETests : E2ETestBase
         await Expect(Page.Locator("#txt-css-underline")).ToHaveCSSAsync("text-underline-offset", "6px");
         StringAssert.Contains(await ComputedStyleAsync("#txt-css-mono", "font-family"), "Courier New");
         await Expect(Page.Locator("#txt-css-gutter")).ToHaveCSSAsync("margin-bottom", "21px");
-        await Expect(Page.Locator("#txt-css-color")).ToHaveCSSAsync("color", await ResolveAsync("color", "var(--bit-clr-err)"));
+        await Expect(Page.Locator("#txt-css-color")).ToHaveCSSAsync("color", await ResolveAsync("color", $"var(--bit-clr-{E2EColors.TextToken("err")})"));
     }
 
     [TestMethod]
@@ -621,7 +624,7 @@ public class BitTextE2ETests : E2ETestBase
         Assert.AreEqual("H2", await TagAsync(Page.Locator("#txt-runtime")));
 
         await Page.Locator("#btn-set-color").ClickAsync();
-        await Expect(text).ToHaveCSSAsync("color", await ResolveAsync("color", "var(--bit-clr-suc)"));
+        await Expect(text).ToHaveCSSAsync("color", await ResolveAsync("color", $"var(--bit-clr-{E2EColors.TextToken("suc")})"));
 
         await Page.Locator("#btn-toggle-disabled").ClickAsync();
         await Expect(text).ToHaveClassAsync(HasClass("bit-dis"));

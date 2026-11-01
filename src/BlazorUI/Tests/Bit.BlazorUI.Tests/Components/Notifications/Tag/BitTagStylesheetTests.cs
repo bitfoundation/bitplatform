@@ -137,6 +137,9 @@ public class BitTagStylesheetTests
             StringAssert.Contains(disabled, "background-color: transparent;", control);
             Assert.IsTrue(rule.IndexOf("&:active", System.StringComparison.Ordinal) < rule.IndexOf("&[aria-disabled", System.StringComparison.Ordinal), control);
         }
+
+        // nor the text the press hands the content and the dismiss button, which the disabled root takes back
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-dis {"), "--bit-tag-wash-fg: initial;");
     }
 
     [TestMethod]
@@ -218,7 +221,7 @@ public class BitTagStylesheetTests
         StringAssert.Contains(fill, "--bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-active, #{$clr-pri-active}))));");
         StringAssert.Contains(fill, "--bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-background, var(--bit-Tag-disabled-background, var(--bit-tag-dft-clr-dis, #{$clr-pri-dis}))));");
         var outline = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-otl {");
-        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-light, #{$clr-pri-light}))));");
+        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-tint, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-tint, #{$clr-pri-tint}))));");
         StringAssert.Contains(stylesheet, "--bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, var(--bit-tag-dft-clr-dis-text, #{$clr-pri-dis-text})));");
 
         // What the role leaves alone stays the variables': the transparent background of Outline and Text.
@@ -236,16 +239,32 @@ public class BitTagStylesheetTests
         // A component of the library that renders a tag gives it a default role other than the primary one through a
         // class (bit-tag-dft-ter), never through Color: so every color the primary role stands in for reads that default
         // right ahead of it - behind the role of an explicit Color and the public variables, which keep the last word.
-        var fallbacks = Regex.Matches(stylesheet, @"(\S*) #\{\$clr-pri(-[a-z-]+)?\}\)");
-        Assert.IsTrue(fallbacks.Count > 0, "No color falls back to the primary role.");
-        Assert.AreEqual(Regex.Matches(stylesheet, @"\$clr-pri\b").Count, fallbacks.Count, "A primary role token is read other than as the last fallback of a color.");
-
-        foreach (Match fallback in fallbacks)
+        // Which default is told by the color being declared, never by the one it happens to read: the text of an
+        // unfilled tag stands the primary main in for the text color the role is read in on the page (role-text, which
+        // keeps the primary main), a selected or a hovered one the primary foreground for the one it reads over the tint -
+        // leaned deeper where the pointer's wash meets the selection's - and every other color the slot the primary token
+        // names - the pressed wash of an unfilled tag being the main mixed in.
+        var fallbacks = 0;
+        foreach (Match declaration in Regex.Matches(stylesheet, @"(--bit-tag-[a-z-]+):([^;]+);"))
         {
-            var suffix = fallback.Groups[2].Value switch { "-text" => "-txt", var other => other };
+            var property = declaration.Groups[1].Value;
+            foreach (Match fallback in Regex.Matches(declaration.Groups[2].Value, @"var\((--bit-tag-[a-z-]+), #\{(?:\$clr-pri(?<slot>-[a-z-]+)?|(?<wash>translucent)\(\$clr-pri, \d+%\)|(?<deep>deep-wash-text)\(\$clr-pri-fg\))\}\)"))
+            {
+                fallbacks++;
+                var slot = fallback.Groups["wash"].Success ? "-tint-active" : fallback.Groups["deep"].Success ? "-sel-wash-fg" : fallback.Groups["slot"].Value switch { "-text" => "-txt", var other => other };
+                var expected = (property, slot) switch
+                {
+                    ("--bit-tag-v-fg", "") => "--bit-tag-dft-clr-fg",
+                    ("--bit-tag-v-sel-fg" or "--bit-tag-v-wash-fg", "-fg") => "--bit-tag-dft-clr-sel-fg",
+                    _ => $"--bit-tag-dft-clr{slot}",
+                };
 
-            Assert.AreEqual($"var(--bit-tag-dft-clr{suffix},", fallback.Groups[1].Value, $"{fallback.Value} is not read behind the host default.");
+                Assert.AreEqual(expected, fallback.Groups[1].Value, $"{property} reads {fallback.Value} behind the wrong host default.");
+            }
         }
+
+        Assert.IsTrue(fallbacks > 0, "No color falls back to the primary role.");
+        Assert.AreEqual(Regex.Matches(stylesheet, @"\$clr-pri\b").Count, fallbacks, "A primary role token is read other than as the last fallback of a color.");
 
         // The classes mirror the role classes - the same roles, the same values - and are never reset by the role classes.
         var roles = SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-#{$role} {");
@@ -255,6 +274,64 @@ public class BitTagStylesheetTests
 
         // Declared after the root rule at the same weight, so the class wins over the reset on the root that carries it.
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-tag {", System.StringComparison.Ordinal) < stylesheet.IndexOf(".bit-tag-dft-#{$role} {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod,
+        DataRow(".bit-tag-otl", "outline"),
+        DataRow(".bit-tag-txt", "text")]
+    public void BitTagShouldDrawTheTextOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // The text of an Outline or Text tag sits on the page rather than on its fill, so it is drawn in the role's text
+        // color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+        StringAssert.Contains(block, $"--bit-tag-v-fg: var(--bit-tag-clr-fg, var(--bit-Tag-{variant}-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{{$clr-pri}}))));");
+
+        // A selected one sits on a wash of the role instead - its tint, the surface the role's fg is solved to be read on -
+        // and so reads that fg, the primary role's too, whose main drops under 4.5:1 there. Never on the light tier: that one
+        // is a pastel which in a dark palette is as light as the role's text. The pointer lays a wash over the content, which
+        // deepens a selected tag's rather than replacing it, so no selected step of its own is needed.
+        StringAssert.Contains(block, $"--bit-tag-v-sel-fg: var(--bit-tag-clr-sel-fg, var(--bit-Tag-{variant}-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-{variant}-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-fg, #{{$clr-pri-fg}}))))));");
+        StringAssert.Contains(block, $"--bit-tag-v-sel-bg: var(--bit-tag-clr-tint, var(--bit-Tag-{variant}-selected-background, var(--bit-Tag-selected-background, var(--bit-tag-dft-clr-tint, #{{$clr-pri-tint}}))));");
+        StringAssert.Contains(block, $"--bit-tag-v-hover-bg: var(--bit-tag-clr-tint, var(--bit-Tag-{variant}-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-tint, #{{$clr-pri-tint}}))));");
+        StringAssert.Contains(block, $"--bit-tag-v-active-bg: var(--bit-tag-clr-tint-active, var(--bit-Tag-{variant}-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-tint-active, #{{translucent($clr-pri, 16%)}}))));");
+        StringAssert.DoesNotMatch(stylesheet, new Regex(@"clr-[a-z-]*light|\(\$tokens, light"));
+        StringAssert.DoesNotMatch(stylesheet, new Regex("v-sel-hover-bg|v-sel-active-bg"));
+
+        // Under the pointer the text sits on a wash too, so it reads that fg as well, the primary role's included: its main,
+        // which the text keeps at rest, drops under 4.5:1 there. On a selected chip the pointer's wash is laid over the
+        // selection's, past the tint the fg is solved for, so the fg is leaned deeper there (deep-wash-text). A public
+        // variable keeps the last word on both, as it does at rest.
+        StringAssert.Contains(block, $"--bit-tag-v-wash-fg: var(--bit-tag-clr-sel-fg, var(--bit-Tag-{variant}-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-fg, #{{$clr-pri-fg}}))));");
+        StringAssert.Contains(block, $"--bit-tag-v-sel-wash-fg: var(--bit-tag-clr-sel-wash-fg, var(--bit-Tag-{variant}-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-{variant}-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-wash-fg, #{{deep-wash-text($clr-pri-fg)}}))))));");
+        Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-fil {").Contains("wash-fg"), "A Fill tag keeps the text it has at rest.");
+
+        var root = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tag {");
+        StringAssert.Contains(root, "--bit-tag-wash-fg: var(--bit-tag-v-wash-fg);");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "&.bit-tag-sel {"), "--bit-tag-wash-fg: var(--bit-tag-v-sel-wash-fg);");
+
+        // Both parts the pointer lays a wash on take the text through a variable, and inherit the tag's otherwise.
+        foreach (var (part, slot) in new[] { ("\n.bit-tag-int {", "cnt"), ("\n.bit-tag-cls {", "cls") })
+        {
+            var rule = SourceFiles.GetScssBlock(stylesheet, part);
+            StringAssert.Contains(SourceFiles.GetScssDeclarations(rule, "&:hover {"), $"--bit-tag-{slot}-sfg: var(--bit-tag-wash-fg);", part);
+            StringAssert.Contains(SourceFiles.GetScssDeclarations(rule, "&:active {"), $"--bit-tag-{slot}-sfg: var(--bit-tag-wash-fg);", part);
+        }
+
+        foreach (var part in new[] { "cnt", "cls" })
+        {
+            var rule = SourceFiles.GetScssDeclarations(stylesheet, $"\n.bit-tag-{part} {{");
+            StringAssert.Contains(rule, $"--bit-tag-{part}-sfg: initial;", part);
+            StringAssert.Contains(rule, $"color: var(--bit-tag-{part}-sfg, currentcolor);", part);
+        }
+
+        var roles = SourceFiles.GetScssDeclarations(stylesheet, ".bit-tag-#{$role} {");
+        StringAssert.Contains(roles, "--bit-tag-clr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(roles, "--bit-tag-clr-sel-fg: #{role($tokens, fg)};");
+        StringAssert.Contains(roles, "--bit-tag-clr-sel-wash-fg: #{deep-wash-text(role($tokens, fg))};");
+        StringAssert.Contains(roles, "--bit-tag-clr-tint: #{role-wash($tokens)};");
+        StringAssert.Contains(roles, "--bit-tag-clr-tint-active: #{role-wash($tokens, 16%)};");
     }
 
     [TestMethod,
@@ -292,12 +369,13 @@ public class BitTagStylesheetTests
         // A tag can sit in the template of another one, which must not inherit the outer tag's Color, Size or Shape:
         // each root starts the values those classes publish out unset, and the classes - declared further down at the
         // same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-txt", "--bit-tag-clr-dis", "--bit-tag-clr-dis-text", "--bit-tag-clr-active",
-                                         "--bit-tag-clr-light", "--bit-tag-clr-light-hover", "--bit-tag-clr-light-active",
+        foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-fg", "--bit-tag-clr-sel-fg", "--bit-tag-clr-sel-wash-fg", "--bit-tag-clr-txt", "--bit-tag-clr-dis",
+                                         "--bit-tag-clr-dis-text", "--bit-tag-clr-active", "--bit-tag-clr-tint", "--bit-tag-clr-tint-active",
                                          // The default a host gave a tag, which a tag in its template must not inherit either.
-                                         "--bit-tag-dft-clr", "--bit-tag-dft-clr-txt", "--bit-tag-dft-clr-dis", "--bit-tag-dft-clr-dis-text",
-                                         "--bit-tag-dft-clr-active", "--bit-tag-dft-clr-light", "--bit-tag-dft-clr-light-hover",
-                                         "--bit-tag-dft-clr-light-active",
+                                         "--bit-tag-dft-clr", "--bit-tag-dft-clr-fg", "--bit-tag-dft-clr-sel-fg", "--bit-tag-dft-clr-sel-wash-fg", "--bit-tag-dft-clr-txt",
+                                         "--bit-tag-dft-clr-dis", "--bit-tag-dft-clr-dis-text", "--bit-tag-dft-clr-active", "--bit-tag-dft-clr-tint", "--bit-tag-dft-clr-tint-active",
+                                         // Only Outline and Text declare these, so a Fill tag in another one's template does not inherit them.
+                                         "--bit-tag-v-wash-fg", "--bit-tag-v-sel-wash-fg",
                                          "--bit-tag-sz-gap", "--bit-tag-sz-lbl-gap", "--bit-tag-sz-fs", "--bit-tag-sz-stx-fs", "--bit-tag-sz-img",
                                          "--bit-tag-sz-pad-y", "--bit-tag-sz-pad-x", "--bit-tag-sz-min-height", "--bit-tag-radius" })
         {

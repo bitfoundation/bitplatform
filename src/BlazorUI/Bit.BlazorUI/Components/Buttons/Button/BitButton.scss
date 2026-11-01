@@ -86,8 +86,8 @@
 // back to, the min-width), so the variables keep the last word there - as they do over the default a component of
 // the library gives the buttons it renders (see .bit-btn-dft-*), which is read after them.
 
-$btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, dft-clr, dft-clr-txt,
-                         dft-clr-hover, dft-clr-active, dft-clr-focus, dft-clr-dis, dft-clr-dis-text, lbl-fontsize,
+$btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, dft-clr, dft-clr-fg,
+                         dft-clr-txt, dft-clr-hover, dft-clr-active, dft-clr-focus, dft-clr-dis, dft-clr-dis-text, lbl-fontsize,
                          prt-fontsize, sct-fontsize, icn-size, spn-size, min-height, icn-margintop, gap, pad-ntx,
                          padding, radius,
                          // The colors the hover and press states move (see the variants below), unset at rest so a
@@ -392,7 +392,7 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 }
 
 .bit-btn-otl {
-    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-outline-color, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri})))));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr-fg, var(--bit-Button-outline-color, var(--bit-Button-color, var(--bit-btn-dft-clr-fg, #{$clr-pri})))));
     background-color: var(--bit-btn-sbg, var(--bit-Button-outline-background, var(--bit-Button-background, transparent)));
     border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-outline-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri})))));
 
@@ -422,7 +422,7 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 }
 
 .bit-btn-txt {
-    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-text-color, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri})))));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr-fg, var(--bit-Button-text-color, var(--bit-Button-color, var(--bit-btn-dft-clr-fg, #{$clr-pri})))));
     background-color: var(--bit-btn-sbg, var(--bit-Button-text-background, var(--bit-Button-background, transparent)));
     border-color: var(--bit-btn-sbr, var(--bit-Button-text-border-color, var(--bit-Button-border-color, transparent)));
 
@@ -454,10 +454,13 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an
 // explicit Color; an unset one is the primary role, which the fallbacks in the variants above spell out after the
-// public variables.
+// public variables. The label of an Outline or Text button is read on the page rather than over the role's fill, so it
+// is drawn in the role's text color (role-text) - a secondary or a warning main is picked to fill a surface and falls
+// under the 4.5:1 of body text on white - while the border and the fills keep the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-btn-#{$role} {
         --bit-btn-clr: #{role($tokens, main)};
+        --bit-btn-clr-fg: #{role-text($role, $tokens)};
         --bit-btn-clr-txt: #{role($tokens, on)};
         --bit-btn-clr-hover: #{role($tokens, hover)};
         --bit-btn-clr-active: #{role($tokens, active)};
@@ -475,6 +478,7 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 @each $role, $tokens in $bit-color-roles {
     .bit-btn-dft-#{$role} {
         --bit-btn-dft-clr: #{role($tokens, main)};
+        --bit-btn-dft-clr-fg: #{role-text($role, $tokens)};
         --bit-btn-dft-clr-txt: #{role($tokens, on)};
         --bit-btn-dft-clr-hover: #{role($tokens, hover)};
         --bit-btn-dft-clr-active: #{role($tokens, active)};
