@@ -435,3 +435,15 @@ $bit-background-color-roles: ();
 
     @return map.get($tokens, fg);
 }
+
+/*
+ * deep-wash-text($text)
+ * --------------------------------------------------
+ * The text an unfilled control draws over a wash deeper than the role's tint - the pointer's wash laid over the one a
+ * selected chip already wears - where the role's fg, solved for the tint alone, drops under 4.5:1 (a warning amber's
+ * in a light palette). It is that text leaned towards the page's own text color, which keeps the hue and holds 4.5:1
+ * there under every packaged palette (BitThemePaletteContrastTests).
+ */
+@function deep-wash-text($text) {
+    @return color-mix(in srgb, #{$text} 85%, #{$clr-fg-pri});
+}

@@ -136,10 +136,10 @@ public sealed class BitThemePaletteContrastTests
             $"{paletteFile} has a primary main that is unreadable as text on the page: {string.Join("; ", failures)}");
     }
 
-    // The surface an outlined or text-only tag is selected on, and a clickable outlined badge is hovered on: the role's tint
-    // laid over the page (role-wash in color-role-maps.scss), with the role's foreground read on top - the primary one's
-    // too, whose main drops under the floor there. The deeper washes of a pointer pressing or resting on it are transient
-    // and are not held to it.
+    // The surface an outlined or text-only tag is selected and hovered on, and a clickable outlined badge is hovered on: the
+    // role's tint laid over the page (role-wash in color-role-maps.scss), with the role's foreground read on top - the
+    // primary one's too, whose main drops under the floor there. The deeper wash of a pointer pressing an unselected one is
+    // transient and is not held to it; a pointer on a selected one is, below.
     [TestMethod]
     [DataRow("Fluent", "colors.fluent-light.scss")]
     [DataRow("Fluent", "colors.fluent-dark.scss")]
@@ -169,6 +169,55 @@ public sealed class BitThemePaletteContrastTests
             $"{paletteFile} has role foregrounds that are unreadable on their tint: {string.Join("; ", failures)}");
     }
 
+    // A selected outlined or text-only tag under the pointer: the pointer's wash - the tint while it rests there, a deeper wash
+    // of the main while it presses - laid over the selection's, past the tint the role's foreground is solved for (a warning
+    // amber's drops under the floor there). Its text is that foreground leaned towards the page's text (deep-wash-text in
+    // color-role-maps.scss), held to the floor on both.
+    [TestMethod]
+    [DataRow("Fluent", "colors.fluent-light.scss")]
+    [DataRow("Fluent", "colors.fluent-dark.scss")]
+    [DataRow("Fluent2", "colors.fluent2-light.scss")]
+    [DataRow("Fluent2", "colors.fluent2-dark.scss")]
+    [DataRow("Material", "colors.material-light.scss")]
+    [DataRow("Material", "colors.material-dark.scss")]
+    [DataRow("Cupertino", "colors.cupertino-light.scss")]
+    [DataRow("Cupertino", "colors.cupertino-dark.scss")]
+    public void DeeperRoleForegroundsMeetTheTextContrastFloorUnderAPointerOnTheirSelectedTint(string paletteFolder, string paletteFile)
+    {
+        var palette = ReadPalette(paletteFolder, paletteFile);
+        var deeper = Share(SourceFiles.Read("Bit.BlazorUI", "Styles", "color-role-maps.scss"),
+                           @"@function deep-wash-text\(\$text\) \{\s*@return color-mix\(in srgb, #\{\$text\} (\d+)%, #\{\$clr-fg-pri\}\);", "deep-wash-text");
+        var pressed = Share(SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "Tag", "BitTag.scss"),
+                            @"--bit-tag-clr-tint-active: #\{role-wash\(\$tokens, (\d+)%\)\};", "pressed wash");
+
+        var failures = new List<string>();
+        foreach (var role in Roles)
+        {
+            var text = Mix(palette.Foreground(role), palette.Token("fg-pri"), deeper);
+            var selected = palette.TintOver(role, "bg-pri");
+            foreach (var (state, share) in new[] { ("hovered", palette.TintShare), ("pressed", pressed) })
+            {
+                var wash = Mix(palette.Token(role), selected, share);
+                var ratio = BitThemeColorContrast.GetContrastRatio(text, wash);
+                if (ratio < 4.5)
+                {
+                    failures.Add($"--bit-clr-{role}-fg leaned deeper {text} vs a {state} selected tint ({wash}) = {ratio:F2}:1 (floor 4.5:1)");
+                }
+            }
+        }
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), failures,
+            $"{paletteFile} has role foregrounds that are unreadable under a pointer on a selected tint: {string.Join("; ", failures)}");
+    }
+
+    // The share of a color in a recipe, read off the stylesheet that writes it.
+    private static double Share(string source, string recipe, string name)
+    {
+        var match = Regex.Match(source, recipe);
+        Assert.IsTrue(match.Success, $"The {name} recipe was not found.");
+        return int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) / 100.0;
+    }
+
     private sealed record Palette(string File, string Scss, double ForegroundShare, double TintShare)
     {
         public string Token(string name)
@@ -192,12 +241,7 @@ public sealed class BitThemePaletteContrastTests
         var scss = SourceFiles.ReadThemeStylesheet(paletteFolder, paletteFile);
         var familyTokens = SourceFiles.Read("Bit.BlazorUI", "Styles", "family-tokens.scss");
 
-        double share(string recipe, string name)
-        {
-            var match = Regex.Match(familyTokens, recipe);
-            Assert.IsTrue(match.Success, $"The role {name} recipe was not found in family-tokens.scss.");
-            return int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) / 100.0;
-        }
+        double share(string recipe, string name) => Share(familyTokens, recipe, $"role {name}");
 
         foreach (var family in new[] { "fg", "tint" })
         {

@@ -336,15 +336,24 @@ public class BitTagE2ETests : E2ETestBase
 
         // An outlined tag answers with a wash of its role - the tint its text color is solved to be read on - rather than
         // with the role's light tier, a pastel which in a dark palette is as light as the text.
+        // Its label keeps the primary main at rest, and reads the primary foreground over the wash, where the main drops
+        // under 4.5:1.
+        var main = await Page.ResolveColorAsync("--bit-clr-pri", "color");
+        var foreground = await Page.ResolveColorAsync("--bit-clr-pri-fg", "color");
         var outline = Content("click-dismiss");
+        await Expect(outline).ToHaveCSSAsync("color", main);
         await outline.HoverAsync();
         await Expect(outline).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-tint"));
+        await Expect(outline).ToHaveCSSAsync("color", foreground);
         await Page.Mouse.DownAsync();
         await Expect(outline).ToHaveCSSAsync("background-color", await Page.ResolveCssColorAsync("color-mix(in srgb, var(--bit-clr-pri) 16%, transparent)"));
+        await Expect(outline).ToHaveCSSAsync("color", foreground);
         await Page.Mouse.UpAsync();
 
         await Dismiss("click-dismiss").HoverAsync();
         await Expect(Dismiss("click-dismiss")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-tint"));
+        await Expect(Dismiss("click-dismiss")).ToHaveCSSAsync("color", foreground);
+        await Expect(outline).ToHaveCSSAsync("color", main);
     }
 
     [TestMethod]
@@ -371,6 +380,12 @@ public class BitTagE2ETests : E2ETestBase
         // 4.5:1 there.
         await Expect(Root("sel-bound")).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-tint"));
         await Expect(Root("sel-bound")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("--bit-clr-pri-fg", "color"));
+
+        // The pointer still rests on it, laying its wash over the selection's - past the tint that foreground is solved for -
+        // so the label is leaned a step deeper there, and goes back to the tag's own once the pointer leaves.
+        await Expect(chip).ToHaveCSSAsync("color", await Page.ResolveCssColorAsync("color-mix(in srgb, var(--bit-clr-pri-fg) 85%, var(--bit-clr-fg-pri))", "color"));
+        await Page.Mouse.MoveAsync(0, 0);
+        await Expect(chip).ToHaveCSSAsync("color", await Page.ResolveColorAsync("--bit-clr-pri-fg", "color"));
 
         await chip.ClickAsync();
         await Expect(chip).ToHaveAttributeAsync("aria-pressed", "false");

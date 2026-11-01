@@ -83,10 +83,12 @@
 // tags it renders (see .bit-tag-dft-*), which is read after them.
 
 $tag-private-properties:
-    clr, clr-fg, clr-sel-fg, clr-txt, clr-dis, clr-dis-text, clr-active, clr-tint, clr-tint-active,
-    dft-clr, dft-clr-fg, dft-clr-sel-fg, dft-clr-txt, dft-clr-dis, dft-clr-dis-text, dft-clr-active, dft-clr-tint,
-    dft-clr-tint-active,
-    sz-gap, sz-lbl-gap, sz-fs, sz-stx-fs, sz-img, sz-pad-y, sz-pad-x, sz-min-height, radius;
+    clr, clr-fg, clr-sel-fg, clr-sel-wash-fg, clr-txt, clr-dis, clr-dis-text, clr-active, clr-tint, clr-tint-active,
+    dft-clr, dft-clr-fg, dft-clr-sel-fg, dft-clr-sel-wash-fg, dft-clr-txt, dft-clr-dis, dft-clr-dis-text, dft-clr-active,
+    dft-clr-tint, dft-clr-tint-active,
+    sz-gap, sz-lbl-gap, sz-fs, sz-stx-fs, sz-img, sz-pad-y, sz-pad-x, sz-min-height, radius,
+    // Only Outline and Text draw their text apart under the pointer, so a Fill tag keeps the one it has at rest.
+    v-wash-fg, v-sel-wash-fg;
 
 // The root of the tag is only the shape and the paint: the rule, the corner, the colors and the height. What
 // is inside it is laid out by .bit-tag-cnt, which is the element that becomes an anchor or a button when the
@@ -113,6 +115,7 @@ $tag-private-properties:
     --bit-tag-icn-clr: var(--bit-Tag-icon-color, currentcolor);
     --bit-tag-hover-bg: var(--bit-tag-v-hover-bg);
     --bit-tag-active-bg: var(--bit-tag-v-active-bg);
+    --bit-tag-wash-fg: var(--bit-tag-v-wash-fg);
     --bit-tag-fcs-clr: var(--bit-Tag-focus-color, currentcolor);
     --bit-tag-pad-x: var(--bit-tag-sz-pad-x, var(--bit-Tag-padding-x, calc(#{$siz-ctrl-pad-x-md} / 2)));
     --bit-tag-pad-y: var(--bit-tag-sz-pad-y, var(--bit-Tag-padding-y, #{spacing(0.375)}));
@@ -141,11 +144,13 @@ $tag-private-properties:
 
     // A selected chip keeps the hover and pressed paint of its variant: every variant lays it over the content as a
     // translucent wash (see the variants below), which deepens whatever the chip is wearing underneath - a selected
-    // chip included - so a filter chip still answers the pointer for as long as it is picked.
+    // chip included - so a filter chip still answers the pointer for as long as it is picked. An unfilled one reads its
+    // text a step deeper over that deeper wash (see the variants below).
     &.bit-tag-sel {
         --bit-tag-fg: var(--bit-tag-v-sel-fg);
         --bit-tag-bg: var(--bit-tag-v-sel-bg);
         --bit-tag-brd: var(--bit-tag-v-sel-brd);
+        --bit-tag-wash-fg: var(--bit-tag-v-sel-wash-fg);
     }
 
     // Comes after the selected state and so takes its paint off with it. The glyphs follow the disabled text
@@ -164,6 +169,8 @@ $tag-private-properties:
         --bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, var(--bit-tag-dft-clr-dis-text, #{$clr-pri-dis-text})));
         --bit-tag-bg: var(--bit-tag-v-dis-bg);
         --bit-tag-brd: var(--bit-tag-v-dis-brd);
+        // A part a key holds :active (AllowDisabledFocus) keeps the disabled text too.
+        --bit-tag-wash-fg: initial;
 
         &:not([title]),
         &[title=""] {
@@ -191,7 +198,9 @@ $tag-private-properties:
     border: none;
     flex: 1 1 auto;
     display: flex;
-    color: inherit;
+    // Inherits the text of the tag - currentcolor, as a color, is inherit - until a state hands it one (see .bit-tag-int).
+    --bit-tag-cnt-sfg: initial;
+    color: var(--bit-tag-cnt-sfg, currentcolor);
     font: inherit;
     text-align: inherit;
     align-items: center;
@@ -216,16 +225,18 @@ $tag-private-properties:
     -webkit-tap-highlight-color: transparent;
     transition: background-color $mot-duration-short $mot-easing;
 
-    // The states change the variable the content is painted from rather than its background, so the one rule that
+    // The states change the variables the content is painted from rather than its paint, so the one rule that
     // paints it is the one at rest (.bit-tag-cnt): content the app paints through Classes keeps that paint under
     // the pointer and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
+            --bit-tag-cnt-sfg: var(--bit-tag-wash-fg);
             --bit-tag-cnt-sbg: var(--bit-tag-hover-bg);
         }
     }
 
     &:active {
+        --bit-tag-cnt-sfg: var(--bit-tag-wash-fg);
         --bit-tag-cnt-sbg: var(--bit-tag-active-bg);
     }
 
@@ -366,7 +377,8 @@ $tag-private-properties:
 .bit-tag-cls {
     border: none;
     display: flex;
-    color: inherit;
+    --bit-tag-cls-sfg: initial;
+    color: var(--bit-tag-cls-sfg, currentcolor);
     cursor: pointer;
     flex-shrink: 0;
     appearance: none;
@@ -388,11 +400,13 @@ $tag-private-properties:
     // not wearing.
     @media (hover: hover) {
         &:hover {
+            --bit-tag-cls-sfg: var(--bit-tag-wash-fg);
             --bit-tag-cls-sbg: var(--bit-tag-hover-bg);
         }
     }
 
     &:active {
+        --bit-tag-cls-sfg: var(--bit-tag-wash-fg);
         --bit-tag-cls-sbg: var(--bit-tag-active-bg);
     }
 
@@ -442,9 +456,11 @@ $tag-private-properties:
 
 // The unfilled variants answer the pointer, and mark a selected chip, with a translucent wash of the role (role-wash in
 // color-role-maps.scss: its tint, the wash its text color is solved to be read on) rather than with its light tier:
-// that one is a standalone pastel, which in a dark palette sits as light as the text drawn on it. A selected chip reads
-// the role's fg over the wash, the primary role's too, whose main drops under 4.5:1 there. The hover and pressed washes
-// are laid over the content, so on a selected chip they deepen its wash rather than replace it.
+// that one is a standalone pastel, which in a dark palette sits as light as the text drawn on it. A selected chip, and
+// one under the pointer, reads the role's fg over the wash, the primary role's too, whose main drops under 4.5:1 there.
+// The hover and pressed washes are laid over the content, so on a selected chip they deepen its wash rather than replace
+// it, past the tint that fg is solved for: there the text is leaned a step deeper with them (deep-wash-text). A public
+// variable keeps the last word on the text in both, as it does at rest.
 .bit-tag-otl {
     --bit-tag-v-fg: var(--bit-tag-clr-fg, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-fg, #{$clr-pri}))));
     --bit-tag-v-bg: var(--bit-Tag-outline-background, var(--bit-Tag-background, transparent));
@@ -456,6 +472,8 @@ $tag-private-properties:
     --bit-tag-v-dis-brd: var(--bit-tag-clr-dis, var(--bit-Tag-outline-disabled-border-color, var(--bit-Tag-disabled-border-color, var(--bit-tag-dft-clr-dis, #{$clr-pri-dis}))));
     --bit-tag-v-hover-bg: var(--bit-tag-clr-tint, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-tint, #{$clr-pri-tint}))));
     --bit-tag-v-active-bg: var(--bit-tag-clr-tint-active, var(--bit-Tag-outline-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-tint-active, #{translucent($clr-pri, 16%)}))));
+    --bit-tag-v-wash-fg: var(--bit-tag-clr-sel-fg, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-fg, #{$clr-pri-fg}))));
+    --bit-tag-v-sel-wash-fg: var(--bit-tag-clr-sel-wash-fg, var(--bit-Tag-outline-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-outline-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-wash-fg, #{deep-wash-text($clr-pri-fg)}))))));
 }
 
 .bit-tag-txt {
@@ -469,18 +487,22 @@ $tag-private-properties:
     --bit-tag-v-dis-brd: var(--bit-Tag-text-disabled-border-color, var(--bit-Tag-disabled-border-color, transparent));
     --bit-tag-v-hover-bg: var(--bit-tag-clr-tint, var(--bit-Tag-text-hover-background, var(--bit-Tag-hover-background, var(--bit-tag-dft-clr-tint, #{$clr-pri-tint}))));
     --bit-tag-v-active-bg: var(--bit-tag-clr-tint-active, var(--bit-Tag-text-active-background, var(--bit-Tag-active-background, var(--bit-tag-dft-clr-tint-active, #{translucent($clr-pri, 16%)}))));
+    --bit-tag-v-wash-fg: var(--bit-tag-clr-sel-fg, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-fg, #{$clr-pri-fg}))));
+    --bit-tag-v-sel-wash-fg: var(--bit-tag-clr-sel-wash-fg, var(--bit-Tag-text-selected-color, var(--bit-Tag-selected-color, var(--bit-Tag-text-color, var(--bit-Tag-color, var(--bit-tag-dft-clr-sel-wash-fg, #{deep-wash-text($clr-pri-fg)}))))));
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an
 // explicit Color; an unset one is the primary role, which the variant classes spell out after the public variables.
 // The text of an Outline or Text tag is read on the page rather than over the role's fill, so it is drawn in the role's
 // text color (role-text) - a secondary or a warning main is picked to fill a surface and falls under the 4.5:1 of body
-// text on white - and a selected one, read on the role's tint, in its fg; the rule keeps the main.
+// text on white - and a selected or hovered one, read on the role's tint, in its fg (leaned deeper where the two washes
+// meet); the rule keeps the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-tag-#{$role} {
         --bit-tag-clr: #{role($tokens, main)};
         --bit-tag-clr-fg: #{role-text($role, $tokens)};
         --bit-tag-clr-sel-fg: #{role($tokens, fg)};
+        --bit-tag-clr-sel-wash-fg: #{deep-wash-text(role($tokens, fg))};
         --bit-tag-clr-txt: #{role($tokens, on)};
         --bit-tag-clr-dis: #{role($tokens, dis)};
         --bit-tag-clr-dis-text: #{role($tokens, dis-text)};
@@ -500,6 +522,7 @@ $tag-private-properties:
         --bit-tag-dft-clr: #{role($tokens, main)};
         --bit-tag-dft-clr-fg: #{role-text($role, $tokens)};
         --bit-tag-dft-clr-sel-fg: #{role($tokens, fg)};
+        --bit-tag-dft-clr-sel-wash-fg: #{deep-wash-text(role($tokens, fg))};
         --bit-tag-dft-clr-txt: #{role($tokens, on)};
         --bit-tag-dft-clr-dis: #{role($tokens, dis)};
         --bit-tag-dft-clr-dis-text: #{role($tokens, dis-text)};
@@ -600,20 +623,22 @@ $tag-private-properties:
         --bit-tag-icn-clr: currentcolor;
 
         // Opting out of the forced palette takes the content and the dismiss button out of it with it, so
-        // their hover and active backgrounds would be painted in the authored colors again - over the system
-        // highlight the selected tag has just taken, and under the HighlightText the label is now wearing.
-        // Both states are pinned back to the highlight, which leaves the pairing readable and the chip picked
+        // their hover and active paint would be the authored colors again - a background over the system
+        // highlight the selected tag has just taken, and a text over it in place of the HighlightText.
+        // Both states are pinned back to the highlight pairing, which leaves it readable and the chip picked
         // throughout. A disabled tag has taken the highlight off (below) and is left out, so a control kept
         // focusable by AllowDisabledFocus does not light up again while Space holds it :active.
         &:not(.bit-dis) .bit-tag-int,
         &:not(.bit-dis) .bit-tag-cls {
             @media (hover: hover) {
                 &:hover {
+                    color: HighlightText;
                     background-color: Highlight;
                 }
             }
 
             &:active {
+                color: HighlightText;
                 background-color: Highlight;
             }
         }

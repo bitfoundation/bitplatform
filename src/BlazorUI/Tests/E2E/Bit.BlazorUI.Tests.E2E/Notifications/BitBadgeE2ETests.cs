@@ -624,6 +624,26 @@ public class BitBadgeE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task OnClick_AnOutlineBadge_DrawsItsCountInTheRoleForegroundOverTheWash()
+    {
+        await OpenAsync("/e2e/badge");
+
+        // At rest the count keeps the primary main, the brand's link color; the wash a hover or a press lays under it takes
+        // that main under 4.5:1, so there it is drawn in the primary foreground.
+        var foreground = await Page.ResolveColorAsync("--bit-clr-pri-fg", "color");
+        var button = Page.Locator("#click-outline button");
+        await Expect(button).ToHaveCSSAsync("color", await Page.ResolveColorAsync("--bit-clr-pri", "color"));
+
+        await button.HoverAsync();
+        await Expect(button).ToHaveCSSAsync("background-color", await Page.ResolveColorAsync("--bit-clr-pri-tint"));
+        await Expect(button).ToHaveCSSAsync("color", foreground);
+
+        await Page.Mouse.DownAsync();
+        await Expect(button).ToHaveCSSAsync("color", foreground);
+        await Page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
     public async Task Href_RendersARealLink_WithTargetAndRel()
     {
         await OpenAsync("/e2e/badge");
