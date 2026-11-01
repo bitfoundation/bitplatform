@@ -49,7 +49,11 @@
     @* What BaletteQuery.Parse made of the query: the terms every command has to match, with their operators. *@
     <p class="bb-soft demo-small demo-terms">
         <span><code>BaletteQuery.Parse</code>:</span>
-        @if (_parsed.Terms.Count == 0)
+        @if (_parsed.IsTooLong)
+        {
+            <span>longer than <code>BaletteQuery.MaxLength</code> (@BaletteQuery.MaxLength characters) - no command matches; the palette's input stops there</span>
+        }
+        else if (_parsed.Terms.Count == 0)
         {
             <span>no terms - every command matches, ordered by priority and frecency</span>
         }

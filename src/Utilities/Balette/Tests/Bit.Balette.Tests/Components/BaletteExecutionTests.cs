@@ -232,6 +232,20 @@ public class BaletteExecutionTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_query_stops_at_the_longest_one_searched_and_a_prompts_answer_does_not()
+    {
+        _service.Register(BaletteCmd.New("Write a note…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+            "Note", _ => Task.FromResult(BaletteCommandResult.Close)))));
+        var cut = await OpenAsync();
+
+        Assert.AreEqual($"{BaletteQuery.MaxLength}", cut.Find("[data-balette=input]").GetAttribute("maxlength"));
+
+        await Press(cut, "Enter");
+
+        Assert.IsNull(cut.Find("[data-balette=input]").GetAttribute("maxlength"));
+    }
+
+    [TestMethod]
     public async Task An_error_result_is_shown_and_keeps_the_prompt_for_a_correction()
     {
         var tries = 0;

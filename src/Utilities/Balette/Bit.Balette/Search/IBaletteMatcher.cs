@@ -1,4 +1,6 @@
-﻿namespace Bit.Balette;
+﻿using System.Buffers;
+
+namespace Bit.Balette;
 
 /// <summary>Scores how well a query matches a text. Implement to plug in a custom algorithm.</summary>
 public interface IBaletteMatcher
@@ -362,7 +364,12 @@ public sealed class BaletteQuery
     /// <summary>The query with no terms, which every command matches.</summary>
     public static BaletteQuery Empty { get; } = new([]);
 
-    internal const int MaxLength = 256;
+    /// <summary>
+    /// The longest query, surrounding spaces aside, that is searched: matching costs grow with the query's length, and
+    /// nobody types more than this into a command palette. The palette's input stops at this length; a longer query that
+    /// reaches <see cref="Parse"/> anyway - passed to <c>OpenAsync</c>, or by code of your own - matches nothing.
+    /// </summary>
+    public const int MaxLength = 256;
 
     private static readonly BaletteQuery TooLong = new([]) { IsTooLong = true };
 
@@ -374,7 +381,11 @@ public sealed class BaletteQuery
     /// <summary>The terms as an array, for the matching loop.</summary>
     internal BaletteQueryTerm[] TermArray { get; }
 
-    internal bool IsTooLong { get; private init; }
+    /// <summary>
+    /// True when the query was longer than <see cref="MaxLength"/>: it has no <see cref="Terms"/>, like
+    /// <see cref="Empty"/>, but where the empty query matches every command this one matches none.
+    /// </summary>
+    public bool IsTooLong { get; private init; }
 
     /// <summary>True when at least one term is matched by the matcher (not by an operator).</summary>
     internal bool HasFuzzyTerm(int minLength = 1)
@@ -395,7 +406,9 @@ public sealed class BaletteQuery
     /// <c>!negate</c>. A double-quoted phrase - straight or curly quotes, which some keyboards type - is one exact term with
     /// its spaces; <c>!"..."</c> excludes it, <c>^"..."</c> and <c>"..."$</c> anchor it. A quote left open takes the rest of
     /// the query, so typing one never shows "no results" midway. A <c>|</c> standing on its own between two terms makes
-    /// them alternatives, as in fzf: <c>^go | ^open settings</c> is (starts with go, or with open) and settings.
+    /// them alternatives, as in fzf: <c>^go | ^open settings</c> is (starts with go, or with open) and settings. A query
+    /// longer than <see cref="MaxLength"/> characters, surrounding spaces aside, has no terms and matches nothing
+    /// (<see cref="IsTooLong"/>).
     /// </summary>
     public static BaletteQuery Parse(string? query)
     {
@@ -404,7 +417,7 @@ public sealed class BaletteQuery
             return Empty;
         }
 
-        if (query.Length > MaxLength)
+        if (query.AsSpan().Trim().Length > MaxLength)
         {
             return TooLong;
         }
@@ -530,7 +543,8 @@ internal sealed class BaletteTypoTolerantMatcher(IBaletteMatcher inner) : IBalet
     /// <summary>
     /// The best alignment of the whole of <paramref name="query"/> with any part of <paramref name="text"/> by optimal
     /// string alignment (Levenshtein plus adjacent transpositions), with free start and end in the text. Positions are
-    /// the text's characters that matched a query character exactly, swapped pairs included.
+    /// the text's characters that matched a query character exactly, swapped pairs included. A comparison past
+    /// <see cref="BaletteFuzzyMatcher.MaxCells"/> gets no second chance: there is no linear-time way to count edits.
     /// </summary>
     internal static BaletteFieldMatch Approximate(string query, string text, int maxEdits, bool normalize)
     {
@@ -540,9 +554,27 @@ internal sealed class BaletteTypoTolerantMatcher(IBaletteMatcher inner) : IBalet
             return BaletteFieldMatch.None;
         }
 
+        // The text and the table are borrowed: a long description would otherwise leave megabytes of large-object garbage
+        // behind for every command the retry reads.
+        var w = t + 1;
+        var x = ArrayPool<char>.Shared.Rent(t);
+        var d = ArrayPool<int>.Shared.Rent((p + 1) * w);
+        try
+        {
+            return Approximate(query, text, maxEdits, normalize, x, d);
+        }
+        finally
+        {
+            ArrayPool<char>.Shared.Return(x);
+            ArrayPool<int>.Shared.Return(d);
+        }
+    }
+
+    private static BaletteFieldMatch Approximate(string query, string text, int maxEdits, bool normalize, char[] x, int[] d)
+    {
+        int p = query.Length, t = text.Length;
         var strip = normalize && !BaletteTextFold.HasDiacritic(query);
         var q = new char[p];
-        var x = new char[t];
         for (var i = 0; i < p; i++)
         {
             q[i] = BaletteTextFold.Fold(query[i], true, normalize, strip);
@@ -554,7 +586,9 @@ internal sealed class BaletteTypoTolerantMatcher(IBaletteMatcher inner) : IBalet
         }
 
         var w = t + 1;
-        var d = new int[(p + 1) * w];
+
+        // Row 0 is the free start anywhere in the text; every other cell is written before it is read.
+        Array.Clear(d, 0, w);
         for (var i = 1; i <= p; i++)
         {
             d[i * w] = i;

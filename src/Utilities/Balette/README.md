@@ -699,6 +699,12 @@ Smart case: a query in lower case matches case-insensitively, one with an upper-
 are kept and highlighted with `<mark>`; a highlight never splits a character from its combining accents or an emoji
 from its other half.
 
+The dynamic programming fills (term length + 1) x (field length + 1) cells. Past `BaletteFuzzyMatcher.MaxCells`
+(1,048,576) - a term against a very long description - the matcher aligns greedily instead, as fzf does: the first
+stretch of the field that holds the term, scored the same way, in linear time. The term is still found and highlighted;
+the alignment is just not always the best one. A query is at most `BaletteQuery.MaxLength` (256) characters: the
+palette's input stops there, and a longer query passed in by code matches nothing (`BaletteQuery.IsTooLong`).
+
 ### Text as people type it
 
 `BaletteFuzzyMatcher.Normalize` (on by default) matches what people type against what is stored:
@@ -1312,6 +1318,11 @@ are no inline scripts and no `eval`, so `script-src 'self'` is enough.
 - **Visibility is not authorization.** `VisibleWhen` and `Disabled` shape the UI; the server must still check every
   action a handler asks it to perform.
 - Stored history is validated when it is read: entries a hand-edited or corrupt `localStorage` holds are dropped.
+- **Search is bounded.** A query is at most `BaletteQuery.MaxLength` (256) characters, and no field comparison fills
+  more than `BaletteFuzzyMatcher.MaxCells` cells - a longer one is aligned greedily, and gets no typo-tolerant second
+  chance - so a pasted wall of text or a huge field cannot make a keystroke allocate gigabytes (on Blazor Server, on
+  the server). Search work still grows with the length of the fields you give it: keep descriptions to what a palette
+  row needs, and search large documents through an async source backed by a real index.
 
 ## Options
 
@@ -1354,7 +1365,9 @@ A palette runs its search on every keystroke, so the hot path is written for it:
   changes, when the palette opens or closes, after a command ran and on `Refresh()` - not while typing.
 - The query is parsed into terms once per keystroke, not once per command.
 - The matcher allocates nothing per field: it reuses per-thread buffers, rejects non-subsequences before the
-  dynamic programming starts, and avoids LINQ.
+  dynamic programming starts, and avoids LINQ. A field too long for those buffers borrows from `ArrayPool<T>.Shared`
+  and gives back, so long descriptions leave no large-object garbage behind; one past `BaletteFuzzyMatcher.MaxCells`
+  is aligned greedily in linear time.
 - Ranking only sorts what it keeps: with `MaxResults` it holds the best rows in a heap and sorts those.
 - Results from async sources reuse the registry's matches for the same query instead of matching again.
 - On WebAssembly a search that took longer than a frame lets the keystroke paint first and folds fast typing into

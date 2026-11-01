@@ -1,10 +1,13 @@
-﻿namespace Bit.Balette;
+﻿using System.Buffers;
+
+namespace Bit.Balette;
 
 /// <summary>
 /// fzf-inspired fuzzy matcher using dynamic programming (Smith-Waterman style with affine gaps).
 /// Rewards matches at word boundaries, camelCase humps, consecutive runs and the first pattern character;
 /// penalizes gaps. Smart case: a lower-case query is case-insensitive, mixed case is case-sensitive.
-/// Returns the positions of the optimal alignment for highlighting.
+/// Returns the positions of the optimal alignment for highlighting. A comparison too big for the score tables
+/// (<see cref="MaxCells"/>) is aligned greedily in linear time instead, as fzf does.
 /// </summary>
 public sealed class BaletteFuzzyMatcher : IBaletteMatcher
 {
@@ -27,7 +30,12 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
     /// <summary>Bonus for matching the case exactly.</summary>
     public const int BonusCaseMatch = 1;
 
-    internal const int MaxCells = 1 << 20;
+    /// <summary>
+    /// The most cells - (query length + 1) x (text length + 1) - the dynamic programming fills for one field. A bigger
+    /// comparison, a short term against a very long text, takes the greedy alignment instead: the first stretch of the
+    /// text that holds the term, scored the same way, in linear time and memory.
+    /// </summary>
+    public const int MaxCells = 1 << 20;
 
     /// <summary>Shared default instance.</summary>
     public static BaletteFuzzyMatcher Default { get; } = new();
@@ -45,7 +53,10 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
     public bool Normalize { get; init; } = true;
 
     /// <summary>Scores <paramref name="query"/> against <paramref name="text"/>, with the positions of the best alignment.</summary>
-    public BaletteFieldMatch Match(string query, string text)
+    public BaletteFieldMatch Match(string query, string text) => Match(query, text, greedy: false);
+
+    /// <summary>The match, by the greedy alignment alone when <paramref name="greedy"/> - what a comparison past <see cref="MaxCells"/> gets.</summary>
+    internal BaletteFieldMatch Match(string query, string text, bool greedy)
     {
         if (string.IsNullOrEmpty(query))
         {
@@ -62,30 +73,43 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
         var caseSensitive = !IgnoreCase && HasUpper(query);
         var strip = Normalize && !BaletteTextFold.HasDiacritic(query);
         int p = query.Length, t = text.Length;
-        if ((long)(p + 1) * (t + 1) > MaxCells)
-        {
-            return BaletteFieldMatch.None;
-        }
+        var cells = (long)(p + 1) * (t + 1);
+        greedy |= cells > MaxCells;
 
-        var size = (p + 1) * (t + 1);
+        // Buffers past what the scratch keeps are borrowed from the shared pool, so a long field does not leave
+        // megabytes of large-object garbage behind on every keystroke.
+        var rent = greedy || cells > Scratch.MaxRetainedCells;
         var scratch = t_scratch ??= new Scratch();
-        scratch.GetText(p, t, size, out var q, out var tx, out var bonus);
+        scratch.GetText(p, t, rent, out var q, out var tx, out var bonus);
         Fold(query, q, caseSensitive, Normalize, strip);
         Fold(text, tx, caseSensitive, Normalize, strip);
 
         // Fast reject: must be a subsequence.
         if (!IsSubsequence(q, p, tx, t))
         {
+            if (rent)
+            {
+                Scratch.Return(q, tx, bonus);
+            }
+
             return BaletteFieldMatch.None;
         }
 
-        scratch.GetMatrices(size, out var m, out var d, out var consec);
+        ComputeBonus(text, bonus);
+
+        if (greedy)
+        {
+            var aligned = AlignGreedily(query, text, q, p, tx, t, bonus, caseSensitive);
+            Scratch.Return(q, tx, bonus);
+            return aligned;
+        }
+
+        var size = (int)cells;
+        scratch.GetMatrices(size, rent, out var m, out var d, out var consec);
 
         const int NegInf = int.MinValue / 2;
         const int Floor = int.MinValue / 4;
         var w = t + 1;
-
-        ComputeBonus(text, bonus);
 
         // Column 0 is the only part of m/d read before being written; consec is only read behind a match guard.
         for (var i = 0; i <= p; i++)
@@ -183,6 +207,11 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
 
         if (bestJ < 0 || best <= Floor)
         {
+            if (rent)
+            {
+                Scratch.Return(q, tx, bonus, m, d, consec);
+            }
+
             return BaletteFieldMatch.None;
         }
 
@@ -206,18 +235,97 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
             }
         }
 
+        if (rent)
+        {
+            Scratch.Return(q, tx, bonus, m, d, consec);
+        }
+
         // Tie-breakers (fractions of one bonus point): prefer shorter texts and earlier matches.
         var score = best - 0.02 * t - 0.01 * positions[0];
         return new BaletteFieldMatch(true, score, positions);
     }
 
+    /// <summary>
+    /// fzf's linear-time alignment (its V1), for a comparison too big for the score tables: the first stretch of the text
+    /// that holds the query in order, narrowed from its end, with the query's characters matched left to right inside
+    /// it. Scored as the dynamic programming scores that alignment, so it ranks alongside the others - it is just not
+    /// always the best alignment there is. The query must be a subsequence of the text.
+    /// </summary>
+    private static BaletteFieldMatch AlignGreedily(string query, string text, char[] q, int p, char[] tx, int t, int[] bonus, bool caseSensitive)
+    {
+        var end = 0;
+        for (int i = 0, j = 0; j < t; j++)
+        {
+            if (tx[j] == q[i] && ++i == p)
+            {
+                end = j;
+                break;
+            }
+        }
+
+        var start = end;
+        for (int i = p - 1, j = end; j >= 0; j--)
+        {
+            if (tx[j] == q[i] && --i < 0)
+            {
+                start = j;
+                break;
+            }
+        }
+
+        var positions = new int[p];
+        for (int i = 0, j = start; i < p; j++)
+        {
+            if (tx[j] == q[i])
+            {
+                positions[i++] = j;
+            }
+        }
+
+        // The same terms as the dynamic programming: a gap costs its start and then its length; a run carries the bonus
+        // that started it; the first character's bonus counts double.
+        var score = 0;
+        var run = 0;
+        for (var i = 0; i < p; i++)
+        {
+            var j = positions[i];
+            if (i > 0 && j - positions[i - 1] > 1)
+            {
+                score += ScoreGapStart + (j - positions[i - 1] - 2) * ScoreGapExtension;
+                run = 0;
+            }
+
+            var b = bonus[j];
+            if (run > 0)
+            {
+                b = Math.Max(Math.Max(b, BonusConsecutive), bonus[j - run]);
+            }
+
+            if (i == 0)
+            {
+                b *= BonusFirstCharMultiplier;
+            }
+
+            if (caseSensitive || (query[i] == text[j] && char.IsUpper(text[j])))
+            {
+                b += BonusCaseMatch;
+            }
+
+            score += ScoreMatch + b;
+            run++;
+        }
+
+        return new BaletteFieldMatch(true, score - 0.02 * t - 0.01 * positions[0], positions);
+    }
+
     [ThreadStatic]
     private static Scratch? t_scratch;
 
-    /// <summary>Per-thread DP buffers reused across calls. Oversized requests get throwaway arrays.</summary>
+    /// <summary>Per-thread DP buffers reused across calls. Oversized requests borrow from the shared pool and give back.</summary>
     private sealed class Scratch
     {
-        private const int MaxRetainedCells = 16 * 1024;
+        /// <summary>The most cells kept between calls; a bigger comparison borrows its buffers from <see cref="ArrayPool{T}.Shared"/>.</summary>
+        public const int MaxRetainedCells = 16 * 1024;
 
         private int[] _m = new int[256];
         private int[] _d = new int[256];
@@ -226,13 +334,13 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
         private char[] _query = new char[32];
         private char[] _text = new char[64];
 
-        public void GetText(int p, int t, int size, out char[] query, out char[] text, out int[] bonus)
+        public void GetText(int p, int t, bool rent, out char[] query, out char[] text, out int[] bonus)
         {
-            if (size > MaxRetainedCells)
+            if (rent)
             {
-                query = new char[p];
-                text = new char[t];
-                bonus = new int[t];
+                query = ArrayPool<char>.Shared.Rent(p);
+                text = ArrayPool<char>.Shared.Rent(t);
+                bonus = ArrayPool<int>.Shared.Rent(t);
                 return;
             }
 
@@ -253,13 +361,13 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
             bonus = _bonus;
         }
 
-        public void GetMatrices(int size, out int[] m, out int[] d, out int[] consec)
+        public void GetMatrices(int size, bool rent, out int[] m, out int[] d, out int[] consec)
         {
-            if (size > MaxRetainedCells)
+            if (rent)
             {
-                m = new int[size];
-                d = new int[size];
-                consec = new int[size];
+                m = ArrayPool<int>.Shared.Rent(size);
+                d = ArrayPool<int>.Shared.Rent(size);
+                consec = ArrayPool<int>.Shared.Rent(size);
                 return;
             }
 
@@ -274,6 +382,20 @@ public sealed class BaletteFuzzyMatcher : IBaletteMatcher
             m = _m;
             d = _d;
             consec = _consec;
+        }
+
+        /// <summary>Gives borrowed buffers back. Their contents are not cleared: every cell is written before it is read.</summary>
+        public static void Return(char[] query, char[] text, int[] bonus, int[]? m = null, int[]? d = null, int[]? consec = null)
+        {
+            ArrayPool<char>.Shared.Return(query);
+            ArrayPool<char>.Shared.Return(text);
+            ArrayPool<int>.Shared.Return(bonus);
+            if (m is not null)
+            {
+                ArrayPool<int>.Shared.Return(m);
+                ArrayPool<int>.Shared.Return(d!);
+                ArrayPool<int>.Shared.Return(consec!);
+            }
         }
     }
 

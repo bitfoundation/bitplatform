@@ -271,28 +271,47 @@ public class McpSearchLabTests
     }
 
     [TestMethod]
-    public async Task A_query_past_the_limit_is_refused()
+    public async Task A_query_past_the_limit_is_explained_rather_than_searched()
     {
-        var atLimit = await InspectAsync(new string('s', BaletteSearchLab.MaxQueryLength), """["Settings"]""");
+        var atLimit = await InspectAsync("  " + new string('s', BaletteQuery.MaxLength) + "  ", """["Settings"]""");
 
         Assert.AreEqual(1, atLimit.Searched);
 
-        var refused = await McpCall.RawAsync("InspectBaletteSearch", new() { ["query"] = new string('s', BaletteSearchLab.MaxQueryLength + 1), ["commands"] = """["Settings"]""" });
+        var refused = await InspectAsync(new string('s', BaletteQuery.MaxLength + 1), """["Settings"]""");
 
-        Assert.IsTrue(refused.IsError);
+        Assert.AreEqual(0, refused.Searched);
+        Assert.IsEmpty(refused.Results);
+        Assert.IsTrue(refused.Notes[0].Contains("BaletteQuery.MaxLength", StringComparison.Ordinal));
     }
 
     [TestMethod]
-    public async Task Commands_past_the_limit_are_refused()
+    public async Task Commands_past_the_limit_are_explained_rather_than_searched()
     {
         var atLimit = await InspectAsync("s", new string('s', BaletteSearchLab.MaxCommandsLength));
 
         Assert.AreEqual(1, atLimit.Searched);
         Assert.AreEqual(1, atLimit.Matched);
 
-        var refused = await McpCall.RawAsync("InspectBaletteSearch", new() { ["query"] = "s", ["commands"] = new string('s', BaletteSearchLab.MaxCommandsLength + 1) });
+        var refused = await InspectAsync("s", new string('s', BaletteSearchLab.MaxCommandsLength + 1), matcher: "substring");
 
-        Assert.IsTrue(refused.IsError);
+        Assert.AreEqual(0, refused.Searched);
+        Assert.AreEqual("substring", refused.Matcher);
+        Assert.IsTrue(refused.Notes[0].Contains("at most", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task The_limits_are_answered_over_plain_http_too_and_published_in_the_schema()
+    {
+        using var http = McpTestHost.CreateHttpClient();
+        using var response = await http.GetAsync($"/api/mcp/InspectBaletteSearch?query={new string('s', BaletteQuery.MaxLength + 1)}");
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
+
+        var tool = (await McpTestHost.Client.ListToolsAsync()).Single(tool => tool.Name == "InspectBaletteSearch");
+        var schema = tool.JsonSchema.GetRawText();
+
+        Assert.Contains($"At most {BaletteQuery.MaxLength} characters", schema);
+        Assert.Contains($"At most {BaletteSearchLab.MaxCommandsLength.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} characters and {BaletteSearchLab.MaxCommands} commands", schema);
     }
 
     internal static Task<BaletteSearchInspectionDto> InspectAsync(string query, string? commands = null, string? matcher = null, bool? groupWhenSearching = null, int? limit = null)

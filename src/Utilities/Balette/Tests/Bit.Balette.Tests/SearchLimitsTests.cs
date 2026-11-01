@@ -127,21 +127,92 @@ public class SearchLimitsTests
         var match = BaletteFuzzyMatcher.Default.Match(Settings, atLimit);
 
         Assert.IsNotNull(match);
-        Assert.IsTrue(match.Score > 0);
+        Assert.IsGreaterThan(0d, match.Score);
         AssertSequence.AreEqual([6], match.TitlePositions);
         Assert.IsNull(BaletteFuzzyMatcher.Default.Match(Settings, pastLimit));
         Assert.IsNull(BaletteFuzzyMatcher.Default.Match(Settings, BaletteQuery.Parse(pastLimit)));
         Assert.IsEmpty(BaletteQuery.Parse(pastLimit).Terms);
+        Assert.IsTrue(BaletteQuery.Parse(pastLimit).IsTooLong);
+        Assert.IsFalse(BaletteQuery.Parse(atLimit).IsTooLong);
+        Assert.IsFalse(BaletteQuery.Empty.IsTooLong);
     }
 
     [TestMethod]
-    public void A_comparison_past_the_cell_budget_does_not_match()
+    public void Spaces_around_a_query_do_not_count_toward_the_limit()
+    {
+        var padded = new string(' ', BaletteQuery.MaxLength) + "set" + new string(' ', BaletteQuery.MaxLength);
+
+        Assert.IsFalse(BaletteQuery.Parse(padded).IsTooLong);
+        AssertSequence.AreEqual([6, 7, 8], BaletteFuzzyMatcher.Default.Match(Settings, padded)!.TitlePositions);
+    }
+
+    [TestMethod]
+    public void A_comparison_past_the_cell_budget_aligns_greedily()
     {
         var text = new string('a', 2_000);
 
-        Assert.IsTrue(BaletteFuzzyMatcher.Default.Match(new string('a', 500), text).Matched);
-        Assert.IsFalse(BaletteFuzzyMatcher.Default.Match(new string('a', 600), text).Matched);
-        Assert.IsFalse(BaletteFuzzyMatcher.Default.Match(new string('a', 50_000), new string('a', 50_000)).Matched);
+        Assert.IsGreaterThan((long)BaletteFuzzyMatcher.MaxCells, 601L * 2_001);
+        AssertSequence.AreEqual(Enumerable.Range(0, 600), BaletteFuzzyMatcher.Default.Match(new string('a', 600), text).Positions);
+        Assert.IsTrue(BaletteFuzzyMatcher.Default.Match(new string('a', 50_000), new string('a', 50_000)).Matched);
+        Assert.IsFalse(BaletteFuzzyMatcher.Default.Match(new string('b', 600), text).Matched);
+    }
+
+    [TestMethod]
+    public void A_term_in_a_very_long_field_is_still_found_and_highlighted()
+    {
+        var article = string.Join(" ", Enumerable.Repeat("lorem ipsum dolor sit amet", 7_000)) + " kubernetes";
+        var match = BaletteFuzzyMatcher.Default.Match("kubernetes", article);
+
+        Assert.IsGreaterThan((long)BaletteFuzzyMatcher.MaxCells, 11L * (article.Length + 1));
+        Assert.IsTrue(match.Matched);
+        AssertSequence.AreEqual(Enumerable.Range(article.Length - 10, 10), match.Positions);
+        Assert.IsNotNull(BaletteFuzzyMatcher.Default.Match(BaletteCmd.New("Article").Description(article).Build(), "kube nets"));
+    }
+
+    [TestMethod]
+    [DataRow("set", "Go to Settings")]
+    [DataRow("gs", "Go to Settings")]
+    [DataRow("GS", "Go to Settings")]
+    [DataRow("fm", "FuzzyMatcher")]
+    [DataRow("edit", "Preferences: open the settings editor")]
+    [DataRow("prefs", "Preferences: open the settings editor")]
+    public void The_greedy_alignment_scores_as_the_table_does_when_they_agree(string query, string text)
+    {
+        var optimal = BaletteFuzzyMatcher.Default.Match(query, text);
+        var greedy = BaletteFuzzyMatcher.Default.Match(query, text, greedy: true);
+
+        AssertSequence.AreEqual(optimal.Positions, greedy.Positions);
+        Assert.AreEqual(optimal.Score, greedy.Score, 1e-9);
+    }
+
+    [TestMethod]
+    [DataRow("quickfox", 146.98, new[] { 4, 5, 6, 7, 8, 16, 17, 18 })]
+    [DataRow("lazydogs", 117.67, new[] { 35, 36, 37, 38, 40, 41, 42, 68 })]
+    [DataRow("brownjumps", 196.92, new[] { 10, 11, 12, 13, 14, 20, 21, 22, 23, 24 })]
+    public void A_long_field_aligned_greedily_scores_as_the_table_did(string query, double score, int[] positions)
+    {
+        var match = BaletteFuzzyMatcher.Default.Match(query, Prose, greedy: true);
+
+        Assert.AreEqual(score, match.Score, 1e-9);
+        AssertSequence.AreEqual(positions, match.Positions);
+    }
+
+    [TestMethod]
+    public void A_long_field_borrows_its_buffers()
+    {
+        var text = new string('a', 100_000);
+        var article = string.Join(" ", Enumerable.Repeat("lorem ipsum dolor sit amet", 7_000)) + " kubernetes";
+
+        BaletteFuzzyMatcher.Default.Match("aa", text);
+        BaletteFuzzyMatcher.Default.Match("kubernetes", article);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var scored = BaletteFuzzyMatcher.Default.Match("aa", text);
+        var aligned = BaletteFuzzyMatcher.Default.Match("kubernetes", article);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.IsTrue(scored.Matched);
+        Assert.IsTrue(aligned.Matched);
+        Assert.IsLessThan(100_000L, allocated);
     }
 
     [TestMethod]
@@ -166,6 +237,30 @@ public class SearchLimitsTests
 
         Assert.IsTrue(BaletteTypoTolerantMatcher.Approximate(new string('a', 500), text, 2, true).Matched);
         Assert.IsFalse(BaletteTypoTolerantMatcher.Approximate(new string('a', 600), text, 2, true).Matched);
+    }
+
+    [TestMethod]
+    public void Typo_tolerance_borrows_its_table()
+    {
+        var query = new string('b', 100);
+        var text = new string('a', 5_000);
+
+        BaletteTypoTolerantMatcher.Approximate(query, text, 2, true);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var match = BaletteTypoTolerantMatcher.Approximate(query, text, 2, true);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.IsFalse(match.Matched);
+        Assert.IsLessThan(100_000L, allocated);
+
+        // A borrowed table holds the last comparison's cells: here 3 edits where this one's row 0 has the start of " set",
+        // which still has to cost nothing.
+        BaletteTypoTolerantMatcher.Approximate(new string('z', 10), new string('a', 8), 2, true);
+        var exact = BaletteTypoTolerantMatcher.Approximate("set", new string('x', 26) + " set", 1, true);
+
+        Assert.IsTrue(exact.Matched);
+        Assert.AreEqual((3 * 16) + 16 - (0.02 * 30), exact.Score, 1e-9);
+        AssertSequence.AreEqual([27, 28, 29], exact.Positions);
     }
 
     private sealed class EveryCharacterMatcher : IBaletteMatcher

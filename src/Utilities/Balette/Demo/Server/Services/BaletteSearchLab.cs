@@ -35,9 +35,8 @@ public static class BaletteSearchLab
     /// <summary>The most commands one answer reports on.</summary>
     public const int MaxLimit = 200;
 
-    internal const int MaxQueryLength = 256;
-
-    internal const int MaxCommandsLength = 64 * 1024;
+    /// <summary>The longest commands argument one inspection reads: <see cref="MaxCommands"/> commands with their fields fit in far less.</summary>
+    public const int MaxCommandsLength = 64 * 1024;
 
     /// <summary>The matchers this tool can run, as the demo's own search lab offers them.</summary>
     public static readonly string[] Matchers = ["fuzzy", "fuzzy-ignore-case", "substring"];
@@ -62,8 +61,18 @@ public static class BaletteSearchLab
     public static BaletteSearchInspectionDto Inspect(string? query, string? commands, string? matcher, bool groupWhenSearching, int limit)
     {
         query ??= string.Empty;
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(query.Length, MaxQueryLength, nameof(query));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(commands?.Length ?? 0, MaxCommandsLength, nameof(commands));
+
+        // Past either limit the answer says why instead of searching - an exception would reach an agent as a bare
+        // "An error occurred" and the HTTP mirror as a 500, neither of which says what to change.
+        if (query.AsSpan().Trim().Length > BaletteQuery.MaxLength)
+        {
+            return Refused(matcher, $"The query is {query.Trim().Length:N0} characters long; a palette query is at most {BaletteQuery.MaxLength} (BaletteQuery.MaxLength) - the palette's input stops there, and BaletteQuery.Parse matches nothing past it - so nothing was searched.");
+        }
+
+        if (commands?.Length > MaxCommandsLength)
+        {
+            return Refused(matcher, $"commands is {commands.Length:N0} characters long; the lab reads at most {MaxCommandsLength:N0}, so nothing was searched. A ranking question needs the handful of commands it is about, not a whole registry.");
+        }
 
         var notes = new List<string>();
 
@@ -383,6 +392,25 @@ public static class BaletteSearchLab
             Term = term.Text,
             Operator = op,
             CaseSensitive = op == "fuzzy" && matcher is BaletteFuzzyMatcher { IgnoreCase: false } && term.Text.Any(char.IsUpper)
+        };
+    }
+
+    /// <summary>The answer to an inspection past the lab's limits: nothing searched, and why, first among the notes.</summary>
+    private static BaletteSearchInspectionDto Refused(string? matcher, string reason)
+    {
+        List<string> notes = [reason];
+        var (matcherName, _) = ResolveMatcher(matcher, notes);
+
+        return new BaletteSearchInspectionDto
+        {
+            Terms = [],
+            Matcher = matcherName,
+            Commands = "none: the input is past the lab's limits",
+            Ranking = "nothing was ranked",
+            Searched = 0,
+            Matched = 0,
+            Results = [],
+            Notes = [.. notes]
         };
     }
 
