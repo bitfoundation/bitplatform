@@ -36,7 +36,14 @@ public static class BcrdtUpdateOperations
     {
         ArgumentNullException.ThrowIfNull(updates);
         if (updates.Length == 0) return BcrdtUpdateEncoder.Empty;
-        if (updates.Length == 1) return updates[0].ToArray();
+        if (updates.Length == 1)
+        {
+            // Read only to be checked, so a malformed update is refused alone just as it is among others.
+            var single = new BcrdtBufferReader(updates[0]);
+            BcrdtUpdateCodec.ReadClientBlocks(ref single);
+            BcrdtDeleteSet.Read(ref single);
+            return updates[0].ToArray();
+        }
 
         List<(Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet)> decoded = new(updates.Length);
         foreach (ReadOnlyMemory<byte> update in updates)

@@ -117,6 +117,23 @@ public class HardeningTests
     }
 
     [TestMethod]
+    public void Merging_one_malformed_update_is_refused_as_it_is_among_others()
+    {
+        // A single update used to come back as given, unread, so a malformed one passed through a merge
+        // that would have refused it beside any other.
+        byte[] valid = CollectedRange(7, 0);
+        byte[] truncated = valid[..^1];
+
+        Assert.ThrowsExactly<BcrdtFormatException>(() => BcrdtUpdateOperations.Merge(truncated));
+        Assert.ThrowsExactly<BcrdtFormatException>(() => BcrdtUpdateOperations.Merge(truncated, CollectedRange(7, 1)));
+
+        byte[] copy = BcrdtUpdateOperations.Merge(valid);
+        CollectionAssert.AreEqual(valid, copy);
+        Assert.AreNotSame(valid, copy);
+        Assert.IsTrue(BcrdtUpdateOperations.IsEmpty(BcrdtUpdateOperations.Merge()));
+    }
+
+    [TestMethod]
     public void A_block_far_ahead_of_its_authors_content_is_refused_before_anything_changes()
     {
         using BcrdtDocument source = Doc(7);
@@ -407,6 +424,35 @@ public class HardeningTests
         var slice = (BcrdtContentAny)new BcrdtContentAny(values).Splice(offset);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => slice.Splice(slice.Length + 1));
         CollectionAssert.AreEqual(values[offset..], slice.GetContent().ToArray());
+    }
+
+    [TestMethod]
+    public void Reading_a_split_value_run_by_index_allocates_nothing_per_read()
+    {
+        // A peer's insert splits a long run of values in two, and both halves go on reading from the one
+        // list behind it. Reading an element through the array must reach into that list where it is, not
+        // build the run's values - or a view of them - for every read.
+        const int Half = 50_000;
+        using BcrdtDocument doc = Doc(1);
+        using BcrdtDocument other = Doc(2);
+        doc.GetArray("a").Push([.. Enumerable.Range(0, 2 * Half).Select(i => (object?)(long)i)]);
+        other.ApplyUpdate(doc.EncodeStateAsUpdate());
+        other.GetArray("a").Insert(Half, [-1L]);
+        doc.ApplyUpdate(other.EncodeStateAsUpdate());
+
+        BcrdtArray array = doc.GetArray("a");
+        object?[] read = new object?[array.Count];
+
+        // Once unmeasured, so the search markers the reads leave behind already exist and are only reused.
+        for (int i = 0; i < read.Length; i++) read[i] = array[i];
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < read.Length; i++) read[i] = array[i];
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        object?[] expected = [.. Enumerable.Range(0, Half).Select(i => (object?)(long)i), -1L, .. Enumerable.Range(Half, Half).Select(i => (object?)(long)i)];
+        CollectionAssert.AreEqual(expected, read);
+        Assert.IsLessThan((long)read.Length, allocated, $"{read.Length:N0} reads allocated {allocated:N0} bytes");
     }
 
     [TestMethod]
