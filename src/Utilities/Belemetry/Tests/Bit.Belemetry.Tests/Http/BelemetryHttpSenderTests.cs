@@ -346,6 +346,27 @@ public class BelemetryHttpSenderTests
     }
 
     [TestMethod]
+    public async Task AzurePartialSuccess_ThatShrinksByOneItemAtATime_GetsOneExtraAttemptAtMost()
+    {
+        var exporter = new BelemetryAzureMonitorExporter(new BelemetryAzureMonitorExporterOptions { ConnectionString = "InstrumentationKey=00000000-0000-0000-0000-000000000001" }, "azuremonitor");
+        var request = exporter.CreateRequests(new BelemetryBatch(Records.Resource(), logs: [.. Enumerable.Range(0, 10).Select(i => Records.Log("m" + i))])).Single();
+        var handler = new FakeHttpMessageHandler();
+        for (var items = 10; items > 1; items--)
+        {
+            var errors = string.Join(",", Enumerable.Range(1, items - 1).Select(i => $$"""{"index":{{i}},"statusCode":500}"""));
+            var body = $$"""{"itemsReceived":{{items}},"itemsAccepted":1,"errors":[{{errors}}]}""";
+            handler.Enqueue((HttpStatusCode)206, r => r.Content = new StringContent(body));
+        }
+        using var sender = CreateSender(handler);
+
+        var result = await sender.SendWithResultAsync(exporter, request, retry: false, CancellationToken.None);
+
+        Assert.AreEqual(BelemetrySendOutcome.Failed, result.Outcome);
+        Assert.HasCount(2, handler.Requests, "A backend that accepts one item per answer cannot keep the delivery going.");
+        Assert.AreEqual(8, result.Remaining.Count);
+    }
+
+    [TestMethod]
     public async Task SendsAUserAgent_UnlessTheExporterSetsOne()
     {
         var handler = new FakeHttpMessageHandler();

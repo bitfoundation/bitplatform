@@ -102,6 +102,12 @@ const globalAttributes: Attributes = {};
 // Consent governs these: they are set through setUser and the session, never as plain attributes.
 const RESERVED_ATTRIBUTES = ['session.id', 'enduser.pseudo.id', 'user.id'];
 
+function recordAttributes(attributes: Attributes | null | undefined): Attributes {
+    const valid = sanitizeAttributes(attributes);
+    for (const key of RESERVED_ATTRIBUTES) delete valid[key];
+    return valid;
+}
+
 function effective(s: State): number {
     return s.config.features & s.consent.granted();
 }
@@ -329,7 +335,7 @@ export function setUser(id: string | null): void {
 /** A custom event: a log record with `eventName = name`, feature Events. */
 export function trackEvent(name: string, attributes?: Attributes | null): void {
     try {
-        if (state && name) state.pipeline.emit(createLog('bit.belemetry.events', Features.Events, Severity.Info, String(name), String(name), sanitizeAttributes(attributes)));
+        if (state && name) state.pipeline.emit(createLog('bit.belemetry.events', Features.Events, Severity.Info, String(name), String(name), recordAttributes(attributes)));
     } catch (e) {
         debug('trackEvent failed', e);
     }
@@ -338,7 +344,7 @@ export function trackEvent(name: string, attributes?: Attributes | null): void {
 /** A manual page view (the current URL unless `url` is given). */
 export function trackPageView(name?: string | null, url?: string | null, attributes?: Attributes | null): void {
     try {
-        if (state) trackPageViewCore(state.ctx, 'manual', { name, url, attributes: sanitizeAttributes(attributes) });
+        if (state) trackPageViewCore(state.ctx, 'manual', { name, url, attributes: recordAttributes(attributes) });
     } catch (e) {
         debug('trackPageView failed', e);
     }
@@ -347,7 +353,7 @@ export function trackPageView(name?: string | null, url?: string | null, attribu
 /** A manual exception, feature Errors. */
 export function trackException(type: string, message: string, stack?: string | null, attributes?: Attributes | null): void {
     try {
-        if (state) state.pipeline.emit(createException(ERRORS_SCOPE, String(type || 'Error'), String(message || ''), stack, sanitizeAttributes(attributes)));
+        if (state) state.pipeline.emit(createException(ERRORS_SCOPE, String(type || 'Error'), String(message || ''), stack, recordAttributes(attributes)));
     } catch (e) {
         debug('trackException failed', e);
     }

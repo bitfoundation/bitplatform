@@ -57,6 +57,8 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
     public bool IsStarted => _module is not null;
 
+    private bool UnloadDrain => _settings.IsBrowser && _settings.CollectDotnet && _settings.HasExporters;
+
     /// <summary>Raised when the script reports a new context.</summary>
     public event Action<BelemetryJsContext>? ContextChanged;
 
@@ -76,8 +78,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
             _callbacks = DotNetObjectReference.Create(new BelemetryJsCallbacks(this));
             var relay = _settings.BrowserTransport == BelemetryBrowserTransport.Relay;
-            var unloadDrain = _settings.IsBrowser && _settings.CollectDotnet && _settings.HasExporters;
-            using var attachOptions = JsonDocument.Parse($"{{\"relay\":{(relay ? "true" : "false")},\"unloadDrain\":{(unloadDrain ? "true" : "false")}}}");
+            using var attachOptions = JsonDocument.Parse($"{{\"relay\":{(relay ? "true" : "false")},\"unloadDrain\":{(UnloadDrain ? "true" : "false")}}}");
             await module.InvokeVoidAsync("attachDotNet", _callbacks, attachOptions.RootElement);
 
             _module = module;
@@ -128,6 +129,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
         if (_settings.IsServer is false)
         {
             if (context.Decided) _consent.Update((BelemetryFeatures)context.Consent, decided: true);
+            else if (_consent.IsDecided is false) _consent.Update(_consent.Granted & (BelemetryFeatures)context.Consent, decided: false);
             _consent.SetContext(context.SessionId, context.PseudoId, context.UserId);
         }
 
@@ -200,7 +202,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
     internal JsonElement DrainForUnload()
     {
-        var requests = _pipeline.DrainForUnload();
+        var requests = UnloadDrain ? _pipeline.DrainForUnload() : [];
         return JsonSerializer.SerializeToElement(requests, BelemetryJsonContext.Default.ListBelemetryHttpRequest);
     }
 

@@ -49,6 +49,11 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
         }
     }
 
+    public bool PostsTo(string url) =>
+        (options.Signals.HasFlag(BelemetrySignals.Traces) && url == Resolve(options.TracesEndpoint, options.Endpoint, options.Protocol, BelemetrySignals.Traces))
+        || (options.Signals.HasFlag(BelemetrySignals.Logs) && url == Resolve(options.LogsEndpoint, options.Endpoint, options.Protocol, BelemetrySignals.Logs))
+        || (options.Signals.HasFlag(BelemetrySignals.Metrics) && url == Resolve(options.MetricsEndpoint, options.Endpoint, options.Protocol, BelemetrySignals.Metrics));
+
     public ValueTask PrepareAsync(HttpRequestMessage message, CancellationToken cancellationToken) => ValueTask.CompletedTask;
 
     public bool IsRetryable(int statusCode) => BelemetryHttpSender.IsOtlpRetryable(statusCode);

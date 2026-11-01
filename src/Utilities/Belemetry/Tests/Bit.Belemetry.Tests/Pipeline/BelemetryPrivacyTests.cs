@@ -206,6 +206,36 @@ public class BelemetryPrivacyTests
         var log = host.Memory.Logs.Single();
         Assert.AreEqual("REDACTED", log.Attributes["Password"]);
         Assert.AreEqual("jane", log.Attributes["User"]);
+        Assert.AreEqual("Sign-in for {User} with {Password}", log.Body, "The rendered message would carry the password.");
+    }
+
+    [TestMethod]
+    public void AppliesToSpanLinks()
+    {
+        var privacy = Create(o => o.BlockedAttributes.Add("secret.attr"));
+        var span = Records.Span();
+        var link = new BelemetrySpanLink { TraceId = Records.LinkTraceId, SpanId = Records.LinkSpanId };
+        link.Attributes.Set("password", "hunter2").Set("note", "jane@example.com").Set("secret.attr", "x");
+        span.Links.Add(link);
+
+        privacy.Apply(span);
+
+        Assert.AreEqual("REDACTED", link.Attributes["password"]);
+        Assert.AreEqual("[email]", link.Attributes["note"]);
+        Assert.IsFalse(link.Attributes.Contains("secret.attr"));
+    }
+
+    [TestMethod]
+    public void RedactsEveryUrlOfAnArray()
+    {
+        var attributes = new BelemetryAttributes()
+            .Set("url.full", new[] { "https://x.test/a?token=abc", "https://x.test/b" })
+            .Set("url.query", new[] { "code=1&page=2" });
+
+        Create().ApplyToAttributes(attributes);
+
+        CollectionAssert.AreEqual(new[] { "https://x.test/a?token=REDACTED", "https://x.test/b" }, (string[])attributes["url.full"]!);
+        CollectionAssert.AreEqual(new[] { "code=REDACTED&page=2" }, (string[])attributes["url.query"]!);
     }
 
     [TestMethod]

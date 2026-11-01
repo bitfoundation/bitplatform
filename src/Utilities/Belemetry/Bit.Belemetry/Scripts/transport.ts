@@ -62,6 +62,7 @@ const KEEPALIVE_LIMIT = 60 * 1024;
 // assume); past it they fail like an over-budget body.
 const KEEPALIVE_MAX_REQUESTS = 9;
 const MAX_RETRY_AFTER_MS = 60000;
+const MAX_RESPONSE_BYTES = 4 * 1024 * 1024;
 
 let suppressed = 0;
 
@@ -97,6 +98,34 @@ export function fromBase64(text: string): Uint8Array {
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     return bytes;
+}
+
+async function readText(response: Response, max: number): Promise<string | null> {
+    if (!response.body) return response.text();
+    if (Number(response.headers.get('Content-Length')) > max) {
+        response.body.cancel().catch(() => undefined);
+        return null;
+    }
+    const reader = response.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    for (;;) {
+        const result = await reader.read();
+        if (result.done) break;
+        size += result.value.length;
+        if (size > max) {
+            reader.cancel().catch(() => undefined);
+            return null;
+        }
+        chunks.push(result.value);
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.length;
+    }
+    return new TextDecoder().decode(bytes);
 }
 
 async function pipe(bytes: Uint8Array, transform: GenericTransformStream): Promise<Uint8Array> {
@@ -284,9 +313,11 @@ export class Transport {
                 if (status === 206 && isAzure(current.exporter)) {
                     let next: OutgoingRequest | null = null;
                     try {
-                        const text = await response.text();
-                        const plain = current.raw || (current.contentEncoding === 'gzip' ? await gunzip(current.body) : null);
-                        next = rebuildPartial(current, text, plain);
+                        const text = await readText(response, MAX_RESPONSE_BYTES);
+                        if (text !== null) {
+                            const plain = current.raw || (current.contentEncoding === 'gzip' ? await gunzip(current.body) : null);
+                            next = rebuildPartial(current, text, plain);
+                        }
                     } catch {
                         // An unreadable 206 body: the accepted items are in, nothing to retry.
                     }

@@ -17,6 +17,10 @@ public static partial class BelemetryCodeReview
 {
     private sealed record Rule(string Id, string Severity, Func<string, IEnumerable<(int Index, string Message, string Fix)>> Check);
 
+    private const int MaxCodeLength = 64 * 1024;
+
+    private const int MaxFindingsPerRule = 10;
+
     private static readonly Rule[] _rules =
     [
         new("BLM001", "error", RenamedApi),
@@ -48,13 +52,25 @@ public static partial class BelemetryCodeReview
             return new("Nothing to review: pass the Belemetry registration (Program.cs) and, ideally, App.razor and Routes.razor.", []);
         }
 
+        if (code.Length > MaxCodeLength)
+        {
+            return new($"Not reviewed: the code is {code.Length} characters long; the review reads at most {MaxCodeLength}.", []);
+        }
+
         var text = code.Replace("\r\n", "\n", StringComparison.Ordinal);
         var findings = new List<BelemetryReviewFindingDto>();
+        var capped = false;
 
         foreach (var rule in _rules)
         {
+            var count = 0;
             foreach (var (index, message, fix) in rule.Check(text))
             {
+                if (++count > MaxFindingsPerRule)
+                {
+                    capped = true;
+                    break;
+                }
                 findings.Add(new(rule.Id, rule.Severity, index < 0 ? null : LineOf(text, index), message, fix));
             }
         }
@@ -67,7 +83,7 @@ public static partial class BelemetryCodeReview
 
         var summary = ordered.Length == 0
             ? "No problems found by the rules. They are textual: they catch the common mistakes, not every one - check consent and the exporter endpoints by running the app with options.Debug and Browser.Debug on."
-            : $"{errors} error(s), {warnings} warning(s), {infos} note(s).";
+            : $"{errors} error(s), {warnings} warning(s), {infos} note(s)." + (capped ? $" Each rule lists at most {MaxFindingsPerRule} of its findings." : "");
 
         return new(summary, ordered);
     }
@@ -94,6 +110,8 @@ public static partial class BelemetryCodeReview
     {
         foreach (Match m in OldNamesRegex().Matches(code))
         {
+            if (IsCommented(code, m.Index)) continue;
+
             yield return (m.Index,
                           $"'{m.Value}' is the old name; it does not exist in Bit.Belemetry.",
                           m.Value.StartsWith("Add", StringComparison.Ordinal) ? "Call builder.Services.AddBitBelemetryServices(...)." : "The browser global is window.BitBelemetry (e.g. BitBelemetry.getContext()).");

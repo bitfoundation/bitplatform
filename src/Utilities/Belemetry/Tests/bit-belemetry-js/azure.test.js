@@ -221,4 +221,11 @@ describe('206 partial success', () => {
         expect(rebuildPartial(request, JSON.stringify({ errors: [{ index: 0, statusCode: 400 }] }))).toBeNull();
         expect(rebuildPartial(request, JSON.stringify({ itemsReceived: 4, itemsAccepted: 4 }))).toBeNull();
     });
+
+    it('retries each item once at most, whatever the response repeats', () => {
+        const errors = [];
+        for (let n = 0; n < 1000; n++) errors.push({ index: n % 2 ? 3 : 1, statusCode: 500 }, { index: 99, statusCode: 500 });
+        const next = rebuildPartial(request, JSON.stringify({ errors }));
+        expect(JSON.parse(new TextDecoder().decode(next.body))).toEqual([{ i: 1 }, { i: 3 }]);
+    });
 });

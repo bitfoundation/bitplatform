@@ -86,6 +86,44 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task Revoking_PurgesRelayedRecordsToo_AndTakesTheUserIdsOffWhatIsLeft()
+    {
+        await using var host = TestHost.Create(o => o.Browser.Transport = BelemetryBrowserTransport.Relay, consentDefault: BelemetryFeatures.None);
+        host.Consent.Decide(BelemetryFeatures.All);
+        host.Consent.SetContext("s-1", "pseudo-1", "user-1");
+
+        host.Pipeline.Relay(new BelemetryRelayBatch { Logs = [new BelemetryRelayLog { Body = "click", Feature = (int)BelemetryFeatures.Interactions }] });
+        host.Pipeline.Enqueue(Log("log", BelemetryFeatures.Logs));
+
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Interactions & ~BelemetryFeatures.UserTracking);
+        await host.FlushAsync();
+
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual("log", log.Body, "A relayed record of a revoked feature is discarded like any other.");
+        Assert.AreEqual("s-1", log.Attributes["session.id"]);
+        Assert.IsFalse(log.Attributes.Contains("enduser.pseudo.id"));
+        Assert.IsFalse(log.Attributes.Contains("user.id"));
+    }
+
+    [TestMethod]
+    public async Task BeforeADecision_TheBrowsersNarrowerGrant_IsAdopted()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All);
+        var bridge = new BelemetryJsBridge(host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>());
+
+        bridge.Apply(new BelemetryJsContext { Consent = (int)(BelemetryFeatures.All & ~BelemetryFeatures.Analytics), Decided = false });
+
+        Assert.IsFalse(host.Pipeline.CanRecord(BelemetryFeatures.Events), "Global Privacy Control took the analytics features away in the page.");
+        Assert.IsTrue(host.Pipeline.CanRecord(BelemetryFeatures.Errors));
+        Assert.IsFalse(host.Consent.IsDecided);
+
+        host.Consent.Decide(BelemetryFeatures.Errors);
+        bridge.Apply(new BelemetryJsContext { Consent = (int)BelemetryFeatures.None, Decided = false });
+
+        Assert.IsTrue(host.Pipeline.CanRecord(BelemetryFeatures.Errors), "An undecided page does not undo a decision .NET already holds.");
+    }
+
+    [TestMethod]
     public async Task Server_CollectsNothingByDefault()
     {
         await using var host = TestHost.Create(o => o.Host = BelemetryHostKind.Server);
@@ -358,6 +396,29 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task MetricPointAttributes_GoThroughThePrivacyRules()
+    {
+        using var meter = new Meter("Tests.Pipeline." + Guid.NewGuid().ToString("N"));
+        await using var host = TestHost.Create(o =>
+        {
+            o.Metrics.Meters.Add(meter.Name);
+            o.Privacy.BlockedAttributes.Add("tenant.id");
+        });
+        host.StartLogging();
+
+        meter.CreateCounter<int>("logins").Add(1,
+            new KeyValuePair<string, object?>("user.email", "jane@example.com"),
+            new KeyValuePair<string, object?>("api_key", "k-123"),
+            new KeyValuePair<string, object?>("tenant.id", "t-1"));
+        await host.FlushAsync(includeMetrics: true);
+
+        var attributes = host.Memory.Metrics.Single().Points.Single().Attributes;
+        Assert.AreEqual("[email]", attributes["user.email"]);
+        Assert.AreEqual("REDACTED", attributes["api_key"]);
+        Assert.IsFalse(attributes.Contains("tenant.id"));
+    }
+
+    [TestMethod]
     public async Task Enrichment_AddsSessionAndUserOnlyWithUserTracking()
     {
         await using var host = TestHost.Create(consentDefault: BelemetryFeatures.None);
@@ -464,6 +525,28 @@ public class BelemetryPipelineTests
         Assert.AreEqual("exception", logs[2].EventName);
         Assert.AreEqual(BelemetryFeatures.Errors, logs[2].Feature);
         Assert.AreEqual("System.InvalidOperationException", logs[2].Attributes["exception.type"]);
+    }
+
+    [TestMethod]
+    public async Task WithoutUserTracking_NoRecordCarriesAUserId_WhoeverPassesOne()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        using var scope = host.Services.CreateScope();
+        var api = (IBelemetry)ActivatorUtilities.CreateInstance<BelemetryService>(scope.ServiceProvider, new BelemetryJsBridge(
+            host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>(), new Bunit.BunitJSInterop().JSRuntime));
+        var logger = host.StartLogging().CreateLogger("MyApp.Checkout");
+
+        api.TrackEvent("checkout", new Dictionary<string, object?> { ["user.id"] = "jane@example.com", ["enduser.pseudo.id"] = "p", ["amount"] = 9.5 });
+        using (logger.BeginScope(new Dictionary<string, object?> { ["user.id"] = "jane@example.com", ["TenantId"] = "t1" }))
+        {
+            logger.LogInformation("Paid");
+        }
+
+        await host.FlushAsync();
+        var logs = host.Memory.Logs.ToList();
+        Assert.AreEqual(9.5, logs.Single(l => l.EventName == "checkout").Attributes["amount"]);
+        Assert.AreEqual("t1", logs.Single(l => l.Body == "Paid").Attributes["TenantId"]);
+        Assert.IsTrue(logs.All(l => l.Attributes.Contains("user.id") is false && l.Attributes.Contains("enduser.pseudo.id") is false), "Consent governs the user ids.");
     }
 
     [TestMethod]

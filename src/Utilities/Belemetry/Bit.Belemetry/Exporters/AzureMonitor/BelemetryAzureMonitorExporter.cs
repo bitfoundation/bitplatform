@@ -54,6 +54,8 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
         };
     }
 
+    public bool PostsTo(string url) => url == ConnectionString.TrackUrl;
+
     public async ValueTask PrepareAsync(HttpRequestMessage message, CancellationToken cancellationToken)
     {
         if (_options.AccessTokenProvider is null) return;

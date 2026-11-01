@@ -168,7 +168,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
         foreach (var request in stored)
         {
             var exporter = _httpExporters.FirstOrDefault(e => e.Name == request.Exporter);
-            if (exporter is null)
+            if (exporter is null || exporter.PostsTo(request.Url) is false)
             {
                 // The exporter it was meant for is no longer configured.
                 await Store.DeleteAsync(request.Id, cancellationToken);
