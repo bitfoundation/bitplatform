@@ -7,6 +7,7 @@ public partial class ShellHeader
 {
     private List<BitDropdownItem<string>> cultureItems = [];
 
+    [AutoInject] private CultureService cultureService = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
 
     protected override void OnInitialized()
@@ -20,7 +21,7 @@ public partial class ShellHeader
         if (string.IsNullOrEmpty(culture) || culture == CultureInfo.CurrentUICulture.Name)
             return;
 
-        await JSRuntime.InvokeVoidAsync("workbench.setCulture", culture);
+        await cultureService.ChangeCulture(culture);
     }
 
     /// <summary>Switches the Workbench's own theme; each view keeps the theme of its scenario.</summary>

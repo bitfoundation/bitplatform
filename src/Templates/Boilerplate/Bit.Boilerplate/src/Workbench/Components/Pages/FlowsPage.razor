@@ -39,6 +39,7 @@
                 @(isConfirmingDelete ? Localizer[nameof(WorkbenchStrings.DeleteFlowConfirm)].Value : null)
             </BitButton>
         }
+        <SoundToggle Size="BitSize.Small" />
         <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Contrast"
                    Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]"
                    OnClick="ToggleShellTheme" />

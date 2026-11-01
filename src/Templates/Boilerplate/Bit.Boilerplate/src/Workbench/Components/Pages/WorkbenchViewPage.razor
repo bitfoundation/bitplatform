@@ -46,6 +46,7 @@ else if (isSmallScreen)
                     <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="24" height="24" />
                     <BitText Typography="BitTypography.H6">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</BitText>
                     <BitSpacer />
+                    <SoundToggle />
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Camera" OnClick="() => DownloadScreenshot(store.SelectedPane)"
                                Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" />
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="() => isToolsOpen = false"
@@ -125,6 +126,8 @@ else
                        Title="@Localizer[nameof(WorkbenchStrings.CopyLink)]"
                        AriaLabel="@Localizer[nameof(WorkbenchStrings.CopyLink)]"
                        OnClick="CopyLink" />
+
+            <SoundToggle Size="BitSize.Small" />
 
             <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
                        IconName="@BitIconName.Contrast"

@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>Keep the placeholders in curly braces as the original text has them, or the page can't show this text.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Mute the sound of agent replies</value>
+    </data>
 </root>

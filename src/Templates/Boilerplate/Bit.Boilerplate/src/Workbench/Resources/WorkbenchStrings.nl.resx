@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>Laat de plaatsaanduidingen tussen accolades staan zoals in de oorspronkelijke tekst, anders kan de pagina deze tekst niet tonen.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Geluid bij antwoorden van de agent dempen</value>
+    </data>
 </root>

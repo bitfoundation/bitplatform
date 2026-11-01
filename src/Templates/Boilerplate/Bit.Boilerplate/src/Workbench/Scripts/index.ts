@@ -600,10 +600,6 @@ host.workbench = {
         anchor.remove();
     },
 
-    copy(text: string) {
-        return navigator.clipboard?.writeText(text);
-    },
-
     runChecks() {
         return runChecks();
     },
@@ -705,12 +701,6 @@ host.workbench = {
         return ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']
             .map(name => ({ name, min: parseFloat(style.getPropertyValue(`--bit-bp-${name}`)) }))
             .filter(breakpoint => Number.isFinite(breakpoint.min));
-    },
-
-    /** Saves the shell's language in ASP.NET Core's culture cookie and reloads. */
-    setCulture(name: string) {
-        document.cookie = `.AspNetCore.Culture=${encodeURIComponent(`c=${name}|uic=${name}`)}; path=/; max-age=31536000; samesite=lax`;
-        location.reload();
     }
 };
 

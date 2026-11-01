@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>Mantén los marcadores entre llaves tal como están en el texto original; de lo contrario, la página no podrá mostrar este texto.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Silenciar el sonido de las respuestas del agente</value>
+    </data>
 </root>

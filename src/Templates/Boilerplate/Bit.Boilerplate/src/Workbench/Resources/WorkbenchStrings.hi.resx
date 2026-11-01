@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>कर्ली ब्रैकेट में लिखे प्लेसहोल्डर वैसे ही रखें जैसे वे मूल टेक्स्ट में हैं, नहीं तो पेज यह टेक्स्ट नहीं दिखा पाएगा।</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>एजेंट के जवाबों की आवाज़ बंद करें</value>
+    </data>
 </root>

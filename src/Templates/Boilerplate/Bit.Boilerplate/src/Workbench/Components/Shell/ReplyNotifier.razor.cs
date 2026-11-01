@@ -50,12 +50,17 @@ public partial class ReplyNotifier
             {
                 Body = message.Text,
                 Tag = thread.Id,
-                Icon = "/_content/Boilerplate.Client.Core/images/bit-logo.png",
+                Icon = "/images/icons/bit-icon-512.png",
+                Silent = store.IsReplySoundMuted,
                 Data = $"{WorkbenchUrls.Workbench(thread.PageKey)}{thread.Query}"
             }));
         }
 
-        await TryAsync(async () => await webAudio.PlayTone(880, 180));
+        if (store.IsReplySoundMuted is false)
+        {
+            await TryAsync(async () => await webAudio.PlayTone(880, 180));
+        }
+
         await TryAsync(async () => await navigator.Vibrate([60, 40, 60]));
     }
 

@@ -89,9 +89,10 @@
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
         <CallTarget Targets="CopyAccessibilityChecker" />
+        <CallTarget Targets="CopyAppIcon" />
         <CallTarget Targets="BuildCssFiles" />
         <ItemGroup>
-            <Content Include="**\*.razor.css;wwwroot\scripts\workbench.js;wwwroot\scripts\axe.min.js;wwwroot\styles\workbench.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+            <Content Include="**\*.razor.css;wwwroot\scripts\workbench.js;wwwroot\scripts\axe.min.js;wwwroot\images\icons\bit-icon-512.png;wwwroot\styles\workbench.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
         </ItemGroup>
     </Target>
 
@@ -106,6 +107,10 @@
 
     <Target Name="CopyAccessibilityChecker" Inputs="node_modules\axe-core\axe.min.js" Outputs="wwwroot\scripts\axe.min.js">
         <Copy SourceFiles="node_modules\axe-core\axe.min.js" DestinationFolder="wwwroot\scripts" />
+    </Target>
+
+    <Target Name="CopyAppIcon" Inputs="..\Client\Boilerplate.Client.Web\wwwroot\images\icons\bit-icon-512.png" Outputs="wwwroot\images\icons\bit-icon-512.png">
+        <Copy SourceFiles="..\Client\Boilerplate.Client.Web\wwwroot\images\icons\bit-icon-512.png" DestinationFolder="wwwroot\images\icons" />
     </Target>
 
     <Target Name="BuildCssFiles">

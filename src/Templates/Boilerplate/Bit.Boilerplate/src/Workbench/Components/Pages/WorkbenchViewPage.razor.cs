@@ -57,6 +57,7 @@ public partial class WorkbenchViewPage
     [AutoInject] private WorkbenchSnapshots snapshots = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
+    [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
     [AutoInject] private WorkbenchTextEdits textEdits = default!;
     [AutoInject] private ILogger<WorkbenchViewPage> logger = default!;
@@ -517,7 +518,7 @@ public partial class WorkbenchViewPage
         // A browser can refuse the clipboard to a copy that arrives after a server round trip; Safari always does.
         try
         {
-            await JSRuntime.InvokeVoidAsync("workbench.copy", NavigationManager.Uri);
+            await clipboard.WriteText(NavigationManager.Uri);
         }
         catch (JSException)
         {

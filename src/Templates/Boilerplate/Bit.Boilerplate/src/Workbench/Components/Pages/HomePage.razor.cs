@@ -37,6 +37,7 @@ public partial class HomePage
 
     private bool isPromptCopied;
 
+    [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
     [AutoInject] private ILogger<HomePage> logger = default!;
 
@@ -90,7 +91,7 @@ public partial class HomePage
         // A browser can refuse the clipboard to a copy that arrives after a server round trip; Safari always does.
         try
         {
-            await JSRuntime.InvokeVoidAsync("workbench.copy", Localizer[nameof(WorkbenchStrings.HomeCtaPrompt)].Value);
+            await clipboard.WriteText(Localizer[nameof(WorkbenchStrings.HomeCtaPrompt)].Value);
         }
         catch (JSException)
         {

@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>Behalten Sie die Platzhalter in geschweiften Klammern so bei, wie sie im Originaltext stehen, sonst kann die Seite diesen Text nicht anzeigen.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Ton bei Antworten des Agenten stummschalten</value>
+    </data>
 </root>

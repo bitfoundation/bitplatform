@@ -11,6 +11,7 @@ public partial class TwoFactorSection
     private string? verificationCode;
 
     [AutoInject] private SettingsStore store = default!;
+    [AutoInject] private Clipboard clipboard = default!;
 
     [CascadingParameter] public SettingsPage Page { get; set; } = default!;
 
@@ -145,7 +146,7 @@ public partial class TwoFactorSection
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("workbench.copy", text);
+            await clipboard.WriteText(text);
 
             return true;
         }

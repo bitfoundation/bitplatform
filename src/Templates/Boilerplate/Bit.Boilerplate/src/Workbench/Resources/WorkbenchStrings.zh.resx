@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>请保留原文中花括号内的占位符，否则页面无法显示这段文字。</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>关闭代理回复的提示音</value>
+    </data>
 </root>

@@ -22,6 +22,7 @@ public partial class WorkbenchStore
     [BlexState] private string? _reviewerName;
     [BlexState] private bool _replyNotifications;
     [BlexState] private bool _wasAskedToNotify;
+    [BlexState] private bool _isReplySoundMuted;
 
     /// <summary>The selected view, or the first one when no view has the selected id.</summary>
     public WorkbenchPane SelectedPane => Panes.FirstOrDefault(p => p.Id == SelectedPaneId) ?? Panes[0];
@@ -93,6 +94,8 @@ public partial class WorkbenchStore
     [BlexAction] private void OnSetReplyNotifications(bool on) => ReplyNotifications = on;
 
     [BlexAction] private void OnMarkAskedToNotify() => WasAskedToNotify = true;
+
+    [BlexAction] private void OnToggleReplySound() => IsReplySoundMuted = IsReplySoundMuted is false;
 
     /// <summary>Sets the selected view's scenario and copies each setting that changed to the other views.</summary>
     [BlexAction]

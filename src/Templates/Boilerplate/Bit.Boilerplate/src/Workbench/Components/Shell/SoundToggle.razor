@@ -1,0 +1,12 @@
+@inherits WorkbenchComponentBase
+
+@* Replies are announced only on this machine, so elsewhere there is no sound to mute. *@
+@if (reviewSession.CanWrite)
+{
+    <BitButton IconOnly Variant="BitVariant.Text" Size="Size"
+               IconName="@(store.IsReplySoundMuted ? BitIconName.VolumeDisabled : BitIconName.Volume3)"
+               Title="@Localizer[nameof(WorkbenchStrings.MuteReplySound)]"
+               AriaLabel="@Localizer[nameof(WorkbenchStrings.MuteReplySound)]"
+               aria-pressed="@(store.IsReplySoundMuted ? "true" : "false")"
+               OnClick="store.ToggleReplySound" />
+}

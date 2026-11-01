@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>أبقِ العناصر النائبة بين الأقواس المعقوفة كما هي في النص الأصلي، وإلا فلن تتمكن الصفحة من عرض هذا النص.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>كتم صوت ردود الوكيل</value>
+    </data>
 </root>

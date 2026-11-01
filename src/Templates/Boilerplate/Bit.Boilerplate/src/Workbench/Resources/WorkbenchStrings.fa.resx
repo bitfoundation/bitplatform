@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>جای‌نگهدارهای داخل آکولاد را همان‌طور که در متن اصلی آمده‌اند نگه دارید، وگرنه صفحه نمی‌تواند این متن را نشان دهد.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>بی‌صدا کردن صدای پاسخ‌های عامل</value>
+    </data>
 </root>

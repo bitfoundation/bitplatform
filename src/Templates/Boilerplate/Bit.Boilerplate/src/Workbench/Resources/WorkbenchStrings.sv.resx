@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>Behåll platshållarna inom klammerparenteser som i originaltexten, annars kan sidan inte visa den här texten.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Stäng av ljudet för agentens svar</value>
+    </data>
 </root>

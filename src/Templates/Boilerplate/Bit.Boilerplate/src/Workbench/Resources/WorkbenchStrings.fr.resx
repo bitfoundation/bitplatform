@@ -2721,4 +2721,7 @@
     <data name="TextKeepPlaceholders" xml:space="preserve">
         <value>Conservez les espaces réservés entre accolades tels qu’ils figurent dans le texte d’origine, sinon la page ne pourra pas afficher ce texte.</value>
     </data>
+    <data name="MuteReplySound" xml:space="preserve">
+        <value>Couper le son des réponses de l'agent</value>
+    </data>
 </root>
