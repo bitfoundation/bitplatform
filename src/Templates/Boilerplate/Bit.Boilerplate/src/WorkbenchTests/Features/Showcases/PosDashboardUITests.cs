@@ -111,6 +111,7 @@ public class PosDashboardUITests : WorkbenchPageTest
         await OpenPreview("pos-dashboard", "?device=desktop-1536");
 
         await Button(WorkbenchStrings.PosCustomize).ClickAsync();
+        await Expect(Page.GetByText(WorkbenchStrings.PosEditHint)).ToBeVisibleAsync();
 
         await Widget(nameof(WorkbenchStrings.PosRefunds)).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosWidgetOptions }).ClickAsync();
         await Widget(nameof(WorkbenchStrings.PosRefunds)).GetByText(WorkbenchStrings.PosHideWidget, new() { Exact = true }).ClickAsync();
