@@ -163,7 +163,7 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 
 | Skill | Read it when | Canonical file |
 | --- | --- | --- |
-| `ai-dlc` | **Every task that is not a small, obvious edit**: building or changing a feature, fixing a reported bug even when its cause turns out obvious (its short track is what adds the regression test), work spanning several files. Only a skill below that covers the whole task replaces it | `.github/agents/ai-dlc.agent.md` |
+| `ai-dlc` | **Every task that is not a small, obvious edit**: building or changing a feature, even when the request is one sentence on what the user wants and nothing is settled yet, fixing a reported bug even when its cause turns out obvious (its short track is what adds the regression test), work spanning several files. Only a skill below that covers the whole task replaces it | `.github/agents/ai-dlc.agent.md` |
 | `scaffold-entity` | Scaffolding a CRUD entity whose fields, rules and screens are already settled, usually as a task of an `ai-dlc` plan. A request for a new feature or section starts with `ai-dlc` | `.github/agents/scaffold-entity.agent.md` |
 | `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx`, or the changes are about to be pushed | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
