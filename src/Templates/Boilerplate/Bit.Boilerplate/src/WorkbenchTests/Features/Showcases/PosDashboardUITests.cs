@@ -10,6 +10,13 @@ public class PosDashboardUITests : WorkbenchPageTest
 
     private ILocator Button(string name) => Page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
+    /// <summary>Hides a widget through its menu, which opens in a layer outside the widget, the only one of them visible.</summary>
+    private async Task Hide(ILocator widget)
+    {
+        await widget.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosWidgetOptions }).ClickAsync();
+        await Page.GetByText(WorkbenchStrings.PosHideWidget, new() { Exact = true }).Locator("visible=true").ClickAsync();
+    }
+
     [TestMethod]
     public async Task EveryWidget_Should_ShowItsData()
     {
@@ -78,8 +85,7 @@ public class PosDashboardUITests : WorkbenchPageTest
 
         var team = Widget(nameof(WorkbenchStrings.PosTeam));
 
-        await team.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosWidgetOptions }).ClickAsync();
-        await team.GetByText(WorkbenchStrings.PosHideWidget, new() { Exact = true }).ClickAsync();
+        await Hide(team);
 
         await Expect(team).ToHaveCountAsync(0);
         await Expect(Widgets).ToHaveCountAsync(PosWidgetCatalog.All.Count - 1);
@@ -113,8 +119,7 @@ public class PosDashboardUITests : WorkbenchPageTest
         await Button(WorkbenchStrings.PosCustomize).ClickAsync();
         await Expect(Page.GetByText(WorkbenchStrings.PosEditHint)).ToBeVisibleAsync();
 
-        await Widget(nameof(WorkbenchStrings.PosRefunds)).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosWidgetOptions }).ClickAsync();
-        await Widget(nameof(WorkbenchStrings.PosRefunds)).GetByText(WorkbenchStrings.PosHideWidget, new() { Exact = true }).ClickAsync();
+        await Hide(Widget(nameof(WorkbenchStrings.PosRefunds)));
 
         await Expect(Widgets).ToHaveCountAsync(PosWidgetCatalog.All.Count - 1);
 

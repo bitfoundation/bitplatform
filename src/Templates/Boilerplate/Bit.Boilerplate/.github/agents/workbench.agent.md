@@ -22,6 +22,9 @@ what the user approves is how the real page will look.
 <!--#endif-->
 - Hot reload carries `.cs`, `.razor`, `.scss` and `.ts` edits as the **run-app** skill (`.github/agents/run-app.agent.md`)
   describes. A `.resx` edit or startup code needs a restart.
+- Running under `dotnet watch` is its dev mode, the only one where the review, Inspect and Edit text can change anything
+  and where `/mcp` and `/api/review` answer. Any other copy, like a published one or a plain `dotnet run`, which is how
+  bit CLI starts it, answers those with a 404: stop that copy and run `dotnet watch` in `src/Workbench`.
 - The home page lists the pages. `/workbench/<key>` opens one with its tools; `/preview/<key>` renders it alone, with
   the scenario in the query string. Pages are prerendered, as in the app.
 - It serves an MCP server at `/mcp`, listed as `workbench` in the project's agent settings, and the same calls as HTTP
@@ -51,15 +54,15 @@ what the user approves is how the real page will look.
   page back to its defaults.
 - Pages follow the app's sign-in rules the way they will in the app: `[Authorize]` with the app's policies on a page
   that needs them, and `AuthorizeView` around what only some users may see or do. The Workbench signs in as one of three
-  users with the app's roles: a global admin (the default), a tenant admin (a second global admin when the project has
-  no multitenancy) and a demo user. Pick one in the inspector to see what each gets; signed out, a page that needs
+  users with the app's user groups: a global admin (the default), a tenant admin (a second global admin when the project
+  has no multitenancy) and a demo user. Pick one in the inspector to see what each gets; signed out, a page that needs
   sign-in shows the app's not-authorized page.
 - Add it to `WorkbenchPageCatalog`: its key, title, description, icon, category, the components it shows off and the
   caption its store screenshots carry.
 - For a new page, offer two or three directions as design options in its catalog entry (`Variants`) and branch the
   markup on the view's variant; the first is the default. The user compares them side by side. Once they pick one,
   remove the others from the page and from the entry.
-- Cases only this page has, like how many items there are, a plan or a role, a feature on or off, or very long names,
+- Cases only this page has, like how many items there are, a plan or a user group, a feature on or off, or very long names,
   become page switches in its entry (`Switches`). Read the chosen value with the scenario's `GetSwitch` in the page or
   its sample service. They show in the inspector, go into links and screenshots, and Compare spreads one over the views.
 - Follow `AGENTS.md` section 5 as for any page of the app: bit BlazorUI components as they are, styled through their
@@ -153,7 +156,7 @@ what the user approves is how the real page will look.
   `GET /api/review/wait?cursor=<cursor>&agent=<your name>`, which answers within a minute, `POST /api/review/<id>/reply`
   and `POST /api/review/<id>/status` with a JSON body (`text` or `status`, and `agent`), `PUT /api/review/<id>/tasks`
   (`tasks`, each with `text` and `done`), `GET /api/review/<id>/screenshot`, `POST /api/review/pages/<key>/status` and
-  `POST /api/review/flows`. They answer only on this machine, and opened from anywhere else the review is read-only, so
+  `POST /api/review/flows`. They answer only in dev mode on this machine, and anywhere else the review is read-only, so
   only someone at this computer can reach you.
 - Keep each page's review status current (`set_page_status`): in review when you hand it to the user, approved when
   they approve it, built once it is in the app.
@@ -162,7 +165,8 @@ what the user approves is how the real page will look.
 - To explain a task that crosses screens, draw a flow (`save_flow`): each screen is a page in a state, reached by the
   taps you list (like the dialog that "Add building" opens), and each link is an arrow that starts at the element its
   tap names. The user opens it at `/flows/<id>` to understand the app or to present it in a meeting. Draw it again with
-  the same id when the pages change.
+  the same id when the pages change. The read-only samples on that page aren't in the review; they live in
+  `WorkbenchSampleFlows.cs`, and one leaves on its own when its page is removed.
 - The review sheet (Screenshot, then Review sheet) puts every open view, its settings and the comments into one HTML or
   PDF file. Offer it when the user wants something to send around or to attach to the pull request.
 - Write what was decided into the feature's spec, as `AGENTS.md` section 6 asks.

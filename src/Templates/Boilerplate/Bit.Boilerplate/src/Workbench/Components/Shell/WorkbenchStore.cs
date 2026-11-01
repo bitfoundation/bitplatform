@@ -179,6 +179,9 @@ public partial class WorkbenchStore
         Panes = [.. Panes.Select(p => p.Id == paneId ? p with { Scenario = p.Scenario.WithSize(width, height) } : p)];
     }
 
+    /// <summary>Replaces the views with these scenarios.</summary>
+    [BlexAction] private void OnShowViews(WorkbenchScenario[] scenarios) => Replace(scenarios);
+
     /// <summary>Replaces the views with one per design option of the page, the first showing the default.</summary>
     [BlexAction]
     private void OnCompareVariants(string[] variants)

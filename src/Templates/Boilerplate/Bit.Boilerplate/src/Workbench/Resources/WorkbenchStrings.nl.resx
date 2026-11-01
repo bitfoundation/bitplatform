@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>Een kassadashboard met widgets die je kunt verplaatsen, vergroten, verbergen en opslaan.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sanne de Vries</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Winkel Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Druk</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Goedemiddag, Sanne</value>
+        <value>Goedemiddag, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Winkel</value>
@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>De werkbank draait de pagina's van je app op voorbeeldgegevens, zodat je elke toestand ontwerpt, op elk apparaat bekijkt en schermafbeeldingen voor de stores maakt, met dezelfde componenten en hetzelfde thema als je app.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Open het kassadashboard</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Begin hier</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Waarom een werkbank?</value>
@@ -1087,7 +1087,7 @@
         <value>Wie verkoopt vandaag het meest?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** staat bovenaan met **64 bestellingen** en € 1.180 omzet [1].</value>
+        <value>**Saleh** staat bovenaan met **64 bestellingen** en € 1.180 omzet [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Hier ken ik alleen de voorgestelde vragen. Probeer er een.</value>
@@ -1909,10 +1909,10 @@
         <value>Alle rollen</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Pas hem aan met AI</value>
+        <value>Pas de werkbank zelf aan met AI</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>De werkbank hoort ook bij je app. Vraag je AI-agent om de functies te veranderen of de tools, apparaten en toestanden toe te voegen die je team nodig heeft.</value>
+        <value>Je kunt de tool zelf veranderen, niet alleen de pagina's erin. Vraag je AI-agent om de functies van de werkbank te veranderen of de tools, apparaten en toestanden toe te voegen die je team nodig heeft.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Niemand</value>
@@ -1924,10 +1924,10 @@
         <value>Ingelogd als</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Globale beheerder</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Tenantbeheerder</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Slaat op in de vertaalbestanden en laadt de weergaven opnieuw. Je agent ziet de wijziging in git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Tekst opslaan werkt als de werkbank vanuit het project op je eigen computer draait.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Wijzig de tekst {0} · {1}:</value>
     </data>
@@ -2370,20 +2367,53 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Ontwerpopties</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Live samenwerken met AI</value>
-    </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>Op de computer waarop de werkbank draait, gaat een opmerking die je op de pagina vastzet rechtstreeks naar de AI-agent van de ontwikkelaar: die past de pagina aan, antwoordt hier meteen en vinkt de opmerking af terwijl je toekijkt. Vanaf elke andere plek is de beoordeling alleen-lezen, zodat niemand die agent via een gedeelde link kan bereiken.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>De agent is offline</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Nog geen opmerkingen.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows worden getekend op de computer waarop de werkbank draait. Hier kun je ze openen en doorlopen.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Nog geen flows.</value>
+    </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Een gebouw toevoegen</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>De lijst met bekende gebouwen, met bovenaan ‘Gebouw toevoegen’.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>‘Gebouw toevoegen’ opent een formulier voor het nieuwe gebouw.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>‘Kaart’ toont dezelfde gebouwen op een kaart van Nederland.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Het kassadashboard openen</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>Terwijl de gegevens laden, houdt elke widget zijn plek.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Daarna vult elke widget zich met de cijfers van de dag.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>Zonder verkopen laat elke widget dat zien.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>Eén widget kan mislukken terwijl de andere gewoon doorgaan.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Gegevens binnen</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>Nog geen verkopen</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>Eén keer laden mislukt</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Voorbeeld</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live beoordelen met je AI-agent</value>
@@ -2401,7 +2431,7 @@
         <value>Tik op de plek waar je een opmerking over wilt maken</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>Nog geen flows. Vraag je agent er een te tekenen, zoals ‘laat zien hoe je een gebouw toevoegt’, of voeg weergaven aan een flow toe vanuit het tabblad Flows van een pagina.</value>
+        <value>Vraag je agent er een te tekenen, zoals ‘laat zien hoe je een gebouw toevoegt’, of voeg weergaven aan een flow toe vanuit het tabblad Flows van een pagina.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>Er staat geen flow op deze link. Misschien is hij verwijderd.</value>
@@ -2728,16 +2758,13 @@
         <value>Component</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Alleen voor snelle wijzigingen. Schrijf al het andere in het tabblad Beoordeling, dan regelt de agent het.</value>
+        <value>Alleen voor snelle/eenvoudige wijzigingen. Schrijf al het andere in het tabblad Beoordeling, dan regelt de agent het.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Klik op een component in een weergave om de parameters te zien en te wijzigen.</value>
     </data>
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Dit is geen bit BlazorUI-component, of het staat niet meer op de pagina, dus er zijn geen parameters om te tonen.</value>
-    </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Wijzigingen kunnen alleen worden opgeslagen als de werkbank vanuit het project op je eigen computer draait.</value>
     </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} tekent dit deel zelf, dus het verandert via de parameters van {0}.</value>
@@ -2781,9 +2808,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Opgeslagen in {0}. Hot reload toont het zo meteen.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Opgeslagen in {0}. Start de app opnieuw om het te zien.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>De wijziging kon niet worden opgeslagen; de tag is misschien verplaatst. Klik opnieuw op het component.</value>
     </data>
@@ -2801,5 +2825,59 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Voorgestelde waarden</value>
+    </data>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>Agent is niet verbonden</value>
+    </data>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Beperkte ervaring</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Je kunt rondkijken, van weergave wisselen en schermafbeeldingen maken. Om iets te wijzigen moet een AI-agent de Workbench uitvoeren.</value>
+    </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>De aanmeldpagina's staan nog niet in de Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Kies je gebruiker op het tabblad Weergave, met de gebruikersgroep die je wilt, of vraag je agent deze pagina's naar de Workbench te halen, dan regelt hij het.</value>
+    </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>Kies hier je gebruiker, met de gebruikersgroep die je wilt, of vraag je agent deze pagina's naar de Workbench te halen, dan regelt hij het.</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>Begrepen</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>Volgende</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>Terug</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>Rondleiding overslaan</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>Klaar</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>Productrondleiding</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{0} van {1}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>Stap {0} van {1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>Wachten op het volgende deel van de pagina.</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>Voortgang van de rondleiding</value>
+    </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Start de rondleiding</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Elke verkoop, live</value>
     </data>
 </root>

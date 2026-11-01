@@ -18,6 +18,7 @@ public sealed partial class WorkbenchTextEdits
         [nameof(AppStrings)] = typeof(AppStrings)
     };
 
+    [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
     private readonly ConcurrentDictionary<(string Resource, string Culture, string Key), string> edited = [];
@@ -67,11 +68,11 @@ public sealed partial class WorkbenchTextEdits
 
     /// <summary>
     /// Writes an entry's text into the culture's resx, adding the entry when the file lacks it. Returns false when the request
-    /// isn't from this machine, the text changes the entry's placeholders, or the file isn't there.
+    /// may not change the texts, the text changes the entry's placeholders, or the file isn't there.
     /// </summary>
     public async Task<bool> Save(string resource, string key, string culture, string value)
     {
-        if (IsLocalRequest is false || KeepsPlaceholders(resource, key, value) is false)
+        if (CanChange is false || KeepsPlaceholders(resource, key, value) is false)
             return false;
 
         if (WorkbenchFolders.Project is not { } folder || ResxFile(folder, resource, culture) is not { } path || File.Exists(path) is false)
@@ -107,8 +108,8 @@ public sealed partial class WorkbenchTextEdits
         return true;
     }
 
-    /// <summary>Whether the current request, or the circuit it started, came from this machine.</summary>
-    private bool IsLocalRequest => httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.IsLocal(context);
+    /// <summary>Whether the current request, or the circuit it started, may change the texts.</summary>
+    private bool CanChange => httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.CanChange(context, configuration);
 
     /// <summary>The resx of a resource in a culture: the neutral file for the default culture, otherwise the language's file.</summary>
     private static string? ResxFile(string projectFolder, string resource, string culture)

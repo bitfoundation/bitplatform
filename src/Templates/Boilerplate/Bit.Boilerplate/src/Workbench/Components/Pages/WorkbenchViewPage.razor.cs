@@ -1,3 +1,4 @@
+using Bit.Bonboarding;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Workbench.Components.Pages;
@@ -16,6 +17,7 @@ public partial class WorkbenchViewPage
     private bool isRestored;
     private bool isSmallScreen;
     private bool isToolsOpen;
+    private bool startsTour;
     private bool isPickingInline;
     private bool isLinkCopied;
     private List<BitMenuButtonItem> compareItems = [];
@@ -62,6 +64,7 @@ public partial class WorkbenchViewPage
     [AutoInject] private WorkbenchSnapshots snapshots = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
+    [AutoInject] private IBonboardingService bonboardingService = default!;
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
     [AutoInject] private WorkbenchTextEdits textEdits = default!;
@@ -89,6 +92,8 @@ public partial class WorkbenchViewPage
 
     protected override void OnInitialized()
     {
+        startsTour = WorkbenchUrls.ReadQuery(NavigationManager.Uri, WorkbenchUrls.TourQueryKey) is not null;
+
         screenshotItems =
         [
             new() { Key = "view", Text = Localizer[nameof(WorkbenchStrings.ScreenshotThisView)], IconName = BitIconName.Camera, OnClick = item => _ = DownloadScreenshot(store.SelectedPane) },
@@ -103,6 +108,7 @@ public partial class WorkbenchViewPage
 
         reviewSession.Changed += OnReviewChanged;
         WorkbenchComponentSources.Updated += OnCodeUpdated;
+        bonboardingService.SessionsChanged += OnGuidesChanged;
     }
 
     protected override void OnParametersSet()
@@ -162,6 +168,16 @@ public partial class WorkbenchViewPage
 
         Apply();
         StateHasChanged();
+
+        if (startsTour && pageInfo is not null)
+        {
+            await RunStartStep(StartTour);
+        }
+        // The browser's Back on the tour's Flows step: back a step, as the tour would otherwise wait out of sight for that page.
+        else if (bonboardingService.FindSession(TourId) is { WaitReason: BonboardingWaitReason.Route } tour)
+        {
+            await RunStartStep(() => tour.PreviousAsync());
+        }
     }
 
     /// <summary>Runs one start-up step; a failure is logged and the other steps still run, so the canvas never waits for ever.</summary>
@@ -207,8 +223,8 @@ public partial class WorkbenchViewPage
     }
 
     /// <summary>
-    /// Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode. Inspect mode opens the first tab,
-    /// where the picked component's panel shows.
+    /// Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode, with the page back to use. Inspect
+    /// mode opens the first tab, where the picked component's panel shows.
     /// </summary>
     private void SetMode(string mode)
     {
@@ -217,7 +233,9 @@ public partial class WorkbenchViewPage
             store.ShowColumn(WorkbenchModes.ReviewColumn);
 
             if (reviewSession.CanWrite is false)
-                return;
+            {
+                mode = WorkbenchModes.Browse;
+            }
         }
 
         if (mode is WorkbenchModes.Inspect)
@@ -436,6 +454,52 @@ public partial class WorkbenchViewPage
 
     private void OnReviewChanged() => InvokeAsync(StateHasChanged);
 
+    /// <summary>
+    /// A sign-in or sign-up button pressed in a view. Those pages aren't here, so this brings the user picker into sight, whatever
+    /// mode, tab or collapsed column was hiding it, and points at it with the rest of the screen dimmed.
+    /// </summary>
+    [JSInvokable]
+    public async Task ShowSignInGuide(string? paneId)
+    {
+        if (paneId is not null)
+        {
+            store.SelectPane(paneId);
+        }
+
+        SetMode(WorkbenchModes.Browse);
+
+        if (isSmallScreen)
+        {
+            isToolsOpen = true;
+        }
+        else
+        {
+            store.ShowColumn(WorkbenchModes.ViewColumn);
+        }
+
+        StateHasChanged();
+
+        await bonboardingService.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "sign-in-guide",
+            Persist = false,
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Target = BonboardingStepTarget.Anchor("sign-in"),
+                    Title = nameof(WorkbenchStrings.SignInNoteTitle),
+                    Description = nameof(WorkbenchStrings.SignInGuide),
+                    Placement = BonboardingPlacement.InlineStart,
+                    Interaction = BonboardingInteractionMode.TargetOnly,
+                    Progress = BonboardingProgressStyle.None,
+                    ShowSkip = false,
+                    DoneLabel = Localizer[nameof(WorkbenchStrings.GotIt)]
+                }
+            }
+        });
+    }
+
     /// <summary>A view whose page changed its own scenario, like a theme picked in the app's menu.</summary>
     [JSInvokable]
     public void ReportScenario(string paneId, string query)
@@ -513,6 +577,15 @@ public partial class WorkbenchViewPage
         {
             var values = pageSwitch.Options.Select(o => o.Value).ToArray();
             compareItems.Add(new() { Key = $"switch-{pageSwitch.Key}", Text = Localizer[pageSwitch.NameKey], IconName = BitIconName.ToggleRight, OnClick = _ => store.CompareSwitch(pageSwitch.Key, values) });
+        }
+    }
+
+    // On a phone the tour swaps the layout, and it ends on whichever page instance is showing by then.
+    private void OnGuidesChanged(object? sender, EventArgs args)
+    {
+        if (isSmallScreen)
+        {
+            InvokeAsync(StateHasChanged);
         }
     }
 
@@ -648,7 +721,22 @@ public partial class WorkbenchViewPage
     {
         reviewSession.Changed -= OnReviewChanged;
         WorkbenchComponentSources.Updated -= OnCodeUpdated;
+        bonboardingService.SessionsChanged -= OnGuidesChanged;
         reference?.Dispose();
+
+        // A guide left running would keep pointing at a shell that is gone; the tour goes on when this is its way to the Flows page.
+        var isTourOnItsWay = IsTouring && IsOnFlowsPage;
+
+        try
+        {
+            if (isTourOnItsWay is false)
+            {
+                await bonboardingService.StopAllAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+        }
 
         await base.DisposeAsync();
     }

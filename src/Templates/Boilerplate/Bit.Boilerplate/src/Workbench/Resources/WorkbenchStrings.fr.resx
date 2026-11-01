@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>Un tableau de bord de point de vente dont les widgets peuvent être réorganisés, redimensionnés, masqués et enregistrés.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Magasin d’Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Chargé</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Bon après-midi, Sarah</value>
+        <value>Bon après-midi, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Magasin</value>
@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>L’établi exécute les pages de votre application sur des données d’exemple, pour que vous puissiez concevoir chaque état, le voir sur chaque appareil et exporter des captures prêtes pour les boutiques, avec les mêmes composants et le même thème que votre application.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Ouvrir le tableau de bord des ventes</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Commencer ici</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Pourquoi un établi ?</value>
@@ -1087,7 +1087,7 @@
         <value>Qui vend le plus aujourd’hui ?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** est en tête avec **64 commandes** et 1 180 € de ventes [1].</value>
+        <value>**Saleh** est en tête avec **64 commandes** et 1 180 € de ventes [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Ici, je ne connais que les questions suggérées. Essayez-en une.</value>
@@ -1909,10 +1909,10 @@
         <value>Tous les rôles</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Personnalisez-le avec l’IA</value>
+        <value>Personnalisez l’établi lui-même avec l’IA</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>L’établi fait aussi partie de votre application. Demandez à votre agent IA de changer ses fonctions ou d’ajouter les outils, appareils et états dont votre équipe a besoin.</value>
+        <value>Vous pouvez modifier l’outil lui-même, pas seulement ses pages. Demandez à votre agent IA de changer les fonctions de l’établi ou d’ajouter les outils, appareils et états dont votre équipe a besoin.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Personne</value>
@@ -1924,13 +1924,13 @@
         <value>Connecté en tant que</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Administrateur global</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Administrateur du locataire</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
-        <value>Démo</value>
+        <value>Demo</value>
     </data>
     <data name="ChecksTab" xml:space="preserve">
         <value>Contrôles</value>
@@ -2147,9 +2147,6 @@
     </data>
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Enregistre dans les fichiers de traduction et recharge les vues. Votre agent voit la modification dans git.</value>
-    </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>L’enregistrement du texte fonctionne quand l’établi s’exécute depuis le projet sur votre propre machine.</value>
     </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Modifie le texte {0} · {1} :</value>
@@ -2370,20 +2367,53 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Options de design</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Collaboration en direct avec l’IA</value>
-    </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>Sur la machine qui exécute l’établi, un commentaire épinglé sur la page part directement vers l’agent IA du développeur : il modifie la page, répond ici même et coche le commentaire sous vos yeux. Depuis n’importe quel autre endroit, la révision est en lecture seule, pour que personne ne puisse atteindre cet agent via un lien partagé.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>L’agent est hors ligne</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Aucun commentaire pour l’instant.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Les parcours se dessinent sur la machine qui exécute l’établi. Ici, vous pouvez les ouvrir et les parcourir.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Aucun parcours pour l’instant.</value>
+    </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Ajouter un bâtiment</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>La liste des bâtiments remarquables, avec « Ajouter un bâtiment » en haut.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>« Ajouter un bâtiment » ouvre un formulaire pour le nouveau bâtiment.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>« Carte » montre les mêmes bâtiments sur une carte des Pays-Bas.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Ouvrir le tableau de bord des ventes</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>Pendant le chargement des données, chaque widget garde sa place.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Puis chaque widget se remplit avec les chiffres du jour.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>Sans vente pour l’instant, chaque widget l’indique.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>Un widget peut échouer pendant que les autres continuent.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Les données arrivent</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>Pas encore de ventes</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>Un chargement échoue</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Exemple</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Révisez en direct avec votre agent IA</value>
@@ -2401,7 +2431,7 @@
         <value>Touchez l’endroit que vous voulez commenter</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>Aucun parcours pour l’instant. Demandez à votre agent d’en dessiner un, comme « montre comment on ajoute un bâtiment », ou ajoutez des vues à un parcours depuis l’onglet Parcours d’une page.</value>
+        <value>Demandez à votre agent d’en dessiner un, comme « montre comment on ajoute un bâtiment », ou ajoutez des vues à un parcours depuis l’onglet Parcours d’une page.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>Aucun parcours à ce lien. Il a peut-être été supprimé.</value>
@@ -2728,16 +2758,13 @@
         <value>Composant</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Pour les changements rapides seulement. Écrivez le reste dans l’onglet Révision, l’agent s’en occupe.</value>
+        <value>Pour les changements rapides/simples seulement. Écrivez le reste dans l’onglet Révision, l’agent s’en occupe.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Cliquez sur un composant dans une vue pour voir ses paramètres et les modifier.</value>
     </data>
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Ce n’est pas un composant bit BlazorUI, ou il n’est plus sur la page : il n’y a donc aucun paramètre à afficher.</value>
-    </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Les changements ne s’enregistrent que lorsque l’établi s’exécute depuis le projet sur votre propre machine.</value>
     </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} dessine cette partie lui-même : elle se modifie donc via les paramètres de {0}.</value>
@@ -2781,9 +2808,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Enregistré dans {0}. Le hot reload l’affichera dans un instant.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Enregistré dans {0}. Redémarrez l’application pour le voir.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>Le changement n’a pas pu être enregistré ; sa balise a peut-être bougé. Cliquez de nouveau sur le composant.</value>
     </data>
@@ -2801,5 +2825,59 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Valeurs suggérées</value>
+    </data>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>L’agent n’est pas connecté</value>
+    </data>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Expérience limitée</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Vous pouvez explorer, changer de vue et faire des captures. Pour modifier quoi que ce soit, un agent IA doit exécuter le Workbench.</value>
+    </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Les pages de connexion ne sont pas encore dans le Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Choisissez votre utilisateur dans l’onglet Vue, avec le groupe d’utilisateurs souhaité, ou demandez à votre agent d’ajouter ces pages au Workbench, il s’en occupe.</value>
+    </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>Choisissez ici votre utilisateur, avec le groupe d’utilisateurs souhaité, ou demandez à votre agent d’ajouter ces pages au Workbench, il s’en occupe.</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>Compris</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>Suivant</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>Retour</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>Passer la visite</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>Terminé</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>Visite du produit</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{0} sur {1}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>Étape {0} sur {1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>En attente de la suite de la page.</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>Progression de la visite</value>
+    </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Faire la visite</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Chaque vente, en direct</value>
     </data>
 </root>

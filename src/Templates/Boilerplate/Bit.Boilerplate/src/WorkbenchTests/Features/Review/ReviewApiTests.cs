@@ -58,7 +58,7 @@ public class ReviewApiTests
         Assert.AreEqual("dark", (string?)view["theme"]);
         Assert.AreEqual(CultureInfoManager.DefaultCulture.Name, (string?)view["culture"]);
         Assert.AreEqual("live", (string?)view["data"]);
-        Assert.AreEqual("signedin", (string?)view["signIn"]);
+        Assert.AreEqual("multiaccount", (string?)view["signIn"]);
         Assert.AreEqual(WorkbenchDemoUsers.All[0].Email, (string?)view["user"]);
 
         Assert.AreEqual("/workbench/buildings?theme=dark&device=ipad-mini", (string?)comment["links"]!["workbench"]);

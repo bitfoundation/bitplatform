@@ -129,9 +129,11 @@
     pointer-events: none;
 }
 
+// As wide as its device, so a long note wraps instead of reaching into the next screen.
 .screen-card {
     gap: 18px;
     display: flex;
+    width: min-content;
     flex-direction: column;
 }
 

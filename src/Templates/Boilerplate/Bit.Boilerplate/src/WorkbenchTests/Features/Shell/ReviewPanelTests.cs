@@ -201,7 +201,6 @@ public class ReviewPanelTests
 
         var cut = Render(ctx, p => p.Add(x => x.PendingAnchor, anchor));
 
-        Assert.Contains(WorkbenchStrings.LiveReviewTitle, cut.Markup);
         Assert.Contains(WorkbenchStrings.AgentOffline, cut.Markup);
         Assert.IsEmpty(cut.FindAll("textarea"), "No composer and no reply box.");
         Assert.IsEmpty(cut.FindAll("button").Where(b => b.TextContent.Trim() == WorkbenchStrings.PageStatusApproved), "The page status is shown, not set.");

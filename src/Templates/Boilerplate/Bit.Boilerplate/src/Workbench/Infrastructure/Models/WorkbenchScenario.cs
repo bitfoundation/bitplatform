@@ -28,7 +28,7 @@ public sealed partial record WorkbenchScenario
     /// <summary>Whether the app's navigation, header and bottom bar are drawn around the page.</summary>
     public bool Chrome { get; init; } = true;
 
-    public WorkbenchAuthState Auth { get; init; } = WorkbenchAuthState.SignedIn;
+    public WorkbenchAuthState Auth { get; init; } = WorkbenchAuthState.MultiAccount;
 
     /// <summary>The index of the signed-in demo user in <see cref="WorkbenchDemoUsers.All"/>.</summary>
     public int User { get; init; }

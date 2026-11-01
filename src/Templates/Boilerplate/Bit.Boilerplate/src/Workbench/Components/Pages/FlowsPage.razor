@@ -31,7 +31,7 @@
                 @Localizer[nameof(WorkbenchStrings.Present)]
             </BitButton>
         }
-        @if (Flow is not null && reviewSession.CanWrite)
+        @if (CanEdit)
         {
             <BitButton Variant="BitVariant.Text" Size="BitSize.Small" Color="BitColor.Error" IconName="@BitIconName.Delete" IconOnly="isConfirmingDelete is false"
                        Title="@Localizer[nameof(WorkbenchStrings.DeleteFlow)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.DeleteFlow)]"
@@ -60,8 +60,8 @@
     }
     else if (Flow is { } flow)
     {
-        @* Only this machine may change the board; elsewhere it can be panned, zoomed and presented. *@
-        <main class="board @(reviewSession.CanWrite ? null : "read-only")">
+        @* Only dev mode may change the board, and not a sample's; otherwise it can be panned, zoomed and presented. *@
+        <main class="board @(CanEdit ? null : "read-only")">
             <BlowCanvas @ref="canvas"
                         Class="flow-board"
                         Nodes="nodes"
@@ -70,11 +70,11 @@
                         FitViewOptions="fitOptions"
                         MinZoom="0.05"
                         MaxZoom="1.5"
-                        NodesDraggable="reviewSession.CanWrite"
-                        NodesConnectable="reviewSession.CanWrite"
-                        ElementsSelectable="reviewSession.CanWrite"
+                        NodesDraggable="CanEdit"
+                        NodesConnectable="CanEdit"
+                        ElementsSelectable="CanEdit"
                         EdgesReconnectable="false"
-                        OnBeforeDelete="(_, _) => reviewSession.CanWrite"
+                        OnBeforeDelete="(_, _) => CanEdit"
                         OnNodeDragStop="MoveScreen"
                         OnConnect="Connect"
                         OnNodesDelete="RemoveScreens"
@@ -95,7 +95,7 @@
                                    title="@Localizer[nameof(WorkbenchStrings.OpenInWorkbench)]" aria-label="@Localizer[nameof(WorkbenchStrings.OpenInWorkbench)]">
                                     <BitIcon IconName="@BitIconName.OpenInNewWindow" />
                                 </a>
-                                @if (reviewSession.CanWrite)
+                                @if (CanEdit)
                                 {
                                     <button type="button" class="screen-remove nodrag" @onclick="() => RemoveScreen(screen.Id)"
                                             title="@Localizer[nameof(WorkbenchStrings.RemoveScreen)]" aria-label="@Localizer[nameof(WorkbenchStrings.RemoveScreen)]">
@@ -130,7 +130,7 @@
             {
                 <p class="board-empty">@Localizer[nameof(WorkbenchStrings.FlowHasNoScreens)]</p>
             }
-            else if (reviewSession.CanWrite && presentIndex < 0 && pickingLinkId is null)
+            else if (CanEdit && presentIndex < 0 && pickingLinkId is null)
             {
                 <p class="board-help">@Localizer[nameof(WorkbenchStrings.BoardHelp)]</p>
             }
@@ -211,17 +211,21 @@
             {
                 <BitText Typography="BitTypography.Body1" Class="missing">@Localizer[nameof(WorkbenchStrings.FlowNotFound)]</BitText>
             }
-            @if (reviewSession.Flows.Count == 0)
+            @if (reviewSession.CanWrite && reviewSession.Flows.Count == 0)
             {
                 <p class="empty">@Localizer[nameof(WorkbenchStrings.FlowsEmpty)]</p>
             }
+            else if (reviewSession.AllFlows.Count == 0)
+            {
+                <p class="empty">@Localizer[nameof(WorkbenchStrings.NoFlowsYet)]</p>
+            }
             <div class="flow-cards">
-                @foreach (var item in reviewSession.Flows)
+                @foreach (var item in reviewSession.AllFlows)
                 {
                     <a class="flow-card" href="@WorkbenchUrls.Flow(item.Id)">
                         <BitIcon IconName="@BitIconName.Flow" Class="flow-card-icon" />
                         <span class="flow-card-name" dir="auto">@item.Name</span>
-                        <span class="flow-card-meta">@Localizer[nameof(WorkbenchStrings.ScreenCount), item.Screens.Length]</span>
+                        <span class="flow-card-meta">@Localizer[nameof(WorkbenchStrings.ScreenCount), item.Screens.Length]@(item.IsSample ? $" · {Localizer[nameof(WorkbenchStrings.FlowSample)]}" : null)</span>
                         <span class="flow-card-pages">@string.Join(IsRtl ? " ← " : " → ", item.Screens.Select(s => TitleOf(s.PageKey)).Distinct())</span>
                     </a>
                 }

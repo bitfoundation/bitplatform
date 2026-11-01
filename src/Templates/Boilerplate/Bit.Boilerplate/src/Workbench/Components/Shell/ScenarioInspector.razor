@@ -86,7 +86,7 @@
         </section>
     }
 
-    <section>
+    <section data-bonboarding-anchor="data-states">
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.DataState)]</BitText>
         <div class="segments three">
             @foreach (var state in Enum.GetValues<WorkbenchDataState>())
@@ -127,21 +127,23 @@
             <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.CaptionHint)]</BitText>
         }
 
-        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.SignInState)]</BitText>
-        <div class="segments three">
-            @foreach (var auth in Enum.GetValues<WorkbenchAuthState>())
-            {
-                <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Auth == auth)" aria-pressed="@PressedOf(Value.Auth == auth)"
-                           OnClick="() => Update(Value with { Auth = auth })">@Localizer[auth.ToString()]</BitButton>
-            }
+        <div class="sign-in" data-bonboarding-anchor="sign-in">
+            <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.SignInState)]</BitText>
+            <div class="segments three">
+                @foreach (var auth in Enum.GetValues<WorkbenchAuthState>())
+                {
+                    <BitButton Size="BitSize.Small" Class="segment" Variant="@VariantOf(Value.Auth == auth)" aria-pressed="@PressedOf(Value.Auth == auth)"
+                               OnClick="() => Update(Value with { Auth = auth })">@Localizer[auth.ToString()]</BitButton>
+                }
+            </div>
+            <BitDropdown Items="userItems"
+                         Value="Value.User"
+                         ValueChanged="(int user) => Update(Value with { User = user })"
+                         Disabled="Value.Auth is WorkbenchAuthState.SignedOut"
+                         AriaLabel="@Localizer[nameof(WorkbenchStrings.SignedInAs)]"
+                         Responsive
+                         FitWidth />
         </div>
-        <BitDropdown Items="userItems"
-                     Value="Value.User"
-                     ValueChanged="(int user) => Update(Value with { User = user })"
-                     Disabled="Value.Auth is WorkbenchAuthState.SignedOut"
-                     AriaLabel="@Localizer[nameof(WorkbenchStrings.SignedInAs)]"
-                     Responsive
-                     FitWidth />
 
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.Theme)]</BitText>
         <div class="segments three">

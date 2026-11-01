@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>En kassaöversikt med widgetar som kan flyttas om, storleksändras, döljas och sparas.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Butik Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Hektiskt</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>God eftermiddag, Sarah</value>
+        <value>God eftermiddag, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Butik</value>
@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>Arbetsbänken kör appens sidor med exempeldata, så att du kan designa varje läge, se det på alla enheter och exportera skärmbilder redo för appbutikerna, med samma komponenter och tema som din app levereras med.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Öppna kassaöversikten</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Börja här</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Varför en arbetsbänk?</value>
@@ -1087,7 +1087,7 @@
         <value>Vem säljer mest i dag?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** leder med **64 beställningar** och 1 180 € i försäljning [1].</value>
+        <value>**Saleh** leder med **64 beställningar** och 1 180 € i försäljning [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Här kan jag bara de föreslagna frågorna. Prova en av dem.</value>
@@ -1909,10 +1909,10 @@
         <value>Alla roller</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Anpassa den med AI</value>
+        <value>Anpassa själva arbetsbänken med AI</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>Arbetsbänken är också en del av din app. Be din AI-agent att ändra dess funktioner eller lägga till de verktyg, enheter och tillstånd som ditt team behöver.</value>
+        <value>Du kan ändra själva verktyget, inte bara sidorna i det. Be din AI-agent att ändra arbetsbänkens funktioner eller lägga till de verktyg, enheter och tillstånd som ditt team behöver.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Ingen</value>
@@ -1924,10 +1924,10 @@
         <value>Inloggad som</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Global administratör</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Tenantadministratör</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Sparar i översättningsfilerna och laddar om vyerna. Din agent ser ändringen i git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Att spara text fungerar när arbetsbänken körs från projektet på din egen dator.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Ändra texten {0} · {1}:</value>
     </data>
@@ -2370,20 +2367,53 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Designalternativ</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Livesamarbete med AI</value>
-    </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>På datorn som kör arbetsbänken går en kommentar som fästs på sidan raka vägen till utvecklarens AI-agent: den ändrar sidan, svarar direkt här och bockar av kommentaren medan du ser på. Från alla andra platser är granskningen skrivskyddad, så att ingen kan nå den agenten via en delad länk.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Agenten är offline</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Inga kommentarer än.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flöden ritas på datorn som kör arbetsbänken. Här kan du öppna dem och gå igenom dem.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Inga flöden än.</value>
+    </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Lägga till en byggnad</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>Listan över kända byggnader, med ”Lägg till byggnad” högst upp.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>”Lägg till byggnad” öppnar ett formulär för den nya byggnaden.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>”Karta” visar samma byggnader på en karta över Nederländerna.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Öppna kassaöversikten</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>Medan data laddas behåller varje widget sin plats.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Sedan fylls varje widget med dagens siffror.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>Utan försäljning än säger varje widget det.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>En widget kan misslyckas medan de andra fortsätter.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Data kommer</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>Ingen försäljning än</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>En laddning misslyckas</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Exempel</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Granska live med din AI-agent</value>
@@ -2401,7 +2431,7 @@
         <value>Tryck på stället du vill kommentera</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>Inga flöden än. Be din agent rita ett, som ”visa hur man lägger till en byggnad”, eller lägg till vyer i ett flöde från fliken Flöden på en sida.</value>
+        <value>Be din agent rita ett, som ”visa hur man lägger till en byggnad”, eller lägg till vyer i ett flöde från fliken Flöden på en sida.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>Det finns inget flöde på den här länken. Det kan ha tagits bort.</value>
@@ -2728,16 +2758,13 @@
         <value>Komponent</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Bara för snabba ändringar. Skriv allt annat i fliken Granskning så tar agenten hand om det.</value>
+        <value>Bara för snabba/enkla ändringar. Skriv allt annat i fliken Granskning så tar agenten hand om det.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Klicka på en komponent i en vy för att se och ändra dess parametrar.</value>
     </data>
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Det här är ingen bit BlazorUI-komponent, eller så finns den inte längre på sidan, så det finns inga parametrar att visa.</value>
-    </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Ändringar kan bara sparas när arbetsbänken körs från projektet på din egen dator.</value>
     </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} ritar den här delen själv, så den ändras via parametrarna för {0}.</value>
@@ -2781,9 +2808,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Sparat i {0}. Hot reload visar det om ett ögonblick.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Sparat i {0}. Starta om appen för att se det.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>Ändringen kunde inte sparas; taggen kan ha flyttats. Klicka på komponenten igen.</value>
     </data>
@@ -2801,5 +2825,59 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Föreslagna värden</value>
+    </data>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>Agenten är inte ansluten</value>
+    </data>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Begränsad upplevelse</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Du kan titta runt, byta vy och ta skärmbilder. För att ändra något måste en AI-agent köra Workbench.</value>
+    </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Inloggningssidorna finns inte i Workbench än</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Välj din användare på fliken Vy, med den användargrupp du vill ha, eller be din agent att lägga till sidorna i Workbench så tar den hand om det.</value>
+    </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>Välj din användare här, med den användargrupp du vill ha, eller be din agent att lägga till sidorna i Workbench så tar den hand om det.</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>Uppfattat</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>Nästa</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>Tillbaka</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>Hoppa över rundturen</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>Klar</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>Produktrundtur</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{0} av {1}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>Steg {0} av {1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>Väntar på nästa del av sidan.</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>Rundturens förlopp</value>
+    </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Starta rundturen</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Varje försäljning, live</value>
     </data>
 </root>

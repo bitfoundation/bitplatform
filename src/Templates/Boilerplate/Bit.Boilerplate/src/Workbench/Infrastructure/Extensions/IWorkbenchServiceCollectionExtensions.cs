@@ -1,3 +1,4 @@
+using Bit.Bonboarding;
 using Bit.Bcrdt;
 using Bit.Bcrdt.Server;
 using Microsoft.Extensions.Localization;
@@ -35,6 +36,11 @@ public static class IWorkbenchServiceCollectionExtensions
                     components.Register<AssistantStockCard>("low_stock");
                 });
             });
+
+            // The guides that point at the shell's own controls, between panels and dropdown lists, so a dropdown they point at
+            // still opens above the dimmed page.
+            services.AddBitBonboardingServices(options => options.ZIndex = 1250);
+            services.AddBitBonboardingLocalizer<WorkbenchTourLocalizer>();
 
             // The pages' stores, saved per view in IndexedDB, so a reload and a screenshot keep what was done on a page.
             services.AddBitBlexServices(options => options.DevToolsName = "bit Workbench");

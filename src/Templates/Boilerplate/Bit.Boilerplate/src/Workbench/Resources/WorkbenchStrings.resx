@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>A point-of-sale dashboard whose widgets can be rearranged, resized, hidden and saved.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Amsterdam store</value>
@@ -583,7 +583,7 @@
         <value>Busy</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Good afternoon, Sarah</value>
+        <value>Good afternoon, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Store</value>
@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>The workbench runs your app's pages on sample data, so you can design every state, see it on every device and export store-ready screenshots, with the same components and theme your app ships with.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Open the POS dashboard</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Start here</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>Why a workbench?</value>
@@ -1087,7 +1087,7 @@
         <value>Today's top seller?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** leads with **64 orders** and €1,180 in sales [1].</value>
+        <value>**Saleh** leads with **64 orders** and €1,180 in sales [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Here I only know the suggested questions. Try one of them.</value>
@@ -1909,10 +1909,10 @@
         <value>All roles</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Customize it with AI</value>
+        <value>Customize Workbench itself with AI</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>The workbench is part of your app too. Ask your AI agent to change its features, or to add the tools, devices and states your team needs.</value>
+        <value>You can change the tool itself, not only the pages in it. Ask your AI agent to change the Workbench's features, or to add the tools, devices and states your team needs.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>No one</value>
@@ -1924,10 +1924,10 @@
         <value>Signed in as</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Global admin</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Tenant admin</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2214,9 +2214,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Saves into the translation files and reloads the views. Your agent sees the change in git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Saving text works when the Workbench runs from the project on your own computer.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Change the text {0} · {1}:</value>
     </data>
@@ -2370,20 +2367,53 @@
     <data name="ThemeTab" xml:space="preserve">
         <value>Tab {0}</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Live collaboration with AI</value>
-    </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>On the computer that runs the Workbench, a comment pinned on the page goes straight to the developer's AI agent: it changes the page, answers right here and ticks the comment off while you watch. From anywhere else the review is read-only, so nobody can reach that agent through a shared link.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>Agent is offline</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>No comments yet.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Flows are drawn on the computer that runs the Workbench. Here you can open them and walk through them.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>No flows yet.</value>
+    </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Adding a building</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>The list of landmark buildings, with Add building on top.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>Add building opens a form for the new building.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>Map shows the same buildings on a map of the Netherlands.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Opening the POS dashboard</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>While the data loads, every widget keeps its place.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Then each widget fills in with the day's numbers.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>With no sales yet, each widget says so.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>One widget can fail while the others carry on.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Data arrives</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>No sales yet</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>One load fails</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Sample</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Review live with your AI agent</value>
@@ -2401,7 +2431,7 @@
         <value>Tap the spot you want to comment on</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>No flows yet. Ask your agent to draw one, like “show how a building is added”, or add views to a flow from a page's Flows tab.</value>
+        <value>Ask your agent to draw one, like “show how a building is added”, or add views to a flow from a page's Flows tab.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>There is no flow at this link. It may have been deleted.</value>
@@ -2728,16 +2758,13 @@
         <value>Component</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>For quick changes only. Write anything else in the Review tab and the agent takes care of it.</value>
+        <value>For quick/simple changes only. Write anything else in the Review tab and the agent takes care of it.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Click a component in a view to see its parameters and change them.</value>
     </data>
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>This isn't a bit BlazorUI component, or it's no longer on the page, so there are no parameters to show.</value>
-    </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Changes can be saved only when the Workbench runs from the project on your own computer.</value>
     </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} draws this part itself, so it changes through {0}'s parameters.</value>
@@ -2781,9 +2808,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Saved to {0}. Hot reload shows it in a moment.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Saved to {0}. Restart the app to see it.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>The change couldn't be saved; its tag may have moved. Click the component again.</value>
     </data>
@@ -2801,5 +2825,59 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Suggested values</value>
+    </data>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>Agent is not connected</value>
+    </data>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Limited experience</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>You can look around, switch views and take screenshots. Changing anything needs an AI agent running the Workbench.</value>
+    </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Sign-in pages aren't in the Workbench yet</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Pick your user in the View tab, with the user group you want, or ask your agent to bring these pages into the Workbench and it will take care of it.</value>
+    </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>Pick your user here, with the user group you want, or ask your agent to bring these pages into the Workbench and it will take care of it.</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>Got it</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>Next</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>Back</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>Skip tour</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>Done</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>Product tour</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{0} of {1}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>Step {0} of {1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>Waiting for the next part of the page.</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>Tour progress</value>
+    </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Take the tour</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Every sale, live</value>
     </data>
 </root>

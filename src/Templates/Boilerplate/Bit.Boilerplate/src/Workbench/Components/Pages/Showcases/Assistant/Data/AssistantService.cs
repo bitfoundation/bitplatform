@@ -246,9 +246,9 @@ public partial class AssistantService : IBitAiTransport
             date = DateOnly.FromDateTime(DateTime.Today),
             team = new[]
             {
-                new { name = "Daan", orders = 64, sales = 1_177.60m },
-                new { name = "Sarah", orders = 58, sales = 1_032.40m },
-                new { name = "Niloofar", orders = 51, sales = 913.00m }
+                new { name = "Saleh", orders = 64, sales = 1_177.60m },
+                new { name = "Yas", orders = 58, sales = 1_032.40m },
+                new { name = "Zahra", orders = 51, sales = 913.00m }
             }
         }, "team", nameof(WorkbenchStrings.AssistantSourceTeam), nameof(WorkbenchStrings.AssistantToolTeam)),
         _ => BitAiToolOutcome.Success(ToJson(new { order = "PO-1042", lines = stockLevels.Length, arrives = NextDate(DayOfWeek.Friday) }))

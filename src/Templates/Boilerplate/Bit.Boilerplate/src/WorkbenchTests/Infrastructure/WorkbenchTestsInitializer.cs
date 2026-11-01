@@ -8,8 +8,12 @@ namespace Boilerplate.WorkbenchTests.Infrastructure;
 public static class WorkbenchTestsInitializer
 {
     private static readonly Lazy<Task<WorkbenchTestServer>> sharedServer = new(() => new WorkbenchTestServer().Start());
+    private static readonly Lazy<Task<WorkbenchTestServer>> readOnlyServer = new(() => new WorkbenchTestServer().Start(isDevMode: false));
 
     public static Task<WorkbenchTestServer> SharedServer => sharedServer.Value;
+
+    /// <summary>A Workbench outside dev mode, like a published demo or the plain run bit CLI starts.</summary>
+    public static Task<WorkbenchTestServer> ReadOnlyServer => readOnlyServer.Value;
 
     [AssemblyInitialize]
     public static void Initialize(TestContext testContext)
@@ -30,6 +34,11 @@ public static class WorkbenchTestsInitializer
         if (sharedServer.IsValueCreated)
         {
             await (await sharedServer.Value).DisposeAsync();
+        }
+
+        if (readOnlyServer.IsValueCreated)
+        {
+            await (await readOnlyServer.Value).DisposeAsync();
         }
     }
 }

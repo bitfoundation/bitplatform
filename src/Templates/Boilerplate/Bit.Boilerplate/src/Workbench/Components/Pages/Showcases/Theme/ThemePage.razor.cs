@@ -49,9 +49,9 @@ public partial class ThemePage
     /// <summary>Sample people, one per presence, for the BitPersona row.</summary>
     private static readonly (string NameKey, BitPersonaPresence Presence)[] people =
     [
-        (nameof(WorkbenchStrings.DemoUserSarah), BitPersonaPresence.Online),
-        (nameof(WorkbenchStrings.DemoUserDaan), BitPersonaPresence.Away),
-        (nameof(WorkbenchStrings.DemoUserNiloofar), BitPersonaPresence.Dnd),
+        (nameof(WorkbenchStrings.DemoUserYas), BitPersonaPresence.Online),
+        (nameof(WorkbenchStrings.DemoUserSaleh), BitPersonaPresence.Away),
+        (nameof(WorkbenchStrings.DemoUserZahra), BitPersonaPresence.Dnd),
         (nameof(WorkbenchStrings.PosStaffEmma), BitPersonaPresence.Offline)
     ];
 
@@ -79,7 +79,7 @@ public partial class ThemePage
     // Texts the samples share.
     private string SampleText => Localizer[nameof(WorkbenchStrings.ThemeSampleText)];
 
-    private string SampleName => Localizer[nameof(WorkbenchStrings.DemoUserSarah)];
+    private string SampleName => Localizer[nameof(WorkbenchStrings.DemoUserYas)];
 
     private string SaveText => AppLocalizer[nameof(AppStrings.Save)];
 

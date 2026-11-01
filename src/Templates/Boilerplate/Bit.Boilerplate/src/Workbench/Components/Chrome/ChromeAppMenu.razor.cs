@@ -9,6 +9,7 @@ public partial class ChromeAppMenu
     private bool isDark;
     private bool showCultures;
     private bool showTenants;
+    private bool isSignOutConfirmOpen;
     private BitChoiceGroupItem<string>[] cultures = [];
     private BitChoiceGroupItem<string>[] tenants = [];
 
@@ -59,12 +60,19 @@ public partial class ChromeAppMenu
     {
         chromeStore.OpenMenu(false);
 
-        return Shell.SignIn();
+        return ShowSignInNote();
+    }
+
+    private void AskToSignOut()
+    {
+        chromeStore.OpenMenu(false);
+
+        isSignOutConfirmOpen = true;
     }
 
     private Task SignOut()
     {
-        chromeStore.OpenMenu(false);
+        isSignOutConfirmOpen = false;
 
         return Shell.SignOut();
     }

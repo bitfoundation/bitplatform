@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>Un tablero de punto de venta cuyos widgets se pueden reorganizar, cambiar de tamaño, ocultar y guardar.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>Sarah Johnson</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>Yas</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>Daan Visser</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>Saleh</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>Niloofar Rahimi</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>Zahra</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Sucursal de Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>Concurrido</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Buenas tardes, Sarah</value>
+        <value>Buenas tardes, Yas</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Sucursal</value>
@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>El banco de trabajo ejecuta las páginas de tu app con datos de ejemplo para que puedas diseñar cada estado, verlo en cada dispositivo y exportar capturas listas para las tiendas, con los mismos componentes y el mismo tema que tu app.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>Abrir el tablero de ventas</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>Empieza aquí</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>¿Por qué un banco de trabajo?</value>
@@ -1087,7 +1087,7 @@
         <value>¿Quién vende más hoy?</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**Daan** va en cabeza con **64 pedidos** y 1.180 € en ventas [1].</value>
+        <value>**Saleh** va en cabeza con **64 pedidos** y 1.180 € en ventas [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>Aquí solo conozco las preguntas sugeridas. Prueba una de ellas.</value>
@@ -1909,10 +1909,10 @@
         <value>Todos los roles</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>Personalízalo con IA</value>
+        <value>Personaliza el propio banco de trabajo con IA</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>El banco de trabajo también forma parte de tu app. Pide a tu agente de IA que cambie sus funciones o que añada las herramientas, los dispositivos y los estados que tu equipo necesita.</value>
+        <value>Puedes cambiar la propia herramienta, no solo sus páginas. Pide a tu agente de IA que cambie las funciones del banco de trabajo o que añada las herramientas, los dispositivos y los estados que tu equipo necesita.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>Nadie</value>
@@ -1924,10 +1924,10 @@
         <value>Sesión iniciada como</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>Administrador global</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>Administrador del inquilino</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
         <value>Demo</value>
@@ -2148,9 +2148,6 @@
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>Guarda en los archivos de traducción y recarga las vistas. Tu agente ve el cambio en git.</value>
     </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>Guardar texto funciona cuando el banco de trabajo se ejecuta desde el proyecto en tu propio equipo.</value>
-    </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>Cambia el texto {0} · {1}:</value>
     </data>
@@ -2370,20 +2367,53 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>Opciones de diseño</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>Colaboración en vivo con IA</value>
-    </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>En el equipo donde se ejecuta el banco de trabajo, un comentario fijado en la página llega directamente al agente de IA del desarrollador: cambia la página, responde aquí mismo y marca el comentario como hecho mientras lo ves. Desde cualquier otro lugar, la revisión es de solo lectura, para que nadie pueda llegar a ese agente a través de un enlace compartido.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>El agente está desconectado</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>Aún no hay comentarios.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>Los flujos se dibujan en el equipo donde se ejecuta el banco de trabajo. Aquí puedes abrirlos y recorrerlos.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>Aún no hay flujos.</value>
+    </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Agregar un edificio</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>La lista de edificios emblemáticos, con «Agregar edificio» arriba.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>«Agregar edificio» abre un formulario para el nuevo edificio.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>«Mapa» muestra los mismos edificios en un mapa de los Países Bajos.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Abrir el tablero de ventas</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>Mientras se cargan los datos, cada widget conserva su lugar.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Luego cada widget se llena con las cifras del día.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>Si aún no hay ventas, cada widget lo indica.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>Un widget puede fallar mientras los demás siguen funcionando.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Llegan los datos</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>Aún sin ventas</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>Falla una carga</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Ejemplo</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Revisa en vivo con tu agente de IA</value>
@@ -2401,7 +2431,7 @@
         <value>Toca el punto que quieres comentar</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>Aún no hay flujos. Pide a tu agente que dibuje uno, como «muestra cómo se añade un edificio», o añade vistas a un flujo desde la pestaña Flujos de una página.</value>
+        <value>Pide a tu agente que dibuje uno, como «muestra cómo se añade un edificio», o añade vistas a un flujo desde la pestaña Flujos de una página.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>No hay ningún flujo en este enlace. Puede que se haya eliminado.</value>
@@ -2728,16 +2758,13 @@
         <value>Componente</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>Solo para cambios rápidos. Escribe cualquier otra cosa en la pestaña Revisión y el agente se encarga.</value>
+        <value>Solo para cambios rápidos/sencillos. Escribe cualquier otra cosa en la pestaña Revisión y el agente se encarga.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>Haz clic en un componente de una vista para ver sus parámetros y cambiarlos.</value>
     </data>
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>Esto no es un componente de bit BlazorUI, o ya no está en la página, así que no hay parámetros que mostrar.</value>
-    </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>Los cambios solo se pueden guardar cuando el banco de trabajo se ejecuta desde el proyecto en tu propio equipo.</value>
     </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>{0} dibuja esta parte por sí mismo, así que cambia con los parámetros de {0}.</value>
@@ -2781,9 +2808,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>Guardado en {0}. Hot reload lo mostrará en un momento.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>Guardado en {0}. Reinicia la aplicación para verlo.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>No se pudo guardar el cambio; puede que su etiqueta se haya movido. Vuelve a hacer clic en el componente.</value>
     </data>
@@ -2801,5 +2825,59 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>Valores sugeridos</value>
+    </data>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>El agente no está conectado</value>
+    </data>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>Experiencia limitada</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>Puedes explorar, cambiar de vista y hacer capturas. Para cambiar algo hace falta un agente de IA que ejecute el Workbench.</value>
+    </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>Las páginas de inicio de sesión aún no están en el Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>Elige tu usuario en la pestaña Vista, con el grupo de usuarios que quieras, o pide a tu agente que traiga estas páginas al Workbench y él se encarga.</value>
+    </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>Elige aquí tu usuario, con el grupo de usuarios que quieras, o pide a tu agente que traiga estas páginas al Workbench y él se encarga.</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>Entendido</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>Siguiente</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>Atrás</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>Saltar el recorrido</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>Listo</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>Recorrido del producto</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{0} de {1}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>Paso {0} de {1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>Esperando la siguiente parte de la página.</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>Progreso del recorrido</value>
+    </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Hacer el recorrido</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Cada venta, en directo</value>
     </data>
 </root>

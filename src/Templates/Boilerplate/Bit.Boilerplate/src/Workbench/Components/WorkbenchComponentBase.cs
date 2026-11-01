@@ -17,6 +17,7 @@ public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposabl
     [AutoInject] protected WorkbenchStore WorkbenchStore = default!;
     [AutoInject] protected IJSRuntime JSRuntime = default!;
     [AutoInject] protected SnackBarService SnackBarService = default!;
+    [AutoInject] protected BitMessageBoxService MessageBoxService = default!;
     [AutoInject] protected IAuthorizationService AuthorizationService = default!;
 
     private CancellationTokenSource? cancellationTokenSource = new();
@@ -41,6 +42,21 @@ public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposabl
 
     /// <summary>Completes once the Blex stores hold what the browser saved for this view; at once while prerendering.</summary>
     protected Task WhenStateRestored() => IsPrerendering ? Task.CompletedTask : Persistor.WhenHydratedAsync();
+
+    /// <summary>
+    /// Says the sign-in and sign-up pages aren't here, and how to get what they would lead to: the shell points at its user
+    /// picker, and a preview opened on its own, with no shell around it, says it in a message.
+    /// </summary>
+    protected async Task ShowSignInNote()
+    {
+        if (IsInsidePreview && PaneId is null)
+        {
+            await MessageBoxService.ShowInfo(Localizer[nameof(WorkbenchStrings.SignInNoteTitle)], Localizer[nameof(WorkbenchStrings.SignInNote)]);
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("workbench.askForSignInGuide");
+    }
 
     /// <summary>The id of the shell's pane this preview is shown in, or null outside a pane.</summary>
     protected string? PaneId => WorkbenchUrls.ReadQuery(NavigationManager.Uri, WorkbenchUrls.PaneQueryKey);

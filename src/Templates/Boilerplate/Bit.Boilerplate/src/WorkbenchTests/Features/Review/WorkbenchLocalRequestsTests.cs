@@ -18,6 +18,18 @@ public class WorkbenchLocalRequestsTests
     }
 
     [TestMethod]
+    [DataRow("1", "localhost:6030", true)]
+    [DataRow(null, "localhost:6030", false)]
+    [DataRow("0", "localhost:6030", false)]
+    [DataRow("1", "workbench.example.com", false)]
+    public void AChange_Should_NeedDevModeOnThisMachine(string? dotnetWatch, string host, bool canChange)
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection([new("DOTNET_WATCH", dotnetWatch)]).Build();
+
+        Assert.AreEqual(canChange, WorkbenchLocalRequests.CanChange(Request(host), configuration));
+    }
+
+    [TestMethod]
     [DataRow("localhost:6030")]
     [DataRow("127.0.0.1:6030")]
     [DataRow("[::1]:6030")]

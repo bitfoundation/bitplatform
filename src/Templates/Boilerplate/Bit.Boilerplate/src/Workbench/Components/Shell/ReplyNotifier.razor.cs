@@ -1,7 +1,7 @@
 namespace Boilerplate.Workbench.Components.Shell;
 
 /// <summary>
-/// Announces the agent's replies on this machine with a tone and a vibration, and with a system notification when
+/// Announces the agent's replies in dev mode with a tone and a vibration, and with a system notification when
 /// "Notify me" is on. It renders nothing and sits in the Workbench layout, so it works on every shell page.
 /// </summary>
 public partial class ReplyNotifier

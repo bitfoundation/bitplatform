@@ -4,7 +4,7 @@ namespace Boilerplate.Workbench.Components.Shell;
 
 /// <summary>
 /// The Review tab: the page's status, whether an agent is listening, the composer for a pinned comment and the page's
-/// threads. Everything that writes shows only when the review session can write, which is on this machine only.
+/// threads. Everything that writes shows only when the review session can write, which is in dev mode on this machine only.
 /// </summary>
 public partial class ReviewPanel
 {

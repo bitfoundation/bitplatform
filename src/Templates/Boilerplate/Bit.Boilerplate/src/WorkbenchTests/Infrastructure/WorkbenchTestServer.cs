@@ -22,9 +22,9 @@ public sealed class WorkbenchTestServer : IAsyncDisposable
 
     public BcrdtDocumentHost ReviewHost => Services.GetRequiredService<BcrdtDocumentHost>();
 
-    public async Task<WorkbenchTestServer> Start(Action<IServiceCollection>? configureServices = null, CancellationToken cancellationToken = default)
+    public async Task<WorkbenchTestServer> Start(Action<IServiceCollection>? configureServices = null, bool isDevMode = true, CancellationToken cancellationToken = default)
     {
-        var builder = CreateBuilder();
+        var builder = CreateBuilder(isDevMode);
 
         builder.WebHost.UseUrls(Address.ToString());
 
@@ -39,8 +39,8 @@ public sealed class WorkbenchTestServer : IAsyncDisposable
         return this;
     }
 
-    /// <summary>The Workbench's builder with all of its services, not started; bUnit tests copy its services.</summary>
-    public static WebApplicationBuilder CreateBuilder()
+    /// <summary>The Workbench's builder with all of its services, not started; bUnit tests copy its services. It's in dev mode unless told not to be.</summary>
+    public static WebApplicationBuilder CreateBuilder(bool isDevMode = true)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -52,6 +52,8 @@ public sealed class WorkbenchTestServer : IAsyncDisposable
         AppEnvironment.Set(builder.Environment.EnvironmentName);
 
         builder.Configuration.AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Workbench");
+
+        builder.Configuration["DOTNET_WATCH"] = isDevMode ? "1" : null;
 
         builder.AddWorkbenchProjectServices();
 

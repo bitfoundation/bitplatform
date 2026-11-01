@@ -150,7 +150,7 @@ public partial class PreviewPane
         if (scenario.Data is not WorkbenchDataState.Live)
             yield return Localizer[$"Data{scenario.Data}"];
 
-        if (scenario.Auth is not WorkbenchAuthState.SignedIn)
+        if (scenario.Auth is not WorkbenchAuthState.MultiAccount)
             yield return Localizer[scenario.Auth.ToString()];
 
         if (scenario.Auth is not WorkbenchAuthState.SignedOut && scenario.User != 0)

@@ -1,15 +1,7 @@
 @inherits WorkbenchComponentBase
 
 <div class="review">
-    @* Opened from another machine, the review is read-only and the agent shows as offline *@
-    @if (session.CanWrite is false)
-    {
-        <section class="live">
-            <BitText Typography="BitTypography.Subtitle2" Class="section-title"><BitIcon IconName="@BitIconName.ChatBot" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.LiveReviewTitle)]</BitText>
-            <BitText Typography="BitTypography.Caption1">@Localizer[nameof(WorkbenchStrings.LiveReviewRemote)]</BitText>
-        </section>
-    }
-
+    @* Outside dev mode, the review is read-only and the agent shows as offline *@
     <section>
         <BitText Typography="BitTypography.Subtitle2" Class="section-title">@Localizer[nameof(WorkbenchStrings.PageStatus)]</BitText>
         @if (session.CanWrite)
@@ -124,7 +116,7 @@
                     </ul>
                 }
 
-                @* An open thread: remote viewers can only show its view; this machine can also reply, resolve and delete *@
+                @* An open thread: read-only viewers can only show its view; dev mode can also reply, resolve and delete *@
                 @if (isSelected && session.CanWrite is false)
                 {
                     <div class="thread-actions">

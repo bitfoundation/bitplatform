@@ -13,10 +13,13 @@ public class WorkbenchPageTest : PageTest
 
     protected WorkbenchTestServer Server { get; private set; } = default!;
 
+    /// <summary>The Workbench these tests run against.</summary>
+    protected virtual Task<WorkbenchTestServer> ServerToTest => WorkbenchTestsInitializer.SharedServer;
+
     [TestInitialize]
     public async Task WorkbenchPageSetup()
     {
-        Server = await WorkbenchTestsInitializer.SharedServer;
+        Server = await ServerToTest;
 
         Context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
         Assertions.SetDefaultExpectTimeout((float)defaultTimeout.TotalMilliseconds);

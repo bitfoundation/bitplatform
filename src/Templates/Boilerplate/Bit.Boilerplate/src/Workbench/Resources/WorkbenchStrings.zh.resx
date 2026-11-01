@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>一个 POS 仪表板，其中的小组件可以重新排列、调整大小、隐藏和保存。</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>莎拉·约翰逊</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>亚斯</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>达恩·菲瑟</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>萨利赫</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>尼卢法尔·拉希米</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>扎赫拉</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>Amsterdam 门店</value>
@@ -583,7 +583,7 @@
         <value>繁忙</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>下午好，莎拉</value>
+        <value>下午好，亚斯</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>门店</value>
@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>工作台用示例数据运行您应用的页面，让您可以设计每种状态、在每种设备上查看，并导出可直接提交应用商店的截图，所用组件和主题与您的应用完全相同。</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>打开 POS 仪表板</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>从这里开始</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>为什么需要工作台？</value>
@@ -1087,7 +1087,7 @@
         <value>今天谁卖得最多？</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>**达恩**以 **64 笔订单**、1,180 欧元的销售额领先 [1]。</value>
+        <value>**萨利赫**以 **64 笔订单**、1,180 欧元的销售额领先 [1]。</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>这里我只会回答推荐的问题。试试其中一个吧。</value>
@@ -1909,10 +1909,10 @@
         <value>全部角色</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>用 AI 定制它</value>
+        <value>用 AI 定制工作台本身</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>工作台本身也是你应用的一部分。让你的 AI 智能体修改它的功能，或者添加团队需要的工具、设备和状态。</value>
+        <value>可以修改的不只是其中的页面，还有这个工具本身。让你的 AI 智能体修改工作台的功能，或者添加团队需要的工具、设备和状态。</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>无人</value>
@@ -1924,13 +1924,13 @@
         <value>登录身份</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>全局管理员</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>租户管理员</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
-        <value>演示</value>
+        <value>Demo</value>
     </data>
     <data name="ChecksTab" xml:space="preserve">
         <value>检测</value>
@@ -2147,9 +2147,6 @@
     </data>
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>保存到翻译文件并重新加载视图。您的智能体会在 git 中看到这项更改。</value>
-    </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>只有当工作台从您自己电脑上的项目运行时，才能保存文本。</value>
     </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>修改文本 {0} · {1}：</value>
@@ -2370,20 +2367,53 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>设计方案</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>与 AI 实时协作</value>
-    </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>在运行工作台的电脑上，钉在页面上的评论会直接发给开发者的 AI 智能体：它会修改页面、就在这里回复，并在您眼前将评论勾选为已完成。在其他任何地方，评审都是只读的，因此没有人能通过共享链接接触到这个智能体。</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>智能体离线</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>还没有评论。</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>流程需要在运行工作台的电脑上绘制。在这里，您可以打开并浏览它们。</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>还没有流程。</value>
+    </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>添加建筑</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>地标建筑列表，顶部有“添加建筑”。</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>“添加建筑”会打开新建筑的表单。</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>“地图”在荷兰地图上显示相同的建筑。</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>打开 POS 仪表板</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>数据加载时，每个小组件都保持原位。</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>然后每个小组件都会显示当天的数字。</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>还没有销售时，每个小组件都会说明。</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>一个小组件出错时，其他小组件继续工作。</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>数据到达</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>还没有销售</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>一次加载失败</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>示例</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>与您的 AI 智能体实时评审</value>
@@ -2401,7 +2431,7 @@
         <value>点按要评论的位置</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>还没有流程。请让您的智能体画一个，比如“展示如何添加一栋建筑”，或在页面的“流程”选项卡中把视图添加到流程。</value>
+        <value>请让您的智能体画一个，比如“展示如何添加一栋建筑”，或在页面的“流程”选项卡中把视图添加到流程。</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>此链接下没有流程，它可能已被删除。</value>
@@ -2728,16 +2758,13 @@
         <value>组件</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>仅用于快速修改。其他需求请写在“评审”标签页，智能体会处理。</value>
+        <value>仅用于快速/简单的修改。其他需求请写在“评审”标签页，智能体会处理。</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>在视图中点击一个组件，即可查看并修改它的参数。</value>
     </data>
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>这不是 bit BlazorUI 组件，或者它已不在页面上，因此没有可显示的参数。</value>
-    </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>只有当工作台从您自己电脑上的项目运行时，才能保存修改。</value>
     </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>这一部分由 {0} 自己绘制，因此要通过 {0} 的参数来修改。</value>
@@ -2781,9 +2808,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>已保存到 {0}。热重载稍后会显示它。</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>已保存到 {0}。重新启动应用即可看到。</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>无法保存修改；它的标签可能已移动。请再次点击该组件。</value>
     </data>
@@ -2801,5 +2825,59 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>建议的值</value>
+    </data>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>智能体未连接</value>
+    </data>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>功能受限</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>你可以浏览、切换视图和截图。要进行修改，需要由 AI 智能体运行 Workbench。</value>
+    </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>登录页面尚未加入 Workbench</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>请在“视图”标签页中选择所需用户组的用户，或让您的智能体把这些页面加入 Workbench，它会处理好。</value>
+    </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>请在这里选择所需用户组的用户，或让您的智能体把这些页面加入 Workbench，它会处理好。</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>知道了</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>下一步</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>上一步</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>跳过导览</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>完成</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>产品导览</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>第 {0} 步，共 {1} 步</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>第 {0} 步，共 {1} 步。{2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>正在等待页面的下一部分。</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>导览进度</value>
+    </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>开始导览</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>每笔销售，实时呈现</value>
     </data>
 </root>

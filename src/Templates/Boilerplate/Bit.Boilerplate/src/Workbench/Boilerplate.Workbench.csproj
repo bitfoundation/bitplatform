@@ -20,6 +20,7 @@
         <PackageReference Include="ModelContextProtocol.AspNetCore" />
         <PackageReference Include="Bit.Bortable" />
         <PackageReference Include="Bit.Blow" />
+        <PackageReference Include="Bit.Bonboarding" />
         <PackageReference Include="Microsoft.Playwright" />
 
         <Using Include="System.Reflection" />

@@ -1,7 +1,7 @@
 namespace Boilerplate.Workbench.Components.Shell;
 
 /// <summary>
-/// The Flows tab: lists the review's flows and, on this machine only, adds the selected view as the next screen of a
+/// The Flows tab: lists the review's flows and, in dev mode only, adds the selected view as the next screen of a
 /// flow, with an optional arrow from that flow's last screen.
 /// </summary>
 public partial class FlowsPanel

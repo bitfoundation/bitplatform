@@ -15,6 +15,12 @@ are designed.
 - With Aspire, start the `workbench` resource from the dashboard. It starts only when asked.
 - Edits to `.cs`, `.razor`, `.scss` and `.ts` files show up while it runs. A `.resx` edit needs a restart.
 
+Running under `dotnet watch` is the Workbench's dev mode, which is how its agent skill starts it. Only dev mode can change
+things: Inspect and Edit text write into the code, the review takes comments and flows, and the agent can connect. Any
+other copy, like a published demo or the plain `dotnet run` bit CLI starts, has no hot reload to show a change and no agent
+to answer a comment, so those stay read-only there, and a small notice on every page says no agent is connected. The rest
+works: the pages and their states, what a visitor changes on a page, which stays in their browser, screenshots and checks.
+
 Screenshots are taken by a headless Chromium-based browser on the machine that runs the Workbench: Playwright's own
 Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To install Playwright's Chromium, run
 `pwsh bin/Debug/net11.0/playwright.ps1 install chromium` here after a build.
@@ -42,7 +48,8 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
   theme.
 - **Flows**: the screens of a task side by side on a board at `/flows`, each a page in the state that matters, like a
   list and the dialog its button opens, with arrows for how you get from one to the next. Present one screen by screen
-  in a meeting. Your agent draws them, or you add the selected view to a flow from the Flows tab.
+  in a meeting. Your agent draws them, or you add the selected view to a flow from the Flows tab. Two read-only samples
+  come with it, from `WorkbenchSampleFlows`.
 - **Review sheet**: every view, its settings and the comments in one HTML or PDF file to send around.
 - **`/preview/<page>`**: the page alone, with its settings in the query string. This is what each view shows.
 
@@ -50,7 +57,7 @@ The Workbench remembers the views you had open, and each view remembers what was
 panel, an accent color, a moved shift), so a reload or a restart comes back to the same place. A screenshot carries that
 too: it shows the view as it was when the button was pressed.
 
-On a phone it shows only the page, with a floating button for the tools.
+On a phone it shows only the page, with a floating button for the tools; its tour still shows everything, one part at a time.
 
 ## Add a page
 
@@ -79,10 +86,10 @@ through the review, it keeps listening: a new comment reaches it as you send it,
 the change in your view, and it replies and ticks the comment. Each reply plays a short sound, and with "Notify me"
 turned on in the Review tab it also shows a notification, on a phone too.
 
-Only this machine can talk to the agent. The MCP server and the review endpoints answer only local requests, and opened
-from anywhere else, through a shared link or a public address, the review is read-only: comments, replies and statuses
-can be read, the agent shows as offline, and nothing can be added, so nobody reaches your agent without being at your
-computer.
+Only this machine can talk to the agent, and only in dev mode. The MCP server and the review endpoints answer only those
+requests, and anywhere else, through a shared link or a public address, the review is read-only: comments, replies and
+statuses can be read, the agent shows as offline, and nothing can be added, so nobody reaches your agent without being at
+your computer.
 
 ## How it stays in step with the app
 

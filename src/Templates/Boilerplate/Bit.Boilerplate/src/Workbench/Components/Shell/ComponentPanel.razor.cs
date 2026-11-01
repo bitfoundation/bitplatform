@@ -3,7 +3,8 @@ namespace Boilerplate.Workbench.Components.Shell;
 /// <summary>
 /// Inspect mode's panel: the picked component's parameters, its own and the inherited ones, the parts of its Styles and
 /// Classes, and the CSS variables its styles use. A change is written into the component's tag in the code, and hot
-/// reload shows it in the views. Values code sets, like @Localizer[...], are shown but left alone.
+/// reload shows it in the views. Values code sets, like @Localizer[...], are shown but left alone, and outside dev mode
+/// everything is.
 /// </summary>
 public partial class ComponentPanel
 {
@@ -31,7 +32,7 @@ public partial class ComponentPanel
 
     [Parameter] public WorkbenchCssVariable[] Variables { get; set; } = [];
 
-    /// <summary>Whether changes can be written into the code: on this machine, with the project folder found.</summary>
+    /// <summary>Whether changes can be written into the code: in dev mode on this machine, with the project folder found.</summary>
     [Parameter] public bool CanSave { get; set; }
 
     private WorkbenchComponentParameter? StyleParameter => Info?.Parameters.FirstOrDefault(p => p.Name is nameof(BitComponentBase.Style));
@@ -91,7 +92,7 @@ public partial class ComponentPanel
 
     private bool Matches(string name) => string.IsNullOrWhiteSpace(filter) || name.Contains(filter.Trim(), StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Whether a parameter can change here: its tag was found, code doesn't set it, its type has an editor and this machine can write.</summary>
+    /// <summary>Whether a parameter can change here: its tag was found, code doesn't set it, its type has an editor and changes can be written.</summary>
     private bool CanEdit(WorkbenchComponentParameter parameter)
     {
         return CanSave && isSaving is false && Info?.Tag is not null && parameter.Code is null && parameter.Editor is not WorkbenchParameterEditor.ReadOnly;
@@ -158,7 +159,7 @@ public partial class ComponentPanel
         {
             if (saved = await write())
             {
-                status = Localizer[WorkbenchComponentEdits.IsHotReloading ? nameof(WorkbenchStrings.ComponentSavedHotReload) : nameof(WorkbenchStrings.ComponentSavedRestart), FileName(tag.File)];
+                status = Localizer[nameof(WorkbenchStrings.ComponentSavedHotReload), FileName(tag.File)];
             }
             else
             {

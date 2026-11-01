@@ -129,14 +129,14 @@
     <data name="PosDashboardDescription" xml:space="preserve">
         <value>لوحة تحكم لنقاط البيع يمكن إعادة ترتيب أدواتها وتغيير حجمها وإخفاؤها وحفظها.</value>
     </data>
-    <data name="DemoUserSarah" xml:space="preserve">
-        <value>سارة جونسون</value>
+    <data name="DemoUserYas" xml:space="preserve">
+        <value>ياس</value>
     </data>
-    <data name="DemoUserDaan" xml:space="preserve">
-        <value>دان فيسر</value>
+    <data name="DemoUserSaleh" xml:space="preserve">
+        <value>صالح</value>
     </data>
-    <data name="DemoUserNiloofar" xml:space="preserve">
-        <value>نيلوفر رحيمي</value>
+    <data name="DemoUserZahra" xml:space="preserve">
+        <value>زهراء</value>
     </data>
     <data name="DemoTenantStore" xml:space="preserve">
         <value>فرع Amsterdam</value>
@@ -583,7 +583,7 @@
         <value>مزدحم</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>مساء الخير يا سارة</value>
+        <value>مساء الخير يا ياس</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>الفرع</value>
@@ -825,8 +825,8 @@
     <data name="HomeLead" xml:space="preserve">
         <value>تشغّل منضدة العمل صفحات تطبيقك ببيانات نموذجية، لتتمكن من تصميم كل حالة ومعاينتها على كل جهاز وتصدير لقطات شاشة جاهزة للمتاجر، بنفس المكونات والمظهر اللذين يأتي بهما تطبيقك.</value>
     </data>
-    <data name="HomeOpenFirstPage" xml:space="preserve">
-        <value>فتح لوحة تحكم نقاط البيع</value>
+    <data name="HomeStartHere" xml:space="preserve">
+        <value>ابدأ من هنا</value>
     </data>
     <data name="HomeWhyButton" xml:space="preserve">
         <value>لماذا منضدة عمل؟</value>
@@ -1087,7 +1087,7 @@
         <value>من الأعلى مبيعًا اليوم؟</value>
     </data>
     <data name="AssistantStaffAnswer" xml:space="preserve">
-        <value>يتصدر **دان** بـ **64 طلبًا** ومبيعات بقيمة 1,180 يورو [1].</value>
+        <value>يتصدر **صالح** بـ **64 طلبًا** ومبيعات بقيمة 1,180 يورو [1].</value>
     </data>
     <data name="AssistantFallbackAnswer" xml:space="preserve">
         <value>هنا أعرف الأسئلة المقترحة فقط. جرّب واحدًا منها.</value>
@@ -1909,10 +1909,10 @@
         <value>كل الأدوار</value>
     </data>
     <data name="HomeWhyCustomizeTitle" xml:space="preserve">
-        <value>خصّصها بالذكاء الاصطناعي</value>
+        <value>خصّص منضدة العمل نفسها بالذكاء الاصطناعي</value>
     </data>
     <data name="HomeWhyCustomizeText" xml:space="preserve">
-        <value>منضدة العمل جزء من تطبيقك أيضاً. اطلب من وكيل الذكاء الاصطناعي تغيير ميزاتها أو إضافة الأدوات والأجهزة والحالات التي يحتاجها فريقك.</value>
+        <value>يمكنك تغيير الأداة نفسها، لا صفحاتها فقط. اطلب من وكيل الذكاء الاصطناعي تغيير ميزات منضدة العمل أو إضافة الأدوات والأجهزة والحالات التي يحتاجها فريقك.</value>
     </data>
     <data name="ShiftsNoStaff" xml:space="preserve">
         <value>لا أحد</value>
@@ -1924,13 +1924,13 @@
         <value>مسجّل الدخول باسم</value>
     </data>
     <data name="RoleGlobalAdmin" xml:space="preserve">
-        <value>المسؤول العام</value>
+        <value>G-Admin</value>
     </data>
     <data name="RoleTenantAdmin" xml:space="preserve">
-        <value>مسؤول المستأجر</value>
+        <value>T-Admin</value>
     </data>
     <data name="RoleDemo" xml:space="preserve">
-        <value>تجريبي</value>
+        <value>Demo</value>
     </data>
     <data name="ChecksTab" xml:space="preserve">
         <value>التحقق</value>
@@ -2147,9 +2147,6 @@
     </data>
     <data name="SaveTranslationsHint" xml:space="preserve">
         <value>يحفظ في ملفات الترجمة ويعيد تحميل العروض. ويرى وكيلك التغيير في git.</value>
-    </data>
-    <data name="SaveTranslationsRemoteHint" xml:space="preserve">
-        <value>يعمل حفظ النص عندما تُشغَّل منضدة العمل من المشروع على حاسوبك.</value>
     </data>
     <data name="ChangeTextRequest" xml:space="preserve">
         <value>غيّر النص {0} · {1}:</value>
@@ -2370,20 +2367,53 @@
     <data name="CompareVariants" xml:space="preserve">
         <value>خيارات التصميم</value>
     </data>
-    <data name="LiveReviewTitle" xml:space="preserve">
-        <value>تعاون مباشر مع الذكاء الاصطناعي</value>
-    </data>
-    <data name="LiveReviewRemote" xml:space="preserve">
-        <value>على الحاسوب الذي يشغّل منضدة العمل، يصل التعليق المثبّت على الصفحة مباشرةً إلى وكيل الذكاء الاصطناعي الخاص بالمطوّر: فيغيّر الصفحة ويردّ هنا ويضع على التعليق علامة الإنجاز أمام عينيك. ومن أي مكان آخر تكون المراجعة للقراءة فقط، حتى لا يتمكن أحد من الوصول إلى ذلك الوكيل عبر رابط مشترك.</value>
-    </data>
     <data name="AgentOffline" xml:space="preserve">
         <value>الوكيل غير متصل</value>
     </data>
     <data name="NoCommentsYet" xml:space="preserve">
         <value>لا توجد تعليقات بعد.</value>
     </data>
-    <data name="FlowsReadOnly" xml:space="preserve">
-        <value>تُرسم المسارات على الحاسوب الذي يشغّل منضدة العمل. وهنا يمكنك فتحها والمرور بها.</value>
+    <data name="NoFlowsYet" xml:space="preserve">
+        <value>لا توجد مسارات بعد.</value>
+    </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>إضافة مبنى</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>قائمة المباني البارزة، وفوقها زر «إضافة مبنى».</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>يفتح «إضافة مبنى» نموذجًا للمبنى الجديد.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>يعرض «خريطة» المباني نفسها على خريطة هولندا.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>فتح لوحة تحكم نقاط البيع</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>أثناء تحميل البيانات، تبقى كل أداة في مكانها.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>ثم تمتلئ كل أداة بأرقام اليوم.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>عندما لا توجد مبيعات بعد، تخبرك كل أداة بذلك.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>قد تفشل أداة بينما تواصل الأخرى عملها.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>وصلت البيانات</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>لا مبيعات بعد</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>فشل تحميل واحد</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>نموذج</value>
     </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>راجع مباشرةً مع وكيل الذكاء الاصطناعي الخاص بك</value>
@@ -2401,7 +2431,7 @@
         <value>المس المكان الذي تريد التعليق عليه</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>لا توجد مسارات بعد. اطلب من وكيلك أن يرسم واحدًا، مثل «اعرض كيف يُضاف مبنى»، أو أضف عروضًا إلى مسار من تبويب «المسارات» في أي صفحة.</value>
+        <value>اطلب من وكيلك أن يرسم واحدًا، مثل «اعرض كيف يُضاف مبنى»، أو أضف عروضًا إلى مسار من تبويب «المسارات» في أي صفحة.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>لا يوجد مسار على هذا الرابط. ربما حُذف.</value>
@@ -2728,16 +2758,13 @@
         <value>المكوّن</value>
     </data>
     <data name="ComponentPanelNote" xml:space="preserve">
-        <value>للتغييرات السريعة فقط. اكتب أي شيء آخر في تبويب المراجعة وسيتولّاه الوكيل.</value>
+        <value>للتغييرات السريعة/البسيطة فقط. اكتب أي شيء آخر في تبويب المراجعة وسيتولّاه الوكيل.</value>
     </data>
     <data name="ComponentPanelHint" xml:space="preserve">
         <value>انقر مكوّنًا في العرض لترى معاملاته وتغيّرها.</value>
     </data>
     <data name="ComponentNotReadable" xml:space="preserve">
         <value>هذا ليس مكوّن bit BlazorUI، أو لم يعد في الصفحة، لذا لا توجد معاملات لعرضها.</value>
-    </data>
-    <data name="ComponentReadOnlyRemote" xml:space="preserve">
-        <value>لا تُحفَظ التغييرات إلا عندما تُشغَّل منضدة العمل من المشروع على حاسوبك.</value>
     </data>
     <data name="ComponentDrawnBy" xml:space="preserve">
         <value>يرسم {0} هذا الجزء بنفسه، لذا يتغيّر عبر معاملات {0}.</value>
@@ -2781,9 +2808,6 @@
     <data name="ComponentSavedHotReload" xml:space="preserve">
         <value>حُفظ في {0}. سيُظهره Hot reload بعد لحظة.</value>
     </data>
-    <data name="ComponentSavedRestart" xml:space="preserve">
-        <value>حُفظ في {0}. أعد تشغيل التطبيق لتراه.</value>
-    </data>
     <data name="ComponentSaveFailed" xml:space="preserve">
         <value>تعذّر حفظ التغيير؛ ربما تحرّك وسمه. انقر المكوّن مرة أخرى.</value>
     </data>
@@ -2801,5 +2825,59 @@
     </data>
     <data name="SuggestShow" xml:space="preserve">
         <value>القيم المقترحة</value>
+    </data>
+    <data name="AgentNotConnected" xml:space="preserve">
+        <value>الوكيل غير متصل</value>
+    </data>
+    <data name="LimitedExperience" xml:space="preserve">
+        <value>تجربة محدودة</value>
+    </data>
+    <data name="AgentNotConnectedHint" xml:space="preserve">
+        <value>يمكنك الاستكشاف وتبديل العروض والتقاط لقطات الشاشة. أما التغيير فيتطلب وكيل ذكاء اصطناعي يشغّل Workbench.</value>
+    </data>
+    <data name="SignInNoteTitle" xml:space="preserve">
+        <value>صفحات تسجيل الدخول ليست في Workbench بعد</value>
+    </data>
+    <data name="SignInNote" xml:space="preserve">
+        <value>اختر المستخدم من تبويب «العرض» بمجموعة المستخدمين التي تريدها، أو اطلب من وكيلك إضافة هذه الصفحات إلى Workbench وسيتولى الأمر.</value>
+    </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>اختر المستخدم من هنا بمجموعة المستخدمين التي تريدها، أو اطلب من وكيلك إضافة هذه الصفحات إلى Workbench وسيتولى الأمر.</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>فهمت</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>التالي</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>السابق</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>تخطي الجولة</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>تم</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>جولة في المنتج</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{0} من {1}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>الخطوة {0} من {1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>في انتظار الجزء التالي من الصفحة.</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>تقدم الجولة</value>
+    </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>ابدأ الجولة</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>كل عملية بيع، مباشرة</value>
     </data>
 </root>
