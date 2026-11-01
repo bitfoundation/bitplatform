@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>“इमारत जोड़ें” पर टैप करें</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>स्क्रीन {0} पर वह बटन चिह्नित करें जो यहाँ लाता है, ताकि तीर उसी से शुरू हो।</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>स्क्रीन {0} पर चिह्नित बटन से शुरू होता है।</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>बटन चिह्नित करें</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>फिर से चिह्नित करें</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>चिह्न हटाएँ</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>स्क्रीन {0} पर वह बटन टैप करें जो स्क्रीन {1} तक ले जाता है।</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>यह व्यू जोड़ें</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{1} में से {0}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>स्क्रीन को खिसकाने के लिए उसे खींचें और आज़माने के लिए उस पर डबल-क्लिक करें। तीर बनाने के लिए किसी स्क्रीन के दाएँ किनारे वाले बिंदु से दूसरी स्क्रीन तक खींचें, और तीर का नाम रखने या उसे हटाने के लिए उस पर डबल-क्लिक करें।</value>
+        <value>स्क्रीन को खिसकाने के लिए उसे खींचें और आज़माने के लिए उस पर डबल-क्लिक करें। तीर बनाने के लिए किसी स्क्रीन के दाएँ किनारे वाले बिंदु से दूसरी स्क्रीन तक खींचें, फिर उसका नाम रखें और वह बटन चिह्नित करें जहाँ से वह शुरू होता है। तीर बदलने या हटाने के लिए उस पर डबल-क्लिक करें।</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>यह फ़्लो हटाएँ?</value>

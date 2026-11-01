@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>Auf „Gebäude hinzufügen“ tippen</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>Markieren Sie die Schaltfläche auf Bildschirm {0}, die hierher führt, dann beginnt der Pfeil dort.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>Beginnt an der markierten Schaltfläche auf Bildschirm {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>Schaltfläche markieren</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>Neu markieren</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>Markierung entfernen</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>Tippen Sie auf die Schaltfläche auf Bildschirm {0}, die zu Bildschirm {1} führt.</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>Diese Ansicht hinzufügen</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{0} von {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Ziehen Sie einen Bildschirm, um ihn zu verschieben, und doppelklicken Sie darauf, um ihn auszuprobieren. Ziehen Sie vom Punkt am rechten Rand eines Bildschirms zu einem anderen, um einen Pfeil zu zeichnen, und doppelklicken Sie auf einen Pfeil, um ihn zu benennen oder zu löschen.</value>
+        <value>Ziehen Sie einen Bildschirm, um ihn zu verschieben, und doppelklicken Sie darauf, um ihn auszuprobieren. Ziehen Sie vom Punkt am rechten Rand eines Bildschirms zu einem anderen, um einen Pfeil zu zeichnen, benennen Sie ihn dann und markieren Sie die Schaltfläche, an der er beginnt. Doppelklicken Sie auf einen Pfeil, um ihn zu ändern oder zu löschen.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Diesen Ablauf löschen?</value>

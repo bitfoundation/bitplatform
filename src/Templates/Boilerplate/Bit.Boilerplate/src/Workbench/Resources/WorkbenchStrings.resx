@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>Tap Add building</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>Mark the button on screen {0} that leads here, and the arrow starts from it.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>Starts from the button marked on screen {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>Mark the button</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>Mark again</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>Remove the mark</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>Tap the button on screen {0} that leads to screen {1}.</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>Add this view</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{0} of {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Drag a screen to move it and double-click it to try it. Drag from the dot on a screen's right edge to another screen to draw an arrow, and double-click an arrow to name or delete it.</value>
+        <value>Drag a screen to move it and double-click it to try it. Drag from the dot on a screen's right edge to another screen to draw an arrow, then name it and mark the button it starts from. Double-click an arrow to change or delete it.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Delete this flow?</value>

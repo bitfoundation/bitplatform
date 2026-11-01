@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>زدن «افزودن ساختمان»</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>دکمه‌ای را در صفحهٔ {0} که به اینجا می‌رسد علامت بزنید تا فلش از همان شروع شود.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>از دکمهٔ علامت‌خورده در صفحهٔ {0} شروع می‌شود.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>علامت زدن دکمه</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>علامت زدن دوباره</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>برداشتن علامت</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>روی دکمه‌ای در صفحهٔ {0} بزنید که به صفحهٔ {1} می‌رسد.</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>افزودن این نما</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{0} از {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>برای جابه‌جا کردن یک صفحه آن را بکشید و برای امتحانش روی آن دوبار کلیک کنید. برای کشیدن فلش، از نقطهٔ لبهٔ راست یک صفحه تا صفحهٔ دیگر بکشید، و برای نام‌گذاری یا حذف فلش روی آن دوبار کلیک کنید.</value>
+        <value>برای جابه‌جا کردن یک صفحه آن را بکشید و برای امتحانش روی آن دوبار کلیک کنید. برای کشیدن فلش، از نقطهٔ لبهٔ راست یک صفحه تا صفحهٔ دیگر بکشید، بعد نامش را بنویسید و دکمه‌ای را که از آن شروع می‌شود علامت بزنید. برای تغییر یا حذف فلش روی آن دوبار کلیک کنید.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>این مسیر حذف شود؟</value>

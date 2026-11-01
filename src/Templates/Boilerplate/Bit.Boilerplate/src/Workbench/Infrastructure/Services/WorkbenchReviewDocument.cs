@@ -201,6 +201,26 @@ public static class WorkbenchReviewDocument
         return true;
     }
 
+    public static bool SetLinkSpot(BcrdtMap flows, string flowId, string linkId, WorkbenchFlowSpot? spot)
+    {
+        if (FindItem(flows.GetMap(flowId)?.GetArray("links"), linkId) is not { } link)
+            return false;
+
+        if (spot is null)
+        {
+            link.Delete("spotX");
+            link.Delete("spotY");
+            link.Delete("spotWidth");
+            link.Delete("spotHeight");
+        }
+        else
+        {
+            WriteSpot(link, spot);
+        }
+
+        return true;
+    }
+
     public static bool RemoveLink(BcrdtMap flows, string flowId, string linkId) => RemoveItem(flows.GetMap(flowId)?.GetArray("links"), linkId);
 
     private static WorkbenchFlowScreen ReadScreen(BcrdtMap screen)
@@ -249,13 +269,18 @@ public static class WorkbenchReviewDocument
 
         if (link.Spot is { } spot)
         {
-            map.Set("spotX", Math.Round(spot.X, 4));
-            map.Set("spotY", Math.Round(spot.Y, 4));
-            map.Set("spotWidth", Math.Round(spot.Width, 4));
-            map.Set("spotHeight", Math.Round(spot.Height, 4));
+            WriteSpot(map, spot);
         }
 
         return map;
+    }
+
+    private static void WriteSpot(BcrdtMap link, WorkbenchFlowSpot spot)
+    {
+        link.Set("spotX", Math.Round(spot.X, 4));
+        link.Set("spotY", Math.Round(spot.Y, 4));
+        link.Set("spotWidth", Math.Round(spot.Width, 4));
+        link.Set("spotHeight", Math.Round(spot.Height, 4));
     }
 
     private static BcrdtMap? FindItem(BcrdtArray? array, string id) => ReadMaps(array).FirstOrDefault(item => ReadString(item, "id") == id);

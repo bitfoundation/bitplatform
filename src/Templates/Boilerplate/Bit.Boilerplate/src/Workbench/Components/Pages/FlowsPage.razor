@@ -76,7 +76,7 @@
                     @if (node.Data is WorkbenchFlowScreen screen)
                     {
                         <BlowHandle Type="BlowHandleType.Target" Id="in" Position="BlowPosition.Left" />
-                        <div class="screen-card @(CurrentScreenId == screen.Id ? "current" : null)">
+                        <div class="screen-card @(CurrentScreenId == screen.Id ? "current" : null) @(PickingLink?.From == screen.Id ? "picking" : null)">
                             <div class="screen-head">
                                 <span class="screen-number">@numbers.GetValueOrDefault(screen.Id)</span>
                                 <span class="screen-title">@TitleOf(screen.PageKey)</span>
@@ -95,7 +95,7 @@
                             <DeviceFrame Device="screen.Scenario.DevicePreset" Rotated="screen.Scenario.Rotated">
                                 @if (sources.GetValueOrDefault(screen.Id) is { } source)
                                 {
-                                    <iframe class="nodrag nowheel" src="@source" title="@TitleOf(screen.PageKey)" loading="lazy"></iframe>
+                                    <iframe class="nodrag nowheel" src="@source" title="@TitleOf(screen.PageKey)" loading="lazy" data-screen-id="@screen.Id"></iframe>
                                 }
                                 @foreach (var link in flow.Links.Where(l => l.From == screen.Id && l.Spot is not null))
                                 {
@@ -122,7 +122,7 @@
             {
                 <p class="board-empty">@Localizer[nameof(WorkbenchStrings.FlowHasNoScreens)]</p>
             }
-            else if (reviewSession.CanWrite && presentIndex < 0)
+            else if (reviewSession.CanWrite && presentIndex < 0 && pickingLinkId is null)
             {
                 <p class="board-help">@Localizer[nameof(WorkbenchStrings.BoardHelp)]</p>
             }
@@ -147,7 +147,15 @@
                 </div>
             }
 
-            @if (editingLinkId is not null)
+            @if (PickingLink is { } picking)
+            {
+                <div class="pick-banner" role="status">
+                    <span>@Localizer[nameof(WorkbenchStrings.PickArrowStart), numbers.GetValueOrDefault(picking.From), numbers.GetValueOrDefault(picking.To)]</span>
+                    <BitButton Variant="BitVariant.Text" Size="BitSize.Small" OnClick="CancelPick">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                </div>
+            }
+
+            @if (EditingLink is { } editing)
             {
                 <div class="label-editor" role="dialog" aria-label="@Localizer[nameof(WorkbenchStrings.ArrowLabel)]">
                     <BitTextField @bind-Value="labelDraft"
@@ -155,6 +163,20 @@
                                   Placeholder="@Localizer[nameof(WorkbenchStrings.ArrowLabelPlaceholder)]"
                                   MaxLength="120"
                                   AutoFocus />
+                    <div class="arrow-start">
+                        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">
+                            @Localizer[editing.Spot is null ? nameof(WorkbenchStrings.ArrowStartHint) : nameof(WorkbenchStrings.ArrowStartMarked), numbers.GetValueOrDefault(editing.From)]
+                        </BitText>
+                        <div class="label-actions">
+                            <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" IconName="@BitIconName.TouchPointer" OnClick="PickSpot">
+                                @Localizer[editing.Spot is null ? nameof(WorkbenchStrings.MarkArrowStart) : nameof(WorkbenchStrings.MarkArrowStartAgain)]
+                            </BitButton>
+                            @if (editing.Spot is not null)
+                            {
+                                <BitButton Variant="BitVariant.Text" Size="BitSize.Small" OnClick="ClearSpot">@Localizer[nameof(WorkbenchStrings.RemoveArrowStart)]</BitButton>
+                            }
+                        </div>
+                    </div>
                     <div class="label-actions">
                         <BitButton OnClick="SaveLabel">@Localizer[nameof(WorkbenchStrings.Save)]</BitButton>
                         <BitButton Variant="BitVariant.Text" OnClick="() => editingLinkId = null">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>

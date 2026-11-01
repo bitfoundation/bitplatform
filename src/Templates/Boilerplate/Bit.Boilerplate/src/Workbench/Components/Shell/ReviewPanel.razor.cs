@@ -112,6 +112,20 @@ public partial class ReviewPanel
 
         await webAudio.Resume();
         await OnSend.InvokeAsync(text);
+        await AskToNotify();
+    }
+
+    private async Task AskToNotify()
+    {
+        if (store.WasAskedToNotify || store.ReplyNotifications)
+            return;
+
+        store.MarkAskedToNotify();
+
+        if (await notification.GetPermission() is Bit.Butil.NotificationPermission.Denied)
+            return;
+
+        await SetReplyNotifications(true);
     }
 
     private async Task SetReplyNotifications(bool on)
@@ -150,6 +164,7 @@ public partial class ReviewPanel
         await webAudio.Resume();
         session.Reply(thread.Id, ReviewerName, reply);
         reply = null;
+        await AskToNotify();
     }
 
     private void Delete(WorkbenchReviewThread thread)

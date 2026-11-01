@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>点按“添加建筑”</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>标记第 {0} 个屏幕上通往这里的按钮，箭头就会从它开始。</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>从第 {0} 个屏幕上标记的按钮开始。</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>标记按钮</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>重新标记</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>移除标记</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>点按第 {0} 个屏幕上通往第 {1} 个屏幕的按钮。</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>添加此视图</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>第 {0} 个，共 {1} 个</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>拖动屏幕即可移动它，双击屏幕即可试用。从屏幕右边缘的圆点拖到另一个屏幕即可画出箭头，双击箭头可为其命名或将其删除。</value>
+        <value>拖动屏幕即可移动它，双击屏幕即可试用。从屏幕右边缘的圆点拖到另一个屏幕即可画出箭头，然后为它命名并标记它开始的按钮。双击箭头可修改或删除它。</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>删除此流程？</value>

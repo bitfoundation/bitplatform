@@ -60,14 +60,23 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         EditFlows(flows => WorkbenchReviewDocument.RemoveScreen(flows, flowId, screenId));
     }
 
-    public void AddLink(string flowId, string from, string to)
+    public string AddLink(string flowId, string from, string to)
     {
-        EditFlows(flows => WorkbenchReviewDocument.AddLink(flows, flowId, new(Guid.NewGuid().ToString("N")[..16], from, to, null, null)));
+        var linkId = Guid.NewGuid().ToString("N")[..16];
+
+        EditFlows(flows => WorkbenchReviewDocument.AddLink(flows, flowId, new(linkId, from, to, null, null)));
+
+        return linkId;
     }
 
     public void SetLinkLabel(string flowId, string linkId, string? label)
     {
         EditFlows(flows => WorkbenchReviewDocument.SetLinkLabel(flows, flowId, linkId, label));
+    }
+
+    public void SetLinkSpot(string flowId, string linkId, WorkbenchFlowSpot? spot)
+    {
+        EditFlows(flows => WorkbenchReviewDocument.SetLinkSpot(flows, flowId, linkId, spot));
     }
 
     public void RemoveLink(string flowId, string linkId)

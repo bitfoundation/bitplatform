@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>Tryck på ”Lägg till byggnad”</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>Markera knappen på skärm {0} som leder hit, så börjar pilen där.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>Börjar vid den markerade knappen på skärm {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>Markera knappen</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>Markera igen</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>Ta bort markeringen</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>Tryck på knappen på skärm {0} som leder till skärm {1}.</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>Lägg till den här vyn</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{0} av {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Dra en skärm för att flytta den och dubbelklicka på den för att prova den. Dra från punkten på en skärms högra kant till en annan skärm för att rita en pil, och dubbelklicka på en pil för att namnge eller ta bort den.</value>
+        <value>Dra en skärm för att flytta den och dubbelklicka på den för att prova den. Dra från punkten på en skärms högra kant till en annan skärm för att rita en pil, ge den sedan ett namn och markera knappen den börjar vid. Dubbelklicka på en pil för att ändra eller ta bort den.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Ta bort det här flödet?</value>

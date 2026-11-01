@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>Toucher « Ajouter un bâtiment »</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>Marquez le bouton de l’écran {0} qui mène ici, et la flèche partira de lui.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>Part du bouton marqué sur l’écran {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>Marquer le bouton</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>Marquer à nouveau</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>Retirer la marque</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>Touchez le bouton de l’écran {0} qui mène à l’écran {1}.</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>Ajouter cette vue</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{0} sur {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Faites glisser un écran pour le déplacer et double-cliquez dessus pour l’essayer. Tirez depuis le point du bord droit d’un écran jusqu’à un autre pour tracer une flèche, et double-cliquez sur une flèche pour la nommer ou la supprimer.</value>
+        <value>Faites glisser un écran pour le déplacer et double-cliquez dessus pour l’essayer. Tirez depuis le point du bord droit d’un écran jusqu’à un autre pour tracer une flèche, puis nommez-la et marquez le bouton d’où elle part. Double-cliquez sur une flèche pour la modifier ou la supprimer.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Supprimer ce parcours ?</value>

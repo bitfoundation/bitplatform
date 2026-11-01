@@ -180,6 +180,16 @@
     pointer-events: none;
 }
 
+.screen-card.picking iframe {
+    pointer-events: auto;
+}
+
+.screen-card.picking ::deep .device {
+    border-radius: 24px;
+    outline: 8px dashed $bit-color-primary;
+    outline-offset: 10px;
+}
+
 .screen-card.current ::deep .device {
     border-radius: 24px;
     outline: 8px solid $bit-color-primary;
@@ -297,6 +307,34 @@ iframe {
 .label-actions {
     gap: 0.5rem;
     display: flex;
+    flex-wrap: wrap;
+}
+
+.arrow-start {
+    gap: 0.5rem;
+    display: flex;
+    padding-top: 0.75rem;
+    flex-direction: column;
+    border-top: 1px solid $bit-color-border-tertiary;
+}
+
+.pick-banner {
+    left: 50%;
+    top: 0.75rem;
+    z-index: 7;
+    gap: 0.5rem;
+    display: flex;
+    font-size: 13px;
+    max-width: 92vw;
+    position: absolute;
+    align-items: center;
+    border-radius: 999px;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.35rem 0.25rem 0.9rem;
+    color: $bit-color-foreground-primary;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-primary;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.35);
 }
 
 .flow-list {

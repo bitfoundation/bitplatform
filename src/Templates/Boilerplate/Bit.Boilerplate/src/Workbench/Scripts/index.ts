@@ -1,5 +1,6 @@
 import { highlight, runChecks } from './checks';
 import { cancelInlinePick, connectFrames, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+import { cancelSpotPick, pickSpot } from './spots';
 import { forceStates } from './states';
 
 const host = window as any;
@@ -522,6 +523,14 @@ host.workbench = {
 
     cancelInlinePick() {
         cancelInlinePick();
+    },
+
+    pickSpot(screenId: string) {
+        return pickSpot(screenId);
+    },
+
+    cancelSpotPick() {
+        cancelSpotPick();
     },
 
     readTokens(names: string[]) {

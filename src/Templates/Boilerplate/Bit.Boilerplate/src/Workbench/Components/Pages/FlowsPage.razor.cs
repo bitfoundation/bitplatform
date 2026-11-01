@@ -8,6 +8,7 @@ public partial class FlowsPage
     private int presentIndex = -1;
     private bool isConfirmingDelete;
     private string? editingLinkId;
+    private string? pickingLinkId;
     private string? labelDraft;
     private readonly List<BlowNode> nodes = [];
     private readonly List<BlowEdge> edges = [];
@@ -24,6 +25,10 @@ public partial class FlowsPage
 
     private WorkbenchFlow? Flow => FlowId is null ? null : reviewSession.Flows.FirstOrDefault(f => f.Id == FlowId);
 
+    private WorkbenchFlowLink? EditingLink => editingLinkId is null ? null : Flow?.Links.FirstOrDefault(l => l.Id == editingLinkId);
+
+    private WorkbenchFlowLink? PickingLink => pickingLinkId is null ? null : Flow?.Links.FirstOrDefault(l => l.Id == pickingLinkId);
+
     private string? CurrentScreenId => Flow is { } flow && presentIndex >= 0 && presentIndex < flow.Screens.Length ? flow.Screens[presentIndex].Id : null;
 
     protected override void OnInitialized()
@@ -35,6 +40,7 @@ public partial class FlowsPage
     {
         presentIndex = -1;
         editingLinkId = null;
+        pickingLinkId = null;
         isConfirmingDelete = false;
 
         await Rebuild();
@@ -171,7 +177,8 @@ public partial class FlowsPage
         if (FlowId is null || connection.Source is not { } from || connection.Target is not { } to || from == to)
             return;
 
-        reviewSession.AddLink(FlowId, from, to);
+        editingLinkId = reviewSession.AddLink(FlowId, from, to);
+        labelDraft = null;
     }
 
     private void RemoveScreens(IReadOnlyList<BlowNode> removed)
@@ -222,6 +229,50 @@ public partial class FlowsPage
         }
 
         editingLinkId = null;
+    }
+
+    private async Task PickSpot()
+    {
+        if (FlowId is null || EditingLink is not { } link)
+            return;
+
+        editingLinkId = null;
+        pickingLinkId = link.Id;
+
+        if (canvas is not null && nodes.FirstOrDefault(n => n.Id == link.From) is { } node)
+        {
+            await canvas.FitViewAsync(new BlowFitViewOptions { Nodes = [node], Padding = 0.1, MaxZoom = 1, Duration = 300 });
+        }
+
+        StateHasChanged();
+
+        var spot = await JSRuntime.InvokeAsync<WorkbenchFlowSpot?>("workbench.pickSpot", link.From);
+
+        if (pickingLinkId != link.Id)
+            return;
+
+        pickingLinkId = null;
+        editingLinkId = link.Id;
+
+        if (spot is not null)
+        {
+            reviewSession.SetLinkSpot(FlowId, link.Id, spot);
+        }
+
+        await ShowAll();
+    }
+
+    private async Task CancelPick()
+    {
+        await JSRuntime.InvokeVoidAsync("workbench.cancelSpotPick");
+    }
+
+    private void ClearSpot()
+    {
+        if (FlowId is not null && editingLinkId is not null)
+        {
+            reviewSession.SetLinkSpot(FlowId, editingLinkId, null);
+        }
     }
 
     private void SaveLabel()

@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>Tik op ‘Gebouw toevoegen’</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>Markeer de knop op scherm {0} die hierheen leidt, dan begint de pijl daar.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>Begint bij de gemarkeerde knop op scherm {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>Knop markeren</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>Opnieuw markeren</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>Markering verwijderen</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>Tik op de knop op scherm {0} die naar scherm {1} leidt.</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>Deze weergave toevoegen</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{0} van {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>Sleep een scherm om het te verplaatsen en dubbelklik erop om het uit te proberen. Sleep vanaf de stip aan de rechterrand van een scherm naar een ander scherm om een pijl te tekenen, en dubbelklik op een pijl om hem een naam te geven of te verwijderen.</value>
+        <value>Sleep een scherm om het te verplaatsen en dubbelklik erop om het uit te proberen. Sleep vanaf de stip aan de rechterrand van een scherm naar een ander scherm om een pijl te tekenen, geef hem daarna een naam en markeer de knop waar hij begint. Dubbelklik op een pijl om hem te wijzigen of te verwijderen.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>Deze flow verwijderen?</value>

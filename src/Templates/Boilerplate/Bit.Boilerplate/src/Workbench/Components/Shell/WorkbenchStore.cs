@@ -15,6 +15,7 @@ public partial class WorkbenchStore
     [BlexState] private string _column = WorkbenchModes.ViewColumn;
     [BlexState] private string? _reviewerName;
     [BlexState] private bool _replyNotifications;
+    [BlexState] private bool _wasAskedToNotify;
 
     public WorkbenchPane SelectedPane => Panes.FirstOrDefault(p => p.Id == SelectedPaneId) ?? Panes[0];
 
@@ -62,6 +63,8 @@ public partial class WorkbenchStore
     [BlexAction] private void OnNameReviewer(string? name) => ReviewerName = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
 
     [BlexAction] private void OnSetReplyNotifications(bool on) => ReplyNotifications = on;
+
+    [BlexAction] private void OnMarkAskedToNotify() => WasAskedToNotify = true;
 
     [BlexAction]
     private void OnChangeScenario(WorkbenchScenario scenario)

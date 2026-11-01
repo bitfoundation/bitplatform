@@ -2442,6 +2442,24 @@
     <data name="ArrowLabelPlaceholder" xml:space="preserve">
         <value>المس «إضافة مبنى»</value>
     </data>
+    <data name="ArrowStartHint" xml:space="preserve">
+        <value>حدّد الزر في الشاشة {0} الذي يؤدي إلى هنا، ليبدأ السهم منه.</value>
+    </data>
+    <data name="ArrowStartMarked" xml:space="preserve">
+        <value>يبدأ من الزر المحدد في الشاشة {0}.</value>
+    </data>
+    <data name="MarkArrowStart" xml:space="preserve">
+        <value>تحديد الزر</value>
+    </data>
+    <data name="MarkArrowStartAgain" xml:space="preserve">
+        <value>تحديد من جديد</value>
+    </data>
+    <data name="RemoveArrowStart" xml:space="preserve">
+        <value>إزالة التحديد</value>
+    </data>
+    <data name="PickArrowStart" xml:space="preserve">
+        <value>انقر على الزر في الشاشة {0} الذي يؤدي إلى الشاشة {1}.</value>
+    </data>
     <data name="AddThisView" xml:space="preserve">
         <value>أضف هذا العرض</value>
     </data>
@@ -2470,7 +2488,7 @@
         <value>{0} من {1}</value>
     </data>
     <data name="BoardHelp" xml:space="preserve">
-        <value>اسحب شاشة لتحريكها وانقر عليها نقرًا مزدوجًا لتجربتها. اسحب من النقطة على الحافة اليمنى للشاشة إلى شاشة أخرى لرسم سهم، وانقر نقرًا مزدوجًا على سهم لتسميته أو حذفه.</value>
+        <value>اسحب شاشة لتحريكها وانقر عليها نقرًا مزدوجًا لتجربتها. اسحب من النقطة على الحافة اليمنى للشاشة إلى شاشة أخرى لرسم سهم، ثم سمِّه وحدّد الزر الذي يبدأ منه. انقر نقرًا مزدوجًا على سهم لتغييره أو حذفه.</value>
     </data>
     <data name="DeleteFlowConfirm" xml:space="preserve">
         <value>حذف هذا المسار؟</value>
