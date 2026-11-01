@@ -387,6 +387,10 @@ if (!isPreview) {
             callShell('ReportScenario', frame.dataset.paneId, String(event.data.query ?? ''));
         }
 
+        if (event.data?.type === 'workbench-sign-in-guide' && frame.dataset.paneId) {
+            callShell('ShowSignInGuide', frame.dataset.paneId);
+        }
+
         // Only a view moves the shell to another page; a flow screen doesn't.
         if (event.data?.type === 'workbench-page' && frame.dataset.paneId) {
             callShell('ReportPage', String(event.data.pageKey ?? ''));
@@ -490,7 +494,7 @@ if (isPreview) {
             window.parent.postMessage({ type: 'workbench-scenario', query: `?${query}` }, location.origin);
         }
 
-        if (event.data?.type === 'workbench-page') {
+        if (event.data?.type === 'workbench-page' || event.data?.type === 'workbench-sign-in-guide') {
             window.parent.postMessage(event.data, location.origin);
         }
     });
@@ -580,6 +584,15 @@ host.workbench = {
 
         if (hasShell) {
             window.parent.postMessage({ type: 'workbench-scenario', query }, location.origin);
+        }
+    },
+
+    /** Asks the shell to point at its user picker, from a view or from a page the shell renders itself on a phone. */
+    askForSignInGuide() {
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'workbench-sign-in-guide' }, location.origin);
+        } else {
+            callShell('ShowSignInGuide', null);
         }
     },
 

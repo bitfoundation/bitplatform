@@ -2802,4 +2802,37 @@
     <data name="SignInNote" xml:space="preserve">
         <value>व्यू टैब में अपने मनचाहे उपयोगकर्ता समूह वाला उपयोगकर्ता चुनें, या अपने एजेंट से इन पेजों को Workbench में लाने को कहें, वह संभाल लेगा।</value>
     </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>यहाँ अपने मनचाहे उपयोगकर्ता समूह वाला उपयोगकर्ता चुनें, या अपने एजेंट से इन पेजों को Workbench में लाने को कहें, वह संभाल लेगा।</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>ठीक है</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>आगे</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>पीछे</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>टूर छोड़ें</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>हो गया</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>प्रोडक्ट टूर</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{1} में से {0}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>चरण {0}/{1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>पेज के अगले हिस्से का इंतज़ार है।</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>टूर की प्रगति</value>
+    </data>
 </root>

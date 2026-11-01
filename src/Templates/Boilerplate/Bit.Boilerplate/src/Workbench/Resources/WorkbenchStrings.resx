@@ -2802,4 +2802,37 @@
     <data name="SignInNote" xml:space="preserve">
         <value>Pick your user in the View tab, with the user group you want, or ask your agent to bring these pages into the Workbench and it will take care of it.</value>
     </data>
+    <data name="SignInGuide" xml:space="preserve">
+        <value>Pick your user here, with the user group you want, or ask your agent to bring these pages into the Workbench and it will take care of it.</value>
+    </data>
+    <data name="GotIt" xml:space="preserve">
+        <value>Got it</value>
+    </data>
+    <data name="TourNext" xml:space="preserve">
+        <value>Next</value>
+    </data>
+    <data name="TourBack" xml:space="preserve">
+        <value>Back</value>
+    </data>
+    <data name="TourSkip" xml:space="preserve">
+        <value>Skip tour</value>
+    </data>
+    <data name="TourDone" xml:space="preserve">
+        <value>Done</value>
+    </data>
+    <data name="TourDialogLabel" xml:space="preserve">
+        <value>Product tour</value>
+    </data>
+    <data name="TourProgress" xml:space="preserve">
+        <value>{0} of {1}</value>
+    </data>
+    <data name="TourStepAnnouncement" xml:space="preserve">
+        <value>Step {0} of {1}. {2}</value>
+    </data>
+    <data name="TourWaiting" xml:space="preserve">
+        <value>Waiting for the next part of the page.</value>
+    </data>
+    <data name="TourProgressLabel" xml:space="preserve">
+        <value>Tour progress</value>
+    </data>
 </root>

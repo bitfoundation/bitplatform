@@ -89,3 +89,18 @@ html:has(> .wb-body),
     height: 0;
     position: absolute;
 }
+
+// The guides take the Workbench's theme, not the device's.
+.bit-bonboarding-root {
+    --bit-bonboarding-font: inherit;
+    --bit-bonboarding-text: var(--bit-clr-fg-pri);
+    --bit-bonboarding-surface: var(--bit-clr-bg-pri);
+    --bit-bonboarding-text-muted: var(--bit-clr-fg-sec);
+    --bit-bonboarding-surface-subtle: var(--bit-clr-bg-sec);
+    --bit-bonboarding-border: var(--bit-clr-brd-ter);
+    --bit-bonboarding-border-strong: var(--bit-clr-brd-sec);
+    --bit-bonboarding-accent: var(--bit-clr-pri);
+    --bit-bonboarding-accent-text: var(--bit-clr-pri-text);
+    --bit-bonboarding-accent-hover: var(--bit-clr-pri-hover);
+    --bit-bonboarding-accent-active: var(--bit-clr-pri-active);
+}

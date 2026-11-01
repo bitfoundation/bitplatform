@@ -93,6 +93,35 @@ public class OtherShowcasesUITests : WorkbenchPageTest
     }
 
     [TestMethod]
+    public async Task SignUpInAView_Should_BringTheUserPickerIntoSightAndPointAtIt()
+    {
+        await OpenWorkbench("theme", "?device=desktop-1536&auth=signedout");
+
+        await Page.Locator("#wb-tab-review").ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Tools, Exact = true }).ClickAsync();
+        await Expect(Page.Locator("#wb-tab-review")).Not.ToBeInViewportAsync();
+
+        await View().Locator(".nav-panel").GetByRole(AriaRole.Button, new() { Name = AppStrings.SignUp, Exact = true }).ClickAsync();
+
+        await Expect(Page.GetByText(WorkbenchStrings.SignInGuide)).ToBeVisibleAsync();
+        await Expect(Page.Locator("#wb-tab-view")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Page.Locator("[data-bonboarding-anchor='sign-in']")).ToBeInViewportAsync(new() { Ratio = 1 });
+
+        var signedIn = Page.Locator("[data-bonboarding-anchor='sign-in']").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.SignedIn, Exact = true });
+
+        await signedIn.ClickAsync();
+        await Expect(signedIn).ToHaveAttributeAsync("aria-pressed", "true");
+
+        await Page.Locator("[data-bonboarding-anchor='sign-in']").GetByRole(AriaRole.Combobox).ClickAsync();
+        await Page.GetByRole(AriaRole.Option, new() { Name = WorkbenchStrings.DemoUserZahra }).ClickAsync();
+        await Expect(View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DemoUserZahra }).Locator("visible=true").First).ToBeVisibleAsync();
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.GotIt, Exact = true }).ClickAsync();
+
+        await Expect(Page.GetByText(WorkbenchStrings.SignInGuide)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
     public async Task TheSideMenu_Should_OfferASignedOutVisitorOnlyTheThemePage()
     {
         await OpenPreview("theme", "?device=desktop-1536&auth=signedout");
