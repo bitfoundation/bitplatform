@@ -32,7 +32,7 @@
                 @ToolbarTemplate
                 @if (Editable && NewItemFactory is not null)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn bit-dtg-btn-primary" @onclick="AddNewRowAsync">@Strings.AddRowText</button>
+                    RenderToolbarItem(__builder, _addRowButton!);
                 }
                 @if (SearchActive)
                 {
@@ -66,26 +66,19 @@
             <div class="bit-dtg-toolbar-end">
                 @if (_filters.Count > 0)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="ClearFiltersFromToolbarAsync">@Strings.ClearFiltersText</button>
+                    RenderToolbarItem(__builder, _clearFiltersButton!);
                 }
                 @if (ShowCsvExport)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => ExportCsvAsync()">@Strings.ExportCsvText</button>
+                    RenderToolbarItem(__builder, _csvExportButton!);
                 }
                 @if (ShowExcelExport)
                 {
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => ExportExcelAsync()">@Strings.ExportExcelText</button>
+                    RenderToolbarItem(__builder, _excelExportButton!);
                 }
                 @if (ShowColumnChooser)
                 {
-                    @* A disclosure, not a popup: the panel it shows is a group of checkboxes inline with the grid, so
-                       aria-expanded/aria-controls describe it and aria-haspopup (a menu, a listbox) would not. The
-                       dropdown arrow is decorative; aria-label keeps it out of the accessible name. *@
-                    <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="ToggleColumnChooser"
-                            @ref="_columnChooserButton"
-                            aria-expanded="@(_showColumnChooserPanel ? "true" : "false")"
-                            aria-controls="@_columnChooserPanelId"
-                            aria-label="@Strings.ColumnsText">@Strings.ColumnsText <span aria-hidden="true">▾</span></button>
+                    RenderToolbarItem(__builder, _columnChooserButton!);
                 }
             </div>
         </div>
@@ -591,6 +584,48 @@
         }
     }
 
+    // A button of the toolbar (see UpdateToolbarButtons). With ToolbarIconOnly it is its icon alone, and its text - still
+    // its accessible name - is shown by a tooltip on hover, on keyboard focus and on a touch, where a title would show
+    // to the mouse alone. The tooltip leaves itself out of the accessibility tree, which has the name already.
+    private void RenderToolbarItem(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, ToolbarButton button)
+    {
+        if (ToolbarIconOnly)
+        {
+            <BitTooltip Text="@button.Text(Strings)" Relationship="BitTooltipRelationship.None" Anchor="@button.Anchor" />
+        }
+        else
+        {
+            RenderToolbarButton(__builder, button);
+        }
+    }
+
+    // The Columns button is a disclosure, not a popup: the panel it shows is a group of checkboxes inline with the grid,
+    // so aria-expanded/aria-controls describe it and aria-haspopup (a menu, a listbox) would not. Its dropdown arrow is
+    // decorative; aria-label keeps it out of the accessible name.
+    private void RenderToolbarButton(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder, ToolbarButton button)
+    {
+        var text = button.Text(Strings);
+        <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="@button.CssClass"
+                aria-label="@(ToolbarIconOnly || button.Disclosure ? text : null)"
+                aria-expanded="@(button.Disclosure ? (_showColumnChooserPanel ? "true" : "false") : null)"
+                aria-controls="@(button.Disclosure ? _columnChooserPanelId : null)"
+                @ref="button.Element"
+                @onclick="button.OnClick">
+            @if (button.IconClass is not null)
+            {
+                <i class="@button.IconClass" aria-hidden="true">@button.IconContent</i>
+            }
+            @if (ToolbarIconOnly is false)
+            {
+                @text
+            }
+            @if (button.Disclosure)
+            {
+                <span aria-hidden="true">▾</span>
+            }
+        </button>
+    }
+
     // The skeleton row standing in for a row still being read, cached: it is rendered once per row of a window.
     private RenderFragment? _placeholderRow;
     private RenderFragment PlaceholderRow => _placeholderRow ??= RenderPlaceholderRow;
@@ -1055,7 +1090,7 @@
 
         CloseColumnChooser();
 
-        try { await _columnChooserButton.FocusAsync(); }
+        try { if (_columnChooserButton is { } button) await button.Element.FocusAsync(); }
         catch (JSException) { }
         catch (JSDisconnectedException) { }
         catch (InvalidOperationException) { }

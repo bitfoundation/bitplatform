@@ -254,6 +254,58 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// in-process with no external dependency; in server mode it covers all matching rows.</summary>
     [Parameter] public bool ShowExcelExport { get; set; }
 
+    /// <summary>Renders the toolbar's buttons - Add row, Clear filters, the CSV and Excel exports and Columns - as icons
+    /// alone, for a compact toolbar. Each button's text (<see cref="Strings"/>) stays its accessible name and is shown in a
+    /// tooltip on hover, on keyboard focus and on a touch. A button given no icon of its own draws a built-in one, from a
+    /// font the package ships: Add, ClearFilter, TextDocument, ExcelDocument and ColumnOptions.</summary>
+    /// <remarks>Each button takes its icon from a pair of parameters - <c>XIcon</c> for an external icon library (a
+    /// ligature set like Material Icons included), <c>XIconName</c> for the Fluent UI icon set of the
+    /// <c>Bit.BlazorUI.Icons</c> nuget package - shown beside the text, or in place of it in this mode. A name is drawn by
+    /// that package's stylesheet, so the app links it, and is written as a literal (a <c>BitIconName</c> constant) for a
+    /// trimmed publish to keep its glyph; a button left without either keeps its built-in glyph, which needs
+    /// neither.</remarks>
+    [Parameter] public bool ToolbarIconOnly { get; set; }
+
+    /// <summary>The icon of the Add row button, from an external icon library. Takes precedence over
+    /// <see cref="AddRowIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? AddRowIcon { get; set; }
+
+    /// <summary>The name of the icon of the Add row button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.CirclePlus</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? AddRowIconName { get; set; }
+
+    /// <summary>The icon of the Clear filters button, from an external icon library. Takes precedence over
+    /// <see cref="ClearFiltersIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ClearFiltersIcon { get; set; }
+
+    /// <summary>The name of the icon of the Clear filters button, from the Fluent UI icon set of the
+    /// <c>Bit.BlazorUI.Icons</c> nuget package (e.g. <c>BitIconName.FilterSolid</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ClearFiltersIconName { get; set; }
+
+    /// <summary>The icon of the Columns button, which opens the column chooser, from an external icon library. Takes
+    /// precedence over <see cref="ColumnChooserIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ColumnChooserIcon { get; set; }
+
+    /// <summary>The name of the icon of the Columns button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.TripleColumn</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ColumnChooserIconName { get; set; }
+
+    /// <summary>The icon of the CSV export button, from an external icon library. Takes precedence over
+    /// <see cref="CsvExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? CsvExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the CSV export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.Download</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? CsvExportIconName { get; set; }
+
+    /// <summary>The icon of the Excel export button, from an external icon library. Takes precedence over
+    /// <see cref="ExcelExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ExcelExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the Excel export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.ExcelLogo</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ExcelExportIconName { get; set; }
+
     /// <summary>
     /// Base name (without extension) of the downloaded export files, so a grid can name its own
     /// downloads instead of the generic default. <c>"orders"</c> produces <c>orders.csv</c> and
@@ -670,8 +722,14 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     // attribute, so Blazor markup can't express it; it is synced via a small JS call after render.
     private ElementReference _selectAllCheckbox;
 
-    // The column chooser's toggle, which takes the focus back when Escape closes the panel from inside it.
-    private ElementReference _columnChooserButton;
+    // The buttons of the toolbar, built on the first parameters and brought up to date by every later set of them
+    // (UpdateToolbarButtons), so the grid's own renders - a sort, a keystroke of a filter, a page - resolve no icon and
+    // build no class again. The column chooser's toggle also takes the focus back when Escape closes the panel.
+    private ToolbarButton? _addRowButton;
+    private ToolbarButton? _clearFiltersButton;
+    private ToolbarButton? _csvExportButton;
+    private ToolbarButton? _excelExportButton;
+    private ToolbarButton? _columnChooserButton;
     private bool? _lastIndeterminate;
 
     // Maps row key -> absolute 0-based position in the full data view, rebuilt whenever the view
@@ -1046,6 +1104,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         // The razor markup dereferences Strings unconditionally; tolerate an explicit null.
         Strings ??= new BitDataGridStrings();
+
+        UpdateToolbarButtons();
 
         // Without a handler the rows OnViewChange was last raised with are of no use, and holding them would keep every
         // row of that view alive; a handler bound (again) is told the view after the render, whatever it last was.
@@ -4929,6 +4989,80 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         // RefreshAsync clamps the page against the restored view's TotalPages.
         await RefreshAsync();
+    }
+
+    // ------------------------------------------------------- Toolbar buttons
+    // The built-in glyphs are full literals, never put together from a name: the Add one is the core font's, the others
+    // the Extras' own subset (Styles/fabric.mdl2.bit.blazoui.extras.scss), so they draw without Bit.BlazorUI.Icons.
+    private void UpdateToolbarButtons()
+    {
+        (_addRowButton ??= NewToolbarButton(static s => s.AddRowText, "bit-dtg-btn bit-dtg-btn-primary", "bit-dtg-btn-ico bit-icon bit-icon--Add", AddNewRowAsync))
+            .Update(AddRowIcon, AddRowIconName, ToolbarIconOnly);
+
+        (_clearFiltersButton ??= NewToolbarButton(static s => s.ClearFiltersText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--ClearFilter", ClearFiltersFromToolbarAsync))
+            .Update(ClearFiltersIcon, ClearFiltersIconName, ToolbarIconOnly);
+
+        (_csvExportButton ??= NewToolbarButton(static s => s.ExportCsvText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--TextDocument", () => ExportCsvAsync()))
+            .Update(CsvExportIcon, CsvExportIconName, ToolbarIconOnly);
+
+        (_excelExportButton ??= NewToolbarButton(static s => s.ExportExcelText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--ExcelDocument", () => ExportExcelAsync()))
+            .Update(ExcelExportIcon, ExcelExportIconName, ToolbarIconOnly);
+
+        (_columnChooserButton ??= NewToolbarButton(static s => s.ColumnsText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--ColumnOptions", () => { ToggleColumnChooser(); return Task.CompletedTask; }, disclosure: true))
+            .Update(ColumnChooserIcon, ColumnChooserIconName, ToolbarIconOnly);
+    }
+
+    private ToolbarButton NewToolbarButton(Func<BitDataGridStrings, string> text, string cssClass, string glyph, Func<Task> onClick, bool disclosure = false)
+    {
+        var button = new ToolbarButton(text, cssClass, glyph, onClick, disclosure);
+        button.Anchor = builder => RenderToolbarButton(builder, button);
+        return button;
+    }
+
+    /// <summary>A button of the toolbar: what it says and what a press of it does, fixed when it is built, and the classes
+    /// and icon it renders with, resolved from the grid's parameters whenever they are set.</summary>
+    private sealed class ToolbarButton(Func<BitDataGridStrings, string> text, string cssClass, string glyph, Func<Task> onClick, bool disclosure)
+    {
+        private readonly string _compactCssClass = $"{cssClass} bit-dtg-btn-compact";
+
+        public Func<BitDataGridStrings, string> Text { get; } = text;
+
+        public Func<Task> OnClick { get; } = onClick;
+
+        /// <summary>The Columns button, which shows and hides the column chooser below the toolbar.</summary>
+        public bool Disclosure { get; } = disclosure;
+
+        /// <summary>The button itself, as the anchor of its tooltip while the toolbar is icon-only.</summary>
+        public RenderFragment? Anchor { get; set; }
+
+        public ElementReference Element { get; set; }
+
+        public string CssClass { get; private set; } = cssClass;
+
+        /// <summary>The classes of its icon, or null for none: a text button shows only an icon it is given.</summary>
+        public string? IconClass { get; private set; }
+
+        /// <summary>The ligature of an icon set that names its glyphs with one (Material Icons), written inside it.</summary>
+        public string? IconContent { get; private set; }
+
+        public void Update(BitIconInfo? icon, string? iconName, bool iconOnly)
+        {
+            CssClass = iconOnly ? _compactCssClass : cssClass;
+
+            // An instance naming no glyph is no icon (BitIconInfo.From already passes it over for a name beside it), so a
+            // button given one still draws the built-in glyph rather than an empty square.
+            if (BitIconInfo.From(icon, iconName) is { IsEmpty: false } resolved)
+            {
+                var classes = resolved.GetCssClasses();
+                IconClass = classes.HasValue() ? $"bit-dtg-btn-ico {classes}" : "bit-dtg-btn-ico";
+                IconContent = resolved.Content;
+            }
+            else
+            {
+                IconClass = iconOnly ? glyph : null;
+                IconContent = null;
+            }
+        }
     }
 
     // ------------------------------------------------------- Column chooser
