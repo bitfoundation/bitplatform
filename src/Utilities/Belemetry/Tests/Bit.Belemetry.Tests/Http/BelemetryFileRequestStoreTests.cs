@@ -356,7 +356,7 @@ public class BelemetryFileRequestStoreTests
         handler.Enqueue(HttpStatusCode.ServiceUnavailable, r =>
         {
             r.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.Zero);
-            consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Interactions);
+            consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Logs);
         });
 
         var services = new ServiceCollection();
@@ -379,6 +379,38 @@ public class BelemetryFileRequestStoreTests
 
         Assert.HasCount(1, handler.Requests, "A request from before a revoke may hold the revoked feature's records: it is not retried.");
         Assert.IsEmpty(StoredFiles(), "Nor is it stored after the revoke cleared the store.");
+    }
+
+    [TestMethod]
+    public async Task Pipeline_ARevokeOfAFeatureARequestDoesNotHold_LeavesItAlone()
+    {
+        BelemetryConsentState consent = null!;
+        var handler = new FakeHttpMessageHandler();
+        handler.Enqueue(HttpStatusCode.ServiceUnavailable, r =>
+        {
+            r.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.Zero);
+            consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Interactions & ~BelemetryFeatures.Persistence & ~BelemetryFeatures.Sessions);
+        });
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler));
+        services.AddBitBelemetryServices(o =>
+        {
+            TestHost.ApplyTestDefaults(o);
+            o.Consent.Default = BelemetryFeatures.All;
+            o.Persistence.Enabled = true;
+            o.Persistence.Directory = _directory;
+            o.AddOtlpExporter("http://collector.test:4318", e => e.Signals = BelemetrySignals.Logs);
+        });
+        await using var provider = services.BuildServiceProvider();
+        var pipeline = provider.GetRequiredService<BelemetryPipeline>();
+        consent = provider.GetRequiredService<BelemetryConsentState>();
+
+        pipeline.Enqueue(Records.Log());
+        await pipeline.FlushAsync(false, CancellationToken.None);
+
+        Assert.HasCount(2, handler.Requests, "Its records are of none of the revoked features: it is retried as before.");
     }
 
     [TestMethod]

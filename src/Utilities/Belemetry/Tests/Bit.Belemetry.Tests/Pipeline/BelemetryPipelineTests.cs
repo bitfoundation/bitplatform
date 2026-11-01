@@ -599,6 +599,70 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task RevokingUserTracking_TakesTheIdOutOfAQueuedLogMessage()
+    {
+        await using var host = TestHost.Create();
+        var logger = host.StartLogging().CreateLogger("MyApp.Checkout");
+
+        logger.LogInformation("Paid by {user.id}", "u-42");
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        // The decision wakes the export loop, which may be the one to export it.
+        await host.FlushUntilAsync(() => host.Memory.Logs.Count == 1);
+
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual("Paid by {user.id}", log.Body, "Rendered while the id was granted, it falls back to its template as the id leaves.");
+        Assert.IsFalse(log.Attributes.Contains("user.id"));
+    }
+
+    [TestMethod]
+    public async Task WithoutUserTracking_AMetricPointCarriesNoUserId()
+    {
+        using var meter = new Meter("Tests.Pipeline." + Guid.NewGuid().ToString("N"));
+        await using var host = TestHost.Create(o => o.Metrics.Meters.Add(meter.Name), consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        host.StartLogging();
+
+        meter.CreateCounter<int>("logins").Add(1,
+            new KeyValuePair<string, object?>("user.id", "u-42"),
+            new KeyValuePair<string, object?>("enduser.pseudo.id", "p-1"),
+            new KeyValuePair<string, object?>("tenant.id", "t-1"));
+        await host.FlushAsync(includeMetrics: true);
+
+        var attributes = host.Memory.Metrics.Single().Points.Single().Attributes;
+        Assert.IsFalse(attributes.Contains("user.id"));
+        Assert.IsFalse(attributes.Contains("enduser.pseudo.id"));
+        Assert.AreEqual("t-1", attributes["tenant.id"]);
+    }
+
+    [TestMethod]
+    public async Task ARevokeDuringAnExport_WithdrawsTheBatchFromEveryExporterStillToGetIt()
+    {
+        var handler = new FakeHttpMessageHandler();
+        await using var host = TestHost.Create(o =>
+        {
+            o.Metrics.Meters.Add(BelemetrySelfTelemetry.MeterName);
+            o.AddOtlpExporter("http://collector.test:4318", e => e.Signals = BelemetrySignals.Logs);
+        }, configureServices: s => s.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler)));
+        handler.Enqueue(System.Net.HttpStatusCode.ServiceUnavailable, r =>
+        {
+            r.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.Zero);
+            host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Logs);
+        });
+        host.StartLogging();
+
+        host.Pipeline.Enqueue(Log("paid", BelemetryFeatures.Logs));
+        await host.FlushAsync();
+        await host.FlushAsync(includeMetrics: true);
+
+        Assert.HasCount(1, handler.Requests, "Not retried.");
+        Assert.IsEmpty(host.Memory.Logs, "Nor handed to the exporters after it.");
+        var exported = host.Memory.Metrics.Last(m => m.Name == "belemetry.records.exported").Points;
+        long Withdrawn(string exporter) => exported.Single(p => p.Attributes.GetString("belemetry.exporter") == exporter && p.Attributes.GetString("belemetry.outcome") == "withdrawn").LongValue;
+        Assert.AreEqual(1, Withdrawn("otlp"));
+        Assert.AreEqual(1, Withdrawn("in-memory"));
+        Assert.IsFalse(exported.Any(p => p.Attributes.GetString("belemetry.outcome") == "failed"), "Withdrawn is not a delivery failure.");
+    }
+
+    [TestMethod]
     public async Task ExportLoop_RunsOffTheStartersContext()
     {
         // The pipeline starts with the first resolution of the logger factory - on a MAUI/WPF UI thread, or inside a

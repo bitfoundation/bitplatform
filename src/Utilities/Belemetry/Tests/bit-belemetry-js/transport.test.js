@@ -361,6 +361,18 @@ describe('Transport', () => {
         expect(loadPersisted()).toEqual([]);
     });
 
+    it('withdraws a request before its first attempt once one of its features is revoked, and only then', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        // Interactions (4) was revoked once since the marks were taken.
+        const t = transport({ revocations: features => (features & 4 ? 1 : 0) });
+        await t.send(request(), false, { features: 4 | 128, revocations: 0 });
+        expect(fetch.calls).toHaveLength(0);
+        expect(loadPersisted()).toEqual([]);
+        await t.send(request(), false, { features: 1 | 128, revocations: 0 });
+        expect(fetch.calls).toHaveLength(1);
+    });
+
     it('does not store a resent request again once consent is revoked while it is sent', async () => {
         localStorage.setItem('bit-belemetry-queue', JSON.stringify([storedRequest(1)]));
         let revocations = 0;

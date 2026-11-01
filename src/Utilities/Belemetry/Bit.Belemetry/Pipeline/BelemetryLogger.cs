@@ -69,6 +69,7 @@ internal sealed class BelemetryLogger : ILogger
             {
                 string? template = null;
                 var hidden = false;
+                var userId = false;
                 foreach (var (key, value) in values)
                 {
                     if (key == OriginalFormat)
@@ -78,10 +79,14 @@ internal sealed class BelemetryLogger : ILogger
                         continue;
                     }
                     hidden |= value is not null && _pipeline.HidesValue(key);
+                    userId |= value is not null && BelemetryPipeline.IsUserId(key);
                     record.Attributes.Set(key, value);
                 }
 
                 if (hidden && template is not null) record.Body = template;
+                // Rendered with a user id it may carry now: should UserTracking be revoked before the export, the body
+                // goes back to the template as the id leaves the record.
+                else if (userId) record.BodyTemplate = template;
             }
 
             if (eventId.Id != 0) record.Attributes.Set(BelemetrySemanticConventions.LogEventId, eventId.Id);

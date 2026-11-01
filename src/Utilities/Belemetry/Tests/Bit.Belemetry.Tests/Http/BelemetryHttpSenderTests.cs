@@ -121,22 +121,80 @@ public class BelemetryHttpSenderTests
     [TestMethod]
     public async Task AWithdrawnRequest_IsNotRetried()
     {
+        var revocations = new BelemetryRevocations();
         var handler = new FakeHttpMessageHandler { Fallback = HttpStatusCode.BadGateway };
-        var withdrawn = false;
-        handler.Enqueue(HttpStatusCode.BadGateway, _ => withdrawn = true);
+        handler.Enqueue(HttpStatusCode.BadGateway, _ => revocations.Revoke(BelemetryFeatures.Logs));
         using var sender = CreateSender(handler);
         var exporter = Otlp();
 
-        var result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, () => withdrawn, CancellationToken.None);
+        var result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, revocations.Mark(BelemetryFeatures.Logs), CancellationToken.None);
 
-        Assert.AreEqual(BelemetrySendOutcome.Failed, result.Outcome);
+        Assert.AreEqual(BelemetrySendOutcome.Withdrawn, result.Outcome);
         Assert.HasCount(1, handler.Requests, "Consent was revoked while it waited: it may hold records of the revoked feature.");
 
         handler.Requests.Clear();
-        result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, () => true, CancellationToken.None);
+        var mark = revocations.Mark(BelemetryFeatures.Logs);
+        revocations.Revoke(BelemetryFeatures.Logs);
+        result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, mark, CancellationToken.None);
 
-        Assert.AreEqual(BelemetrySendOutcome.Failed, result.Outcome);
+        Assert.AreEqual(BelemetrySendOutcome.Withdrawn, result.Outcome);
         Assert.IsEmpty(handler.Requests, "Revoked before its first attempt (it waited for another export): never sent.");
+    }
+
+    [TestMethod]
+    public async Task ARevokeOfAnotherFeature_LeavesARequestAlone()
+    {
+        var revocations = new BelemetryRevocations();
+        var handler = new FakeHttpMessageHandler();
+        handler.Enqueue(HttpStatusCode.BadGateway, _ => revocations.Revoke(BelemetryFeatures.Interactions | BelemetryFeatures.Persistence | BelemetryFeatures.Sessions));
+        using var sender = CreateSender(handler);
+        var exporter = Otlp();
+
+        var result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, revocations.Mark(BelemetryFeatures.Errors | BelemetryFeatures.Logs), CancellationToken.None);
+
+        Assert.AreEqual(BelemetrySendOutcome.Delivered, result.Outcome);
+        Assert.HasCount(2, handler.Requests);
+    }
+
+    [TestMethod]
+    public async Task ARevoke_CutsTheWaitForARetryShort()
+    {
+        var revocations = new BelemetryRevocations();
+        var handler = new FakeHttpMessageHandler();
+        handler.Enqueue(HttpStatusCode.ServiceUnavailable, r =>
+        {
+            r.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(30));
+            _ = Task.Delay(100).ContinueWith(_ => revocations.Revoke(BelemetryFeatures.Logs), TaskScheduler.Default);
+        });
+        using var sender = CreateSender(handler);
+        var exporter = Otlp();
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
+        var result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, revocations.Mark(BelemetryFeatures.Logs), CancellationToken.None);
+
+        Assert.AreEqual(BelemetrySendOutcome.Withdrawn, result.Outcome);
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, "A withdrawn request must not hold the export lock for its Retry-After.");
+        Assert.HasCount(1, handler.Requests);
+    }
+
+    [TestMethod]
+    public async Task ARevokeOfAnotherFeature_DoesNotCutTheWaitShort()
+    {
+        var revocations = new BelemetryRevocations();
+        var handler = new FakeHttpMessageHandler();
+        handler.Enqueue(HttpStatusCode.ServiceUnavailable, r =>
+        {
+            r.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(1));
+            _ = Task.Delay(100).ContinueWith(_ => revocations.Revoke(BelemetryFeatures.Interactions), TaskScheduler.Default);
+        });
+        using var sender = CreateSender(handler);
+        var exporter = Otlp();
+
+        var result = await sender.SendWithResultAsync(exporter, LogsRequest(exporter), retry: true, revocations.Mark(BelemetryFeatures.Logs), CancellationToken.None);
+
+        Assert.AreEqual(BelemetrySendOutcome.Delivered, result.Outcome);
+        Assert.HasCount(2, handler.Requests);
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(900), handler.Requests[1].Time - handler.Requests[0].Time, "Woken up by the revoke, it waits for the rest of the Retry-After.");
     }
 
     [TestMethod]

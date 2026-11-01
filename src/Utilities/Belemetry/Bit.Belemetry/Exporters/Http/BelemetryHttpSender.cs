@@ -79,14 +79,14 @@ internal sealed class BelemetryHttpSender : IDisposable
     /// became of it: the outcome, what is still undelivered, and the records accepted and refused for good.
     /// </summary>
     public Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, CancellationToken cancellationToken) =>
-        SendWithResultAsync(exporter, request, retry, withdrawn: null, cancellationToken);
+        SendWithResultAsync(exporter, request, retry, mark: null, cancellationToken);
 
     /// <summary>
     /// Delivers <paramref name="request"/> as <see cref="SendWithResultAsync(IBelemetryHttpExporter, BelemetryHttpRequest, bool, CancellationToken)"/>
-    /// does, and gives it up as <see cref="BelemetrySendOutcome.Failed"/>, without another attempt, once
-    /// <paramref name="withdrawn"/> says it may no longer be sent (consent was revoked after it was built).
+    /// does, and gives it up as <see cref="BelemetrySendOutcome.Withdrawn"/> once <paramref name="mark"/> is withdrawn:
+    /// before any attempt, the first included, and as soon as it happens during the wait for a retry.
     /// </summary>
-    public async Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, Func<bool>? withdrawn, CancellationToken cancellationToken)
+    public async Task<BelemetrySendResult> SendWithResultAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, bool retry, BelemetryConsentMark? mark, CancellationToken cancellationToken)
     {
         var attempts = retry ? Backoff.Length + 1 : 1;
         var extended = false;
@@ -98,7 +98,7 @@ internal sealed class BelemetryHttpSender : IDisposable
 
         for (var attempt = 0; attempt < attempts; attempt++)
         {
-            if (withdrawn?.Invoke() is true) break;
+            if (mark?.IsWithdrawn is true) return new(BelemetrySendOutcome.Withdrawn, request, delivered, rejected);
 
             TimeSpan? retryAfter = null;
 
@@ -196,7 +196,8 @@ internal sealed class BelemetryHttpSender : IDisposable
                           : Backoff.Length == 0 ? TimeSpan.Zero : Backoff[Math.Min(attempt, Backoff.Length - 1)];
                 try
                 {
-                    await Task.Delay(delay, cancellationToken);
+                    // Cut short by a revoke that withdraws the request: it must not hold the export lock for nothing.
+                    await (mark is { } m ? m.DelayAsync(delay, cancellationToken) : Task.Delay(delay, cancellationToken));
                 }
                 catch (OperationCanceledException)
                 {

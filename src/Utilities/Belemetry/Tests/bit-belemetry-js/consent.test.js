@@ -190,11 +190,21 @@ describe('ConsentManager', () => {
     it('counts the revocations, not the grants', () => {
         const consent = new ConsentManager(config({ default: Features.Errors }));
         consent.set(Features.All);
-        expect(consent.revocations).toBe(0);
+        expect(consent.revocations(Features.All)).toBe(0);
         consent.set(Features.All & ~Features.Interactions);
-        expect(consent.revocations).toBe(1);
+        expect(consent.revocations(Features.All)).toBe(1);
         consent.set(Features.All & ~Features.Interactions);
-        expect(consent.revocations).toBe(1);
+        expect(consent.revocations(Features.All)).toBe(1);
+    });
+
+    it('counts the revocations per feature, so a mark moves only with its own features', () => {
+        const consent = new ConsentManager(config({ default: Features.Errors }));
+        consent.set(Features.All);
+        const errors = consent.mark(Features.Errors | Features.Logs);
+        const interactions = consent.mark(Features.Interactions);
+        consent.set(Features.All & ~Features.Interactions & ~Features.Persistence & ~Features.Sessions);
+        expect(consent.revocations(errors.features)).toBe(errors.revocations);
+        expect(consent.revocations(interactions.features)).not.toBe(interactions.revocations);
     });
 
     it('notifies listeners with the previous and next grant', () => {

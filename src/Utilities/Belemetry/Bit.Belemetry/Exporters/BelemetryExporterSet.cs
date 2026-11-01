@@ -70,48 +70,45 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     }
 
     /// <param name="batch">The batch.</param>
-    /// <param name="persistenceAllowed">Whether what cannot be delivered may be stored.</param>
-    /// <param name="revocations">
-    /// <see cref="BelemetryPipeline.Revocations"/> when the batch left the queue: after a revoke its requests are
-    /// neither retried nor stored, as they may hold records of the revoked feature.
+    /// <param name="mark">
+    /// The consent the batch left the queue under: once one of its features is revoked, it goes no further - to no
+    /// exporter that has not had it yet, and no request of it is retried or stored - as it may hold the revoked
+    /// feature's records.
     /// </param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task ExportAsync(BelemetryBatch batch, bool persistenceAllowed, int revocations, CancellationToken cancellationToken)
+    public async Task ExportAsync(BelemetryBatch batch, BelemetryConsentMark mark, CancellationToken cancellationToken)
     {
-        bool Withdrawn() => _pipeline.Revocations != revocations;
-
         foreach (var exporter in _httpExporters)
         {
+            // Checked before the batch is serialized for it, which would only be thrown away.
+            if (mark.IsWithdrawn)
+            {
+                _pipeline.Self.Exported(exporter.Name, "withdrawn", Count(batch));
+                continue;
+            }
+
             foreach (var created in exporter.CreateRequests(WithMinimumSeverity(batch, exporter.MinimumSeverity)))
             {
-                var sent = await _sender.SendWithResultAsync(exporter, created, retry: true, Withdrawn, cancellationToken);
+                var sent = await _sender.SendWithResultAsync(exporter, created, retry: true, mark, cancellationToken);
                 _pipeline.Self.Exported(exporter.Name, "delivered", sent.Delivered);
                 _pipeline.Self.Exported(exporter.Name, "rejected", sent.Rejected);
+                if (sent.Outcome == BelemetrySendOutcome.Withdrawn) _pipeline.Self.Exported(exporter.Name, "withdrawn", sent.Remaining.Count);
                 if (sent.Outcome != BelemetrySendOutcome.Failed) continue;
 
                 // After a partial success only the items to retry are left to store: the accepted ones are in.
                 var request = sent.Remaining;
-                var result = "failed";
-                if (persistenceAllowed && Store is not null && Withdrawn() is false)
-                {
-                    try
-                    {
-                        // The browser store sends the request itself, so it needs the headers; a file store must not get them.
-                        await Store.SaveAsync(Store is BelemetryBrowserRequestStore ? request.WithHeaders(exporter.Headers) : request, cancellationToken);
-                        result = "stored";
-                    }
-                    catch (Exception ex)
-                    {
-                        _pipeline.LogDiagnostic(ex, "Persisting an undelivered request failed; it is dropped.");
-                    }
-                }
-
-                _pipeline.Self.Exported(exporter.Name, result, request.Count);
+                _pipeline.Self.Exported(exporter.Name, await StoreAsync(exporter, request, mark, cancellationToken), request.Count);
             }
         }
 
         foreach (var exporter in _exporters)
         {
+            if (mark.IsWithdrawn)
+            {
+                _pipeline.Self.Exported(exporter.Name, "withdrawn", Count(batch));
+                continue;
+            }
+
             var result = "failed";
             try
             {
@@ -124,7 +121,46 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 _pipeline.LogDiagnostic(ex, $"The exporter '{exporter.Name}' failed.");
             }
 
-            _pipeline.Self.Exported(exporter.Name, result, batch.Spans.Count + batch.Logs.Count + batch.Metrics.Sum(m => m.Points.Count));
+            _pipeline.Self.Exported(exporter.Name, result, Count(batch));
+        }
+    }
+
+    private static int Count(BelemetryBatch batch) => batch.Spans.Count + batch.Logs.Count + batch.Metrics.Sum(m => m.Points.Count);
+
+    /// <summary>
+    /// Keeps an undelivered request for a later retry, when persistence is consented and the request was not withdrawn;
+    /// returns its self-telemetry outcome.
+    /// </summary>
+    private async Task<string> StoreAsync(IBelemetryHttpExporter exporter, BelemetryHttpRequest request, BelemetryConsentMark mark, CancellationToken cancellationToken)
+    {
+        if (mark.IsWithdrawn) return "withdrawn";
+        if (Store is null || _pipeline.CanRecord(BelemetryFeatures.Persistence) is false) return "failed";
+
+        try
+        {
+            if (Store is BelemetryBrowserRequestStore)
+            {
+                // The script sends it itself, so it needs the headers - and the features, as the page may have
+                // revoked one that .NET has not heard of yet. A file store must get neither.
+                await Store.SaveAsync(request.ForBrowser(exporter.Headers, _pipeline.BrowserFeatures(mark.Features)), cancellationToken);
+                return "stored";
+            }
+
+            await Store.SaveAsync(request, cancellationToken);
+
+            // Checked again once it is saved: a revoke meanwhile may have cleared the store before it landed.
+            if (mark.IsWithdrawn || _pipeline.CanRecord(BelemetryFeatures.Persistence) is false)
+            {
+                await Store.DeleteAsync(request.Id, cancellationToken);
+                return mark.IsWithdrawn ? "withdrawn" : "failed";
+            }
+
+            return "stored";
+        }
+        catch (Exception ex)
+        {
+            _pipeline.LogDiagnostic(ex, "Persisting an undelivered request failed; it is dropped.");
+            return "failed";
         }
     }
 
@@ -172,13 +208,16 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
             return;
         }
 
-        var revocations = _pipeline.Revocations;
+        // Any revoke clears the store, whichever feature it is of. Marked first, then the clearing of any revoke the mark
+        // counts is awaited: what is loaded after it is from after that revoke.
+        var mark = _pipeline.Revocations.Mark(BelemetryFeatures.All);
+        await _pipeline.StoreCleared;
         var stored = await Store.LoadAsync(50, cancellationToken);
         HashSet<string>? unreachable = null;
         foreach (var request in stored)
         {
             // Revoked mid-pass: the stored requests are cleared, and must not be sent or come back.
-            if (_pipeline.Revocations != revocations) return;
+            if (mark.IsWithdrawn) return;
 
             var exporter = _httpExporters.FirstOrDefault(e => e.Name == request.Exporter);
             if (exporter is null || exporter.PostsTo(request.Url) is false)
@@ -204,7 +243,9 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 // Partly delivered: keep only what is left, or the accepted items would be resent every pass. The
                 // backend answered, so the rest of its backlog still goes.
                 await Store.DeleteAsync(request.Id, cancellationToken);
-                if (_pipeline.Revocations == revocations) await Store.SaveAsync(sent.Remaining, cancellationToken);
+                if (mark.IsWithdrawn) return;
+                await Store.SaveAsync(sent.Remaining, cancellationToken);
+                if (mark.IsWithdrawn) await Store.DeleteAsync(sent.Remaining.Id, cancellationToken);
             }
             else
             {

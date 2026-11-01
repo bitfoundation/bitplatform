@@ -22,7 +22,7 @@ internal sealed class BelemetrySelfTelemetry : IDisposable
         _dropped = _meter.CreateCounter<long>("belemetry.records.dropped", "{record}",
             "Records Belemetry dropped before export, by reason: queue_full, pending_full (the hold before a consent decision), not_consented, consent_revoked, error_limit, relay_limit, filtered (a processor).");
         _exported = _meter.CreateCounter<long>("belemetry.records.exported", "{record}",
-            "Records Belemetry handed to an exporter, by outcome: delivered, rejected (refused for good), stored (kept for a later retry), failed (lost).");
+            "Records Belemetry handed to an exporter, by outcome: delivered, rejected (refused for good), stored (kept for a later retry), failed (lost), withdrawn (consent for a feature of its records was revoked after it left the queue).");
     }
 
     public void Dropped(string reason, bool span, long count = 1)

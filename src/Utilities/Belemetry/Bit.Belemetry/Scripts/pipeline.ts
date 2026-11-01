@@ -1,5 +1,5 @@
 ﻿import type { ResolvedConfig } from './config';
-import type { ConsentManager } from './consent';
+import type { ConsentManager, ConsentMark } from './consent';
 import { Features } from './features';
 import { ErrorLimiter, limitRecord } from './limits';
 import { debug } from './log';
@@ -8,8 +8,11 @@ import { applyPrivacy, isBlocked } from './privacy';
 import { isSessionSampled, type SessionManager } from './session';
 import { countDropped } from './stats';
 
-/** Where batches go: the exporters (direct) or .NET (relay). */
-export type Sink = (batch: RecordBatch, unload: boolean) => Promise<void>;
+/**
+ * Where batches go: the exporters (direct) or .NET (relay). `mark` is the consent the batch left the queue under: a
+ * request built from it is withdrawn once one of its features is revoked, during a compression or a retry.
+ */
+export type Sink = (batch: RecordBatch, unload: boolean, mark: ConsentMark) => Promise<void>;
 
 /**
  * The app's own processing of a record (`addProcessor`), run as the record is handed to the exporters: it may change
@@ -137,14 +140,18 @@ export class Pipeline {
         const size = Math.max(1, this.config.batch.maxBatchSize);
         while (this.queue.length) {
             const batch: RecordBatch = { resource: this.resource, spans: [], logs: [] };
+            // With UserTracking while the ids are added: a revoke of it withdraws the batch too.
+            let features = this.session.userTracking ? Features.UserTracking : 0;
             for (const record of this.queue.splice(0, size)) {
                 if (!this.process(record)) continue;
+                features |= record.feature;
                 if (isSpan(record)) batch.spans.push(record);
                 else batch.logs.push(record);
             }
             if (!batch.spans.length && !batch.logs.length) continue;
             try {
-                sends.push(Promise.resolve(sink(batch, unload)).catch(e => debug('export failed', e)));
+                // As it leaves the queue, which a revoke purges: a revoke from here on is one the batch escaped.
+                sends.push(Promise.resolve(sink(batch, unload, this.consent.mark(features))).catch(e => debug('export failed', e)));
             } catch (e) {
                 debug('export failed', e);
             }

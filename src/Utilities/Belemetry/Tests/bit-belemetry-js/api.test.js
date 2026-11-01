@@ -201,6 +201,46 @@ describe('public API', () => {
         expect(fetch.calls[0].init.headers).toMatchObject({ a: 'b', 'Content-Type': 'application/json' });
     });
 
+    it('gives up a .NET request holding a feature the page no longer grants', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        await load();
+        api.start(relayConfig({ consent: { default: 0 } }));
+        api.setConsent(4095 & ~api.Features.Logs);
+        const request = features => ({ exporter: 'otlp', url: 'https://collector.test/v1/logs', contentType: 'application/json', body: btoa('{}'), features });
+        // Built by .NET before it heard of the page's revoke of Logs.
+        await api.sendRequests([request(api.Features.Logs | api.Features.Errors), request(api.Features.Errors)]);
+        expect(fetch.calls).toHaveLength(1);
+        expect(api.getStats().requests.withdrawn).toBe(1);
+    });
+
+    it('withdraws a batch whose feature is revoked while it is compressed, and only such a batch', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        await load();
+        api.start({
+            ...relayConfig({ transport: 'direct' }),
+            consent: { default: 0 },
+            exporters: [{ type: 'otlp', endpoint: 'https://collector.test', protocol: 'http/json', compression: 'gzip' }],
+        });
+        api.setConsent(4095);
+        expect(api._getState().pipeline.size).toBe(1);
+        // The initial page view leaves the queue, and is compressed after the revoke: it is not sent.
+        let flushed = api.flush();
+        api.setConsent(4095 & ~api.Features.PageViews);
+        await flushed;
+        await api._getState().transport.idle();
+        expect(fetch.calls).toHaveLength(0);
+
+        // A revoke of features the batch does not hold leaves it alone.
+        api.trackEvent('a');
+        flushed = api.flush();
+        api.setConsent(4095 & ~api.Features.PageViews & ~api.Features.Interactions & ~api.Features.Persistence);
+        await flushed;
+        await api._getState().transport.idle();
+        expect(fetch.calls).toHaveLength(1);
+    });
+
     it('reports the grant within the configured features', async () => {
         await load();
         api.start(relayConfig({ features: 1 | 128 }));

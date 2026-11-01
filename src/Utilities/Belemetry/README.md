@@ -412,8 +412,10 @@ How it behaves:
   `Consent.PendingLimit`) and sent if the user grants them, dropped if not.
 - **Revoking is immediate.** Queued records of a revoked feature are discarded, and its device storage is cleared:
   revoking any feature clears the offline queue (a stored request can hold that feature's records), `Sessions` the
-  stored session, `UserTracking` the pseudo id and user id, which also leave the records still queued. A request
-  already waiting for a retry is dropped rather than retried or stored, for the same reason.
+  stored session, `UserTracking` the pseudo id and user id, which also leave the records still queued. What already
+  left the queue and holds a revoked feature's records (or the user ids) is dropped too: not sent if it has not been
+  yet, not retried, not stored - and the other records of its batch go with it. A revoke of `Persistence` or
+  `Sessions`, which no record belongs to, drops nothing in flight.
 - **The choice is remembered** (`Consent.Persist`, default on) in `localStorage` (and in a file in Hybrid apps) -
   recording the choice itself is strictly necessary. Other open tabs of the app adopt it as it is made, so a banner
   answered in one tab closes in the rest, and a revoke there stops them sending too.
@@ -455,8 +457,9 @@ On WebAssembly and Hybrid these go through the .NET pipeline; on Blazor Server t
 browser, so their consent applies.
 
 The user ids are consent's to add: without `UserTracking`, a `user.id` or `enduser.pseudo.id` passed as an attribute,
-a log scope or a structured log value is dropped (from span events and links too), and a log message that would render
-one is exported with its template as the body (`Paid by {user.id}`).
+a log scope, a structured log value or a metric tag is dropped (from span events and links too), and a log message that
+would render one is exported with its template as the body (`Paid by {user.id}`) - also when `UserTracking` is revoked
+after the message was logged and before it was exported.
 
 ---
 
@@ -537,10 +540,11 @@ options.Metrics.Meters.Add("Bit.Belemetry");
 | Instrument | Attributes | Counts |
 | --- | --- | --- |
 | `belemetry.records.dropped` | `belemetry.reason`, `belemetry.signal` (`traces`/`logs`) | records dropped before export: `queue_full`, `pending_full` (the hold before a consent decision), `not_consented`, `consent_revoked`, `error_limit`, `relay_limit`, `filtered` (a processor returned false) |
-| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost) |
+| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost), `withdrawn` (consent for a feature of its records was revoked after it left the queue: neither sent again nor stored) |
 
 In the browser, `BitBelemetry.getStats()` gives the script's counterpart: `{ dropped: { <reason>: n }, requests:
-{ delivered, rejected, kept, dropped }, queued, pending }` since the page loaded (with `sampled_out` among the reasons).
+{ delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since the page loaded (with `sampled_out` among the
+reasons).
 
 Metrics depend on the `System.Diagnostics.Metrics` feature switch (`MetricsSupport`). The WebAssembly SDK turns it off
 by default; the Bit.Belemetry package turns it back on unless the project sets it. With the switch off, no metrics are

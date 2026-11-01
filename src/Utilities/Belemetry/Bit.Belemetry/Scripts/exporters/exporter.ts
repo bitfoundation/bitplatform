@@ -1,4 +1,5 @@
-﻿import type { RecordBatch } from '../model';
+﻿import type { ConsentMark } from '../consent';
+import type { RecordBatch } from '../model';
 
 /** The signal bits of an exporter's `signals` (C# BelemetrySignals). Metrics never come from the browser. */
 export const Signals = {
@@ -18,6 +19,9 @@ export interface Exporter {
     urls: string[];
     /** Headers to send when a persisted request to one of `urls` is resent (stored requests carry none). */
     headers?: Record<string, string> | null;
-    /** Serializes the batch and hands it to the transport. Resolves once handed over, not when delivered. */
-    export(batch: RecordBatch, unload: boolean): Promise<void>;
+    /**
+     * Serializes the batch and hands it to the transport with `mark`, the consent the batch left the queue under.
+     * Resolves once handed over, not when delivered.
+     */
+    export(batch: RecordBatch, unload: boolean, mark?: ConsentMark): Promise<void>;
 }

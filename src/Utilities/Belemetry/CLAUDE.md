@@ -109,9 +109,20 @@ How consent works:
 - **Revoking a feature** purges its queued records. Revoking any feature also clears stored requests (a stored request
   can hold that feature's records), revoking `Sessions` clears the stored session, and revoking `UserTracking` clears
   the pseudo id and the user id, and takes them off the records still queued.
-- **A request built before a revoke** is neither retried nor stored after it, on both sides: each counts the revokes
-  (`BelemetryPipeline.Revocations`, `ConsentManager.revocations`), and a request whose count moved on is given up. A
-  resend pass stops at a revoke as well.
+- **A batch that left the queue before a revoke of one of its features** goes no further, on both sides: no request
+  of it is sent (not even a first attempt), retried or stored, and in .NET no exporter that has not had it yet gets it.
+  Each side counts the revokes per feature (`BelemetryRevocations`, `ConsentManager.revocations(features)`), and a
+  batch carries a mark (`BelemetryConsentMark`, `ConsentMark`) of its records' features - with `UserTracking`, as the
+  records may carry the user ids (.NET always, the script while it adds them) - taken as it leaves the queue
+  (`ExportQueuedAsync` under the lock, `Pipeline.flush`); it is withdrawn once their count moves on. A revoke of other
+  features leaves it alone, so revoking `Persistence` or `Sessions`, which no record belongs to, withdraws nothing in
+  flight. A withdrawn request is counted as `withdrawn` (the exported outcome, `getStats().requests`), not as failed.
+  The .NET sender's wait for a retry ends at such a revoke. A resend pass marks `All` and stops at any revoke, and in
+  .NET first waits for the store clearing of a revoke its mark counts (`BelemetryPipeline.StoreCleared`); a request
+  saved as a revoke lands is deleted again.
+- **.NET requests the script sends** (`sendRequests`, the unload drain) carry the `features` of their records: a
+  revoke made in the page reaches .NET only later (`ContextChanged`), so the script gives up a request holding a feature
+  it no longer grants, and marks the rest when it receives them.
 - **Other tabs** adopt a decision through the `storage` event of `bit-belemetry-consent` (`ConsentManager.adopt`), as if
   it had been made there (released, purged, reported to .NET); a removed or unreadable entry changes nothing.
 - **.NET reads the grant back** after every `setConsent` (`BelemetryConsentService.SetAsync`), on every host: the
@@ -259,9 +270,9 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `setAttributes(attributes or null)` | Global attributes merged into every record at `emit`, before privacy; a record's own win; a null value removes a key, `null` clears all; `session.id`, `enduser.pseudo.id`, `user.id` are refused (consent governs them) |
 | `flush()` | Returns a promise that resolves when the queued records have been handed to the transport |
 | `getContext()` | `{ consent, decided, sessionId, pseudoId, userId }` |
-| `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
+| `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
 | `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool })` | Registers the .NET bridge (`BelemetryJsCallbacks`) |
-| `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64)}]`) using keepalive fetch, retry and persistence |
+| `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64),features}]`) using keepalive fetch, retry and persistence; one whose `features` the page no longer grants is given up |
 
 .NET `[JSInvokable]` callbacks (on the internal `BelemetryJsCallbacks` relay class):
 

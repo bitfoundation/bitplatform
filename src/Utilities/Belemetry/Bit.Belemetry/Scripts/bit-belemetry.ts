@@ -27,7 +27,7 @@ import { Pipeline, type Processor } from './pipeline';
 import { createException, createLog, sanitizeAttributes } from './records';
 import { buildResource } from './resource';
 import { SessionManager } from './session';
-import { resetStats, statsSnapshot, type StatsSnapshot } from './stats';
+import { countRequest, resetStats, statsSnapshot, type StatsSnapshot } from './stats';
 import { StorageKeys } from './storage';
 import { fromBase64, Transport } from './transport';
 
@@ -51,6 +51,8 @@ export interface DotNetRequest {
     contentEncoding?: string | null;
     headers?: Record<string, string> | null;
     body: string;
+    /** The features of its records (C# `BelemetryHttpRequest.Features`): given up when the page no longer grants one. */
+    features?: number | null;
 }
 
 export interface AttachOptions {
@@ -172,9 +174,9 @@ function updateSink(s: State): void {
         // Without the .NET bridge yet, records wait in the queue.
         s.pipeline.sink = bridge ? (batch => relayBatch((bridge as Bridge).ref, batch)) : null;
     } else {
-        s.pipeline.sink = (batch, unload) => Promise.all(s.exporters.map(exporter => {
+        s.pipeline.sink = (batch, unload, mark) => Promise.all(s.exporters.map(exporter => {
             try {
-                return exporter.export(batch, unload).catch(e => debug('export failed', e));
+                return exporter.export(batch, unload, mark).catch(e => debug('export failed', e));
             } catch (e) {
                 debug('export failed', e);
                 return undefined;
@@ -237,7 +239,7 @@ function init(input: BelemetryConfig | null | undefined): State {
             const exporter = exporterFor(s, url);
             return exporter ? exporter.headers : null;
         },
-        revocations: () => s.consent.revocations,
+        revocations: features => s.consent.revocations(features),
     });
     const exporters = createExporters(config, transport);
     const pipeline = new Pipeline(config, consent, session, buildResource(config));
@@ -449,6 +451,13 @@ function sendRequestsCore(requests: DotNetRequest[] | null | undefined, unload: 
     const sends: Promise<void>[] = [];
     for (const request of requests) {
         try {
+            const features = typeof request.features === 'number' ? request.features : null;
+            // A revoke made in the page (a banner, another tab, Global Privacy Control) reaches .NET only later: a
+            // request it built under a feature the page no longer grants holds that feature's records.
+            if (state && features !== null && (features & ~state.consent.granted())) {
+                countRequest('withdrawn');
+                continue;
+            }
             sends.push(transport.send({
                 exporter: request.exporter,
                 url: request.url,
@@ -456,7 +465,7 @@ function sendRequestsCore(requests: DotNetRequest[] | null | undefined, unload: 
                 contentEncoding: request.contentEncoding || null,
                 headers: request.headers || null,
                 body: fromBase64(request.body || ''),
-            }, unload));
+            }, unload, state && features !== null ? state.consent.mark(features) : undefined));
         } catch (e) {
             debug('invalid request', e);
         }
