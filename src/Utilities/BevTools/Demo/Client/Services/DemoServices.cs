@@ -259,6 +259,7 @@ public sealed class ProductApi(IHttpClientFactory factory, NavigationManager nav
         get
         {
             var client = factory.CreateClient("api");
+            // In the browser only: the server's client comes with the address of the request it serves (Program.cs).
             client.BaseAddress ??= new Uri(navigation.BaseUri);
             return client;
         }

@@ -86,7 +86,7 @@
                 </tr>
                 <tr>
                     <td>Click</td>
-                    <td>Log record, <code>eventName = "browser.user_interaction"</code>. Attributes: <code>event.type</code>, <code>target.element</code>, <code>target.id</code>, <code>target.name</code> (<code>data-bit-belemetry-name</code>, <code>aria-label</code>, then <code>name</code>), <code>target.text</code> (only with <code>captureText</code>), <code>target.xpath</code>. Elements under <code>[data-bit-belemetry-ignore]</code> are skipped</td>
+                    <td>Log record, <code>eventName = "browser.user_interaction"</code>. Attributes: <code>event.type</code>, <code>target.element</code>, <code>target.id</code>, <code>target.name</code> (<code>data-bit-belemetry-name</code>, <code>aria-label</code>, then <code>name</code>), <code>target.text</code> (only with <code>captureText</code>), <code>target.xpath</code>. Elements under <code>[data-bit-belemetry-ignore]</code> are skipped (in a shadow root under one too), and their text is left out of <code>target.text</code></td>
                     <td><code>bit.belemetry.interactions</code></td>
                     <td>Interactions</td>
                 </tr>
@@ -265,8 +265,8 @@
         </table>
     </div>
     <p>
-        Revoking a feature clears its key: <code>Persistence</code> removes the queue, <code>Sessions</code> the stored
-        session, and <code>UserTracking</code> the pseudo id and the user id.
+        Revoking a feature clears its key: any feature removes the queue (a stored request can hold its records),
+        <code>Sessions</code> the stored session, and <code>UserTracking</code> the pseudo id and the user id.
     </p>
 </div>
 

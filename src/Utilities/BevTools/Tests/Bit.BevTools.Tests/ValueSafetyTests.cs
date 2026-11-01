@@ -58,9 +58,12 @@ public class ValueSafetyTests
     }
 
     [TestMethod]
-    public void Text_built_to_make_the_credential_patterns_backtrack_is_checked_in_linear_time()
+    [DataRow("ey")]
+    [DataRow("abcdefgh.ijklmn.")]
+    [DataRow("eyabcde.")]
+    public void Text_built_to_make_the_credential_patterns_backtrack_is_checked_in_linear_time(string unit)
     {
-        var text = string.Concat(Enumerable.Repeat("ey", 50_000));
+        var text = string.Concat(Enumerable.Repeat(unit, 100_000 / unit.Length));
 
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
         Assert.IsFalse(BevRedactor.LooksLikeSecret(text));
@@ -68,6 +71,31 @@ public class ValueSafetyTests
         var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start);
 
         Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"checking 100,000 characters took {elapsed.TotalMilliseconds:0} ms");
+    }
+
+    [TestMethod]
+    [DataRow("https://app/cb?returnUrl=%2Fhome%3Fid_token%3D{0}&x=1")]
+    [DataRow("{{\"payload\":\"{{\\u0022token\\u0022:\\u0022{0}\\u0022}}\"}}")]
+    [DataRow("line one\\n{0}")]
+    [DataRow("prefix{0} and {0}")]
+    public void A_token_right_after_an_escape_or_other_characters_is_still_redacted(string format)
+    {
+        var text = string.Format(format, Jwt);
+
+        Assert.IsTrue(BevRedactor.LooksLikeSecret(text));
+        Assert.AreEqual(string.Format(format, BevRedactor.RedactedValue), BevRedactor.RedactText(text));
+    }
+
+    [TestMethod]
+    [DataRow("at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] data)")]
+    [DataRow("survey_results.annual_report.pdf")]
+    [DataRow("monkey-business.example-site.com")]
+    [DataRow("Bit.Demo.Keyboard_Shortcuts.Handlers.Register")]
+    [DataRow("Bit.Demo.HeyJudeComponent.Render.Method")]
+    public void Dotted_text_with_ey_inside_a_word_is_not_a_token(string text)
+    {
+        Assert.IsFalse(BevRedactor.LooksLikeSecret(text));
+        Assert.AreSame(text, BevRedactor.RedactText(text));
     }
 
     [TestMethod]
@@ -123,6 +151,32 @@ public class ValueSafetyTests
         Assert.IsFalse(optionsNode.IsExpandable);
         StringAssert.Contains(optionsNode.Display, "IOptions<SmtpSettings>");
         Assert.IsFalse(flat.Values.Any(v => v.Contains("s3cret", StringComparison.Ordinal)), string.Join(", ", flat));
+    }
+
+    [TestMethod]
+    public void Exports_below_Full_keep_the_changes_a_render_captured_and_summarize_other_lists()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = BevValueAccess.Shallow);
+        using var _ = scope;
+        var sample = new BevRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = System.Diagnostics.Stopwatch.GetTimestamp(), ChangedState = ["_counter: 0 → 1"] };
+        session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Render, Category = "render", Title = "Counter", DurationMs = 1, Data = new RenderEventData(sample, 2) });
+        session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.StateChange, Category = "orders", Title = "Order placed", Data = new Dictionary<string, object?> { ["items"] = new List<string> { "opaque-item" } } });
+
+        foreach (var export in new[] { BevSessionExporter.ToJson(session), BevTraceExporter.ToChromeTrace(session) })
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(export);
+            var strings = StringsIn(document.RootElement).ToList();
+            Assert.Contains(s => s.Contains("_counter: 0 → 1", StringComparison.Ordinal), strings, "the panel shows it under Shallow too");
+            Assert.DoesNotContain(s => s.Contains("opaque-item", StringComparison.Ordinal), strings);
+        }
+
+        static IEnumerable<string> StringsIn(System.Text.Json.JsonElement element) => element.ValueKind switch
+        {
+            System.Text.Json.JsonValueKind.String => [element.GetString()!],
+            System.Text.Json.JsonValueKind.Object => element.EnumerateObject().SelectMany(p => StringsIn(p.Value)),
+            System.Text.Json.JsonValueKind.Array => element.EnumerateArray().SelectMany(StringsIn),
+            _ => [],
+        };
     }
 
     [TestMethod]

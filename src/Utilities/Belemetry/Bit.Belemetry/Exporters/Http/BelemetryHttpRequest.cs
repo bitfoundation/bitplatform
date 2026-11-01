@@ -36,6 +36,13 @@ internal sealed class BelemetryHttpRequest
     /// <summary>The number of records (spans, log records or metric data points) it carries, for the self-telemetry; 0 when unknown.</summary>
     public int Count { get; set; }
 
+    /// <summary>
+    /// The consent features of the records it carries; set only when the browser sends it (<see cref="ForBrowser"/>).
+    /// The page's consent may be ahead of .NET's - a revoke there reaches .NET later - so the script gives up a request
+    /// holding a feature the page no longer grants.
+    /// </summary>
+    public BelemetryFeatures? Features { get; set; }
+
     /// <summary>A copy with <paramref name="headers"/> merged under its own <see cref="Headers"/>.</summary>
     internal BelemetryHttpRequest WithHeaders(IReadOnlyDictionary<string, string> headers)
     {
@@ -46,6 +53,14 @@ internal sealed class BelemetryHttpRequest
         }
 
         return Copy(merged.Count > 0 ? merged : null);
+    }
+
+    /// <summary>The copy the browser script sends: with <paramref name="headers"/> (see <see cref="WithHeaders"/>) and the <paramref name="features"/> of its records.</summary>
+    internal BelemetryHttpRequest ForBrowser(IReadOnlyDictionary<string, string> headers, BelemetryFeatures features)
+    {
+        var copy = WithHeaders(headers);
+        copy.Features = features;
+        return copy;
     }
 
     /// <summary>A copy without any headers - what a durable store may keep.</summary>
@@ -62,5 +77,6 @@ internal sealed class BelemetryHttpRequest
         Body = Body,
         Time = Time,
         Count = Count,
+        Features = Features,
     };
 }

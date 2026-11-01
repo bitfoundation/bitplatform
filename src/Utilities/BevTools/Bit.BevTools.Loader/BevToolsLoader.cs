@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.BevTools;
@@ -46,7 +48,9 @@ public sealed class BevToolsLoader : IDisposable
     /// <summary>
     /// Opens the BevTools panel. When BevTools was not registered at startup it first loads Bit.BevTools (in Blazor
     /// WebAssembly through LazyAssemblyLoader when it is marked BlazorWebAssemblyLazyLoad) and attaches it to the running
-    /// app, which it then sees from that moment on. Returns false, with <see cref="Problem"/> saying why, when it could not.
+    /// app, which it then sees from that moment on. Returns false, with <see cref="Problem"/> saying why, when it could not;
+    /// also false, leaving <see cref="Problem"/> to it, when a newer call overtook this one while it awaited
+    /// <see cref="BitBevToolsLoaderOptions.Authorize"/> or the download: only the latest call acts on its answer.
     /// </summary>
     public async Task<bool> OpenAsync()
     {
@@ -58,7 +62,7 @@ public sealed class BevToolsLoader : IDisposable
         // Asked before anything is downloaded or attached, and on every open: whoever is in the scope can change (a
         // sign-out in the same circuit), and a decision cached from before would outlive it.
         var opening = ++_openings;
-        var refusal = await AuthorizeAsync();
+        var refusal = await AuthorizeAsync(logFailure: true);
         if (opening != _openings)
         {
             return false;
@@ -106,34 +110,73 @@ public sealed class BevToolsLoader : IDisposable
         return true;
     }
 
-    /// <summary>The panel to render: known once BevTools runs in this scope.</summary>
+    /// <summary>
+    /// The panel to render: known once BevTools runs in this scope and, with <see cref="BitBevToolsLoaderOptions.Authorize"/>
+    /// set, once the latest <see cref="OpenAsync"/> was accepted by it - a BevTools registered at startup included.
+    /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     internal Type? PanelType => IsActive && (_authorized || _context.Options.Authorize is null) ? _context.EntryPoint?.PanelType : null;
 
     /// <summary>
     /// Whether <see cref="BitBevToolsLoaderOptions.Authorize"/> accepts whoever is in this scope (true when none is
     /// set), on top of <see cref="CanOpen"/>. Use it to show the "Open dev tools" button only to the people allowed to
-    /// press it; <see cref="OpenAsync"/> asks again either way.
+    /// press it; <see cref="OpenAsync"/> asks again either way. A callback that throws is a refusal here too, and is not
+    /// logged: this runs whenever the app renders its button, for every visitor, and <see cref="OpenAsync"/> logs it.
     /// </summary>
-    public async Task<bool> IsAuthorizedAsync() => CanOpen && await AuthorizeAsync() is null;
+    public async Task<bool> IsAuthorizedAsync() => CanOpen && await AuthorizeAsync(logFailure: false) is null;
 
     /// <returns>Null when authorized, otherwise why not.</returns>
-    private async Task<string?> AuthorizeAsync()
+    private async Task<string?> AuthorizeAsync(bool logFailure)
     {
         if (_context.Options.Authorize is not { } authorize)
         {
             return null;
         }
 
+        // Outside the callback's try: a failure here is Bit.BevTools', and blaming the app's callback for it would send
+        // its developers debugging code that never ran. Still a refusal, since the callback could not be asked.
+        IDisposable? ownWork;
         try
         {
-            using var ownWork = _context.EntryPoint?.BeginOwnWork();
-            return await authorize(_services) ? null : "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize did not accept the current user.";
+            ownWork = _context.EntryPoint?.BeginOwnWork();
         }
         catch (Exception ex)
         {
-            // A failing check is a refusal, never an opening: the callback is a security control.
-            return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + ": " + ex.Message;
+            return BevToolsLoaderContext.IsVersionMismatch(ex)
+                ? BevToolsLoaderContext.VersionMismatch(_context.EntryPoint!, ex)
+                : "BevTools is not opened here: Bit.BevTools failed before asking BitBevToolsLoaderOptions.Authorize: " + ex.GetType().Name + ": " + ex.Message;
+        }
+
+        using (ownWork)
+        {
+            try
+            {
+                return await authorize(_services) ? null : "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize did not accept the current user.";
+            }
+            catch (Exception ex)
+            {
+                // A failing check is a refusal, never an opening: the callback is a security control. Problem goes to
+                // whoever pressed the button, whom the callback did not accept, so it names the exception and the log
+                // holds the rest - said only once the log has it, so nobody searches a log that has no logger.
+                var logged = false;
+                if (logFailure)
+                {
+                    try
+                    {
+                        if (_services.GetService<ILoggerFactory>() is { } loggerFactory)
+                        {
+                            loggerFactory.CreateLogger("Bit.BevTools").LogWarning(ex, "BitBevToolsLoaderOptions.Authorize threw; BevTools stays closed.");
+                            logged = true;
+                        }
+                    }
+                    catch
+                    {
+                        // A log line that cannot be written must not turn the refusal into an exception.
+                    }
+                }
+
+                return "BevTools is not opened here: BitBevToolsLoaderOptions.Authorize threw " + ex.GetType().Name + (logged ? " (logged)." : ".");
+            }
         }
     }
 

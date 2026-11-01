@@ -77,6 +77,15 @@ public partial class SettingsStore
     private void OnSetTheme(string theme) => Theme = theme;
 }
 
+[BlexStoreAttribute(Name = "layout", Persist = true, Version = 2)]
+public partial class LayoutStore
+{
+    [BlexStateAttribute] private string _view = "grid";
+
+    [BlexActionAttribute]
+    private void OnSetView(string view) => View = view;
+}
+
 [BlexStoreAttribute(Name = "data")]
 public partial class DataStore
 {

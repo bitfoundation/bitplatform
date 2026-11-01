@@ -218,10 +218,22 @@ public class ProtocolTests : BunitContext
         bridge.OnJsError(new BevJsErrorPayload { Message = new string('e', 4001) });
         bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Stack = new string('s', 4001) });
         bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Source = new string('u', 4001) });
+        bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Type = new string('t', 201) });
         bridge.OnJsError(new BevJsErrorPayload { Message = "TypeError: x is undefined", Stack = "at app.js:1:1" });
 
         Assert.AreEqual(1, Session.Browser.JsErrorCount);
         Assert.ContainsSingle(Session.Errors.Snapshot());
+    }
+
+    [TestMethod]
+    public void The_name_of_a_JavaScript_error_is_redacted_like_its_message()
+    {
+        const string jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJl";
+        var bridge = new BevJsBridge(Session, () => { });
+
+        bridge.OnJsError(new BevJsErrorPayload { Message = "failed", Type = "Error " + jwt });
+
+        Assert.IsFalse(Session.Errors.Snapshot().Single().ExceptionType.Contains(jwt, StringComparison.Ordinal));
     }
 
     public sealed class SecretHolder : ComponentBase

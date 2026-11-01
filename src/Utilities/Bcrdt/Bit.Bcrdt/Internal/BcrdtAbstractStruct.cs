@@ -33,6 +33,9 @@ public abstract class BcrdtAbstractStruct
     /// <summary>Absorbs the struct immediately to the right if the two can be represented as one.</summary>
     public abstract bool TryMergeWith(BcrdtAbstractStruct right);
 
+    /// <summary>Whether <see cref="TryMergeWith"/> would absorb <paramref name="right"/>. Changes nothing.</summary>
+    internal virtual bool CanMergeWith(BcrdtAbstractStruct right) => false;
+
     /// <summary>
     /// Whether two adjacent ranges fit in one struct, whose length is an <see cref="int"/>.
     /// </summary>
@@ -68,10 +71,14 @@ public sealed class BcrdtGarbageCollected(BcrdtItemId id, int length) : BcrdtAbs
     /// <inheritdoc/>
     public override bool TryMergeWith(BcrdtAbstractStruct right)
     {
-        if (right is not BcrdtGarbageCollected || !FitsOneBlock(Length, right.Length)) return false;
+        if (!CanMergeWith(right)) return false;
         Length += right.Length;
         return true;
     }
+
+    /// <inheritdoc/>
+    internal override bool CanMergeWith(BcrdtAbstractStruct right) =>
+        right is BcrdtGarbageCollected && FitsOneBlock(Length, right.Length);
 
     /// <inheritdoc/>
     public override void Write(ref BcrdtBufferWriter writer, int offset)
@@ -109,10 +116,14 @@ public sealed class BcrdtSkip(BcrdtItemId id, int length) : BcrdtAbstractStruct(
     /// <inheritdoc/>
     public override bool TryMergeWith(BcrdtAbstractStruct right)
     {
-        if (right is not BcrdtSkip || !FitsOneBlock(Length, right.Length)) return false;
+        if (!CanMergeWith(right)) return false;
         Length += right.Length;
         return true;
     }
+
+    /// <inheritdoc/>
+    internal override bool CanMergeWith(BcrdtAbstractStruct right) =>
+        right is BcrdtSkip && FitsOneBlock(Length, right.Length);
 
     /// <inheritdoc/>
     public override void Write(ref BcrdtBufferWriter writer, int offset)

@@ -266,7 +266,7 @@ export function createAzureExporter(config: AzureMonitorExporterConfig, transpor
     const signals = signalsOf(config);
     return {
         urls: [target.endpoint],
-        async export(batch, unload) {
+        async export(batch, unload, mark) {
             const filtered: RecordBatch = {
                 resource: batch.resource,
                 spans: signals & Signals.Traces ? batch.spans : [],
@@ -285,7 +285,7 @@ export function createAzureExporter(config: AzureMonitorExporterConfig, transpor
                 contentEncoding: zipped ? 'gzip' : null,
                 body: zipped || body,
                 raw: zipped ? body : null,
-            }, unload);
+            }, unload, mark);
         },
     };
 }

@@ -69,7 +69,9 @@
             Belemetry's diagnostics (the <code>Bit.Belemetry</code> log category, at Debug - Information with
             <code>options.Debug</code>); it never reaches the app. Every call is counted on the
             <code>Bit.Belemetry</code> meter's <code>belemetry.records.exported</code>, under the exporter's
-            <code>Name</code>, as <code>delivered</code> or <code>failed</code> (see <a href="/dotnet">.NET instrumentation</a>).
+            <code>Name</code>, as <code>delivered</code> or <code>failed</code> - or <code>withdrawn</code>, without a
+            call, when the user revoked a feature of the batch's records after it left the queue (see
+            <a href="/dotnet">.NET instrumentation</a>).
         </li>
         <li>
             Retries and offline persistence belong to the built-in HTTP exporters. A custom exporter's

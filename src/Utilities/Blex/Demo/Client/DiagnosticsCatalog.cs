@@ -422,6 +422,59 @@ public static class DiagnosticsCatalog
             [BlexEffect(TimeoutMilliseconds = 5000)]
             private async Task OnLoad(CancellationToken ct) => Orders = await _api.GetOrdersAsync(ct);
             """),
+
+        new("BLEX024", "Store version cannot be negative", true,
+            "<code>[BlexStore(Version = n)]</code> gives a persisted store a version of its own. Only a positive one does: <code>0</code> means the store follows <code>BlexPersistenceOptions.Version</code>, and a negative one would quietly do the same, so the version you wrote would never be checked.",
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = -1)]   // BLEX024
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """,
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 1)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """),
+
+        new("BLEX025", "Store version has no effect without Persist", false,
+            "A store's <code>Version</code> versions the state it saves. A store without <code>Persist = true</code> saves nothing, so the version is never written or checked - usually <code>Persist = true</code> was left out.",
+            """
+            [BlexStore(Name = "layout", Version = 2)]                    // BLEX025
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """,
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 2)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """),
+
+        new("BLEX026", "Store declares a member the generator overrides", true,
+            "The generated half of a store overrides some <code>BlexStoreBase</code> members: <code>Name</code>, <code>SerializeState</code> and <code>DeserializeState</code> always, and others when the store asks for them - <code>Persist</code> and <code>PersistVersion</code> for <code>Persist = true</code> and <code>Version = n</code>, and the members behind <code>EnforceActions</code>, <code>RollbackOnError</code>, transient state, computeds, cancellable effects and actions. A store that writes one of those itself would declare it twice, so the build would fail inside generated code. Say it through the attribute instead, or drop the attribute setting and keep your own override.",
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 2)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+
+                public override int PersistVersion => 3;                 // BLEX026
+            }
+            """,
+            """
+            [BlexStore(Name = "layout", Persist = true, Version = 3)]
+            public partial class LayoutStore
+            {
+                [BlexState] private string _view = "grid";
+            }
+            """),
     ];
 
     /// <summary>The entry for one diagnostic id (case-insensitive), or <c>null</c>.</summary>

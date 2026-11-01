@@ -11,4 +11,10 @@ internal enum BelemetrySendOutcome
 
     /// <summary>Not delivered for a transient reason (network, throttling, server error) - worth retrying later.</summary>
     Failed,
+
+    /// <summary>
+    /// Given up because consent for a feature of its records was revoked after it was built (<see cref="BelemetryConsentMark"/>):
+    /// it may hold that feature's records, so it is neither sent again nor stored.
+    /// </summary>
+    Withdrawn,
 }

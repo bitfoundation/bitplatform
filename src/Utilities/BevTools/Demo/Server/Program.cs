@@ -3,7 +3,9 @@ using Bit.BevTools.Demo.Client.Extension;
 using Bit.BevTools.Demo.Client.Models;
 using Bit.BevTools.Demo.Client.Services;
 using Bit.BevTools.Demo.Server.Components;
-using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 
 DemoCulture.Apply();
@@ -19,14 +21,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddDemoServices();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient("api").ConfigureHttpClient((services, client) =>
-{
-    if (services.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request is { } request)
-    {
-        client.BaseAddress = new Uri(UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, "/"));
-    }
-});
+// The server calls its own API at an address it decides (DemoApiAddress), never at one a visitor names: not at
+// NavigationManager.BaseUri, which ProductApi falls back to in the browser and which in an interactive Server circuit is
+// whatever the browser sent when the circuit started, and not at the request's Host header either.
+builder.Services.AddHttpClient("api").ConfigureHttpClient((services, client) => client.BaseAddress = DemoApiAddress.Resolve(services));
 
 // One line. An application leaves Enabled alone and BevTools turns itself on in Development only; this demo exists to
 // show BevTools, wherever it is deployed (bevtools.bitplatform.dev included), so it is on in every environment.
@@ -101,6 +99,38 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Bit.BevTools.Demo.Client._Imports).Assembly);
 
 app.Run();
+
+/// <summary>
+/// Where the server reaches its own API. Configuration names it (<c>DemoApiBaseAddress</c>) where the server cannot reach
+/// an address it listens on: behind IIS out of process, Kestrel takes only the requests IIS forwards with its pairing
+/// token, so the deployment's web.config names the public address. Otherwise it is an address the server listens on,
+/// at <c>localhost</c> when that is every interface, HTTPS first: plain HTTP is redirected there anyway when both are.
+/// </summary>
+internal static class DemoApiAddress
+{
+    public static Uri Resolve(IServiceProvider services)
+    {
+        if (services.GetRequiredService<IConfiguration>()["DemoApiBaseAddress"] is { Length: > 0 } configured)
+        {
+            return new Uri(configured);
+        }
+
+        var address = services.GetRequiredService<IServer>().Features.GetRequiredFeature<IServerAddressesFeature>().Addresses
+            .OrderBy(address => address.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .FirstOrDefault() ?? throw new InvalidOperationException("The server is not listening on any address yet.");
+
+        // A wildcard binding (http://+:80, http://*:80, http://[::]:80, http://0.0.0.0:80) names every interface, not one
+        // to connect to.
+        var uri = new UriBuilder(address.Replace("://+:", "://localhost:").Replace("://*:", "://localhost:"));
+        if (System.Net.IPAddress.TryParse(uri.Host.Trim('[', ']'), out var ip) && (ip.Equals(System.Net.IPAddress.Any) || ip.Equals(System.Net.IPAddress.IPv6Any)))
+        {
+            uri.Host = "localhost";
+        }
+
+        uri.Path = "/";
+        return uri.Uri;
+    }
+}
 
 internal static class DemoCatalog
 {

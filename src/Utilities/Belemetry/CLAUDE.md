@@ -106,8 +106,23 @@ How consent works:
   is granted (default `None`).
 - Records for other features are **held in memory** (bounded by `Consent.PendingLimit`, default 500), not sent.
 - **After the decision**, held records the user granted are sent and the rest are dropped.
-- **Revoking a feature** purges its queued records. Revoking `Persistence` also clears stored requests, revoking
-  `Sessions` clears the stored session, and revoking `UserTracking` clears the pseudo id and the user id.
+- **Revoking a feature** purges its queued records. Revoking any feature also clears stored requests (a stored request
+  can hold that feature's records), revoking `Sessions` clears the stored session, and revoking `UserTracking` clears
+  the pseudo id and the user id, and takes them off the records still queued.
+- **A batch that left the queue before a revoke of one of its features** goes no further, on both sides: no request
+  of it is sent (not even a first attempt), retried or stored, and in .NET no exporter that has not had it yet gets it.
+  Each side counts the revokes per feature (`BelemetryRevocations`, `ConsentManager.revocations(features)`), and a
+  batch carries a mark (`BelemetryConsentMark`, `ConsentMark`) of its records' features - with `UserTracking`, as the
+  records may carry the user ids (.NET always, the script while it adds them) - taken as it leaves the queue
+  (`ExportQueuedAsync` under the lock, `Pipeline.flush`); it is withdrawn once their count moves on. A revoke of other
+  features leaves it alone, so revoking `Persistence` or `Sessions`, which no record belongs to, withdraws nothing in
+  flight. A withdrawn request is counted as `withdrawn` (the exported outcome, `getStats().requests`), not as failed.
+  The .NET sender's wait for a retry ends at such a revoke. A resend pass marks `All` and stops at any revoke, and in
+  .NET first waits for the store clearing of a revoke its mark counts (`BelemetryPipeline.StoreCleared`); a request
+  saved as a revoke lands is deleted again.
+- **.NET requests the script sends** (`sendRequests`, the unload drain) carry the `features` of their records: a
+  revoke made in the page reaches .NET only later (`ContextChanged`), so the script gives up a request holding a feature
+  it no longer grants, and marks the rest when it receives them.
 - **Other tabs** adopt a decision through the `storage` event of `bit-belemetry-consent` (`ConsentManager.adopt`), as if
   it had been made there (released, purged, reported to .NET); a removed or unreadable entry changes nothing.
 - **.NET reads the grant back** after every `setConsent` (`BelemetryConsentService.SetAsync`), on every host: the
@@ -193,7 +208,8 @@ Notes on the fields:
 - `headers` of an OTLP exporter are `BrowserHeaders` alone when a server renders the config (its `Headers` are server
   configuration and must never be published in a page); in WebAssembly and Hybrid they are `Headers` with
   `BrowserHeaders` on top (`BelemetryBrowserConfigFactory.BrowserHeaders`).
-- `blockedAttributes` are exact, case-sensitive attribute keys removed from every record and span event. A blocked id
+- `blockedAttributes` are exact, case-sensitive attribute keys removed from every record, span event, span link and
+  metric point. A blocked id
   (`session.id`, ...) is not added by the enrichment step either, and is removed from relayed records that carry it.
 - Privacy is one rule set on both sides (`BelemetryPrivacy.cs`, `privacy.ts`), applied per attribute in this order:
   blocked keys are removed, an id included (the operator's explicit choice); the ids (`session.id`,
@@ -254,9 +270,9 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | `setAttributes(attributes or null)` | Global attributes merged into every record at `emit`, before privacy; a record's own win; a null value removes a key, `null` clears all; `session.id`, `enduser.pseudo.id`, `user.id` are refused (consent governs them) |
 | `flush()` | Returns a promise that resolves when the queued records have been handed to the transport |
 | `getContext()` | `{ consent, decided, sessionId, pseudoId, userId }` |
-| `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
+| `getStats()` | `{ dropped: { <reason>: n }, requests: { delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since load (`stats.ts`); reasons shared with the C# `belemetry.records.dropped` counter where both drop for the same cause |
 | `attachDotNet(dotNetRef, { relay: bool, unloadDrain: bool })` | Registers the .NET bridge (`BelemetryJsCallbacks`) |
-| `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64)}]`) using keepalive fetch, retry and persistence |
+| `sendRequests(requests)` | Sends pre-serialized requests built by .NET in WASM (`[{exporter,url,contentType,contentEncoding,headers,body(base64),features}]`) using keepalive fetch, retry and persistence; one whose `features` the page no longer grants is given up |
 
 .NET `[JSInvokable]` callbacks (on the internal `BelemetryJsCallbacks` relay class):
 
@@ -267,7 +283,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 - `"Belemetry.ContextChanged"`. Receives a `BelemetryJsContext` whenever consent, session or user changes.
 - `"Belemetry.DrainForUnload"` (synchronous, WASM only). Called on `pagehide` / `visibilitychange:hidden`. Returns
   the pending .NET records serialized as requests, which JS sends with `fetch(..., { keepalive: true })` because
-  async .NET work does not survive unload.
+  async .NET work does not survive unload. Elsewhere it returns nothing: on a server any client of a circuit can call
+  it, and the queue and the exporters' headers belong to every user.
 
 ### Semantic conventions emitted by the browser
 
@@ -276,7 +293,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | Page view | Log record, `eventName = "browser.page_view"`. Attributes: `url.full`, `url.path`, `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`/`restore`; `restore` is a `pageshow` with `persisted`, which starts a new visit without counting the time spent in the back/forward cache) |
 | Page visit time | Log record, `eventName = "browser.page_visit_time"`, only with `pageViews.trackVisitTime`. Emitted for the previous page when the next page view starts, and for the current page when it is hidden; the next visit starts when the page is shown again, so hidden time is counted nowhere and nothing twice. Attributes: `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms, integer) |
 | Rage click | Log record, `eventName = "browser.rage_click"`, with `interactions.rageClicks`: once per burst of 3 clicks on one element within 1 s (from the burst's first click). The click's target attributes, `event.type = "rage_click"`, `interaction.click_count = 3` |
-| Click | Log record, `eventName = "browser.user_interaction"`. Attributes: `event.type`, `target.element`, `target.id`, `target.name` (`data-bit-belemetry-name`, `aria-label`, then `name`), `target.text` (only with `captureText`), `target.xpath`. Elements under `[data-bit-belemetry-ignore]` are skipped |
+| Click | Log record, `eventName = "browser.user_interaction"`. Attributes: `event.type`, `target.element`, `target.id`, `target.name` (`data-bit-belemetry-name`, `aria-label`, then `name`), `target.text` (only with `captureText`), `target.xpath`. Elements under `[data-bit-belemetry-ignore]` are skipped (in a shadow root under one too), and their text is left out of `target.text` |
 | Web vital | Log record, `eventName = "browser.web_vital"`. Attributes: `web_vital.name` (`LCP`/`INP`/`CLS`/`FCP`/`TTFB`), `web_vital.value`, `web_vital.delta`, `web_vital.rating` (`good`/`needs-improvement`/`poor`), `web_vital.id`, `web_vital.navigation_type` |
 | Document load | Internal span `documentLoad`, with events `domInteractive`, `domContentLoadedEventEnd`, `loadEventEnd`, ... from `PerformanceNavigationTiming` |
 | Resource timing | Internal span `resourceFetch` with `url.full`, `http.response.body.size`, `network.protocol.name` |

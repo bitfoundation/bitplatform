@@ -22,8 +22,9 @@ public static class BcrdtUpdateDecoder
     /// </para>
     /// </remarks>
     /// <exception cref="BcrdtFormatException">
-    /// The payload is not a well-formed update. The whole payload is decoded before anything is
-    /// integrated, so a rejected update leaves the document exactly as it was.
+    /// The payload is not a well-formed update, or places a block further past what the document holds
+    /// from its author than any replica writes. The whole payload is decoded and checked before anything
+    /// is integrated, so a rejected update leaves the document exactly as it was.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// A well-formed block could not be integrated. That block and the later blocks from the same

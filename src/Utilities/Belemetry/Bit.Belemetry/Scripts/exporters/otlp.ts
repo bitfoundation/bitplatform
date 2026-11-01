@@ -1,4 +1,5 @@
 ﻿import type { OtlpExporterConfig } from '../config';
+import type { ConsentMark } from '../consent';
 import type { Transport } from '../transport';
 import { gzip } from '../transport';
 import { Signals, signalsOf, type Exporter } from './exporter';
@@ -21,7 +22,7 @@ export function createOtlpExporter(config: OtlpExporterConfig, transport: Transp
     const compress = config.compression === 'gzip';
     const signals = signalsOf(config);
 
-    const send = async (url: string, body: Uint8Array, unload: boolean): Promise<void> => {
+    const send = async (url: string, body: Uint8Array, unload: boolean, mark: ConsentMark | undefined): Promise<void> => {
         let payload = body;
         let encoding: string | null = null;
         // Compression is async, and nothing async survives unload, so unload batches go uncompressed.
@@ -32,22 +33,22 @@ export function createOtlpExporter(config: OtlpExporterConfig, transport: Transp
                 encoding = 'gzip';
             }
         }
-        transport.send({ exporter: 'otlp', url, contentType, contentEncoding: encoding, headers: config.headers, body: payload, raw: encoding ? body : null }, unload);
+        transport.send({ exporter: 'otlp', url, contentType, contentEncoding: encoding, headers: config.headers, body: payload, raw: encoding ? body : null }, unload, mark);
     };
 
     return {
         urls: [urls.base, urls.traces, urls.logs],
         headers: config.headers,
-        export(batch, unload) {
+        export(batch, unload, mark) {
             // Both sends start synchronously (no await in between), which matters during unload.
             const sends: Promise<void>[] = [];
             if (batch.spans.length && (signals & Signals.Traces)) {
                 const body = json ? encodeUtf8(JSON.stringify(tracesToJson(batch.resource, batch.spans, sdkVersion))) : encodeTraces(batch.resource, batch.spans, sdkVersion);
-                sends.push(send(urls.traces, body, unload));
+                sends.push(send(urls.traces, body, unload, mark));
             }
             if (batch.logs.length && (signals & Signals.Logs)) {
                 const body = json ? encodeUtf8(JSON.stringify(logsToJson(batch.resource, batch.logs, sdkVersion))) : encodeLogs(batch.resource, batch.logs, sdkVersion);
-                sends.push(send(urls.logs, body, unload));
+                sends.push(send(urls.logs, body, unload, mark));
             }
             return Promise.all(sends).then(() => undefined);
         },

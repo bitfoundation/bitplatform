@@ -8,6 +8,16 @@ import { readItem, removeItem, StorageKeys, writeItem } from './storage';
 export type ConsentListener = (previous: number, next: number, released: TelemetryRecord[]) => void;
 
 /**
+ * The consent a request was built under (C# `BelemetryConsentMark`): the features its records belong to, and how many
+ * times they had been revoked by then (`ConsentManager.revocations`). Once one of them is revoked again it is withdrawn -
+ * neither sent, retried nor stored - as it may hold the revoked feature's records.
+ */
+export interface ConsentMark {
+    features: number;
+    revocations: number;
+}
+
+/**
  * The consent state machine. Before a decision only `consent.default` is granted and records of the other
  * features are held (bounded) in memory. After the decision the held records the user granted are released and
  * the rest are dropped.
@@ -16,6 +26,8 @@ export class ConsentManager {
     private decision: number | null = null;
     private pending: TelemetryRecord[] = [];
     private listeners: ConsentListener[] = [];
+    /** How many times each feature (by bit) was revoked. */
+    private revoked: number[] = [];
 
     /**
      * @param available The configured features (`config.features`). The grant never exceeds them: a grant of a
@@ -70,6 +82,24 @@ export class ConsentManager {
         return (this.granted() & feature) !== 0;
     }
 
+    /**
+     * How many times any of `features` was revoked so far. Counted per feature, so a revoke of another one withdraws
+     * nothing: a request of error logs survives the user turning off interactions, and revoking Persistence or Sessions,
+     * which no record belongs to, withdraws nothing in flight.
+     */
+    revocations(features: number): number {
+        let count = 0;
+        for (let bit = 0; bit < this.revoked.length; bit++) {
+            if (features & (1 << bit)) count += this.revoked[bit] || 0;
+        }
+        return count;
+    }
+
+    /** The mark of a request built now from records of `features`. */
+    mark(features: number): ConsentMark {
+        return { features, revocations: this.revocations(features) };
+    }
+
     /** Holds a record until the decision. The oldest record is dropped when `pendingLimit` is exceeded. */
     hold(record: TelemetryRecord): void {
         if (this.config.pendingLimit <= 0) {
@@ -110,7 +140,11 @@ export class ConsentManager {
 
     private changed(previous: number): void {
         const next = this.granted();
-        purgeStorage(previous & ~next);
+        const revoked = previous & ~next;
+        for (let bit = 0; bit < 31; bit++) {
+            if (revoked & (1 << bit)) this.revoked[bit] = (this.revoked[bit] || 0) + 1;
+        }
+        purgeStorage(revoked);
         // After a decision nothing stays held. Before one (a new default), only what became granted leaves.
         const released = this.pending.filter(r => (next & r.feature) !== 0);
         if (this.decided) countDropped('not_consented', this.pending.length - released.length);

@@ -94,6 +94,10 @@
                         <td><code>override bool Persist =&gt; true</code></td>
                     </tr>
                     <tr>
+                        <td><code>[BlexStore(Persist = true, Version = 2)]</code></td>
+                        <td><code>override int PersistVersion =&gt; 2</code> - the store's saved state is versioned on its own, not by <code>options.Version</code></td>
+                    </tr>
+                    <tr>
                         <td><code>[BlexStore(EnforceActions = true)]</code></td>
                         <td>every state setter is <code>private set</code>, <code>override bool EnforcesActions =&gt; true</code>, and no <code>"Set Foo"</code> descriptors</td>
                     </tr>
@@ -158,6 +162,9 @@
             A generated member may not take one of these - they are inherited from <code>BlexStoreBase</code>
             or emitted by the generator itself. Collisions are reported as <code>BLEX005</code>. The name
             <code>Actions</code> is different: taking it costs only the typed descriptors (<code>BLEX020</code>).
+            A store may write its own override of one of them only where the generator writes none: its own
+            <code>PersistVersion</code> next to <code>[BlexStore(Version = n)]</code>, or its own
+            <code>SerializeState</code> in any store, is <code>BLEX026</code>.
         </p>
         <CodeBlock Code="@Reserved" Language="text" Title="Reserved" />
     </div>
@@ -178,7 +185,7 @@
 @code {
     private static readonly IReadOnlyList<ApiTable.Row> Attributes =
     [
-        new("BlexStoreAttribute", "Marks a partial class as a store. Properties: <code>Name</code>, <code>Persist</code>, <code>EnforceActions</code>, <code>RollbackOnError</code>. See <a href=\"stores\">Stores &amp; state</a>."),
+        new("BlexStoreAttribute", "Marks a partial class as a store. Properties: <code>Name</code>, <code>Persist</code>, <code>Version</code>, <code>EnforceActions</code>, <code>RollbackOnError</code>. See <a href=\"stores\">Stores &amp; state</a>."),
         new("BlexStateAttribute", "Marks a field as reactive state. Property: <code>Persist</code> (set <code>false</code> to keep the field out of storage). See <a href=\"stores\">Stores &amp; state</a> and <a href=\"persistence#transient\">Persisting only part of a store</a>."),
         new("BlexComputedAttribute", "Marks a parameterless <code>ComputeXxx()</code>/<code>GetXxx()</code> method as memoized derived state. See <a href=\"computed\">Computed state</a>."),
         new("BlexActionAttribute", "Marks an <code>OnXxx</code> method as an action. Property: <code>Name</code>. See <a href=\"actions\">Actions</a>."),
@@ -314,18 +321,19 @@
 
     // The generator's own ReservedNames list (Bit.Blex.Generators/BlexGenerator.cs), in its order.
     private const string Reserved = """
-        Name                    Persist                 StateChanged
-        PropertyChanged         SerializeState          DeserializeState
-        InvalidateComputed      NotifyRestored          SetState
-        SetEffectState          BeginEffect             EndEffect
-        DebounceEffectAsync     RunEffectAttemptsAsync  Dispatch
-        DispatchAsync           BeginAction             DispatchApprovedAsync
-        Batch                   ResetState              RestoreState
-        IsRestoring             IsObserved              Dispose
-        IsDisposed              CancelEffects           InstanceKey
-        WithInstanceKey         TimeProvider            ActionDescriptors
-        FindAction              DescribeActions         EnforcesActions
-        TransientStateKeys      CaptureRollbackState    ApplyRollbackState
+        Name                    Persist                 PersistVersion
+        StateChanged            PropertyChanged         SerializeState
+        DeserializeState        InvalidateComputed      NotifyRestored
+        SetState                SetEffectState          BeginEffect
+        EndEffect               DebounceEffectAsync     RunEffectAttemptsAsync
+        Dispatch                DispatchAsync           BeginAction
+        DispatchApprovedAsync   Batch                   ResetState
+        RestoreState            IsRestoring             IsObserved
+        Dispose                 IsDisposed              CancelEffects
+        InstanceKey             WithInstanceKey         TimeProvider
+        ActionDescriptors       FindAction              DescribeActions
+        EnforcesActions         TransientStateKeys      CaptureRollbackState
+        ApplyRollbackState
         """;
 
     private const string JsonShape = """
@@ -341,5 +349,8 @@
 
         // A persisted slice with options.Version > 0
         { "__blexVersion": 1, "state": { "Accent": "violet" } }
+
+        // A persisted slice of a store with a version of its own ([BlexStore(Version = n)])
+        { "__blexStoreVersion": 2, "state": { "View": "grid" } }
         """;
 }

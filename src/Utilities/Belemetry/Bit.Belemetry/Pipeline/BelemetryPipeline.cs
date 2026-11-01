@@ -35,6 +35,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private int _disposed;
     private int _queuedSpans;
     private int _queuedLogs;
+    private Task _storeCleared = Task.CompletedTask;
 
     public BelemetryPipeline(BelemetrySettings settings, BelemetryConsentState consent, IServiceProvider services)
     {
@@ -56,7 +57,14 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
     internal BelemetryExporterSet Exporters => _exporters ??= new BelemetryExporterSet(Settings, _services, this);
 
-    internal BelemetryPrivacy Privacy => _privacy;
+    /// <summary>The user's revokes: a batch built before a revoke of one of its features goes no further.</summary>
+    internal BelemetryRevocations Revocations { get; } = new();
+
+    /// <summary>
+    /// Completes once the store is cleared after the last revoke. Set before the revoke is counted, so a resend pass
+    /// whose mark counts a revoke waits for its clearing rather than loading the requests it is about to remove.
+    /// </summary>
+    internal Task StoreCleared => Volatile.Read(ref _storeCleared);
 
     /// <summary>Belemetry's own health metrics (the <c>Bit.Belemetry</c> meter).</summary>
     internal BelemetrySelfTelemetry Self { get; } = new();
@@ -123,6 +131,24 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         return allowPending && _consent.IsDecided is false;
     }
 
+    /// <summary>
+    /// Whether a log message must not render the value of <paramref name="key"/>: a blocked or redacted attribute, or a
+    /// user id the record will not carry because the user has not granted <see cref="BelemetryFeatures.UserTracking"/>.
+    /// </summary>
+    internal bool HidesValue(string key) =>
+        _privacy.HidesValue(key) || (Settings.IsServer is false && _consent.IsGranted(BelemetryFeatures.UserTracking) is false && IsUserId(key));
+
+    /// <summary>Whether <paramref name="key"/> is one of the user ids, which only <see cref="BelemetryFeatures.UserTracking"/> lets a record carry.</summary>
+    internal static bool IsUserId(string key) => key is BelemetrySemanticConventions.EndUserPseudoId or BelemetrySemanticConventions.UserId;
+
+    /// <summary>
+    /// The features the browser script is told a request's records belong to (<see cref="BelemetryHttpRequest.Features"/>):
+    /// <see cref="BelemetryFeatures.UserTracking"/> only while it is granted, as the records carry no user id otherwise,
+    /// and the script would give up every request of a page that never granted it.
+    /// </summary>
+    internal BelemetryFeatures BrowserFeatures(BelemetryFeatures features) =>
+        _consent.IsGranted(BelemetryFeatures.UserTracking) ? features : features & ~BelemetryFeatures.UserTracking;
+
     /// <param name="span">The span.</param>
     /// <param name="resource">Its resource; the .NET side's when null.</param>
     /// <param name="relayed">Relayed by the browser script, which applied the user's consent and the error limits already.</param>
@@ -132,7 +158,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         _privacy.Apply(span);
         BelemetryValueLimit.Apply(span, Settings.Options.MaxValueLength);
-        if (Settings.IsServer is false) Enrich(span.Attributes, relayed);
+        var userIds = Settings.IsServer is false && Enrich(span, relayed);
 
         foreach (var processor in Settings.Options.Processors)
         {
@@ -151,7 +177,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed));
+        Add(new Entry(span, resource ?? Settings.Resource, span.Feature, PreConsented: relayed, userIds));
     }
 
     /// <param name="log">The log record.</param>
@@ -169,7 +195,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         _privacy.Apply(log);
         BelemetryValueLimit.Apply(log, Settings.Options.MaxValueLength);
-        if (Settings.IsServer is false) Enrich(log.Attributes, relayed);
+        var userIds = Settings.IsServer is false && Enrich(log, relayed);
 
         foreach (var processor in Settings.Options.Processors)
         {
@@ -188,7 +214,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             }
         }
 
-        Add(new Entry(log, resource ?? Settings.Resource, log.Feature, PreConsented: relayed));
+        Add(new Entry(log, resource ?? Settings.Resource, log.Feature, PreConsented: relayed, userIds));
     }
 
     /// <summary>
@@ -299,20 +325,37 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         }
 
         var metrics = _meters is not null && CanRecord(BelemetryFeatures.Metrics) ? RunMetricProcessors(_meters.Collect()) : [];
+
+        // The browser sends these with keepalive, so they carry the exporter's headers - and the features of their
+        // records, as the page may have revoked one that .NET has not heard of yet.
+        var features = BrowserFeatures(FeaturesOf(entries, metrics: metrics.Count > 0));
         foreach (var batch in BuildBatches(entries, metrics))
         {
-            // The browser sends these with keepalive, so they carry the exporter's headers.
             foreach (var exporter in Exporters.HttpExporters)
             {
-                requests.AddRange(exporter.CreateRequests(BelemetryExporterSet.WithMinimumSeverity(batch, exporter.MinimumSeverity)).Select(r => r.WithHeaders(exporter.Headers)));
+                requests.AddRange(exporter.CreateRequests(BelemetryExporterSet.WithMinimumSeverity(batch, exporter.MinimumSeverity)).Select(r => r.ForBrowser(exporter.Headers, features)));
             }
         }
 
         return requests;
     }
 
-    private void Enrich(BelemetryAttributes attributes, bool relayed)
+    /// <summary>
+    /// The features of queued records (and of metrics), with <see cref="BelemetryFeatures.UserTracking"/>: any of them
+    /// may carry the user ids, so a revoke of it withdraws them too.
+    /// </summary>
+    private static BelemetryFeatures FeaturesOf(List<Entry> entries, bool metrics = false)
     {
+        var features = BelemetryFeatures.UserTracking | (metrics ? BelemetryFeatures.Metrics : BelemetryFeatures.None);
+        foreach (var entry in entries) features |= entry.Feature;
+        return features;
+    }
+
+    /// <returns>Whether the record may carry the user ids: <see cref="BelemetryFeatures.UserTracking"/> was granted.</returns>
+    private bool Enrich(object record, bool relayed)
+    {
+        var attributes = record is BelemetrySpan span ? span.Attributes : ((BelemetryLogRecord)record).Attributes;
+
         // After the privacy rules, which leave the ids alone - except an id the operator blocked, which is not added.
         if (_consent.SessionId is { } sessionId && _privacy.IsBlocked(BelemetrySemanticConventions.SessionId) is false)
         {
@@ -330,12 +373,38 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
             {
                 attributes.SetIfAbsent(BelemetrySemanticConventions.UserId, userId);
             }
+
+            return true;
         }
-        else if (relayed is false)
+
+        if (relayed is false) RemoveUserIds(record);
+        return false;
+    }
+
+    /// <summary>
+    /// Takes the user ids off a record: its attributes, those of a span's events and links, and a log message that
+    /// renders one, which falls back to its template.
+    /// </summary>
+    private static void RemoveUserIds(object record)
+    {
+        if (record is BelemetrySpan span)
         {
-            attributes.Remove(BelemetrySemanticConventions.EndUserPseudoId);
-            attributes.Remove(BelemetrySemanticConventions.UserId);
+            RemoveUserIds(span.Attributes);
+            foreach (var e in span.Events) RemoveUserIds(e.Attributes);
+            foreach (var link in span.Links) RemoveUserIds(link.Attributes);
         }
+        else
+        {
+            var log = (BelemetryLogRecord)record;
+            RemoveUserIds(log.Attributes);
+            if (log.BodyTemplate is { } template) log.Body = template;
+        }
+    }
+
+    private static void RemoveUserIds(BelemetryAttributes attributes)
+    {
+        attributes.Remove(BelemetrySemanticConventions.EndUserPseudoId);
+        attributes.Remove(BelemetrySemanticConventions.UserId);
     }
 
     private void Add(Entry entry)
@@ -344,6 +413,13 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
         lock (_lock)
         {
+            // Under the lock, as a revoke of UserTracking takes the ids off the queued records: a record enriched while it
+            // was granted cannot slip into the queue with them just after one. A relayed record had the page's consent applied.
+            if (entry.UserIds && entry.PreConsented is false && _consent.IsGranted(BelemetryFeatures.UserTracking) is false)
+            {
+                RemoveUserIds(entry.Record);
+            }
+
             var held = entry.PreConsented is false && Settings.IsServer is false && _consent.IsGranted(entry.Feature) is false;
             if (held)
             {
@@ -411,10 +487,18 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         if (Settings.IsServer) return;
 
         var revoked = previous & ~current;
+        TaskCompletionSource? cleared = null;
         lock (_lock)
         {
             if (revoked != BelemetryFeatures.None)
             {
+                // Before the revoke is counted: a resend pass that counts it waits for the store to be cleared.
+                cleared = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                Volatile.Write(ref _storeCleared, cleared.Task);
+
+                // Under the lock, with the purge: a batch taken from the queue before it is the one that escaped it.
+                Revocations.Revoke(revoked);
+
                 for (var node = _queue.First; node is not null;)
                 {
                     var next = node.Next;
@@ -440,20 +524,15 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
 
             if ((revoked & BelemetryFeatures.UserTracking) != 0)
             {
-                foreach (var entry in _queue.Concat(_pending))
-                {
-                    var attributes = entry.Record is BelemetrySpan span ? span.Attributes : ((BelemetryLogRecord)entry.Record).Attributes;
-                    attributes.Remove(BelemetrySemanticConventions.EndUserPseudoId);
-                    attributes.Remove(BelemetrySemanticConventions.UserId);
-                }
+                foreach (var entry in _queue.Concat(_pending)) RemoveUserIds(entry.Record);
             }
         }
 
-        if (revoked != BelemetryFeatures.None) _ = ClearStoreAsync();
+        if (cleared is not null) _ = ClearStoreAsync(cleared);
         Signal();
     }
 
-    private async Task ClearStoreAsync()
+    private async Task ClearStoreAsync(TaskCompletionSource cleared)
     {
         try
         {
@@ -462,6 +541,10 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         catch (Exception ex)
         {
             LogDiagnostic(ex, "Clearing the persisted telemetry failed.");
+        }
+        finally
+        {
+            cleared.TrySetResult();
         }
     }
 
@@ -533,17 +616,21 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     {
         List<Entry> entries;
         bool more;
+        BelemetryConsentMark mark;
         lock (_lock)
         {
             entries = TakeReady(Math.Max(1, Settings.Options.Batch.MaxBatchSize));
             more = _queue.Count > 0;
+
+            // Under the lock, with the take: a revoke from here on is one these records escaped the purge of.
+            mark = Revocations.Mark(FeaturesOf(entries));
         }
 
         if (entries.Count == 0) return false;
 
         foreach (var batch in BuildBatches(entries, []))
         {
-            await ExportAsync(batch, cancellationToken);
+            await ExportAsync(batch, mark, cancellationToken);
         }
 
         return more;
@@ -553,19 +640,27 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     {
         if (_meters is null) return;
 
+        // Before the grant is read, to take the user ids off and to send at all: a revoke after it withdraws the batch.
+        var mark = Revocations.Mark(BelemetryFeatures.Metrics | BelemetryFeatures.UserTracking);
         var metrics = RunMetricProcessors(_meters.Collect());
 
         // Collected either way so the delta intervals stay aligned; only sent when consented.
         if (metrics.Count == 0 || CanRecord(BelemetryFeatures.Metrics) is false) return;
 
-        await ExportAsync(new BelemetryBatch(Settings.Resource, metrics: metrics), cancellationToken);
+        await ExportAsync(new BelemetryBatch(Settings.Resource, metrics: metrics), mark, cancellationToken);
     }
 
     private List<BelemetryMetric> RunMetricProcessors(List<BelemetryMetric> metrics)
     {
+        // Consent's to add, as on spans and logs: without UserTracking a measurement's user id is dropped.
+        var userIds = Settings.IsServer || _consent.IsGranted(BelemetryFeatures.UserTracking);
         foreach (var metric in metrics)
         {
-            foreach (var point in metric.Points) _privacy.ApplyToAttributes(point.Attributes);
+            foreach (var point in metric.Points)
+            {
+                _privacy.ApplyToAttributes(point.Attributes);
+                if (userIds is false) RemoveUserIds(point.Attributes);
+            }
         }
 
         if (Settings.Options.Processors.Count == 0) return metrics;
@@ -594,13 +689,13 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         LogDiagnostic(exception, $"The processor {processor.GetType().FullName} threw; it is skipped for every record it throws on (only this first failure is logged).", LogLevel.Warning);
     }
 
-    private async Task ExportAsync(BelemetryBatch batch, CancellationToken cancellationToken)
+    private async Task ExportAsync(BelemetryBatch batch, BelemetryConsentMark mark, CancellationToken cancellationToken)
     {
         await _exportLock.WaitAsync(cancellationToken);
         try
         {
             using var _ = BelemetrySuppression.Begin();
-            await Exporters.ExportAsync(batch, CanRecord(BelemetryFeatures.Persistence), cancellationToken);
+            await Exporters.ExportAsync(batch, mark, cancellationToken);
         }
         finally
         {
@@ -690,5 +785,10 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         _stopping.Dispose();
     }
 
-    private sealed record Entry(object Record, BelemetryResource Resource, BelemetryFeatures Feature, bool PreConsented);
+    /// <param name="Record">The span or log record.</param>
+    /// <param name="Resource">Its resource.</param>
+    /// <param name="Feature">Its consent feature.</param>
+    /// <param name="PreConsented">Relayed by the browser script, which applied the page's consent.</param>
+    /// <param name="UserIds">Enriched while <see cref="BelemetryFeatures.UserTracking"/> was granted: it may carry the user ids.</param>
+    private sealed record Entry(object Record, BelemetryResource Resource, BelemetryFeatures Feature, bool PreConsented, bool UserIds);
 }

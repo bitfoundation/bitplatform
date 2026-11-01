@@ -204,7 +204,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             // Whatever attaching fails with - a JS error, a disconnect, an interop timeout while the tab is throttled or
             // paused in the browser's debugger, a result that does not deserialize - must not escape a lifecycle method:
             // on Blazor Server that terminates the circuit, and the diagnostics tool would take the app down with it.
-            Session.Browser.BridgeError = ex.Message;
+            Session.Browser.BridgeError = BevRedactor.RedactText(ex.Message);
         }
 
         // Settled whether or not preferences were saved or could be read: an open request left pending would
@@ -425,7 +425,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException)
         {
-            error = ex.Message;
+            error = BevRedactor.RedactText(ex.Message);
         }
         catch (Exception ex)
         {
@@ -986,7 +986,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
         catch (Exception ex)
         {
-            Session.Browser.StorageError = ex.GetType().Name + ": " + ex.Message;
+            Session.Browser.StorageError = ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
             Session.Errors.Record(ex, "bevtools", "Reading browser storage failed.");
         }
         finally
@@ -1015,7 +1015,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
-            Session.Browser.AccessibilityError = ex.GetType().Name + ": " + ex.Message;
+            Session.Browser.AccessibilityError = ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
         }
 
         Session.Diagnostics.Evaluate(force: true);
