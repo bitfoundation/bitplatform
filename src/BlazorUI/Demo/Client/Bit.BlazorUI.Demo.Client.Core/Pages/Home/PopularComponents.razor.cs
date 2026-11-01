@@ -8,17 +8,33 @@ public partial class PopularComponents
     [
         new()
         {
-            Name = "ColorPicker",
-            Description = "Browse and pick a color, with hue, saturation and alpha.",
-            Url = "/components/colorpicker",
+            Name = "DataGrid",
+            Description = "Sort, filter, page and virtualize large data sets.",
+            Url = "/components/datagrid",
             Code = """
-                   <BitColorPicker ShowPreview ShowAlphaSlider
-                                   @bind-Alpha="Alpha"
-                                   @bind-Value="Color" />
+                   <BitDataGrid Items="Products" Pageable PageSize="5" AriaLabel="Products">
+                       <BitDataGridColumn Property="p => p.Name" Width="180px" />
+                       <BitDataGridColumn Property="p => p.Category" />
+                       <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                       <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
+                   </BitDataGrid>
 
                    @code {
-                       private double Alpha = 1;
-                       private string Color = "rgb(0,101,239)";
+                       private record Product(string Name, string Category, decimal Price, int Stock);
+
+                       private static List<Product> Products =
+                       [
+                           new("Smart Speaker", "Electronics", 89.99m, 120),
+                           new("Classic Notebook", "Books", 12.50m, 340),
+                           new("Eco Backpack", "Sports", 64.00m, 75),
+                           new("Pro Camera", "Electronics", 899.00m, 12),
+                           new("Vintage Lamp", "Home", 45.90m, 0),
+                           new("Modern Jacket", "Clothing", 129.00m, 48),
+                           new("Mini Drone", "Toys", 249.99m, 30),
+                           new("Deluxe Blender", "Home", 159.00m, 22),
+                           new("Compact Mug", "Home", 9.99m, 510),
+                           new("Ultra Sneaker", "Sports", 119.00m, 64),
+                       ];
                    }
                    """
         },
@@ -39,21 +55,27 @@ public partial class PopularComponents
         },
         new()
         {
-            Name = "FileUpload",
-            Description = "Chunked, resumable uploads with per-file progress.",
-            Url = "/components/fileupload",
+            Name = "FullCalendar",
+            Description = "Day, week, month and agenda views, with drag-and-drop events.",
+            Url = "/components/fullcalendar",
             Code = """
-                   <BitFileUpload AutoUpload
-                                  Multiple
-                                  ChunkedUpload
-                                  Label="Select files"
-                                  UploadUrl="@UploadUrl"
-                                  RemoveUrl="@RemoveUrl"
-                                  MaxSize="1024 * 1024 * 500" />
+                   <BitFullCalendar Events="Events" />
 
                    @code {
-                       private string UploadUrl = "/UploadFile";
-                       private string RemoveUrl = "/RemoveFile";
+                       private List<BitFullCalendarEvent> Events = CreateEvents();
+
+                       private static List<BitFullCalendarEvent> CreateEvents()
+                       {
+                           var today = DateTime.Today;
+                           return
+                           [
+                               new() { Id = "1", Title = "Team Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(9).AddMinutes(45), Color = "blue" },
+                               new() { Id = "2", Title = "Design Review", StartDate = today.AddHours(10), EndDate = today.AddHours(11), Color = "purple" },
+                               new() { Id = "3", Title = "Sprint Planning", StartDate = today.AddHours(14), EndDate = today.AddHours(15).AddMinutes(30), Color = "orange" },
+                               new() { Id = "4", Title = "Tech Conference", StartDate = today.AddDays(1).AddHours(9), EndDate = today.AddDays(3).AddHours(17), Color = "green" },
+                               new() { Id = "5", Title = "Product Demo", StartDate = today.AddDays(-2).AddHours(14), EndDate = today.AddDays(-2).AddHours(15), Color = "red" },
+                           ];
+                       }
                    }
                    """
         },
@@ -153,12 +175,36 @@ public partial class PopularComponents
     }
 
 
-    private string Color = "rgb(0,101,239)";
-    private double Alpha = 1;
+    private record GridProduct(string Name, string Category, decimal Price, int Stock);
+    private static List<GridProduct> GridProducts =
+    [
+        new("Smart Speaker", "Electronics", 89.99m, 120),
+        new("Classic Notebook", "Books", 12.50m, 340),
+        new("Eco Backpack", "Sports", 64.00m, 75),
+        new("Pro Camera", "Electronics", 899.00m, 12),
+        new("Vintage Lamp", "Home", 45.90m, 0),
+        new("Modern Jacket", "Clothing", 129.00m, 48),
+        new("Mini Drone", "Toys", 249.99m, 30),
+        new("Deluxe Blender", "Home", 159.00m, 22),
+        new("Compact Mug", "Home", 9.99m, 510),
+        new("Ultra Sneaker", "Sports", 119.00m, 64),
+    ];
 
 
-    private string UploadUrl => Configuration.GetApiUrl("api/FileUpload/UploadChunkedFile");
-    private string RemoveUrl => Configuration.GetApiUrl("api/FileUpload/RemoveFile");
+
+    private List<BitFullCalendarEvent> CalendarEvents = CreateCalendarEvents();
+    private static List<BitFullCalendarEvent> CreateCalendarEvents()
+    {
+        var today = DateTime.Today;
+        return
+        [
+            new() { Id = "1", Title = "Team Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(9).AddMinutes(45), Color = "blue" },
+            new() { Id = "2", Title = "Design Review", StartDate = today.AddHours(10), EndDate = today.AddHours(11), Color = "purple" },
+            new() { Id = "3", Title = "Sprint Planning", StartDate = today.AddHours(14), EndDate = today.AddHours(15).AddMinutes(30), Color = "orange" },
+            new() { Id = "4", Title = "Tech Conference", StartDate = today.AddDays(1).AddHours(9), EndDate = today.AddDays(3).AddHours(17), Color = "green" },
+            new() { Id = "5", Title = "Product Demo", StartDate = today.AddDays(-2).AddHours(14), EndDate = today.AddDays(-2).AddHours(15), Color = "red" },
+        ];
+    }
 
 
 

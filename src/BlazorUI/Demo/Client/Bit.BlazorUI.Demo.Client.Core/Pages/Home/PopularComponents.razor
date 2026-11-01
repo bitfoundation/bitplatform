@@ -50,11 +50,16 @@
             </div>
 
             <div class="showcase-preview-body">
-                @if (SelectedComponent?.Name == "ColorPicker")
+                @if (SelectedComponent?.Name == "DataGrid")
                 {
-                    <BitColorPicker ShowAlphaSlider ShowPreview @bind-Alpha="Alpha" @bind-Value="@Color" />
+                    <BitDataGrid Items="GridProducts" Pageable PageSize="5" AriaLabel="Products">
+                        <BitDataGridColumn Property="p => p.Name" Width="180px" />
+                        <BitDataGridColumn Property="p => p.Category" />
+                        <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitTextAlign.End" />
+                        <BitDataGridColumn Property="p => p.Stock" Align="BitTextAlign.End" />
+                    </BitDataGrid>
                     <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
-                        @Color &nbsp;·&nbsp; alpha @Alpha
+                        Click a header to sort; Ctrl/⌘ or Shift+click adds a column to the sort.
                     </BitText>
                 }
                 else if (SelectedComponent?.Name == "DatePicker")
@@ -64,15 +69,12 @@
                         Selected: <b>@(SelectedDate?.ToString("dd MMM yyyy") ?? "nothing yet")</b>
                     </BitText>
                 }
-                else if (SelectedComponent?.Name == "FileUpload")
+                else if (SelectedComponent?.Name == "FullCalendar")
                 {
-                    <BitFileUpload AutoUpload
-                                   Multiple
-                                   ChunkedUpload
-                                   Label="Select files"
-                                   UploadUrl="@UploadUrl"
-                                   RemoveUrl="@RemoveUrl"
-                                   MaxSize="1024 * 1024 * 500" />
+                    <BitFullCalendar Events="CalendarEvents" Style="--bit-FullCalendar-height:420px" />
+                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
+                        Click a day to add an event, or an event to see its details.
+                    </BitText>
                 }
                 else if (SelectedComponent?.Name == "Dropdown")
                 {
@@ -99,8 +101,11 @@
             </div>
         </div>
 
+        @* Keyed on the selection, so every pick renders a fresh code element. Prism replaces the text
+           node inside it with its token spans, and Blazor keeps writing a new sample into that
+           detached node rather than the page - so updating it in place leaves the first sample showing. *@
         <div class="showcase-code" id="@CodeBoxId">
-            <CodeBox Language="cshtml" MaxHeight="18rem">@SelectedComponent?.Code</CodeBox>
+            <CodeBox @key="SelectedComponent" Language="cshtml" MaxHeight="18rem">@SelectedComponent?.Code</CodeBox>
         </div>
     </div>
 
