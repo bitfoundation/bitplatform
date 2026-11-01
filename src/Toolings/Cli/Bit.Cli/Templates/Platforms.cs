@@ -55,18 +55,11 @@ public static class Platforms
         _ => [Platform.Web, Platform.Android]
     };
 
-    public static IReadOnlyList<string> Workloads(IEnumerable<Platform> platforms, HostOs os)
-    {
-        var selected = platforms.ToHashSet();
-        var workloads = new List<string> { "wasm-tools" };
+    public const string WebAssemblyWorkload = "wasm-tools";
 
-        if (BuildsSolution(selected))
-        {
-            workloads.Add(MauiWorkload(os));
-        }
+    public static IReadOnlyList<string> Workloads(IEnumerable<Platform> platforms, HostOs os) => [WebAssemblyWorkload, .. NativeWorkloads(platforms, os)];
 
-        return workloads;
-    }
+    public static IReadOnlyList<string> NativeWorkloads(IEnumerable<Platform> platforms, HostOs os) => BuildsSolution(platforms) ? [MauiWorkload(os)] : [];
 
     public static string MauiWorkload(HostOs os) => os is HostOs.Linux ? "maui-android" : "maui";
 
@@ -78,18 +71,19 @@ public static class Platforms
         _ => null
     };
 
-    public static string BuildSupport(IEnumerable<Platform> platforms)
-    {
-        string[] names = ["WebAssembly", .. platforms.Where(p => p is not Platform.Web).Order().Select(Title)];
+    public static string BuildSupport(IEnumerable<Platform> platforms) => Support(["WebAssembly", .. NativeTitles(platforms)]);
 
-        return $"{(names.Length == 1 ? names[0] : $"{string.Join(", ", names[..^1])} and {names[^1]}")} build support";
-    }
+    public static string NativeBuildSupport(IEnumerable<Platform> platforms) => Support(NativeTitles(platforms));
+
+    private static string[] NativeTitles(IEnumerable<Platform> platforms) => [.. platforms.Where(p => p is not Platform.Web).Order().Select(Title)];
+
+    private static string Support(string[] names) => $"{(names.Length == 1 ? names[0] : $"{string.Join(", ", names[..^1])} and {names[^1]}")} build support";
 
     public static bool BuildsSolution(IEnumerable<Platform> platforms) => platforms.Any(p => p is not Platform.Web);
-
-    public static string BuildPath(string projectName, IEnumerable<Platform> platforms) => BuildsSolution(platforms) ? $"{projectName}.slnx" : $"{projectName}.Web.slnf";
 
     public static string MauiProject(string projectName) => $"src/Client/{projectName}.Client.Maui/{projectName}.Client.Maui.csproj";
 
     public static string WindowsProject(string projectName) => $"src/Client/{projectName}.Client.Windows/{projectName}.Client.Windows.csproj";
+
+    public static string WorkbenchProject(string projectName) => $"src/Workbench/{projectName}.Workbench.csproj";
 }

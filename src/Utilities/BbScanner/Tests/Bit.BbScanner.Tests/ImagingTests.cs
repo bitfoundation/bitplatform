@@ -156,6 +156,26 @@ public class ImagingTests
     }
 
     [TestMethod]
+    public void AWindowWhoseEndWrapsPastTheLargestIntIsRejected()
+    {
+        // Added up in 32 bits, each of these ends wraps round to a small number that lies inside the buffer.
+        var data = new byte[1000];
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, 1, 100, int.MaxValue, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, 0, int.MaxValue, 10, 3));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, -10, 100, 10, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, 10, -100, 10, 2));
+
+        var view = new BbLuminanceView(data, 100, 10);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => view.Crop(1, 0, int.MaxValue, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => view.Crop(0, 1, 1, int.MaxValue));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => view.Crop(0, 0, -1, 1));
+
+        using var image = new BbBitMatrix(100, 10);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => image.SetRegion(1, 0, int.MaxValue, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => image.SetRegion(0, 1, 1, int.MaxValue));
+    }
+
+    [TestMethod]
     [DataRow(0.0, 0.0, 1.0, 1.0, true)]
     [DataRow(0.25, 0.25, 0.5, 0.5, false)]
     public void ScanRegionReportsWhetherItCoversTheFrame(double x, double y, double w, double h, bool full)

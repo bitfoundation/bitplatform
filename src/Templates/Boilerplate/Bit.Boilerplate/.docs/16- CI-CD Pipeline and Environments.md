@@ -25,13 +25,16 @@ runs in: `Development`, `Test`, `Staging` or `Production`.
 | Workflow | Runs on | Does |
 | --- | --- | --- |
 | `ci.yml` | every pull request, and by hand | builds the whole solution and runs every test |
-| `cd-test.yml` | every push to `develop`, and by hand | deploys the Test environment |
-| `cd-production.yml` | every push to `main`, and by hand | runs `ci.yml`, then deploys the Production environment |
+| `cd-test.yml` | every push to `develop` that changes the app, and by hand | deploys the Test environment |
+| `cd-production.yml` | every push to `main` that changes the app, and by hand | runs `ci.yml`, then deploys the Production environment |
 | `cd-template.yml` | called by the two above | the jobs both deployments share, with `ENV_NAME` naming the environment |
 
-Merging a pull request into `develop` updates Test, and a release into `main` updates Production. The runs of one
+Merging a pull request into `develop` updates Test, and a release into `main` updates Production. Only a change under
+`src/Shared`, `src/Server` or `src/Client`, or to `src/Directory.Build.props` or `src/Directory.Packages.props`, deploys:
+one to the docs, the tests or the agent files doesn't spend the plan's Actions minutes on a deployment. The runs of one
 workflow queue up instead of overlapping, and one that has started is never cancelled halfway. `cd-test.yml` doesn't
-wait for the tests, so protect `develop` with a required `ci.yml` check.
+wait for the tests, so protect `develop` with a required `ci.yml` check, which a private repository has with GitHub Pro
+or Team.
 
 In a public repository, every build also gets a signed attestation of the commit and the run that made it, which
 `gh attestation verify` checks, and the About page links to them.
@@ -85,8 +88,8 @@ and the `deploy` skill (`.github/agents/deploy.agent.md`) sets up the rest.
 
 ## The apps
 
-The same CD builds the native apps next to the server and leaves them as artifacts of the run; publishing them to the
-stores is up to you.
+The same CD builds the native apps next to the server and leaves them as artifacts of the run for a day, which keeps
+the runs inside the storage GitHub Free includes; publishing them to the stores is up to you.
 
 - **Windows**: an installer with automatic updates (Velopack). Once the `CODE_SIGNING_*` settings are there, it is
   signed with Azure Artifact Signing, so Windows shows your organization as the publisher.

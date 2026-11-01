@@ -181,6 +181,7 @@ public sealed class BcrdtDocument : IDisposable
 
         var created = new T();
         _roots[name] = created;
+        created.RootKey = name;
         created.Integrate(this, null);
         return created;
     }
@@ -206,6 +207,7 @@ public sealed class BcrdtDocument : IDisposable
         upgraded.HasFormatting = placeholder.HasFormatting;
 
         _roots[name] = upgraded;
+        upgraded.RootKey = name;
         upgraded.Integrate(this, null);
         return upgraded;
     }
@@ -217,6 +219,7 @@ public sealed class BcrdtDocument : IDisposable
 
         var created = new BcrdtUntypedType();
         _roots[name] = created;
+        created.RootKey = name;
         created.Integrate(this, null);
         return created;
     }

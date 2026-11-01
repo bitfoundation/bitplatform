@@ -221,19 +221,25 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// </summary>
     private void Confirm(BbBitMatrix image, in BbLuminanceView luminance, float x, float y, int rowInner)
     {
-        if (Measure(image, luminance, x, y, 0, 1) is not ({ } down, var downShift))
+        // No line's nine inner runs are much longer than the row's: the measure across has to agree with them to three
+        // tenths, and no diameter may be more than 1.6 times another. The five runs out to the outer ring one way are
+        // part of the nine, so five twice as long as the row's nine are refused below whatever else they measure, and a
+        // walk gives up on them there rather than following them - down a light column through every centre of an image
+        // of stripes, which costs the square of its height, or along a light line through every centre of a lattice.
+        var extent = 2f * rowInner;
+        if (Measure(image, luminance, x, y, 0, 1, extent) is not ({ } down, var downShift))
         {
             return;
         }
 
         y += downShift;
-        if (Measure(image, luminance, x, y, 1, 0) is not ({ } across, var acrossShift))
+        if (Measure(image, luminance, x, y, 1, 0, extent) is not ({ } across, var acrossShift))
         {
             return;
         }
 
         x += acrossShift;
-        if (Measure(image, luminance, x, y, 1, 1) is not ({ } falling, _) || Measure(image, luminance, x, y, 1, -1) is not ({ } rising, _))
+        if (Measure(image, luminance, x, y, 1, 1, extent) is not ({ } falling, _) || Measure(image, luminance, x, y, 1, -1, extent) is not ({ } rising, _))
         {
             return;
         }
@@ -276,14 +282,18 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
     /// left out: data modules run into it. In the binarised image an edge is where it is to within half a step; from
     /// the luminance, where it crosses halfway between the rings' dark and light, to a fraction of that. A fit the
     /// edges stray from by more than a third of a ring is not the bullseye's: a line through the rings off their
-    /// centre can cross runs near enough the right widths.
+    /// centre can cross runs near enough the right widths. Each way, the five runs inside the outer ring are refused
+    /// once they reach further than <paramref name="extent"/> pixels together, and the outer ring is followed no further
+    /// than <see cref="IsBullseye"/> can ask of it.
     /// </remarks>
-    private static (float? Radius, float Shift) Measure(BbBitMatrix image, in BbLuminanceView luminance, float x, float y, int dx, int dy)
+    private static (float? Radius, float Shift) Measure(BbBitMatrix image, in BbLuminanceView luminance, float x, float y, int dx, int dy, float extent)
     {
         Span<int> forward = stackalloc int[6];
         Span<int> backward = stackalloc int[6];
         var (cx, cy) = ((int)x, (int)y);
-        if (!Inside(image, cx, cy) || image[cx, cy] || !Walk(image, cx, cy, dx, dy, forward) || !Walk(image, cx, cy, -dx, -dy, backward))
+        var length = MathF.Sqrt((dx * dx) + (dy * dy));
+        var limit = (int)(extent / length);
+        if (!Inside(image, cx, cy) || image[cx, cy] || !Walk(image, cx, cy, dx, dy, limit, forward) || !Walk(image, cx, cy, -dx, -dy, limit, backward))
         {
             return (null, 0);
         }
@@ -297,7 +307,6 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
         }
 
         runs[5] = forward[0] + backward[0] - 1;
-        var length = MathF.Sqrt((dx * dx) + (dy * dy));
         if (!IsBullseye(runs, MinRing / length))
         {
             return (null, 0);
@@ -340,24 +349,31 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
         var ring = scale * (RingRadii[1] - RingRadii[0]);
         return residual / 10 > MaxStray * MaxStray * ring * ring ? (null, 0) : (scale * RingRadii[^1] * length, centre * length);
 
-        static bool Walk(BbBitMatrix image, int x, int y, int dx, int dy, Span<int> runs)
+        static bool Walk(BbBitMatrix image, int x, int y, int dx, int dy, int limit, Span<int> runs)
         {
-            // The centre's light, then five runs of the rings: dark, light, dark, light, dark.
+            // The centre's light, then five runs of the rings: dark, light, dark, light, dark. The five inside the outer
+            // ring have to end within limit steps together. The outer ring is only asked to be half a ring wide, and the
+            // nine runs inside it, no more than twice the limit, make that less than limit / InnerRings: it is cut short
+            // there rather than followed.
+            var left = limit;
+            var outer = (int)MathF.Ceiling(limit / InnerRings);
             for (var run = 0; run < 6; run++)
             {
                 var dark = run % 2 == 1;
+                var most = run < 5 ? left : outer;
                 var length = 0;
-                while (Inside(image, x, y) && image[x, y] == dark)
+                while (length < most && Inside(image, x, y) && image[x, y] == dark)
                 {
                     length++;
                     (x, y) = (x + dx, y + dy);
                 }
 
-                if (length == 0 || (!Inside(image, x, y) && run < 5))
+                if (length == 0 || (run < 5 && (!Inside(image, x, y) || image[x, y] == dark)))
                 {
                     return false;
                 }
 
+                left -= length;
                 runs[run] = length;
             }
 

@@ -25,7 +25,9 @@ public static class BcrdtUpdateOperations
     /// receiver waits for them rather than mistaking the result for a complete history.
     /// </para>
     /// </remarks>
-    public static byte[] Merge(params ReadOnlyMemory<byte>[] updates)
+    public static byte[] Merge(params ReadOnlyMemory<byte>[] updates) => Merge(updates, BcrdtUpdateCodec.MaxClockGap);
+
+    internal static byte[] Merge(ReadOnlyMemory<byte>[] updates, long maxGap)
     {
         ArgumentNullException.ThrowIfNull(updates);
         if (updates.Length == 0) return BcrdtUpdateEncoder.Empty;
@@ -72,6 +74,11 @@ public static class BcrdtUpdateOperations
             {
                 long end = block.Id.Clock + block.Length;
                 if (end <= cursor) continue;
+
+                if (block.Id.Clock - cursor > maxGap)
+                {
+                    throw new BcrdtFormatException($"Block at {block.Id} is {block.Id.Clock - cursor} clocks past the block before it.");
+                }
 
                 // A gap wider than one struct can describe becomes several skips, rather than one whose
                 // length wraps and silently shifts every later block to the wrong clock.

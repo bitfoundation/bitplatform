@@ -38,7 +38,10 @@ public readonly struct BbLuminanceView
         ArgumentOutOfRangeException.ThrowIfNegative(width);
         ArgumentOutOfRangeException.ThrowIfNegative(height);
 
-        if (height > 0 && (offset + ((height - 1) * stride) + width) > data.Length)
+        // The first and last rows' ends in 64 bits: near the largest int an end wraps round to a small number, which
+        // passes for one inside the buffer.
+        var last = offset + ((long)(height - 1) * stride);
+        if (height > 0 && (offset < 0 || last < 0 || Math.Max(offset, last) + width > data.Length))
         {
             throw new ArgumentOutOfRangeException(nameof(data), "The window does not fit inside the supplied buffer.");
         }
@@ -122,7 +125,11 @@ public readonly struct BbLuminanceView
     {
         ArgumentOutOfRangeException.ThrowIfNegative(x);
         ArgumentOutOfRangeException.ThrowIfNegative(y);
-        if (x + width > Width || y + height > Height)
+        ArgumentOutOfRangeException.ThrowIfNegative(width);
+        ArgumentOutOfRangeException.ThrowIfNegative(height);
+
+        // Subtracted rather than added: a sum near the largest int wraps round to a small one, which passes.
+        if (x > Width - width || y > Height - height)
         {
             throw new ArgumentOutOfRangeException(nameof(width), "The crop lies outside the current window.");
         }

@@ -108,6 +108,7 @@ app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}", options: new BcrdtWebSocketEn
 {
     DocumentHost = app.Services.GetRequiredService<BcrdtDocumentHost>(),
     AuthorizeAccess = (context, documentId) => ValueTask.FromResult(LiveHub.AccessOf(context)),
+    MaxMessageSize = BcrdtSyncProtocol.DefaultMaxMessageSize,
 });
 
 // Both are literal routes, so they are matched before any component route regardless of order;

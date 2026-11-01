@@ -1,4 +1,6 @@
-﻿namespace Bit.BbScanner.Tests;
+﻿using System.Runtime.CompilerServices;
+
+namespace Bit.BbScanner.Tests;
 
 /// <summary>
 /// Exercises the contracts an application depends on: option validation, disposal, the duplicate
@@ -107,8 +109,64 @@ public class PublicApiTests
         Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, 8000, 8000, BbPixelFormat.Gray8));
         Assert.ThrowsExactly<ArgumentException>(() => decoder.DecodeAll(pixels, 64, 64, BbPixelFormat.Rgba32));
 
+        // Four bytes a pixel of a frame the largest int a side is past the largest long, and wraps round to a negative.
+        Assert.ThrowsExactly<ArgumentException>(() => decoder.Decode(pixels, int.MaxValue, int.MaxValue, BbPixelFormat.Rgba32));
+
         Assert.IsLessThan(1_000_000L, GC.GetAllocatedBytesForCurrentThread() - before);
     }
+
+    [TestMethod]
+    public void ACutOutRegionOutsideItsFrameIsRejected()
+    {
+        using var decoder = new BbBarcodeDecoder();
+        var pixels = new byte[64 * 100];
+
+        // Added to its offset, a size near the largest int wraps round to a small sum that lies inside the frame.
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Gray8, (int.MaxValue - 10, 0, 100, 64), 640, 480));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Gray8, (0, int.MaxValue - 10, 64, 100), 640, 480));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeAllRegion(decoder, pixels, BbPixelFormat.Gray8, (600, 0, 64, 100), 640, 480, 16));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DecodeAllRegion(decoder, pixels, BbPixelFormat.Gray8, (-1, 0, 64, 100), 640, 480, 16));
+    }
+
+    [TestMethod]
+    public void ACutOutRegionLargerThanItsPixelsIsRejectedBeforeAnythingIsAllocated()
+    {
+        using var decoder = new BbBarcodeDecoder();
+        var pixels = new byte[16];
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        Assert.ThrowsExactly<ArgumentException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Gray8, (0, 0, 64, 64), 640, 480));
+
+        // Four bytes a pixel of two billion squared is past the largest long, and wraps round to a negative.
+        const int Huge = 2_000_000_000;
+        Assert.ThrowsExactly<ArgumentException>(() => DecodeRegion(decoder, pixels, BbPixelFormat.Rgba32, (0, 0, Huge, Huge), Huge, Huge));
+        Assert.ThrowsExactly<ArgumentException>(() => DecodeAllRegion(decoder, pixels, BbPixelFormat.Rgb24, (0, 0, Huge, Huge), Huge, Huge, 16));
+
+        Assert.IsLessThan(1_000_000L, GC.GetAllocatedBytesForCurrentThread() - before);
+    }
+
+    // The entry points a remote page's frames, cut out to the searched region, are decoded through: internal, as only
+    // the component hands them frames.
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "DecodeRegion")]
+    private static extern BbBarcodeResult? DecodeRegion(
+        BbBarcodeDecoder decoder,
+        ReadOnlySpan<byte> pixels,
+        BbPixelFormat format,
+        (int X, int Y, int Width, int Height) region,
+        int frameWidth,
+        int frameHeight,
+        bool suppressDuplicates = true);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "DecodeAllRegion")]
+    private static extern IReadOnlyList<BbBarcodeResult> DecodeAllRegion(
+        BbBarcodeDecoder decoder,
+        ReadOnlySpan<byte> pixels,
+        BbPixelFormat format,
+        (int X, int Y, int Width, int Height) region,
+        int frameWidth,
+        int frameHeight,
+        int maxSymbols,
+        bool suppressDuplicates = true);
 
     [TestMethod]
     public void TheDuplicateWindowCanBeChangedWhileRunning()

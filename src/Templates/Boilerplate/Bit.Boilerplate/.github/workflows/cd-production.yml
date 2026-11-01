@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
+    paths: [ "src/Shared/**", "src/Server/**", "src/Client/**", "src/Directory.Build.props", "src/Directory.Packages.props" ]
 
 # `environment:` gates approval but does NOT serialize runs, so without this two pushes in quick
 # succession can finish out of order and leave the OLDER commit deployed. Queue instead of cancelling:

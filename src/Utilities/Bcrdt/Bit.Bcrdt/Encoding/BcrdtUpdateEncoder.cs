@@ -79,7 +79,7 @@ public static class BcrdtUpdateEncoder
             }
         }
 
-        return BcrdtUpdateOperations.Merge([.. parts]);
+        return BcrdtUpdateOperations.Merge([.. parts], long.MaxValue);
     }
 
     /// <summary>

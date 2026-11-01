@@ -16,8 +16,8 @@ Explain this first, in a few lines, together with what the user needs to bring: 
 or one each), a domain, a Cloudflare account and the services of section 5. Then go through the steps with them.
 
 - **Two environments.** Test deploys from `develop` and Production from `main`, so the merges ai-dlc's phase 7 makes
-  are the deployments. Each one is a GitHub environment with its own variables and secrets, and its own database,
-  storage and keys.
+  are the deployments, those that change the app's code. Each one is a GitHub environment with its own variables and
+  secrets, and its own database, storage and keys.
 - **Built on GitHub, run on the VM.** A push to an environment's branch starts its CD workflow. Its build job runs on
   a GitHub-hosted runner: Aspire publishes the AppHost for Docker Compose, and the app's images go to GitHub Container
   Registry (GHCR), tagged with the commit. Its deploy job runs on that environment's self-hosted runner on the VM,
@@ -29,6 +29,9 @@ or one each), a domain, a Cloudflare account and the services of section 5. Then
   Cloudflare Tunnel, which also gives it DNS, TLS and Cloudflare's cache.
 - **Cloudflare is the recommendation, and it is free.** Its free plan covers the tunnel, the DNS, the certificates and
   the cache this needs, so tell the user they need no paid plan to start.
+- **GitHub Free is enough too.** A private repository on it has the environments, their secrets and the branch each
+  one deploys from; only protecting `develop` and `main` takes GitHub Pro or Team. Tell the user in a line that Pro or
+  Team would make this more professional, with its pros and cons as they stand then, and let them choose.
 <!--#if (aspire != true)-->
 - **This project was created without .NET Aspire**, and this way of deploying is built on it: the AppHost publishes
   the Docker Compose project, and the template's CD builds and deploys it. Propose adding Aspire to the user first,
@@ -203,7 +206,8 @@ there, and the setting or secret that carries it. Every environment gets its own
 - **App certificate**: a new `AppCertificate` for each environment, never the development one (see `AppCertificate.md`
   in the server project). Generate it yourself.
 - **Client apps**: the Android, iOS, macOS and Windows signing keys, only for the apps the user ships
-  (`.docs/16- CI-CD Pipeline and Environments.md`).
+  (`.docs/16- CI-CD Pipeline and Environments.md`). Take the jobs of the others out of the CD: every run draws on the
+  Actions minutes of the user's GitHub plan, and macOS minutes cost the most.
 
 ## 6. GitHub environments and secrets
 
@@ -211,13 +215,14 @@ there, and the setting or secret that carries it. Every environment gets its own
   the workflows use, creates the `Test` and `Production` environments, and creates and stores what it can: the app
   certificate, the VAPID keys, the database and Redis passwords and the Android signing key. `bit pipeline --check`
   lists what is still missing.
-- Let each environment deploy only from its own branch (`gh api`), and offer the user required reviewers for Production.
+- Let each environment deploy only from its own branch (`gh api`).
 - Set the variables, and the secrets only the user's accounts can give, from the git-ignored file, with `gh variable set
   --env <name> -f <file>` and `gh secret set --env <name> -f <file>`, then delete the file. The names are in the table
   of `.docs/16- CI-CD Pipeline and Environments.md`, and what the workflows read (`vars.*`, `secrets.*`) is the final
   word. A setting the CD has no secret of its own for goes into the apps' settings secrets, one `Section__Key=value`
   line each.
-- Protect `develop` and `main`, so they take changes only through a pull request whose CI passed.
+- With GitHub Pro or Team, protect `develop` and `main`, so they take changes only through a pull request whose CI
+  passed.
 
 ## 7. The pipeline
 
@@ -266,11 +271,11 @@ project up, and fails unless every container is healthy and the public address a
 
 ## 9. First deployment and hand-back
 
-- Start the first deployment to Test: merge the settings change into `develop` through ai-dlc's phase 7, or run the
-  Test CD by hand (`gh workflow run`). Watch the run. The deploy job already fails when a container isn't healthy or
-  the public address doesn't answer; when it does, read that container's logs (`docker compose logs` in the deploy
-  folder) before you change anything. Then check the environment at its public address: the home page,
-  signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
+- Start the first deployment to Test: merge the settings change into `develop` through ai-dlc's phase 7, and run the
+  Test CD by hand (`gh workflow run`) if that change didn't touch the app's code. Watch the run. The deploy job already
+  fails when a container isn't healthy or the public address doesn't answer; when it does, read that container's logs
+  (`docker compose logs` in the deploy folder) before you change anything. Then check the environment at its public
+  address: the home page, signing up with its email, and a file upload. Read whatever can't be seen from outside through that environment's
   dev-mcp.
 - Then ask that environment's dev-mcp for its health (`GetHealth`), after the sign-in the troubleshoot skill
   describes. It runs every health check the server has and returns each one that isn't Healthy with its reason, which
