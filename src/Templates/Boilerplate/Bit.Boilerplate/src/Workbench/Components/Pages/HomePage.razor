@@ -25,6 +25,12 @@
                             @Localizer[heroPage.Key == "pos-dashboard" ? nameof(WorkbenchStrings.HomeOpenFirstPage) : nameof(WorkbenchStrings.HomeCtaOpen)]
                         </BitButton>
                     }
+                    @if (HeroPage is { } tourPage)
+                    {
+                        <BitButton Size="BitSize.Large" Variant="BitVariant.Outline" IconName="@BitIconName.Help" Class="tour-button" Href="@WorkbenchUrls.Tour(tourPage.Key)">
+                            @Localizer[nameof(WorkbenchStrings.TourStart)]
+                        </BitButton>
+                    }
                     <BitButton Size="BitSize.Large" Variant="BitVariant.Outline" Href="#why">
                         @Localizer[nameof(WorkbenchStrings.HomeWhyButton)]
                     </BitButton>

@@ -23,6 +23,11 @@ public static class WorkbenchUrls
 
     public static string Workbench(string pageKey) => $"/workbench/{pageKey}";
 
+    /// <summary>The query key that starts the tour when the shell opens.</summary>
+    public const string TourQueryKey = "tour";
+
+    public static string Tour(string pageKey) => $"{Workbench(pageKey)}?{TourQueryKey}=true";
+
     public static string Flow(string flowId) => $"{Flows}/{flowId}";
 
     public static string Preview(string pageKey, WorkbenchScenario scenario, string? paneId = null, string? snapshotId = null)

@@ -17,6 +17,7 @@ public partial class WorkbenchViewPage
     private bool isRestored;
     private bool isSmallScreen;
     private bool isToolsOpen;
+    private bool startsTour;
     private bool isPickingInline;
     private bool isLinkCopied;
     private List<BitMenuButtonItem> compareItems = [];
@@ -91,6 +92,8 @@ public partial class WorkbenchViewPage
 
     protected override void OnInitialized()
     {
+        startsTour = WorkbenchUrls.ReadQuery(NavigationManager.Uri, WorkbenchUrls.TourQueryKey) is not null;
+
         screenshotItems =
         [
             new() { Key = "view", Text = Localizer[nameof(WorkbenchStrings.ScreenshotThisView)], IconName = BitIconName.Camera, OnClick = item => _ = DownloadScreenshot(store.SelectedPane) },
@@ -164,6 +167,12 @@ public partial class WorkbenchViewPage
 
         Apply();
         StateHasChanged();
+
+        // The tour points at the shell's columns, which a phone doesn't have.
+        if (startsTour && pageInfo is not null && isSmallScreen is false)
+        {
+            await RunStartStep(StartTour);
+        }
     }
 
     /// <summary>Runs one start-up step; a failure is logged and the other steps still run, so the canvas never waits for ever.</summary>
@@ -699,6 +708,15 @@ public partial class WorkbenchViewPage
         reviewSession.Changed -= OnReviewChanged;
         WorkbenchComponentSources.Updated -= OnCodeUpdated;
         reference?.Dispose();
+
+        // A guide left running would keep pointing at a shell that is gone.
+        try
+        {
+            await bonboardingService.StopAllAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+        }
 
         await base.DisposeAsync();
     }

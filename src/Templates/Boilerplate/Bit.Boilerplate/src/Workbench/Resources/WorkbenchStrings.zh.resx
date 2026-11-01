@@ -2835,4 +2835,10 @@
     <data name="TourProgressLabel" xml:space="preserve">
         <value>导览进度</value>
     </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>开始导览</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>每笔销售，实时呈现</value>
+    </data>
 </root>

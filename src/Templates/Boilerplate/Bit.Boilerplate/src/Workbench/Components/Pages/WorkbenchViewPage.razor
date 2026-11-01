@@ -126,6 +126,7 @@ else
                            IconName="@BitIconName.Camera"
                            Variant="BitVariant.Fill"
                            Size="BitSize.Small"
+                           data-bonboarding-anchor="screenshot"
                            Items="screenshotItems" />
 
             <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
@@ -133,6 +134,12 @@ else
                        Title="@Localizer[nameof(WorkbenchStrings.CopyLink)]"
                        AriaLabel="@Localizer[nameof(WorkbenchStrings.CopyLink)]"
                        OnClick="CopyLink" />
+
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small"
+                       IconName="@BitIconName.Help"
+                       Title="@Localizer[nameof(WorkbenchStrings.TourStart)]"
+                       AriaLabel="@Localizer[nameof(WorkbenchStrings.TourStart)]"
+                       OnClick="StartTour" />
 
             <SoundToggle Size="BitSize.Small" />
 

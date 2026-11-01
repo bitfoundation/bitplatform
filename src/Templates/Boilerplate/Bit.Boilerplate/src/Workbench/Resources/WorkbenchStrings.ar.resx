@@ -2835,4 +2835,10 @@
     <data name="TourProgressLabel" xml:space="preserve">
         <value>تقدم الجولة</value>
     </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>ابدأ الجولة</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>كل عملية بيع، مباشرة</value>
+    </data>
 </root>

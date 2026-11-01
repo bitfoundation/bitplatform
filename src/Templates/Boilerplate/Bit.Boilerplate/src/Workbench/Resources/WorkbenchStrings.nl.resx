@@ -2835,4 +2835,10 @@
     <data name="TourProgressLabel" xml:space="preserve">
         <value>Voortgang van de rondleiding</value>
     </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Start de rondleiding</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Elke verkoop, live</value>
+    </data>
 </root>

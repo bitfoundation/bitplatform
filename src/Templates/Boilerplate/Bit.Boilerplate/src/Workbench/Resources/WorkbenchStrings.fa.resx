@@ -2835,4 +2835,10 @@
     <data name="TourProgressLabel" xml:space="preserve">
         <value>پیشرفت راهنما</value>
     </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>شروع راهنما</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>هر فروش، زنده</value>
+    </data>
 </root>

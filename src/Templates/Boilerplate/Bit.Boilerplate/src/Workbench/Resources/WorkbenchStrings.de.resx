@@ -2835,4 +2835,10 @@
     <data name="TourProgressLabel" xml:space="preserve">
         <value>Tourfortschritt</value>
     </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Tour starten</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Jeder Verkauf, live</value>
+    </data>
 </root>

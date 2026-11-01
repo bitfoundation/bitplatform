@@ -2835,4 +2835,10 @@
     <data name="TourProgressLabel" xml:space="preserve">
         <value>Rundturens förlopp</value>
     </data>
+    <data name="TourStart" xml:space="preserve">
+        <value>Starta rundturen</value>
+    </data>
+    <data name="TourCaption" xml:space="preserve">
+        <value>Varje försäljning, live</value>
+    </data>
 </root>
