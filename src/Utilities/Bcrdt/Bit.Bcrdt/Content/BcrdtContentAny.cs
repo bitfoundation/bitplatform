@@ -16,6 +16,9 @@ public sealed class BcrdtContentAny : IBcrdtContent
     private int _start;
     private int _count;
 
+    // The runs that read from _values since it was split, or null if no split ever shared it.
+    private Readers? _readers;
+
     /// <summary>Creates a payload holding a single value.</summary>
     /// <exception cref="NotSupportedException">The value is outside the collaborative value model.</exception>
     /// <remarks>
@@ -29,13 +32,14 @@ public sealed class BcrdtContentAny : IBcrdtContent
     /// <exception cref="NotSupportedException">A value is outside the collaborative value model.</exception>
     public BcrdtContentAny(IEnumerable<object?> values) : this([.. values.Select(BcrdtAnyCodec.Canonicalize)], true) { }
 
-    private BcrdtContentAny(List<object?> values, bool _) : this(values, 0, values.Count) { }
+    private BcrdtContentAny(List<object?> values, bool _) : this(values, 0, values.Count, null) { }
 
-    private BcrdtContentAny(List<object?> values, int start, int count)
+    private BcrdtContentAny(List<object?> values, int start, int count, Readers? readers)
     {
         _values = values;
         _start = start;
         _count = count;
+        _readers = readers;
     }
 
     /// <summary>Wraps values that have already been through <see cref="BcrdtAnyCodec.Canonicalize(object?)"/>.</summary>
@@ -51,12 +55,15 @@ public sealed class BcrdtContentAny : IBcrdtContent
     public BcrdtContentRef Ref => BcrdtContentRef.Any;
 
     /// <inheritdoc/>
-    public IReadOnlyList<object?> GetContent() =>
-        _start == 0 && _count == _values.Count ? _values : new Slice(_values, _start, _count);
+    /// <remarks>
+    /// Always a view of the run as it is now, never the list behind it: that list may still grow when the
+    /// run absorbs a neighbour, and a caller enumerating it then - pushing to an array while walking it,
+    /// say - would have the enumeration fail under it.
+    /// </remarks>
+    public IReadOnlyList<object?> GetContent() => new Slice(_values, _start, _count);
 
-    /// <summary>One value of the run, without the view <see cref="GetContent"/> allocates for a slice.</summary>
-    internal object? this[int index] =>
-        (uint)index < (uint)_count ? _values[_start + index] : throw new ArgumentOutOfRangeException(nameof(index));
+    /// <inheritdoc/>
+    public object? GetValue(int index) => ValueAt(_values, _start, _count, index);
 
     /// <inheritdoc/>
     public IBcrdtContent Copy() => new BcrdtContentAny(_values.GetRange(_start, _count), true);
@@ -67,12 +74,17 @@ public sealed class BcrdtContentAny : IBcrdtContent
         ArgumentOutOfRangeException.ThrowIfNegative(offset);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(offset, _count);
 
-        var right = new BcrdtContentAny(_values, _start + offset, _count - offset);
+        _readers ??= new Readers();
+        _readers.Count++;
+        var right = new BcrdtContentAny(_values, _start + offset, _count - offset, _readers);
         _count = offset;
         Detach();
         right.Detach();
         return right;
     }
+
+    /// <inheritdoc/>
+    public bool CanMergeWith(IBcrdtContent right) => right is BcrdtContentAny;
 
     /// <inheritdoc/>
     public bool TryMergeWith(IBcrdtContent right)
@@ -82,21 +94,24 @@ public sealed class BcrdtContentAny : IBcrdtContent
         if (ReferenceEquals(_values, other._values) && _start + _count == other._start)
         {
             _count += other._count;
+            other.Release();
             return true;
         }
 
-        // Only a run that spans its whole list may grow it in place. A slice that happens to end where
-        // the list ends shares it with the run it was split from, and growing it there would keep
-        // everything it gains alive for as long as that neighbour lives - long after the slice itself
-        // has been deleted and collected.
-        if (_start != 0 || _count != _values.Count)
+        // Only the list's one reader may grow it, and only at its end. A run that shares its list with
+        // another it was split from would keep everything it gains alive for as long as that neighbour
+        // lives - long after the run itself has been deleted and collected - so it moves to a list of its
+        // own first, sized for what it is about to absorb.
+        if (_readers is { Count: > 1 } || _start + _count != _values.Count)
         {
-            _values = _values.GetRange(_start, _count);
-            _start = 0;
+            var values = new List<object?>(_count + other._count);
+            for (int i = 0; i < _count; i++) values.Add(_values[_start + i]);
+            MoveTo(values);
         }
 
         for (int i = 0; i < other._count; i++) _values.Add(other._values[other._start + i]);
         _count += other._count;
+        other.Release();
         return true;
     }
 
@@ -107,7 +122,7 @@ public sealed class BcrdtContentAny : IBcrdtContent
     public void Delete(BcrdtTransaction transaction) { }
 
     /// <inheritdoc/>
-    public void Collect(BcrdtStructStore store) { }
+    public void Collect(BcrdtStructStore store) => Release();
 
     /// <inheritdoc/>
     public void Write(ref BcrdtBufferWriter writer, int offset)
@@ -131,17 +146,44 @@ public sealed class BcrdtContentAny : IBcrdtContent
 
     private void Detach()
     {
-        if (_count < _values.Count / RetentionDivisor)
-        {
-            _values = _values.GetRange(_start, _count);
-            _start = 0;
-        }
+        if (_count < _values.Count / RetentionDivisor) MoveTo(_values.GetRange(_start, _count));
+    }
+
+    /// <summary>Moves the run to a list of its own, leaving the one it read from to its other readers.</summary>
+    private void MoveTo(List<object?> values)
+    {
+        Release();
+        _values = values;
+        _start = 0;
+        _readers = null;
+    }
+
+    /// <summary>Stops counting this run among the readers of its list, once it has been absorbed or reclaimed.</summary>
+    /// <remarks>
+    /// A run dropped without this - the part of an update a replica already had, say - only leaves its
+    /// list looking shared, and the cost of that is one copy when a reader next grows.
+    /// </remarks>
+    private void Release()
+    {
+        if (_readers is not null) _readers.Count--;
+    }
+
+    private static object? ValueAt(List<object?> values, int start, int count, int index) =>
+        (uint)index < (uint)count ? values[start + index] : throw new ArgumentOutOfRangeException(nameof(index));
+
+    /// <summary>How many runs read from one list.</summary>
+    /// <remarks>
+    /// Kept so that a run left alone on its list - its neighbour moved to a list of its own on the split -
+    /// can go on growing it in place. Without the count, every value appended to such a run would copy it.
+    /// </remarks>
+    private sealed class Readers
+    {
+        public int Count = 1;
     }
 
     private sealed class Slice(List<object?> values, int start, int count) : IReadOnlyList<object?>
     {
-        public object? this[int index] =>
-            (uint)index < (uint)count ? values[start + index] : throw new ArgumentOutOfRangeException(nameof(index));
+        public object? this[int index] => ValueAt(values, start, count, index);
 
         public int Count => count;
 

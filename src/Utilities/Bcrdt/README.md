@@ -1024,7 +1024,10 @@ encoding or GC:
 
 Every content type implements `Splice(offset)` and `TryMergeWith(next)`, which is how run-length encoding survives
 edits: inserting into the middle of a 4000-character block splits it into two, and adjacent blocks from the same
-client with adjacent clocks merge back together during transaction cleanup.
+client with adjacent clocks merge back together during transaction cleanup. `CanMergeWith(next)` answers the same
+question without merging, so cleanup can find a whole run of mergeable blocks first and fold it from the left - each
+merge then appends one neighbour instead of copying everything gathered so far. `GetValue(index)` reads one unit
+without building the others, which is what indexing into an array or reading a map entry uses.
 
 **Splitting must happen exactly at the requested offset, and must be lossless.** The offset is fixed because an
 identifier addresses a logical unit, so a block of length *n* must split into *offset* and *n − offset* or every later

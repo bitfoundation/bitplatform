@@ -38,14 +38,26 @@ public static class BcrdtUpdateOperations
         if (updates.Length == 0) return BcrdtUpdateEncoder.Empty;
         if (updates.Length == 1) return updates[0].ToArray();
 
-        Dictionary<ulong, List<BcrdtAbstractStruct>> byClient = [];
-        List<BcrdtDeleteSet> deleteSets = new(updates.Length);
-
+        List<(Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet)> decoded = new(updates.Length);
         foreach (ReadOnlyMemory<byte> update in updates)
         {
             var reader = new BcrdtBufferReader(update);
             Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
-            deleteSets.Add(BcrdtDeleteSet.Read(ref reader));
+            decoded.Add((groups, BcrdtDeleteSet.Read(ref reader)));
+        }
+
+        return Merge(decoded, maxGap);
+    }
+
+    /// <summary>Combines updates that have already been read, consuming their blocks.</summary>
+    internal static byte[] Merge(List<(Dictionary<ulong, BcrdtClientBlocks> Groups, BcrdtDeleteSet DeleteSet)> updates, long maxGap)
+    {
+        Dictionary<ulong, List<BcrdtAbstractStruct>> byClient = [];
+        List<BcrdtDeleteSet> deleteSets = new(updates.Count);
+
+        foreach ((Dictionary<ulong, BcrdtClientBlocks> groups, BcrdtDeleteSet deleteSet) in updates)
+        {
+            deleteSets.Add(deleteSet);
 
             foreach ((ulong client, BcrdtClientBlocks blocks) in groups)
             {

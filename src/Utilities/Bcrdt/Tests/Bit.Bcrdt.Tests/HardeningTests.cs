@@ -1,4 +1,5 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
+using static Bit.Bcrdt.Tests.HandWrittenUpdates;
 
 namespace Bit.Bcrdt.Tests;
 
@@ -15,36 +16,6 @@ namespace Bit.Bcrdt.Tests;
 public class HardeningTests
 {
     private static BcrdtDocument Doc(ulong clientId) => new(new BcrdtDocumentOptions { ClientId = clientId });
-
-    private delegate void Writing(ref BcrdtBufferWriter writer);
-
-    private static byte[] Build(Writing write)
-    {
-        var writer = new BcrdtBufferWriter(64);
-        try
-        {
-            write(ref writer);
-            return writer.ToArray();
-        }
-        finally
-        {
-            writer.Dispose();
-        }
-    }
-
-    private static byte[] CollectedRange(ulong client, ulong clock, int length = 1, int count = 1) => Build((ref BcrdtBufferWriter writer) =>
-    {
-        writer.WriteVarUInt(1);
-        writer.WriteVarUInt((ulong)count);
-        writer.WriteVarUInt(client);
-        writer.WriteVarUInt(clock);
-        for (int i = 0; i < count; i++)
-        {
-            writer.WriteByte((byte)BcrdtContentRef.GarbageCollected);
-            writer.WriteVarUInt((ulong)length);
-        }
-        writer.WriteVarUInt(0);
-    });
 
     // ---------------------------------------------------------------- lengths and clocks
 
@@ -409,9 +380,9 @@ public class HardeningTests
         CollectionAssert.AreEqual(values[offset..], right.GetContent().ToArray());
         CollectionAssert.AreEqual(values[offset..], Written(right));
         Assert.AreEqual(values[offset], right.GetContent()[0]);
-        for (int i = 0; i < right.Length; i++) Assert.AreEqual(values[offset + i], right[i]);
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => right[right.Length]);
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => left[-1]);
+        for (int i = 0; i < right.Length; i++) Assert.AreEqual(values[offset + i], right.GetValue(i));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => right.GetValue(right.Length));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => left.GetValue(-1));
 
         Assert.IsTrue(right.TryMergeWith(new BcrdtContentAny(100L)));
         Assert.IsTrue(left.TryMergeWith(right));
@@ -468,6 +439,125 @@ public class HardeningTests
         var appended = new WeakReference(array[array.Length - 1]!);
         array.Delete(2, array.Length - 2);
         return appended;
+    }
+
+    [TestMethod]
+    public void A_run_left_alone_on_its_values_by_a_split_grows_them_in_place()
+    {
+        // A peer's insert just after a long run's first value splits it, and the one-value left half takes
+        // a copy of its value; the right half is then the only run reading the rest, and what is appended
+        // next joins it. It used to copy the whole run for that, so an insert and an append of a few bytes
+        // each, repeated, made every replica copy the run again and again.
+        object?[] values = [.. Enumerable.Range(0, 100_000).Select(i => (object?)(long)i)];
+        var run = new BcrdtContentAny(values);
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 200; i++)
+        {
+            var right = (BcrdtContentAny)run.Splice(1);
+            Assert.IsTrue(right.TryMergeWith(new BcrdtContentAny((long)-i)));
+            run = right;
+        }
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        object?[] expected = [.. values[200..], .. Enumerable.Range(0, 200).Select(i => (object?)(long)-i)];
+        CollectionAssert.AreEqual(expected, run.GetContent().ToArray());
+        Assert.IsLessThan(8_000_000L, allocated, $"two hundred appends allocated {allocated:N0} bytes");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void A_long_chain_of_one_unit_blocks_folds_into_one_without_copying_it_again_and_again(bool text)
+    {
+        // A block per value or character, each continuing the one before: one block, as a peer could
+        // send it rather than as a replica writes it. Folded together from the right, each block copied
+        // everything gathered so far, so this took time in the square of the chain's length.
+        const int Count = 100_000;
+        byte[] update = Build((ref BcrdtBufferWriter writer) =>
+        {
+            List<(BcrdtAbstractStruct Block, int Offset)> blocks = [];
+            for (int i = 0; i < Count; i++)
+            {
+                IBcrdtContent content = text ? new BcrdtContentString("x") : new BcrdtContentAny((long)i);
+                BcrdtItemId? origin = i == 0 ? null : new BcrdtItemId(7, i - 1);
+                blocks.Add((new BcrdtItem(new BcrdtItemId(7, i), null, origin, null, null, i == 0 ? "a" : null, null, content), 0));
+            }
+
+            BcrdtUpdateCodec.WriteBlockGroups(ref writer, [(7UL, 0L, blocks)]);
+            new BcrdtDeleteSet().Write(ref writer);
+        });
+
+        using BcrdtDocument doc = Doc(1);
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        doc.ApplyUpdate(update);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.HasCount(1, doc.Store.GetClientStructs(7)!);
+        if (text) Assert.AreEqual(new string('x', Count), doc.GetText("a").ToString());
+        else CollectionAssert.AreEqual(Enumerable.Range(0, Count).Select(i => (object?)(long)i).ToList(), doc.GetArray("a").ToArray());
+        Assert.IsLessThan(400_000_000L, allocated, $"folding {Count:N0} blocks allocated {allocated:N0} bytes");
+    }
+
+    [TestMethod]
+    public void Reading_a_long_run_of_text_by_index_builds_only_the_value_read()
+    {
+        // Nothing stops a peer from putting text where values belong - a long run of it in an array,
+        // continued by a second run that joins the first, and another under a map key. Reading one
+        // element used to build a string for every character of the run.
+        const int Length = 100_000;
+        byte[] update = Build((ref BcrdtBufferWriter writer) =>
+        {
+            List<(BcrdtAbstractStruct Block, int Offset)> blocks =
+            [
+                (new BcrdtItem(new BcrdtItemId(7, 0), null, null, null, null, "a", null, new BcrdtContentString(new string('h', Length))), 0),
+                (new BcrdtItem(new BcrdtItemId(7, Length), null, new BcrdtItemId(7, Length - 1), null, null, null, null, new BcrdtContentString(new string('t', Length))), 0),
+                (new BcrdtItem(new BcrdtItemId(7, 2 * Length), null, null, null, null, "m", "k", new BcrdtContentString(new string('v', Length))), 0),
+            ];
+
+            BcrdtUpdateCodec.WriteBlockGroups(ref writer, [(7UL, 0L, blocks)]);
+            new BcrdtDeleteSet().Write(ref writer);
+        });
+
+        using BcrdtDocument doc = Doc(1);
+        doc.ApplyUpdate(update);
+        BcrdtArray array = doc.GetArray("a");
+        BcrdtMap map = doc.GetMap("m");
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        for (int i = 0; i < 1_000; i++)
+        {
+            Assert.AreEqual("h", array[i]);
+            Assert.AreEqual("t", array[Length + i]);
+            Assert.AreEqual("v", map.Get("k"));
+        }
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.IsLessThan(4_000_000L, allocated, $"three thousand reads allocated {allocated:N0} bytes");
+
+        var joined = (BcrdtItem)doc.Store.GetClientStructs(7)![0];
+        Assert.AreEqual(2 * Length, joined.Length);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => joined.Content.GetValue(2 * Length));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => joined.Content.GetValue(-1));
+    }
+
+    [TestMethod]
+    public void Pushing_to_an_array_while_enumerating_it_leaves_the_enumeration_working()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtArray array = doc.GetArray("a");
+        array.Push([1L, 2L, 3L]);
+
+        // Each push joins the run the enumeration is walking at that moment, growing its values in place.
+        List<object?> seen = [];
+        foreach (object? value in array)
+        {
+            seen.Add(value);
+            if (seen.Count <= 3) array.Push(10 * (long)value!);
+        }
+
+        CollectionAssert.AreEqual(new object?[] { 1L, 2L, 3L }, seen.Take(3).ToList());
+        CollectionAssert.AreEqual(new object?[] { 1L, 2L, 3L, 10L, 20L, 30L }, array.ToArray());
     }
 
     private static object?[] Written(BcrdtContentAny content)

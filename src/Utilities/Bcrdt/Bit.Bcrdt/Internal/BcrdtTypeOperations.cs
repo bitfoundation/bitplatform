@@ -315,7 +315,7 @@ public static class BcrdtTypeOperations
         for (; cursor is not null; cursor = cursor.Right)
         {
             if (cursor.Deleted || !cursor.Countable) continue;
-            if (index < cursor.Length) return cursor.Content is BcrdtContentAny values ? values[index] : cursor.Content.GetContent()[index];
+            if (index < cursor.Length) return cursor.Content.GetValue(index);
             index -= cursor.Length;
         }
         return null;
@@ -370,8 +370,7 @@ public static class BcrdtTypeOperations
     {
         BcrdtItem? item = parent.MapGetRaw(key);
         if (item is null || item.Deleted) return null;
-        IReadOnlyList<object?> content = item.Content.GetContent();
-        return content.Count == 0 ? null : content[item.Length - 1];
+        return item.Content.GetValue(item.Length - 1);
     }
 
     /// <summary>Whether a map key currently has a value.</summary>
@@ -400,8 +399,7 @@ public static class BcrdtTypeOperations
         foreach ((string key, BcrdtItem item) in parent.KeyIndex)
         {
             if (item.Deleted) continue;
-            IReadOnlyList<object?> content = item.Content.GetContent();
-            yield return new KeyValuePair<string, object?>(key, content.Count == 0 ? null : content[item.Length - 1]);
+            yield return new KeyValuePair<string, object?>(key, item.Content.GetValue(item.Length - 1));
         }
     }
 
