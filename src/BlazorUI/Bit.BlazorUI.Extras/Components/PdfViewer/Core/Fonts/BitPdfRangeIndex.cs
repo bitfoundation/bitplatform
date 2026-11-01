@@ -19,7 +19,12 @@ internal static class BitPdfRangeIndex
             if (lo <= hi)
             {
                 points.Add((lo, i, true));
-                points.Add((hi == long.MaxValue ? long.MaxValue : hi + 1, i, false));
+                // A range reaching the top code has no code after it to end at: it is left open, and
+                // the last segment runs on to the top.
+                if (hi < long.MaxValue)
+                {
+                    points.Add((hi + 1, i, false));
+                }
             }
         }
         points.Sort((a, b) => a.At.CompareTo(b.At));
@@ -46,9 +51,9 @@ internal static class BitPdfRangeIndex
             {
                 active.Dequeue();
             }
-            if (p < points.Count && active.TryPeek(out int owner, out _))
+            if (active.TryPeek(out int owner, out _))
             {
-                segments.Add((at, points[p].At - 1, owner));
+                segments.Add((at, p < points.Count ? points[p].At - 1 : long.MaxValue, owner));
             }
         }
         return [.. segments];

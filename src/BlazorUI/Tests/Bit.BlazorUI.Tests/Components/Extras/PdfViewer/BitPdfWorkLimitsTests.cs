@@ -228,10 +228,13 @@ public class BitPdfWorkLimitsTests
         Assert.AreEqual(107, corrected.Lookup(0x0007));
 
         var topmost = BitPdfCMap.Parse(Encoding.Latin1.GetBytes(
+            "1 begincodespacerange <0000000000000000> <7FFFFFFFFFFFFFFF> endcodespacerange\n" +
             "1 begincidrange <7FFFFFFFFFFFFFF0> <7FFFFFFFFFFFFFFF> 5 endcidrange"));
 
+        Assert.AreEqual(8, topmost.CodeLength);
         Assert.AreEqual(6, topmost.Lookup(0x7FFFFFFFFFFFFFF1));
         Assert.AreEqual(19, topmost.Lookup(0x7FFFFFFFFFFFFFFE));
+        Assert.AreEqual(20, topmost.Lookup(long.MaxValue)); // the range covers the top code too
     }
 
     [TestMethod]
@@ -265,5 +268,32 @@ public class BitPdfWorkLimitsTests
         Assert.IsNull(map.Lookup(0x31));
         Assert.IsNull(map.Lookup(0x200)); // a range whose low end is past its high end maps nothing
         Assert.AreEqual("Y", map.Lookup(0x300));
+    }
+
+    [TestMethod]
+    public void AToUnicodeMapWithManyRangesShouldBeIndexedOnceForEveryLookup()
+    {
+        // Every other code of 20,000 two-code ranges, all read through the one index the first lookup
+        // builds: rebuilt for every lookup the loop below takes minutes, and a scan of every range seconds.
+        const int ranges = 20_000;
+        const int lookups = 200_000;
+        string entries = string.Concat(Enumerable.Range(0, ranges).Select(i => $"<{i * 4:X8}> <{i * 4 + 1:X8}> <0041>\n"));
+        var map = BitPdfToUnicodeCMap.Parse(Encoding.Latin1.GetBytes($"{ranges} beginbfrange\n{entries}endbfrange"));
+
+        var watch = Stopwatch.StartNew();
+        int mapped = 0;
+        for (int i = 0; i < lookups; i++)
+        {
+            int code = (i % ranges) * 4 + (i & 3);
+            if (map.Lookup(code) is not null)
+            {
+                mapped++;
+            }
+        }
+
+        Assert.IsTrue(watch.ElapsedMilliseconds < 1_000, $"{lookups} lookups took {watch.ElapsedMilliseconds}ms");
+        Assert.AreEqual(lookups / 2, mapped);
+        Assert.AreEqual("B", map.Lookup(4 * 123 + 1));
+        Assert.IsNull(map.Lookup(4 * 123 + 2));
     }
 }

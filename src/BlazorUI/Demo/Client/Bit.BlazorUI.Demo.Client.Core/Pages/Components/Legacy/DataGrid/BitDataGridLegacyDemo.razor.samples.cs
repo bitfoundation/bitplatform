@@ -665,9 +665,17 @@ public class ProductsController : ControllerBase
         .ToArray();
 
     [HttpGet]
-    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
-        odataQuery.Validate(_validationSettings);
+        // A query past the limits is the client's mistake: a 400 that says why, not a 500.
+        try
+        {
+            odataQuery.Validate(_validationSettings);
+        }
+        catch (Microsoft.OData.ODataException exception)
+        {
+            return BadRequest(exception.Message);
+        }
 
         var query = _products.AsQueryable();
 
@@ -680,7 +688,7 @@ public class ProductsController : ControllerBase
 
         query = query.Take(odataQuery.Top?.Value ?? 50);
 
-        return new PagedResult<ProductDto>(query.ToArray(), totalCount);
+        return Ok(new PagedResult<ProductDto>(query.ToArray(), totalCount));
     }
 }
 
@@ -864,9 +872,17 @@ public class ProductsController : ControllerBase
         .ToArray();
 
     [HttpGet]
-    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
-        odataQuery.Validate(_validationSettings);
+        // A query past the limits is the client's mistake: a 400 that says why, not a 500.
+        try
+        {
+            odataQuery.Validate(_validationSettings);
+        }
+        catch (Microsoft.OData.ODataException exception)
+        {
+            return BadRequest(exception.Message);
+        }
 
         var query = _products.AsQueryable();
 
@@ -881,7 +897,7 @@ public class ProductsController : ControllerBase
 
         query = query.Take(odataQuery.Top?.Value ?? 50);
 
-        return new PagedResult<ProductDto>(query.ToArray(), totalCount);
+        return Ok(new PagedResult<ProductDto>(query.ToArray(), totalCount));
     }
 }
 
