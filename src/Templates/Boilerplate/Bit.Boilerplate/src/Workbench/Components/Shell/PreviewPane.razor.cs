@@ -1,8 +1,14 @@
 namespace Boilerplate.Workbench.Components.Shell;
 
+/// <summary>
+/// One view on the canvas: a header naming the device and the settings that differ from the defaults, the app's
+/// breakpoints, and the page's preview in a device frame that Scripts/index.ts scales to fit and resizes.
+/// </summary>
 public partial class PreviewPane
 {
     private DevicePreset device = DevicePresets.Default;
+    // The iframe's src is only the first URL; later ones go through workbench.showInFrame, which replaces the frame's
+    // location without adding to its history. shownUrl is the URL the frame was last sent to.
     private string? frameUrl;
     private string previewUrl = string.Empty;
     private string? shownUrl;
@@ -10,8 +16,21 @@ public partial class PreviewPane
     private int frameHeight;
     private int viewportWidth;
     private int viewportHeight;
+    private string deviceName = string.Empty;
 
+    // The narrowest width a breakpoint snaps a view to, so the smallest breakpoint, which starts at 0, still shows a phone.
     private const int MinBreakpointWidth = 375;
+
+    // The first words of the presets' generic names, such as "Desktop 1920×1080", and the text that translates them.
+    private static readonly (string Prefix, string TextKey)[] genericDeviceNames =
+    [
+        ("Laptop ", nameof(WorkbenchStrings.DeviceLaptop)),
+        ("Desktop ", nameof(WorkbenchStrings.DeviceDesktop)),
+        ("Phone ", nameof(WorkbenchStrings.DevicePhone)),
+        ("Tablet ", nameof(WorkbenchStrings.DeviceTablet))
+    ];
+
+    private const string OpenSuffix = " (open)";
 
     [Parameter] public WorkbenchPane Pane { get; set; } = default!;
 
@@ -37,6 +56,9 @@ public partial class PreviewPane
 
     [Parameter] public IReadOnlyList<WorkbenchBreakpoint> Breakpoints { get; set; } = [];
 
+    /// <summary>A saved state to load the page with, such as the one a comment was left on.</summary>
+    [Parameter] public string? SnapshotId { get; set; }
+
     private bool ShowFrame => Pane.Scenario.Frame && Pane.Scenario.Backdrop is null;
 
     private string SizeText
@@ -48,19 +70,23 @@ public partial class PreviewPane
         }
     }
 
+    /// <summary>The made-up address the desktop frame's browser bar shows.</summary>
     private string AddressText => $"your-app.com/{Page.Key}";
 
+    /// <summary>The frame's unscaled size as CSS variables, which the scaler multiplies by the scale index.ts sets.</summary>
     private string StageStyle => FormattableString.Invariant($"--wb-frame-w:{frameWidth}px;--wb-frame-h:{frameHeight}px;");
 
     protected override void OnParametersSet()
     {
         device = Pane.Scenario.DevicePreset;
-        previewUrl = WorkbenchUrls.Preview(Page.Key, Pane.Scenario, Pane.Id);
+        deviceName = GetDeviceName(device, Localizer);
+        previewUrl = WorkbenchUrls.Preview(Page.Key, Pane.Scenario, Pane.Id, SnapshotId);
         frameUrl ??= previewUrl;
         (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(device, Pane.Scenario.Rotated, ShowFrame);
         (viewportWidth, viewportHeight) = device.GetViewport(Pane.Scenario.Rotated);
     }
 
+    /// <summary>Sends the frame to the view's preview URL when its scenario or page has changed.</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -73,7 +99,17 @@ public partial class PreviewPane
             return;
 
         shownUrl = previewUrl;
-        await JSRuntime.InvokeVoidAsync("workbench.showInFrame", Pane.Id, previewUrl);
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workbench.showInFrame", Pane.Id, previewUrl);
+        }
+        catch (JSException)
+        {
+            // The frame's location can't be reached, such as on another site's page, but its src can still be set.
+            frameUrl = previewUrl;
+            StateHasChanged();
+        }
     }
 
     public static string GetDeviceIconName(DevicePreset device) => device.Kind switch
@@ -83,6 +119,24 @@ public partial class PreviewPane
         _ => BitIconName.TVMonitor
     };
 
+    /// <summary>The device's name in the Workbench's language: generic names are translated, product names stay as they are.</summary>
+    public static string GetDeviceName(DevicePreset device, IStringLocalizer<WorkbenchStrings> localizer)
+    {
+        if (device.Key == DevicePresets.CustomKey)
+            return localizer[nameof(WorkbenchStrings.CustomSize)];
+
+        foreach (var (prefix, textKey) in genericDeviceNames)
+        {
+            if (device.Name.StartsWith(prefix, StringComparison.Ordinal))
+                return localizer[textKey, device.Name[prefix.Length..]];
+        }
+
+        return device.Name.EndsWith(OpenSuffix, StringComparison.Ordinal)
+            ? localizer[nameof(WorkbenchStrings.DeviceOpen), device.Name[..^OpenSuffix.Length]]
+            : device.Name;
+    }
+
+    /// <summary>A short label for each setting of this view that differs from the default, shown in its header.</summary>
     private IEnumerable<string> GetChips()
     {
         var scenario = Pane.Scenario;
@@ -108,7 +162,7 @@ public partial class PreviewPane
         if (scenario.Backdrop is { } backdrop)
             yield return Localizer[$"Backdrop{backdrop}"];
 
-        if (scenario.Variant is not null && Page.ResolveVariant(scenario) is { } variant)
+        if (scenario.Variant is not null && Page.Variants.FirstOrDefault(v => v.Key == scenario.Variant) is { } variant)
             yield return Localizer[variant.NameKey];
 
         foreach (var pageSwitch in Page.Switches)

@@ -5,18 +5,27 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// Renders previews in a headless Chromium-based browser for screenshots, thumbnails, checks, flow screens and PDF review sheets.
+/// The browser starts on first use and is shared; Screenshots:MaxConcurrentCaptures caps how many pages it renders at once.
+/// </summary>
 public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
 {
     [AutoInject] private IServer server = default!;
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private ILogger<WorkbenchScreenshotService> logger = default!;
 
-    private readonly ConcurrentDictionary<string, Task<byte[]>> thumbnails = [];
+    private readonly ConcurrentDictionary<string, Lazy<Task<byte[]>>> thumbnails = [];
     private readonly SemaphoreSlim browserLock = new(1, 1);
     private SemaphoreSlim? captureSlots;
+    private int waitingCaptures;
     private IPlaywright? playwright;
     private IBrowser? browser;
 
+    /// <summary>The pages the browser may render at once, created on first use from Screenshots:MaxConcurrentCaptures.</summary>
+    private SemaphoreSlim CaptureSlots => LazyInitializer.EnsureInitialized(ref captureSlots, () => new SemaphoreSlim(Math.Max(1, configuration.GetValue("Screenshots:MaxConcurrentCaptures", 2))));
+
+    /// <summary>Opens a preview and returns its PNG, once the fonts are loaded and two more frames are drawn.</summary>
     public async Task<byte[]> Capture(string relativeUrl, int width, int height, double pixelRatio, bool isMobile, WorkbenchThemeMode theme, string? culture, CancellationToken cancellationToken)
     {
         var png = await Open(relativeUrl, width, height, pixelRatio, isMobile, theme, culture, async page =>
@@ -29,6 +38,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         return RemoveAlphaChannel(png);
     }
 
+    /// <summary>Runs the accessibility and theme-color checks in a view and returns their JSON.</summary>
     public Task<string> RunChecks(WorkbenchPageInfo page, string? query, CancellationToken cancellationToken)
     {
         var scenario = WorkbenchScenario.Parse(query);
@@ -42,13 +52,14 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
                     device.IsHandheld,
                     scenario.Theme,
                     scenario.Culture,
-                    async browserPage => (await browserPage.EvaluateAsync("() => window.workbench.runChecks()")).ToString() ?? "{}",
+                    async browserPage => await browserPage.EvaluateAsync("() => window.workbench.runChecks()") is { } result ? result.ToString() : "{}",
                     cancellationToken);
     }
 
+    /// <summary>Prints an HTML document to an A4 PDF.</summary>
     public async Task<byte[]> RenderPdf(string html, CancellationToken cancellationToken)
     {
-        await (captureSlots ??= new(configuration.GetValue("Screenshots:MaxConcurrentCaptures", 2))).WaitAsync(cancellationToken);
+        var slots = await WaitForSlot(cancellationToken);
 
         try
         {
@@ -63,15 +74,43 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         }
         finally
         {
-            captureSlots.Release();
+            slots.Release();
         }
     }
 
+    /// <summary>
+    /// Waits for a free capture slot and returns the semaphore to release. Throws <see cref="WorkbenchCapturesBusyException"/>
+    /// when more than Screenshots:MaxQueuedCaptures captures already wait.
+    /// </summary>
+    private async Task<SemaphoreSlim> WaitForSlot(CancellationToken cancellationToken)
+    {
+        var slots = CaptureSlots;
+
+        if (Interlocked.Increment(ref waitingCaptures) > configuration.GetValue("Screenshots:MaxQueuedCaptures", 64))
+        {
+            Interlocked.Decrement(ref waitingCaptures);
+            throw new WorkbenchCapturesBusyException();
+        }
+
+        try
+        {
+            await slots.WaitAsync(cancellationToken);
+        }
+        finally
+        {
+            Interlocked.Decrement(ref waitingCaptures);
+        }
+
+        return slots;
+    }
+
+    /// <summary>
+    /// Opens a preview in a fresh browser context at the device's viewport, pixel ratio, theme and locale, waits until the page
+    /// reports it is ready, and hands the page to <paramref name="use"/>.
+    /// </summary>
     private async Task<T> Open<T>(string relativeUrl, int width, int height, double pixelRatio, bool isMobile, WorkbenchThemeMode theme, string? culture, Func<IPage, Task<T>> use, CancellationToken cancellationToken)
     {
-        captureSlots ??= new(configuration.GetValue("Screenshots:MaxConcurrentCaptures", 2));
-
-        await captureSlots.WaitAsync(cancellationToken);
+        var slots = await WaitForSlot(cancellationToken);
 
         try
         {
@@ -85,9 +124,10 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
                 HasTouch = isMobile,
                 Locale = culture,
                 ReducedMotion = ReducedMotion.Reduce,
-                ColorScheme = theme is WorkbenchThemeMode.Dark ? ColorScheme.Dark : ColorScheme.Light,
-                ExtraHTTPHeaders = GetPairingHeaders()
+                ColorScheme = theme is WorkbenchThemeMode.Dark ? ColorScheme.Dark : ColorScheme.Light
             });
+
+            await AddPairingHeader(context);
 
             var page = await context.NewPageAsync();
 
@@ -97,6 +137,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
 
             try
             {
+                // A page that keeps the network busy is captured anyway after a few seconds.
                 await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new() { Timeout = 8_000 });
             }
             catch (TimeoutException)
@@ -112,10 +153,11 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         }
         finally
         {
-            captureSlots.Release();
+            slots.Release();
         }
     }
 
+    /// <summary>Captures a view and names the file after its page, device, pixel size, culture, theme and data state.</summary>
     public async Task<(byte[] Png, string FileName)> CapturePage(WorkbenchPageInfo page, string? query, CancellationToken cancellationToken)
     {
         var scenario = WorkbenchScenario.Parse(query);
@@ -123,6 +165,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         var (width, height) = device.GetViewport(scenario.Rotated);
         var snapshotId = QueryHelpers.ParseQuery(query).TryGetValue(WorkbenchUrls.SnapshotQueryKey, out var id) ? id.ToString() : null;
 
+        // The device frame is drawn only around a store screenshot with a backdrop.
         var png = await Capture(WorkbenchUrls.Preview(page.Key, scenario with { Frame = scenario.Backdrop is not null && scenario.Frame }, snapshotId: snapshotId).TrimStart('/'),
                                 width,
                                 height,
@@ -139,6 +182,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         return (png, fileName);
     }
 
+    /// <summary>Taps through a flow screen's taps, then finds where each arrow starts and reads the page's state.</summary>
     public Task<WorkbenchFlowCapture> CaptureFlowScreen(WorkbenchPageInfo page, WorkbenchScenario scenario, IReadOnlyList<string> taps, IReadOnlyList<string> spots, CancellationToken cancellationToken)
     {
         var device = scenario.DevicePreset;
@@ -185,6 +229,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         }, cancellationToken);
     }
 
+    /// <summary>The first button, link or tab named by the text, or else an element with exactly that text.</summary>
     private static ILocator Tappable(IPage page, string text)
     {
         return page.GetByRole(AriaRole.Button, new() { Name = text })
@@ -194,11 +239,12 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
                    .First;
     }
 
+    /// <summary>A page's thumbnail for the home page, captured once and kept; a failed capture is tried again next time.</summary>
     public Task<byte[]> GetThumbnail(string pageKey, bool phone, WorkbenchThemeMode theme)
     {
         var key = $"{pageKey}|{phone}|{theme}";
 
-        return thumbnails.GetOrAdd(key, _ => CaptureThumbnail(key, pageKey, phone, theme));
+        return thumbnails.GetOrAdd(key, _ => new(() => CaptureThumbnail(key, pageKey, phone, theme))).Value;
     }
 
     private async Task<byte[]> CaptureThumbnail(string key, string pageKey, bool phone, WorkbenchThemeMode theme)
@@ -217,13 +263,22 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         }
     }
 
-    private static Dictionary<string, string>? GetPairingHeaders()
+    /// <summary>
+    /// Adds the IIS pairing token, which Kestrel asks for on every request when it runs behind IIS, to the requests the
+    /// page makes to this app only, so no other site receives it.
+    /// </summary>
+    private async Task AddPairingHeader(IBrowserContext context)
     {
-        var pairingToken = Environment.GetEnvironmentVariable("ASPNETCORE_TOKEN");
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_TOKEN") is not { Length: > 0 } pairingToken)
+            return;
 
-        return string.IsNullOrEmpty(pairingToken) ? null : new() { ["MS-ASPNETCORE-TOKEN"] = pairingToken };
+        await context.RouteAsync($"{WorkbenchUrls.LocalBaseAddress(server)}**", route => route.ContinueAsync(new()
+        {
+            Headers = new Dictionary<string, string>(route.Request.Headers) { ["MS-ASPNETCORE-TOKEN"] = pairingToken }
+        }));
     }
 
+    /// <summary>Writes the PNG again without an alpha channel, which the App Store does not accept in screenshots.</summary>
     private static byte[] RemoveAlphaChannel(byte[] png)
     {
         using var image = PngDecoder.Decode(png);
@@ -231,6 +286,7 @@ public sealed partial class WorkbenchScreenshotService : IAsyncDisposable
         return PngEncoder.Encode(image).Data;
     }
 
+    /// <summary>Starts the shared browser on first use: Playwright's Chromium, otherwise Microsoft Edge or Google Chrome.</summary>
     private async Task<IBrowser> GetBrowser()
     {
         if (browser?.IsConnected is true)

@@ -1,5 +1,8 @@
 namespace Boilerplate.Workbench.Infrastructure.Models;
 
+/// <summary>
+/// A device a view can be shown on: its viewport in CSS pixels, pixel ratio, safe areas and frame, and the store it is for, if any.
+/// </summary>
 public sealed record DevicePreset(string Key,
                                   string Name,
                                   DeviceKind Kind,
@@ -23,12 +26,14 @@ public sealed record DevicePreset(string Key,
 
     public bool IsLandscape(bool rotated) => GetViewport(rotated) is var (width, height) && width > height;
 
+    /// <summary>The screenshot's size in device pixels.</summary>
     public (int Width, int Height) GetPixels(bool rotated)
     {
         var (width, height) = GetViewport(rotated);
         return ((int)Math.Round(width * PixelRatio), (int)Math.Round(height * PixelRatio));
     }
 
+    /// <summary>The insets the page's safe-area styles get; a phone on its side keeps only a short bottom inset.</summary>
     public (int Top, int Bottom) GetSafeArea(bool rotated)
     {
         if (IsHandheld is false)

@@ -1,21 +1,35 @@
-import { highlight, runChecks } from './checks';
+import { highlight, parseColor, runChecks } from './checks';
 import { cancelInlinePick, connectFrames, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
 import { cancelSpotPick, pickSpot } from './spots';
 import { forceStates } from './states';
 
+/** The window, typed loosely to reach Blazor and the workbench interop object. */
 const host = window as any;
+/** True inside a view's page (/preview/...), false on the shell, the home page and the flows board. */
 const isPreview = location.pathname.startsWith('/preview');
 
+/** Device stages the resize observer already watches, and iframes whose load is already handled. */
 const observedStages = new WeakSet<Element>();
 const seenFrames = new WeakSet<Element>();
 
+/** The fallback timer of each view still loading, and the document each view had when it was sent to a new address. */
+const readyTimers = new WeakMap<HTMLIFrameElement, number>();
+const staleDocuments = new WeakMap<HTMLIFrameElement, Document | null>();
+
+/** The address each view was last sent to, for reloading a view that shows a page of another origin. */
+const shownUrls = new WeakMap<HTMLIFrameElement, string>();
+
+/** Refits a device stage whenever its box changes size. */
 const resizeObserver = new ResizeObserver(entries => entries.forEach(entry => fitStage(entry.target as HTMLElement)));
 
+/** The .NET objects of the shell page and of the preview page, which this script calls back. */
 let shellReference: any = null;
 let previewReference: any = null;
+/** In a store composition: whether the inner screen has reported ready, and whether this page's own ready waits for it. */
 let isScreenReady = false;
 let isReadyPending = false;
 
+/** Scales a device to fit its stage, or to the chosen zoom, and sizes its pane to match. */
 function fitStage(stage: HTMLElement) {
     if (stage.dataset.resizing === 'true') return;
 
@@ -43,6 +57,7 @@ function fitStage(stage: HTMLElement) {
     }
 }
 
+/** The scale that fits every view side by side in the canvas width, after the panes' padding and gaps. */
 function fitCanvasWidth(stage: HTMLElement) {
     const canvas = stage.closest<HTMLElement>('.canvas');
     if (!canvas) return Number.POSITIVE_INFINITY;
@@ -55,6 +70,7 @@ function fitCanvasWidth(stage: HTMLElement) {
     return totalFrameWidth > 0 ? Math.max(0.2, (canvas.clientWidth - chrome) / totalFrameWidth) : Number.POSITIVE_INFINITY;
 }
 
+/** Watches new device stages, refits all of them, and shows the loading state of each new iframe until it reports ready. */
 function scan() {
     document.querySelectorAll<HTMLElement>('.pane-stage').forEach(stage => {
         if (!observedStages.has(stage)) {
@@ -68,27 +84,113 @@ function scan() {
         if (frame && !seenFrames.has(frame)) {
             seenFrames.add(frame);
             stage.classList.remove('ready');
-            frame.addEventListener('load', () => prepareFrame(frame));
+            frame.addEventListener('load', () => onFrameLoad(frame));
         }
+
+        if (frame && hasReported(frame)) markStageReady(frame);
     });
 }
 
+/** Prepares a view's new document, and ends its loading state at once when it is ready or isn't a preview, or after 25 seconds. */
+function onFrameLoad(frame: HTMLIFrameElement) {
+    prepareFrame(frame);
+    clearTimeout(readyTimers.get(frame));
+
+    const doc = frame.contentDocument;
+
+    if (hasReported(frame) || doc === null || doc.location.pathname.startsWith('/preview') === false) {
+        markStageReady(frame);
+        return;
+    }
+
+    // A page that fails before it reports ready then shows itself, or its error, instead of a spinner.
+    readyTimers.set(frame, setTimeout(() => markStageReady(frame), 25000));
+}
+
+/** Whether the document a view holds now has reported ready, so a missed message doesn't leave it loading. */
+function hasReported(frame: HTMLIFrameElement) {
+    try {
+        const doc = frame.contentDocument;
+        return doc !== null && doc !== staleDocuments.get(frame) && (frame.contentWindow as any)?.__workbenchReady === true;
+    } catch {
+        return false;
+    }
+}
+
+/** Ends a view's loading state. */
+function markStageReady(frame: HTMLIFrameElement) {
+    clearTimeout(readyTimers.get(frame));
+    readyTimers.delete(frame);
+    frame.closest('.pane-stage')?.classList.add('ready');
+}
+
+/** Shows a view's loading state until the document it is being sent to reports ready. */
+function expectNewDocument(frame: HTMLIFrameElement) {
+    clearTimeout(readyTimers.get(frame));
+    readyTimers.delete(frame);
+    staleDocuments.set(frame, frame.contentDocument);
+    frame.closest('.pane-stage')?.classList.remove('ready');
+}
+
+/** The iframe of the view with this pane id. */
 function findFrame(paneId: string) {
     return document.querySelector<HTMLIFrameElement>(`iframe[data-pane-id="${CSS.escape(paneId)}"]`);
 }
 
+/** The iframe whose window sent a message. */
 function frameOf(source: MessageEventSource | null) {
     return Array.from(document.querySelectorAll('iframe')).find(frame => frame.contentWindow === source);
 }
 
-function screenOf() {
-    return document.querySelector<HTMLIFrameElement>('iframe.screen-frame')?.contentWindow as any;
+/** The inner screen a store composition shows its page in, when this page is one. */
+function screenFrame() {
+    return document.querySelector<HTMLIFrameElement>('iframe.screen-frame');
 }
 
+/** The window of the inner screen a store composition shows its page in, when this page is one. */
+function screenOf() {
+    return screenFrame()?.contentWindow as any;
+}
+
+/** The workbench object of a frame's page, or null while it loads or once it shows a page of another origin. */
+function workbenchOf(frame: HTMLIFrameElement | null | undefined): any {
+    try {
+        return (frame?.contentWindow as any)?.workbench ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/** The address a frame shows, or null once it shows a page of another origin. */
+function addressOf(frame: HTMLIFrameElement) {
+    try {
+        return frame.contentWindow?.location.href ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/** Calls the shell page's .NET object; a failed call, as after the page has gone, is logged instead of left unhandled. */
+function callShell(method: string, ...args: unknown[]) {
+    shellReference?.invokeMethodAsync(method, ...args).catch((error: unknown) => console.warn(error));
+}
+
+/** Calls the preview page's .NET object, answering the fallback when there is none or the call fails. */
+function callPreview<T>(fallback: T, method: string, ...args: unknown[]): Promise<T> {
+    if (!previewReference) return Promise.resolve(fallback);
+
+    return previewReference.invokeMethodAsync(method, ...args).catch((error: unknown) => {
+        console.warn(error);
+        return fallback;
+    });
+}
+
+/** Resolves with the promise's value, or with null once the time runs out. */
 function withTimeout<T>(promise: Promise<T>, milliseconds: number) {
     return Promise.race([promise, new Promise<null>(resolve => setTimeout(() => resolve(null), milliseconds))]);
 }
 
+/** Whether the page handles a drag on this element itself: a field, a draggable item or a touch-action that takes the gesture. */
 function ownsDrag(target: Element) {
     if (target.closest('input, textarea, select, [contenteditable="true"], [draggable="true"]')) return true;
 
@@ -100,6 +202,7 @@ function ownsDrag(target: Element) {
     return false;
 }
 
+/** Whether the pointer went down on the element's scrollbar rather than on its content. */
 function isOnScrollbar(target: Element, event: PointerEvent) {
     if (target === document.documentElement) return event.clientX >= target.clientWidth || event.clientY >= target.clientHeight;
 
@@ -110,6 +213,7 @@ function isOnScrollbar(target: Element, event: PointerEvent) {
     return (target.clientWidth > 0 && (x < 0 || x > target.clientWidth)) || (target.clientHeight > 0 && y > target.clientHeight);
 }
 
+/** Whether the element can scroll further along the axis in the drag's direction; a zero delta means in either direction. */
 function canScroll(element: Element, axis: 'x' | 'y', delta: number): boolean {
     if (delta === 0) return canScroll(element, axis, 1) || canScroll(element, axis, -1);
 
@@ -120,6 +224,7 @@ function canScroll(element: Element, axis: 'x' | 'y', delta: number): boolean {
 
     if (axis === 'y') return delta > 0 ? element.scrollTop < element.scrollHeight - element.clientHeight - 0.5 : element.scrollTop > 0.5;
 
+    // In right-to-left, scrollLeft runs from a negative start up to zero.
     const isRtl = style.direction === 'rtl';
     const start = isRtl ? element.clientWidth - element.scrollWidth : 0;
     const end = isRtl ? 0 : element.scrollWidth - element.clientWidth;
@@ -127,6 +232,7 @@ function canScroll(element: Element, axis: 'x' | 'y', delta: number): boolean {
     return delta > 0 ? element.scrollLeft < end - 0.5 : element.scrollLeft > start + 0.5;
 }
 
+/** The nearest element, from the target up, that can scroll along the axis in the drag's direction. */
 function findScroller(target: Element, axis: 'x' | 'y', delta: number) {
     for (let element: Element | null = target; element; element = element.parentElement) {
         if (canScroll(element, axis, delta)) return element;
@@ -135,6 +241,7 @@ function findScroller(target: Element, axis: 'x' | 'y', delta: number) {
     return null;
 }
 
+/** Makes a mouse drag scroll a handheld view the way a finger does, with momentum, and keeps the drag from clicking. */
 function emulateTouch() {
     let drag: { x: number; y: number; target: Element; pointerId: number; moved: boolean; scrollerX: Element | null; scrollerY: Element | null; samples: { x: number; y: number; time: number }[] } | null = null;
     let glideFrame = 0;
@@ -160,9 +267,11 @@ function emulateTouch() {
 
         if (!moved) return;
 
+        // The click that ends a drag is not a tap, so it is swallowed.
         swallowClick = true;
         setTimeout(() => swallowClick = false);
 
+        // Glides on with the speed of the last 100 ms of the drag, slowing down each frame.
         const now = performance.now();
         const recent = samples.filter(sample => now - sample.time < 100);
         if (recent.length < 2) return;
@@ -213,6 +322,7 @@ function emulateTouch() {
         const left = drag.x - event.clientX;
         const top = drag.y - event.clientY;
 
+        // A drag starts only after 6px, so a plain click still clicks.
         if (!drag.moved) {
             if (Math.hypot(left, top) < 6) return;
 
@@ -243,6 +353,7 @@ function emulateTouch() {
         event.stopImmediatePropagation();
     }, true);
 
+    // A native drag of an image or a link would take over the gesture, so only what the page marks draggable may start one.
     window.addEventListener('dragstart', event => {
         if (event.target instanceof Element && event.target.closest('[draggable="true"]') === null) {
             event.preventDefault();
@@ -250,6 +361,7 @@ function emulateTouch() {
     }, true);
 }
 
+// On the shell: refit the stages as views come and go or change size, and handle what the views report.
 if (!isPreview) {
     new MutationObserver(scan).observe(document.body, {
         subtree: true,
@@ -264,21 +376,25 @@ if (!isPreview) {
         const frame = frameOf(event.source);
         if (!frame) return;
 
-        if (event.data?.type === 'workbench-ready') {
-            frame.closest('.pane-stage')?.classList.add('ready');
+        // The view has settled: hide its loading state and set up the comment and inspect tools in it. A ready from
+        // the document a view is leaving is ignored.
+        if (event.data?.type === 'workbench-ready' && frame.contentDocument !== staleDocuments.get(frame)) {
+            markStageReady(frame);
             prepareFrame(frame);
         }
 
         if (event.data?.type === 'workbench-scenario' && frame.dataset.paneId) {
-            shellReference?.invokeMethodAsync('ReportScenario', frame.dataset.paneId, String(event.data.query ?? ''));
+            callShell('ReportScenario', frame.dataset.paneId, String(event.data.query ?? ''));
         }
 
-        if (event.data?.type === 'workbench-page') {
-            shellReference?.invokeMethodAsync('ReportPage', String(event.data.pageKey ?? ''));
+        // Only a view moves the shell to another page; a flow screen doesn't.
+        if (event.data?.type === 'workbench-page' && frame.dataset.paneId) {
+            callShell('ReportPage', String(event.data.pageKey ?? ''));
         }
     });
 }
 
+/** Lets the edge and corner handles of a device resize its screen, and reports the new size to the shell when the drag ends. */
 function resizeFrames() {
     document.addEventListener('pointerdown', event => {
         const handle = event.target instanceof Element ? event.target.closest<HTMLElement>('.resize-handle') : null;
@@ -303,6 +419,7 @@ function resizeFrames() {
         document.documentElement.classList.add('wb-resizing');
         handle.setPointerCapture(event.pointerId);
 
+        // The pointer moves in scaled pixels, so the change is divided by the stage's scale.
         const move = (moveEvent: PointerEvent) => {
             const width = axis.includes('x') ? start.width + (moveEvent.clientX - start.x) / scale : start.width;
             const height = axis.includes('y') ? start.height + (moveEvent.clientY - start.y) / scale : start.height;
@@ -327,7 +444,7 @@ function resizeFrames() {
             delete stage.dataset.resizing;
 
             if (size.width !== start.width || size.height !== start.height) {
-                shellReference?.invokeMethodAsync('ResizePane', paneId, size.width, size.height);
+                callShell('ResizePane', paneId, size.width, size.height);
             } else {
                 fitStage(stage);
             }
@@ -339,20 +456,24 @@ function resizeFrames() {
     }, true);
 }
 
+// Resizing devices and the comment, inspect and text tools run on the shell, over its views.
 if (!isPreview) {
     resizeFrames();
-    connectFrames({ invoke: (method, ...args) => shellReference?.invokeMethodAsync(method, ...args) });
+    connectFrames({ invoke: callShell });
 }
 
+// Touch emulation runs in handheld views without a backdrop, whose body the server marks with wb-touch.
 if (isPreview && document.body.classList.contains('wb-touch')) {
     emulateTouch();
 }
 
+// A store composition waits for its inner screen and passes the screen's reports on to the shell.
 if (isPreview) {
     window.addEventListener('message', event => {
         const screen = screenOf();
         if (event.origin !== location.origin || !screen || event.source !== screen) return;
 
+        // The inner screen has settled, so this page can report ready if it was waiting.
         if (event.data?.type === 'workbench-ready') {
             isScreenReady = true;
             if (isReadyPending) host.workbench.markReady();
@@ -361,6 +482,7 @@ if (isPreview) {
 
         if (window.parent === window) return;
 
+        // The inner screen doesn't know the backdrop and caption, so they are taken from this page's address.
         if (event.data?.type === 'workbench-scenario') {
             const query = new URLSearchParams(String(event.data.query ?? ''));
             const own = new URLSearchParams(location.search);
@@ -374,7 +496,9 @@ if (isPreview) {
     });
 }
 
+/** The functions .NET calls through JS interop as workbench.<name>, on the shell and in previews alike. */
 host.workbench = {
+    /** Marks the preview ready for screenshots and tells the shell, after a composition's inner screen is ready. */
     markReady() {
         if (screenOf() && isScreenReady === false) {
             isReadyPending = true;
@@ -382,7 +506,6 @@ host.workbench = {
         }
 
         host.__workbenchReady = true;
-        document.documentElement.setAttribute('data-workbench-ready', '');
 
         if (window.parent !== window) {
             window.parent.postMessage({ type: 'workbench-ready' }, location.origin);
@@ -397,47 +520,54 @@ host.workbench = {
         previewReference = reference;
     },
 
+    /** Points a view's iframe at a new address without a history entry, unless it is already there. */
     showInFrame(paneId: string, url: string) {
         const frame = findFrame(paneId);
         const target = new URL(url, location.origin).href;
 
-        if (!frame || frame.contentWindow?.location.href === target) return;
+        if (!frame) return;
 
-        frame.closest('.pane-stage')?.classList.remove('ready');
+        shownUrls.set(frame, target);
+        if (addressOf(frame) === target) return;
+
+        expectNewDocument(frame);
         frame.contentWindow?.location.replace(target);
     },
 
+    /** A view's saved page state for a screenshot, or null when the view doesn't answer in time. */
     async captureFrame(paneId: string): Promise<string | null> {
         try {
-            const preview = findFrame(paneId)?.contentWindow as any;
-            return await withTimeout<string>(preview?.workbench?.captureState() ?? Promise.resolve(null), 4000);
+            return await withTimeout<string>(workbenchOf(findFrame(paneId))?.captureState() ?? Promise.resolve(null), 4000);
         } catch {
             return null;
         }
     },
 
+    /** Puts a view's page state back to its defaults. */
     async resetFrame(paneId: string) {
         try {
-            const preview = findFrame(paneId)?.contentWindow as any;
-            await withTimeout(preview?.workbench?.resetState() ?? Promise.resolve(), 4000);
+            await withTimeout(workbenchOf(findFrame(paneId))?.resetState() ?? Promise.resolve(), 4000);
         } catch {
         }
     },
 
+    /** This preview's page state as JSON, read from the inner screen when this page is a store composition. */
     captureState(): Promise<string | null> {
-        const screen = screenOf();
-        if (screen?.workbench) return screen.workbench.captureState();
+        const screen = workbenchOf(screenFrame());
+        if (screen) return screen.captureState();
 
-        return previewReference ? previewReference.invokeMethodAsync('CaptureState') : Promise.resolve(null);
+        return callPreview<string | null>(null, 'CaptureState');
     },
 
-    resetState() {
-        const screen = screenOf();
-        if (screen?.workbench) return screen.workbench.resetState();
+    /** Puts this preview's page state back to its defaults, in the inner screen when there is one. */
+    resetState(): Promise<void> {
+        const screen = workbenchOf(screenFrame());
+        if (screen) return screen.resetState();
 
-        return previewReference?.invokeMethodAsync('ResetState');
+        return callPreview<void>(undefined, 'ResetState');
     },
 
+    /** Records a scenario change made in the page: in the address bar when the page already shows it, else by a reload, and tells the shell. */
     reportScenario(url: string, query: string, isApplied: boolean) {
         const hasShell = window.parent !== window;
 
@@ -453,12 +583,14 @@ host.workbench = {
         }
     },
 
+    /** Tells the shell the view moved to another Workbench page. */
     reportPage(pageKey: string) {
         if (window.parent !== window) {
             window.parent.postMessage({ type: 'workbench-page', pageKey }, location.origin);
         }
     },
 
+    /** Downloads a URL through a temporary link. */
     download(url: string) {
         const anchor = document.createElement('a');
         anchor.href = url;
@@ -480,14 +612,22 @@ host.workbench = {
         forceStates();
     },
 
+    /** The resource entries whose text matches, for Edit text mode. */
     findTexts(text: string) {
-        return previewReference ? previewReference.invokeMethodAsync('FindTexts', text) : Promise.resolve([]);
+        return callPreview<unknown[]>([], 'FindTexts', text);
     },
 
+    /** Reloads every view and shows its loading state until it reports ready again. */
     reloadFrames() {
         document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]').forEach(frame => {
-            frame.closest('.pane-stage')?.classList.remove('ready');
-            frame.contentWindow?.location.reload();
+            expectNewDocument(frame);
+
+            // A frame showing a page of another origin can't be reloaded from here, so it goes back to the view's address.
+            try {
+                frame.contentWindow?.location.reload();
+            } catch {
+                frame.contentWindow?.location.replace(shownUrls.get(frame) ?? frame.src);
+            }
         });
     },
 
@@ -495,16 +635,17 @@ host.workbench = {
         return highlight(selector);
     },
 
+    /** Runs the accessibility and theme checks inside a view, giving up after 30 seconds. */
     async checkFrame(paneId: string) {
-        const preview = findFrame(paneId)?.contentWindow as any;
-        return await withTimeout(preview?.workbench?.runChecks() ?? Promise.resolve(null), 30000);
+        return await withTimeout(workbenchOf(findFrame(paneId))?.runChecks() ?? Promise.resolve(null), 30000);
     },
 
+    /** Scrolls to and flashes an element in a view, for a check finding. */
     highlightInFrame(paneId: string, selector: string) {
-        const preview = findFrame(paneId)?.contentWindow as any;
-        return preview?.workbench?.highlight(selector) ?? false;
+        return workbenchOf(findFrame(paneId))?.highlight(selector) ?? false;
     },
 
+    /** Gives Inspect mode the component name of each root class and the label for colors outside the theme. */
     setComponentNames(names: Record<string, string>, notFromTheme: string) {
         setComponentNames(names, notFromTheme);
     },
@@ -513,18 +654,21 @@ host.workbench = {
         setMode(mode);
     },
 
+    /** Shows the comment pins of each view, keyed by pane id. */
     showPins(pins: Record<string, never[]>) {
         showPins(pins);
     },
 
+    /** Waits for a click on the inline preview to start a comment there. */
     pickInline() {
-        pickInline(anchor => shellReference?.invokeMethodAsync('BeginInlineComment', anchor));
+        pickInline(anchor => callShell('BeginInlineComment', anchor));
     },
 
     cancelInlinePick() {
         cancelInlinePick();
     },
 
+    /** Lets the user pick the spot a flow arrow starts from on a flow screen. */
     pickSpot(screenId: string) {
         return pickSpot(screenId);
     },
@@ -533,6 +677,7 @@ host.workbench = {
         cancelSpotPick();
     },
 
+    /** Each theme token's resolved color as hex, with its opacity when it isn't opaque. */
     readTokens(names: string[]) {
         const probe = document.createElement('span');
         probe.style.display = 'none';
@@ -543,9 +688,9 @@ host.workbench = {
         names.forEach(name => {
             probe.style.color = '';
             probe.style.color = `var(${name})`;
-            const parts = getComputedStyle(probe).color.match(/[\d.]+/g)?.map(Number) ?? [];
-            const hex = parts.slice(0, 3).map(part => Math.round(part).toString(16).padStart(2, '0')).join('');
-            values[name] = parts.length >= 3 ? `#${hex}${parts.length === 4 && parts[3] < 1 ? ` · ${Math.round(parts[3] * 100)}%` : ''}` : '';
+            const color = parseColor(getComputedStyle(probe).color);
+            const hex = color?.slice(0, 3).map(part => Math.min(255, Math.max(0, Math.round(part * 255))).toString(16).padStart(2, '0')).join('');
+            values[name] = color ? `#${hex}${color[3] < 1 ? ` · ${Math.round(color[3] * 100)}%` : ''}` : '';
         });
 
         probe.remove();
@@ -553,6 +698,7 @@ host.workbench = {
         return values;
     },
 
+    /** The theme's breakpoints, read from bit BlazorUI's --bit-bp-* variables. */
     readBreakpoints() {
         const style = getComputedStyle(document.documentElement);
 
@@ -561,14 +707,17 @@ host.workbench = {
             .filter(breakpoint => Number.isFinite(breakpoint.min));
     },
 
+    /** Saves the shell's language in ASP.NET Core's culture cookie and reloads. */
     setCulture(name: string) {
         document.cookie = `.AspNetCore.Culture=${encodeURIComponent(`c=${name}|uic=${name}`)}; path=/; max-age=31536000; samesite=lax`;
         location.reload();
     }
 };
 
+// A preview takes its culture from its query string, so its circuit is told the culture; the shell uses the cookie.
 const culture = isPreview ? document.documentElement.lang : null;
 
+// blazor.web.js loads with autostart off, so Blazor starts here, once the workbench object exists.
 host.Blazor.start({
     circuit: {
         configureSignalR: (builder: any) => {

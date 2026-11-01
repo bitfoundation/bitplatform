@@ -6,12 +6,17 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// Builds the Workbench's addresses and reads them back. A list of views travels as one base64url query value.
+/// </summary>
 public static class WorkbenchUrls
 {
     public const string Home = "/";
 
+    /// <summary>The query key of the view a preview belongs to, which keys its saved page state.</summary>
     public const string PaneQueryKey = "pane";
 
+    /// <summary>The query key of a snapshot id, which makes a preview restore that page state.</summary>
     public const string SnapshotQueryKey = "snapshot";
 
     public const string Flows = "/flows";
@@ -39,6 +44,7 @@ public static class WorkbenchUrls
         return snapshotId is null ? url : QueryHelpers.AddQueryString(url, SnapshotQueryKey, snapshotId);
     }
 
+    /// <summary>The address of one zip with the screenshots of several views.</summary>
     public static string ScreenshotArchive(IEnumerable<(string PageKey, WorkbenchScenario Scenario, string? SnapshotId)> shots)
     {
         var entries = shots.Select(shot =>
@@ -58,6 +64,7 @@ public static class WorkbenchUrls
         return QueryHelpers.AddQueryString($"/api/review-sheet/{pageKey}{query}", "format", format);
     }
 
+    /// <summary>Splits a shots value into page keys and query strings; an invalid value gives none.</summary>
     public static (string PageKey, string Query)[] DecodeShots(string? value)
     {
         return [.. Decode(value).Select(entry =>
@@ -67,24 +74,31 @@ public static class WorkbenchUrls
         })];
     }
 
+    /// <summary>The shell's views as one query value, for a link that opens the same views.</summary>
     public static string EncodePanes(IEnumerable<WorkbenchScenario> scenarios) => Encode(scenarios.Select(s => s.ToQueryString()));
 
     public static WorkbenchScenario[] DecodePanes(string? value) => [.. Decode(value).Select(WorkbenchScenario.Parse)];
 
+    /// <summary>
+    /// The address this process listens on, with a wildcard host as localhost, preferring a loopback address and then http.
+    /// The headless browser and the review relay call the Workbench through it.
+    /// </summary>
     public static Uri LocalBaseAddress(IServer server)
     {
-        var address = server.Features.Get<IServerAddressesFeature>()?.Addresses
-            .OrderBy(a => a.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-            .FirstOrDefault() ?? "http://localhost:5000";
+        var addresses = server.Features.Get<IServerAddressesFeature>()?.Addresses ?? [];
 
-        address = address.Replace("://+", "://localhost")
-                         .Replace("://*", "://localhost")
-                         .Replace("://0.0.0.0", "://localhost")
-                         .Replace("://[::]", "://localhost");
-
-        return new Uri(address.EndsWith('/') ? address : $"{address}/");
+        return addresses.Select(address => address.Replace("://+", "://localhost")
+                                                  .Replace("://*", "://localhost")
+                                                  .Replace("://0.0.0.0", "://localhost")
+                                                  .Replace("://[::]", "://localhost"))
+                        .Select(address => Uri.TryCreate(address.EndsWith('/') ? address : $"{address}/", UriKind.Absolute, out var uri) ? uri : null)
+                        .OfType<Uri>()
+                        .OrderBy(uri => uri.IsLoopback is false)
+                        .ThenBy(uri => uri.Scheme == Uri.UriSchemeHttps)
+                        .FirstOrDefault() ?? new Uri("http://localhost:5000/");
     }
 
+    /// <summary>A query value of an absolute address, or null when it is missing or blank.</summary>
     public static string? ReadQuery(string uri, string key)
     {
         var query = QueryHelpers.ParseQuery(new Uri(uri).Query);

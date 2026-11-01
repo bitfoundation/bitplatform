@@ -59,6 +59,7 @@
             min-height: 22rem;
         }
 
+        // The pane the view switch hides.
         &.show-map .list-pane,
         &.show-list .map-pane {
             display: none;
@@ -172,7 +173,8 @@
     min-width: 0;
     align-items: flex-start;
     border-radius: 12px;
-    padding: 0.25rem 0.25rem 0.25rem 0;
+    padding-block: 0.25rem;
+    padding-inline: 0 0.25rem;
     border: 1px solid $bit-color-border-tertiary;
     background-color: $bit-color-background-primary;
 
@@ -211,7 +213,8 @@
     height: 100%;
 }
 
-:root[bit-theme$="dark"] ::deep .map .leaflet-tile-pane {
+// Darkens the light base map in dark themes: inverted, with the hues turned back.
+:root[bit-theme$="dark"] .map-pane ::deep .leaflet-tile-pane {
     filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
 }
 

@@ -2,6 +2,7 @@ using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings.Account;
 
+/// <summary>The Workbench copy of the app's change-password tab; a valid form only shows the success message.</summary>
 public partial class ChangePasswordTab
 {
     private bool isWaiting;
@@ -23,6 +24,9 @@ public partial class ChangePasswordTab
             model.OldPassword = model.NewPassword = model.ConfirmPassword = null;
 
             SnackBarService.Success(AppLocalizer[nameof(AppStrings.PasswordChangedSuccessfullyMessage)]);
+        }
+        catch (OperationCanceledException)
+        {
         }
         finally
         {

@@ -6,6 +6,9 @@
 
 namespace Boilerplate.Workbench.Infrastructure.Services.StandIns;
 
+/// <summary>
+/// The app's storage service on the browser's localStorage for persistent items and sessionStorage for the rest.
+/// </summary>
 public partial class WorkbenchStorageService : IStorageService
 {
     [AutoInject] private SessionStorage sessionStorage = default!;

@@ -1,9 +1,18 @@
+using Microsoft.AspNetCore.Components.Web;
+
 namespace Boilerplate.Workbench.Components.Pages;
 
+/// <summary>
+/// /workbench/{key}: the shell around one page. On wider screens it shows the page's views as iframes of /preview side
+/// by side with the inspector, review, checks and flows; on a phone it renders the page inline with the tools in a panel.
+/// The views and their settings live in <see cref="WorkbenchStore"/> and are mirrored into the address.
+/// </summary>
 public partial class WorkbenchViewPage
 {
     private WorkbenchPageInfo? pageInfo;
+    // The address the store was last written to, to tell its own replace-navigations from the user's.
     private string? lastAppliedUri;
+    // The store holds the views saved in the browser and the ones in the address; until then nothing is drawn.
     private bool isRestored;
     private bool isSmallScreen;
     private bool isToolsOpen;
@@ -12,10 +21,15 @@ public partial class WorkbenchViewPage
     private List<BitMenuButtonItem> compareItems = [];
     private List<BitMenuButtonItem> screenshotItems = [];
     private IReadOnlyList<WorkbenchBreakpoint> breakpoints = [];
+    // A comment being written: the view and spot it was pinned to, and the view's state at that moment.
     private (string PaneId, WorkbenchReviewAnchor Anchor, string? State)? pendingComment;
     private string? selectedThreadId;
+    // The pins last sent to the frames as JSON, so an unchanged set isn't sent again on every render.
     private string? shownPins;
-    private (string PaneId, string Url)? pendingFrameUrl;
+    // A view to load with a snapshot once the current render is on screen, for showing a comment as it was left.
+    // The saved state a comment's Show reloads a view with, while that view stays in the comment's scenario.
+    private (string PaneId, string Query, string SnapshotId)? shownSnapshot;
+    // The text clicked in Edit text mode and the resource entries it came from.
     private (string PaneId, string Text, WorkbenchTextMatch[] Matches, WorkbenchReviewAnchor Anchor)? pickedText;
 
     private static readonly (string Mode, string IconName, string TextKey)[] modes =
@@ -25,6 +39,17 @@ public partial class WorkbenchViewPage
         (WorkbenchModes.Inspect, BitIconName.Search, nameof(WorkbenchStrings.ModeInspect)),
         (WorkbenchModes.Text, BitIconName.Edit, nameof(WorkbenchStrings.ModeText))
     ];
+
+    // The tabs of the side column, in their order on screen.
+    private static readonly (string Column, string TextKey)[] columns =
+    [
+        (WorkbenchModes.ViewColumn, nameof(WorkbenchStrings.ViewTab)),
+        (WorkbenchModes.ReviewColumn, nameof(WorkbenchStrings.ReviewTab)),
+        (WorkbenchModes.ChecksColumn, nameof(WorkbenchStrings.ChecksTab)),
+        (WorkbenchModes.FlowsColumn, nameof(WorkbenchStrings.Flows))
+    ];
+
+    private readonly ElementReference[] columnTabs = new ElementReference[columns.Length];
     private DotNetObjectReference<WorkbenchViewPage>? reference;
 
     [AutoInject] private WorkbenchStore store = default!;
@@ -34,10 +59,14 @@ public partial class WorkbenchViewPage
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
     [AutoInject] private WorkbenchTextEdits textEdits = default!;
+    [AutoInject] private ILogger<WorkbenchViewPage> logger = default!;
 
     private string ReviewerName => store.ReviewerName ?? Localizer[nameof(WorkbenchStrings.Reviewer)];
 
     private int OpenThreadCount => pageInfo is null ? 0 : reviewSession.ThreadsOf(pageInfo.Key).Count(t => t.Status is not WorkbenchReviewStatus.Done);
+
+    // The page was left while an await ran: what follows the await belongs to a view that is gone.
+    private bool IsDisposed => CurrentCancellationToken.IsCancellationRequested;
 
     [Parameter] public string? PageKey { get; set; }
 
@@ -51,6 +80,7 @@ public partial class WorkbenchViewPage
             new() { Key = "sheet-pdf", Text = Localizer[nameof(WorkbenchStrings.ReviewSheetPdf)], IconName = BitIconName.PDF, OnClick = item => _ = DownloadSheet("pdf") },
         ];
 
+        // Every change to the views re-renders the shell and is written into the address.
         Subscribe(store);
         OwnsSubscription(blexManager.SubscribeTo<WorkbenchStore>(_ => Apply()));
 
@@ -68,6 +98,7 @@ public partial class WorkbenchViewPage
             BuildCompareItems();
         }
 
+        // An address the shell didn't write itself, like Back or a link to another page: its views win.
         if (isRestored && NavigationManager.Uri != lastAppliedUri)
         {
             store.OpenUrl(new Uri(NavigationManager.Uri).Query);
@@ -85,35 +116,61 @@ public partial class WorkbenchViewPage
         }
 
         reference = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("workbench.registerShell", reference);
 
-        breakpoints = await JSRuntime.InvokeAsync<WorkbenchBreakpoint[]>("workbench.readBreakpoints");
+        // A step that fails is logged and skipped, so the views still appear when one of them breaks.
+        await RunStartStep(() => JSRuntime.InvokeVoidAsync("workbench.registerShell", reference).AsTask());
+        if (IsDisposed)
+            return;
 
-        await WhenStateRestored();
+        await RunStartStep(async () => { breakpoints = await JSRuntime.InvokeAsync<WorkbenchBreakpoint[]>("workbench.readBreakpoints"); });
+        if (IsDisposed)
+            return;
+
+        // The views saved in the browser first, then the ones a shared link names on top of them.
+        await RunStartStep(WhenStateRestored);
+        if (IsDisposed)
+            return;
 
         store.OpenUrl(new Uri(NavigationManager.Uri).Query);
         isRestored = true;
 
-        await JSRuntime.InvokeVoidAsync("workbench.setComponentNames", WorkbenchComponentNames.RootClasses, Localizer[nameof(WorkbenchStrings.NotFromTheme)].Value);
-        await reviewSession.Open(ReviewerName);
+        await RunStartStep(() => JSRuntime.InvokeVoidAsync("workbench.setComponentNames", WorkbenchComponentNames.RootClasses, Localizer[nameof(WorkbenchStrings.NotFromTheme)].Value).AsTask());
+        if (IsDisposed)
+            return;
+
+        await RunStartStep(() => reviewSession.Open(ReviewerName));
+        if (IsDisposed)
+            return;
 
         Apply();
         StateHasChanged();
     }
 
+    /// <summary>Runs one start-up step; a failure is logged and the other steps still run, so the canvas never waits for ever.</summary>
+    private async Task RunStartStep(Func<Task> step)
+    {
+        try
+        {
+            await step();
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "A start-up step of the workbench page failed.");
+        }
+    }
+
+    /// <summary>
+    /// After each render, hands the frames what lives outside Blazor: a view to reload with a snapshot, the mode, and
+    /// the comment pins of every view.
+    /// </summary>
     private async Task SyncFrames()
     {
-        if (pendingFrameUrl is { } frame)
-        {
-            pendingFrameUrl = null;
-            await JSRuntime.InvokeVoidAsync("workbench.showInFrame", frame.PaneId, frame.Url);
-        }
-
         await JSRuntime.InvokeVoidAsync("workbench.setMode", store.Mode);
 
         if (pageInfo is null)
             return;
 
+        // Open comments, the selected one even when done, and the draft being written, per view.
         var pins = store.Panes.ToDictionary(pane => pane.Id, pane => reviewSession.ThreadsOf(pageInfo.Key)
             .Where(t => t.Status is not WorkbenchReviewStatus.Done || t.Id == selectedThreadId)
             .Select(t => new { t.Id, Number = t.Number.ToString(CultureInfo.InvariantCulture), t.Anchor.Selector, t.Anchor.Text, t.Anchor.X, t.Anchor.Y, Status = t.Status.ToString().ToLowerInvariant(), Selected = t.Id == selectedThreadId })
@@ -131,6 +188,7 @@ public partial class WorkbenchViewPage
         await JSRuntime.InvokeVoidAsync("workbench.showPins", pins);
     }
 
+    /// <summary>Comment mode opens the Review tab; a read-only viewer gets the tab but not the mode.</summary>
     private void SetMode(string mode)
     {
         if (mode is WorkbenchModes.Comment)
@@ -144,6 +202,7 @@ public partial class WorkbenchViewPage
         store.SetMode(mode);
     }
 
+    /// <summary>A click in a view in Comment mode: opens a draft pinned there, with the view's state captured for its screenshot.</summary>
     [JSInvokable]
     public async Task BeginComment(string paneId, WorkbenchReviewAnchor anchor)
     {
@@ -151,6 +210,9 @@ public partial class WorkbenchViewPage
             return;
 
         var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", paneId);
+
+        if (IsDisposed)
+            return;
 
         pendingComment = (paneId, anchor, state);
         selectedThreadId = null;
@@ -161,6 +223,7 @@ public partial class WorkbenchViewPage
         StateHasChanged();
     }
 
+    /// <summary>Phone layout: closes the tools so the next tap on the page pins a comment there.</summary>
     private async Task PinInline()
     {
         isToolsOpen = false;
@@ -169,6 +232,7 @@ public partial class WorkbenchViewPage
         await JSRuntime.InvokeVoidAsync("workbench.pickInline");
     }
 
+    /// <summary>The tap that pins a comment on the inline page; its state is this circuit's own, as the page runs here.</summary>
     [JSInvokable]
     public void BeginInlineComment(WorkbenchReviewAnchor anchor)
     {
@@ -191,6 +255,7 @@ public partial class WorkbenchViewPage
         await JSRuntime.InvokeVoidAsync("workbench.cancelInlinePick");
     }
 
+    /// <summary>A text clicked in Edit text mode, with the resource entries that render it.</summary>
     [JSInvokable]
     public void BeginTextEdit(string paneId, string text, WorkbenchTextMatch[] matches, WorkbenchReviewAnchor anchor)
     {
@@ -201,13 +266,16 @@ public partial class WorkbenchViewPage
         StateHasChanged();
     }
 
+    // No callback for a read-only viewer, so the text panel hides its button that asks the agent.
     private EventCallback<string> AskAgentCallback => reviewSession.CanWrite ? EventCallback.Factory.Create<string>(this, AskAgentAboutText) : default;
 
+    /// <summary>Saved translations reach the views only through a reload, as the resources are read when a page renders.</summary>
     private async Task OnTextSaved()
     {
         await JSRuntime.InvokeVoidAsync("workbench.reloadFrames");
     }
 
+    /// <summary>Turns a request about the picked text into a comment pinned on it, for the agent to answer.</summary>
     private async Task AskAgentAboutText(string request)
     {
         if (pageInfo is null || pickedText is not { } picked || store.Panes.FirstOrDefault(p => p.Id == picked.PaneId) is not { } pane)
@@ -222,6 +290,7 @@ public partial class WorkbenchViewPage
         store.ShowColumn(WorkbenchModes.ReviewColumn);
     }
 
+    /// <summary>A click on a comment's pin in a view.</summary>
     [JSInvokable]
     public void OpenThread(string threadId)
     {
@@ -252,6 +321,7 @@ public partial class WorkbenchViewPage
         selectedThreadId = selectedThreadId == thread.Id ? null : thread.Id;
     }
 
+    /// <summary>Puts the selected view into the scenario a comment was left in and reloads it with the state it had then.</summary>
     private async Task ShowThread(WorkbenchReviewThread thread)
     {
         if (pageInfo is null)
@@ -264,14 +334,18 @@ public partial class WorkbenchViewPage
 
         store.ChangeScenario(thread.Scenario);
 
-        if (snapshotId is not null)
-        {
-            pendingFrameUrl = (pane.Id, WorkbenchUrls.Preview(pageInfo.Key, thread.Scenario, pane.Id, snapshotId));
-        }
+        shownSnapshot = snapshotId is null ? null : (pane.Id, thread.Scenario.ToQueryString(), snapshotId);
 
         isToolsOpen = false;
     }
 
+    /// <summary>The snapshot a view loads with: a shown comment's state, until the view leaves that comment's scenario.</summary>
+    private string? SnapshotOf(WorkbenchPane pane)
+    {
+        return shownSnapshot is { } shown && shown.PaneId == pane.Id && shown.Query == pane.Scenario.ToQueryString() ? shown.SnapshotId : null;
+    }
+
+    /// <summary>The selected view's stores: read from its iframe, or from this circuit when the page runs inline on a phone.</summary>
     private async Task<string?> CaptureSelectedState()
     {
         return isSmallScreen
@@ -281,27 +355,34 @@ public partial class WorkbenchViewPage
 
     private void OnReviewChanged() => InvokeAsync(StateHasChanged);
 
+    /// <summary>A view whose page changed its own scenario, like a theme picked in the app's menu.</summary>
     [JSInvokable]
     public void ReportScenario(string paneId, string query)
     {
         store.ReportScenario(paneId, WorkbenchScenario.Parse(query));
     }
 
+    /// <summary>The end of a drag on a view's edge or corner.</summary>
     [JSInvokable]
     public void ResizePane(string paneId, int width, int height)
     {
         store.ResizePane(paneId, width, height);
     }
 
+    /// <summary>A view whose page navigated to another catalog page: the shell, and so every view, follows it.</summary>
     [JSInvokable]
     public void ReportPage(string pageKey)
     {
         if (WorkbenchPageCatalog.Find(pageKey) is not { } page || page == pageInfo)
             return;
 
-        NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(page.Key)}{store.QueryString}");
+        NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(page.Key)}{store.OtherPageQueryString}");
     }
 
+    /// <summary>
+    /// Gives the shell's own circuit the selected view's scenario (the phone layout renders the page with it) and writes
+    /// the views into the address, so a reload or a copied link opens the same ones.
+    /// </summary>
     private void Apply()
     {
         ScenarioState.Set(store.SelectedPane.Scenario);
@@ -312,7 +393,8 @@ public partial class WorkbenchViewPage
             return;
         }
 
-        var url = NavigationManager.ToAbsoluteUri($"{WorkbenchUrls.Workbench(pageInfo.Key)}{store.QueryString}").ToString();
+        // AbsoluteUri keeps the escaping the browser reports the address with, so equal addresses compare equal.
+        var url = NavigationManager.ToAbsoluteUri($"{WorkbenchUrls.Workbench(pageInfo.Key)}{store.QueryString}").AbsoluteUri;
 
         lastAppliedUri = url;
 
@@ -322,6 +404,7 @@ public partial class WorkbenchViewPage
         }
     }
 
+    /// <summary>The Compare menu: the built-in spreads, then the page's own design options and switches.</summary>
     private void BuildCompareItems()
     {
         compareItems =
@@ -329,7 +412,9 @@ public partial class WorkbenchViewPage
             new() { Key = "single", Text = Localizer[nameof(WorkbenchStrings.CompareSingle)], IconName = BitIconName.CellPhone, OnClick = _ => store.Compare("single") },
             new() { Key = "devices", Text = Localizer[nameof(WorkbenchStrings.CompareDevices)], IconName = BitIconName.Devices2, OnClick = _ => store.Compare("devices") },
             new() { Key = "themes", Text = Localizer[nameof(WorkbenchStrings.CompareThemes)], IconName = BitIconName.ClearNight, OnClick = _ => store.Compare("themes") },
-            new() { Key = "languages", Text = Localizer[nameof(WorkbenchStrings.CompareLanguages)], IconName = BitIconName.Globe, OnClick = _ => store.Compare("languages") },
+            .. CultureInfoManager.InvariantGlobalization
+                ? Array.Empty<BitMenuButtonItem>()
+                : [new() { Key = "languages", Text = Localizer[nameof(WorkbenchStrings.CompareLanguages)], IconName = BitIconName.Globe, OnClick = _ => store.Compare("languages") }],
             new() { Key = "states", Text = Localizer[nameof(WorkbenchStrings.CompareStates)], IconName = BitIconName.Split, OnClick = _ => store.Compare("states") },
             new() { Key = "accounts", Text = Localizer[nameof(WorkbenchStrings.CompareSignIn)], IconName = BitIconName.People, OnClick = _ => store.Compare("accounts") },
         ];
@@ -355,6 +440,7 @@ public partial class WorkbenchViewPage
         isSmallScreen = matched;
     }
 
+    /// <summary>Clears what was done on the selected view's page and puts its scenario back to the defaults, keeping its device.</summary>
     private async Task Reset()
     {
         var pane = store.SelectedPane;
@@ -374,6 +460,7 @@ public partial class WorkbenchViewPage
         store.ChangeScenario(new WorkbenchScenario { Device = pane.Scenario.Device, Rotated = pane.Scenario.Rotated });
     }
 
+    /// <summary>Saves a view's current stores as a snapshot for the screenshot service; null when there is none.</summary>
     private async Task<string?> CaptureState(WorkbenchPane pane)
     {
         var state = isSmallScreen
@@ -398,34 +485,45 @@ public partial class WorkbenchViewPage
         if (pageInfo is null)
             return;
 
-        List<(string, WorkbenchScenario, string?)> shots = [];
-
-        foreach (var pane in store.Panes)
-        {
-            shots.Add((pageInfo.Key, pane.Scenario, await CaptureState(pane)));
-        }
-
-        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ScreenshotArchive(shots));
+        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ScreenshotArchive(await CaptureAll(pageInfo.Key)));
     }
 
+    /// <summary>Every view with its settings and comments in one HTML or PDF file.</summary>
     private async Task DownloadSheet(string format)
     {
         if (pageInfo is null)
             return;
 
-        List<(string, WorkbenchScenario, string?)> shots = [];
+        var pageKey = pageInfo.Key;
+
+        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ReviewSheet(pageKey, await CaptureAll(pageKey), format));
+    }
+
+    /// <summary>Every view with a snapshot of its stores as they are now, for the screenshot archive and the review sheet.</summary>
+    private async Task<List<(string PageKey, WorkbenchScenario Scenario, string? SnapshotId)>> CaptureAll(string pageKey)
+    {
+        List<(string PageKey, WorkbenchScenario Scenario, string? SnapshotId)> shots = [];
 
         foreach (var pane in store.Panes)
         {
-            shots.Add((pageInfo.Key, pane.Scenario, await CaptureState(pane)));
+            shots.Add((pageKey, pane.Scenario, await CaptureState(pane)));
         }
 
-        await JSRuntime.InvokeVoidAsync("workbench.download", WorkbenchUrls.ReviewSheet(pageInfo.Key, shots, format));
+        return shots;
     }
 
     private async Task CopyLink()
     {
-        await JSRuntime.InvokeVoidAsync("workbench.copy", NavigationManager.Uri);
+        // A browser can refuse the clipboard to a copy that arrives after a server round trip; Safari always does.
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workbench.copy", NavigationManager.Uri);
+        }
+        catch (JSException)
+        {
+            SnackBarService.Error(Localizer[nameof(WorkbenchStrings.CopyFailed)]);
+            return;
+        }
 
         isLinkCopied = true;
         StateHasChanged();
@@ -439,6 +537,30 @@ public partial class WorkbenchViewPage
     private async Task ToggleShellTheme()
     {
         await bitThemeManager.ToggleDarkLightAsync();
+    }
+
+    /// <summary>Arrow keys, Home and End move between the side column's tabs, mirrored in right-to-left.</summary>
+    private async Task OnColumnTabKeyDown(KeyboardEventArgs args)
+    {
+        var current = Math.Max(0, Array.FindIndex(columns, c => c.Column == store.Column));
+        var forward = CurrentDir is BitDir.Rtl ? "ArrowLeft" : "ArrowRight";
+        var backward = CurrentDir is BitDir.Rtl ? "ArrowRight" : "ArrowLeft";
+
+        var next = args.Key switch
+        {
+            "Home" => 0,
+            "End" => columns.Length - 1,
+            _ when args.Key == forward => (current + 1) % columns.Length,
+            _ when args.Key == backward => (current + columns.Length - 1) % columns.Length,
+            _ => -1
+        };
+
+        if (next < 0)
+            return;
+
+        store.ShowColumn(columns[next].Column);
+
+        await columnTabs[next].FocusAsync();
     }
 
     public override async ValueTask DisposeAsync()

@@ -1,9 +1,14 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Data;
 
+/// <summary>
+/// Sample point-of-sale data for the dashboard's widgets. Every call goes through the scenario state, so the data
+/// state switches reach each widget, and the numbers are seeded by the filter, so they look the same on every run.
+/// </summary>
 public partial class PosDashboardDataService
 {
     [AutoInject] private WorkbenchScenarioState scenarioState = default!;
 
+    /// <summary>The stores the picker offers, as resource keys; the first is all stores together.</summary>
     public static IReadOnlyList<string> StoreKeys { get; } =
     [
         nameof(WorkbenchStrings.PosStoreAll),
@@ -12,6 +17,7 @@ public partial class PosDashboardDataService
         nameof(WorkbenchStrings.PosStoreUtrecht)
     ];
 
+    /// <summary>The menu: name key, emoji, unit price, and how popular it is, which scales the units sold.</summary>
     private static readonly (string Key, string Emoji, decimal Price, int Popularity)[] products =
     [
         (nameof(WorkbenchStrings.PosProductFlatWhite), "☕", 3.90m, 96),
@@ -24,6 +30,7 @@ public partial class PosDashboardDataService
         (nameof(WorkbenchStrings.PosProductColdBrew), "🧊", 4.20m, 31),
     ];
 
+    /// <summary>The team, as resource keys that also find each person's photo.</summary>
     private static readonly string[] staff =
     [
         nameof(WorkbenchStrings.PosStaffEmma),
@@ -48,7 +55,8 @@ public partial class PosDashboardDataService
         scenarioState.Load<PosHourlySales[]>("pos.sales-by-hour", () =>
         {
             var random = CreateRandom(filter, "sales-by-hour");
-            var factor = VolumeFactor(filter) / filter.Days;
+            // One day's volume, so the hours compare the same way for any period.
+            var factor = VolumeFactor(filter) / Math.Max(1, filter.Days);
             return [.. Enumerable.Range(7, 14).Select(hour =>
             {
                 var today = (decimal)Curve(hour) * 196 * factor * (decimal)(0.9 + random.NextDouble() * 0.2);
@@ -137,6 +145,7 @@ public partial class PosDashboardDataService
             }))];
         }, () => [], cancellationToken);
 
+    /// <summary>A KPI for the filter, the previous value that <paramref name="change"/> implies, and a 12-point trend.</summary>
     private static PosKpi Kpi(PosDashboardFilter filter, string source, decimal baseValue, decimal change, bool round = false, bool scaleByVolume = true)
     {
         var random = CreateRandom(filter, source);
@@ -154,6 +163,7 @@ public partial class PosDashboardDataService
         return new PosKpi(Math.Round(value, 2), Math.Round(previous, 2), trend);
     }
 
+    /// <summary>How much the store and the period scale the base numbers: bigger stores and longer periods sell more.</summary>
     private static decimal VolumeFactor(PosDashboardFilter filter)
     {
         var store = filter.StoreKey switch
@@ -167,6 +177,7 @@ public partial class PosDashboardDataService
         return store * filter.Days * (filter.Days == 1 ? 1 : 0.94m);
     }
 
+    /// <summary>How busy each opening hour is, from 0 to 1, with a breakfast and a lunch peak.</summary>
     private static double Curve(int hour) => hour switch
     {
         7 => 0.55,
@@ -185,6 +196,7 @@ public partial class PosDashboardDataService
         _ => 0.2
     };
 
+    /// <summary>A generator seeded by the widget and the filter, so each combination shows the same numbers every time.</summary>
     private static Random CreateRandom(PosDashboardFilter filter, string source)
     {
         var seed = 17;

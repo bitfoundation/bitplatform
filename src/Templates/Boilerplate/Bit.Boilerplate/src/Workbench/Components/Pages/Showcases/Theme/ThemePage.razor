@@ -72,6 +72,7 @@
             <BitButton IconOnly IconName="@BitIconName.Settings" Title="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ThemeIconButton)]" />
         </div>
 
+        @* From here on each component is shown in its states; a sample with Force is drawn hovered, focused or pressed. *@
         @foreach (var variant in Enum.GetValues<BitVariant>())
         {
             <ComponentStates Name="@($"BitButton · {variant}")">
@@ -492,6 +493,7 @@
         </ComponentStates>
     </section>
 
+    @* Overlays open from their controls, or from the overlay page switch for links and screenshots. *@
     <section @ref="overlaysSection">
         <BitText Typography="BitTypography.H6" Element="h2">@Localizer[nameof(WorkbenchStrings.ThemeOverlays)]</BitText>
         <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.ThemeOverlaysHint)]</BitText>
@@ -508,6 +510,7 @@
     </section>
 </div>
 
+@* The dialog and the panel that the Overlays buttons and the overlay switch open. *@
 <BitDialog @bind-IsOpen="isDialogOpen"
            Title="@Localizer[nameof(WorkbenchStrings.ThemeDialogTitle)]"
            Message="@Localizer[nameof(WorkbenchStrings.ThemeDialogMessage)]"

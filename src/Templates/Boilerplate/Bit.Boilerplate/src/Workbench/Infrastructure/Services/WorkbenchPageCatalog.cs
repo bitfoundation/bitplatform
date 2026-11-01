@@ -4,6 +4,9 @@ using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// The pages the Workbench shows, with their texts, icons, categories, design options and switches. A new page is added here.
+/// </summary>
 public static class WorkbenchPageCatalog
 {
     public static IReadOnlyList<WorkbenchPageInfo> Pages { get; } =
@@ -104,5 +107,6 @@ public static class WorkbenchPageCatalog
             nameof(WorkbenchStrings.SettingsCaption))
     ];
 
+    /// <summary>The page with this key, ignoring case, or null.</summary>
     public static WorkbenchPageInfo? Find(string? key) => Pages.FirstOrDefault(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase));
 }

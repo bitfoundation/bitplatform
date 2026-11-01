@@ -20,11 +20,12 @@
         </div>
     </div>
 
+    @* Phones show one pane at a time; these buttons pick which. *@
     @if (isNarrow)
     {
-        <div class="view-switch" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]">
-            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Outline : BitVariant.Fill)" IconName="@BitIconName.BulletedList" OnClick="() => store.ShowMap(false)">@Localizer[nameof(WorkbenchStrings.BuildingsListView)]</BitButton>
-            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Fill : BitVariant.Outline)" IconName="@BitIconName.MapPin" OnClick="() => store.ShowMap(true)">@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]</BitButton>
+        <div class="view-switch" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsViewSwitch)]">
+            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Outline : BitVariant.Fill)" IconName="@BitIconName.BulletedList" OnClick="() => store.ShowMap(false)" aria-pressed="@(store.IsMapShown ? "false" : "true")">@Localizer[nameof(WorkbenchStrings.BuildingsListView)]</BitButton>
+            <BitButton Size="BitSize.Small" Variant="@(store.IsMapShown ? BitVariant.Fill : BitVariant.Outline)" IconName="@BitIconName.MapPin" OnClick="() => store.ShowMap(true)" aria-pressed="@(store.IsMapShown ? "true" : "false")">@Localizer[nameof(WorkbenchStrings.BuildingsMapView)]</BitButton>
         </div>
     }
 
@@ -56,6 +57,7 @@
                     </div>
                     break;
                 default:
+                    @* The cards design option; the grid below is the default. *@
                     @if (Scenario.Variant is "cards")
                     {
                         <div class="cards" role="list" aria-label="@Localizer[nameof(WorkbenchStrings.BuildingsHeading)]">
@@ -155,6 +157,7 @@
     </div>
 </div>
 
+@* Only once the store is restored, since the editor opens with the draft it holds. *@
 @if (isRestored)
 {
     <BuildingEditor @ref="editor" OnSaved="OnSaved" />

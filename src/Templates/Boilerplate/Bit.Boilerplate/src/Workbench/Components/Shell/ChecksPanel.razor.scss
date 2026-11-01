@@ -13,6 +13,7 @@ section {
     border-bottom: 1px solid $bit-color-border-tertiary;
 }
 
+// The titles are BitText components, reached through their Class.
 ::deep .section-title {
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -83,6 +84,7 @@ section {
     flex-shrink: 0;
     align-self: center;
     border-radius: 4px;
+    // The color the check found, set inline on each finding.
     background-color: var(--wb-swatch);
     border: 1px solid $bit-color-border-secondary;
 }

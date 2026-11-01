@@ -8,6 +8,7 @@
 .orders {
     width: 100%;
     font-size: 14px;
+    // Keeps the columns readable on phones, where the wrapper scrolls sideways.
     min-width: 36rem;
     border-collapse: collapse;
 

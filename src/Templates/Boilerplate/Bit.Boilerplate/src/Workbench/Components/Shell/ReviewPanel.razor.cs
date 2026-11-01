@@ -1,11 +1,18 @@
 namespace Boilerplate.Workbench.Components.Shell;
 
+/// <summary>
+/// The Review tab: the page's status, whether an agent is listening, the composer for a pinned comment and the page's
+/// threads. Everything that writes shows only when the review session can write, which is on this machine only.
+/// </summary>
 public partial class ReviewPanel
 {
     private string? draft;
     private string? reply;
     private bool showDone;
     private bool notificationsBlocked;
+    private bool isSending;
+    // The thread whose delete button was pressed once and now asks to be pressed again.
+    private string? confirmingDeleteId;
 
     [AutoInject] private WorkbenchReviewSession session = default!;
     [AutoInject] private WorkbenchStore store = default!;
@@ -15,18 +22,21 @@ public partial class ReviewPanel
 
     [Parameter] public WorkbenchPageInfo Page { get; set; } = default!;
 
+    /// <summary>The spot a new comment is being written for; while it is set, the composer shows.</summary>
     [Parameter] public WorkbenchReviewAnchor? PendingAnchor { get; set; }
 
     [Parameter] public string? SelectedThreadId { get; set; }
 
     [Parameter] public EventCallback<WorkbenchReviewThread> OnSelect { get; set; }
 
+    /// <summary>Opens the view a comment was left on, with the page state it had.</summary>
     [Parameter] public EventCallback<WorkbenchReviewThread> OnShow { get; set; }
 
     [Parameter] public EventCallback<string> OnSend { get; set; }
 
     [Parameter] public EventCallback OnCancel { get; set; }
 
+    /// <summary>Starts picking a spot to comment on; the phone layout sets it, the desktop uses Comment mode instead.</summary>
     [Parameter] public EventCallback OnPin { get; set; }
 
     [Parameter] public string ReviewerName { get; set; } = string.Empty;
@@ -67,12 +77,14 @@ public partial class ReviewPanel
 
     protected override void OnParametersSet()
     {
+        // A selected thread that is done is only listed under Done, so switch there.
         if (SelectedThreadId is not null && PageThreads.FirstOrDefault(t => t.Id == SelectedThreadId) is { Status: WorkbenchReviewStatus.Done })
         {
             showDone = true;
         }
     }
 
+    /// <summary>Names a comment's element by its component and text, or "this spot" when neither is known.</summary>
     private string DescribeAnchor(WorkbenchReviewAnchor anchor)
     {
         var text = string.IsNullOrWhiteSpace(anchor.Text) ? null : $"“{anchor.Text}”";
@@ -82,10 +94,11 @@ public partial class ReviewPanel
             : Localizer[nameof(WorkbenchStrings.ThisSpot)];
     }
 
+    /// <summary>A short line naming the view a comment was left on: its device, theme, language and data state.</summary>
     private string DescribeView(WorkbenchScenario scenario)
     {
         var device = scenario.DevicePreset;
-        var parts = new List<string> { device.Key == DevicePresets.CustomKey ? FormattableString.Invariant($"{device.Width}×{device.Height}") : device.Name };
+        var parts = new List<string> { device.Key == DevicePresets.CustomKey ? FormattableString.Invariant($"{device.Width}×{device.Height}") : PreviewPane.GetDeviceName(device, Localizer) };
 
         if (scenario.Theme is not WorkbenchThemeMode.Light) parts.Add(Localizer[$"Theme{scenario.Theme}"]);
         if (scenario.Culture is not null) parts.Add(scenario.Culture);
@@ -97,24 +110,51 @@ public partial class ReviewPanel
     private Task Select(WorkbenchReviewThread thread)
     {
         reply = null;
+        confirmingDeleteId = null;
 
         return OnSelect.InvokeAsync(thread);
     }
 
+    /// <summary>
+    /// Sends the draft, which is cleared only once it is sent; the click also unlocks audio for the reply tone, and may
+    /// turn reply notifications on.
+    /// </summary>
     private async Task Send()
     {
-        if (string.IsNullOrWhiteSpace(draft))
+        if (string.IsNullOrWhiteSpace(draft) || isSending)
             return;
 
         var text = draft;
-        draft = null;
+        isSending = true;
         showDone = false;
 
-        await webAudio.Resume();
-        await OnSend.InvokeAsync(text);
+        try
+        {
+            await UnlockAudio();
+            await OnSend.InvokeAsync(text);
+            draft = null;
+        }
+        finally
+        {
+            isSending = false;
+        }
+
         await AskToNotify();
     }
 
+    /// <summary>Unlocks audio for the reply tone, which browsers allow only after a click; a failure doesn't stop the click's work.</summary>
+    private async Task UnlockAudio()
+    {
+        try
+        {
+            await webAudio.Resume();
+        }
+        catch (JSException)
+        {
+        }
+    }
+
+    /// <summary>Offers reply notifications once, after the reviewer's first comment or reply, unless the browser denied them.</summary>
     private async Task AskToNotify()
     {
         if (store.WasAskedToNotify || store.ReplyNotifications)
@@ -128,6 +168,10 @@ public partial class ReviewPanel
         await SetReplyNotifications(true);
     }
 
+    /// <summary>
+    /// Turning on asks the browser's permission and registers the service worker that opens a notification's page;
+    /// a refusal leaves notifications off and says so.
+    /// </summary>
     private async Task SetReplyNotifications(bool on)
     {
         notificationsBlocked = false;
@@ -161,14 +205,22 @@ public partial class ReviewPanel
         if (string.IsNullOrWhiteSpace(reply))
             return;
 
-        await webAudio.Resume();
+        await UnlockAudio();
         session.Reply(thread.Id, ReviewerName, reply);
         reply = null;
         await AskToNotify();
     }
 
+    /// <summary>Deletes a thread on the second press; the first turns the button into a question.</summary>
     private void Delete(WorkbenchReviewThread thread)
     {
+        if (confirmingDeleteId != thread.Id)
+        {
+            confirmingDeleteId = thread.Id;
+            return;
+        }
+
+        confirmingDeleteId = null;
         session.Delete(thread.Id);
     }
 

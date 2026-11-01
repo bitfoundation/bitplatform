@@ -7,8 +7,13 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Boilerplate.Workbench.Components.Chrome;
 
+/// <summary>
+/// The app's chrome around a page in a view: nav panel, header with the account menu, and bottom bar. It follows the
+/// view's sign-in state, user and tenant without a server.
+/// </summary>
 public partial class ChromeShell
 {
+    /// <summary>The view's own address, so the nav items for this page link back to it with its settings.</summary>
     private string currentPageUrl = string.Empty;
     private List<BitNavItem> navPanelItems = [];
 
@@ -25,8 +30,10 @@ public partial class ChromeShell
 
     public bool IsSignedIn => Auth is not WorkbenchAuthState.SignedOut;
 
+    /// <summary>The demo user the view is signed in as.</summary>
     public WorkbenchDemoUser ActiveUser => WorkbenchDemoUsers.Find(Scenario.User);
 
+    /// <summary>The other demo users, listed as signed-in accounts when the view shows several accounts.</summary>
     public IEnumerable<WorkbenchDemoUser> OtherAccounts => Auth is WorkbenchAuthState.MultiAccount
         ? WorkbenchDemoUsers.All.Where(u => u != ActiveUser)
         : [];
@@ -40,6 +47,7 @@ public partial class ChromeShell
         await SetNavPanelItems();
     }
 
+    // The account actions change the view's scenario instead of calling a server.
     public Task SignIn() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.SignedIn });
 
     public Task SignOut() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.SignedOut, User = 0 });
@@ -50,6 +58,7 @@ public partial class ChromeShell
 
     public void SwitchTenant(string tenantKey) => chromeStore.SwitchTenant(tenantKey);
 
+    /// <summary>Rebuilds the nav items when the view's scenario changes, since the sign-in state and the user decide them.</summary>
     private void OnScenarioChanged()
     {
         _ = InvokeAsync(async () =>
@@ -59,6 +68,7 @@ public partial class ChromeShell
         });
     }
 
+    /// <summary>What a nav item opens: a Workbench page in this view's settings, or the fallback anchor when the Workbench has no such page.</summary>
     private string PageUrl(string pageKey, string fallback)
     {
         if (WorkbenchPageCatalog.Find(pageKey) is null)
@@ -67,6 +77,7 @@ public partial class ChromeShell
         return pageKey == Page.Key ? currentPageUrl : WorkbenchUrls.Preview(pageKey, Scenario, PaneId);
     }
 
+    /// <summary>Builds the nav panel's items the way the app does, from the signed-in user's permissions, with the showcases added.</summary>
     private async Task SetNavPanelItems()
     {
         var authUser = (await authenticationStateProvider.GetAuthenticationStateAsync()).User;
@@ -81,6 +92,7 @@ public partial class ChromeShell
             }
         ];
 
+        // The showcases, which the app doesn't have, get a group of their own.
         navPanelItems.Add(new()
         {
             Text = Localizer[nameof(WorkbenchStrings.NavShowcases)],

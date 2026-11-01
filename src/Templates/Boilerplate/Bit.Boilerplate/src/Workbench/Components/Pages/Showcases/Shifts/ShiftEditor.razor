@@ -1,5 +1,6 @@
 @inherits WorkbenchComponentBase
 
+@* Blocking, so only Close, Cancel, Save or Delete close it and a stray tap keeps the draft. *@
 <BitModal @bind-IsOpen="isOpen" Blocking MaxWidth="30rem" Classes="@(new() { Content = "editor-modal" })">
     @if (isOpen)
     {

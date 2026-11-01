@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Widgets;
 
+/// <summary>How sales split over payment methods: a donut with the total in its center, and a legend with shares and amounts.</summary>
 public partial class PosPaymentMethodsWidget
 {
     private decimal total;

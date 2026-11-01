@@ -13,6 +13,7 @@ section {
     border-bottom: 1px solid $bit-color-border-tertiary;
 }
 
+// The titles are BitText components, reached through their Class.
 ::deep .section-title {
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -33,6 +34,7 @@ section {
         border-color: $bit-color-primary;
     }
 
+    // The flow icon is a BitIcon, rendered by another component.
     ::deep .bit-icn {
         color: $bit-color-primary;
     }

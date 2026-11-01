@@ -1,5 +1,6 @@
 @import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
 
+// Fills the whole screenshot; each backdrop class below only sets the colors the layers paint with.
 .composition {
     inset: 0;
     color: #fff;
@@ -80,6 +81,7 @@
     }
 }
 
+// In vmin, so the dot grid looks the same at every store size.
 .pattern {
     inset: 0;
     position: absolute;
@@ -143,6 +145,7 @@
     border: 1px solid rgba(255, 255, 255, 0.32);
     box-shadow: 0 6px 24px -10px rgba(0, 0, 0, 0.35);
 
+    // ::deep because the icon element is rendered by BitIcon.
     ::deep .eyebrow-icon {
         color: inherit;
         font-size: 1.15em;
@@ -173,6 +176,7 @@
     }
 }
 
+// The box takes the scaled size in the layout; the slot scales the full-size device into it from its top-left corner.
 .device-box {
     flex-shrink: 0;
     position: relative;

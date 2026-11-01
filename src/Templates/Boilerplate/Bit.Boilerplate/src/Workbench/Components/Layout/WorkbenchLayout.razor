@@ -2,7 +2,15 @@
 
 <CascadingValue Value="currentDir">
     <div class="wb-shell">
-        @Body
+        @* A page that throws shows an error with a reload button instead of stopping the whole shell *@
+        <ErrorBoundary @ref="errorBoundary">
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent>
+                <LayoutError />
+            </ErrorContent>
+        </ErrorBoundary>
     </div>
     <BitModalContainer />
     <ReplyNotifier />

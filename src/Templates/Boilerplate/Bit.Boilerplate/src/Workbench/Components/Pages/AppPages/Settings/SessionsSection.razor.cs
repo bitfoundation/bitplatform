@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 
+/// <summary>The Workbench copy of the app's sessions section, on the sample sessions minus the ones revoked in the store.</summary>
 public partial class SessionsSection
 {
     private const int MaxPrivilegedSessionsCount = 3;
@@ -29,6 +30,7 @@ public partial class SessionsSection
         await LoadSessions();
     }
 
+    /// <summary>Loads the sample sessions; the empty data state leaves only this device's.</summary>
     private async Task LoadSessions()
     {
         isLoading = true;
@@ -72,6 +74,9 @@ public partial class SessionsSection
 
             SnackBarService.Success(AppLocalizer[nameof(AppStrings.RemoveSessionSuccessMessage)]);
             await LoadSessions();
+        }
+        catch (OperationCanceledException)
+        {
         }
         finally
         {

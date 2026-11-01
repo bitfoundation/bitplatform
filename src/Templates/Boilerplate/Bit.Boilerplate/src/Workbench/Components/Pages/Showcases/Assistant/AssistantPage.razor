@@ -2,6 +2,7 @@
 
 <BitAiOptionsProvider UiOptions="uiOptions">
     <div class="assistant @(Scenario.Chrome ? null : "bare")">
+        @* The history beside the chat on wide screens; narrow ones open the same list in the side panel below. *@
         <aside class="history">
             <AssistantHistory Conversations="Summaries" SelectedId="@session.Conversation.ConversationId" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" OnDelete="Delete" />
         </aside>
@@ -16,7 +17,7 @@
                                    Title="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
                                    AriaLabel="@Localizer[nameof(WorkbenchStrings.AssistantConversations)]"
                                    OnClick="() => store.ShowHistory(true)" />
-                        <h1 class="chat-title">@(session.Conversation.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</h1>
+                        <h2 class="chat-title">@(session.Conversation.Title ?? Localizer[nameof(WorkbenchStrings.AssistantNewChat)])</h2>
                         <BitAiModelSelector Models="assistantService.Models"
                                             ModelId="@Model.ModelId"
                                             ModelIdChanged="ChooseModel"
@@ -25,6 +26,7 @@
                     </header>
                 </HeaderTemplate>
                 <EmptyTemplate>
+                    @* No messages yet: the history's placeholder while it loads, its error with a retry, or the welcome. *@
                     @if (isLoading)
                     {
                         <div class="placeholder">
@@ -64,6 +66,7 @@
                 </FooterTemplate>
             </BitAiChat>
 
+            @* The history on narrow screens, opened by the header's history button. *@
             <BitPanel IsOpen="store.IsHistoryOpen" IsOpenChanged="store.ShowHistory" Placement="BitPlacement.Start" Classes="@(new() { Container = "history-panel" })">
                 <div class="history-sheet">
                     <AssistantHistory Conversations="Summaries" SelectedId="@session.Conversation.ConversationId" IsLoading="isLoading" IsFailed="isFailed" OnSelect="Select" OnNewChat="NewChat" OnDelete="Delete" />

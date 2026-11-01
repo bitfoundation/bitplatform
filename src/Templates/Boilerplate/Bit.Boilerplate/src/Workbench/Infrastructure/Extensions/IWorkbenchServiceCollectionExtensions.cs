@@ -1,7 +1,5 @@
 using Bit.Bcrdt;
 using Bit.Bcrdt.Server;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Localization;
 //#if (module == "Admin")
 using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
@@ -9,22 +7,25 @@ using Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 
 namespace Boilerplate.Workbench.Infrastructure.Extensions;
 
+/// <summary>
+/// Registers the Workbench's own services: the scenario, sample data, page stores, screenshots, Edit text mode and the review.
+/// </summary>
 public static class IWorkbenchServiceCollectionExtensions
 {
-    public const string ScreenshotsRateLimitPolicy = "screenshots";
-
     extension(IServiceCollection services)
     {
         public void AddWorkbenchServices(IConfiguration configuration)
         {
             services.AddScoped<WorkbenchScenarioState>();
             services.AddSingleton<WorkbenchScreenshotService>();
+            services.AddSingleton(_ => new WorkbenchScreenshotLimiter(configuration));
             services.AddSingleton<WorkbenchSnapshots>();
             services.AddScoped<PosDashboardDataService>();
             services.AddScoped<BuildingsService>();
             services.AddScoped<AssistantService>();
             services.AddScoped<ShiftsService>();
 
+            // The assistant page's chat runs on the sample replies of AssistantService.
             services.AddBitBlazorUIAIServices(ai =>
             {
                 ai.UseTransport(sp => sp.GetRequiredService<AssistantService>());
@@ -35,6 +36,7 @@ public static class IWorkbenchServiceCollectionExtensions
                 });
             });
 
+            // The pages' stores, saved per view in IndexedDB, so a reload and a screenshot keep what was done on a page.
             services.AddBitBlexServices(options => options.DevToolsName = "bit Workbench");
             services.AddBitBlexStore<WorkbenchStore>();
             services.AddBitBlexStore<ChromeStore>();
@@ -51,10 +53,12 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddScoped<IBitAccentColorStore, ChromeAccentStore>();
             services.AddAuthorizationCore(options => options.AddPolicy(WorkbenchPolicies.ManageBuildings, policy => policy.RequireRole(WorkbenchPolicies.AdminRoles)));
 
+            // Every localizer records the texts it shows, so Edit text mode can trace a text on the page to its resource entry.
             services.AddSingleton<WorkbenchTextRecorder>();
             services.AddSingleton<WorkbenchTextEdits>();
             services.AddTransient(typeof(IStringLocalizer<>), typeof(WorkbenchRecordingLocalizer<>));
 
+            // The review: a Bcrdt document kept in App_Data/Reviews, synced to every circuit through the relay and served to the agent over MCP.
             services.AddSingleton<WorkbenchReviewAgent>();
             services.AddSingleton<WorkbenchReviewAttachments>();
             services.AddSingleton<WorkbenchReviewRelay>();
@@ -65,6 +69,7 @@ public static class IWorkbenchServiceCollectionExtensions
                 Store = new BcrdtFileSystemDocumentStore(WorkbenchFolders.Reviews),
                 ValidateUpdate = context =>
                 {
+                    // Wakes an agent waiting for comments; only the review document is accepted.
                     sp.GetRequiredService<WorkbenchReviewAgent>().Pulse();
                     return ValueTask.FromResult(context.DocumentId == WorkbenchReviewDocument.Id);
                 }
@@ -73,20 +78,6 @@ public static class IWorkbenchServiceCollectionExtensions
             services.AddMcpServer(options => options.ServerInfo = new() { Name = "workbench", Title = "bit Workbench", Version = "1.0.0" })
                 .WithHttpTransport()
                 .WithTools<WorkbenchReviewTools>();
-
-            services.AddRateLimiter(options =>
-            {
-                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-                options.AddPolicy(ScreenshotsRateLimitPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
-                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                    _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = configuration.GetValue("Screenshots:PermitsPerMinutePerClient", 30),
-                        Window = TimeSpan.FromMinutes(1),
-                        QueueLimit = 0
-                    }));
-            });
         }
     }
 }

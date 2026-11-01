@@ -1,7 +1,9 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Widgets;
 
+/// <summary>Sales per opening hour as bars, with last week's as a dashed line to compare.</summary>
 public partial class PosSalesByHourWidget
 {
+    /// <summary>The bar heights of the loading placeholder, in percent.</summary>
     private static readonly int[] skeletonHeights = [35, 70, 62, 44, 52, 80, 66, 40, 48, 58, 42, 30];
 
     private BitChartData chartData = new();

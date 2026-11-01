@@ -5,6 +5,7 @@
     gap: 1rem;
     display: flex;
     min-height: 26rem;
+    // Fills the height the app's chrome leaves, so the messages scroll instead of the page.
     height: calc(#{$bit-env-height-available} - 5.75rem);
 
     @include lt-md {
@@ -32,6 +33,7 @@
     padding: 0.5rem;
 }
 
+// Keeps the panel clear of the device's notch and home indicator.
 ::deep .history-panel {
     top: $bit-env-inset-top;
     bottom: $bit-env-inset-bottom;

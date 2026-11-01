@@ -1,7 +1,10 @@
+/** A comment pin as the shell sends it: its anchor, number and status, and whether it is selected. */
 type Pin = { id: string; number: string; selector: string; text: string | null; x: number; y: number; status: string; selected: boolean };
 
+/** How this module calls back into the shell's .NET page. */
 type FrameHost = { invoke(method: string, ...args: unknown[]): void };
 
+/** Styles injected into each view: the hover outline, the padding overlay, the inspect card, the pins and the mode cursors. */
 const frameCss = `
 .wb-layer { position: fixed; inset: 0; z-index: 2147483646; pointer-events: none; }
 .wb-hover { position: fixed; display: none; pointer-events: none; border-radius: 2px; outline: 2px solid var(--bit-clr-pri); background: color-mix(in srgb, var(--bit-clr-pri) 10%, transparent); }
@@ -19,36 +22,50 @@ html[data-wb-mode="inspect"], html[data-wb-mode="inspect"] *, html[data-wb-mode=
 html[data-wb-mode] .wb-pin { cursor: pointer !important; }
 `;
 
+/** Events kept from the page while a picking mode is on, so a click picks instead of acting. */
 const blockedEvents = ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'dblclick', 'contextmenu', 'submit', 'keydown'];
 
+/** Touch events the page must not see while picking; they stay passive so the view still scrolls. */
 const shieldedEvents = ['touchstart', 'touchend'];
 
-const preparedDocuments = new WeakSet<Document>();
-const themeColors = new WeakMap<Document, Map<string, string>>();
+/** The mark a view's window gets once its listeners are in place; a frame keeps one window proxy across navigations, so the mark goes on the window itself. */
+const preparedMark = '__workbenchFrame';
 
+/** The theme colors found in each view document, keyed by resolved value, with the theme they were read under. */
+const themeColors = new WeakMap<Document, { theme: string; colors: Map<string, string> }>();
+
+/** The shell's mode: browse, comment, inspect or text. */
 let mode = 'browse';
 let host: FrameHost | null = null;
 let componentNames: Record<string, string> = {};
 let notFromThemeLabel = '';
+/** The pins of each view, by pane id. */
 let pinsByPane: Record<string, Pin[]> = {};
+/** The animation frame a pin repositioning is queued on, or 0. */
 let pinFrame = 0;
+/** The click listener of an inline pick in progress. */
 let inlinePick: ((event: MouseEvent) => void) | null = null;
 
+/** Whether a mode is on in which a click picks an element instead of acting on the page. */
 const isPicking = () => mode === 'comment' || mode === 'inspect' || mode === 'text';
 
+/** Connects the shell, and keeps the pins on their elements while any show. */
 export function connectFrames(frameHost: FrameHost) {
     host = frameHost;
 
+    // A page can move its content without a scroll or resize event, so the pins are also repositioned on a timer.
     setInterval(() => {
         if (mode === 'comment' || Object.values(pinsByPane).some(pins => pins.length > 0)) schedulePins();
     }, 700);
 }
 
+/** Sets the component names Inspect mode shows and the label for colors outside the theme. */
 export function setComponentNames(names: Record<string, string>, notFromTheme: string) {
     componentNames = names ?? {};
     notFromThemeLabel = notFromTheme;
 }
 
+/** Switches every view to the mode. */
 export function setMode(next: string) {
     if (mode === next) return;
 
@@ -56,11 +73,13 @@ export function setMode(next: string) {
     paneFrames().forEach(prepareFrame);
 }
 
+/** Replaces the pins of every view. */
 export function showPins(pins: Record<string, unknown[]>) {
     pinsByPane = (pins ?? {}) as Record<string, Pin[]>;
     paneFrames().forEach(prepareFrame);
 }
 
+/** Waits for one click on the inline preview surface and hands its anchor to the callback. */
 export function pickInline(onPick: (anchor: ReturnType<typeof anchorOf>) => void) {
     cancelInlinePick();
 
@@ -78,6 +97,7 @@ export function pickInline(onPick: (anchor: ReturnType<typeof anchorOf>) => void
     window.addEventListener('click', inlinePick, true);
 }
 
+/** Stops waiting for an inline pick. */
 export function cancelInlinePick() {
     if (!inlinePick) return;
 
@@ -85,24 +105,22 @@ export function cancelInlinePick() {
     inlinePick = null;
 }
 
+/** Sets up a view's page, its listeners once per window, then applies the current mode and pins to it. */
 export function prepareFrame(frame: HTMLIFrameElement) {
     const doc = frame.contentDocument;
     const win = frame.contentWindow as (Window & typeof globalThis) | null;
 
+    // Only a loaded preview of this origin is prepared; the frame may still be loading or may have left the Workbench.
     if (!doc || !win || !doc.body || doc.location.pathname.startsWith('/preview') === false) return;
 
-    if (!preparedDocuments.has(doc)) {
-        preparedDocuments.add(doc);
+    ensureLayer(doc);
 
-        const style = doc.createElement('style');
-        style.textContent = frameCss;
-        doc.head.appendChild(style);
+    const globals = win as unknown as Record<string, any>;
 
-        const layer = doc.createElement('div');
-        layer.className = 'wb-layer';
-        layer.innerHTML = '<div class="wb-hover"></div><div class="wb-pad"></div><div class="wb-info"></div>';
-        doc.documentElement.appendChild(layer);
+    if (globals[preparedMark] !== true) {
+        globals[preparedMark] = true;
 
+        // While picking, presses and Enter or Space never reach the page; a pin still takes them.
         const block = (event: Event) => {
             if (!isPicking()) return;
             if (event instanceof win.KeyboardEvent && event.key !== 'Enter' && event.key !== ' ') return;
@@ -112,6 +130,7 @@ export function prepareFrame(frame: HTMLIFrameElement) {
             event.stopImmediatePropagation();
         };
 
+        // Touch events are only stopped, not cancelled, so the page still scrolls under the finger.
         const shield = (event: Event) => {
             if (!isPicking() || (event.target as Element | null)?.closest?.('.wb-pin')) return;
 
@@ -125,6 +144,9 @@ export function prepareFrame(frame: HTMLIFrameElement) {
         doc.documentElement.addEventListener('mouseleave', () => hideHover(doc));
         win.addEventListener('scroll', schedulePins, true);
         win.addEventListener('resize', schedulePins);
+
+        // An enhanced reload, as after a hot reload, rewrites the page's markup and drops the layer and the mode, so they are put back.
+        globals.Blazor?.addEventListener?.('enhancedload', () => prepareFrame(frame));
     }
 
     if (mode === 'browse') {
@@ -137,10 +159,33 @@ export function prepareFrame(frame: HTMLIFrameElement) {
     renderPins(frame);
 }
 
+/** Adds the Workbench's style and overlay layer to a view's page when they are missing, and returns the layer. */
+function ensureLayer(doc: Document) {
+    if (!doc.head.querySelector('style[data-wb-frame]')) {
+        const style = doc.createElement('style');
+        style.dataset.wbFrame = '';
+        style.textContent = frameCss;
+        doc.head.appendChild(style);
+    }
+
+    let layer = doc.documentElement.querySelector<HTMLElement>(':scope > .wb-layer');
+
+    if (!layer) {
+        layer = doc.createElement('div');
+        layer.className = 'wb-layer';
+        layer.innerHTML = '<div class="wb-hover"></div><div class="wb-pad"></div><div class="wb-info"></div>';
+        doc.documentElement.appendChild(layer);
+    }
+
+    return layer;
+}
+
+/** The iframes of the views on the shell. */
 function paneFrames() {
     return Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]'));
 }
 
+/** A click while picking: opens a pin's thread, or starts a comment or a text edit on the element. */
 function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
     if (!isPicking()) return;
 
@@ -172,12 +217,14 @@ function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
         const anchor = anchorOf(target, event.clientX, event.clientY);
         const preview = frame.contentWindow as any;
 
+        // The text's resource entries are looked up inside the view, which knows its culture.
         Promise.resolve(text ? preview?.workbench?.findTexts(text) : [])
             .catch(() => [])
             .then(matches => host?.invoke('BeginTextEdit', paneId, text, matches ?? [], anchor));
     }
 }
 
+/** The text a text edit starts from: the placeholder, the visible text or the accessible name. */
 function textOf(element: Element) {
     const input = element.closest('input, textarea') as HTMLInputElement | null;
     const labelled = element.closest('[aria-label], [title]');
@@ -186,6 +233,7 @@ function textOf(element: Element) {
     return text.trim().replace(/\s+/g, ' ').slice(0, 500);
 }
 
+/** Outlines the element under the pointer, and in Inspect mode shows its padding and a card describing it. */
 function onHover(frame: HTMLIFrameElement, event: MouseEvent) {
     const doc = frame.contentDocument;
     const target = event.target as Element | null;
@@ -197,13 +245,16 @@ function onHover(frame: HTMLIFrameElement, event: MouseEvent) {
         return;
     }
 
+    const layer = ensureLayer(doc);
+    const hover = layer.querySelector<HTMLElement>('.wb-hover');
+    const pad = layer.querySelector<HTMLElement>('.wb-pad');
+    const info = layer.querySelector<HTMLElement>('.wb-info');
+
+    if (!hover || !pad || !info) return;
+
     const rect = target.getBoundingClientRect();
-    const hover = doc.querySelector<HTMLElement>('.wb-hover')!;
 
     Object.assign(hover.style, { display: 'block', left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` });
-
-    const pad = doc.querySelector<HTMLElement>('.wb-pad')!;
-    const info = doc.querySelector<HTMLElement>('.wb-info')!;
 
     if (mode !== 'inspect') {
         pad.style.display = 'none';
@@ -225,6 +276,7 @@ function onHover(frame: HTMLIFrameElement, event: MouseEvent) {
     info.innerHTML = describe(doc, target, rect, style);
     info.style.display = 'block';
 
+    // The card goes below the element when it fits, otherwise above, and stays inside the viewport.
     const width = info.offsetWidth;
     const height = info.offsetHeight;
     const viewport = doc.documentElement.clientWidth;
@@ -238,6 +290,7 @@ function hideHover(doc: Document) {
     doc.querySelectorAll<HTMLElement>('.wb-hover, .wb-pad, .wb-info').forEach(element => element.style.display = 'none');
 }
 
+/** The inspect card's HTML: component, size, spacing, font and colors, each color named by its theme token. */
 function describe(doc: Document, element: Element, rect: DOMRect, style: CSSStyleDeclaration) {
     const escape = (value: string) => value.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
     const component = componentOf(element);
@@ -256,21 +309,28 @@ function describe(doc: Document, element: Element, rect: DOMRect, style: CSSStyl
     return lines.join('<br>');
 }
 
+/** Formats four box sides, as one number when they are all the same. */
 function box(top: string, right: string, bottom: string, left: string) {
     const values = [top, right, bottom, left].map(value => Math.round(parseFloat(value)));
     return values.every(value => value === values[0]) ? `${values[0]}` : values.join(' ');
 }
 
+/** The theme token a color comes from, or the color marked as not from the theme. */
 function colorName(doc: Document, color: string) {
     const names = themeColorsOf(doc);
     return names.get(color) ?? `${color} · ${notFromThemeLabel}`;
 }
 
+/** Maps each resolved --bit-clr-* color of a document to its token name, read again when the theme or the accent changes. */
 function themeColorsOf(doc: Document) {
-    let colors = themeColors.get(doc);
-    if (colors) return colors;
+    // The primary, background and foreground tokens tell whether the page's theme or accent changed since the last read.
+    const tokens = getComputedStyle(doc.body);
+    const theme = ['--bit-clr-pri', '--bit-clr-bg-pri', '--bit-clr-fg-pri'].map(name => tokens.getPropertyValue(name)).join('|');
 
-    colors = new Map<string, string>();
+    const cached = themeColors.get(doc);
+    if (cached?.theme === theme) return cached.colors;
+
+    const colors = new Map<string, string>();
     const probe = doc.createElement('span');
     probe.style.display = 'none';
     doc.body.appendChild(probe);
@@ -282,15 +342,17 @@ function themeColorsOf(doc: Document) {
     }
 
     probe.remove();
-    themeColors.set(doc, colors);
+    themeColors.set(doc, { theme, colors });
 
     return colors;
 }
 
+/** The custom property names declared in a document's top-level style rules that pass the filter. */
 export function customProperties(doc: Document, accept: (name: string) => boolean) {
     const names = new Set<string>();
 
     for (const sheet of Array.from(doc.styleSheets)) {
+        // The rules of a sheet from another origin can't be read, so it is skipped.
         let rules: CSSRuleList;
         try {
             rules = sheet.cssRules;
@@ -311,6 +373,7 @@ export function customProperties(doc: Document, accept: (name: string) => boolea
     return names;
 }
 
+/** The component an element belongs to, from the nearest ancestor with a known root class. */
 export function componentOf(element: Element | null) {
     for (let current = element; current; current = current.parentElement) {
         for (const name of Array.from(current.classList)) {
@@ -321,6 +384,7 @@ export function componentOf(element: Element | null) {
     return null;
 }
 
+/** Where a comment is anchored: the element's selector, component and text, and the click point as a fraction of its box. */
 function anchorOf(target: Element, x: number, y: number) {
     const rect = target.getBoundingClientRect();
     const labelled = target.closest('[aria-label], [title]');
@@ -335,6 +399,7 @@ function anchorOf(target: Element, x: number, y: number) {
     };
 }
 
+/** A path of nth-of-type steps from body to the element. */
 function selectorOf(element: Element) {
     const parts: string[] = [];
 
@@ -351,6 +416,7 @@ function selectorOf(element: Element) {
     return parts.length ? `body > ${parts.join(' > ')}` : 'body';
 }
 
+/** Finds a pin's element by its selector, or by its text when the page changed under it. */
 function resolve(doc: Document, pin: Pin) {
     let element: Element | null = null;
 
@@ -359,20 +425,29 @@ function resolve(doc: Document, pin: Pin) {
     } catch {
     }
 
+    // The selector wins while its element still holds the text; otherwise the innermost element of its tag whose text starts with it.
     const text = pin.text?.slice(0, 40);
     if (element && (!text || ((element as HTMLElement).innerText ?? '').includes(text))) return element;
     if (!text) return element;
 
     const tag = pin.selector.split('>').pop()?.trim().split(':')[0] || '*';
+    let match: Element | null = null;
 
-    return Array.from(doc.querySelectorAll(tag)).find(candidate => ((candidate as HTMLElement).innerText ?? '').trim().replace(/\s+/g, ' ').startsWith(text)) ?? element;
+    // The ancestors of a match start with the same text, so the search goes on inside the first match and stops once it leaves it.
+    for (const candidate of Array.from(doc.querySelectorAll(tag))) {
+        if (match && match.contains(candidate) === false) break;
+        if (((candidate as HTMLElement).innerText ?? '').trim().replace(/\s+/g, ' ').startsWith(text)) match = candidate;
+    }
+
+    return match ?? element;
 }
 
+/** Adds, updates and removes a view's pin buttons; outside Comment mode only the selected pin shows. */
 function renderPins(frame: HTMLIFrameElement) {
     const doc = frame.contentDocument;
-    const layer = doc?.querySelector('.wb-layer');
-    if (!doc || !layer) return;
+    if (!doc) return;
 
+    const layer = ensureLayer(doc);
     const pins = (pinsByPane[frame.dataset.paneId ?? ''] ?? []).filter(pin => mode === 'comment' || pin.selected);
     const existing = new Map(Array.from(layer.querySelectorAll<HTMLElement>('.wb-pin')).map(element => [element.dataset.id!, element]));
 
@@ -397,6 +472,7 @@ function renderPins(frame: HTMLIFrameElement) {
     positionPins(doc);
 }
 
+/** Repositions every view's pins on the next animation frame, once however often it is asked. */
 function schedulePins() {
     if (pinFrame) return;
 
@@ -406,6 +482,7 @@ function schedulePins() {
     });
 }
 
+/** Places each pin on its element, and hides it when the element is gone or has no size. */
 function positionPins(doc: Document) {
     doc.querySelectorAll<HTMLElement>('.wb-pin').forEach(element => {
         const pin = JSON.parse(element.dataset.pin ?? '{}') as Pin;

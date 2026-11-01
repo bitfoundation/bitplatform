@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>एक मिनट पहले सहेजा गया</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>इस पेज पर कुछ गड़बड़ हो गई।</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>फिर से लोड करें</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>यह टिप्पणी हटाएँ?</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>अनुवाद सहेजे नहीं जा सके।</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>स्क्रीन को फ़्लो में नहीं जोड़ा जा सका।</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>लैपटॉप {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>डेस्कटॉप {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>फ़ोन {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>टैबलेट {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (खुला)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>बैंगनी</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>हरा</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>नारंगी</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>हरा-नीला</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>गुलाबी</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>इमारतें इस रूप में दिखाएँ</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>ब्राउज़र ने कॉपी करने की अनुमति नहीं दी। टेक्स्ट चुनें और खुद कॉपी करें।</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>यह व्यू रीसेट करें</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>यह स्क्रीन अभी लोड नहीं हुई है। थोड़ा रुकें, फिर बटन दोबारा चिह्नित करें।</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>कर्ली ब्रैकेट में लिखे प्लेसहोल्डर वैसे ही रखें जैसे वे मूल टेक्स्ट में हैं, नहीं तो पेज यह टेक्स्ट नहीं दिखा पाएगा।</value>
+    </data>
 </root>

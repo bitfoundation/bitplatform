@@ -1,6 +1,7 @@
 @import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
 @import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
 
+// Sticky, and above the home page's content that scrolls under it.
 .shell-header {
     top: 0;
     z-index: 10;
@@ -9,14 +10,11 @@
     display: flex;
     position: sticky;
     align-items: center;
+    // Lines the content up with the home page's 1200px column.
     padding: 0 max(1rem, calc((100% - 1200px) / 2));
     backdrop-filter: saturate(180%) blur(12px);
     background-color: color-mix(in srgb, #{$bit-color-background-primary} 82%, transparent);
     border-bottom: 1px solid $bit-color-border-tertiary;
-
-    &.wide {
-        padding: 0 1.25rem;
-    }
 }
 
 .brand {
@@ -48,6 +46,7 @@
     }
 }
 
+// The language picker is a BitDropdown, reached through its Class.
 ::deep .language {
     width: 10rem;
 }

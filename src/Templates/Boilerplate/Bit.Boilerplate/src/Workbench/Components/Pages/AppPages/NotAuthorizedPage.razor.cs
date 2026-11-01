@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages;
 
+/// <summary>The Workbench copy of the app's not-authorized page; its sign-in buttons change the view's signed-in state.</summary>
 public partial class NotAuthorizedPage
 {
     private bool lacksValidPrivilege;
@@ -48,7 +49,9 @@ public partial class NotAuthorizedPage
         return failedPolicies;
     }
 
+    /// <summary>Signs the view in as the first demo user.</summary>
     private Task SignIn() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.SignedIn, User = 0 });
 
-    private Task SignInAsDifferentUser() => ReportScenario(Scenario with { User = 0 });
+    /// <summary>Signs the view in as the next demo user, the way picking another account in the app's sign-in would.</summary>
+    private Task SignInAsDifferentUser() => ReportScenario(Scenario with { User = (Scenario.User + 1) % WorkbenchDemoUsers.All.Count });
 }

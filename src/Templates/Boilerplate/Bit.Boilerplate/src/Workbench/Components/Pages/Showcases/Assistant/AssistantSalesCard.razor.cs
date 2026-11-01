@@ -1,5 +1,9 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Assistant;
 
+/// <summary>
+/// The card the assistant draws for its <c>sales_trend</c> generative UI: the week's net sales, the change and a bar
+/// per day. Its parameters are bound from the reply's JSON.
+/// </summary>
 public partial class AssistantSalesCard
 {
     private static readonly BitChartOptions options = new()
@@ -19,6 +23,7 @@ public partial class AssistantSalesCard
 
     protected override void OnParametersSet()
     {
+        // One label per value, ending today, as short weekday names in the view's language.
         var today = DateTime.Today;
 
         data = new()

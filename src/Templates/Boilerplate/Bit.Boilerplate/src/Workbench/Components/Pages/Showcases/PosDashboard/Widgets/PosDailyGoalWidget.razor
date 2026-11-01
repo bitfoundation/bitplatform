@@ -21,6 +21,7 @@
             <div class="ring">
                 <svg viewBox="0 0 120 120" aria-hidden="true">
                     <circle cx="60" cy="60" r="50" class="track" />
+                    @* The arc grows to the progress as the widget appears. *@
                     <Bmotion Initial="Bm.To(pathLength: 0)" Animate="Bm.To(pathLength: Data!.Progress)" Transition="Bm.Tween(1.1, BmEase.Out)">
                         <circle cx="60" cy="60" r="50" class="value" />
                     </Bmotion>

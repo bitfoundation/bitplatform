@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Buildings.Data;
 
+/// <summary>A building on the map; mutable for the editor's form, so it is copied with <c>Clone</c> wherever it is kept.</summary>
 public sealed class Building
 {
     public Guid Id { get; set; } = Guid.NewGuid();

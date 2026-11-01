@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>Shapes the review into the JSON the agent reads, over MCP and HTTP alike.</summary>
 public static class WorkbenchReviewJson
 {
     public static object Describe(IEnumerable<WorkbenchReviewThread> threads, Dictionary<string, WorkbenchPageReview>? pages, long cursor, IEnumerable<WorkbenchFlow>? flows = null)
@@ -20,6 +21,7 @@ public static class WorkbenchReviewJson
         };
     }
 
+    /// <summary>A comment with its element, its view, links to it, its messages and its tasks.</summary>
     private static object Describe(WorkbenchReviewThread thread)
     {
         var scenario = thread.Scenario;

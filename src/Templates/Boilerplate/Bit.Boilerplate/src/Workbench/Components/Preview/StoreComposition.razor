@@ -1,5 +1,6 @@
 @inherits WorkbenchComponentBase
 
+@* A store screenshot: a colored backdrop with a caption, and the page itself in an inner iframe inside a device. *@
 <div class="composition @Scenario.Backdrop?.ToString().ToLowerInvariant() @(isLandscape ? "landscape" : "portrait")" style="@canvasStyle">
     <div class="aura"></div>
     <div class="pattern"></div>

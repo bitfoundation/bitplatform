@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>حُفظ قبل دقيقة</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>حدث خطأ ما في هذه الصفحة.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>إعادة التحميل</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>حذف هذا التعليق؟</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>تعذّر حفظ الترجمات.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>تعذّرت إضافة الشاشة إلى المسار.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>حاسوب محمول {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>حاسوب مكتبي {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>هاتف {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>جهاز لوحي {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (مفتوح)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>بنفسجي</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>أخضر</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>برتقالي</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>أزرق مخضر</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>وردي</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>عرض المباني كـ</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>لم يسمح المتصفح بالنسخ. حدّد النص وانسخه بنفسك.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>إعادة ضبط هذا العرض</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>لم يكتمل تحميل هذه الشاشة بعد. انتظر لحظة ثم حدّد الزر مرة أخرى.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>أبقِ العناصر النائبة بين الأقواس المعقوفة كما هي في النص الأصلي، وإلا فلن تتمكن الصفحة من عرض هذا النص.</value>
+    </data>
 </root>

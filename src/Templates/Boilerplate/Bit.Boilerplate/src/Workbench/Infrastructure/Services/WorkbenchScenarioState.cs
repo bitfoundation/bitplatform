@@ -1,5 +1,9 @@
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// The scenario of the view this circuit renders, and how its pages load data: as the data state says, a load waits, fails or
+/// comes back empty. It counts the loads in flight, so a screenshot waits until the page has settled.
+/// </summary>
 public partial class WorkbenchScenarioState
 {
     private int pendingLoads;
@@ -12,8 +16,10 @@ public partial class WorkbenchScenarioState
 
     public bool IsSettled => Volatile.Read(ref pendingLoads) == 0;
 
+    /// <summary>When a load last started or ended, or the scenario last changed.</summary>
     public DateTimeOffset LastActivity => new(Interlocked.Read(ref lastActivityTicks), TimeSpan.Zero);
 
+    /// <summary>Switches to another scenario; a source in the Error state fails again on its next load.</summary>
     public void Set(WorkbenchScenario scenario)
     {
         Scenario = scenario;
@@ -24,6 +30,7 @@ public partial class WorkbenchScenarioState
 
     public void Touch() => Interlocked.Exchange(ref lastActivityTicks, DateTimeOffset.UtcNow.UtcTicks);
 
+    /// <summary>Counts a load the page makes on its own, so a screenshot waits for it too.</summary>
     public async Task<T> Track<T>(Task<T> task)
     {
         Interlocked.Increment(ref pendingLoads);
@@ -40,6 +47,7 @@ public partial class WorkbenchScenarioState
         }
     }
 
+    /// <summary>A data source's state; in Mixed, a hash of the source's name picks error, empty or live, the same on every run.</summary>
     public WorkbenchDataState ResolveState(string source)
     {
         if (Scenario.Data is not WorkbenchDataState.Mixed)
@@ -59,6 +67,9 @@ public partial class WorkbenchScenarioState
         };
     }
 
+    /// <summary>
+    /// Loads sample data as the data state says: never finishing, slowly, empty, or failing on the first attempt so a retry works.
+    /// </summary>
     public async Task<T> Load<T>(string source, Func<T> live, Func<T> empty, CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref pendingLoads);
@@ -94,6 +105,7 @@ public partial class WorkbenchScenarioState
         }
     }
 
+    /// <summary>Waits as a save to a server would.</summary>
     public Task Save(CancellationToken cancellationToken = default) => SimulateLatency(cancellationToken);
 
     private static Task SimulateLatency(CancellationToken cancellationToken) => Task.Delay(Random.Shared.Next(50, 151), cancellationToken);

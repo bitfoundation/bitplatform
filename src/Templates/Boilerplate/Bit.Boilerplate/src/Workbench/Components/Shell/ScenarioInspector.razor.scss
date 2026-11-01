@@ -18,6 +18,7 @@ section {
     }
 }
 
+// The titles are BitText components, reached through their Class.
 ::deep .section-title {
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -39,6 +40,7 @@ section {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    // The segments are BitButtons; this lets them shrink to equal columns.
     ::deep .segment {
         min-width: 0;
         padding-inline: 0.25rem;
@@ -67,6 +69,7 @@ section {
     background-color: var(--wb-accent);
     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 
+    // --wb-accent is set inline on each swatch; the default one paints the theme's primary.
     &.accent-default {
         background-color: $bit-color-primary;
     }
@@ -104,6 +107,7 @@ section {
     }
 }
 
+// Swatches of the store screenshot backgrounds.
 .backdrop-brand {
     background: linear-gradient(165deg, color-mix(in srgb, #{$bit-color-primary} 72%, #fff), #{$bit-color-primary} 52%, color-mix(in srgb, #{$bit-color-primary} 45%, #000));
 }

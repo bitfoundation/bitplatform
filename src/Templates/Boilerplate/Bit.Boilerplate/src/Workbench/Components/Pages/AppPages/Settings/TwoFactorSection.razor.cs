@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 
+/// <summary>The Workbench copy of the app's two-factor section: any code is accepted, and every change lands in the store.</summary>
 public partial class TwoFactorSection
 {
     private bool isWaiting;
@@ -24,6 +25,7 @@ public partial class TwoFactorSection
         await Load();
     }
 
+    /// <summary>A load with nothing to fetch, so the section shows the loading and error states the app's does.</summary>
     private async Task Load()
     {
         isLoading = true;
@@ -86,6 +88,7 @@ public partial class TwoFactorSection
         }
     }
 
+    /// <summary>Stands in for a request: false when one is already running or the section closed meanwhile.</summary>
     private async Task<bool> Send()
     {
         if (isWaiting)
@@ -111,10 +114,8 @@ public partial class TwoFactorSection
 
     private async Task CopySharedKeyToClipboard()
     {
-        if (isKeyCopiedShown)
+        if (isKeyCopiedShown || await Copy(SettingsDemoData.SharedKey) is false)
             return;
-
-        await JSRuntime.InvokeVoidAsync("workbench.copy", SettingsDemoData.SharedKey);
 
         isKeyCopiedShown = true;
         StateHasChanged();
@@ -127,10 +128,8 @@ public partial class TwoFactorSection
 
     private async Task CopyRecoveryCodesToClipboard()
     {
-        if (isCodesCopiedShown)
+        if (isCodesCopiedShown || await Copy(string.Join(Environment.NewLine, store.RecoveryCodes ?? [])) is false)
             return;
-
-        await JSRuntime.InvokeVoidAsync("workbench.copy", string.Join(Environment.NewLine, store.RecoveryCodes ?? []));
 
         isCodesCopiedShown = true;
         StateHasChanged();
@@ -139,5 +138,22 @@ public partial class TwoFactorSection
 
         isCodesCopiedShown = false;
         StateHasChanged();
+    }
+
+    /// <summary>Copies the text, or shows an error when the browser refuses, as one that allows copying only straight from a tap does.</summary>
+    private async Task<bool> Copy(string text)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workbench.copy", text);
+
+            return true;
+        }
+        catch (JSException)
+        {
+            SnackBarService.Error(Localizer[nameof(WorkbenchStrings.CopyFailed)]);
+
+            return false;
+        }
     }
 }

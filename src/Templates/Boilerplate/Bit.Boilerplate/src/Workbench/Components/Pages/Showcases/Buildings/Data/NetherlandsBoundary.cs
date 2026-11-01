@@ -1,13 +1,14 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Buildings.Data;
 
+/// <summary>The outline of the Netherlands from the embedded GeoJSON file, drawn on the map and used to keep buildings inside.</summary>
 public static class NetherlandsBoundary
 {
     private static readonly Lazy<(string GeoJson, double[][][][] Polygons)> boundary = new(Load);
 
+    /// <summary>The embedded file's text, a GeoJSON feature of the country.</summary>
     public static string GeoJson => boundary.Value.GeoJson;
 
-    public static (double South, double West, double North, double East) Bounds { get; } = (50.70, 3.30, 53.60, 7.25);
-
+    /// <summary>Whether a point lies inside the country, counting edge crossings over every ring of each polygon.</summary>
     public static bool Contains(double latitude, double longitude)
     {
         foreach (var polygon in boundary.Value.Polygons)
@@ -35,6 +36,7 @@ public static class NetherlandsBoundary
         return false;
     }
 
+    /// <summary>A GeoJSON polygon over the region around the country with holes for it, to dim what lies outside.</summary>
     public static string BuildOutsideMask()
     {
         var holes = boundary.Value.Polygons.Select(polygon => polygon[0]);
@@ -48,6 +50,7 @@ public static class NetherlandsBoundary
         });
     }
 
+    /// <summary>Reads the embedded file once: its text, and its polygons as rings of longitude and latitude pairs.</summary>
     private static (string, double[][][][]) Load()
     {
         using var stream = typeof(NetherlandsBoundary).Assembly.GetManifestResourceStream("Boilerplate.Workbench.Components.Pages.Showcases.Buildings.Data.netherlands.geojson")!;

@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 
+/// <summary>The Workbench copy of the app's products per category chart, on <c>DashboardDemoData</c> through the scenario state.</summary>
 public partial class ProductsCountPerCategoryWidget
 {
     private bool isLoading = true;

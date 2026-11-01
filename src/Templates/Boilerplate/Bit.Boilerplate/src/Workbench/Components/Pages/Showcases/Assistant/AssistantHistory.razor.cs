@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Assistant;
 
+/// <summary>The assistant's conversation list with its loading and empty states, beside the chat or in its side panel.</summary>
 public partial class AssistantHistory
 {
     [Parameter] public IReadOnlyList<BitAiConversationSummary> Conversations { get; set; } = [];

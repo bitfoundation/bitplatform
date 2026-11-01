@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 
+/// <summary>The Workbench copy of the app's upgrade section: the ad is a short wait, and having watched it is kept in the store.</summary>
 public partial class UpgradeAccountSection
 {
     private bool isFailed;
@@ -42,6 +43,9 @@ public partial class UpgradeAccountSection
             await Task.Delay(1500, CurrentCancellationToken);
 
             store.WatchAd();
+        }
+        catch (OperationCanceledException)
+        {
         }
         finally
         {

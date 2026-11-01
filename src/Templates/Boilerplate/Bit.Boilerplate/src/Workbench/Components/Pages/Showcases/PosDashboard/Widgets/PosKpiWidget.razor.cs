@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard.Widgets;
 
+/// <summary>A KPI card: the value, its change from the previous period and a sparkline, colored by whether the change is good.</summary>
 public partial class PosKpiWidget
 {
     private BitChartData trendData = new();
@@ -12,6 +13,7 @@ public partial class PosKpiWidget
 
     [Parameter] public PosKpiMetric Metric { get; set; }
 
+    /// <summary>Whether the change is good news: growth, or a fall for refunds.</summary>
     private bool IsGoodChange => Metric is PosKpiMetric.Refunds ? Data!.Change <= 0 : Data!.Change >= 0;
 
     protected override Task<PosKpi> Fetch(PosDashboardFilter filter, CancellationToken cancellationToken) => Metric switch
@@ -48,6 +50,7 @@ public partial class PosKpiWidget
         };
     }
 
+    /// <summary>Transactions are a count; the other metrics are money.</summary>
     private string FormatValue(decimal value) => Metric switch
     {
         PosKpiMetric.Transactions => PosFormat.Number(value),

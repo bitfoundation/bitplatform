@@ -2,6 +2,10 @@ using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 
+/// <summary>
+/// What the settings page changes, in place of the app's server: the profile and its draft, pending email and phone
+/// changes, passwordless, two-factor, revoked sessions, consents and the watched ad.
+/// </summary>
 [BlexStore(Name = "settings", Persist = true)]
 public partial class SettingsStore
 {
@@ -18,12 +22,14 @@ public partial class SettingsStore
     [BlexState] private Guid[] _revokedSessionIds = [];
     [BlexState] private Dictionary<string, bool> _consents = [];
     [BlexState] private bool _isAdWatched;
+    // Not saved, so a reload never opens the confirmation by itself.
     [BlexState(Persist = false)] private bool _isDeleteDialogOpen;
 
     [BlexAction] private void OnExpand(string? section) => ExpandedSection = section;
 
     [BlexAction] private void OnSelectAccountTab(string? tab) => AccountTab = tab;
 
+    /// <summary>Keeps a saved profile and drops its draft.</summary>
     [BlexAction]
     private void OnSaveProfile(SettingsProfile profile)
     {
@@ -39,6 +45,7 @@ public partial class SettingsStore
 
     [BlexAction] private void OnSetPasswordless(bool isEnabled) => IsPasswordlessEnabled = isEnabled;
 
+    /// <summary>Turns two-factor on or off: new codes set the count left, and turning it off resets the count.</summary>
     [BlexAction]
     private void OnSetTwoFactor(bool isEnabled, string[]? recoveryCodes)
     {

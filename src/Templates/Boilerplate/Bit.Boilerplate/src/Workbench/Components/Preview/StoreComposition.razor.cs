@@ -1,5 +1,9 @@
 namespace Boilerplate.Workbench.Components.Preview;
 
+/// <summary>
+/// Lays out a store screenshot at the device's own size: the caption above (or beside, in landscape) a scaled device
+/// whose screen is an inner /preview of the same page without the backdrop.
+/// </summary>
 public partial class StoreComposition
 {
     private bool isLandscape;
@@ -16,16 +20,19 @@ public partial class StoreComposition
     {
         caption = Scenario.Caption ?? Localizer[Page.CaptionKey ?? Page.TitleKey];
         frameDevice = GetFrameDevice(Scenario.DevicePreset);
+        // The same pane and snapshot, so the inner screen shows the state the view has.
         screenUrl = WorkbenchUrls.Preview(Page.Key, Scenario with { Backdrop = null, Caption = null }, PaneId, WorkbenchUrls.ReadQuery(NavigationManager.Uri, WorkbenchUrls.SnapshotQueryKey));
 
         var (canvasWidth, canvasHeight) = Scenario.DevicePreset.GetViewport(Scenario.Rotated);
         var (frameWidth, frameHeight) = DeviceFrame.GetFrameSize(frameDevice, Scenario.Rotated, Scenario.Frame);
         var visualWidth = frameDevice.Kind is DeviceKind.Laptop ? frameWidth * 1.1 : frameWidth;
+        // A long caption gets a smaller font, down to 60%.
         var fit = Math.Clamp(Math.Sqrt(32.0 / Math.Max(caption.Length, 1)), 0.6, 1);
         var isPhone = frameDevice.Kind is DeviceKind.Phone;
 
         isLandscape = canvasWidth > canvasHeight;
 
+        // Sizes are fractions of the screenshot's own width and height, so every store size keeps the same proportions.
         var scale = isLandscape
             ? Math.Min(canvasWidth * 0.56 / visualWidth, canvasHeight * 0.8 / frameHeight)
             : canvasWidth * (isPhone ? 0.86 : 0.8) / visualWidth;
@@ -42,6 +49,10 @@ public partial class StoreComposition
         deviceStyle = FormattableString.Invariant($"transform:scale({scale:0.####});");
     }
 
+    /// <summary>
+    /// The device drawn around the screen: a desktop becomes a laptop, and flat-cornered phones and tablets get the
+    /// rounded corners and camera a store image expects.
+    /// </summary>
     private static DevicePreset GetFrameDevice(DevicePreset device)
     {
         return device.Kind switch

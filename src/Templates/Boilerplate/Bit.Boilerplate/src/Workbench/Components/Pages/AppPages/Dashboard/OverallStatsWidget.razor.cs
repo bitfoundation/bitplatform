@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 
+/// <summary>The Workbench copy of the app's overall stats widget, counting <c>DashboardDemoData</c> through the scenario state.</summary>
 public partial class OverallStatsWidget
 {
     private bool isLoading = true;

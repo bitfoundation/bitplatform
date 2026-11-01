@@ -24,7 +24,8 @@
                     @foreach (var hour in hours)
                     {
                         var orders = Lookup(day, hour);
-                        <span class="cell" style="--level:@Level(orders)" title="@Localizer[nameof(WorkbenchStrings.PosOrdersCount), PosFormat.Number(orders)]"></span>
+                        var label = $"{CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName(day)} {FormatHour(hour)}, {Localizer[nameof(WorkbenchStrings.PosOrdersCount), PosFormat.Number(orders)]}";
+                        <span class="cell" style="--level:@Level(orders)" role="img" aria-label="@label" title="@label"></span>
                     }
                 }
             </div>

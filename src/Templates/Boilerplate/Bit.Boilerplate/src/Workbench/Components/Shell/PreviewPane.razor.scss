@@ -91,12 +91,15 @@
     --wb-scale: 0.5;
 }
 
+// Takes the scaled size of the device, which keeps its real size and is scaled from its top-left corner,
+// so it stays left-to-right in a right-to-left shell too.
 .pane-scaler {
     direction: ltr;
     flex-shrink: 0;
     width: calc(var(--wb-frame-w, 400px) * var(--wb-scale));
     height: calc(var(--wb-frame-h, 800px) * var(--wb-scale));
 
+    // The device is DeviceFrame's root element, so it needs ::deep.
     ::deep > .device {
         transform-origin: 0 0;
         transform: scale(var(--wb-scale));
@@ -113,6 +116,7 @@
     transition: opacity 0.2s ease;
 }
 
+// index.ts adds ready when the preview posts workbench-ready, and removes it when the frame is sent elsewhere.
 .pane-stage.ready .pane-loading {
     opacity: 0;
 }

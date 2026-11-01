@@ -1,25 +1,36 @@
 using Bit.Blow;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Workbench.Components.Pages;
 
+/// <summary>
+/// /flows lists the flows of the review; /flows/{id} draws one as a Bit.Blow board of live screens joined by arrows,
+/// which this machine can rearrange, link and label, and anyone can present screen by screen.
+/// </summary>
 public partial class FlowsPage
 {
     private BlowCanvas? canvas;
+    // The screen being presented, or -1.
     private int presentIndex = -1;
     private bool isConfirmingDelete;
+    // The arrow whose label editor is open.
     private string? editingLinkId;
+    // The arrow whose starting element is being picked on its first screen.
     private string? pickingLinkId;
+    // The last pick found its screen not loaded yet; the label editor says so.
+    private bool isScreenNotLoaded;
+    // The review document couldn't be opened, so the board shows a message instead of loading for ever.
+    private bool isOpenFailed;
     private string? labelDraft;
     private readonly List<BlowNode> nodes = [];
     private readonly List<BlowEdge> edges = [];
-    private readonly Dictionary<string, string> sources = [];
+    // Each screen's 1-based place in the flow, shown on its card.
     private readonly Dictionary<string, int> numbers = [];
     private readonly BlowFitViewOptions fitOptions = new() { Padding = 0.08, MaxZoom = 1 };
 
     [AutoInject] private WorkbenchReviewSession reviewSession = default!;
-    [AutoInject] private WorkbenchReviewAttachments attachments = default!;
-    [AutoInject] private WorkbenchSnapshots snapshots = default!;
     [AutoInject] private BitThemeManager bitThemeManager = default!;
+    [AutoInject] private ILogger<FlowsPage> logger = default!;
 
     [Parameter] public string? FlowId { get; set; }
 
@@ -31,6 +42,8 @@ public partial class FlowsPage
 
     private string? CurrentScreenId => Flow is { } flow && presentIndex >= 0 && presentIndex < flow.Screens.Length ? flow.Screens[presentIndex].Id : null;
 
+    private bool IsRtl => CurrentDir is BitDir.Rtl;
+
     protected override void OnInitialized()
     {
         reviewSession.Changed += OnReviewChanged;
@@ -38,12 +51,19 @@ public partial class FlowsPage
 
     protected override async Task OnParametersSetAsync()
     {
+        // Another flow: whatever was being presented, edited or picked belonged to the previous one.
         presentIndex = -1;
         editingLinkId = null;
-        pickingLinkId = null;
         isConfirmingDelete = false;
+        isScreenNotLoaded = false;
 
-        await Rebuild();
+        if (pickingLinkId is not null)
+        {
+            pickingLinkId = null;
+            await CancelSpotPick();
+        }
+
+        Rebuild();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -51,27 +71,36 @@ public partial class FlowsPage
         if (firstRender is false)
             return;
 
-        await reviewSession.Open(Localizer[nameof(WorkbenchStrings.Reviewer)]);
-        await Rebuild();
+        // The flows live in the review document, which opens only once the page is interactive.
+        try
+        {
+            await reviewSession.Open(Localizer[nameof(WorkbenchStrings.Reviewer)]);
+        }
+        catch (Exception exception)
+        {
+            isOpenFailed = true;
+            logger.LogError(exception, "The review document could not be opened for the flows page.");
+        }
+
+        if (CurrentCancellationToken.IsCancellationRequested)
+            return;
+
+        Rebuild();
 
         StateHasChanged();
     }
 
-    private async Task Rebuild()
+    /// <summary>
+    /// Brings the board's nodes and edges in line with the flow in the review document, keeping the node objects
+    /// Blow already knows so their measured sizes survive and a node being dragged stays where the pointer is.
+    /// </summary>
+    private void Rebuild()
     {
         if (Flow is not { } flow)
         {
             nodes.Clear();
             edges.Clear();
             return;
-        }
-
-        foreach (var screen in flow.Screens.Where(s => sources.ContainsKey(s.Id) is false))
-        {
-            var state = screen.HasState ? await attachments.ReadState($"{flow.Id}{screen.Id}") : null;
-            var snapshotId = snapshots.Add(state ?? "{}");
-
-            sources[screen.Id] = WorkbenchUrls.Preview(screen.PageKey, screen.Scenario with { Backdrop = null, Caption = null }, snapshotId: snapshotId);
         }
 
         numbers.Clear();
@@ -112,6 +141,7 @@ public partial class FlowsPage
             });
         }
 
+        // An arrow with a marked start leaves from the hidden handle drawn at that spot, the others from the card's edge.
         edges.Clear();
         edges.AddRange(flow.Links.Where(link => numbers.ContainsKey(link.From) && numbers.ContainsKey(link.To)).Select(link => new BlowEdge
         {
@@ -134,6 +164,7 @@ public partial class FlowsPage
         }));
     }
 
+    /// <summary>Zooms the board to one screen and makes that screen's page usable.</summary>
     private async Task Present(int index)
     {
         if (Flow is not { Screens.Length: > 0 } flow)
@@ -172,6 +203,7 @@ public partial class FlowsPage
         }
     }
 
+    /// <summary>An arrow drawn between two screens on the board; its label editor opens at once.</summary>
     private void Connect(BlowConnection connection)
     {
         if (FlowId is null || connection.Source is not { } from || connection.Target is not { } to || from == to)
@@ -228,9 +260,13 @@ public partial class FlowsPage
             reviewSession.RemoveLink(FlowId, editingLinkId);
         }
 
-        editingLinkId = null;
+        CloseLabelEditor();
     }
 
+    /// <summary>
+    /// Zooms to the arrow's first screen and waits for a click inside its page; the element clicked becomes the
+    /// arrow's starting spot. Cancelling keeps the spot it had.
+    /// </summary>
     private async Task PickSpot()
     {
         if (FlowId is null || EditingLink is not { } link)
@@ -238,6 +274,7 @@ public partial class FlowsPage
 
         editingLinkId = null;
         pickingLinkId = link.Id;
+        isScreenNotLoaded = false;
 
         if (canvas is not null && nodes.FirstOrDefault(n => n.Id == link.From) is { } node)
         {
@@ -246,8 +283,24 @@ public partial class FlowsPage
 
         StateHasChanged();
 
-        var spot = await JSRuntime.InvokeAsync<WorkbenchFlowSpot?>("workbench.pickSpot", link.From);
+        WorkbenchFlowSpot? spot = null;
 
+        try
+        {
+            // No timeout: the pick waits for the click however long it takes, until the page goes away.
+            spot = await JSRuntime.InvokeAsync<WorkbenchFlowSpot?>("workbench.pickSpot", CurrentCancellationToken, [link.From]);
+        }
+        catch (Exception exception) when (exception is TaskCanceledException or JSDisconnectedException)
+        {
+            return;
+        }
+        catch (JSException)
+        {
+            // The screen's page hadn't loaded yet.
+            isScreenNotLoaded = true;
+        }
+
+        // Another flow opened, or another pick started, while this one waited.
         if (pickingLinkId != link.Id)
             return;
 
@@ -262,9 +315,34 @@ public partial class FlowsPage
         await ShowAll();
     }
 
-    private async Task CancelPick()
+    /// <summary>Ends the pick with no spot, which brings back the label editor.</summary>
+    private Task CancelPick() => CancelSpotPick();
+
+    /// <summary>Takes the pick's listeners off the screen's page, which settles the pick with no spot.</summary>
+    private async Task CancelSpotPick()
     {
-        await JSRuntime.InvokeVoidAsync("workbench.cancelSpotPick");
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("workbench.cancelSpotPick");
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    /// <summary>Escape closes the label editor without saving.</summary>
+    private void OnLabelEditorKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Escape")
+        {
+            CloseLabelEditor();
+        }
+    }
+
+    private void CloseLabelEditor()
+    {
+        editingLinkId = null;
+        isScreenNotLoaded = false;
     }
 
     private void ClearSpot()
@@ -282,9 +360,10 @@ public partial class FlowsPage
             reviewSession.SetLinkLabel(FlowId, editingLinkId, labelDraft);
         }
 
-        editingLinkId = null;
+        CloseLabelEditor();
     }
 
+    /// <summary>The first click asks for confirmation on the button itself, the second deletes.</summary>
     private void DeleteFlow()
     {
         if (FlowId is null)
@@ -307,21 +386,33 @@ public partial class FlowsPage
 
     private string TitleOf(string pageKey) => WorkbenchPageCatalog.Find(pageKey) is { } page ? Localizer[page.TitleKey].Value : pageKey;
 
+    /// <summary>
+    /// A screen's /preview address. Its state is read from the review by the screen's id, so the address never expires
+    /// and is the same on every render, and the frame never reloads for a review change.
+    /// </summary>
+    private static string SourceOf(WorkbenchFlow flow, WorkbenchFlowScreen screen)
+    {
+        return WorkbenchUrls.Preview(screen.PageKey, screen.Scenario with { Backdrop = null, Caption = null }, snapshotId: $"{PreviewPage.SavedStatePrefix}{flow.Id}{screen.Id}");
+    }
+
+    /// <summary>The spot's outline over the screen; the spot is in fractions of the screen's viewport.</summary>
     private static string SpotStyle(WorkbenchFlowSpot spot)
     {
         return FormattableString.Invariant($"left:{spot.X * 100:0.##}%;top:{spot.Y * 100:0.##}%;width:{spot.Width * 100:0.##}%;height:{spot.Height * 100:0.##}%");
     }
 
+    /// <summary>Puts the arrow's hidden source handle on the middle of the spot's right edge.</summary>
     private static string SpotHandleStyle(WorkbenchFlowSpot spot)
     {
         return FormattableString.Invariant($"left:{(spot.X + spot.Width) * 100:0.##}%;right:auto;top:{(spot.Y + spot.Height / 2) * 100:0.##}%");
     }
 
+    /// <summary>Redraws the board for a change from anyone: this browser, another one, or the agent.</summary>
     private void OnReviewChanged()
     {
-        InvokeAsync(async () =>
+        InvokeAsync(() =>
         {
-            await Rebuild();
+            Rebuild();
             StateHasChanged();
         });
     }
@@ -329,6 +420,12 @@ public partial class FlowsPage
     public override async ValueTask DisposeAsync()
     {
         reviewSession.Changed -= OnReviewChanged;
+
+        if (pickingLinkId is not null)
+        {
+            pickingLinkId = null;
+            await CancelSpotPick();
+        }
 
         await base.DisposeAsync();
     }

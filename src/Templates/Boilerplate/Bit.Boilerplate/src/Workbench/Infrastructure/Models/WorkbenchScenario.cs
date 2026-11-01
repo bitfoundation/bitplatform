@@ -5,12 +5,18 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Boilerplate.Workbench.Infrastructure.Models;
 
+/// <summary>
+/// Everything a view is set to: data state, theme, culture, sign-in, device, store backdrop, design option, switches and look.
+/// It round-trips through the query string, which is how links, previews and screenshots carry it.
+/// </summary>
 public sealed partial record WorkbenchScenario
 {
     public const int MaxCaptionLength = 120;
 
+    /// <summary>The query-string prefix of page switches, as in sw-amount=few.</summary>
     public const string SwitchQueryPrefix = "sw-";
 
+    /// <summary>The text sizes a view can be set to, in percent.</summary>
     public static readonly int[] TextScales = [100, 130, 200];
 
     public WorkbenchDataState Data { get; init; } = WorkbenchDataState.Live;
@@ -19,30 +25,40 @@ public sealed partial record WorkbenchScenario
 
     public string? Culture { get; init; }
 
+    /// <summary>Whether the app's navigation, header and bottom bar are drawn around the page.</summary>
     public bool Chrome { get; init; } = true;
 
     public WorkbenchAuthState Auth { get; init; } = WorkbenchAuthState.SignedIn;
 
+    /// <summary>The index of the signed-in demo user in <see cref="WorkbenchDemoUsers.All"/>.</summary>
     public int User { get; init; }
 
     public string Device { get; init; } = DevicePresets.DefaultKey;
 
+    /// <summary>The custom device's width; used only when <see cref="Device"/> is the custom key.</summary>
     public int Width { get; init; }
 
+    /// <summary>The custom device's height; used only when <see cref="Device"/> is the custom key.</summary>
     public int Height { get; init; }
 
     public bool Rotated { get; init; }
 
+    /// <summary>Whether the device is drawn around the screen.</summary>
     public bool Frame { get; init; } = true;
 
+    /// <summary>The background of a store screenshot; null shows the page without one.</summary>
     public WorkbenchBackdrop? Backdrop { get; init; }
 
+    /// <summary>A caption typed for the store screenshot, shown as written in every language.</summary>
     public string? Caption { get; init; }
 
+    /// <summary>The key of the page's design option.</summary>
     public string? Variant { get; init; }
 
+    /// <summary>The page switches, as key=value pairs sorted by key and separated by semicolons.</summary>
     public string? Switches { get; init; }
 
+    /// <summary>Another primary color to try on this view only, as #rrggbb.</summary>
     public string? Accent { get; init; }
 
     public int TextScale { get; init; } = 100;
@@ -55,10 +71,9 @@ public sealed partial record WorkbenchScenario
 
     [JsonIgnore] public bool IsRtl => Culture is not null && CultureInfoManager.GetCultureInfo(Culture)?.TextInfo.IsRightToLeft is true;
 
-    [JsonIgnore] public bool HasLightBackdrop => Backdrop is WorkbenchBackdrop.Paper;
-
     public string? GetSwitch(string key) => ReadSwitches(Switches).GetValueOrDefault(key);
 
+    /// <summary>A copy with the switch set, or removed when the value is null.</summary>
     public WorkbenchScenario WithSwitch(string key, string? value)
     {
         var switches = ReadSwitches(Switches);
@@ -75,6 +90,7 @@ public sealed partial record WorkbenchScenario
         return this with { Switches = WriteSwitches(switches) };
     }
 
+    /// <summary>A copy on a custom device of this size, clamped to the custom size limits.</summary>
     public WorkbenchScenario WithSize(int width, int height)
     {
         var custom = DevicePresets.Custom(width, height);
@@ -82,6 +98,7 @@ public sealed partial record WorkbenchScenario
         return this with { Device = DevicePresets.CustomKey, Width = custom.Width, Height = custom.Height, Rotated = false };
     }
 
+    /// <summary>Reads a scenario from a query string; a value that is missing or invalid keeps its default.</summary>
     public static WorkbenchScenario Parse(string? query)
     {
         var values = QueryHelpers.ParseQuery(query);
@@ -117,9 +134,11 @@ public sealed partial record WorkbenchScenario
             Vision = Enum.TryParse<WorkbenchVision>(Read("vision"), ignoreCase: true, out var vision) ? vision : null
         };
 
+        // A custom device takes its size from the size key and keeps its rotation.
         return scenario.Device == DevicePresets.CustomKey ? scenario.WithSize(width, height) with { Rotated = scenario.Rotated } : scenario;
     }
 
+    /// <summary>Writes only the values that differ from the defaults, so the default view has an empty query string.</summary>
     public string ToQueryString()
     {
         var defaults = new WorkbenchScenario();
@@ -152,6 +171,7 @@ public sealed partial record WorkbenchScenario
         return QueryHelpers.AddQueryString(string.Empty, values);
     }
 
+    /// <summary>Turns a hex color, with or without #, into #rrggbb, or null when it is not one.</summary>
     public static string? ReadAccent(string? value)
     {
         var hex = value?.Trim().TrimStart('#');
@@ -178,6 +198,7 @@ public sealed partial record WorkbenchScenario
                                          .ToDictionary(pair => pair[0], pair => pair[1]);
     }
 
+    /// <summary>Keeps keys and values that are short lowercase tokens, sorted so equal switches give equal strings.</summary>
     private static string? WriteSwitches(Dictionary<string, string> switches)
     {
         var valid = switches.Where(pair => TokenRegex().IsMatch(pair.Key) && TokenRegex().IsMatch(pair.Value))

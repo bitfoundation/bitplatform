@@ -2,6 +2,10 @@ using Bit.Bcrdt;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// One circuit's copy of the review document, synced through the relay: the threads, page statuses, flows and the agent.
+/// It writes only for requests made on this machine; opened from anywhere else, the review is read-only.
+/// </summary>
 public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 {
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
@@ -9,10 +13,13 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
 
     private bool? canWrite;
+    private Task? opening;
     private BcrdtCollaborativeDocument? document;
 
+    /// <summary>Raised after the document changes, whoever changed it.</summary>
     public event Action? Changed;
 
+    /// <summary>Whether this circuit's request came from this machine, decided once per circuit.</summary>
     public bool CanWrite => canWrite ??= httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.IsLocal(context);
 
     public bool IsOpen => document is not null;
@@ -25,6 +32,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public IReadOnlyList<WorkbenchFlow> Flows { get; private set; } = [];
 
+    /// <summary>Creates an empty flow; returns its id, or null when this circuit can't write.</summary>
     public string? CreateFlow(string name)
     {
         if (document is null || CanWrite is false || string.IsNullOrWhiteSpace(name))
@@ -37,6 +45,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         return id;
     }
 
+    /// <summary>Adds a view to a flow, right of its last screen and linked from it, with the view's page state.</summary>
     public async Task AddScreen(string flowId, string pageKey, string query, string? note, string? state, string? linkLabel)
     {
         if (document is null || CanWrite is false || WorkbenchReviewDocument.ReadFlows(document.GetMap("flows")).FirstOrDefault(f => f.Id == flowId) is not { } flow)
@@ -57,7 +66,11 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public void RemoveScreen(string flowId, string screenId)
     {
+        if (CanWrite is false)
+            return;
+
         EditFlows(flows => WorkbenchReviewDocument.RemoveScreen(flows, flowId, screenId));
+        attachments.DeleteState($"{flowId}{screenId}");
     }
 
     public string AddLink(string flowId, string from, string to)
@@ -92,11 +105,23 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         EditFlows(flows => WorkbenchReviewDocument.RenameFlow(flows, flowId, name));
     }
 
+    /// <summary>Deletes a flow and the page states saved for its screens.</summary>
     public void DeleteFlow(string flowId)
     {
+        if (CanWrite is false)
+            return;
+
+        var screens = Flows.FirstOrDefault(f => f.Id == flowId)?.Screens ?? [];
+
         EditFlows(flows => flows.Delete(flowId));
+
+        foreach (var screen in screens)
+        {
+            attachments.DeleteState($"{flowId}{screen.Id}");
+        }
     }
 
+    /// <summary>Edits the flows in one change, when this circuit may write.</summary>
     private void EditFlows(Action<BcrdtMap> edit)
     {
         if (CanWrite is false)
@@ -105,11 +130,11 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         document?.Transact(_ => edit(document.GetMap("flows")), null);
     }
 
-    public async Task Open(string reviewerName)
-    {
-        if (document is not null)
-            return;
+    /// <summary>Opens the document once per circuit, under the reviewer's name for presence; calls made meanwhile wait for the same open.</summary>
+    public Task Open(string reviewerName) => opening ??= OpenDocument(reviewerName);
 
+    private async Task OpenDocument(string reviewerName)
+    {
         var id = Guid.NewGuid().ToString("N");
 
         document = await collaboration.OpenAsync(WorkbenchReviewDocument.Id, new() { User = new(id, reviewerName, BcrdtPresenceService.SuggestColor(id), null) }, CancellationToken.None);
@@ -122,6 +147,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public WorkbenchPageReview? PageOf(string pageKey) => Pages.GetValueOrDefault(pageKey);
 
+    /// <summary>Adds a comment with the view's page state; returns its id, or null when this circuit can't write.</summary>
     public async Task<string?> AddThread(string pageKey, string query, WorkbenchReviewAnchor anchor, string author, string text, string? state)
     {
         if (document is null || CanWrite is false || string.IsNullOrWhiteSpace(text))
@@ -151,12 +177,14 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         document?.Transact(_ => WorkbenchReviewDocument.SetStatus(document.GetMap("threads"), threadId, status, fromAgent: false), null);
     }
 
+    /// <summary>Deletes a comment and the page state saved with it.</summary>
     public void Delete(string threadId)
     {
-        if (CanWrite is false)
+        if (document is null || CanWrite is false)
             return;
 
-        document?.Transact(_ => document.GetMap("threads").Delete(threadId), null);
+        document.Transact(_ => document.GetMap("threads").Delete(threadId), null);
+        attachments.DeleteState(threadId);
     }
 
     public void SetPageStatus(string pageKey, WorkbenchPageStatus status, string by)
@@ -173,6 +201,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         Changed?.Invoke();
     }
 
+    /// <summary>Reads the document into the properties above.</summary>
     private void Refresh()
     {
         if (document is null)

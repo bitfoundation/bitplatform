@@ -4,6 +4,7 @@
     gap: 0.375rem;
     display: flex;
     flex-direction: column;
+    // Lets the value's font size follow the card's width, so a long amount fits a small card.
     container-type: inline-size;
 }
 

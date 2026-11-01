@@ -19,9 +19,12 @@
             </Bmotion>
             <Bmotion Initial="Bm.To(opacity: 0, y: 16)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Enter(3)">
                 <div class="hero-actions">
-                    <BitButton Size="BitSize.Large" IconName="@BitIconName.BarChartVerticalFill" Href="@WorkbenchUrls.Workbench("pos-dashboard")">
-                        @Localizer[nameof(WorkbenchStrings.HomeOpenFirstPage)]
-                    </BitButton>
+                    @if (HeroPage is { } heroPage)
+                    {
+                        <BitButton Size="BitSize.Large" IconName="@heroPage.IconName" Href="@WorkbenchUrls.Workbench(heroPage.Key)">
+                            @Localizer[heroPage.Key == "pos-dashboard" ? nameof(WorkbenchStrings.HomeOpenFirstPage) : nameof(WorkbenchStrings.HomeCtaOpen)]
+                        </BitButton>
+                    }
                     <BitButton Size="BitSize.Large" Variant="BitVariant.Outline" Href="#why">
                         @Localizer[nameof(WorkbenchStrings.HomeWhyButton)]
                     </BitButton>
@@ -36,20 +39,27 @@
             </Bmotion>
         </div>
 
+        @* Live thumbnails of two showcase pages; both themes load, and the styles show the one that matches the shell's. *@
         <div class="hero-visual" aria-hidden="true">
             <Bmotion Initial="Bm.To(opacity: 0, y: 40)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Bm.Spring(stiffness: 90, damping: 18).WithDelay(0.15)">
                 <div class="laptop-holder">
                     <DeviceFrame Device="@DevicePresets.Find("laptop-hidpi")">
-                        <img class="light-only" src="api/thumbnails/pos-dashboard" alt="" loading="lazy" />
-                        <img class="dark-only" src="api/thumbnails/pos-dashboard?theme=Dark" alt="" loading="lazy" />
+                        @if (HeroPage is { } laptopPage)
+                        {
+                            <img class="light-only" src="@($"api/thumbnails/{laptopPage.Key}")" alt="" loading="lazy" />
+                            <img class="dark-only" src="@($"api/thumbnails/{laptopPage.Key}?theme=Dark")" alt="" loading="lazy" />
+                        }
                     </DeviceFrame>
                 </div>
             </Bmotion>
             <Bmotion Initial="Bm.To(opacity: 0, y: 60, x: 30)" Animate="Bm.To(opacity: 1, y: 0, x: 0)" Transition="Bm.Spring(stiffness: 90, damping: 16).WithDelay(0.35)">
                 <div class="phone-holder">
                     <DeviceFrame Device="DevicePresets.Default">
-                        <img class="light-only" src="api/thumbnails/buildings?phone=true" alt="" loading="lazy" />
-                        <img class="dark-only" src="api/thumbnails/buildings?phone=true&theme=Dark" alt="" loading="lazy" />
+                        @if (PhonePage is { } phonePage)
+                        {
+                            <img class="light-only" src="@($"api/thumbnails/{phonePage.Key}?phone=true")" alt="" loading="lazy" />
+                            <img class="dark-only" src="@($"api/thumbnails/{phonePage.Key}?phone=true&theme=Dark")" alt="" loading="lazy" />
+                        }
                     </DeviceFrame>
                 </div>
             </Bmotion>
@@ -111,14 +121,15 @@
             <h2>@Localizer[nameof(WorkbenchStrings.HomePagesTitle)]</h2>
             <p>@Localizer[nameof(WorkbenchStrings.HomePagesSubtitle)]</p>
         </div>
+        @* One card per catalog page, with its review status and open comments once the review document is open. *@
         <div class="catalog">
             @foreach (var entry in WorkbenchPageCatalog.Pages)
             {
                 <Bmotion Preset="BmPresets.Reveal(distance: 24)" WhileHover="Bm.To(y: -6)">
                     <a class="page-card" href="@WorkbenchUrls.Workbench(entry.Key)">
                         <span class="thumbnail">
-                            <img class="light-only" src="@($"api/thumbnails/{entry.Key}")" alt="@Localizer[entry.TitleKey]" loading="lazy" />
-                            <img class="dark-only" src="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="@Localizer[entry.TitleKey]" loading="lazy" />
+                            <img class="light-only" src="@($"api/thumbnails/{entry.Key}")" alt="" loading="lazy" />
+                            <img class="dark-only" src="@($"api/thumbnails/{entry.Key}?theme=Dark")" alt="" loading="lazy" />
                         </span>
                         <span class="page-body">
                             <span class="page-category"><BitIcon IconName="@entry.IconName" Size="BitSize.Small" /> @Localizer[entry.CategoryKey]</span>
@@ -176,11 +187,14 @@
                 <div class="cta-text">
                     <h2>@Localizer[nameof(WorkbenchStrings.HomeCtaTitle)]</h2>
                     <p>@Localizer[nameof(WorkbenchStrings.HomeCtaText)]</p>
-                    <div class="cta-actions">
-                        <BitButton Size="BitSize.Large" IconName="@BitIconName.Design" Href="@WorkbenchUrls.Workbench(WorkbenchPageCatalog.Pages[0].Key)">
-                            @Localizer[nameof(WorkbenchStrings.HomeCtaOpen)]
-                        </BitButton>
-                    </div>
+                    @if (WorkbenchPageCatalog.Pages.FirstOrDefault() is { } firstPage)
+                    {
+                        <div class="cta-actions">
+                            <BitButton Size="BitSize.Large" IconName="@BitIconName.Design" Href="@WorkbenchUrls.Workbench(firstPage.Key)">
+                                @Localizer[nameof(WorkbenchStrings.HomeCtaOpen)]
+                            </BitButton>
+                        </div>
+                    }
                 </div>
                 <figure class="prompt">
                     <figcaption class="prompt-label"><BitIcon IconName="@BitIconName.Robot" Size="BitSize.Small" /> @Localizer[nameof(WorkbenchStrings.HomeCtaPromptLabel)]</figcaption>
@@ -219,4 +233,6 @@
             </nav>
         </div>
     </footer>
+
+    <ChromeSnackBar />
 </div>

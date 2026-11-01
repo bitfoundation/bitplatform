@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>Een minuut geleden opgeslagen</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>Er ging iets mis op deze pagina.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>Opnieuw laden</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>Deze opmerking verwijderen?</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>De vertalingen konden niet worden opgeslagen.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>Het scherm kon niet aan de flow worden toegevoegd.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>Laptop {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>Desktop {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>Telefoon {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>Tablet {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (opengeklapt)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>Paars</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>Groen</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>Oranje</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>Petrol</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>Roze</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>Gebouwen tonen als</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>De browser stond kopiëren niet toe. Selecteer de tekst en kopieer hem zelf.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>Deze weergave herstellen</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>Dit scherm is nog niet geladen. Wacht even en markeer de knop dan opnieuw.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>Laat de plaatsaanduidingen tussen accolades staan zoals in de oorspronkelijke tekst, anders kan de pagina deze tekst niet tonen.</value>
+    </data>
 </root>

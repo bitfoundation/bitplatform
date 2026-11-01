@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Chrome;
 
+/// <summary>The app's snack bar in a view, showing the messages pages send through the pub-sub service.</summary>
 public partial class ChromeSnackBar
 {
     private Action? unsubscribe;

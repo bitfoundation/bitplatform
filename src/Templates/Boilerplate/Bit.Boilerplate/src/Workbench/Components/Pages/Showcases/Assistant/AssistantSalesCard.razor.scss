@@ -18,6 +18,7 @@
 }
 
 .card-title {
+    // A row of its own, so the value and the change share the next one.
     flex-basis: 100%;
     font-size: 13px;
     color: $bit-color-foreground-secondary;

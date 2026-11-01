@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Buildings.Data;
 
+/// <summary>The sample buildings: landmarks in every Dutch province, plus the variations the page's switches ask for.</summary>
 public static class BuildingSeed
 {
     public static List<Building> Create()
@@ -68,6 +69,7 @@ public static class BuildingSeed
             New("Valkenburg Castle", "Valkenburg aan de Geul", DutchProvince.Limburg, BuildingType.Landmark, 1115, null, null, 50.86194, 5.83083),
         ];
 
+        // Fixed ids, so what the store remembers points at the same buildings after a restart.
         for (var index = 0; index < buildings.Count; index++)
         {
             buildings[index].Id = new Guid(index + 1, 0, 0, new byte[8]);
@@ -76,6 +78,7 @@ public static class BuildingSeed
         return buildings;
     }
 
+    /// <summary>Repeats the buildings for the "many" switch; each copy gets its own id, a number and a shifted spot.</summary>
     public static IEnumerable<Building> Multiply(List<Building> buildings, int times)
     {
         for (var copy = 0; copy < times; copy++)
@@ -100,6 +103,7 @@ public static class BuildingSeed
         }
     }
 
+    /// <summary>A copy with a very long name and city, for the "long" names switch.</summary>
     public static Building Lengthen(Building building)
     {
         var clone = building.Clone();

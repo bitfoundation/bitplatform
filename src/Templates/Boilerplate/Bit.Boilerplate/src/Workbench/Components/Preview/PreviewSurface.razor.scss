@@ -1,5 +1,6 @@
 @import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
 
+// Without the app's chrome nothing else keeps the page clear of the status bar and the home indicator.
 .bare-surface {
     min-height: 100%;
     padding: 1rem;

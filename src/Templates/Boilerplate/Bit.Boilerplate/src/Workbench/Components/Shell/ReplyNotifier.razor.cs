@@ -1,8 +1,14 @@
 namespace Boilerplate.Workbench.Components.Shell;
 
+/// <summary>
+/// Announces the agent's replies on this machine with a tone and a vibration, and with a system notification when
+/// "Notify me" is on. It renders nothing and sits in the Workbench layout, so it works on every shell page.
+/// </summary>
 public partial class ReplyNotifier
 {
+    // Only replies written after this circuit started are announced, so a reload doesn't replay older ones.
     private readonly DateTimeOffset startedAt = DateTimeOffset.UtcNow;
+    // The replies announced so far, as thread id and message index.
     private readonly HashSet<string> announced = [];
 
     [AutoInject] private WorkbenchReviewSession session = default!;
@@ -18,6 +24,10 @@ public partial class ReplyNotifier
 
     private void OnSessionChanged() => InvokeAsync(Announce);
 
+    /// <summary>
+    /// Shows a notification for the latest of the new agent replies, then plays the cue once for the batch. Each step is
+    /// tried on its own, since a browser may lack one of them, as Safari lacks vibration.
+    /// </summary>
     private async Task Announce()
     {
         if (session.CanWrite is false)
@@ -31,22 +41,34 @@ public partial class ReplyNotifier
         if (replies.Count == 0)
             return;
 
-        await webAudio.PlayTone(880, 180);
-        await navigator.Vibrate([60, 40, 60]);
-
-        if (store.ReplyNotifications is false)
-            return;
-
-        var (thread, message, _) = replies[^1];
-        var pageTitle = WorkbenchPageCatalog.Find(thread.PageKey) is { } page ? Localizer[page.TitleKey].Value : thread.PageKey;
-
-        await notification.Show(Localizer[nameof(WorkbenchStrings.AgentRepliedOn), message.Author, pageTitle], new()
+        if (store.ReplyNotifications)
         {
-            Body = message.Text,
-            Tag = thread.Id,
-            Icon = "/_content/Boilerplate.Client.Core/images/bit-logo.png",
-            Data = $"{WorkbenchUrls.Workbench(thread.PageKey)}{thread.Query}"
-        });
+            var (thread, message, _) = replies[^1];
+            var pageTitle = WorkbenchPageCatalog.Find(thread.PageKey) is { } page ? Localizer[page.TitleKey].Value : thread.PageKey;
+
+            await TryAsync(async () => await notification.Show(Localizer[nameof(WorkbenchStrings.AgentRepliedOn), message.Author, pageTitle], new()
+            {
+                Body = message.Text,
+                Tag = thread.Id,
+                Icon = "/_content/Boilerplate.Client.Core/images/bit-logo.png",
+                Data = $"{WorkbenchUrls.Workbench(thread.PageKey)}{thread.Query}"
+            }));
+        }
+
+        await TryAsync(async () => await webAudio.PlayTone(880, 180));
+        await TryAsync(async () => await navigator.Vibrate([60, 40, 60]));
+    }
+
+    /// <summary>Runs a browser call, ignoring the error it raises where the browser can't do it.</summary>
+    private static async Task TryAsync(Func<Task> call)
+    {
+        try
+        {
+            await call();
+        }
+        catch (JSException)
+        {
+        }
     }
 
     public override async ValueTask DisposeAsync()

@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 
+/// <summary>The dashboard's edit mode and widget layout, kept per view.</summary>
 [BlexStore(Name = "dashboard", Persist = true)]
 public partial class DashboardStore
 {

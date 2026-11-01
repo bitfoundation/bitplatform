@@ -1,6 +1,9 @@
 //+:cnd:noEmit
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// The sample accounts a view can be signed in as (a global admin, a store manager and a demo user) and the sample tenants.
+/// </summary>
 public static class WorkbenchDemoUsers
 {
     public static IReadOnlyList<WorkbenchDemoUser> All { get; } =
@@ -16,8 +19,10 @@ public static class WorkbenchDemoUsers
         nameof(WorkbenchStrings.DemoTenantHeadOffice),
     ];
 
+    /// <summary>The user at this index, clamped to the list.</summary>
     public static WorkbenchDemoUser Find(int index) => All[Math.Clamp(index, 0, All.Count - 1)];
 
+    // The store manager is a tenant admin, or a second global admin when the app has no multitenancy.
     //#if (multitenant == true)
     private const string StoreManagerRole = AppRoles.TenantAdmin;
     //#else

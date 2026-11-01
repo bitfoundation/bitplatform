@@ -4,17 +4,20 @@
     top: 0;
     left: 0;
     right: 0;
+    // Above the page's own fixed layers.
     z-index: 1000001;
     display: flex;
     position: fixed;
     align-items: center;
     pointer-events: none;
     justify-content: space-between;
+    // Fills the device's top safe area, which the preview sets.
     height: var(--bit-env-inset-top);
     color: $bit-color-foreground-primary;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
 
     &.apple.phone {
+        // Puts the time and the icons on either side of the iPhone's notch.
         padding: 0 calc(50% - 160px) 0 calc(50% - 160px);
         padding-top: 4px;
 

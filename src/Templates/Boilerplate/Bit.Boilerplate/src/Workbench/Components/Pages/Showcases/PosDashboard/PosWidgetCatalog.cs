@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.PosDashboard;
 
+/// <summary>Every widget the dashboard offers, in the default order, with its title, icon, component and default size.</summary>
 public static class PosWidgetCatalog
 {
     public static IReadOnlyList<PosWidgetDefinition> All { get; } =
@@ -20,5 +21,6 @@ public static class PosWidgetCatalog
 
     public static PosWidgetDefinition? Find(string key) => All.FirstOrDefault(d => d.Key == key);
 
+    /// <summary>The default layout: every widget shown at its default size.</summary>
     public static List<PosWidgetLayout> CreateDefaultLayout() => [.. All.Select(d => new PosWidgetLayout { Key = d.Key, Size = d.DefaultSize })];
 }

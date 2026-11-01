@@ -14,6 +14,7 @@
 }
 else if (isSmallScreen)
 {
+    @* On a phone: the selected view's page rendered right here, and the tools in a full-screen panel behind a floating button. *@
     <div class="phone-layout">
         <div class="inline-surface">
             @if (isRestored)
@@ -74,6 +75,7 @@ else if (isSmallScreen)
 }
 else
 {
+    @* Wider screens: the page list, the views as iframes of /preview, and the tabs for the selected view. *@
     <div class="workbench">
         <header class="topbar">
             <a class="brand" href="/">
@@ -89,7 +91,7 @@ else
 
             <BitSpacer />
 
-            <div class="modes" role="radiogroup" aria-label="@Localizer[nameof(WorkbenchStrings.Mode)]">
+            <div class="modes" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.Mode)]">
                 @foreach (var (mode, iconName, textKey) in modes)
                 {
                     <BitButton IconOnly Size="BitSize.Small"
@@ -97,6 +99,7 @@ else
                                IconName="@iconName"
                                Title="@Localizer[textKey]"
                                AriaLabel="@Localizer[textKey]"
+                               aria-pressed="@(store.Mode == mode ? "true" : "false")"
                                OnClick="() => SetMode(mode)" />
                 }
             </div>
@@ -151,7 +154,8 @@ else
                                  OnRotate="p => store.RotatePane(p.Id)"
                                  OnScreenshot="DownloadScreenshot"
                                  OnResize="size => store.ResizePane(size.Pane.Id, size.Width, size.Height)"
-                                 Breakpoints="breakpoints" />
+                                 Breakpoints="breakpoints"
+                                 SnapshotId="@SnapshotOf(pane)" />
                 }
             }
             else
@@ -162,56 +166,64 @@ else
             }
         </section>
 
+        @* Edit text mode takes the column over from whichever tab is open. *@
         <aside class="sidebar inspector-column">
-            <div class="column-tabs" role="tablist">
-                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ViewColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ViewColumn ? "true" : "false")"
-                        @onclick="() => store.ShowColumn(WorkbenchModes.ViewColumn)">@Localizer[nameof(WorkbenchStrings.ViewTab)]</button>
-                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ReviewColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ReviewColumn ? "true" : "false")"
-                        @onclick="() => store.ShowColumn(WorkbenchModes.ReviewColumn)">
-                    @Localizer[nameof(WorkbenchStrings.ReviewTab)]
-                    @if (OpenThreadCount > 0)
-                    {
-                        <span class="tab-count">@OpenThreadCount</span>
-                    }
-                </button>
-                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.ChecksColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.ChecksColumn ? "true" : "false")"
-                        @onclick="() => store.ShowColumn(WorkbenchModes.ChecksColumn)">@Localizer[nameof(WorkbenchStrings.ChecksTab)]</button>
-                <button type="button" role="tab" class="column-tab @(store.Column == WorkbenchModes.FlowsColumn ? "active" : null)" aria-selected="@(store.Column == WorkbenchModes.FlowsColumn ? "true" : "false")"
-                        @onclick="() => store.ShowColumn(WorkbenchModes.FlowsColumn)">@Localizer[nameof(WorkbenchStrings.Flows)]</button>
+            @* Only the open tab is in the tab order; the arrow keys move between them. *@
+            <div class="column-tabs" role="tablist" @onkeydown="OnColumnTabKeyDown">
+                @for (var index = 0; index < columns.Length; index++)
+                {
+                    var tabIndex = index;
+                    var (column, textKey) = columns[index];
+                    var isActive = store.Column == column;
+                    <button type="button" role="tab" id="@($"wb-tab-{column}")" aria-controls="wb-column-panel"
+                            class="column-tab @(isActive ? "active" : null)" aria-selected="@(isActive ? "true" : "false")" tabindex="@(isActive ? 0 : -1)"
+                            @ref="columnTabs[tabIndex]"
+                            @onclick="() => store.ShowColumn(column)">
+                        @Localizer[textKey]
+                        @if (column == WorkbenchModes.ReviewColumn && OpenThreadCount > 0)
+                        {
+                            <span class="tab-count">@OpenThreadCount</span>
+                        }
+                    </button>
+                }
             </div>
-            @if (store.Mode == WorkbenchModes.Text)
-            {
-                <TextPanel Text="@pickedText?.Text"
-                           Matches="@(pickedText?.Matches ?? [])"
-                           CanSave="reviewSession.CanWrite && textEdits.CanWriteFiles"
-                           Culture="@store.SelectedPane.Scenario.Culture"
-                           OnSaved="OnTextSaved"
-                           OnAskAgent="AskAgentCallback" />
-            }
-            else if (store.Column == WorkbenchModes.ChecksColumn)
-            {
-                <ChecksPanel PaneId="@store.SelectedPane.Id" />
-            }
-            else if (store.Column == WorkbenchModes.FlowsColumn)
-            {
-                <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
-            }
-            else if (store.Column == WorkbenchModes.ReviewColumn)
-            {
-                <ReviewPanel Page="pageInfo"
-                             PendingAnchor="pendingComment?.Anchor"
-                             SelectedThreadId="@selectedThreadId"
-                             ReviewerName="@ReviewerName"
-                             ReviewerNameChanged="store.NameReviewer"
-                             OnSelect="SelectThread"
-                             OnShow="ShowThread"
-                             OnSend="SendComment"
-                             OnCancel="CancelComment" />
-            }
-            else
-            {
-                <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" Zoom="@store.Zoom" ZoomChanged="store.SetZoom" />
-            }
+            <div role="tabpanel" id="wb-column-panel" aria-labelledby="@($"wb-tab-{store.Column}")">
+                @if (store.Mode == WorkbenchModes.Text)
+                {
+                    <TextPanel Text="@pickedText?.Text"
+                               Matches="@(pickedText?.Matches ?? [])"
+                               CanSave="reviewSession.CanWrite && textEdits.CanWriteFiles"
+                               Culture="@store.SelectedPane.Scenario.Culture"
+                               OnSaved="OnTextSaved"
+                               OnAskAgent="AskAgentCallback" />
+                }
+                else if (store.Column == WorkbenchModes.ChecksColumn)
+                {
+                    <ChecksPanel PaneId="@store.SelectedPane.Id" View="@($"{pageInfo.Key}{store.SelectedPane.Scenario.ToQueryString()}")" />
+                }
+                else if (store.Column == WorkbenchModes.FlowsColumn)
+                {
+                    <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
+                }
+                else if (store.Column == WorkbenchModes.ReviewColumn)
+                {
+                    <ReviewPanel Page="pageInfo"
+                                 PendingAnchor="pendingComment?.Anchor"
+                                 SelectedThreadId="@selectedThreadId"
+                                 ReviewerName="@ReviewerName"
+                                 ReviewerNameChanged="store.NameReviewer"
+                                 OnSelect="SelectThread"
+                                 OnShow="ShowThread"
+                                 OnSend="SendComment"
+                                 OnCancel="CancelComment" />
+                }
+                else
+                {
+                    <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" Zoom="@store.Zoom" ZoomChanged="store.SetZoom" />
+                }
+            </div>
         </aside>
     </div>
+
+    <ChromeSnackBar />
 }

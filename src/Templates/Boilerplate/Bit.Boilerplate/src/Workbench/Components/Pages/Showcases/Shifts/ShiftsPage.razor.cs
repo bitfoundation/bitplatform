@@ -1,5 +1,9 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Shifts;
 
+/// <summary>
+/// The shift planner: a BitFullCalendar timeline of shifts per team member, with staff and role filters and an editor
+/// to add or change a shift. Moves, resizes and deletes on the calendar save at once.
+/// </summary>
 public partial class ShiftsPage
 {
     private static readonly BitFullCalendarView[] views = [BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month, BitFullCalendarView.Agenda];
@@ -8,6 +12,7 @@ public partial class ShiftsPage
 
     private static readonly ShiftRole[] allRoles = Enum.GetValues<ShiftRole>();
 
+    /// <summary>Each role's color, a data color for the calendar, the legend and the filters.</summary>
     private static readonly Dictionary<ShiftRole, string> roleColors = new()
     {
         [ShiftRole.Lead] = "#8b5cf6",
@@ -22,12 +27,15 @@ public partial class ShiftsPage
     private bool isLoading = true;
     private bool isFailed;
     private Shift[] shifts = [];
+    // The stored shifts the page shows or last saved, so it tells its own saves from shifts set elsewhere.
+    private Shift[]? appliedShifts;
     private List<BitFullCalendarEvent> events = [];
     private IReadOnlyList<BitFullCalendarResource> resources = [];
     private IReadOnlyList<BitFullCalendarColorOption> roles = [];
     private List<BitDropdownItem<string>> staffFilterItems = [];
     private List<BitDropdownItem<ShiftRole>> roleFilterItems = [];
     private BitFullCalendarTexts texts = new();
+    // Shifts stay within opening hours and may not overlap.
     private readonly BitFullCalendarSettings settings = new()
     {
         AllowEventOverlap = false,
@@ -44,6 +52,7 @@ public partial class ShiftsPage
     [AutoInject] private ShiftsStore store = default!;
     [AutoInject] private ShiftsService shiftsService = default!;
 
+    /// <summary>The shifts in the week the calendar's date falls in, for the summary under the title.</summary>
     private IEnumerable<Shift> WeekShifts
     {
         get
@@ -54,6 +63,7 @@ public partial class ShiftsPage
         }
     }
 
+    /// <summary>A day on phones, where a week doesn't fit, a month elsewhere; used until the user picks a view.</summary>
     private BitFullCalendarView DefaultView => isPhone ? BitFullCalendarView.Day : BitFullCalendarView.Month;
 
     private int WeekShiftCount => WeekShifts.Count();
@@ -73,11 +83,18 @@ public partial class ShiftsPage
         if (IsPrerendering)
             return;
 
+        // The filters and the edited shifts come from the store, so they are read once it holds what the browser saved.
         await WhenStateRestored();
         resources = CreateResources();
+
+        // Store state that comes from elsewhere, like a reset, reloads the shifts; a filter change rebuilds the rows and events.
+        OwnsSubscription(store.Subscribe(() => store.Shifts, stored => OnStoredShiftsChanged(stored)));
+        OwnsSubscription(store.Subscribe(() => (store.StaffFilter, store.RoleFilter), _ => OnFiltersChanged()));
+
         await Reload();
     }
 
+    /// <summary>Loads the shifts and builds the calendar's events; a simulated failure shows the retry message.</summary>
     private async Task Reload()
     {
         isLoading = true;
@@ -87,6 +104,7 @@ public partial class ShiftsPage
         try
         {
             shifts = await shiftsService.GetShifts(CurrentCancellationToken);
+            appliedShifts = store.Shifts;
             events = CreateEvents();
         }
         catch (WorkbenchSimulatedException)
@@ -101,34 +119,53 @@ public partial class ShiftsPage
         isLoading = false;
     }
 
+    /// <summary>Whether the staff filter shows this person; an unset filter shows everyone.</summary>
     private bool IsShown(string staffKey) => store.StaffFilter is not { } staff || staff.Contains(staffKey);
 
+    /// <summary>Whether the role filter shows this role; an unset filter shows every role.</summary>
     private bool IsShown(ShiftRole role) => store.RoleFilter is not { } filter || filter.Contains(role);
 
+    /// <summary>The staff filter's text: all staff, or the chosen names.</summary>
     private string StaffFilterText => store.StaffFilter is not { } keys || keys.Length == allStaffKeys.Length
         ? Localizer[nameof(WorkbenchStrings.ShiftsAllStaff)]
         : string.Join(", ", keys.Select(key => Localizer[key].Value));
 
+    /// <summary>The role filter's text: all roles, or the chosen ones.</summary>
     private string RoleFilterText => store.RoleFilter is not { } filter || filter.Length == allRoles.Length
         ? Localizer[nameof(WorkbenchStrings.ShiftsAllRoles)]
         : string.Join(", ", filter.Select(role => Localizer[$"ShiftsRole{role}"].Value));
 
+    /// <summary>The calendar's rows: the team members the staff filter shows.</summary>
     private List<BitFullCalendarResource> CreateResources() =>
         [.. ShiftsService.Staff.Where(member => IsShown(member.NameKey)).Select(member => new BitFullCalendarResource { Id = member.NameKey, Title = Localizer[member.NameKey], Subtitle = Localizer[$"ShiftsRole{member.Role}"] })];
 
-    private void FilterStaff(IEnumerable<string?> keys)
+    private void FilterStaff(IEnumerable<string?> keys) => store.FilterStaff([.. keys.OfType<string>()]);
+
+    private void FilterRoles(IEnumerable<ShiftRole> filter) => store.FilterRoles([.. filter]);
+
+    /// <summary>Reloads the shifts when the store got them from elsewhere, like a reset; the page's own saves are skipped.</summary>
+    private void OnStoredShiftsChanged(Shift[]? stored)
     {
-        store.FilterStaff([.. keys.OfType<string>()]);
-        resources = CreateResources();
-        events = CreateEvents();
+        if (ReferenceEquals(stored, appliedShifts))
+            return;
+
+        appliedShifts = stored;
+
+        _ = InvokeAsync(Reload);
     }
 
-    private void FilterRoles(IEnumerable<ShiftRole> filter)
+    /// <summary>Rebuilds the rows and events for the filters the store holds.</summary>
+    private void OnFiltersChanged()
     {
-        store.FilterRoles([.. filter]);
-        events = CreateEvents();
+        _ = InvokeAsync(() =>
+        {
+            resources = CreateResources();
+            events = CreateEvents();
+            StateHasChanged();
+        });
     }
 
+    /// <summary>The calendar's events: the filtered shifts, plus the stocktake and the day off as blocking backgrounds.</summary>
     private List<BitFullCalendarEvent> CreateEvents()
     {
         List<BitFullCalendarEvent> result = [.. shifts.Where(shift => IsShown(shift.StaffKey) && IsShown(shift.Role)).Select(ToEvent)];
@@ -169,6 +206,7 @@ public partial class ShiftsPage
         return result;
     }
 
+    /// <summary>A shift as a calendar event, colored by its role's color option.</summary>
     private BitFullCalendarEvent ToEvent(Shift shift) => new()
     {
         Id = shift.Id,
@@ -180,6 +218,7 @@ public partial class ShiftsPage
         Resource = shift.StaffKey
     };
 
+    /// <summary>Saves a shift the user moved, resized or deleted on the calendar.</summary>
     private async Task OnChange(BitFullCalendarChangeEventArgs args)
     {
         if (args.Event.IsBackground)
@@ -190,11 +229,13 @@ public partial class ShiftsPage
             : [.. shifts.Where(s => s.Id != args.Event.Id), FromEvent(args.Event)];
 
         shifts = updated;
+        appliedShifts = updated;
         events = CreateEvents();
 
-        await shiftsService.Save(updated, CurrentCancellationToken);
+        await shiftsService.Save(updated);
     }
 
+    /// <summary>A calendar event the user moved or edited, as a shift; the sample title key stays while the title reads the same.</summary>
     private Shift FromEvent(BitFullCalendarEvent calendarEvent)
     {
         var previous = shifts.FirstOrDefault(s => s.Id == calendarEvent.Id);
@@ -210,6 +251,7 @@ public partial class ShiftsPage
                    keptTitle ? null : calendarEvent.Title);
     }
 
+    /// <summary>The calendar's texts from the Calendar resources; a text without a resource keeps the calendar's own.</summary>
     private BitFullCalendarTexts CreateTexts()
     {
         var calendarTexts = new BitFullCalendarTexts();
@@ -232,8 +274,12 @@ public partial class ShiftsPage
         isPhone = phone;
     }
 
+    /// <summary>Opens the editor to add a shift in the slot, inside opening hours, four hours long unless the slot sets an end.</summary>
     private Task OpenNew(BitFullCalendarEvent? slot)
     {
+        if (isLoading || isFailed)
+            return Task.CompletedTask;
+
         var staff = ShiftsService.Staff.FirstOrDefault(member => member.NameKey == slot?.Resource) ?? ShiftsService.Staff[0];
         var start = slot?.StartDate ?? (store.Date ?? DateTime.Today).Date;
 
@@ -248,6 +294,7 @@ public partial class ShiftsPage
         return editor!.Open(new(Guid.NewGuid().ToString("N"), staff.NameKey, staff.Role, start, end > closing ? closing : end), isNew: true);
     }
 
+    /// <summary>Opens the editor on a clicked shift; background events and a failed load open nothing.</summary>
     private Task OpenExisting(BitFullCalendarEvent calendarEvent)
     {
         if (isFailed || calendarEvent.IsBackground || shifts.FirstOrDefault(s => s.Id == calendarEvent.Id) is not { } shift)
@@ -256,6 +303,7 @@ public partial class ShiftsPage
         return editor!.Open(shift, isNew: false);
     }
 
+    /// <summary>The calendar's reason to refuse a shift the editor would save, as a message; null when it fits.</summary>
     private string? ValidateShift(Shift shift)
     {
         return (calendar?.State.ValidateRange(shift.Id, shift.Start, shift.End, shift.StaffKey) ?? BitFullCalendarChangeRefusal.None) switch
@@ -268,27 +316,33 @@ public partial class ShiftsPage
         };
     }
 
+    /// <summary>Keeps the shift the editor saved and confirms it.</summary>
     private async Task OnEditorSaved(Shift shift)
     {
         shifts = [.. shifts.Where(s => s.Id != shift.Id), shift];
+        appliedShifts = shifts;
         events = CreateEvents();
 
-        await shiftsService.Save(shifts, CurrentCancellationToken);
+        await shiftsService.Save(shifts);
 
         SnackBarService.Success(Localizer[nameof(WorkbenchStrings.ShiftsSaved)]);
     }
 
+    /// <summary>Drops the shift the editor deleted and says so.</summary>
     private async Task OnEditorDeleted(Shift shift)
     {
         shifts = [.. shifts.Where(s => s.Id != shift.Id)];
+        appliedShifts = shifts;
         events = CreateEvents();
 
-        await shiftsService.Save(shifts, CurrentCancellationToken);
+        await shiftsService.Save(shifts);
 
         SnackBarService.Info(Localizer[nameof(WorkbenchStrings.ShiftsDeleted)]);
     }
 
+    /// <summary>A role's color, for the role dots in the filters and the editor.</summary>
     public static string RoleColor(ShiftRole role) => roleColors[role];
 
+    /// <summary>The id of a role's color option on the calendar.</summary>
     private static string ToColorId(ShiftRole role) => role.ToString().ToLowerInvariant();
 }

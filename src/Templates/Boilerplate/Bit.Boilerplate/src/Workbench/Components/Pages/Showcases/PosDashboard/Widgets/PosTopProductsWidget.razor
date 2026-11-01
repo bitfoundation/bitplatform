@@ -27,7 +27,7 @@
                     <span class="emoji" aria-hidden="true">@product.Emoji</span>
                     <span class="details">
                         <span class="name">@Localizer[product.NameKey]</span>
-                        <span class="bar"><span style="width:@BarWidth(product.Revenue, top)"></span></span>
+                        <span class="bar"><span style="width:@PosFormat.BarWidth(product.Revenue, top)"></span></span>
                     </span>
                     <span class="figures">
                         <span class="revenue">@PosFormat.Money(product.Revenue, 0)</span>

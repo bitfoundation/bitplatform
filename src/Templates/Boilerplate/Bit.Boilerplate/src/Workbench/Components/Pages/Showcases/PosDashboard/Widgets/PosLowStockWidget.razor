@@ -25,7 +25,7 @@
                         <span class="level">@Localizer[nameof(WorkbenchStrings.PosInStock), PosFormat.Number(item.InStock), PosFormat.Number(item.Minimum)]</span>
                     </span>
                     <span class="badge @(item.IsOut ? "out" : "low")">@Localizer[item.IsOut ? nameof(WorkbenchStrings.PosOutOfStock) : nameof(WorkbenchStrings.PosLowStockBadge)]</span>
-                    @if (ordered.Contains(item.NameKey))
+                    @if (store.ReorderedItems.Contains(item.NameKey))
                     {
                         <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Accept" Disabled>@Localizer[nameof(WorkbenchStrings.PosOrdered)]</BitButton>
                     }

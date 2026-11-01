@@ -1,9 +1,15 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Theme;
 
+/// <summary>
+/// The Theme and components page: the theme's colors, type scale and corner radii, then every bit component the app
+/// uses in each of its states. Scripts/states.ts draws hover, focus and pressed; the overlay switch opens one overlay.
+/// </summary>
 public partial class ThemePage
 {
+    /// <summary>The suffixes of each color family's tokens: main, hover, active, dark, light and text.</summary>
     private static readonly string[] variants = ["", "-hover", "-active", "-dark", "-light", "-text"];
 
+    /// <summary>The color tokens the Colors section shows, by family.</summary>
     private static readonly (string NameKey, string[] Tokens)[] families =
     [
         .. new (string NameKey, string Code)[]
@@ -22,6 +28,7 @@ public partial class ThemePage
         (nameof(WorkbenchStrings.ThemeBorder), ["--bit-clr-brd-pri", "--bit-clr-brd-sec", "--bit-clr-brd-ter", "--bit-clr-brd-dis"])
     ];
 
+    /// <summary>Every typography except Inherit, which has no look of its own.</summary>
     private static readonly BitTypography[] typographies = [.. Enum.GetValues<BitTypography>().Where(t => t is not BitTypography.Inherit)];
 
     private static readonly string[] radii = ["xs", "sm", "md", "lg", "xl", "2xl", "control", "surface", "popup", "dialog", "full"];
@@ -30,6 +37,7 @@ public partial class ThemePage
 
     private static readonly BitColor[] messageColors = [BitColor.Info, BitColor.Success, BitColor.Warning, BitColor.SevereWarning, BitColor.Error];
 
+    /// <summary>The states shown for interactive components, with the state states.ts forces; null is the untouched default.</summary>
     private static readonly (string NameKey, string? Force)[] interactionStates =
     [
         (nameof(WorkbenchStrings.ThemeStateDefault), null),
@@ -38,6 +46,7 @@ public partial class ThemePage
         (nameof(WorkbenchStrings.ThemeStatePressed), "active")
     ];
 
+    /// <summary>Sample people, one per presence, for the BitPersona row.</summary>
     private static readonly (string NameKey, BitPersonaPresence Presence)[] people =
     [
         (nameof(WorkbenchStrings.DemoUserSarah), BitPersonaPresence.Online),
@@ -50,12 +59,14 @@ public partial class ThemePage
 
     private readonly DateTimeOffset? sampleDate = new DateTimeOffset(1990, 5, 17, 0, 0, 0, TimeSpan.Zero);
 
+    // Each color token's computed value, read in the browser after the first render and when the view's theme or accent changes.
     private Dictionary<string, string> values = [];
     private List<BitDropdownItem<string>> options = [];
     private List<BitChoiceGroupItem<string>> choices = [];
     private List<BitMenuButtonItem> menuItems = [];
     private List<BitNavBarItem> navBarItems = [];
     private List<BitNavItem> navItems = [];
+    // Which overlay is open; the overlay page switch opens one after the first render.
     private bool isDropdownOpen;
     private bool isDatePickerOpen;
     private bool isMenuOpen;
@@ -63,6 +74,9 @@ public partial class ThemePage
     private bool isPanelOpen;
     private ElementReference overlaysSection;
 
+    [AutoInject] private BitAccentColorService accentColorService = default!;
+
+    // Texts the samples share.
     private string SampleText => Localizer[nameof(WorkbenchStrings.ThemeSampleText)];
 
     private string SampleName => Localizer[nameof(WorkbenchStrings.DemoUserSarah)];
@@ -125,53 +139,97 @@ public partial class ThemePage
             new() { Key = "profile", Text = AppLocalizer[nameof(AppStrings.ProfileTitle)], IconName = BitIconName.Contact },
             new() { Key = "settings", Text = AppLocalizer[nameof(AppStrings.Settings)], IconName = BitIconName.Settings }
         ];
+
+        // A theme or accent the view switches to in place changes the token values.
+        ScenarioState.Changed += OnLookChanged;
+        accentColorService.AccentChanged += OnAccentChanged;
     }
 
+    /// <summary>Forces the marked states after each render; the first also reads the tokens and opens the switch's overlay.</summary>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JSRuntime.InvokeVoidAsync("workbench.forceStates");
-
-        if (firstRender is false)
-            return;
-
-        values = await JSRuntime.InvokeAsync<Dictionary<string, string>>("workbench.readTokens", [families.SelectMany(family => family.Tokens).ToArray()]);
-
-        var overlay = Scenario.GetSwitch("overlay");
-
-        if (overlay is "dropdown" or "date" or "menu")
+        try
         {
-            await overlaysSection.ScrollIntoView(true);
-        }
+            await JSRuntime.InvokeVoidAsync("workbench.forceStates");
 
-        switch (overlay)
+            if (firstRender is false)
+                return;
+
+            values = await ReadTokens();
+
+            var overlay = Scenario.GetSwitch("overlay");
+
+            // These open in place, so their section is brought into view first.
+            if (overlay is "dropdown" or "date" or "menu")
+            {
+                await overlaysSection.ScrollIntoView(true);
+            }
+
+            switch (overlay)
+            {
+                case "dropdown":
+                    isDropdownOpen = true;
+                    break;
+                case "date":
+                    isDatePickerOpen = true;
+                    break;
+                case "menu":
+                    isMenuOpen = true;
+                    break;
+                case "dialog":
+                    isDialogOpen = true;
+                    break;
+                case "panel":
+                    isPanelOpen = true;
+                    break;
+                case "snackbar":
+                    ShowSnackBars();
+                    break;
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception exception) when (exception is JSDisconnectedException or OperationCanceledException)
         {
-            case "dropdown":
-                isDropdownOpen = true;
-                break;
-            case "date":
-                isDatePickerOpen = true;
-                break;
-            case "menu":
-                isMenuOpen = true;
-                break;
-            case "dialog":
-                isDialogOpen = true;
-                break;
-            case "panel":
-                isPanelOpen = true;
-                break;
-            case "snackbar":
-                ShowSnackBars();
-                break;
+            // The view went away while the browser was being asked.
         }
-
-        StateHasChanged();
     }
 
+    /// <summary>Each color token's computed value, read in the browser.</summary>
+    private ValueTask<Dictionary<string, string>> ReadTokens() =>
+        JSRuntime.InvokeAsync<Dictionary<string, string>>("workbench.readTokens", [families.SelectMany(family => family.Tokens).ToArray()]);
+
+    private void OnLookChanged() => _ = InvokeAsync(RefreshTokens);
+
+    private void OnAccentChanged(object? sender, EventArgs e) => OnLookChanged();
+
+    /// <summary>Reads the token values again and shows them.</summary>
+    private async Task RefreshTokens()
+    {
+        try
+        {
+            values = await ReadTokens();
+            StateHasChanged();
+        }
+        catch (Exception exception) when (exception is JSDisconnectedException or OperationCanceledException)
+        {
+            // The view went away while the browser was being asked.
+        }
+    }
+
+    /// <summary>Shows a success, a warning and an error snack bar.</summary>
     private void ShowSnackBars()
     {
-        SnackBarService.Success(nameof(BitColor.Success), Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Success]);
-        SnackBarService.Warning(nameof(BitColor.Warning), Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Warning]);
-        SnackBarService.Error(nameof(BitColor.Error), Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Error]);
+        SnackBarService.Success(Localizer[nameof(WorkbenchStrings.ThemeSuccess)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Success]);
+        SnackBarService.Warning(Localizer[nameof(WorkbenchStrings.ThemeWarning)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Warning]);
+        SnackBarService.Error(Localizer[nameof(WorkbenchStrings.ThemeError)], Localizer[nameof(WorkbenchStrings.ThemeMessage), BitColor.Error]);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        ScenarioState.Changed -= OnLookChanged;
+        accentColorService.AccentChanged -= OnAccentChanged;
+
+        base.Dispose(disposing);
     }
 }

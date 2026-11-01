@@ -2,6 +2,7 @@
 @import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
 
 ::deep {
+    // On phones the menu opens as a sheet along the screen's edge, inside the safe area.
     .app-menu-callout {
         @include lt-sm {
             height: unset;
@@ -23,6 +24,7 @@
         max-width: 12rem;
     }
 
+    // The menu button shows only the photo; the name beside it is a separate text.
     .persona-details {
         display: none;
     }
@@ -34,6 +36,7 @@
         }
     }
 
+    // Lets a long account name shrink instead of widening the menu.
     .account-button {
         .bit-acb-inn,
         .bit-acb-con,

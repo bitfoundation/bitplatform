@@ -5,6 +5,9 @@ using Microsoft.Extensions.Localization;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// Builds the review sheet: one self-contained HTML file with the views' screenshots, the page's status and its comments.
+/// </summary>
 public static class WorkbenchReviewSheet
 {
     private const string Styles = """
@@ -116,6 +119,7 @@ public static class WorkbenchReviewSheet
         return builder.ToString();
     }
 
+    /// <summary>A view's device, theme, language, data state and sign-in, as one line.</summary>
     private static string Describe(WorkbenchScenario scenario, IStringLocalizer localizer)
     {
         var device = scenario.DevicePreset;

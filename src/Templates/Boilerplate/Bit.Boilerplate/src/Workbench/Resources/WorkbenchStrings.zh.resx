@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>一分钟前已保存</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>此页面出了点问题。</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>重新加载</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>删除这条评论？</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>无法保存翻译。</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>无法将此屏幕添加到流程。</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>笔记本电脑 {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>台式机 {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>手机 {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>平板电脑 {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0}（展开）</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>紫色</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>绿色</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>橙色</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>青绿色</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>玫红色</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>建筑显示方式</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>浏览器不允许复制。请选中文字并自行复制。</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>重置此视图</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>此屏幕尚未加载完成。请稍等片刻，然后重新标记按钮。</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>请保留原文中花括号内的占位符，否则页面无法显示这段文字。</value>
+    </data>
 </root>

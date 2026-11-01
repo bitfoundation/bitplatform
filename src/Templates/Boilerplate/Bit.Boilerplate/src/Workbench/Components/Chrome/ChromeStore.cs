@@ -1,5 +1,9 @@
 namespace Boilerplate.Workbench.Components.Chrome;
 
+/// <summary>
+/// What the user changes in a view's chrome: the nav panel, the account menu, the tenant, accent, time zone and
+/// notifications. It is saved per view, except whether the menu is open.
+/// </summary>
 [BlexStore(Name = "chrome", Persist = true)]
 public partial class ChromeStore
 {

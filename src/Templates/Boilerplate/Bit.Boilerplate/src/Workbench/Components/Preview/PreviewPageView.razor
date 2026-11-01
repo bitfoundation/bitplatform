@@ -1,7 +1,23 @@
 @inherits WorkbenchComponentBase
 
-<AuthorizeRouteView RouteData="routeData">
-    <NotAuthorized>
-        <NotAuthorizedPage PageType="Page.ComponentType" />
-    </NotAuthorized>
-</AuthorizeRouteView>
+@* A page that throws shows this instead of a frame that never finishes, with a way back to its defaults. *@
+<PreviewErrorBoundary @ref="errorBoundary" OnError="OnPageFailed">
+    <ChildContent>
+        @* Signed out, or without the role the page asks for, the app's own not-authorized page shows instead. *@
+        <AuthorizeRouteView RouteData="routeData">
+            <NotAuthorized>
+                <NotAuthorizedPage PageType="Page.ComponentType" />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+    </ChildContent>
+    <ErrorContent>
+        <BitStack Alignment="BitAlignment.Center" Gap="1rem" Padding="2rem" role="alert">
+            <BitText Typography="BitTypography.H6">@AppLocalizer[nameof(AppStrings.SomethingWentWrong)]</BitText>
+            @if (AppEnvironment.IsDevelopment())
+            {
+                <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary" Dir="BitDir.Auto">@context.Message</BitText>
+            }
+            <BitButton IconName="@BitIconName.Refresh" OnClick="ResetView">@Localizer[nameof(WorkbenchStrings.ResetThisView)]</BitButton>
+        </BitStack>
+    </ErrorContent>
+</PreviewErrorBoundary>

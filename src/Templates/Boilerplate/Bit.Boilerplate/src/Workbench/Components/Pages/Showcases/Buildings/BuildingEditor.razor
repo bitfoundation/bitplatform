@@ -1,6 +1,6 @@
 @inherits WorkbenchComponentBase
 
-<BitModal @bind-IsOpen="isOpen" Blocking MaxWidth="34rem" Classes="@(new() { Content = "editor-modal" })">
+<BitModal @bind-IsOpen="isOpen" OnDismiss="Close" Blocking MaxWidth="34rem" Classes="@(new() { Content = "editor-modal" })">
     @if (model is not null && editContext is not null)
     {
         <div class="editor">

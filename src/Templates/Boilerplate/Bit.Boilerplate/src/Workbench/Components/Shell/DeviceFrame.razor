@@ -10,6 +10,7 @@
     <div class="screen">
         @ChildContent
 
+        @* The camera cutout, drawn in portrait only *@
         @if (ShowFrame && Device.IsLandscape(Rotated) is false)
         {
             @if (Device.Cutout is DeviceCutout.Island)
@@ -35,6 +36,7 @@
         <span class="side-button power"></span>
     }
 
+    @* Drag handles for a custom size; Scripts/index.ts handles the drag *@
     @if (Resizable)
     {
         <span class="resize-handle resize-x" data-axis="x" aria-hidden="true"></span>

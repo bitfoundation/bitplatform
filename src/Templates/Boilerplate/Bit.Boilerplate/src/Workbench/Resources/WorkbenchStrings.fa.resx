@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>یک دقیقه پیش ذخیره شد</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>مشکلی در این صفحه پیش آمد.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>بارگذاری دوباره</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>این نظر حذف شود؟</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>ترجمه‌ها ذخیره نشدند.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>صفحه به مسیر اضافه نشد.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>لپ‌تاپ {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>رایانهٔ رومیزی {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>گوشی {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>تبلت {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (باز)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>بنفش</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>سبز</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>نارنجی</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>سبزآبی</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>صورتی</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>نمایش ساختمان‌ها به صورت</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>مرورگر اجازهٔ کپی نداد. متن را انتخاب کنید و خودتان کپی کنید.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>بازنشانی این نما</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>این صفحه هنوز بارگذاری نشده است. کمی صبر کنید و دوباره دکمه را علامت بزنید.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>جای‌نگهدارهای داخل آکولاد را همان‌طور که در متن اصلی آمده‌اند نگه دارید، وگرنه صفحه نمی‌تواند این متن را نشان دهد.</value>
+    </data>
 </root>

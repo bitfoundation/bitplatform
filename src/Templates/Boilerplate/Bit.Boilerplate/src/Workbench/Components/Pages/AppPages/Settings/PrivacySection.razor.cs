@@ -3,6 +3,7 @@ using System.Text.Json;
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 
+/// <summary>The Workbench copy of the app's privacy section: consents live in the store; the export downloads the profile.</summary>
 public partial class PrivacySection
 {
     private const string Analytics = nameof(Analytics);
@@ -38,9 +39,17 @@ public partial class PrivacySection
         _ => string.Empty
     };
 
+    /// <summary>Downloads the profile as a JSON file, where the app downloads a zip from its server.</summary>
     private async Task ExportPersonalData()
     {
-        await ScenarioState.Save(CurrentCancellationToken);
+        try
+        {
+            await ScenarioState.Save(CurrentCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
 
         var json = JsonSerializer.Serialize(Page.Profile, new JsonSerializerOptions { WriteIndented = true });
 

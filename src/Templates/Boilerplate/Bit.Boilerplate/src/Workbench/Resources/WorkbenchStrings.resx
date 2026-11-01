@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>Saved a minute ago</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>Something went wrong on this page.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>Reload</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>Delete this comment?</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>The translations couldn't be saved.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>The screen couldn't be added to the flow.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>Laptop {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>Desktop {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>Phone {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>Tablet {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (open)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>Purple</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>Green</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>Orange</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>Teal</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>Rose</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>Show the buildings as</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>The browser didn't allow copying. Select the text and copy it yourself.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>Reset this view</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>This screen hasn't loaded yet. Wait a moment, then mark the button again.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>Keep the placeholders in curly braces as the original text has them, or the page can't show this text.</value>
+    </data>
 </root>

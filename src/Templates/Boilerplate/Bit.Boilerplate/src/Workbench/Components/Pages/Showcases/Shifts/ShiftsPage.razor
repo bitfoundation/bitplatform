@@ -1,5 +1,6 @@
 @inherits WorkbenchComponentBase
 
+@* Phones start on the day view. *@
 <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="OnPhoneChanged" />
 
 <div class="shifts">
@@ -41,6 +42,7 @@
         </BitDropdown>
     </div>
 
+    @* The error and empty messages sit above the calendar, which stays in place. *@
     @if (isFailed)
     {
         <BitMessage Color="BitColor.Warning" Multiline Title="@Localizer[nameof(WorkbenchStrings.LoadFailed)]">
@@ -68,7 +70,7 @@
                      DateChanged="store.GoTo"
                      Views="views"
                      IsLoading="isLoading"
-                     ReadOnly="isFailed"
+                     ReadOnly="isFailed || isLoading"
                      HideFilters
                      HideSettings
                      OnChange="OnChange"

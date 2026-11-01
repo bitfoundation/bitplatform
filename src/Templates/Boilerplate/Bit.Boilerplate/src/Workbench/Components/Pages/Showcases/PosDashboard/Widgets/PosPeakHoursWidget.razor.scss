@@ -7,6 +7,7 @@
 .heatmap {
     gap: 4px;
     display: grid;
+    // Keeps the cells readable on phones, where the wrapper scrolls sideways.
     min-width: 28rem;
     align-items: center;
     grid-template-columns: 2.75rem repeat(var(--hours), minmax(0, 1fr));
@@ -26,6 +27,7 @@
 .cell {
     height: 1.375rem;
     border-radius: 5px;
+    // Busier cells get more of the primary color; even a quiet one gets a hint.
     background-color: color-mix(in srgb, #{$bit-color-primary} calc(8% + var(--level) * 92%), #{$bit-color-background-secondary});
 }
 
@@ -43,5 +45,10 @@
         height: 8px;
         border-radius: 4px;
         background: linear-gradient(90deg, #{$bit-color-background-secondary}, #{$bit-color-primary});
+
+        // The scale runs from quiet to busy in the reading direction.
+        &:dir(rtl) {
+            background: linear-gradient(270deg, #{$bit-color-background-secondary}, #{$bit-color-primary});
+        }
     }
 }

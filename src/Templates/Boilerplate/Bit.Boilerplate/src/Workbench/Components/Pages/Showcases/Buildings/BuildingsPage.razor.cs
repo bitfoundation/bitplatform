@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Buildings;
 
+/// <summary>
+/// A data grid (or cards) and a map of the Netherlands that stay in sync: selecting a building on either selects it on
+/// both. Users the ManageBuildings policy allows add, edit and delete; their changes live in <c>BuildingsStore</c>.
+/// </summary>
 public partial class BuildingsPage
 {
     private const string OutlineLayerId = "netherlands-outline";
@@ -10,6 +14,7 @@ public partial class BuildingsPage
 
     private static readonly BitMapClustering clustering = new();
 
+    // The Dutch government's base map, which can't be panned or zoomed out of the country.
     private readonly BitLeafletMapProvider provider = new()
     {
         TileUrl = "https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:3857/{z}/{x}/{y}.png",
@@ -40,6 +45,7 @@ public partial class BuildingsPage
 
     private string? SearchText => store.SearchText;
 
+    /// <summary>The loaded buildings whose name, city, province or type, as shown, contains the search text.</summary>
     private IEnumerable<Building> FilteredBuildings => string.IsNullOrWhiteSpace(SearchText)
         ? buildings
         : buildings.Where(b => b.Name.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)
@@ -49,6 +55,7 @@ public partial class BuildingsPage
 
     protected override async Task OnParametersSetAsync()
     {
+        // Whether the signed-in user may add, edit and delete buildings.
         canManage = await AuthorizationService.IsAuthorized((await AuthenticationStateTask).User, WorkbenchPolicies.ManageBuildings);
     }
 
@@ -61,6 +68,7 @@ public partial class BuildingsPage
 
         await WhenStateRestored();
 
+        // The editor reopens the draft the store holds, so it renders only once the store is restored.
         isRestored = true;
 
         await Reload();
@@ -71,6 +79,7 @@ public partial class BuildingsPage
         BuildMarkers();
     }
 
+    /// <summary>Loads the buildings through the scenario state and selects the one the store remembers.</summary>
     private async Task Reload()
     {
         status = PosWidgetStatus.Loading;
@@ -93,6 +102,7 @@ public partial class BuildingsPage
         BuildMarkers();
     }
 
+    /// <summary>Rebuilds the markers from the filtered buildings, with the selected one red and on top.</summary>
     private void BuildMarkers()
     {
         markers = [.. FilteredBuildings.Select(b => new BitMapMarker
@@ -109,6 +119,7 @@ public partial class BuildingsPage
         })];
     }
 
+    /// <summary>Draws the country's outline, dims everything outside it and goes back to the saved view.</summary>
     private async Task OnMapReady()
     {
         if (map is null)
@@ -145,6 +156,7 @@ public partial class BuildingsPage
         BuildMarkers();
     }
 
+    /// <summary>Opens the editor for a new building where the map was double-clicked, if that is inside the country.</summary>
     private async Task OnMapDoubleClick(BitMapLatLng position)
     {
         if (canManage is false || status is not PosWidgetStatus.Ready and not PosWidgetStatus.Empty)
@@ -194,6 +206,7 @@ public partial class BuildingsPage
         }
     }
 
+    /// <summary>Selects the building everywhere; <paramref name="flyTo"/> also moves the map to it when it is visible.</summary>
     private async Task Select(Building building, bool flyTo)
     {
         store.Select(building.Id);
@@ -207,6 +220,7 @@ public partial class BuildingsPage
 
     }
 
+    /// <summary>Delete or Backspace on the map deletes the selected building, after a confirmation.</summary>
     private async Task OnMapKeyDown(KeyboardEventArgs args)
     {
         if (canManage && args.Key is "Delete" or "Backspace" && buildings.FirstOrDefault(b => b.Id == store.SelectedId) is { } building)
@@ -215,6 +229,7 @@ public partial class BuildingsPage
         }
     }
 
+    /// <summary>Opens the editor for a new building at the map's starting center.</summary>
     private Task OpenAdd()
     {
         var center = provider.Center;
@@ -224,6 +239,7 @@ public partial class BuildingsPage
 
     private Task OpenEdit(Building building) => canManage ? editor!.Open(building, isNew: false) : Task.CompletedTask;
 
+    /// <summary>Puts the saved building into the list, or adds it, and selects it.</summary>
     private async Task OnSaved(Building building)
     {
         var index = buildings.FindIndex(b => b.Id == building.Id);
@@ -250,7 +266,14 @@ public partial class BuildingsPage
         if (confirmed is false)
             return;
 
-        await buildingsService.Delete(building.Id, CurrentCancellationToken);
+        try
+        {
+            await buildingsService.Delete(building.Id, CurrentCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
 
         buildings.RemoveAll(b => b.Id == building.Id);
         status = buildings.Count == 0 ? PosWidgetStatus.Empty : PosWidgetStatus.Ready;
@@ -267,8 +290,7 @@ public partial class BuildingsPage
 
     private void ShowOutsideWarning() => SnackBarService.Warning(Localizer[nameof(WorkbenchStrings.BuildingsOutsideTitle)], Localizer[nameof(WorkbenchStrings.BuildingsOutsideBody)]);
 
-    private object? SortByProvince(Building building) => Localizer[$"Province{building.Province}"].Value;
-
+    /// <summary>Sorts by the type's translated name, the way the column shows it.</summary>
     private object? SortByType(Building building) => Localizer[$"BuildingType{building.Type}"].Value;
 
     private void OnNarrowChanged(bool narrow)
@@ -276,6 +298,7 @@ public partial class BuildingsPage
         isNarrow = narrow;
     }
 
+    /// <summary>The color that marks a building type in the list and on the map, a data color the theme check leaves alone.</summary>
     public static string GetTypeColor(BuildingType type) => type switch
     {
         BuildingType.Museum => "#8b5cf6",

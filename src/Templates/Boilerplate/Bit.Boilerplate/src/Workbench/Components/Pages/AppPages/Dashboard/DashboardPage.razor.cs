@@ -1,5 +1,9 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 
+/// <summary>
+/// The Workbench copy of the app's dashboard. The widget layout and the edit mode live in <c>DashboardStore</c>, where
+/// the app keeps the layout in its storage service and the edit mode in a field.
+/// </summary>
 public partial class DashboardPage
 {
     private static readonly DashboardWidget[] defaults = [new(nameof(OverallStatsWidget), 6), new(nameof(ProductsCountPerCategoryWidget), 3), new(nameof(ProductsPercentageWidget), 3)];
@@ -13,6 +17,7 @@ public partial class DashboardPage
         await WhenStateRestored();
     }
 
+    /// <summary>The saved layout without widgets that no longer exist, then the missing ones with their defaults.</summary>
     private IList<DashboardWidget> Widgets
     {
         get
@@ -35,5 +40,15 @@ public partial class DashboardPage
 
     private void SaveWidgets(IList<DashboardWidget> widgets) => store.Arrange([.. widgets]);
 
-    public record DashboardWidget(string Id, int Span, bool Hidden = false);
+    /// <summary>A widget's place in the layout: its id, its span out of six columns and whether it is hidden.</summary>
+    public record DashboardWidget(string Id, int Span, bool Hidden = false)
+    {
+        /// <summary>
+        /// Equal by id, as the app's widget is the same instance after a change: a resized or hidden widget keeps its
+        /// element, its loaded data and the focus.
+        /// </summary>
+        public virtual bool Equals(DashboardWidget? other) => other is not null && other.Id == Id;
+
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Id);
+    }
 }

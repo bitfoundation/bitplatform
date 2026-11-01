@@ -17,6 +17,7 @@ section {
     }
 }
 
+// The titles are BitText components, reached through their Class.
 ::deep .section-title {
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -34,6 +35,7 @@ section {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    // The segments are BitButtons; this lets them shrink to equal columns.
     ::deep .segment {
         min-width: 0;
         padding-inline: 0.25rem;
@@ -129,6 +131,7 @@ section {
     flex-shrink: 0;
     font-size: 12px;
     font-weight: 700;
+    // A pin shape, like the comment markers on the page.
     border-radius: 50% 50% 50% 4px;
     align-items: center;
     justify-content: center;

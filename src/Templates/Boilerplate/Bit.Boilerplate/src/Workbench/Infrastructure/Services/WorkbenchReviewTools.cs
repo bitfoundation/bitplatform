@@ -5,6 +5,7 @@ using ModelContextProtocol.Protocol;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>The review tools the Workbench's MCP server offers the coding agent; each one calls WorkbenchReviewAgent.</summary>
 [McpServerToolType]
 public sealed partial class WorkbenchReviewTools
 {
@@ -16,11 +17,7 @@ public sealed partial class WorkbenchReviewTools
     [Description("Returns the review comments people left on pages in the Workbench, each pinned to an element of a view (its device, theme, language, data state and sign-in), with the conversation so far and your task list for it. Also returns each page's review status. Call it once when you start, then call wait_for_review with the cursor it returns.")]
     public async Task<string> GetReview([Description("Also return comments that are done.")] bool includeDone = false, CancellationToken cancellationToken = default)
     {
-        var threads = await agent.GetThreads(cancellationToken);
-        var pages = await agent.GetPages(cancellationToken);
-        var flows = await agent.GetFlows(cancellationToken);
-
-        return JsonSerializer.Serialize(WorkbenchReviewJson.Describe(threads.Where(t => includeDone || t.Status is not WorkbenchReviewStatus.Done), pages, threads.Select(t => t.Sequence).DefaultIfEmpty(0).Max(), flows), jsonOptions);
+        return JsonSerializer.Serialize(await agent.DescribeReview(includeDone, cancellationToken), jsonOptions);
     }
 
     [McpServerTool(Name = "wait_for_review", ReadOnly = true)]
@@ -97,5 +94,6 @@ public sealed partial class WorkbenchReviewTools
             : new TextContentBlock { Text = "There is no comment with that id." };
     }
 
+    /// <summary>The agent's name, as its MCP client introduced itself.</summary>
     private static string AgentName(McpServer server) => server.ClientInfo?.Title ?? server.ClientInfo?.Name ?? "Agent";
 }

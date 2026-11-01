@@ -90,10 +90,12 @@
     color: $bit-color-foreground-secondary;
 }
 
+// Today's labels in the timeline header use the primary text color.
 .shifts ::deep .today > .bit-bfc-tl-time-cell-label {
     color: $bit-color-foreground-primary;
 }
 
+// A narrower staff column on phones leaves room for the hours.
 @include lt-sm {
     .shifts ::deep .bit-bfc-tl-corner,
     .shifts ::deep .bit-bfc-tl-resource-cell {

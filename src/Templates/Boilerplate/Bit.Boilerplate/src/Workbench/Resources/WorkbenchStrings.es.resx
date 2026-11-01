@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>Guardado hace un minuto</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>Algo salió mal en esta página.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>Volver a cargar</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>¿Eliminar este comentario?</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>No se pudieron guardar las traducciones.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>No se pudo añadir la pantalla al flujo.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>Portátil {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>Equipo de escritorio {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>Teléfono {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>Tableta {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (abierto)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>Morado</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>Verde</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>Naranja</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>Verde azulado</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>Rosa</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>Mostrar los edificios como</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>El navegador no permitió copiar. Selecciona el texto y cópialo tú.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>Restablecer esta vista</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>Esta pantalla aún no ha cargado. Espera un momento y vuelve a marcar el botón.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>Mantén los marcadores entre llaves tal como están en el texto original; de lo contrario, la página no podrá mostrar este texto.</value>
+    </data>
 </root>

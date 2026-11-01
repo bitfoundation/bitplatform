@@ -39,6 +39,7 @@
         background-color: color-mix(in srgb, #{$bit-color-primary} 10%, transparent);
     }
 
+    // Lines the BitIcon up with the title's first line.
     ::deep .page-icon {
         margin-top: 2px;
     }

@@ -1,5 +1,6 @@
 @inherits WorkbenchComponentBase
 
+@* Widgets read the filter and edit mode from the page, and call its Move, Resize and Hide. *@
 <CascadingValue Value="this">
     <div class="pos-dashboard">
         <div class="dashboard-header">
@@ -44,6 +45,7 @@
             </div>
         }
 
+        @* The grid waits for the saved layout; each item draws its widget's component from the catalog. *@
         @if (isLayoutLoaded)
         {
             <Bortable @ref="bortable"
@@ -63,9 +65,22 @@
                 </ItemTemplate>
             </Bortable>
         }
+        else
+        {
+            @* Until then the default layout's cards show their loading state. *@
+            <div class="dashboard-grid">
+                @foreach (var widget in placeholders)
+                {
+                    <div class="@GetItemClass(widget)">
+                        <PosWidgetFrame Definition="PosWidgetCatalog.Find(widget.Key)!" Layout="widget" Status="PosWidgetStatus.Loading" />
+                    </div>
+                }
+            </div>
+        }
     </div>
 
-    <BitPanel IsOpen="store.IsGalleryOpen" IsOpenChanged="store.OpenGallery" Placement="BitPlacement.End" HeaderText="@Localizer[nameof(WorkbenchStrings.PosWidgetGallery)]">
+    @* The gallery lists the hidden widgets, to add them back. *@
+    <BitPanel IsOpen="store.IsGalleryOpen" IsOpenChanged="store.OpenGallery" Placement="BitPlacement.End" HeaderText="@Localizer[nameof(WorkbenchStrings.PosWidgetGallery)]" ShowCloseButton>
         <div class="gallery">
             @foreach (var widget in hiddenWidgets.ToList())
             {

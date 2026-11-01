@@ -3,6 +3,10 @@ using Bit.Bcrdt;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>
+/// Reads and writes the review's Bcrdt document: threads, page statuses, flows and the agent, each in a map of its own.
+/// Texts are trimmed to fixed lengths, so one entry can't make the document grow without bound.
+/// </summary>
 public static class WorkbenchReviewDocument
 {
     public const string Id = "workbench-review";
@@ -19,6 +23,7 @@ public static class WorkbenchReviewDocument
 
     private static long lastSequence;
 
+    /// <summary>A number taken from the clock that only grows within the process, so cursors still work after a restart.</summary>
     public static long NextSequence()
     {
         while (true)
@@ -31,6 +36,7 @@ public static class WorkbenchReviewDocument
         }
     }
 
+    /// <summary>Reads every thread, numbered per page in the order they were made.</summary>
     public static List<WorkbenchReviewThread> ReadThreads(BcrdtMap threads)
     {
         List<WorkbenchReviewThread> result = [];
@@ -102,6 +108,7 @@ public static class WorkbenchReviewDocument
         return [.. result.OrderBy(f => f.CreatedAt)];
     }
 
+    /// <summary>Writes a flow over the one with the same id, keeping when it was first made.</summary>
     public static void SaveFlow(BcrdtMap flows, string id, string name, IEnumerable<WorkbenchFlowScreen> screens, IEnumerable<WorkbenchFlowLink> links)
     {
         var flow = new BcrdtMap();
@@ -162,6 +169,7 @@ public static class WorkbenchReviewDocument
         return true;
     }
 
+    /// <summary>Removes a screen and every arrow that starts or ends at it.</summary>
     public static bool RemoveScreen(BcrdtMap flows, string flowId, string screenId)
     {
         if (flows.GetMap(flowId) is not { } flow || RemoveItem(flow.GetArray("screens"), screenId) is false)
@@ -302,6 +310,7 @@ public static class WorkbenchReviewDocument
         return false;
     }
 
+    /// <summary>The agent last seen on the review, or null before any agent has called.</summary>
     public static WorkbenchReviewAgentInfo? ReadAgent(BcrdtMap agent)
     {
         return ReadString(agent, "name") is { } name && ReadTime(agent, "at") is { } at
@@ -333,6 +342,7 @@ public static class WorkbenchReviewDocument
         threads.Set(id, thread);
     }
 
+    /// <summary>Adds a message to a thread; one from the reviewer raises the thread's sequence and reopens it if it was done.</summary>
     public static bool AddMessage(BcrdtMap threads, string id, bool fromAgent, string author, string text)
     {
         if (threads.GetMap(id) is not { } thread || thread.GetArray("messages") is not { } messages)
@@ -353,6 +363,7 @@ public static class WorkbenchReviewDocument
         return true;
     }
 
+    /// <summary>Sets a thread's status; a reviewer reopening it raises its sequence, so the agent hears of it.</summary>
     public static bool SetStatus(BcrdtMap threads, string id, WorkbenchReviewStatus status, bool fromAgent)
     {
         if (threads.GetMap(id) is not { } thread)
@@ -399,6 +410,7 @@ public static class WorkbenchReviewDocument
         pages.Set(pageKey, page);
     }
 
+    /// <summary>Records the agent's name, the thread it works on and the time, which the review shows as the agent being online.</summary>
     public static void SetAgent(BcrdtMap agent, string name, string? threadId)
     {
         agent.Set("name", Trim(name, MaxNameLength));
@@ -418,6 +430,7 @@ public static class WorkbenchReviewDocument
         return message;
     }
 
+    /// <summary>The maps in an array, skipping anything else.</summary>
     private static IEnumerable<BcrdtMap> ReadMaps(BcrdtArray? array)
     {
         if (array is null)
@@ -430,6 +443,7 @@ public static class WorkbenchReviewDocument
         }
     }
 
+    /// <summary>Trims the text and cuts it at the given length.</summary>
     private static string? Trim(string? value, int length) => value is null ? null : value.Trim() is var trimmed && trimmed.Length > length ? trimmed[..length] : value.Trim();
 
     private static string? ReadString(BcrdtMap map, string key) => map.Get(key) as string;

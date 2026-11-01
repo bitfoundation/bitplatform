@@ -4,20 +4,24 @@ body {
     padding: 0;
 }
 
+// A page wider than its device is cut off rather than scrolled sideways, as on a phone.
 .wb-preview-body {
     overflow-x: hidden;
 }
 
+// The app's styles stop the document scrolling at phone widths for its app shell; the Workbench's own pages keep it.
 html:has(> .wb-body),
 .wb-body {
     overflow: auto;
 }
 
+// Handheld views show a finger-sized circle instead of the mouse pointer.
 .wb-touch,
 .wb-touch * {
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Ccircle cx='13' cy='13' r='11' fill='rgba(120,120,120,0.35)' stroke='rgba(255,255,255,0.9)' stroke-width='1.5'/%3E%3C/svg%3E") 13 13, auto !important;
 }
 
+// No text gets selected while a drag scrolls a view or resizes a device.
 .wb-dragging,
 .wb-dragging * {
     user-select: none !important;
@@ -28,10 +32,12 @@ html:has(> .wb-body),
     user-select: none !important;
 }
 
+// Keeps the views from taking the pointer while a device is being resized.
 .wb-resizing iframe {
     pointer-events: none;
 }
 
+// The size badge in the middle of a device while it is being resized.
 .device[data-size]::before {
     top: 50%;
     left: 50%;
@@ -47,22 +53,37 @@ html:has(> .wb-body),
     transform: translate(-50%, -50%);
 }
 
+// Reduce motion: bit components get the values bit's own reduced-motion query gives them, so their loaders slow down
+// rather than stop.
+[data-wb-motion="reduce"] {
+    scroll-behavior: auto !important;
+    --bit-mot-loop-factor-reduced: 3;
+    --bit-mot-duration-reduced: 0.01ms;
+    --bit-mot-duration-factor-reduced: 0;
+    --bit-mot-easing-spinner-reduced: linear;
+    --bit-mot-duration-long-reduced: 0.01ms;
+    --bit-mot-duration-spinner-reduced: 4s;
+    --bit-mot-duration-short-reduced: 0.01ms;
+}
+
+// Every transition ends almost at once; 0.01ms rather than 0s, since a zero-length transition never fires the
+// transitionend that panels wait for. Animations are left to the tokens above, as some of them loop.
 [data-wb-motion="reduce"] *,
 [data-wb-motion="reduce"] *::before,
 [data-wb-motion="reduce"] *::after {
-    animation-delay: 0s !important;
     transition-delay: 0s !important;
     scroll-behavior: auto !important;
-    animation-duration: 0s !important;
-    transition-duration: 0s !important;
+    transition-duration: 0.01ms !important;
 }
 
+// Color blindness: the whole page goes through one of the SVG color filters the host page adds.
 @each $vision in protanopia, deuteranopia, tritanopia, achromatopsia {
     [data-wb-vision="#{$vision}"] {
         filter: url("#wb-vision-#{$vision}");
     }
 }
 
+// The SVG that holds those filters takes no space.
 .wb-vision-filters {
     width: 0;
     height: 0;

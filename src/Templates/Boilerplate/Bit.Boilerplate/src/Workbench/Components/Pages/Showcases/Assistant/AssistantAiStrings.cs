@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Assistant;
 
+/// <summary>The AI components' own texts, read from WorkbenchStrings so the chat follows the view's language.</summary>
 public sealed class AssistantAiStrings(IStringLocalizer<WorkbenchStrings> localizer) : BitAiStrings
 {
     public override string Send => localizer[nameof(WorkbenchStrings.AssistantSend)];

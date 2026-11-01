@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
+/// <summary>The sample portraits of the demo users and the point-of-sale staff, found by the resource key of their names.</summary>
 public static class WorkbenchPhotos
 {
     private static readonly Dictionary<string, string> files = new()

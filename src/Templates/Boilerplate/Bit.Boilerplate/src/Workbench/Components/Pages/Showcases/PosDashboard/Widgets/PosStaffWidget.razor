@@ -28,7 +28,7 @@
                                 Presence="@(rank <= 3 ? BitPersonaPresence.Online : BitPersonaPresence.Away)" />
                     <span class="sales">
                         <span class="amount">@PosFormat.Money(member.Sales, 0)</span>
-                        <span class="bar"><span style="width:@BarWidth(member.Sales, top)"></span></span>
+                        <span class="bar"><span style="width:@PosFormat.BarWidth(member.Sales, top)"></span></span>
                     </span>
                     @if (rank == 1)
                     {

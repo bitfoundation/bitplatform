@@ -1,5 +1,6 @@
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Dashboard;
 
+/// <summary>The stand-in for the dashboard's API: product categories with their chart colors and product counts.</summary>
 public static class DashboardDemoData
 {
     public static IReadOnlyList<(string Name, string Color, int ProductCount)> Categories { get; } =

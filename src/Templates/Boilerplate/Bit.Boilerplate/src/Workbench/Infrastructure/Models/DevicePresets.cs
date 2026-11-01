@@ -1,5 +1,8 @@
 namespace Boilerplate.Workbench.Infrastructure.Models;
 
+/// <summary>
+/// The devices a view can be shown on, the sizes the app stores ask for, and the custom size a view gets when it is dragged.
+/// </summary>
 public static class DevicePresets
 {
     public const string DefaultKey = "iphone-18-pro";
@@ -38,6 +41,7 @@ public static class DevicePresets
         new("desktop-1920", "Desktop 1920×1080", DeviceKind.Desktop, 1920, 1080, 1),
         new("desktop-2560", "Desktop 2560×1440", DeviceKind.Desktop, 2560, 1440, 1),
 
+        // The screenshot sizes the App Store, Google Play and the Microsoft Store ask for.
         new("store-apple-iphone-69", "iPhone 6.9\"", DeviceKind.Phone, 440, 956, 3, 62, 34, 55, DeviceCutout.Island, Store: "App Store"),
         new("store-apple-iphone-63", "iPhone 6.3\"", DeviceKind.Phone, 402, 874, 3, 62, 34, 55, DeviceCutout.Island, Store: "App Store"),
         new("store-apple-ipad-13", "iPad 13\"", DeviceKind.Tablet, 1032, 1376, 2, 24, 20, 18, Store: "App Store"),
@@ -49,8 +53,10 @@ public static class DevicePresets
 
     public static DevicePreset Default { get; } = All.First(d => d.Key == DefaultKey);
 
+    /// <summary>The preset with this key, ignoring case, or the default one.</summary>
     public static DevicePreset Find(string? key) => All.FirstOrDefault(d => string.Equals(d.Key, key, StringComparison.OrdinalIgnoreCase)) ?? Default;
 
+    /// <summary>A desktop of the given size, clamped to the limits above; 0 picks a default size.</summary>
     public static DevicePreset Custom(int width, int height)
     {
         width = width is 0 ? 1024 : Math.Clamp(width, MinCustomSize, MaxCustomWidth);

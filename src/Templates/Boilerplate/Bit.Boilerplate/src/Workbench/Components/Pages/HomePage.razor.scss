@@ -95,6 +95,7 @@
     }
 }
 
+// zoom shrinks the full-size device frames to fit the hero; each breakpoint sets its own factor through the custom property.
 .laptop-holder {
     top: 10px;
     position: absolute;
@@ -134,6 +135,7 @@
     object-position: top;
 }
 
+// Of each light and dark thumbnail pair, only the one in the shell's theme shows.
 .dark-only {
     display: none !important;
 }
@@ -148,6 +150,7 @@
     }
 }
 
+// Floats over both devices.
 .chip {
     z-index: 5;
     gap: 0.375rem;

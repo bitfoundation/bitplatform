@@ -5,20 +5,23 @@
     height: 100dvh;
     display: grid;
     overflow: hidden;
-    grid-template-rows: 52px minmax(0, 1fr);
+    grid-template-rows: minmax(52px, auto) minmax(0, 1fr);
     grid-template-columns: 264px minmax(0, 1fr) 312px;
     grid-template-areas: "top top top" "nav canvas inspector";
 
+    // Below lg the page list column folds away to give the views the room.
     @include lt-lg {
         grid-template-columns: 0 minmax(0, 1fr) 300px;
     }
 }
 
+// Wraps onto a second row on a tablet instead of pushing the last buttons out of reach.
 .topbar {
     gap: 0.5rem;
     display: flex;
+    flex-wrap: wrap;
     grid-area: top;
-    padding: 0 0.75rem;
+    padding: 0.375rem 0.75rem;
     align-items: center;
     background-color: $bit-color-background-primary;
     border-bottom: 1px solid $bit-color-border-tertiary;
@@ -94,6 +97,7 @@
     border: 1px solid $bit-color-border-tertiary;
 }
 
+// Stays above the column's content while it scrolls.
 .column-tabs {
     top: 0;
     z-index: 1;
@@ -153,12 +157,14 @@
     &.single {
         justify-content: center;
 
+        // A single view takes the canvas's width; ::deep because .pane is PreviewPane's element.
         ::deep .pane {
             width: 100%;
         }
     }
 
     &.multi {
+        // safe: views wider than the canvas start at its edge instead of being cut off on both sides.
         justify-content: safe center;
 
         ::deep .pane-header {
@@ -173,6 +179,7 @@
     overflow-y: auto;
 }
 
+// Clear of the app's bottom bar and the home indicator.
 .phone-layout ::deep .tools-button {
     bottom: calc(#{$bit-env-inset-bottom} + 4.5rem);
     box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.45);
@@ -188,12 +195,15 @@
     gap: 0.5rem;
     display: flex;
     position: fixed;
+    // Over the app's own chrome, which the inline page draws in this same document.
     z-index: $bit-zindex-modal;
     align-items: center;
     border-radius: 999px;
-    white-space: nowrap;
+    max-width: calc(100vw - 2rem);
     transform: translateX(-50%);
-    padding: 0.25rem 0.25rem 0.25rem 1rem;
+    padding-block: 0.25rem;
+    padding-inline: 1rem 0.25rem;
+    box-sizing: border-box;
     color: $bit-color-foreground-primary;
     background-color: $bit-color-background-primary;
     border: 1px solid $bit-color-border-secondary;

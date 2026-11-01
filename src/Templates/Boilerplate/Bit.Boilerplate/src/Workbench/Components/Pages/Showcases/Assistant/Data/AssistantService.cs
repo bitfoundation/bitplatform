@@ -2,6 +2,10 @@ using System.Runtime.CompilerServices;
 
 namespace Boilerplate.Workbench.Components.Pages.Showcases.Assistant.Data;
 
+/// <summary>
+/// The assistant's stand-in model: an <c>IBitAiTransport</c> that streams scripted replies per topic, with reasoning,
+/// tool calls, an approval, generative UI cards and a document, plus the sample tools those replies call.
+/// </summary>
 public partial class AssistantService : IBitAiTransport
 {
     public const string DefaultModelId = "thorough";
@@ -16,6 +20,7 @@ public partial class AssistantService : IBitAiTransport
 
     private static readonly double[] dailySales = [4380, 4710, 4520, 4960, 5340, 6120, 4790];
 
+    // Each product's name key, the units left and the quantity to order.
     private static readonly (string NameKey, int Left, int Order)[] stockLevels =
     [
         (nameof(WorkbenchStrings.AssistantStockOatMilk), 4, 24),
@@ -29,6 +34,7 @@ public partial class AssistantService : IBitAiTransport
     private BitAiModel[]? models;
     private BitAiToolRegistry? tools;
 
+    /// <summary>The topics the script answers, each matched by the exact text of its suggestion.</summary>
     public static IReadOnlyList<AssistantTopic> Topics { get; } =
     [
         new("sales", nameof(WorkbenchStrings.AssistantSalesPrompt), nameof(WorkbenchStrings.AssistantSalesReasoning)),
@@ -37,8 +43,10 @@ public partial class AssistantService : IBitAiTransport
         new("staff", nameof(WorkbenchStrings.AssistantStaffPrompt), nameof(WorkbenchStrings.AssistantStaffReasoning))
     ];
 
+    /// <summary>The topic of a prompt that matches no suggestion.</summary>
     public static AssistantTopic Fallback { get; } = new("other", string.Empty, null);
 
+    /// <summary>The two stand-in models; only the thorough one shows its reasoning.</summary>
     public IReadOnlyList<BitAiModel> Models => models ??=
     [
         new(DefaultModelId, localizer[nameof(WorkbenchStrings.AssistantModelThorough)])
@@ -59,6 +67,7 @@ public partial class AssistantService : IBitAiTransport
 
     private bool IsSlow => scenarioState.Scenario.Data is WorkbenchDataState.Slow;
 
+    /// <summary>The sample tools the replies call; placing an order writes, so it waits for the user's approval.</summary>
     private BitAiToolRegistry Tools => tools ??= new(
     [
         CreateTool(SalesTool, nameof(WorkbenchStrings.AssistantToolSales), BitIconName.BarChartVerticalFill),
@@ -67,8 +76,10 @@ public partial class AssistantService : IBitAiTransport
         CreateTool(OrderTool, nameof(WorkbenchStrings.AssistantToolOrder), BitIconName.DeliveryTruck, BitAiToolRisk.Write)
     ]);
 
+    /// <summary>The model with that id, or the first one.</summary>
     public BitAiModel FindModel(string? modelId) => Models.FirstOrDefault(m => m.ModelId == modelId) ?? Models[0];
 
+    /// <summary>The topic whose suggestion is the prompt, ignoring case and surrounding spaces.</summary>
     public AssistantTopic Match(string prompt)
     {
         var text = prompt.Trim();
@@ -76,14 +87,18 @@ public partial class AssistantService : IBitAiTransport
         return Topics.FirstOrDefault(topic => string.Equals(localizer[topic.PromptKey], text, StringComparison.CurrentCultureIgnoreCase)) ?? Fallback;
     }
 
+    /// <summary>The sample history, loaded through the scenario state so the data-state switches reach it.</summary>
     public Task<List<BitAiConversationSnapshot>> GetConversations(CancellationToken cancellationToken) =>
         scenarioState.Load("assistant.conversations", CreateConversations, () => [], cancellationToken);
 
+    /// <summary>A session on this transport and the sample tools, unpaced because <c>StreamAsync</c> paces itself.</summary>
     public BitAiChatSession CreateSession(BitAiConversation conversation, string modelId, BitAiStrings strings) =>
         new(this, conversation, new() { RequestOptions = new() { ModelId = modelId }, Strings = strings, Pacing = null }, Tools);
 
+    /// <summary>Streams the scripted reply to the latest user message in small pieces with short pauses, like a live model.</summary>
     public async IAsyncEnumerable<BitAiEvent> StreamAsync(BitAiRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // The reply answers the latest user message; the tool calls after it tell how far its script has got.
         var start = request.Messages.Count - 1;
 
         while (start >= 0 && request.Messages[start].Role.IsUser is false)
@@ -92,6 +107,7 @@ public partial class AssistantService : IBitAiTransport
         }
 
         var calls = request.Messages.Skip(start + 1).SelectMany(m => m.Parts.OfType<BitAiToolCallPart>()).ToArray();
+        // An order approved with "always" earlier in the chat isn't asked about again.
         var askApproval = request.Messages.SelectMany(m => m.Parts.OfType<BitAiToolCallPart>()).Any(c => c.ToolName == OrderTool && c.Approval is BitAiApprovalDecision.ApprovedAlways) is false;
         var topic = Match(start < 0 ? string.Empty : request.Messages[start].GetText());
 
@@ -130,6 +146,7 @@ public partial class AssistantService : IBitAiTransport
         }
     }
 
+    /// <summary>The events of one reply, from its topic and the tool calls already answered in this turn.</summary>
     private List<BitAiEvent> Reply(AssistantTopic topic, BitAiModel model, IReadOnlyList<BitAiToolCallPart> calls, int contextTokens, bool askApproval)
     {
         List<BitAiEvent> events = [new BitAiMessageStartedEvent()];
@@ -191,6 +208,7 @@ public partial class AssistantService : IBitAiTransport
                 break;
         }
 
+        // Usage follows what was written, at about four characters a token.
         var reasoningLength = events.OfType<BitAiReasoningDeltaEvent>().Sum(e => e.Delta.Length);
         var writtenLength = events.Sum(e => e switch
         {
@@ -207,6 +225,7 @@ public partial class AssistantService : IBitAiTransport
         return events;
     }
 
+    /// <summary>The sample result of a tool; any other tool is the order being placed.</summary>
     private BitAiToolOutcome RunTool(string toolName) => toolName switch
     {
         SalesTool => Found(new
@@ -235,13 +254,16 @@ public partial class AssistantService : IBitAiTransport
         _ => BitAiToolOutcome.Success(ToJson(new { order = "PO-1042", lines = stockLevels.Length, arrives = NextDate(DayOfWeek.Friday) }))
     };
 
+    /// <summary>A successful result that cites the dataset it came from.</summary>
     private BitAiToolOutcome Found(object value, string source, string titleKey, string siteKey) => BitAiToolOutcome.Success(ToJson(value)) with
     {
         Citations = [new($"{source}-citation", new($"{source}-source", localizer[titleKey]) { Kind = BitAiSourceKind.Dataset, SiteName = localizer[siteKey] })]
     };
 
+    /// <summary>The low-stock rows, with the product names in the view's language.</summary>
     private AssistantStockItem[] StockItems() => [.. stockLevels.Select(s => new AssistantStockItem(localizer[s.NameKey], s.Left, s.Order))];
 
+    /// <summary>A sample tool that answers after a short wait, longer in the slow state.</summary>
     private AssistantTool CreateTool(string name, string titleKey, string iconName, BitAiToolRisk risk = BitAiToolRisk.ReadOnly) =>
         new(new(name) { Title = localizer[titleKey], Icon = iconName, Risk = risk }, async cancellationToken =>
         {
@@ -250,6 +272,7 @@ public partial class AssistantService : IBitAiTransport
             return RunTool(name);
         });
 
+    /// <summary>The sample history; in the mixed state the newest conversation ends in a failed answer.</summary>
     private List<BitAiConversationSnapshot> CreateConversations()
     {
         var now = DateTimeOffset.Now;
@@ -263,6 +286,7 @@ public partial class AssistantService : IBitAiTransport
         ];
     }
 
+    /// <summary>Plays a topic's script into a finished conversation, approving and answering each tool call on the way.</summary>
     private BitAiConversationSnapshot CreateConversation(string id, string titleKey, DateTimeOffset at, AssistantTopic topic, bool isFailed = false)
     {
         var conversation = new BitAiConversation(id);
@@ -281,6 +305,7 @@ public partial class AssistantService : IBitAiTransport
         {
             BitAiToolCallPart[] pending;
 
+            // One round per request, as a live session makes them, until no tool call is left unanswered.
             do
             {
                 processor.BeginStream();
@@ -311,6 +336,7 @@ public partial class AssistantService : IBitAiTransport
         return Backdate(BitAiConversationSerializer.ToSnapshot(conversation), at);
     }
 
+    /// <summary>Moves the snapshot's times to the given moment, so the history reads as minutes or days old.</summary>
     private static BitAiConversationSnapshot Backdate(BitAiConversationSnapshot snapshot, DateTimeOffset at) => snapshot with
     {
         CreatedAt = at,
@@ -323,12 +349,15 @@ public partial class AssistantService : IBitAiTransport
         })]
     };
 
+    /// <summary>A rough token count of the messages, at four characters a token.</summary>
     private static int ContextTokens(IEnumerable<IBitAiMessage> messages) => messages.Sum(m => m.GetText().Length) / 4;
 
+    /// <summary>The first date after today that falls on the given weekday.</summary>
     private static DateOnly NextDate(DayOfWeek day) => DateOnly.FromDateTime(DateTime.Today.AddDays(((int)day - (int)DateTime.Today.DayOfWeek + 6) % 7 + 1));
 
     private static JsonElement ToJson(object value) => JsonSerializer.SerializeToElement(value, JsonSerializerOptions.Web);
 
+    /// <summary>A tool call with a new id and the given JSON arguments.</summary>
     private static BitAiToolCallStartedEvent CallTool(string toolName, string arguments)
     {
         using var document = JsonDocument.Parse(arguments);
@@ -336,6 +365,7 @@ public partial class AssistantService : IBitAiTransport
         return new(BitAiId.NewToolCallId(), toolName) { Arguments = document.RootElement.Clone() };
     }
 
+    /// <summary>Cuts text into pieces of two to six characters, the way a model streams tokens.</summary>
     private static IEnumerable<string> Slice(string text)
     {
         for (var index = 0; index < text.Length;)

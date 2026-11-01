@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Boilerplate.Workbench.Infrastructure.Services.StandIns;
 
+/// <summary>
+/// Signs the view in as the scenario's demo user, with the claims the app's server would issue,
+/// and tells the page when the scenario's sign-in changes.
+/// </summary>
 public sealed class WorkbenchAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
 {
     private readonly WorkbenchScenarioState scenarioState;
@@ -24,6 +28,7 @@ public sealed class WorkbenchAuthenticationStateProvider : AuthenticationStatePr
     {
         var current = (scenarioState.Scenario.Auth, scenarioState.Scenario.User);
 
+        // Other scenario changes leave the user as is, so they don't re-run the page's authorization.
         if (current == shown)
             return;
 
@@ -31,6 +36,7 @@ public sealed class WorkbenchAuthenticationStateProvider : AuthenticationStatePr
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
+    /// <summary>The demo user's claims, with the role's features; the ids are fixed so they come out the same on every run.</summary>
     private static ClaimsPrincipal CreateUser(WorkbenchScenario scenario)
     {
         if (scenario.Auth is WorkbenchAuthState.SignedOut)

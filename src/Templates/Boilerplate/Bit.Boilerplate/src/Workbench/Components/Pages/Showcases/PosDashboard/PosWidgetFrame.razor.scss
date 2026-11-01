@@ -31,6 +31,7 @@
     padding: 4px;
     cursor: grab;
     display: flex;
+    // A touch on the handle drags the widget instead of scrolling the page.
     touch-action: none;
     border-radius: 6px;
     background: transparent;
@@ -44,6 +45,7 @@
         outline: 2px solid $bit-color-primary;
     }
 
+    // A bigger target for fingers.
     @media (pointer: coarse) {
         padding: 10px;
     }

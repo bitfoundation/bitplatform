@@ -2,6 +2,10 @@ using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings.Account;
 
+/// <summary>
+/// The Workbench copy of the app's change-phone tab: no text message is sent, any token is accepted, and the pending
+/// number is kept in the store.
+/// </summary>
 public partial class ChangePhoneNumberTab
 {
     private bool isWaiting;
@@ -19,9 +23,13 @@ public partial class ChangePhoneNumberTab
     protected override void OnInitialized()
     {
         Subscribe(store);
+        Page.ProfileChanged += OnProfileChanged;
 
         changeModel.PhoneNumber = sendModel.PhoneNumber = string.IsNullOrEmpty(store.PendingPhoneNumber) ? null : store.PendingPhoneNumber;
     }
+
+    // Shows the current number once the page's profile has loaded.
+    private void OnProfileChanged() => StateHasChanged();
 
     private async Task SendToken()
     {
@@ -44,6 +52,9 @@ public partial class ChangePhoneNumberTab
             store.RequestPhoneNumberChange(sendModel.PhoneNumber);
 
             SnackBarService.Success(AppLocalizer[nameof(AppStrings.SuccessfulSendChangePhoneNumberTokenMessage)]);
+        }
+        catch (OperationCanceledException)
+        {
         }
         finally
         {
@@ -72,6 +83,9 @@ public partial class ChangePhoneNumberTab
             store.RequestPhoneNumberChange(null);
             sendModel.PhoneNumber = changeModel.PhoneNumber = changeModel.Token = null;
         }
+        catch (OperationCanceledException)
+        {
+        }
         finally
         {
             isWaiting = false;
@@ -84,5 +98,12 @@ public partial class ChangePhoneNumberTab
         changeModel.PhoneNumber = null;
 
         store.RequestPhoneNumberChange(null);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        Page.ProfileChanged -= OnProfileChanged;
+
+        await base.DisposeAsync();
     }
 }

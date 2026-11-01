@@ -1,6 +1,7 @@
 @inherits WorkbenchComponentBase
 
 <div class="review">
+    @* Opened from another machine, the review is read-only and the agent shows as offline *@
     @if (session.CanWrite is false)
     {
         <section class="live">
@@ -17,6 +18,7 @@
                 @foreach (var status in Enum.GetValues<WorkbenchPageStatus>())
                 {
                     <BitButton Size="BitSize.Small" Class="segment" Variant="@(PageStatus == status ? BitVariant.Fill : BitVariant.Outline)"
+                               aria-pressed="@(PageStatus == status ? "true" : "false")"
                                OnClick="() => session.SetPageStatus(Page.Key, status, ReviewerName)">@Localizer[$"PageStatus{status}"]</BitButton>
                 }
             </div>
@@ -43,6 +45,7 @@
         }
     </section>
 
+    @* The composer for a comment pinned on the page, or the button that starts pinning one *@
     @if (PendingAnchor is { } pendingAnchor && session.CanWrite)
     {
         <section class="composer">
@@ -61,7 +64,7 @@
                           AriaLabel="@Localizer[nameof(WorkbenchStrings.NewComment)]"
                           MaxLength="WorkbenchReviewDocument.MaxTextLength" />
             <div class="composer-actions">
-                <BitButton IconName="@BitIconName.Send" Disabled="string.IsNullOrWhiteSpace(draft)" OnClick="Send">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
+                <BitButton IconName="@BitIconName.Send" Disabled="string.IsNullOrWhiteSpace(draft) || isSending" OnClick="Send">@Localizer[nameof(WorkbenchStrings.Send)]</BitButton>
                 <BitButton Variant="BitVariant.Text" OnClick="CancelPending">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
             </div>
         </section>
@@ -75,8 +78,8 @@
 
     <section class="threads">
         <div class="segments two">
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@(showDone ? BitVariant.Outline : BitVariant.Fill)" OnClick="() => showDone = false">@Localizer[nameof(WorkbenchStrings.OpenComments), OpenCount]</BitButton>
-            <BitButton Size="BitSize.Small" Class="segment" Variant="@(showDone ? BitVariant.Fill : BitVariant.Outline)" OnClick="() => showDone = true">@Localizer[nameof(WorkbenchStrings.DoneComments), DoneCount]</BitButton>
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@(showDone ? BitVariant.Outline : BitVariant.Fill)" aria-pressed="@(showDone ? "false" : "true")" OnClick="() => showDone = false">@Localizer[nameof(WorkbenchStrings.OpenComments), OpenCount]</BitButton>
+            <BitButton Size="BitSize.Small" Class="segment" Variant="@(showDone ? BitVariant.Fill : BitVariant.Outline)" aria-pressed="@(showDone ? "true" : "false")" OnClick="() => showDone = true">@Localizer[nameof(WorkbenchStrings.DoneComments), DoneCount]</BitButton>
         </div>
 
         @if (VisibleThreads.Any() is false)
@@ -120,6 +123,7 @@
                     </ul>
                 }
 
+                @* An open thread: remote viewers can only show its view; this machine can also reply, resolve and delete *@
                 @if (isSelected && session.CanWrite is false)
                 {
                     <div class="thread-actions">
@@ -146,9 +150,11 @@
                             <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.CheckMark" OnClick="() => session.SetStatus(thread.Id, WorkbenchReviewStatus.Done)">@Localizer[nameof(WorkbenchStrings.Resolve)]</BitButton>
                         }
                         <BitButton Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.View" OnClick="() => OnShow.InvokeAsync(thread)">@Localizer[nameof(WorkbenchStrings.ShowView)]</BitButton>
-                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Error" IconOnly IconName="@BitIconName.Delete"
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" Color="BitColor.Error" IconOnly="confirmingDeleteId != thread.Id" IconName="@BitIconName.Delete"
                                    Title="@Localizer[nameof(WorkbenchStrings.DeleteComment)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.DeleteComment)]"
-                                   OnClick="() => Delete(thread)" />
+                                   OnClick="() => Delete(thread)">
+                            @(confirmingDeleteId == thread.Id ? Localizer[nameof(WorkbenchStrings.DeleteCommentConfirm)].Value : null)
+                        </BitButton>
                     </div>
                 }
             </article>

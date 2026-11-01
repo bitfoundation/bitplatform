@@ -2,14 +2,17 @@ using Boilerplate.Shared.Features.Identity.Dtos;
 
 namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 
+/// <summary>The stand-in data of the settings page: the profile, the signed-in sessions and the two-factor setup.</summary>
 public static class SettingsDemoData
 {
     private const string OsImagesUrl = "_content/Boilerplate.Client.Core/images/os";
 
+    // A fixed picture, where the app draws the QR code of the user's own key.
     public const string QrCodeUrl = "images/two-factor-qr.svg";
 
     public const string SharedKey = "jbsw y3dp ehpk 3pxp";
 
+    /// <summary>The session of the device the view stands for, which can't be revoked.</summary>
     public static readonly Guid CurrentSessionId = new(1, 0, 0, new byte[8]);
 
     public static SettingsProfile CreateProfile(string fullName, string email) => new(fullName,

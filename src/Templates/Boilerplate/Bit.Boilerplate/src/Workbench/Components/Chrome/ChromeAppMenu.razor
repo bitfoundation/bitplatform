@@ -4,11 +4,13 @@
 @inherits WorkbenchComponentBase
 
 <section>
-    <BitDropMenu Transparent IsOpen="chromeStore.IsMenuOpen" IsOpenChanged="chromeStore.OpenMenu" Responsive
+    <BitDropMenu Transparent IsOpen="chromeStore.IsMenuOpen" IsOpenChanged="chromeStore.OpenMenu" Responsive LazyRender
                  Width="20rem"
                  MaxWidth="calc(100vw - 1rem)"
                  OnDismiss="ResetMenu"
+                 AriaLabel="@AccountMenuLabel"
                  Classes="@(new() { Callout = "app-menu-callout" })">
+        @* The menu's button: the user's name and photo, or a contact icon when signed out *@
         <Template>
             <BitIcon IconName="@BitIconName.ChevronDown" Size="BitSize.Small" Color="BitColor.Info" Class="menu-chevron" />
             @if (Shell.IsSignedIn)
@@ -35,6 +37,7 @@
         </Template>
         <Body>
             <BitCard FullSize Class="app-menu-card">
+                @* Language list *@
                 @if (showCultures)
                 {
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
@@ -43,6 +46,7 @@
                         </BitActionButton>
                         <BitSeparator />
                         <BitChoiceGroup Items="cultures" NoCircle FullWidth StretchItemLabel
+                                        AriaLabel="@AppLocalizer[nameof(AppStrings.SelectLanguage)]"
                                         DefaultValue="@CultureInfo.CurrentUICulture.Name"
                                         OnChange="(string? culture) => ChangeCulture(culture)">
                             <ItemTemplate Context="item">
@@ -63,6 +67,7 @@
                         </BitActionButton>
                         <BitSeparator />
                         <BitChoiceGroup Items="tenants" NoCircle FullWidth StretchItemLabel
+                                        AriaLabel="@AppLocalizer[nameof(AppStrings.SwitchTenant)]"
                                         DefaultValue="@Shell.TenantKey"
                                         OnChange="(string? tenant) => { Shell.SwitchTenant(tenant!); showTenants = false; }">
                             <ItemTemplate Context="item">
@@ -79,6 +84,7 @@
                     </BitStack>
                 }
                 @*#endif*@
+                @* Main list: accounts, language, tenant, time zone, notifications, theme, accent and sign-out *@
                 @if (showCultures is false && showTenants is false)
                 {
                     <BitStack AutoSize>

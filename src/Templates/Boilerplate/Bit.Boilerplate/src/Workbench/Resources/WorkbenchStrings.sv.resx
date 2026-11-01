@@ -2661,4 +2661,64 @@
     <data name="ThemeTooltipText" xml:space="preserve">
         <value>Sparades för en minut sedan</value>
     </data>
+    <data name="PageFailed" xml:space="preserve">
+        <value>Något gick fel på den här sidan.</value>
+    </data>
+    <data name="ReloadPage" xml:space="preserve">
+        <value>Läs in igen</value>
+    </data>
+    <data name="DeleteCommentConfirm" xml:space="preserve">
+        <value>Ta bort den här kommentaren?</value>
+    </data>
+    <data name="SaveTranslationsFailed" xml:space="preserve">
+        <value>Översättningarna kunde inte sparas.</value>
+    </data>
+    <data name="AddScreenFailed" xml:space="preserve">
+        <value>Skärmen kunde inte läggas till i flödet.</value>
+    </data>
+    <data name="DeviceLaptop" xml:space="preserve">
+        <value>Bärbar dator {0}</value>
+    </data>
+    <data name="DeviceDesktop" xml:space="preserve">
+        <value>Stationär dator {0}</value>
+    </data>
+    <data name="DevicePhone" xml:space="preserve">
+        <value>Telefon {0}</value>
+    </data>
+    <data name="DeviceTablet" xml:space="preserve">
+        <value>Surfplatta {0}</value>
+    </data>
+    <data name="DeviceOpen" xml:space="preserve">
+        <value>{0} (uppfälld)</value>
+    </data>
+    <data name="AccentPurple" xml:space="preserve">
+        <value>Lila</value>
+    </data>
+    <data name="AccentGreen" xml:space="preserve">
+        <value>Grön</value>
+    </data>
+    <data name="AccentOrange" xml:space="preserve">
+        <value>Orange</value>
+    </data>
+    <data name="AccentTeal" xml:space="preserve">
+        <value>Blågrön</value>
+    </data>
+    <data name="AccentRose" xml:space="preserve">
+        <value>Rosa</value>
+    </data>
+    <data name="BuildingsViewSwitch" xml:space="preserve">
+        <value>Visa byggnaderna som</value>
+    </data>
+    <data name="CopyFailed" xml:space="preserve">
+        <value>Webbläsaren tillät inte kopiering. Markera texten och kopiera den själv.</value>
+    </data>
+    <data name="ResetThisView" xml:space="preserve">
+        <value>Återställ den här vyn</value>
+    </data>
+    <data name="ScreenNotLoaded" xml:space="preserve">
+        <value>Den här skärmen har inte laddats än. Vänta en stund och markera knappen igen.</value>
+    </data>
+    <data name="TextKeepPlaceholders" xml:space="preserve">
+        <value>Behåll platshållarna inom klammerparenteser som i originaltexten, annars kan sidan inte visa den här texten.</value>
+    </data>
 </root>

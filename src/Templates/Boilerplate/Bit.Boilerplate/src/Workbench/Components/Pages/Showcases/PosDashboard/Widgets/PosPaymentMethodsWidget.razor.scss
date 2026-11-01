@@ -21,6 +21,7 @@
     display: flex;
     position: absolute;
     align-items: center;
+    // Lets the pointer reach the chart's slices under the total.
     pointer-events: none;
     flex-direction: column;
     justify-content: center;

@@ -1,33 +1,39 @@
 @inherits WorkbenchComponentBase
 
-<div class="pane @(IsSelected ? "selected" : null)" @onclick="Select">
+@* Focus anywhere in the view, its page included, selects it, so the keyboard can select a view too *@
+<div class="pane @(IsSelected ? "selected" : null)"
+     role="group"
+     aria-label="@deviceName"
+     aria-current="@(IsSelected ? "true" : null)"
+     @onclick="Select"
+     @onfocusin="Select">
     <div class="pane-header">
         <BitIcon IconName="@GetDeviceIconName(device)" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
-        <BitText Typography="BitTypography.Body2" Class="pane-device" NoWrap>@(device.Key == DevicePresets.CustomKey ? Localizer[nameof(WorkbenchStrings.CustomSize)] : device.Name)</BitText>
+        <BitText Typography="BitTypography.Body2" Class="pane-device" NoWrap>@deviceName</BitText>
         <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary" Class="pane-size" NoWrap>@SizeText</BitText>
         @foreach (var chip in GetChips())
         {
             <span class="pane-chip">@chip</span>
         }
         <BitSpacer />
-        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text"
+        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" StopPropagation
                    IconName="@BitIconName.Rotate"
                    Title="@Localizer[nameof(WorkbenchStrings.Rotate)]"
                    AriaLabel="@Localizer[nameof(WorkbenchStrings.Rotate)]"
                    OnClick="() => OnRotate.InvokeAsync(Pane)" />
-        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text"
+        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" StopPropagation
                    IconName="@BitIconName.Camera"
                    Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]"
                    AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]"
                    OnClick="() => OnScreenshot.InvokeAsync(Pane)" />
-        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text"
+        <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" StopPropagation
                    IconName="@BitIconName.OpenInNewTab"
                    Href="@previewUrl" Target="_blank"
                    Title="@Localizer[nameof(WorkbenchStrings.OpenInNewTab)]"
                    AriaLabel="@Localizer[nameof(WorkbenchStrings.OpenInNewTab)]" />
         @if (CanRemove)
         {
-            <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text"
+            <BitButton IconOnly Size="BitSize.Small" Variant="BitVariant.Text" StopPropagation
                        IconName="@BitIconName.Cancel"
                        Title="@Localizer[nameof(WorkbenchStrings.RemoveView)]"
                        AriaLabel="@Localizer[nameof(WorkbenchStrings.RemoveView)]"
@@ -35,6 +41,7 @@
         }
     </div>
 
+    @* The app's breakpoints, the current one highlighted; a click snaps the view's width to one *@
     @if (Breakpoints.Count > 0)
     {
         <div class="breakpoints" role="group" aria-label="@Localizer[nameof(WorkbenchStrings.Breakpoints)]">
@@ -53,6 +60,7 @@
         </div>
     }
 
+    @* The device at its real size, scaled by index.ts; the ring fades once the preview posts that it is ready *@
     <div class="pane-stage"
          style="@StageStyle"
          data-frame-width="@frameWidth"
