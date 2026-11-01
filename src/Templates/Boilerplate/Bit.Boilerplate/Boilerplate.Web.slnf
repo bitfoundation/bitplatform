@@ -15,6 +15,9 @@
       "src\\Server\\Boilerplate.Server.Web\\Boilerplate.Server.Web.csproj",
       "src\\Shared\\Boilerplate.Shared.csproj",
       "src\\Tests\\Boilerplate.Tests.csproj",
+//#if (advancedTests == true)
+      "src\\WorkbenchTests\\Boilerplate.WorkbenchTests.csproj",
+//#endif
       "src\\Workbench\\Boilerplate.Workbench.csproj"
     ]
   }

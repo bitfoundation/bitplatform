@@ -76,6 +76,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B38FF18E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Tests", "src\Tests\Boilerplate.Tests.csproj", "{47F82CD8-D6DA-4F03-9DD6-F67AF3621C93}"
 EndProject
+#if (advancedTests == true)
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.WorkbenchTests", "src\WorkbenchTests\Boilerplate.WorkbenchTests.csproj", "{BF36608B-E37B-4556-960A-30869FE092BB}"
+EndProject
+//#endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workbench", "Workbench", "{5E3393CE-5AFC-49A7-A28C-5191BB58B021}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Workbench", "src\Workbench\Boilerplate.Workbench.csproj", "{2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07}"
@@ -172,6 +176,12 @@ Global
         {2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07}.Debug|Any CPU.Build.0 = Debug|Any CPU
         {2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07}.Release|Any CPU.ActiveCfg = Release|Any CPU
         {2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07}.Release|Any CPU.Build.0 = Release|Any CPU
+#if (advancedTests == true)
+        {BF36608B-E37B-4556-960A-30869FE092BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {BF36608B-E37B-4556-960A-30869FE092BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {BF36608B-E37B-4556-960A-30869FE092BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {BF36608B-E37B-4556-960A-30869FE092BB}.Release|Any CPU.Build.0 = Release|Any CPU
+//#endif
 #if (aspire == true)
         {C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
         {C1CACA9D-8E95-5A02-3E37-37CE607581A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -196,6 +206,9 @@ Global
         {E3CB3C34-F5DE-4A96-B552-7D52BCAD1E1F} = {248D8229-BABD-4F0A-A9C6-0417B464507B}
         {AA97E5DE-1021-2739-ED90-9EDEEAEB5CA2} = {723683EA-193C-45FD-A64D-7830A2867E4F}
         {2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07} = {5E3393CE-5AFC-49A7-A28C-5191BB58B021}
+#if (advancedTests == true)
+        {BF36608B-E37B-4556-960A-30869FE092BB} = {B38FF18E-11BC-4AF6-8FA3-648B3952DCAF}
+#endif
 #if (aspire == true)
         {C1CACA9D-8E95-5A02-3E37-37CE607581A3} = {723683EA-193C-45FD-A64D-7830A2867E4F}
 #endif

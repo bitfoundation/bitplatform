@@ -108,6 +108,11 @@
     <Project Path="src/Tests/Boilerplate.Tests.csproj">
       <Build Solution="DebugBlazorServer|*" Project="false" />
     </Project>
+<!--#if (advancedTests == true)-->
+    <Project Path="src/WorkbenchTests/Boilerplate.WorkbenchTests.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+<!--#endif-->
   </Folder>
   <Folder Name="/Workbench/">
     <Project Path="src/Workbench/Boilerplate.Workbench.csproj">

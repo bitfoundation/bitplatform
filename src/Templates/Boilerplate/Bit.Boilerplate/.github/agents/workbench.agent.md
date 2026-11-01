@@ -189,3 +189,6 @@ what the user approves is how the real page will look.
 - A screenshot shows what the view showed when it was taken, including what the user typed or chose on the page.
 - Its text is in `WorkbenchStrings.resx`, or in the app's resources once it has been rebuilt there, and a page that stays
   in the Workbench changed nothing outside `src/Workbench`.
+<!--#if (advancedTests == true)-->
+- `dotnet test` in `src/WorkbenchTests` passes: it checks every page's catalog entry and runs the checks on each page.
+<!--#endif-->

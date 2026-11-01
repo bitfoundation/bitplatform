@@ -100,3 +100,10 @@ from there and put it online with a Cloudflare quick tunnel: the link works whil
 tunnel keep running. Whoever has the link sees the review but can't add to it. To keep it online, publish it like any
 ASP.NET Core app to a server that has a Chromium-based browser for the screenshots. The `Screenshots` section of
 `appsettings.json` caps how many captures run at once and how many each client may ask for per minute.
+<!--#if (advancedTests == true)-->
+
+## Tests
+
+`src/WorkbenchTests` tests the Workbench itself: its stores and sample data, the review's HTTP and MCP endpoints, its
+components with bUnit and its pages in a browser with Playwright. Run `dotnet test` in that folder.
+<!--#endif-->

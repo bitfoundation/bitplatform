@@ -886,6 +886,7 @@
                 {
                     "condition": "(advancedTests != true)",
                     "exclude": [
+                        "src/WorkbenchTests/**",
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Versioning/**",
