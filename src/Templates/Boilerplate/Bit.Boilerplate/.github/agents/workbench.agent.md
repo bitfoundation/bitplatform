@@ -165,7 +165,8 @@ what the user approves is how the real page will look.
 - To explain a task that crosses screens, draw a flow (`save_flow`): each screen is a page in a state, reached by the
   taps you list (like the dialog that "Add building" opens), and each link is an arrow that starts at the element its
   tap names. The user opens it at `/flows/<id>` to understand the app or to present it in a meeting. Draw it again with
-  the same id when the pages change.
+  the same id when the pages change. The read-only samples on that page aren't in the review; they live in
+  `WorkbenchSampleFlows.cs`, and one leaves on its own when its page is removed.
 - The review sheet (Screenshot, then Review sheet) puts every open view, its settings and the comments into one HTML or
   PDF file. Offer it when the user wants something to send around or to attach to the pull request.
 - Write what was decided into the feature's spec, as `AGENTS.md` section 6 asks.

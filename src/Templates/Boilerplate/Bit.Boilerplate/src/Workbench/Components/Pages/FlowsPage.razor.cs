@@ -34,7 +34,10 @@ public partial class FlowsPage
 
     [Parameter] public string? FlowId { get; set; }
 
-    private WorkbenchFlow? Flow => FlowId is null ? null : reviewSession.Flows.FirstOrDefault(f => f.Id == FlowId);
+    private WorkbenchFlow? Flow => FlowId is null ? null : reviewSession.AllFlows.FirstOrDefault(f => f.Id == FlowId);
+
+    // Only dev mode may change a board, and nobody a sample's.
+    private bool CanEdit => reviewSession.CanWrite && Flow is { IsSample: false };
 
     private WorkbenchFlowLink? EditingLink => editingLinkId is null ? null : Flow?.Links.FirstOrDefault(l => l.Id == editingLinkId);
 
@@ -134,9 +137,9 @@ public partial class FlowsPage
                 Type = "screen",
                 Data = screen,
                 Position = new(screen.X, screen.Y),
-                Draggable = reviewSession.CanWrite,
-                Connectable = reviewSession.CanWrite,
-                Deletable = reviewSession.CanWrite,
+                Draggable = CanEdit,
+                Connectable = CanEdit,
+                Deletable = CanEdit,
                 AriaLabel = TitleOf(screen.PageKey)
             });
         }
@@ -159,7 +162,7 @@ public partial class FlowsPage
             LabelBgPaddingX = 16,
             LabelBgPaddingY = 8,
             LabelBgBorderRadius = 14,
-            Deletable = reviewSession.CanWrite,
+            Deletable = CanEdit,
             Reconnectable = false
         }));
     }
@@ -231,7 +234,7 @@ public partial class FlowsPage
 
     private void EditLabel(BlowEdgeMouseEvent args)
     {
-        if (reviewSession.CanWrite is false || Flow?.Links.FirstOrDefault(l => l.Id == args.Edge.Id) is not { } link)
+        if (CanEdit is false || Flow?.Links.FirstOrDefault(l => l.Id == args.Edge.Id) is not { } link)
             return;
 
         editingLinkId = link.Id;

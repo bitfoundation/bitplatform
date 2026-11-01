@@ -21,6 +21,8 @@ public partial class WorkbenchViewPage
         var modeBefore = store.Mode;
         var columnBefore = store.Column;
         var phone = new WorkbenchScenario();
+        // The building sample shows what a flow is; without its page, the list of flows does.
+        var flowsUrl = reviewSession.AllFlows.Any(flow => flow.Id == WorkbenchSampleFlows.BuildingsId) ? WorkbenchUrls.Flow(WorkbenchSampleFlows.BuildingsId) : WorkbenchUrls.Flows;
 
         return new()
         {
@@ -141,10 +143,13 @@ public partial class WorkbenchViewPage
                 new BonboardingStepDefinition
                 {
                     Id = "flows",
-                    Route = WorkbenchUrls.Flows,
-                    Target = BonboardingStepTarget.Css(".flow-list"),
+                    Route = flowsUrl,
+                    // The building sample's screens, which leaves room beside them for the card; without the sample, the list of flows.
+                    Target = BonboardingStepTarget.Css(".screen-card:has([data-screen-id='list']), .flow-list"),
+                    AdditionalTargets = [BonboardingStepTarget.Css(".screen-card:has([data-screen-id='form'])"), BonboardingStepTarget.Css(".screen-card:has([data-screen-id='map'])")],
                     Title = nameof(WorkbenchStrings.Flows),
                     Description = nameof(WorkbenchStrings.AllFlowsHint),
+                    Placement = BonboardingPlacement.InlineStart,
                     OnBeforeLeave = _ => ShowInTour(BackToTheViews)
                 },
                 new BonboardingStepDefinition
@@ -163,7 +168,7 @@ public partial class WorkbenchViewPage
         };
     }
 
-    private bool IsOnFlowsPage => BonboardingRouteMatcher.Matches(WorkbenchUrls.Flows, NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
+    private bool IsOnFlowsPage => BonboardingRouteMatcher.Matches($"{WorkbenchUrls.Flows}*", NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
 
     private void BackToTheViews() => NavigationManager.NavigateTo($"{WorkbenchUrls.Workbench(pageInfo!.Key)}{store.QueryString}");
 

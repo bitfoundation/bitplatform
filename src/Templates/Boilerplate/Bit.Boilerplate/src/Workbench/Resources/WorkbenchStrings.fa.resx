@@ -2376,6 +2376,45 @@
     <data name="NoFlowsYet" xml:space="preserve">
         <value>هنوز مسیری نیست.</value>
     </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>افزودن ساختمان</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>فهرست ساختمان‌های شاخص، با «افزودن ساختمان» در بالای آن.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>«افزودن ساختمان» فرمی برای ساختمان جدید باز می‌کند.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>«نقشه» همان ساختمان‌ها را روی نقشهٔ هلند نشان می‌دهد.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>باز کردن داشبورد فروشگاه</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>تا داده‌ها بار شوند، هر ویجت سر جای خودش می‌ماند.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>بعد هر ویجت با اعداد امروز پر می‌شود.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>وقتی هنوز فروشی نیست، هر ویجت همین را می‌گوید.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>یک ویجت ممکن است خطا بدهد و بقیه به کارشان ادامه بدهند.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>داده‌ها رسید</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>هنوز فروشی نیست</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>یک بارگذاری شکست خورد</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>نمونه</value>
+    </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>بازبینی زنده با عامل هوش مصنوعی‌تان</value>
     </data>
@@ -2392,7 +2431,7 @@
         <value>جایی را که می‌خواهید درباره‌اش نظر بدهید لمس کنید</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>هنوز مسیری نیست. از عاملتان بخواهید یکی بکشد، مثلاً «نشان بده ساختمان چطور اضافه می‌شود»، یا از زبانهٔ «مسیرها» در هر صفحه نماها را به یک مسیر اضافه کنید.</value>
+        <value>از عاملتان بخواهید یکی بکشد، مثلاً «نشان بده ساختمان چطور اضافه می‌شود»، یا از زبانهٔ «مسیرها» در هر صفحه نماها را به یک مسیر اضافه کنید.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>مسیری با این پیوند نیست. شاید حذف شده باشد.</value>

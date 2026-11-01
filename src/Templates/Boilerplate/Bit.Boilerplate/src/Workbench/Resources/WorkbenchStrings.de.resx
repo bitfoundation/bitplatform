@@ -2376,6 +2376,45 @@
     <data name="NoFlowsYet" xml:space="preserve">
         <value>Noch keine Abläufe.</value>
     </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Ein Gebäude hinzufügen</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>Die Liste der bekannten Gebäude, darüber „Gebäude hinzufügen“.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>„Gebäude hinzufügen“ öffnet ein Formular für das neue Gebäude.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>„Karte“ zeigt dieselben Gebäude auf einer Karte der Niederlande.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Das Kassen-Dashboard öffnen</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>Während die Daten laden, behält jedes Widget seinen Platz.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Dann füllt sich jedes Widget mit den Zahlen des Tages.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>Ohne Verkäufe sagt das jedes Widget auch.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>Ein Widget kann ausfallen, während die anderen weiterlaufen.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Daten sind da</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>Noch keine Verkäufe</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>Ein Ladevorgang schlägt fehl</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Beispiel</value>
+    </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live mit Ihrem KI-Agenten prüfen</value>
     </data>
@@ -2392,7 +2431,7 @@
         <value>Tippen Sie auf die Stelle, die Sie kommentieren möchten</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>Noch keine Abläufe. Bitten Sie Ihren Agenten, einen zu zeichnen, etwa „Zeig, wie ein Gebäude hinzugefügt wird“, oder fügen Sie Ansichten über den Tab „Abläufe“ einer Seite hinzu.</value>
+        <value>Bitten Sie Ihren Agenten, einen zu zeichnen, etwa „Zeig, wie ein Gebäude hinzugefügt wird“, oder fügen Sie Ansichten über den Tab „Abläufe“ einer Seite hinzu.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>Unter diesem Link gibt es keinen Ablauf. Vielleicht wurde er gelöscht.</value>

@@ -32,6 +32,9 @@ public sealed partial class WorkbenchReviewAttachments
 
     public async Task<string?> ReadState(string threadId)
     {
+        if (WorkbenchSampleFlows.StateOf(threadId) is { } sampleState)
+            return sampleState;
+
         var path = Path.Combine(Folder, $"{threadId}.json");
 
         return IsSafeId(threadId) && File.Exists(path) ? await File.ReadAllTextAsync(path) : null;

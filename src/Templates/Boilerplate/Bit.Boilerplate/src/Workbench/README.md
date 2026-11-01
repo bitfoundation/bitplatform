@@ -48,7 +48,8 @@ Chromium when it is installed, otherwise Microsoft Edge or Google Chrome. To ins
   theme.
 - **Flows**: the screens of a task side by side on a board at `/flows`, each a page in the state that matters, like a
   list and the dialog its button opens, with arrows for how you get from one to the next. Present one screen by screen
-  in a meeting. Your agent draws them, or you add the selected view to a flow from the Flows tab.
+  in a meeting. Your agent draws them, or you add the selected view to a flow from the Flows tab. Two read-only samples
+  come with it, from `WorkbenchSampleFlows`.
 - **Review sheet**: every view, its settings and the comments in one HTML or PDF file to send around.
 - **`/preview/<page>`**: the page alone, with its settings in the query string. This is what each view shows.
 

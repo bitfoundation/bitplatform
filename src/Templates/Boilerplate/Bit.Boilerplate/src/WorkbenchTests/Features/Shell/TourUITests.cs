@@ -48,7 +48,8 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
 
         await Advance(WorkbenchStrings.Flows);
-        await Expect(Page).ToHaveURLAsync(new Regex("/flows$"));
+        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+        await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
 
         await Advance(WorkbenchStrings.HomeWhySafeTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
@@ -92,7 +93,7 @@ public class TourUITests : WorkbenchPageTest
             await Advance(title);
         }
 
-        await Expect(Page).ToHaveURLAsync(new Regex("/flows$"));
+        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
 
         await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }).ClickAsync();
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();

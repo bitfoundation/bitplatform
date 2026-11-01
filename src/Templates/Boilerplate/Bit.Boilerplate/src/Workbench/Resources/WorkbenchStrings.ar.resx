@@ -2376,6 +2376,45 @@
     <data name="NoFlowsYet" xml:space="preserve">
         <value>لا توجد مسارات بعد.</value>
     </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>إضافة مبنى</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>قائمة المباني البارزة، وفوقها زر «إضافة مبنى».</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>يفتح «إضافة مبنى» نموذجًا للمبنى الجديد.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>يعرض «خريطة» المباني نفسها على خريطة هولندا.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>فتح لوحة تحكم نقاط البيع</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>أثناء تحميل البيانات، تبقى كل أداة في مكانها.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>ثم تمتلئ كل أداة بأرقام اليوم.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>عندما لا توجد مبيعات بعد، تخبرك كل أداة بذلك.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>قد تفشل أداة بينما تواصل الأخرى عملها.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>وصلت البيانات</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>لا مبيعات بعد</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>فشل تحميل واحد</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>نموذج</value>
+    </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>راجع مباشرةً مع وكيل الذكاء الاصطناعي الخاص بك</value>
     </data>
@@ -2392,7 +2431,7 @@
         <value>المس المكان الذي تريد التعليق عليه</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>لا توجد مسارات بعد. اطلب من وكيلك أن يرسم واحدًا، مثل «اعرض كيف يُضاف مبنى»، أو أضف عروضًا إلى مسار من تبويب «المسارات» في أي صفحة.</value>
+        <value>اطلب من وكيلك أن يرسم واحدًا، مثل «اعرض كيف يُضاف مبنى»، أو أضف عروضًا إلى مسار من تبويب «المسارات» في أي صفحة.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>لا يوجد مسار على هذا الرابط. ربما حُذف.</value>

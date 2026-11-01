@@ -2376,6 +2376,45 @@
     <data name="NoFlowsYet" xml:space="preserve">
         <value>还没有流程。</value>
     </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>添加建筑</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>地标建筑列表，顶部有“添加建筑”。</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>“添加建筑”会打开新建筑的表单。</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>“地图”在荷兰地图上显示相同的建筑。</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>打开 POS 仪表板</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>数据加载时，每个小组件都保持原位。</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>然后每个小组件都会显示当天的数字。</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>还没有销售时，每个小组件都会说明。</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>一个小组件出错时，其他小组件继续工作。</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>数据到达</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>还没有销售</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>一次加载失败</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>示例</value>
+    </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>与您的 AI 智能体实时评审</value>
     </data>
@@ -2392,7 +2431,7 @@
         <value>点按要评论的位置</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>还没有流程。请让您的智能体画一个，比如“展示如何添加一栋建筑”，或在页面的“流程”选项卡中把视图添加到流程。</value>
+        <value>请让您的智能体画一个，比如“展示如何添加一栋建筑”，或在页面的“流程”选项卡中把视图添加到流程。</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>此链接下没有流程，它可能已被删除。</value>

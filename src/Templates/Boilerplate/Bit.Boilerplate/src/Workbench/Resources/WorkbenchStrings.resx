@@ -2376,6 +2376,45 @@
     <data name="NoFlowsYet" xml:space="preserve">
         <value>No flows yet.</value>
     </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Adding a building</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>The list of landmark buildings, with Add building on top.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>Add building opens a form for the new building.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>Map shows the same buildings on a map of the Netherlands.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Opening the POS dashboard</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>While the data loads, every widget keeps its place.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Then each widget fills in with the day's numbers.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>With no sales yet, each widget says so.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>One widget can fail while the others carry on.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Data arrives</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>No sales yet</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>One load fails</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Sample</value>
+    </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Review live with your AI agent</value>
     </data>
@@ -2392,7 +2431,7 @@
         <value>Tap the spot you want to comment on</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>No flows yet. Ask your agent to draw one, like “show how a building is added”, or add views to a flow from a page's Flows tab.</value>
+        <value>Ask your agent to draw one, like “show how a building is added”, or add views to a flow from a page's Flows tab.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>There is no flow at this link. It may have been deleted.</value>

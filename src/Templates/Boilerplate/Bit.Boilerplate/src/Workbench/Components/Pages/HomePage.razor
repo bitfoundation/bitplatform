@@ -165,16 +165,16 @@
             <p>@Localizer[nameof(WorkbenchStrings.FlowsHint)]</p>
         </div>
         <div class="flow-cards">
-            @foreach (var flow in reviewSession.Flows)
+            @foreach (var flow in reviewSession.AllFlows)
             {
                 <a class="flow-card" href="@WorkbenchUrls.Flow(flow.Id)">
                     <span class="flow-card-name" dir="auto"><BitIcon IconName="@BitIconName.Flow" Size="BitSize.Small" /> @flow.Name</span>
-                    <span class="flow-card-meta">@Localizer[nameof(WorkbenchStrings.ScreenCount), flow.Screens.Length]</span>
+                    <span class="flow-card-meta">@Localizer[nameof(WorkbenchStrings.ScreenCount), flow.Screens.Length]@(flow.IsSample ? $" · {Localizer[nameof(WorkbenchStrings.FlowSample)]}" : null)</span>
                 </a>
             }
             <a class="flow-card all-flows" href="@WorkbenchUrls.Flows">
                 <span class="flow-card-name">@Localizer[nameof(WorkbenchStrings.AllFlows)]</span>
-                <span class="flow-card-meta">@Localizer[reviewSession.Flows.Count > 0 ? nameof(WorkbenchStrings.AllFlowsHint) : reviewSession.CanWrite ? nameof(WorkbenchStrings.FlowsEmpty) : nameof(WorkbenchStrings.NoFlowsYet)]</span>
+                <span class="flow-card-meta">@Localizer[reviewSession.AllFlows.Count > 0 ? nameof(WorkbenchStrings.AllFlowsHint) : reviewSession.CanWrite ? nameof(WorkbenchStrings.FlowsEmpty) : nameof(WorkbenchStrings.NoFlowsYet)]</span>
             </a>
         </div>
     </section>

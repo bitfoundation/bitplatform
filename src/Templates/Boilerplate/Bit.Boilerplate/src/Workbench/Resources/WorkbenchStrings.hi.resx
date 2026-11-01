@@ -2376,6 +2376,45 @@
     <data name="NoFlowsYet" xml:space="preserve">
         <value>अभी कोई फ़्लो नहीं।</value>
     </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>इमारत जोड़ना</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>प्रसिद्ध इमारतों की सूची, ऊपर “इमारत जोड़ें” के साथ।</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>“इमारत जोड़ें” नई इमारत के लिए एक फ़ॉर्म खोलता है।</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>“मैप” वही इमारतें नीदरलैंड के मैप पर दिखाता है।</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>POS डैशबोर्ड खोलना</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>डेटा लोड होने तक हर विजेट अपनी जगह पर रहता है।</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>फिर हर विजेट दिन के आँकड़ों से भर जाता है।</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>अभी कोई बिक्री न हो तो हर विजेट यही बताता है।</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>एक विजेट विफल हो सकता है, जबकि बाकी चलते रहते हैं।</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>डेटा आ गया</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>अभी कोई बिक्री नहीं</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>एक लोड विफल</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>नमूना</value>
+    </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>अपने AI एजेंट के साथ लाइव रिव्यू करें</value>
     </data>
@@ -2392,7 +2431,7 @@
         <value>जिस जगह पर टिप्पणी करनी है, उसे टैप करें</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>अभी कोई फ़्लो नहीं। अपने एजेंट से एक बनाने को कहें, जैसे “दिखाओ कि इमारत कैसे जोड़ी जाती है”, या किसी पेज के फ़्लो टैब से व्यू को फ़्लो में जोड़ें।</value>
+        <value>अपने एजेंट से एक बनाने को कहें, जैसे “दिखाओ कि इमारत कैसे जोड़ी जाती है”, या किसी पेज के फ़्लो टैब से व्यू को फ़्लो में जोड़ें।</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>इस लिंक पर कोई फ़्लो नहीं है। शायद उसे हटा दिया गया है।</value>

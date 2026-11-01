@@ -12,7 +12,9 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     [AutoInject] private IConfiguration configuration = default!;
     [AutoInject] private IBcrdtCollaborationService collaboration = default!;
     [AutoInject] private WorkbenchReviewAttachments attachments = default!;
+    [AutoInject] private IStringLocalizer<WorkbenchStrings> localizer = default!;
 
+    private WorkbenchFlow[]? sampleFlows;
     private bool? canWrite;
     private Task? opening;
     private BcrdtCollaborativeDocument? document;
@@ -32,6 +34,9 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     public WorkbenchReviewAgentInfo? Agent { get; private set; }
 
     public IReadOnlyList<WorkbenchFlow> Flows { get; private set; } = [];
+
+    /// <summary>The flows to show: the review's own, then the samples.</summary>
+    public IReadOnlyList<WorkbenchFlow> AllFlows => [.. Flows, .. sampleFlows ??= WorkbenchSampleFlows.Create(localizer)];
 
     /// <summary>Creates an empty flow; returns its id, or null when this circuit can't write.</summary>
     public string? CreateFlow(string name)

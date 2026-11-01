@@ -2376,6 +2376,45 @@
     <data name="NoFlowsYet" xml:space="preserve">
         <value>Nog geen flows.</value>
     </data>
+    <data name="SampleFlowBuildings" xml:space="preserve">
+        <value>Een gebouw toevoegen</value>
+    </data>
+    <data name="SampleFlowBuildingsList" xml:space="preserve">
+        <value>De lijst met bekende gebouwen, met bovenaan ‘Gebouw toevoegen’.</value>
+    </data>
+    <data name="SampleFlowBuildingsForm" xml:space="preserve">
+        <value>‘Gebouw toevoegen’ opent een formulier voor het nieuwe gebouw.</value>
+    </data>
+    <data name="SampleFlowBuildingsMap" xml:space="preserve">
+        <value>‘Kaart’ toont dezelfde gebouwen op een kaart van Nederland.</value>
+    </data>
+    <data name="SampleFlowPos" xml:space="preserve">
+        <value>Het kassadashboard openen</value>
+    </data>
+    <data name="SampleFlowPosLoading" xml:space="preserve">
+        <value>Terwijl de gegevens laden, houdt elke widget zijn plek.</value>
+    </data>
+    <data name="SampleFlowPosReady" xml:space="preserve">
+        <value>Daarna vult elke widget zich met de cijfers van de dag.</value>
+    </data>
+    <data name="SampleFlowPosEmpty" xml:space="preserve">
+        <value>Zonder verkopen laat elke widget dat zien.</value>
+    </data>
+    <data name="SampleFlowPosMixed" xml:space="preserve">
+        <value>Eén widget kan mislukken terwijl de andere gewoon doorgaan.</value>
+    </data>
+    <data name="SampleFlowPosReadyLink" xml:space="preserve">
+        <value>Gegevens binnen</value>
+    </data>
+    <data name="SampleFlowPosEmptyLink" xml:space="preserve">
+        <value>Nog geen verkopen</value>
+    </data>
+    <data name="SampleFlowPosMixedLink" xml:space="preserve">
+        <value>Eén keer laden mislukt</value>
+    </data>
+    <data name="FlowSample" xml:space="preserve">
+        <value>Voorbeeld</value>
+    </data>
     <data name="HomeWhyLiveTitle" xml:space="preserve">
         <value>Live beoordelen met je AI-agent</value>
     </data>
@@ -2392,7 +2431,7 @@
         <value>Tik op de plek waar je een opmerking over wilt maken</value>
     </data>
     <data name="FlowsEmpty" xml:space="preserve">
-        <value>Nog geen flows. Vraag je agent er een te tekenen, zoals ‘laat zien hoe je een gebouw toevoegt’, of voeg weergaven aan een flow toe vanuit het tabblad Flows van een pagina.</value>
+        <value>Vraag je agent er een te tekenen, zoals ‘laat zien hoe je een gebouw toevoegt’, of voeg weergaven aan een flow toe vanuit het tabblad Flows van een pagina.</value>
     </data>
     <data name="FlowNotFound" xml:space="preserve">
         <value>Er staat geen flow op deze link. Misschien is hij verwijderd.</value>
