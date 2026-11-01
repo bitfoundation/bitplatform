@@ -72,9 +72,30 @@ public static class BormJsonSchemaImporter
     /// <summary>How many rounds of union-collapsing and allOf-folding one subschema may take.</summary>
     private const int MaxPreparePasses = 8;
 
+    /// <summary>
+    /// How many choices and suggestions one document may give its fields, all of them together. A shared
+    /// enum is copied into every field that refers to it, so a few kilobytes of references can ask for
+    /// millions of options.
+    /// </summary>
     private const int MaxChoices = 250_000;
 
+    /// <summary>How many characters those choices and suggestions may come to, all of them together.</summary>
     private const int MaxChoiceText = 10_000_000;
+
+    /// <summary>
+    /// How many bytes of schema the fields may be built from, all of them together: each field reads its
+    /// own keywords — a title, a description, a bag of attributes — and keeps what it reads, so a
+    /// definition shared by every field is read, and kept, once for each of them. A definition a field
+    /// reaches through a reference while its unions and conditions are looked at counts too.
+    /// </summary>
+    private const int MaxFieldText = 10_000_000;
+
+    /// <summary>
+    /// How many bytes the importer may write for itself, all of it together. Every merge, folded
+    /// <c>allOf</c> and rewritten union is a copy of the schema it touches, and a definition referred to
+    /// from thousands of places is copied once for each of them, however few merges each copy takes.
+    /// </summary>
+    private const int MaxCopiedText = MaxFieldText * 2;
 
     /// <summary>
     /// The pattern that stands in for <c>"format": "uuid"</c> as the browser's own <c>pattern</c>
@@ -198,7 +219,13 @@ public static class BormJsonSchemaImporter
     private static BormFieldDefinition? BuildField(ImportContext ctx, string name, JsonElement rawSchema, bool required)
     {
         var schema = ctx.Prepare(rawSchema, out var identity, out var recursive);
-        if (recursive || schema.ValueKind == JsonValueKind.False) return null;
+        if (recursive || schema.ValueKind == JsonValueKind.False)
+        {
+            // Not built, so not charged as a field is, but walked past all the same by every field that
+            // refers to the definition holding it: a million `false` properties are a million steps.
+            ctx.ChargeText(name.Length + JsonMarshal.GetRawUtf8Value(rawSchema).Length);
+            return null;
+        }
 
         if (name.AsSpan().IndexOfAny('.', '[', ']') >= 0)
             throw new FormatException(
@@ -207,6 +234,7 @@ public static class BormJsonSchemaImporter
         // Anything else that is not an object — `true`, or a malformed value — constrains nothing.
         if (schema.ValueKind != JsonValueKind.Object) schema = ImportContext.EmptySchema;
 
+        ctx.ChargeSchema(schema);
         ctx.Enter(identity, countsAsField: true);
         try
         {
@@ -394,6 +422,7 @@ public static class BormJsonSchemaImporter
         if (field.Type == BormFieldType.MultiSelect && field.Options.Count == 0 && hasItems)
         {
             var itemSchema = ctx.Prepare(items, out _, out _);
+            ctx.ChargeSchema(itemSchema);
             if (itemSchema.ValueKind == JsonValueKind.Object)
                 valueKind = ReadChoices(ctx, ctx.ConstBranches(itemSchema), itemSchema, field.Options, ReadTypeName(itemSchema));
         }
@@ -403,6 +432,7 @@ public static class BormJsonSchemaImporter
         if (field.Type == BormFieldType.Tags && hasItems)
         {
             var itemSchema = ctx.Prepare(items, out _, out _);
+            ctx.ChargeSchema(itemSchema);
             if (itemSchema.ValueKind == JsonValueKind.Object)
             {
                 if (field.MinLength is null && TryReadInt(itemSchema, "minLength", out var minLen))
@@ -992,22 +1022,26 @@ public static class BormJsonSchemaImporter
     private static void ApplyConditionalRequiredness(
         ImportContext ctx, JsonElement schema, IList<BormFieldDefinition> fields)
     {
+        var requiredness = new Requiredness(fields);
+
         if (TryGet(schema, "dependentRequired", out var dependent) && dependent.ValueKind == JsonValueKind.Object)
-            ApplyDependentRequired(dependent, fields);
+            ApplyDependentRequired(dependent, requiredness);
 
         // Draft-07 spelled it `dependencies`, with an array value meaning the same thing.
         if (TryGet(schema, "dependencies", out var dependencies) && dependencies.ValueKind == JsonValueKind.Object)
-            ApplyDependentRequired(dependencies, fields);
+            ApplyDependentRequired(dependencies, requiredness);
 
-        ApplyIfThen(ctx, schema, fields);
+        ApplyIfThen(ctx, schema, requiredness);
 
         // Every conditional an allOf branch carried, each applied on its own terms.
         if (TryGet(schema, ConditionalsKeyword, out var conditionals) && conditionals.ValueKind == JsonValueKind.Array)
             foreach (var block in conditionals.EnumerateArray())
-                ApplyIfThen(ctx, block, fields);
+                ApplyIfThen(ctx, block, requiredness);
+
+        requiredness.Apply();
     }
 
-    private static void ApplyDependentRequired(JsonElement map, IList<BormFieldDefinition> fields)
+    private static void ApplyDependentRequired(JsonElement map, Requiredness requiredness)
     {
         foreach (var entry in map.EnumerateObject())
         {
@@ -1015,39 +1049,71 @@ public static class BormJsonSchemaImporter
 
             var trigger = new BormFieldCondition(entry.Name, BormConditionOperator.IsNotEmpty);
             foreach (var dependentName in entry.Value.EnumerateArray())
-            {
-                if (dependentName.ValueKind != JsonValueKind.String || dependentName.GetString() is not { } target) continue;
-                var field = fields.FirstOrDefault(f => string.Equals(f.Name, target, StringComparison.OrdinalIgnoreCase));
-                if (field is null || field.Required) continue;
-                field.RequiredWhen = Combine(field.RequiredWhen, trigger);
-            }
+                if (dependentName.ValueKind == JsonValueKind.String && dependentName.GetString() is { } target)
+                    requiredness.Add(target, trigger);
         }
     }
 
-    private static void ApplyIfThen(ImportContext ctx, JsonElement schema, IList<BormFieldDefinition> fields)
+    private static void ApplyIfThen(ImportContext ctx, JsonElement schema, Requiredness requiredness)
     {
         if (!TryGet(schema, "if", out var ifSchema)) return;
 
-        var condition = ReadIfCondition(ctx.Resolve(ifSchema));
+        // Looked at through their references, which charges what those name: a conditional that every
+        // object refers to is read again for each of them.
+        var condition = ReadIfCondition(ctx.Look(ifSchema, keepSiblings: true));
         if (condition is null) return;
 
         if (TryGet(schema, "then", out var thenSchema))
-            ApplyBranch(ctx.Resolve(thenSchema), condition);
+            ApplyBranch(ctx.Look(thenSchema, keepSiblings: true), condition);
 
         if (TryGet(schema, "else", out var elseSchema))
         {
             // "Otherwise" is the negation, which only round-trips cleanly for a single comparison.
             var negated = Negate(condition);
-            if (negated is not null) ApplyBranch(ctx.Resolve(elseSchema), negated);
+            if (negated is not null) ApplyBranch(ctx.Look(elseSchema, keepSiblings: true), negated);
         }
 
         void ApplyBranch(JsonElement branch, IBormCondition when)
         {
-            foreach (var name in ReadRequired(branch))
+            foreach (var name in ReadRequired(branch)) requiredness.Add(name, when);
+        }
+    }
+
+    /// <summary>
+    /// When each of a set of sibling fields becomes required, gathered by name and given to each field
+    /// once. The lists that name them can be long: finding each name by walking every field was a million
+    /// names times ten thousand fields, and folding each condition into the field's as it came nested
+    /// them a million deep, which evaluating them overflowed the stack on.
+    /// </summary>
+    private sealed class Requiredness
+    {
+        private readonly Dictionary<string, BormFieldDefinition> _byName = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<BormFieldDefinition, List<IBormCondition>> _added = new(ReferenceEqualityComparer.Instance);
+
+        public Requiredness(IEnumerable<BormFieldDefinition> fields)
+        {
+            foreach (var field in fields) _byName.TryAdd(field.Name, field);
+        }
+
+        /// <summary>Makes the field <paramref name="name"/> names required while <paramref name="when"/> holds, unless it always is.</summary>
+        public void Add(string name, IBormCondition when)
+        {
+            if (!_byName.TryGetValue(name, out var field) || field.Required) return;
+            if (!_added.TryGetValue(field, out var conditions)) _added[field] = conditions = [];
+            // Each condition is added for all the names it lists before the next is, so a name listed
+            // twice under it (in two spellings, say) finds it last.
+            if (conditions.Count == 0 || !ReferenceEquals(conditions[^1], when)) conditions.Add(when);
+        }
+
+        /// <summary>Gives every field "any of these", beside the condition it already had.</summary>
+        public void Apply()
+        {
+            foreach (var (field, conditions) in _added)
             {
-                var field = fields.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
-                if (field is null || field.Required) continue;
-                field.RequiredWhen = Combine(field.RequiredWhen, when);
+                var any = new List<IBormCondition>(conditions.Count + 1);
+                if (field.RequiredWhen is { } own) any.Add(own);
+                any.AddRange(conditions);
+                field.RequiredWhen = any.Count == 1 ? any[0] : new BormConditionGroup(BormConditionLogic.Or, [.. any]);
             }
         }
     }
@@ -1121,9 +1187,6 @@ public static class BormJsonSchemaImporter
             => new BormFieldCondition(c.FieldPath, BormConditionOperator.IsEmpty),
         _ => null
     };
-
-    private static IBormCondition Combine(IBormCondition? existing, IBormCondition addition)
-        => existing is null ? addition : BormConditionGroup.Any(existing, addition);
 
     // ---------------------------------------------------------------- steps
 
@@ -1243,9 +1306,25 @@ public static class BormJsonSchemaImporter
             return doc.RootElement.Clone();
         }
 
+        /// <summary>Reads back a document the importer wrote for itself, charging it against <see cref="MaxCopiedText"/>.</summary>
+        private JsonElement Detach(byte[] utf8)
+        {
+            _copiedText += utf8.Length;
+            if (_copiedText > MaxCopiedText)
+                throw new FormatException(
+                    $"The schema needs more than {MaxCopiedText} bytes of it copied to be built; it is refused rather than built.");
+            return ParseDetached(utf8);
+        }
+
         private readonly JsonElement _root = root;
 
         private PointerNode? _pointers;
+
+        /// <summary>The unions of the document being imported, by where their branch lists start in it (see <see cref="UnionOf"/>).</summary>
+        private readonly Dictionary<int, Union> _unions = [];
+
+        /// <summary>The last union of a document the importer wrote for itself.</summary>
+        private Union? _lastCopied;
 
         /// <summary>
         /// How many times each definition appears on the path from the document root down to the field
@@ -1265,6 +1344,8 @@ public static class BormJsonSchemaImporter
         private int _allOfDepth;
         private long _choices;
         private long _choiceText;
+        private long _fieldText;
+        private long _copiedText;
 
         /// <summary>Set when an <c>allOf</c> branch had to be dropped because it names a definition seen too often.</summary>
         private bool _recursionHit;
@@ -1373,8 +1454,51 @@ public static class BormJsonSchemaImporter
                     $"The schema's choices and suggestions come to more than {MaxChoices} values or {MaxChoiceText} characters across its fields; it is refused rather than built.");
         }
 
-        /// <summary>Follows a chain of local <c>$ref</c>s to the schema they ultimately name.</summary>
-        public JsonElement Resolve(JsonElement schema) => Resolve(schema, followed: null);
+        /// <summary>
+        /// Charges a field's schema against <see cref="MaxFieldText"/> by its size in bytes: every keyword's
+        /// name, and its value unless that is paid for where it is read — the <c>properties</c> and
+        /// <c>items</c> built as fields of their own, an <c>anyOf</c>/<c>oneOf</c> worked out once per list
+        /// (see <see cref="UnionOf"/>), the choices and suggestions <see cref="MaxChoiceText"/> counts — or
+        /// not read at all: a field that builds no children only copies its <c>properties</c>, and every
+        /// copy is charged as it is written (see <see cref="Detach"/>). A name is charged even then, since
+        /// every lookup on the schema walks past every keyword.
+        /// </summary>
+        public void ChargeSchema(JsonElement schema)
+        {
+            if (schema.ValueKind != JsonValueKind.Object) return;
+            foreach (var keyword in schema.EnumerateObject())
+            {
+                var size = JsonMarshal.GetRawUtf8PropertyName(keyword).Length;
+                if (!ReadElsewhere(keyword)) size += JsonMarshal.GetRawUtf8Value(keyword.Value).Length;
+                ChargeText(size);
+            }
+
+            static bool ReadElsewhere(JsonProperty keyword)
+                => keyword.NameEquals("properties"u8) || keyword.NameEquals("items"u8)
+                   || keyword.NameEquals("anyOf"u8) || keyword.NameEquals("oneOf"u8)
+                   || keyword.NameEquals("enum"u8) || keyword.NameEquals("x-enum"u8) || keyword.NameEquals("enumNames"u8)
+                   || keyword.NameEquals("x-enumGroups"u8) || keyword.NameEquals("x-enumDisabled"u8)
+                   || keyword.NameEquals("examples"u8);
+        }
+
+        /// <summary>Charges bytes of schema read for the fields against <see cref="MaxFieldText"/>.</summary>
+        public void ChargeText(long bytes)
+        {
+            _fieldText += bytes;
+            if (_fieldText > MaxFieldText)
+                throw new FormatException(
+                    $"The schema's fields are built from more than {MaxFieldText} bytes of it; it is refused rather than built.");
+        }
+
+        /// <summary>
+        /// Follows a schema's references to look at what they name — the bare target, or with
+        /// <paramref name="keepSiblings"/> the keywords beside each reference merged in — charging every
+        /// definition passed through against <see cref="MaxFieldText"/>. Whatever asks — a union's
+        /// branches, a pinned property, an if/then/else — asks again for every field that refers to it,
+        /// and a definition is no cheaper to read for being shared.
+        /// </summary>
+        public JsonElement Look(JsonElement schema, bool keepSiblings = false)
+            => Resolve(schema, followed: null, keepSiblings, charge: true);
 
         /// <summary>
         /// Follows a chain of local <c>$ref</c>s, recording each definition it passes through. Keywords
@@ -1388,7 +1512,8 @@ public static class BormJsonSchemaImporter
         /// False to return the bare target. Keeping the siblings costs a merge, which a caller that only
         /// wants to look at the target — is it null, does it pin a const — should not pay for.
         /// </param>
-        public JsonElement Resolve(JsonElement schema, ISet<string>? followed, bool keepSiblings = true)
+        /// <param name="charge">Whether every definition passed through is charged against <see cref="MaxFieldText"/>.</param>
+        public JsonElement Resolve(JsonElement schema, ISet<string>? followed, bool keepSiblings = true, bool charge = false)
         {
             var current = schema;
             List<JsonElement>? siblings = null;
@@ -1402,6 +1527,7 @@ public static class BormJsonSchemaImporter
                 if (pointer is null || !TryResolvePointer(pointer, out var target, out var key)) break;
 
                 followed?.Add(key);
+                if (charge) ChargeText(JsonMarshal.GetRawUtf8Value(target).Length);
                 if (keepSiblings && HasSiblingKeywords(current))
                 {
                     ChargeMerge();
@@ -1500,27 +1626,20 @@ public static class BormJsonSchemaImporter
         /// </remarks>
         public JsonElement CollapseUnion(JsonElement schema, ISet<string>? identity = null)
         {
-            if (schema.ValueKind != JsonValueKind.Object) return schema;
-            if (UnionBranches(schema) is not { } union) return schema;
+            if (UnionOf(schema) is not { } union) return schema;
 
             // A branch list of `const` values (with or without a null) is an enum with labels;
             // ReadChoices reads it where it stands, so the schema is handed back untouched.
-            if (ConstBranches(schema) is not null) return schema;
+            if (Constants(union) is not null) return schema;
 
             if (RewriteDiscriminatedUnion(schema, union, identity) is { } rewritten) return rewritten;
 
-            // Telling a null branch from a real one only needs each reference followed, not each
-            // branch's own keywords merged in — and the question is settled by the second real branch,
-            // however many more there are.
-            JsonElement? chosen = null;
-            foreach (var raw in union.Branches.EnumerateArray())
+            if (!union.SingleKnown)
             {
-                var target = Resolve(raw, followed: null, keepSiblings: false);
-                if (target.ValueKind == JsonValueKind.False || DeclaresOnlyNull(target)) continue;
-                if (chosen is not null) return schema;
-                chosen = raw;
+                union.Single = SingleBranch(union);
+                union.SingleKnown = true;
             }
-            if (chosen is not { } single) return schema;
+            if (union.Single is not { } single) return schema;
 
             var pointers = new HashSet<string>(StringComparer.Ordinal);
             var branch = Resolve(single, pointers);
@@ -1531,6 +1650,24 @@ public static class BormJsonSchemaImporter
             // allOf on either side is carried for MergeAllOf to fold, not dropped.
             ChargeMerge();
             return Merge([branch, Without(schema, union.Keyword)], keepAllOf: true);
+        }
+
+        /// <summary>
+        /// The one branch of a union that is not null, or null when there are none or several. Telling a
+        /// null branch from a real one only needs each reference followed, not each branch's own keywords
+        /// merged in — and the question is settled by the second real branch, however many more there are.
+        /// </summary>
+        private JsonElement? SingleBranch(Union union)
+        {
+            JsonElement? chosen = null;
+            foreach (var raw in union.Branches.EnumerateArray())
+            {
+                var target = Look(raw);
+                if (target.ValueKind == JsonValueKind.False || DeclaresOnlyNull(target)) continue;
+                if (chosen is not null) return null;
+                chosen = raw;
+            }
+            return chosen;
         }
 
         /// <summary>
@@ -1557,70 +1694,28 @@ public static class BormJsonSchemaImporter
         /// </para>
         /// </remarks>
         private JsonElement? RewriteDiscriminatedUnion(
-            JsonElement schema, (string Keyword, JsonElement Branches) union, ISet<string>? identity, string? knownDiscriminator = null)
+            JsonElement schema, Union union, ISet<string>? identity, string? knownDiscriminator = null)
         {
-            // Settled first, as cheaply as the answer allows: a union of thousands of described
-            // references is an ordinary thing for a generator to write, and merging every branch only to
-            // find it is not one of these cost a merge per branch per field. Each branch is looked at
-            // through its references alone; only one composed with allOf has to be folded to be seen.
             var openApi = TryGet(schema, "discriminator", out var openApiDiscriminator) ? openApiDiscriminator : (JsonElement?)null;
             var named = knownDiscriminator ?? (openApi is { } n ? ReadString(n, "propertyName") : null);
 
-            // The properties every branch so far pins, while no property is named: once none is left there
-            // is nothing to tell the branches apart by, and the rest need not be looked at. Without this, a
-            // union of plain shapes — the commonest kind — was outlined in full for every field using it.
-            HashSet<string>? candidates = null;
-            var outline = new List<(JsonElement Raw, JsonElement Target)>();
-            foreach (var raw in union.Branches.EnumerateArray())
+            // A list found not to be one of these stays not one of them, told apart by the same property or
+            // by none: every field that refers to it asks again, and the answer only changes when a branch
+            // had to be folded together with what is being expanded around it.
+            var way = knownDiscriminator is not null ? "k" + knownDiscriminator : named is not null ? "n" + named : "";
+            if (union.Untold?.Contains(way) == true) return null;
+            var mapping = openApi is { } d ? Mapping(d) : null;
+            if (TellApart(union, mapping, named, knownDiscriminator is not null, out var settled) is not { } told)
             {
-                var target = Resolve(raw, followed: null, keepSiblings: false);
-                if (target.ValueKind == JsonValueKind.False || DeclaresOnlyNull(target)) continue;
-                if (target.ValueKind == JsonValueKind.Object && target.TryGetProperty("allOf", out _))
-                {
-                    var pointers = new HashSet<string>(StringComparer.Ordinal);
-                    Resolve(raw, pointers, keepSiblings: false);
-                    if (pointers.Any(IsExhausted) || pointers.Any(_merging.Contains)) return null;
-                    target = MergeAllOf(target);
-                }
-                if (!TryGet(target, "properties", out var shape) || shape.ValueKind != JsonValueKind.Object) return null;
-
-                if (named is not null)
-                {
-                    if (PinnedValue(target, named) is null && MappedValue(openApi, raw) is null) return null;
-                }
-                else if (candidates is null)
-                {
-                    candidates = new HashSet<string>(StringComparer.Ordinal);
-                    foreach (var property in shape.EnumerateObject())
-                        if (PinnedValue(target, property.Name) is not null) candidates.Add(property.Name);
-                }
-                else
-                {
-                    candidates.RemoveWhere(c => PinnedValue(target, c) is null);
-                }
-                if (candidates is { Count: 0 }) return null;
-
-                outline.Add((raw, target));
+                if (settled) (union.Untold ??= new HashSet<string>(StringComparer.Ordinal)).Add(way);
+                return null;
             }
-            // A union of one object is no choice at all — unless the property that chooses is already
-            // known, where one branch is "these extra questions for that one answer".
-            if (outline.Count < (knownDiscriminator is null ? 2 : 1)) return null;
-
-            var discriminator = named ?? FindDiscriminator(outline.Select(b => b.Target).ToList());
-            if (discriminator is null) return null;
-
-            var values = new List<JsonElement>();
-            foreach (var (raw, target) in outline)
-            {
-                if ((PinnedValue(target, discriminator) ?? MappedValue(openApi, raw)) is not { } value) return null;
-                values.Add(value);
-            }
-            if (values.Select(v => v.GetRawText()).Distinct(StringComparer.Ordinal).Count() != values.Count) return null;
+            var (outline, discriminator, values) = told;
 
             // Only now is each branch read in full — its references' sibling keywords, its allOf.
             var branches = new List<JsonElement>();
             var pointersSeen = new List<HashSet<string>>();
-            foreach (var (raw, _) in outline)
+            foreach (var raw in outline)
             {
                 var pointers = new HashSet<string>(StringComparer.Ordinal);
                 var target = Resolve(raw, pointers);
@@ -1633,6 +1728,9 @@ public static class BormJsonSchemaImporter
                 if (branch.ValueKind != JsonValueKind.Object
                     || !TryGet(branch, "properties", out var properties) || properties.ValueKind != JsonValueKind.Object)
                     return null;
+                // Read in full for every field the union is, the properties it leaves out included, so
+                // charged as a field's own keywords are.
+                ChargeText(JsonMarshal.GetRawUtf8Value(branch).Length);
                 if (TryGet(branch, "type", out var type) && !(type.ValueKind == JsonValueKind.String && type.GetString() == "object"))
                     return null;
 
@@ -1664,14 +1762,14 @@ public static class BormJsonSchemaImporter
 
             for (var i = 0; i < branches.Count; i++)
             {
-                var branchRequired = ReadStringArray(branches[i], "required") ?? [];
+                var branchRequired = (ReadStringArray(branches[i], "required") ?? []).ToHashSet(StringComparer.Ordinal);
                 var condition = ConditionJson(discriminator, values[i]);
                 foreach (var p in branches[i].GetProperty("properties").EnumerateObject())
                 {
                     if (p.Name == discriminator || p.Value.ValueKind == JsonValueKind.False) continue;
                     if (!byName.TryGetValue(p.Name, out var plan)) Add(plan = new PropertyPlan(p.Name, p.Value, fromOuter: false));
                     if (!plan.FromOuter) plan.VisibleWhen.Add(condition);
-                    if (branchRequired.Contains(p.Name, StringComparer.Ordinal)) plan.RequiredWhen.Add(condition);
+                    if (branchRequired.Contains(p.Name)) plan.RequiredWhen.Add(condition);
                 }
             }
 
@@ -1689,6 +1787,86 @@ public static class BormJsonSchemaImporter
                 plans.Add(plan);
                 byName[plan.Name] = plan;
             }
+        }
+
+        /// <summary>
+        /// Settles whether a union's branches are told apart by one property, as cheaply as the answer
+        /// allows: the branches that are not null, the property, and the value each branch pins it to; or
+        /// null when they are not. <paramref name="settled"/> then says whether that is the list's own
+        /// answer, or depended on what is being expanded around it — a branch folded with its allOf.
+        /// </summary>
+        /// <remarks>
+        /// A union of thousands of described references is an ordinary thing for a generator to write, and
+        /// merging every branch only to find it is not one of these cost a merge per branch per field.
+        /// Each branch is looked at through its references alone; only one composed with allOf has to be
+        /// folded to be seen.
+        /// </remarks>
+        private (List<JsonElement> Branches, string Discriminator, List<JsonElement> Values)? TellApart(
+            Union union, Dictionary<string, string>? mapping, string? named, bool known, out bool settled)
+        {
+            settled = true;
+
+            // The properties every branch so far pins, while no property is named: once none is left there
+            // is nothing to tell the branches apart by, and the rest need not be looked at. Without this, a
+            // union of plain shapes — the commonest kind — was outlined in full for every field using it.
+            HashSet<string>? candidates = null;
+            var outline = new List<(JsonElement Raw, JsonElement Shape, Dictionary<string, JsonElement>? Pins)>();
+            foreach (var raw in union.Branches.EnumerateArray())
+            {
+                var target = Look(raw);
+                if (target.ValueKind == JsonValueKind.False || DeclaresOnlyNull(target)) continue;
+                if (target.ValueKind == JsonValueKind.Object && target.TryGetProperty("allOf", out _))
+                {
+                    settled = false;
+                    var pointers = new HashSet<string>(StringComparer.Ordinal);
+                    Resolve(raw, pointers, keepSiblings: false);
+                    if (pointers.Any(IsExhausted) || pointers.Any(_merging.Contains)) return null;
+                    target = MergeAllOf(target);
+                }
+                if (!TryGet(target, "properties", out var shape) || shape.ValueKind != JsonValueKind.Object) return null;
+
+                Dictionary<string, JsonElement>? pins = null;
+                if (named is not null)
+                {
+                    if (PinnedValue(shape, named) is null && MappedValue(mapping, raw) is null) return null;
+                }
+                else
+                {
+                    // What each candidate is pinned to, read in one walk of the branch: asking for each
+                    // property by name walked every property for every property, and a branch of a hundred
+                    // thousand was ten billion steps. As a lookup by name does, the last of two spellings wins.
+                    pins = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+                    foreach (var property in shape.EnumerateObject())
+                    {
+                        if ((candidates is null || candidates.Contains(property.Name)) && PinnedValue(property.Value) is { } value)
+                            pins[property.Name] = value;
+                        else
+                            pins.Remove(property.Name);
+                    }
+                    if (candidates is null) candidates = new HashSet<string>(pins.Keys, StringComparer.Ordinal);
+                    else candidates.IntersectWith(pins.Keys);
+                    if (candidates.Count == 0) return null;
+                }
+
+                outline.Add((raw, shape, pins));
+            }
+            // A union of one object is no choice at all — unless the property that chooses is already
+            // known, where one branch is "these extra questions for that one answer".
+            if (outline.Count < (known ? 1 : 2)) return null;
+
+            var discriminator = named ?? FindDiscriminator(outline[0].Shape, outline.Select(b => b.Pins!).ToList(), candidates!);
+            if (discriminator is null) return null;
+
+            var values = new List<JsonElement>();
+            foreach (var (raw, shape, pins) in outline)
+            {
+                var pinned = pins is not null ? pins[discriminator] : PinnedValue(shape, discriminator);
+                if ((pinned ?? MappedValue(mapping, raw)) is not { } value) return null;
+                values.Add(value);
+            }
+            if (values.Select(v => v.GetRawText()).Distinct(StringComparer.Ordinal).Count() != values.Count) return null;
+
+            return (outline.Select(b => b.Raw).ToList(), discriminator, values);
         }
 
         /// <summary>
@@ -1728,10 +1906,13 @@ public static class BormJsonSchemaImporter
                 ChargeMerge();
                 var subform = MergeAllOf(target);
                 if (subform.ValueKind != JsonValueKind.Object) continue;
+                // Read in full for every field that has it, and gone from the schema the field is charged
+                // for by the time it is built.
+                ChargeText(JsonMarshal.GetRawUtf8Value(subform).Length);
                 identity?.UnionWith(pointers);
 
                 // "Different questions per answer": a union whose branches each pin the trigger.
-                if (UnionBranches(subform) is { } union
+                if (UnionOf(subform) is { } union
                     && RewriteDiscriminatedUnion(subform, union, identity: null, knownDiscriminator: trigger) is { } split)
                 {
                     foreach (var p in split.GetProperty("properties").EnumerateObject())
@@ -1743,13 +1924,13 @@ public static class BormJsonSchemaImporter
                 }
 
                 var answered = ConditionJson(trigger, value: null, op: "IsNotEmpty");
-                var required = ReadStringArray(subform, "required") ?? [];
+                var required = (ReadStringArray(subform, "required") ?? []).ToHashSet(StringComparer.Ordinal);
                 if (TryGet(subform, "properties", out var properties) && properties.ValueKind == JsonValueKind.Object)
                 {
                     foreach (var p in properties.EnumerateObject())
                     {
                         if (p.Name == trigger || p.Value.ValueKind == JsonValueKind.False) continue;
-                        Merge(p.Name, p.Value, answered, required.Contains(p.Name, StringComparer.Ordinal) ? answered : null, copyConditions: false);
+                        Merge(p.Name, p.Value, answered, required.Contains(p.Name) ? answered : null, copyConditions: false);
                     }
                 }
                 // A subform that only adds requirements to properties the schema already has.
@@ -1778,11 +1959,14 @@ public static class BormJsonSchemaImporter
             }
         }
 
-        /// <summary>The first property every branch pins to a value of its own — the field that says which branch an answer is.</summary>
-        private JsonElement? PinnedValue(JsonElement branch, string property)
+        /// <summary>The value the property <paramref name="property"/> of a branch's <paramref name="properties"/> is pinned to, if any.</summary>
+        private JsonElement? PinnedValue(JsonElement properties, string property)
+            => TryGet(properties, property, out var raw) ? PinnedValue(raw) : null;
+
+        /// <summary>The value a property's schema pins it to — its <c>const</c>, or an <c>enum</c> of one — if any.</summary>
+        private JsonElement? PinnedValue(JsonElement raw)
         {
-            if (!TryGet(branch, "properties", out var properties) || !TryGet(properties, property, out var raw)) return null;
-            var schema = Resolve(raw, followed: null, keepSiblings: false);
+            var schema = Look(raw);
             if (TryGet(raw, "const", out var value) || TryGet(schema, "const", out value)) return value;
             foreach (var candidate in new[] { raw, schema })
                 if (TryGet(candidate, "enum", out var e) && e.ValueKind == JsonValueKind.Array && e.GetArrayLength() == 1)
@@ -1791,42 +1975,49 @@ public static class BormJsonSchemaImporter
         }
 
         /// <summary>
+        /// OpenAPI's discriminator <c>mapping</c> turned round — the value it gives each reference, the first
+        /// one listed where it gives several — so each branch is one lookup rather than a walk of all of it.
+        /// </summary>
+        private static Dictionary<string, string> Mapping(JsonElement discriminator)
+        {
+            var byReference = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (TryGet(discriminator, "mapping", out var mapping) && mapping.ValueKind == JsonValueKind.Object)
+                foreach (var entry in mapping.EnumerateObject())
+                    if (entry.Value.ValueKind == JsonValueKind.String && entry.Value.GetString() is { } reference)
+                        byReference.TryAdd(reference, entry.Name);
+            return byReference;
+        }
+
+        /// <summary>
         /// The value OpenAPI's discriminator assigns a branch that does not pin it itself: the key its
         /// <c>mapping</c> gives the branch's reference, or else the name of the definition referred to —
         /// OpenAPI's implicit mapping, and what Swashbuckle and NSwag write for an <c>allOf</c> hierarchy.
+        /// Null <paramref name="mapping"/> is no discriminator at all.
         /// </summary>
-        private static JsonElement? MappedValue(JsonElement? discriminator, JsonElement branch)
+        private JsonElement? MappedValue(Dictionary<string, string>? mapping, JsonElement branch)
         {
-            if (discriminator is not { } d || ReadString(branch, "$ref") is not { Length: > 0 } reference) return null;
-
-            if (TryGet(d, "mapping", out var mapping) && mapping.ValueKind == JsonValueKind.Object)
-            {
-                foreach (var entry in mapping.EnumerateObject())
-                    if (entry.Value.ValueKind == JsonValueKind.String && entry.Value.GetString() == reference)
-                        return StringElement(entry.Name);
-            }
+            if (mapping is null || ReadString(branch, "$ref") is not { Length: > 0 } reference) return null;
+            if (mapping.TryGetValue(reference, out var mapped)) return StringElement(mapped);
 
             var slash = reference.LastIndexOf('/');
             return slash >= 0 && slash < reference.Length - 1 ? StringElement(reference[(slash + 1)..]) : null;
 
-            static JsonElement StringElement(string text) => ParseDetached(JsonSerializer.SerializeToUtf8Bytes(text));
+            JsonElement StringElement(string text) => Detach(JsonSerializer.SerializeToUtf8Bytes(text));
         }
 
-        private string? FindDiscriminator(List<JsonElement> branches)
+        /// <summary>
+        /// The first property of the first branch that every branch pins to a value of its own — the field
+        /// that says which branch an answer is. Only the <paramref name="candidates"/>, which every branch
+        /// pins, are tried, each by what <paramref name="pins"/> says each branch pins it to.
+        /// </summary>
+        private static string? FindDiscriminator(
+            JsonElement first, List<Dictionary<string, JsonElement>> pins, HashSet<string> candidates)
         {
-            foreach (var candidate in branches[0].GetProperty("properties").EnumerateObject())
+            foreach (var candidate in first.EnumerateObject())
             {
+                if (!candidates.Contains(candidate.Name)) continue;
                 var values = new HashSet<string>(StringComparer.Ordinal);
-                var pins = true;
-                foreach (var branch in branches)
-                {
-                    if (PinnedValue(branch, candidate.Name) is not { } value || !values.Add(value.GetRawText()))
-                    {
-                        pins = false;
-                        break;
-                    }
-                }
-                if (pins) return candidate.Name;
+                if (pins.All(branch => values.Add(branch[candidate.Name].GetRawText()))) return candidate.Name;
             }
             return null;
         }
@@ -1858,7 +2049,7 @@ public static class BormJsonSchemaImporter
         /// Writes <paramref name="schema"/> again with its properties replaced by <paramref name="plans"/>
         /// and <paramref name="removed"/> keywords dropped.
         /// </summary>
-        private static JsonElement WriteObject(JsonElement schema, string[] removed, List<PropertyPlan> plans,
+        private JsonElement WriteObject(JsonElement schema, string[] removed, List<PropertyPlan> plans,
             List<string>? required, bool keepArrayDependencies = false)
         {
             var buffer = new MemoryStream();
@@ -1897,7 +2088,7 @@ public static class BormJsonSchemaImporter
                 }
                 writer.WriteEndObject();
             }
-            return ParseDetached(buffer.ToArray());
+            return Detach(buffer.ToArray());
 
             static void WriteArrayDependencies(Utf8JsonWriter writer, JsonElement dependencies)
             {
@@ -1999,7 +2190,7 @@ public static class BormJsonSchemaImporter
         }
 
         /// <summary>A condition on a sibling, in the <c>x-</c> form the importer reads: Equals by default.</summary>
-        private static JsonElement ConditionJson(string field, JsonElement? value, string? op = null)
+        private JsonElement ConditionJson(string field, JsonElement? value, string? op = null)
         {
             var buffer = new MemoryStream();
             using (var writer = new Utf8JsonWriter(buffer))
@@ -2014,7 +2205,7 @@ public static class BormJsonSchemaImporter
                 }
                 writer.WriteEndObject();
             }
-            return ParseDetached(buffer.ToArray());
+            return Detach(buffer.ToArray());
         }
 
         /// <summary>
@@ -2027,28 +2218,38 @@ public static class BormJsonSchemaImporter
         /// Only <c>const</c> and <c>title</c> are read, so a referenced branch is followed without its
         /// sibling keywords being merged in, and the first branch that pins nothing ends the question.
         /// A union of thousands of described references used to be resolved, merged and materialised
-        /// branch by branch, several times for every field that used it.
+        /// branch by branch, several times for every field that used it; the answer is now kept with the
+        /// list (see <see cref="UnionOf"/>).
         /// </remarks>
         public IReadOnlyList<ConstChoice>? ConstBranches(JsonElement schema)
+            => UnionOf(schema) is { } union ? Constants(union) : null;
+
+        private IReadOnlyList<ConstChoice>? Constants(Union union)
         {
-            if (UnionBranches(schema) is not { } union) return null;
+            if (union.ConstantsKnown) return union.Constants;
 
             List<ConstChoice>? choices = null;
             foreach (var raw in union.Branches.EnumerateArray())
             {
-                var target = Resolve(raw, followed: null, keepSiblings: false);
+                var target = Look(raw);
                 if (DeclaresOnlyNull(target)) continue;
 
                 // The branch's own keywords win over the definition it refers to, as they do anywhere.
                 if (TryGet(raw, "const", out var value) || TryGet(target, "const", out value))
                 {
                     var title = ReadString(raw, "title") ?? ReadString(target, "title");
-                    ChargeChoices(1, title?.Length ?? 0);
+                    if (title is not null) ChargeText(Encoding.UTF8.GetByteCount(title));
                     (choices ??= []).Add(new ConstChoice(value, title));
                 }
                 else
-                    return null;
+                {
+                    choices = null;
+                    break;
+                }
             }
+
+            union.Constants = choices;
+            union.ConstantsKnown = true;
             return choices;
         }
 
@@ -2056,12 +2257,59 @@ public static class BormJsonSchemaImporter
         /// The union a schema declares. <c>anyOf</c> and <c>oneOf</c> are read in the same order
         /// everywhere, so the decision to collapse and the reading of labelled values never disagree.
         /// </summary>
-        private static (string Keyword, JsonElement Branches)? UnionBranches(JsonElement schema)
+        /// <remarks>
+        /// A list in the document being imported is one list however many fields reach it, so what is
+        /// worked out about it is kept, by where it starts in the document: a union every field refers
+        /// to was walked again for each of them, and a few times for each — as an enum, as a
+        /// discriminated union, as an optional value. A list the importer wrote for itself is new each
+        /// time, and was charged as it was written; only the last is kept, for the same field asking again.
+        /// </remarks>
+        private Union? UnionOf(JsonElement schema)
         {
             if (schema.ValueKind != JsonValueKind.Object) return null;
-            if (schema.TryGetProperty("anyOf", out var any) && any.ValueKind == JsonValueKind.Array) return ("anyOf", any);
-            if (schema.TryGetProperty("oneOf", out var one) && one.ValueKind == JsonValueKind.Array) return ("oneOf", one);
-            return null;
+            string keyword;
+            if (schema.TryGetProperty("anyOf", out var branches) && branches.ValueKind == JsonValueKind.Array) keyword = "anyOf";
+            else if (schema.TryGetProperty("oneOf", out branches) && branches.ValueKind == JsonValueKind.Array) keyword = "oneOf";
+            else return null;
+
+            var text = JsonMarshal.GetRawUtf8Value(branches);
+            if (JsonMarshal.GetRawUtf8Value(_root).Overlaps(text, out var offset))
+            {
+                if (!_unions.TryGetValue(offset, out var known)) _unions[offset] = known = new Union(keyword, branches);
+                return known;
+            }
+
+            if (_lastCopied is { } last)
+            {
+                var lastText = JsonMarshal.GetRawUtf8Value(last.Branches);
+                if (lastText.Length == text.Length && lastText.Overlaps(text, out var at) && at == 0) return last;
+            }
+            return _lastCopied = new Union(keyword, branches);
+        }
+
+        /// <summary>One <c>anyOf</c>/<c>oneOf</c> list, and what has been worked out about it so far.</summary>
+        private sealed class Union(string keyword, JsonElement branches)
+        {
+            public string Keyword { get; } = keyword;
+            public JsonElement Branches { get; } = branches;
+
+            /// <summary>Whether <see cref="Constants"/> has been worked out.</summary>
+            public bool ConstantsKnown { get; set; }
+
+            /// <summary>The labelled values, when every branch that is not null pins a <c>const</c>.</summary>
+            public IReadOnlyList<ConstChoice>? Constants { get; set; }
+
+            /// <summary>Whether <see cref="Single"/> has been worked out.</summary>
+            public bool SingleKnown { get; set; }
+
+            /// <summary>The one branch that is not null, when there is exactly one.</summary>
+            public JsonElement? Single { get; set; }
+
+            /// <summary>
+            /// The ways of telling the branches apart already found wanting (see
+            /// <see cref="RewriteDiscriminatedUnion"/>): by a property named or known, or by none.
+            /// </summary>
+            public HashSet<string>? Untold { get; set; }
         }
 
         /// <summary>Whether a schema holding a <c>$ref</c> also says something of its own.</summary>
@@ -2070,7 +2318,7 @@ public static class BormJsonSchemaImporter
                 or "$id" or "$comment" or "$anchor" or "$dynamicAnchor"));
 
         /// <summary>Copies a schema without some of its keywords.</summary>
-        private static JsonElement Without(JsonElement schema, params string[] keywords)
+        private JsonElement Without(JsonElement schema, params string[] keywords)
         {
             var buffer = new MemoryStream();
             using (var writer = new Utf8JsonWriter(buffer))
@@ -2084,7 +2332,7 @@ public static class BormJsonSchemaImporter
                 }
                 writer.WriteEndObject();
             }
-            return ParseDetached(buffer.ToArray());
+            return Detach(buffer.ToArray());
         }
 
         /// <summary>
@@ -2119,19 +2367,19 @@ public static class BormJsonSchemaImporter
         /// folded them and drops them; a merge that runs before it (a <c>$ref</c> with siblings, a
         /// collapsed union) must keep them for it to fold.
         /// </param>
-        private static JsonElement Merge(IEnumerable<JsonElement> branches, bool keepAllOf = false)
+        private JsonElement Merge(IEnumerable<JsonElement> branches, bool keepAllOf = false)
         {
             var allOf = new List<JsonElement>();
             var properties = new Dictionary<string, List<JsonElement>>(StringComparer.Ordinal);
             var propertyOrder = new List<string>();
             var items = new List<JsonElement>();
-            var required = new List<string>();
+            var required = new Names();
             var scalars = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
             var conditionals = new List<(JsonElement If, JsonElement? Then, JsonElement? Else)>();
             var carried = new List<JsonElement>();
-            var dependentRequired = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            var dependentRequired = new Dictionary<string, Names>(StringComparer.Ordinal);
             var dependencies = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-            var dependencyArrays = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            var dependencyArrays = new Dictionary<string, Names>(StringComparer.Ordinal);
             var patterns = new List<string>();
             var enums = new List<JsonElement>();
             var labels = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -2372,15 +2620,15 @@ public static class BormJsonSchemaImporter
             }
 
             // The document is kept alive by cloning the element out of it.
-            return ParseDetached(buffer.ToArray());
+            return Detach(buffer.ToArray());
 
-            static List<string> Bucket(Dictionary<string, List<string>> map, string key)
-                => map.TryGetValue(key, out var list) ? list : map[key] = [];
+            static Names Bucket(Dictionary<string, Names> map, string key)
+                => map.TryGetValue(key, out var names) ? names : map[key] = new Names();
 
-            static void AddStrings(JsonElement array, List<string> into)
+            static void AddStrings(JsonElement array, Names into)
             {
                 foreach (var item in array.EnumerateArray())
-                    if (item.ValueKind == JsonValueKind.String && item.GetString() is { } s && !into.Contains(s))
+                    if (item.ValueKind == JsonValueKind.String && item.GetString() is { } s)
                         into.Add(s);
             }
 
@@ -2437,6 +2685,13 @@ public static class BormJsonSchemaImporter
             // A property described by several branches is all of those descriptions at once.
             static void WriteCombined(Utf8JsonWriter writer, List<JsonElement> descriptions)
             {
+                // The usual case, and the one a property-heavy definition copied for every field repeats.
+                if (descriptions.Count == 1)
+                {
+                    descriptions[0].WriteTo(writer);
+                    return;
+                }
+
                 if (descriptions.Any(d => d.ValueKind == JsonValueKind.False))
                 {
                     writer.WriteBooleanValue(false);
@@ -2461,6 +2716,27 @@ public static class BormJsonSchemaImporter
                 writer.WriteEndArray();
                 writer.WriteEndObject();
             }
+        }
+
+        /// <summary>
+        /// Names in the order they were first given, each once. Kept with a set beside the list: a hundred
+        /// thousand required names, each looked for in the list so far, were five billion comparisons.
+        /// </summary>
+        private sealed class Names : IEnumerable<string>
+        {
+            private readonly List<string> _order = [];
+            private readonly HashSet<string> _seen = new(StringComparer.Ordinal);
+
+            public int Count => _order.Count;
+
+            public void Add(string name)
+            {
+                if (_seen.Add(name)) _order.Add(name);
+            }
+
+            public IEnumerator<string> GetEnumerator() => _order.GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>

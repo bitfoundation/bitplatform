@@ -243,7 +243,7 @@ public sealed class BormModelDataAccessor : IBormDataAccessor
     {
         if (seg.IsIndex)
         {
-            if (target is not IList list) { LastWriteFailed = true; return; }
+            if (target is not IList list || seg.Index - list.Count > BormPath.MaxPadding) { LastWriteFailed = true; return; }
 
             var elementType = BormFieldTypeResolver.GetEnumerableElementType(target.GetType()) ?? typeof(object);
             if (!BormValueConverter.TryCoerce(value, elementType, out var converted))

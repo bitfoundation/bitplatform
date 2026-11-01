@@ -3122,8 +3122,11 @@ public sealed class BormState : IDisposable
 
         if (count > current)
         {
-            for (var i = current; i < count; i++)
+            var added = 0;
+            for (var i = current; i < count; i++, added++)
                 if (InsertItem(arrayField, arrayPath, int.MaxValue, notify: false, track: false) < 0) break;
+            // A list that would not take even one row has not changed, and there is nothing to settle or announce.
+            if (added == 0) return current;
         }
         else if (Data.GetValue(arrayPath) is IList list)
         {
@@ -4021,16 +4024,37 @@ public sealed class BormState : IDisposable
     /// <remarks>
     /// Opt-in, not automatic: on an edit form loaded from storage, "this record has no lines" can be
     /// the truth, and inventing one would be the library editing the user's data on their behalf.
+    /// <para>
+    /// The lists together hold at most <see cref="BormDraft.MaxRows"/> rows toward their minimums, as a
+    /// draft restores at most that many: an imported schema says <c>"minItems": 100000000</c> in a few
+    /// bytes, and the form never finished opening. The rows already there count, so seeding again after
+    /// <see cref="NotifyDefinitionChanged"/> tops the lists up rather than adding as many rows again, and
+    /// rows are counted as they are added, so one that a sweep clears straight away still cost its insert.
+    /// The rows of each list are added together and the form settled once, where a row at a time
+    /// settled it once per row.
+    /// </para>
     /// </remarks>
     private void SeedRequiredArrayItems()
     {
+        var lists = new List<(BormFieldDefinition Field, string Path, int Min)>();
         foreach (var (field, path) in EnumerateFieldPaths().ToList())
         {
             if (field.Type != BormFieldType.Array || field.MinItems is not { } min || min <= 0) continue;
             if (!field.Attributes.TryGetValue("seedMinItems", out var seed) || seed is not true) continue;
+            lists.Add((field, path, min));
+        }
+        if (lists.Count == 0) return;
 
-            for (var i = ArrayCount(path); i < min; i++)
-                if (InsertArrayItem(field, path, int.MaxValue) < 0) break;
+        // A list's rows beyond its minimum are the user's data rather than seeded ones, and take nothing
+        // from what the other lists may be given.
+        var budget = BormDraft.MaxRows - lists.Sum(l => (long)Math.Min(ArrayCount(l.Path), l.Min));
+        foreach (var (field, path, min) in lists)
+        {
+            var current = ArrayCount(path);
+            var add = (int)Math.Min(min - current, budget);
+            if (add <= 0) continue;
+            budget -= add;
+            WithRows(path, () => SetRowCount(field, path, current + add));
         }
     }
 

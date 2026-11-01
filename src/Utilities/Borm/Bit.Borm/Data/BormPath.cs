@@ -9,6 +9,13 @@ public static class BormPath
 {
     private static readonly IReadOnlyList<BormPathSegment> NoSegments = Array.AsReadOnly(Array.Empty<BormPathSegment>());
 
+    /// <summary>
+    /// How far past a list's end a write through a path may land, the gap filled with empty items. One
+    /// bound for every accessor, so a model-bound and a dictionary-bound form agree on which writes they
+    /// take: <c>Tags[100000000]</c> is a few bytes of path and was a hundred million items of list.
+    /// </summary>
+    internal const int MaxPadding = 1_000;
+
     // Every read and write of a value parses its path, and a render reads every field's: the same few
     // hundred strings, parsed again and again into the same segments. Remembered here, read-only so
     // no caller can change what the next one is handed, and bounded, because row paths are built from
