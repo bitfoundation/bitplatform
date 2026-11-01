@@ -170,7 +170,8 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     //#if (cloudflare == true)
     builder.AddCloudflareQuickTunnel("cloudflare-tunnel-workbench")
         .WithReference(workbench)
-        .WaitFor(workbench);
+        .WaitFor(workbench)
+        .WithExplicitStart();
     //#endif
 
     if (OperatingSystem.IsWindows())
