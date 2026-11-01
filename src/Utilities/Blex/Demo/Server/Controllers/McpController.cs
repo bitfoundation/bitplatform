@@ -31,7 +31,7 @@ namespace Bit.Blex.Demo.Server.Controllers;
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
-public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
+public class McpController(HtmlRenderer htmlRenderer, ILoggerFactory loggerFactory) : ControllerBase
 {
     // The docs pages are rich enough that a couple of them would otherwise dominate a client's context
     // window; the ones in this demo land below the cap.
@@ -148,7 +148,7 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
         [Description("True to also return the full generated source. Off by default - the member list is what a caller normally needs.")] bool includeGeneratedCode = false,
         CancellationToken cancellationToken = default)
     {
-        return BlexStoreInspector.InspectAsync(source, includeGeneratedCode, cancellationToken);
+        return BlexStoreInspector.InspectAsync(source, includeGeneratedCode, loggerFactory.CreateLogger(typeof(BlexStoreInspector)), cancellationToken);
     }
 
     [HttpGet]

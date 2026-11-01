@@ -6,6 +6,14 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.HttpOverrides;
 using ModelContextProtocol.Protocol;
 
+// InspectBlexStore runs every inspection in a child process of this executable, so a source that sends Roslyn
+// into an endless computation costs a killed worker rather than the server. A worker never builds the web app.
+if (args is [BlexStoreInspector.WorkerArgument])
+{
+    Environment.ExitCode = await BlexStoreInspector.RunWorkerAsync(Console.OpenStandardInput(), Console.OpenStandardOutput(), Console.Error);
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()

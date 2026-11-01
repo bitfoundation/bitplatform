@@ -565,9 +565,10 @@ public sealed class BlexQueryClient : IDisposable
     }
 
     /// <summary>
-    /// Removes the queries <paramref name="key"/> covers from the cache, cancelling their fetches. An observer
-    /// still watching one starts over on a fresh entry -- no data, and a fetch if it is enabled -- so a removal
-    /// on sign-out never leaves the previous user's data on screen.
+    /// Removes the queries <paramref name="key"/> covers from the cache, cancelling their fetches, and drops the
+    /// prerendered data handed over for them and not yet claimed. An observer still watching one starts over on a
+    /// fresh entry -- no data, and a fetch if it is enabled -- so a removal on sign-out never leaves the previous
+    /// user's data on screen, nor for the next query of the same key to pick up.
     /// </summary>
     public void Remove(BlexQueryKey key, bool exact = false)
     {
@@ -590,8 +591,8 @@ public sealed class BlexQueryClient : IDisposable
                     removed.RemoveAt(i);
             }
 
-            string[] handedOver = [.. _hydration.Keys];
-            foreach (var pending in handedOver)
+            // Removing while enumerating is allowed: a removal does not invalidate a Dictionary's enumerator.
+            foreach (var pending in _hydration.Keys)
             {
                 if (pending == text || (!exact && pending.StartsWith(prefix, StringComparison.Ordinal)))
                     _hydration.Remove(pending);

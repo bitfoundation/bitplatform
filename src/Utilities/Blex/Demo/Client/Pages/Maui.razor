@@ -41,7 +41,7 @@
         <CodeBlock Code="@HybridProgram" FileName="MauiProgram.cs" />
         <CodeBlock Code="@HybridRoutes" Language="razor" FileName="Components/Routes.razor" />
         <ul class="bb-detail-list">
-            <li><strong>DevTools.</strong> There is no browser extension inside a WebView; the bridge detects that and disables itself, and <code>EnableDevTools="false"</code> skips loading it at all.</li>
+            <li><strong>DevTools.</strong> There is no browser extension inside a WebView; with <code>EnableDevTools</code> at its default (<code>false</code>) the bridge is never loaded, and turned on it detects the missing extension and disables itself.</li>
             <li><strong>Storage.</strong> <code>AddBitBlexLocalStoragePersistence()</code> works - the WebView has a <code>localStorage</code> - but it lives in the WebView's profile. <code>AddBitBlexPreferencesPersistence()</code> from <code>Bit.Blex.Maui</code> writes to the OS-native app preferences instead; its <code>IServiceCollection</code> overload stays scoped, to match the rest.</li>
             <li><strong>The network.</strong> Requests leave from the device, so <code>&lt;BlexProvider&gt;</code> follows the WebView's <code>offline</code>/<code>online</code> events and <a href="queries">queries</a> pause while offline, as in the browser.</li>
         </ul>

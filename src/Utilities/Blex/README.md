@@ -1332,8 +1332,10 @@ while time-travel restores keep working - which is the point. Both are readable 
 moves, since neither is an action a component would re-render on - and disconnecting the bridge clears them, so
 a monitor closed while locked cannot leave the application permanently frozen.
 
-For production, keep `EnableDevTools` off (bind it to the host environment) so there is no connection at all, or
-redact sensitive values from the monitor with sanitizers:
+For production, keep `EnableDevTools` off (bind it to the host environment) so there is no connection at all.
+With interactive server rendering this matters beyond the extension: the bridge runs on the server, so any script
+on the page can read the state tree, dispatch any action and replace the state through it. In development, redact
+sensitive values from the monitor with sanitizers:
 
 ```csharp
 builder.Services.AddBitBlexServices(options =>
@@ -1358,8 +1360,8 @@ involved on the library side.
 
 MAUI Blazor Hybrid apps use `Bit.Blex` exactly like any Blazor app: `AddBitBlexServices(...)` in
 `MauiProgram.cs` and `<BlexProvider>` wrapping the root component inside the `BlazorWebView`.
-There is no browser extension inside a WebView, so the DevTools bridge detects its absence and
-disables itself; set `<BlexProvider EnableDevTools="false">` to skip loading it entirely.
+There is no browser extension inside a WebView, so leave `EnableDevTools` at its default (`false`) and
+the DevTools bridge is never loaded; turned on, it detects the extension's absence and disables itself.
 `AddBitBlexLocalStoragePersistence()` works (the WebView provides `localStorage`), or add
 `Bit.Blex.Maui` and call `AddBitBlexPreferencesPersistence()` to persist to OS-native app preferences
 instead of the WebView profile.

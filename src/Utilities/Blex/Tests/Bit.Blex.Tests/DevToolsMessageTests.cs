@@ -120,7 +120,7 @@ public class DevToolsMessageTests
     public void ActionNameWithLineBreaks_StaysOnOneStderrLine()
     {
         var manager = new BlexManager();
-        var typed = new JsonObject { ["type"] = "counter/Nope\r\n[Blex] forged line" }.ToJsonString();
+        var typed = new JsonObject { ["type"] = "counter/Nope\r\n[Blex] forged line\u202Edesrever" }.ToJsonString();
         var original = Console.Error;
         using var captured = new StringWriter();
         Console.SetError(captured);
@@ -136,6 +136,6 @@ public class DevToolsMessageTests
 
         var line = captured.ToString().TrimEnd('\r', '\n');
         Assert.IsFalse(line.Contains('\r') || line.Contains('\n'), line);
-        StringAssert.Contains(line, @"counter/Nope\u000d\u000a[Blex] forged line");
+        StringAssert.Contains(line, @"counter/Nope\u000d\u000a[Blex] forged line\u202edesrever");
     }
 }

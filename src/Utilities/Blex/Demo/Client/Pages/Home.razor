@@ -270,9 +270,10 @@
             <details>
                 <summary>Do I need the Redux DevTools extension?</summary>
                 <p>
-                    No. The bridge connects when the extension is there and disables itself when it is not - as in a
-                    MAUI WebView. Set <code>&lt;BlexProvider EnableDevTools="false"&gt;</code> in production so the state
-                    tree is never handed to an installed extension, or redact keys with <code>RedactDevToolsKeys</code>.
+                    No. The bridge is off unless <code>&lt;BlexProvider EnableDevTools="true"&gt;</code> turns it on, and
+                    even then it disables itself when the extension is not there - as in a MAUI WebView. Turn it on in
+                    development only, so the state tree is never handed to an installed extension in production, and
+                    redact keys with <code>RedactDevToolsKeys</code>.
                 </p>
             </details>
             <details>
