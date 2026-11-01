@@ -213,6 +213,11 @@
     width: 100%;
 }
 
+// Under the guide that points at the user picker inside it, whose dropdown still opens over both.
+.phone-layout ::deep .tools-panel {
+    --bit-Panel-z-index: 1100;
+}
+
 .pick-banner {
     top: 0.75rem;
     left: 50%;

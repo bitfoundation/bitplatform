@@ -93,6 +93,33 @@ public class OtherShowcasesUITests : WorkbenchPageTest
     }
 
     [TestMethod]
+    public async Task SignInOnAPhone_Should_PointAtTheUserPickerOverTheToolsPanel()
+    {
+        await Page.SetViewportSizeAsync(390, 800);
+        await Page.GotoAsync(new Uri(Server.Address, "/workbench/buildings?auth=signedout").ToString());
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn, Exact = true }).Locator("visible=true").First.ClickAsync();
+
+        await Expect(Page.GetByText(WorkbenchStrings.SignInGuide)).ToBeVisibleAsync();
+
+        var picker = Page.Locator("[data-bonboarding-anchor='sign-in']");
+
+        await Expect(picker).ToBeInViewportAsync(new() { Ratio = 1 });
+
+        var signedIn = picker.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.SignedIn, Exact = true });
+
+        await signedIn.ClickAsync();
+        await Expect(signedIn).ToHaveAttributeAsync("aria-pressed", "true");
+
+        await picker.GetByRole(AriaRole.Combobox).ClickAsync();
+        await Page.GetByRole(AriaRole.Option, new() { Name = WorkbenchStrings.DemoUserZahra }).ClickAsync();
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.GotIt, Exact = true }).ClickAsync();
+
+        await Expect(Page.GetByText(WorkbenchStrings.SignInGuide)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
     public async Task SignUpInAView_Should_BringTheUserPickerIntoSightAndPointAtIt()
     {
         await OpenWorkbench("theme", "?device=desktop-1536&auth=signedout");
