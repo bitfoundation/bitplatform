@@ -150,6 +150,38 @@ public class BitPdfXRefTests
     }
 
     [TestMethod]
+    public void AnObjectStreamWhoseHeaderClaimsAnExtraPairShouldKeepItsLastObject()
+    {
+        // /N counts one pair more than the header holds, so the last "offset" is read out of the first
+        // object's body (and is 0). Ended at that offset, the real last object used to come out null.
+        var file = new BitPdfEngineTestFile("%PDF-1.5\n");
+        file.Stream(4, BitPdfEngineTestFile.ShowText("Overcounted"));
+        var (data, first) = ObjectStream(
+            (1, "<< /Type /Catalog /Pages 2 0 R >>"),
+            (2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>"),
+            (3, PageBody),
+            (5, FontBody),
+            (6, "<< /Title (Last in the stream) >>"));
+        file.Stream(7, data, $"/Type /ObjStm /N 6 /First {first}");
+        file.XRefStream(8, "/Root 1 0 R /Info 6 0 R",
+        [
+            (0, 0, 0, 65535),
+            (1, 2, 7, 0),
+            (2, 2, 7, 1),
+            (3, 2, 7, 2),
+            (4, 1, file.Offsets[4], 0),
+            (5, 2, 7, 3),
+            (6, 2, 7, 4),
+            (7, 1, file.Offsets[7], 0),
+        ]);
+
+        var document = BitPdfDocument.Load(file.ToArray());
+
+        Assert.AreEqual("Overcounted", PageText(document));
+        Assert.AreEqual("Last in the stream", document.Metadata.Title);
+    }
+
+    [TestMethod]
     public void AnXRefStreamWithNonContiguousIndexSubsectionsShouldResolveEachOne()
     {
         var file = new BitPdfEngineTestFile("%PDF-1.5\n");
@@ -305,6 +337,25 @@ public class BitPdfXRefTests
     {
         var file = Base("Recovered", out int[] objects);
         file.XRefTable("/Size 7 /Root 1 0 R /Info 6 0 R", objects);
+        string text = Encoding.Latin1.GetString(file.ToArray());
+        int at = text.LastIndexOf("startxref\n", StringComparison.Ordinal) + "startxref\n".Length;
+        byte[] broken = Encoding.Latin1.GetBytes(text[..at] + "999999" + text[text.IndexOf('\n', at)..]);
+
+        var document = BitPdfDocument.Load(broken);
+
+        Assert.IsTrue(document.Warnings.Count > 0);
+        Assert.AreEqual("Recovered", PageText(document));
+        Assert.AreEqual("Original title", document.Metadata.Title);
+    }
+
+    [TestMethod]
+    public void ARecoveryScanShouldStillFindTheTrailerWrittenAfterABrokenCandidate()
+    {
+        // A comment holding "trailer [" opens an array that is never closed. Read on to the end of
+        // the file, that candidate used to take the real trailer (and so its /Info) down with it.
+        var file = Base("Recovered", out int[] objects);
+        file.Obj(7, "[1 2] % a trailer [ that is never closed");
+        file.XRefTable("/Size 8 /Root 1 0 R /Info 6 0 R", [.. objects, 7]);
         string text = Encoding.Latin1.GetString(file.ToArray());
         int at = text.LastIndexOf("startxref\n", StringComparison.Ordinal) + "startxref\n".Length;
         byte[] broken = Encoding.Latin1.GetBytes(text[..at] + "999999" + text[text.IndexOf('\n', at)..]);

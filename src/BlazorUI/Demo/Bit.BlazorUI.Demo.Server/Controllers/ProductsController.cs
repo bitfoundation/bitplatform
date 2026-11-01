@@ -8,8 +8,12 @@ public partial class ProductsController : AppControllerBase
 {
     private static readonly Random _random = new Random();
 
+    // $top is applied by hand below (after the count), so it is bounded here: without MaxTop a single
+    // request could ask for every one of the half a million rows. 1000 is past any window the demos'
+    // virtualized lists and grids ask for.
     private static readonly ODataValidationSettings _validationSettings = new()
     {
+        MaxTop = 1000,
         AllowedFunctions = AllowedFunctions.AllFunctions & ~AllowedFunctions.MatchesPattern
     };
 

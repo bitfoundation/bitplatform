@@ -14,6 +14,7 @@ public sealed class BitPdfToUnicodeCMap
 
     private readonly Dictionary<int, string> _single = new();
     private readonly List<(int Lo, int Hi, string Dst)> _ranges = new();
+    private (long Lo, long Hi, int Owner)[]? _segments;
 
     /// <summary>Looks up the Unicode text for <paramref name="code"/>, or <c>null</c> if unmapped.</summary>
     public string? Lookup(int code)
@@ -22,25 +23,25 @@ public sealed class BitPdfToUnicodeCMap
         {
             return s;
         }
-        foreach (var (lo, hi, dst) in _ranges)
+        _segments ??= BitPdfRangeIndex.Build(_ranges.Count, i => (_ranges[i].Lo, _ranges[i].Hi));
+        int owner = BitPdfRangeIndex.Find(_segments, code);
+        if (owner < 0)
         {
-            if (code >= lo && code <= hi)
-            {
-                // Increment the last UTF-16 unit by the offset, per the CMap rules.
-                if (dst.Length == 0)
-                {
-                    return string.Empty;
-                }
-                if (code == lo)
-                {
-                    return dst;
-                }
-                var chars = dst.ToCharArray();
-                chars[^1] = (char)(chars[^1] + (code - lo));
-                return new string(chars);
-            }
+            return null;
         }
-        return null;
+        var (lo, _, dst) = _ranges[owner];
+        // Increment the last UTF-16 unit by the offset, per the CMap rules.
+        if (dst.Length == 0)
+        {
+            return string.Empty;
+        }
+        if (code == lo)
+        {
+            return dst;
+        }
+        var chars = dst.ToCharArray();
+        chars[^1] = (char)(chars[^1] + (code - lo));
+        return new string(chars);
     }
 
     /// <summary>Parses a decoded ToUnicode CMap byte stream.</summary>

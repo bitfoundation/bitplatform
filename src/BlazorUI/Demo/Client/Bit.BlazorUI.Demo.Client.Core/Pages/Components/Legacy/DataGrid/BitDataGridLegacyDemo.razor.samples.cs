@@ -652,6 +652,14 @@ public class ProductsController : ControllerBase
 {
     private static readonly Random _random = new Random();
 
+    // Bound what a client may ask for: $top (applied by hand below) and the matchesPattern function,
+    // whose regular expression would otherwise run against every row.
+    private static readonly ODataValidationSettings _validationSettings = new()
+    {
+        MaxTop = 1000,
+        AllowedFunctions = AllowedFunctions.AllFunctions & ~AllowedFunctions.MatchesPattern
+    };
+
     private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
         .Select(i => new ProductDto { Id = i, Name = Guid.NewGuid().ToString(""N""), Price = _random.Next(1, 100) })
         .ToArray();
@@ -659,6 +667,8 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
+        odataQuery.Validate(_validationSettings);
+
         var query = _products.AsQueryable();
 
         query = (IQueryable<ProductDto>)odataQuery.ApplyTo(query, ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
@@ -841,6 +851,14 @@ public class ProductsController : ControllerBase
 {
     private static readonly Random _random = new Random();
 
+    // Bound what a client may ask for: $top (applied by hand below) and the matchesPattern function,
+    // whose regular expression would otherwise run against every row.
+    private static readonly ODataValidationSettings _validationSettings = new()
+    {
+        MaxTop = 1000,
+        AllowedFunctions = AllowedFunctions.AllFunctions & ~AllowedFunctions.MatchesPattern
+    };
+
     private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
         .Select(i => new ProductDto { Id = i, Name = Guid.NewGuid().ToString(""N""), Price = _random.Next(1, 100) })
         .ToArray();
@@ -848,6 +866,8 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
+        odataQuery.Validate(_validationSettings);
+
         var query = _products.AsQueryable();
 
         query = (IQueryable<ProductDto>)odataQuery.ApplyTo(query, ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);

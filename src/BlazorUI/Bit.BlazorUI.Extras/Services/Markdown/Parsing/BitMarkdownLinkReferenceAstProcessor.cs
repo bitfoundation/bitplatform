@@ -23,20 +23,14 @@ public sealed class BitMarkdownLinkReferenceAstProcessor : BitMarkdownAstProcess
         BitMarkdownAstHelper.VisitChildLists(document, list =>
         {
             // Collected in document order so the first definition of a label wins, then
-            // removed back to front so the indexes stay valid.
+            // removed in one pass.
             for (int i = 0; i < list.Count; i++)
             {
                 if (list[i] is BitMarkdownLinkReferenceDefinitionNode def)
                     definitions.TryAdd(def.NormalizedLabel, def);
             }
 
-            int kept = 0;
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i] is not BitMarkdownLinkReferenceDefinitionNode) list[kept++] = list[i];
-            }
-
-            for (int i = list.Count - 1; i >= kept; i--) list.RemoveAt(i);
+            BitMarkdownAstHelper.RemoveAll<BitMarkdownLinkReferenceDefinitionNode>(list);
         });
 
         // Always run: a reference node can outlive its definition (a "[a]:" line the

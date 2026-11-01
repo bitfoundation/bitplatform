@@ -444,6 +444,16 @@ public partial class BitMarkdownViewer : BitComponentBase
                         stripped.Children.AddRange(link.Children);
                         list[i] = stripped;
                         break;
+
+                    // Split out of the text runs (and its expansion entity-decoded) while the
+                    // document was being parsed, so neither went through the text node case above.
+                    case BitMarkdownAbbreviationNode abbreviation:
+                        list[i] = new BitMarkdownAbbreviationNode
+                        {
+                            Text = BitMarkdownTextSanitizer.StripBidiControlCharacters(abbreviation.Text),
+                            Title = BitMarkdownTextSanitizer.StripBidiControlCharacters(abbreviation.Title)
+                        };
+                        break;
                 }
             }
         });

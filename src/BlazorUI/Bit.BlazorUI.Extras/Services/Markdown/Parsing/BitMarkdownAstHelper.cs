@@ -53,6 +53,21 @@ public static class BitMarkdownAstHelper
     }
 
     /// <summary>
+    /// Removes every <typeparamref name="TNode"/> from <paramref name="list"/> in one pass, so a list holding
+    /// many of them among other nodes is not shifted down once per removal.
+    /// </summary>
+    internal static void RemoveAll<TNode>(IList<BitMarkdownNode> list) where TNode : BitMarkdownNode
+    {
+        int kept = 0;
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (list[i] is not TNode) list[kept++] = list[i];
+        }
+
+        for (int i = list.Count - 1; i >= kept; i--) list.RemoveAt(i);
+    }
+
+    /// <summary>
     /// Renders the whole subtree as plain text: what the document says, with none of the markup it
     /// says it with. Blocks are separated by a blank line, so the result reads as paragraphs rather
     /// than as one run-on sentence.

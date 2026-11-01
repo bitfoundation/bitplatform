@@ -263,6 +263,23 @@ public class BitVirtualizeLayoutTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitVirtualizeMinLaneSizeShouldKeepAReportedWidthWithinOneWindow()
+    {
+        SetupViewport(300, 1000);
+
+        var component = RenderGrid(5_000, 1, 100, p => p.Add(x => x.MinLaneSize, 220f));
+
+        // A width that is not a number of pixels leaves the 4 lanes of the measured 1000px alone.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, double.PositiveInfinity));
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 4)");
+
+        // An absurd one yields no more lanes than one window renders.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, 1e12));
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 1000)");
+        Assert.IsTrue(RenderedIndices(component).Length <= 1_000);
+    }
+
+    [TestMethod]
     public void BitVirtualizeMinLaneSizeShouldFallBackToLanesUntilTheListIsMeasured()
     {
         var component = RenderGrid(100, 2, 100, p => p.Add(x => x.MinLaneSize, 220f));

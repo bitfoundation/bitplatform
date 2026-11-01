@@ -231,4 +231,21 @@ public class BitPdfWorkLimitsTests
         Assert.AreEqual("C", map.Lookup(3));
         Assert.AreSame(map.Lookup(1), map.Lookup(1));
     }
+
+    [TestMethod]
+    public void AToUnicodeMapShouldResolveCodesThroughOverlappingRanges()
+    {
+        var map = BitPdfToUnicodeCMap.Parse(Encoding.Latin1.GetBytes(
+            "2 beginbfchar <0011> <0058> <0300> <0059> endbfchar\n" +
+            "3 beginbfrange <0010> <0020> <0041> <0018> <0030> <0061> <0200> <0100> <0030> endbfrange"));
+
+        Assert.AreEqual("A", map.Lookup(0x10));
+        Assert.AreEqual("X", map.Lookup(0x11)); // a bfchar wins over a range
+        Assert.AreEqual("Q", map.Lookup(0x20)); // the earlier range wins where two overlap
+        Assert.AreEqual("j", map.Lookup(0x21));
+        Assert.AreEqual("y", map.Lookup(0x30));
+        Assert.IsNull(map.Lookup(0x31));
+        Assert.IsNull(map.Lookup(0x200)); // a range whose low end is past its high end maps nothing
+        Assert.AreEqual("Y", map.Lookup(0x300));
+    }
 }

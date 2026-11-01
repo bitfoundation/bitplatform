@@ -30,10 +30,7 @@ public sealed class BitMarkdownAbbreviationAstProcessor : BitMarkdownAstProcesso
                     definitions.TryAdd(definition.Label, definition.Title);
             }
 
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                if (list[i] is BitMarkdownAbbreviationDefinitionNode) list.RemoveAt(i);
-            }
+            BitMarkdownAstHelper.RemoveAll<BitMarkdownAbbreviationDefinitionNode>(list);
         });
 
         if (definitions.Count == 0) return;

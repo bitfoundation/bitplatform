@@ -19,17 +19,14 @@ public sealed class BitMarkdownFootnoteAstProcessor : BitMarkdownAstProcessor
         BitMarkdownAstHelper.VisitChildLists(document, list =>
         {
             // Collected in document order so the first definition of a label wins (matching
-            // how link references behave), then removed back to front.
+            // how link references behave), then removed in one pass.
             for (int i = 0; i < list.Count; i++)
             {
                 if (list[i] is BitMarkdownFootnoteDefinitionNode definition)
                     definitions.TryAdd(definition.Label, definition);
             }
 
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                if (list[i] is BitMarkdownFootnoteDefinitionNode) list.RemoveAt(i);
-            }
+            BitMarkdownAstHelper.RemoveAll<BitMarkdownFootnoteDefinitionNode>(list);
         });
 
         if (definitions.Count > 0)

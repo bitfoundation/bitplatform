@@ -663,17 +663,32 @@ public sealed class BitPdfXRef : IBitPdfXRef
             offsets.Add(offTok is double d ? (int)d : 0);
         }
 
+        // Each object ends where the next one starts - the next by offset, not by header order, so
+        // one bad offset (a header that claims more pairs than it holds, say) does not cost the
+        // object before it. Entries that share an offset share its parse, so every byte of the
+        // stream is parsed at most once however the header is written.
+        int[] starts = [.. offsets.Distinct().Order()];
+        var parsed = new Dictionary<int, object?>();
         for (int i = 0; i < n; i++)
         {
-            int objStart = first + offsets[i];
-            int length = i + 1 < n ? offsets[i + 1] - offsets[i] : data.Length - objStart;
-            if (objStart < 0 || objStart >= data.Length || length <= 0 || length > data.Length - objStart)
+            int offset = offsets[i];
+            if (parsed.TryGetValue(offset, out var shared))
             {
-                result.Add(null);
+                result.Add(shared);
                 continue;
             }
-            var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, objStart, length)), this);
-            result.Add(parser.GetObj());
+
+            object? obj = null;
+            long objStart = (long)first + offset;
+            if (objStart >= 0 && objStart < data.Length)
+            {
+                int next = Array.BinarySearch(starts, offset) + 1;
+                long objEnd = next < starts.Length ? Math.Min((long)first + starts[next], data.Length) : data.Length;
+                var parser = new BitPdfParser(new BitPdfLexer(new BitPdfStream(data, (int)objStart, (int)(objEnd - objStart))), this);
+                obj = parser.GetObj();
+            }
+            parsed[offset] = obj;
+            result.Add(obj);
         }
 
         return result;
@@ -845,18 +860,19 @@ public sealed class BitPdfXRef : IBitPdfXRef
     {
         var kw = "trailer"u8.ToArray();
         BitPdfDict? result = null;
-        int start = 0;
-        while (start <= _reader.Length - kw.Length)
+        int i = _reader.IndexOf(kw, 0);
+        while (i >= 0)
         {
-            int i = _reader.IndexOf(kw, start);
-            if (i < 0)
-            {
-                break;
-            }
-            start = i + 1;
-            var lexer = new BitPdfLexer(_source.CreateStream(i + kw.Length));
+            // A candidate is read only up to the next "trailer" keyword. That keeps the scan linear
+            // however many candidates a file holds, and a broken candidate (an array or dictionary
+            // that is never closed) cannot run on through the real trailer written after it and
+            // take it down with it; a trailer dictionary has no reason to hold the word itself.
+            int next = _reader.IndexOf(kw, i + 1);
+            int bodyStart = i + kw.Length;
+            int bodyEnd = next >= 0 ? next : _reader.Length;
             try
             {
+                var lexer = new BitPdfLexer(_source.CreateStream(bodyStart, bodyEnd - bodyStart));
                 var parser = new BitPdfParser(lexer, this, _reader, allowStreams: false);
                 if (parser.GetObj() is BitPdfDict d)
                 {
@@ -867,7 +883,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 // Ignore an unparseable trailer candidate.
             }
-            start = Math.Max(start, lexer.Pos);
+            i = next;
         }
         return result;
     }

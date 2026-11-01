@@ -460,7 +460,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         // Independent of the scroll position, so a stale report still has them right.
         ApplyEdges(headSize, tailSize);
 
-        if (crossSize >= 0 && Math.Abs(crossSize - _crossSize) > 0.5)
+        if (crossSize >= 0 && double.IsFinite(crossSize) && Math.Abs(crossSize - _crossSize) > 0.5)
         {
             _crossSize = crossSize;
             if (ComputeLanes() != _lanes)
@@ -946,10 +946,11 @@ public partial class BitVirtualize<TItem> : BitComponentBase
         }
     }
 
-    // n lanes of MinLaneSize take n * MinLaneSize plus the n - 1 gaps between them.
+    // n lanes of MinLaneSize take n * MinLaneSize plus the n - 1 gaps between them. The cross size is what the script
+    // reported, so the count is kept within one rendered window: a row wider than that could never be drawn whole.
     private int ComputeLanes() =>
         MinLaneSize is > 0f && _crossSize > 0
-            ? Math.Max(1, (int)Math.Floor((_crossSize + GapSize) / (MinLaneSize.Value + GapSize)))
+            ? Math.Max(1, (int)Math.Min(Math.Floor((_crossSize + GapSize) / (MinLaneSize.Value + GapSize)), MaxRenderedItems))
             : Math.Max(1, Lanes);
 
     // A change of the orientation invalidates the sizes measured along the old axis, one of the lanes the sizes of the
