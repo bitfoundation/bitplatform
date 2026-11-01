@@ -12,7 +12,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Bit.Websites.Careers.Shared\Bit.Websites.Careers.Shared.csproj" />
         <ProjectReference Include="..\Bit.Websites.Careers.Client\Bit.Websites.Careers.Client.csproj" />
-		<PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
+		<PackageReference Include="Bit.Belemetry" Version="11.0.0-pre-15" />
         <PackageReference Include="Bit.BlazorES2019" Version="11.0.0-pre-15" />
         <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-15">
             <PrivateAssets>all</PrivateAssets>
