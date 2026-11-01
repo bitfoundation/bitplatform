@@ -96,6 +96,35 @@ public class ComponentCodeTests
     }
 
     [TestMethod]
+    public void AReset_Should_FirstWriteTheDefaultTheViewsCanTake()
+    {
+        var button = typeof(BitButton);
+        string? Default(string parameter, string? value) => WorkbenchRazorValues.DefaultAttribute(WorkbenchComponentParameters.ParameterOf(button, parameter)!, value);
+
+        Assert.AreEqual("IconOnly=\"false\"", Default("IconOnly", "false"));
+        Assert.AreEqual("Color=\"null\"", Default("Color", null));
+        Assert.AreEqual("Style=\"@null\"", Default("Style", null));
+        Assert.AreEqual("Styles=\"null\"", Default("Styles", null));
+        Assert.IsNull(Default("IconOnly", null), "A bool is never null, so a missing default can't be one.");
+
+        var dropdownValue = WorkbenchComponentParameters.ParameterOf(WorkbenchComponentParameters.TypeOf("BitDropdown")!, "Value")!;
+
+        Assert.IsNull(WorkbenchRazorValues.DefaultAttribute(dropdownValue, null), "The page may infer the dropdown's type from its Value.");
+    }
+
+    [TestMethod]
+    public void TheNullAResetWrites_Should_ReadAsAPlainNull()
+    {
+        Assert.IsTrue(WorkbenchRazorValues.TryRead(typeof(BitColor?), "null", out var color));
+        Assert.IsNull(color);
+        Assert.IsTrue(WorkbenchRazorValues.TryRead(typeof(string), "@null", out var title));
+        Assert.IsNull(title);
+        Assert.IsTrue(WorkbenchRazorValues.TryRead(typeof(string), "null", out var word));
+        Assert.AreEqual("null", word, "In a text parameter, a plain null is the word.");
+        Assert.IsFalse(WorkbenchRazorValues.TryRead(typeof(int), "null", out _));
+    }
+
+    [TestMethod]
     public void TheIconSearch_Should_RankLikeTheDemosIconPage()
     {
         Assert.AreEqual("Delete", WorkbenchIconSearch.Search("delete").First());
@@ -118,5 +147,6 @@ public class ComponentCodeTests
     public void AName_Should_PickItsSuggestions(string name, string? kind)
     {
         Assert.AreEqual(kind, WorkbenchValueSuggestions.KindOf(name));
+        Assert.AreEqual(kind is not null, WorkbenchValueSuggestions.Of(name).Length > 0);
     }
 }

@@ -2799,4 +2799,7 @@
     <data name="ColorPick" xml:space="preserve">
         <value>选择颜色</value>
     </data>
+    <data name="SuggestShow" xml:space="preserve">
+        <value>建议的值</value>
+    </data>
 </root>

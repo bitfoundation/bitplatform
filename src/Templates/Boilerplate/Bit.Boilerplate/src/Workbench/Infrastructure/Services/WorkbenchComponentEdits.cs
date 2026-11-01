@@ -10,6 +10,9 @@ public sealed partial class WorkbenchComponentEdits
 {
     [AutoInject] private IHttpContextAccessor httpContextAccessor = default!;
 
+    // How long a removal waits for hot reload to apply the default it writes first; a change that doesn't compile never applies.
+    private static readonly TimeSpan maxHotReloadWait = TimeSpan.FromSeconds(10);
+
     private readonly ConcurrentDictionary<string, SemaphoreSlim> fileLocks = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Whether the project folder, and with it the .razor files, is on this machine.</summary>
@@ -18,8 +21,8 @@ public sealed partial class WorkbenchComponentEdits
     /// <summary>Whether dotnet watch runs the Workbench, so a saved change shows without a restart.</summary>
     public static bool IsHotReloading => Environment.GetEnvironmentVariable("DOTNET_WATCH") is "1";
 
-    /// <summary>Sets a parameter to a value; null takes the attribute away, so the component's default applies again.</summary>
-    public Task<bool> Set(string component, WorkbenchComponentTag tag, string parameter, string? value)
+    /// <summary>Sets a parameter to a value; null takes the attribute away, so the component's default, as the panel read it, applies again.</summary>
+    public Task<bool> Set(string component, WorkbenchComponentTag tag, string parameter, string? value, string? defaultValue)
     {
         if (WorkbenchComponentParameters.TypeOf(component) is not { } type || WorkbenchComponentParameters.ParameterOf(type, parameter) is not { } property)
             return Task.FromResult(false);
@@ -29,7 +32,7 @@ public sealed partial class WorkbenchComponentEdits
         if (value is not null && (attribute = WorkbenchRazorValues.Attribute(property, value)) is null)
             return Task.FromResult(false);
 
-        return Write(component, tag, property, attribute);
+        return Write(component, tag, property, attribute, attribute is null ? WorkbenchRazorValues.DefaultAttribute(property, defaultValue) : null);
     }
 
     /// <summary>Sets the parts of a Styles or Classes parameter; with every part empty, takes the attribute away.</summary>
@@ -40,14 +43,18 @@ public sealed partial class WorkbenchComponentEdits
             || WorkbenchRazorValues.IsParts(property.PropertyType) is false)
             return Task.FromResult(false);
 
-        return Write(component, tag, property, WorkbenchRazorValues.PartsAttribute(property, parts));
+        var attribute = WorkbenchRazorValues.PartsAttribute(property, parts);
+
+        return Write(component, tag, property, attribute, attribute is null ? WorkbenchRazorValues.DefaultAttribute(property, null) : null);
     }
 
     /// <summary>
     /// Replaces, adds or takes away the parameter's attribute in the tag. Returns false when the request isn't from this
     /// machine, the tag is gone, or code sets the parameter, which only the code's author may change.
+    /// Hot reload leaves a parameter a tag stops setting at the value it last had, so before an attribute goes, the reset
+    /// attribute sets the default and the views get it; the components then keep it once the attribute is gone.
     /// </summary>
-    private async Task<bool> Write(string component, WorkbenchComponentTag tag, PropertyInfo property, string? attribute)
+    private async Task<bool> Write(string component, WorkbenchComponentTag tag, PropertyInfo property, string? attribute, string? reset)
     {
         if (IsLocalRequest is false || WorkbenchRazorFiles.FullPath(tag.File) is not { } path)
             return false;
@@ -58,33 +65,10 @@ public sealed partial class WorkbenchComponentEdits
 
         try
         {
-            var raw = await File.ReadAllBytesAsync(path);
-            var hasBom = raw.AsSpan().StartsWith(Encoding.UTF8.Preamble);
-            var text = Encoding.UTF8.GetString(hasBom ? raw[3..] : raw);
-            var starts = WorkbenchRazorTags.Find(text, component);
-
-            if (tag.Ordinal >= starts.Count || WorkbenchRazorTags.Parse(text, starts[tag.Ordinal], component) is not { } parsed)
+            if (reset is not null && IsHotReloading && await ResetFirst(path, component, tag, property, reset) is false)
                 return false;
 
-            var existing = parsed.Attributes.LastOrDefault(a => string.Equals(WorkbenchComponentParameters.ParameterNameOf(a), property.Name, StringComparison.OrdinalIgnoreCase));
-
-            if (existing is not null && IsPlain(property, existing) is false)
-                return false;
-
-            var changed = (existing, attribute) switch
-            {
-                (null, null) => text,
-                (null, { } added) => Insert(text, starts[tag.Ordinal], parsed.NameEnd, parsed.Attributes, added),
-                ({ } old, null) => Remove(text, old),
-                ({ } old, { } replaced) => text[..old.Start] + replaced + text[old.End..]
-            };
-
-            if (changed != text)
-            {
-                await File.WriteAllBytesAsync(path, [.. (hasBom ? Encoding.UTF8.Preamble.ToArray() : []), .. Encoding.UTF8.GetBytes(changed)]);
-            }
-
-            return true;
+            return await Change(path, component, tag, property, attribute, onlyReplace: false) is not null;
         }
         finally
         {
@@ -92,10 +76,80 @@ public sealed partial class WorkbenchComponentEdits
         }
     }
 
+    /// <summary>Writes the reset attribute in place of the one there and waits until hot reload applied it; false when the tag can't be changed.</summary>
+    private static async Task<bool> ResetFirst(string path, string component, WorkbenchComponentTag tag, PropertyInfo property, string reset)
+    {
+        var updated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnUpdated() => updated.TrySetResult();
+
+        WorkbenchComponentSources.Updated += OnUpdated;
+
+        try
+        {
+            switch (await Change(path, component, tag, property, reset, onlyReplace: true))
+            {
+                case null:
+                    return false;
+                case true:
+                    await Task.WhenAny(updated.Task, Task.Delay(maxHotReloadWait));
+                    // The views render the update right after it applies.
+                    await Task.Delay(300);
+                    break;
+            }
+
+            return true;
+        }
+        finally
+        {
+            WorkbenchComponentSources.Updated -= OnUpdated;
+        }
+    }
+
+    /// <summary>
+    /// Puts the attribute in the tag, in place of the one there, or takes that one away for null; with onlyReplace, a tag
+    /// without one stays as it is. Null when the tag is gone or code sets the parameter; otherwise whether the file changed.
+    /// </summary>
+    private static async Task<bool?> Change(string path, string component, WorkbenchComponentTag tag, PropertyInfo property, string? attribute, bool onlyReplace)
+    {
+        var raw = await File.ReadAllBytesAsync(path);
+        var hasBom = raw.AsSpan().StartsWith(Encoding.UTF8.Preamble);
+        var text = Encoding.UTF8.GetString(hasBom ? raw[3..] : raw);
+        var starts = WorkbenchRazorTags.Find(text, component);
+
+        if (tag.Ordinal >= starts.Count || WorkbenchRazorTags.Parse(text, starts[tag.Ordinal], component) is not { } parsed)
+            return null;
+
+        var existing = parsed.Attributes.LastOrDefault(a => string.Equals(WorkbenchComponentParameters.ParameterNameOf(a), property.Name, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is not null && IsPlain(property, existing) is false)
+            return null;
+
+        if (existing is null && onlyReplace)
+            return false;
+
+        var changed = (existing, attribute) switch
+        {
+            (null, null) => text,
+            (null, { } added) => Insert(text, starts[tag.Ordinal], parsed.NameEnd, parsed.Attributes, added),
+            ({ } old, null) => Remove(text, old),
+            ({ } old, { } replaced) => text[..old.Start] + replaced + text[old.End..]
+        };
+
+        if (changed == text)
+            return false;
+
+        await File.WriteAllBytesAsync(path, [.. (hasBom ? Encoding.UTF8.Preamble.ToArray() : []), .. Encoding.UTF8.GetBytes(changed)]);
+
+        return true;
+    }
+
     private static bool IsPlain(PropertyInfo property, WorkbenchRazorAttribute attribute)
     {
         if (attribute.Name.StartsWith('@'))
             return false;
+
+        if (WorkbenchRazorValues.IsNull(property.PropertyType, attribute.Value))
+            return true;
 
         return WorkbenchRazorValues.IsParts(property.PropertyType)
             ? WorkbenchRazorValues.TryReadParts(attribute.Value) is not null

@@ -2,7 +2,7 @@ namespace Boilerplate.Workbench.Infrastructure.Services;
 
 /// <summary>
 /// Values the component panel suggests for a CSS variable or a text parameter, picked by the words in its name, like
-/// margin or line-height; they come up as the field's autocomplete, and any other value can still be typed.
+/// margin or line-height; they are a click away under the field's arrow, and any other value can still be typed.
 /// </summary>
 public static class WorkbenchValueSuggestions
 {
@@ -35,10 +35,15 @@ public static class WorkbenchValueSuggestions
     ];
 
     /// <summary>The kind whose words a name contains; null when none does.</summary>
-    public static string? KindOf(string name)
+    public static string? KindOf(string name) => Find(name).Kind;
+
+    /// <summary>The values to suggest for a name; none when no kind's words are in it.</summary>
+    public static string[] Of(string name) => Find(name).Values ?? [];
+
+    private static (string Kind, string[] Words, string[] Values) Find(string name)
     {
         var compact = name.Replace("-", string.Empty).ToLowerInvariant();
 
-        return Kinds.FirstOrDefault(kind => kind.Words.Any(word => compact.Contains(word, StringComparison.Ordinal))).Kind;
+        return Kinds.FirstOrDefault(kind => kind.Words.Any(word => compact.Contains(word, StringComparison.Ordinal)));
     }
 }

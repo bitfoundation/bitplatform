@@ -91,7 +91,7 @@ public static class WorkbenchComponentParameters
                 {
                     code = $"{attribute.Name}=\"{attribute.Value}\"";
                 }
-                else if (editor is WorkbenchParameterEditor.Parts && WorkbenchRazorValues.TryReadParts(attribute.Value) is { } parts)
+                else if (editor is WorkbenchParameterEditor.Parts && (WorkbenchRazorValues.TryReadParts(attribute.Value) ?? (WorkbenchRazorValues.IsNull(property.PropertyType, attribute.Value) ? new Dictionary<string, string>() : null)) is { } parts)
                 {
                     tagParts = parts;
                     isSet = true;

@@ -14,6 +14,9 @@ public static partial class WorkbenchRazorValues
         var core = Nullable.GetUnderlyingType(type) ?? type;
         value = null;
 
+        if (IsNull(type, raw))
+            return true;
+
         if (core == typeof(bool))
         {
             value = raw is null ? "true" : Unwrap(raw);
@@ -63,6 +66,37 @@ public static partial class WorkbenchRazorValues
         }
 
         return false;
+    }
+
+    /// <summary>Whether an attribute sets a parameter that can be null to null, like Color="null" or Title="@null".</summary>
+    public static bool IsNull(Type type, string? raw)
+    {
+        if (raw is null || (type.IsValueType && Nullable.GetUnderlyingType(type) is null))
+            return false;
+
+        // In a text parameter a plain null is the word; only code makes it null.
+        return type == typeof(string) ? raw.Trim() is "@null" or "@(null)" : Unwrap(raw) is "null";
+    }
+
+    /// <summary>
+    /// The attribute that sets a parameter to its default, which a removal writes first, as hot reload leaves a parameter
+    /// a tag stops setting at its last value. Null when it can't be written, like for a parameter typed by the component's
+    /// type argument, whose type the page may infer from that attribute.
+    /// </summary>
+    public static string? DefaultAttribute(PropertyInfo property, string? defaultValue)
+    {
+        var type = property.PropertyType;
+
+        if (type.ContainsGenericParameters)
+            return null;
+
+        if (defaultValue is not null)
+            return Attribute(property, defaultValue);
+
+        if (type.IsValueType && Nullable.GetUnderlyingType(type) is null)
+            return null;
+
+        return type == typeof(string) ? $"{property.Name}=\"@null\"" : $"{property.Name}=\"null\"";
     }
 
     /// <summary>The parts an attribute sets for a Styles or Classes parameter, written as @(new() { Root = "..." }); null when code computes them.</summary>

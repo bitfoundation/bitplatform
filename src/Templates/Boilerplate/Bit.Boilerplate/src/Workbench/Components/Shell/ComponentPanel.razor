@@ -88,7 +88,7 @@
                                 @foreach (var part in parameter.Parts)
                                 {
                                     <BitTextField Label="@part.Name"
-                                                  Value="@part.Value"
+                                                  Value="@ShownPart(parameter, part)"
                                                   ValueChanged="(string? value) => SetPart(parameter, part.Name, value)"
                                                   Disabled="CanEdit(parameter) is false" />
                                 }
@@ -118,16 +118,23 @@
                         </div>
                         @if (IsColorVariable(variable))
                         {
-                            <ColorField Value="@variable.Value"
+                            <ColorField Value="@Shown(variable.Name, variable.Value)"
                                         OnChange="value => SetVariable(variable, value)"
                                         AriaLabel="@variable.Name"
                                         Disabled="CanEditVariables is false" />
                         }
+                        else if (WorkbenchValueSuggestions.Of(variable.Name) is { Length: > 0 } suggestions)
+                        {
+                            <SuggestField Value="@Shown(variable.Name, variable.Value)"
+                                          OnChange="value => SetVariable(variable, value)"
+                                          Suggestions="suggestions"
+                                          AriaLabel="@variable.Name"
+                                          Disabled="CanEditVariables is false" />
+                        }
                         else
                         {
-                            <BitTextField Value="@variable.Value"
+                            <BitTextField Value="@Shown(variable.Name, variable.Value)"
                                           ValueChanged="(string? value) => SetVariable(variable, value)"
-                                          InputHtmlAttributes="SuggestionsFor(variable.Name)"
                                           AriaLabel="@variable.Name"
                                           Disabled="CanEditVariables is false" />
                         }
@@ -136,17 +143,6 @@
             </section>
         }
     }
-
-    @* The values each kind of field suggests as it's typed in. *@
-    @foreach (var (kind, _, values) in WorkbenchValueSuggestions.Kinds)
-    {
-        <datalist id="@($"wb-suggest-{kind}")">
-            @foreach (var value in values)
-            {
-                <option value="@value"></option>
-            }
-        </datalist>
-    }
 </div>
 
 @code {
@@ -154,7 +150,7 @@
     private RenderFragment Head(WorkbenchComponentParameter parameter) => @<div class="parameter-head" data-doc="@parameter.Description">
         <span class="parameter-name">@parameter.Name</span>
         <span class="parameter-type">@parameter.TypeName</span>
-        @if (parameter.IsSet && CanEdit(parameter))
+        @if (IsSet(parameter) && CanEdit(parameter))
         {
             <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Undo"
                        Title="@Localizer[nameof(WorkbenchStrings.ComponentReset)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ComponentReset)]"
@@ -171,7 +167,7 @@
         }
         else if (parameter.Editor is WorkbenchParameterEditor.Toggle)
         {
-            <BitToggle Value="@(parameter.Value is "true")"
+            <BitToggle Value="@(Shown(parameter) is "true")"
                        ValueChanged="(bool value) => SetToggle(parameter, value)"
                        AriaLabel="@parameter.Name"
                        Disabled="CanEdit(parameter) is false" />
@@ -179,7 +175,7 @@
         else if (parameter.Editor is WorkbenchParameterEditor.Choice)
         {
             <BitDropdown Items="ChoicesOf(parameter)"
-                         Value="@(parameter.Value ?? NotSet)"
+                         Value="@(Shown(parameter) ?? NotSet)"
                          ValueChanged="(string? value) => Set(parameter, value is NotSet ? null : value)"
                          AriaLabel="@parameter.Name"
                          Disabled="CanEdit(parameter) is false"
@@ -187,7 +183,7 @@
         }
         else if (IsIcon(parameter))
         {
-            <IconField Value="@parameter.Value"
+            <IconField Value="@Shown(parameter)"
                        OnChange="value => Set(parameter, value)"
                        Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
                        AriaLabel="@parameter.Name"
@@ -195,18 +191,26 @@
         }
         else if (IsColor(parameter))
         {
-            <ColorField Value="@parameter.Value"
+            <ColorField Value="@Shown(parameter)"
                         OnChange="value => Set(parameter, value)"
                         Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
                         AriaLabel="@parameter.Name"
                         Disabled="CanEdit(parameter) is false" />
         }
+        else if (parameter.Editor is WorkbenchParameterEditor.Text && WorkbenchValueSuggestions.Of(parameter.Name) is { Length: > 0 } suggestions)
+        {
+            <SuggestField Value="@Shown(parameter)"
+                          OnChange="value => Set(parameter, value)"
+                          Suggestions="suggestions"
+                          Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
+                          AriaLabel="@parameter.Name"
+                          Disabled="CanEdit(parameter) is false" />
+        }
         else
         {
-            <BitTextField Value="@parameter.Value"
+            <BitTextField Value="@Shown(parameter)"
                           ValueChanged="(string? value) => Set(parameter, string.IsNullOrEmpty(value) ? null : value)"
                           Placeholder="@(parameter.DefaultValue ?? Localizer[nameof(WorkbenchStrings.ComponentNotSet)].Value)"
-                          InputHtmlAttributes="@(parameter.Editor is WorkbenchParameterEditor.Text ? SuggestionsFor(parameter.Name) : null)"
                           AriaLabel="@parameter.Name"
                           Disabled="CanEdit(parameter) is false" />
         }

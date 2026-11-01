@@ -2799,4 +2799,7 @@
     <data name="ColorPick" xml:space="preserve">
         <value>Elegir un color</value>
     </data>
+    <data name="SuggestShow" xml:space="preserve">
+        <value>Valores sugeridos</value>
+    </data>
 </root>

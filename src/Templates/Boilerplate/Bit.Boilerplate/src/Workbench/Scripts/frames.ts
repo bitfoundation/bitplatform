@@ -276,20 +276,39 @@ function componentRootOf(element: Element) {
 }
 
 /**
- * The CSS variables a component's styles use, each with its value on the component: first the ones its rules set, then
- * the theme's they only read. Its rules are the ones whose selector names its root class, alone or with a suffix.
+ * The CSS variables that style a component as it is, each with its value on the component: first the ones its rules set,
+ * then the theme's they only read. Its rules are the ones whose selector names its root class, alone or with a suffix,
+ * and matches its root or an element in it, hovered, focused or pressed alike; a rule for a variant it isn't, like
+ * another Typography, or for a screen it isn't on, says nothing about it.
  */
 function cssVariablesOf(doc: Document, root: Element, rootClass: string) {
     // Root classes are letters, digits and dashes, like bit-btn, so they need no escaping; .bit-btn-pri counts, .bit-btng doesn't.
     const pattern = new RegExp(`\\.${rootClass}(?![\\w])`);
     const own = new Set<string>();
     const read = new Set<string>();
+    const view = doc.defaultView;
+
+    const applies = (selectorText: string) => selectorsOf(selectorText).some(selector => {
+        // The states the pointer or the keyboard puts it in, and the parts drawn around it, are left out of the match.
+        const plain = selector.replace(/::?(?:before|after|placeholder|selection|marker|backdrop|-webkit-[\w-]+|-moz-[\w-]+)(?![\w-])/g, '')
+            .replace(/:(?:focus-visible|focus-within|hover|active|focus)(?![\w-])/g, '')
+            .trim();
+
+        try {
+            return !!plain && (root.matches(plain) || !!root.querySelector(plain));
+        } catch {
+            return false;
+        }
+    });
 
     const visit = (rules: CSSRuleList) => {
         for (const rule of Array.from(rules)) {
             const styleRule = rule as CSSStyleRule;
+            const media = (rule as CSSMediaRule).media;
 
-            if (styleRule.selectorText && pattern.test(styleRule.selectorText)) {
+            if (media && (rule as CSSMediaRule).cssRules && view && !view.matchMedia(media.mediaText).matches) continue;
+
+            if (styleRule.selectorText && pattern.test(styleRule.selectorText) && applies(styleRule.selectorText)) {
                 for (let i = 0; i < styleRule.style.length; i++) {
                     if (styleRule.style[i].startsWith('--')) own.add(styleRule.style[i]);
                 }
@@ -318,6 +337,26 @@ function cssVariablesOf(doc: Document, root: Element, rootClass: string) {
         ...Array.from(own).sort().map(name => entry(name, true)),
         ...Array.from(read).filter(name => !own.has(name)).sort().map(name => entry(name, false))
     ];
+}
+
+/** The selectors of a selector list, split at the commas outside parentheses, like the one in :is(a, b). */
+function selectorsOf(text: string) {
+    const selectors: string[] = [];
+    let depth = 0;
+    let start = 0;
+
+    for (let i = 0; i < text.length; i++) {
+        if (text[i] === '(') depth++;
+        else if (text[i] === ')') depth--;
+        else if (text[i] === ',' && depth === 0) {
+            selectors.push(text.slice(start, i));
+            start = i + 1;
+        }
+    }
+
+    selectors.push(text.slice(start));
+
+    return selectors;
 }
 
 /** The text a text edit starts from: the placeholder, the visible text or the accessible name. */

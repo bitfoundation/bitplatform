@@ -14,7 +14,11 @@ public partial class ComponentPanel
     private string? status;
     private bool isSaving;
     private string? shownElementId;
+    private WorkbenchComponentInfo? shownInfo;
     private Dictionary<string, List<BitDropdownItem<string>>> choices = [];
+    // What a change just set, by parameter, Styles part (Styles.Root) or CSS variable, shown until the component is read
+    // again with it, so a field doesn't jump back to the old value while hot reload brings the change to the views.
+    private readonly Dictionary<string, string?> drafts = [];
 
     [AutoInject] private WorkbenchStore store = default!;
     [AutoInject] private WorkbenchComponentEdits edits = default!;
@@ -44,6 +48,13 @@ public partial class ComponentPanel
             shownElementId = Info?.ElementId;
         }
 
+        // The component was read again: what it says now is what to show.
+        if (Info != shownInfo)
+        {
+            drafts.Clear();
+            shownInfo = Info;
+        }
+
         choices = Info?.Parameters.Where(p => p.Editor is WorkbenchParameterEditor.Choice).ToDictionary(p => p.Name, ItemsOf) ?? [];
     }
 
@@ -69,6 +80,15 @@ public partial class ComponentPanel
                                        .OrderBy(p => p.IsSet || p.Code is not null ? 0 : 1);
     }
 
+    /// <summary>A parameter's value as the panel shows it: what a change just set, its default for a reset, or the component's.</summary>
+    private string? Shown(WorkbenchComponentParameter parameter) => drafts.TryGetValue(parameter.Name, out var draft) ? draft ?? parameter.DefaultValue : parameter.Value;
+
+    private string? ShownPart(WorkbenchComponentParameter parameter, WorkbenchComponentPart part) => Shown($"{parameter.Name}.{part.Name}", part.Value);
+
+    private string? Shown(string key, string? value) => drafts.TryGetValue(key, out var draft) ? draft : value;
+
+    private bool IsSet(WorkbenchComponentParameter parameter) => drafts.TryGetValue(parameter.Name, out var draft) ? draft is not null : parameter.IsSet;
+
     private bool Matches(string name) => string.IsNullOrWhiteSpace(filter) || name.Contains(filter.Trim(), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Whether a parameter can change here: its tag was found, code doesn't set it, its type has an editor and this machine can write.</summary>
@@ -78,51 +98,65 @@ public partial class ComponentPanel
     }
 
     /// <summary>Writes a parameter's value into the tag; null takes the attribute away, so the component's default applies.</summary>
-    private Task Set(WorkbenchComponentParameter parameter, string? value)
+    private Task<bool> Set(WorkbenchComponentParameter parameter, string? value)
     {
         if (Info?.Tag is not { } tag || CanEdit(parameter) is false || (value is not null && value == parameter.Value && parameter.IsSet))
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
-        return Save(tag, () => edits.Set(Info.Name, tag, parameter.Name, value));
+        return Save(tag, parameter.Name, value, () => edits.Set(Info.Name, tag, parameter.Name, value, parameter.DefaultValue));
     }
 
-    private Task SetToggle(WorkbenchComponentParameter parameter, bool value) => Set(parameter, value ? "true" : "false");
+    private Task<bool> SetToggle(WorkbenchComponentParameter parameter, bool value) => Set(parameter, value ? "true" : "false");
 
-    private Task SetPart(WorkbenchComponentParameter parameter, string partName, string? value)
+    private Task<bool> SetPart(WorkbenchComponentParameter parameter, string partName, string? value)
     {
         if (Info?.Tag is not { } tag || CanEdit(parameter) is false)
-            return Task.CompletedTask;
+            return Task.FromResult(false);
 
         var parts = parameter.Parts.Select(part => part.Name == partName ? part with { Value = value } : part).ToArray();
 
-        return Save(tag, () => edits.SetParts(Info.Name, tag, parameter.Name, parts));
+        return Save(tag, $"{parameter.Name}.{partName}", value, () => edits.SetParts(Info.Name, tag, parameter.Name, parts));
     }
 
     /// <summary>Sets a CSS variable in the component's Style, or takes it out when the value is cleared.</summary>
-    private Task SetVariable(WorkbenchCssVariable variable, string? value)
+    private async Task SetVariable(WorkbenchCssVariable variable, string? value)
     {
-        if (StyleParameter is not { } style || CanEditVariables is false || value?.Trim() == variable.Value)
-            return Task.CompletedTask;
+        value = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-        var declarations = (style.Value ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                                       .Where(declaration => declaration.Split(':', 2)[0].Trim() != variable.Name)
-                                                       .ToList();
+        if (StyleParameter is not { } style || CanEditVariables is false || value == variable.Value)
+            return;
 
-        if (string.IsNullOrWhiteSpace(value) is false)
+        var all = (style.Value ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var declarations = all.Where(declaration => declaration.Split(':', 2)[0].Trim() != variable.Name).ToList();
+
+        // Clearing a variable the Style doesn't set leaves the theme's value, which is what it has.
+        if (value is null && declarations.Count == all.Length)
+            return;
+
+        if (value is not null)
         {
-            declarations.Add($"{variable.Name}: {value.Trim()}");
+            declarations.Add($"{variable.Name}: {value}");
         }
 
-        return Set(style, declarations.Count is 0 ? null : $"{string.Join("; ", declarations)};");
+        drafts[variable.Name] = value;
+
+        if (await Set(style, declarations.Count is 0 ? null : $"{string.Join("; ", declarations)};") is false)
+        {
+            drafts.Remove(variable.Name);
+        }
     }
 
-    private async Task Save(WorkbenchComponentTag tag, Func<Task<bool>> write)
+    /// <summary>Writes a change, showing its value under the key until the component is read again; false when it couldn't be written.</summary>
+    private async Task<bool> Save(WorkbenchComponentTag tag, string key, string? value, Func<Task<bool>> write)
     {
+        var saved = false;
+
         isSaving = true;
+        drafts[key] = value;
 
         try
         {
-            if (await write())
+            if (saved = await write())
             {
                 status = Localizer[WorkbenchComponentEdits.IsHotReloading ? nameof(WorkbenchStrings.ComponentSavedHotReload) : nameof(WorkbenchStrings.ComponentSavedRestart), FileName(tag.File)];
             }
@@ -138,16 +172,17 @@ public partial class ComponentPanel
         finally
         {
             isSaving = false;
+
+            if (saved is false)
+            {
+                drafts.Remove(key);
+            }
         }
+
+        return saved;
     }
 
     private static string FileName(string path) => path[(path.LastIndexOf('/') + 1)..];
-
-    /// <summary>The field attribute that ties it to the suggestions its name's kind has, like margin's; null for a name with none.</summary>
-    private static Dictionary<string, object>? SuggestionsFor(string name)
-    {
-        return WorkbenchValueSuggestions.KindOf(name) is { } kind ? new() { ["list"] = $"wb-suggest-{kind}" } : null;
-    }
 
     /// <summary>A variable's name without the --bit- every one of bit BlazorUI's starts with.</summary>
     private static string ShortName(string name) => name.StartsWith("--bit-", StringComparison.Ordinal) ? name["--bit-".Length..] : name;
