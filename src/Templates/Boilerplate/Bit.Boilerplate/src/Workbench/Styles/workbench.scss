@@ -1,3 +1,5 @@
+@import '../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+
 html,
 body {
     margin: 0;
@@ -131,5 +133,154 @@ body:has(.tour-states) {
     .bit-bonboarding-root {
         --bit-bonboarding-spotlight-ring: transparent;
         --bit-bonboarding-spotlight-glow: transparent;
+    }
+}
+
+// The tour on a phone: the shell, showing what the step is about, in one part of the screen and the guide's card, whose Next stays in one spot, in the other.
+@media screen and (max-width: #{$screen-xs-max}), screen and (max-height: 500px) {
+    html[data-wb-tour] {
+        .workbench {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr);
+            grid-template-areas: "top" "canvas";
+        }
+
+        .workbench .topbar > :not(.brand, .modes, [data-bonboarding-anchor="screenshot"]),
+        .flows-page .topbar > :not(.brand, .crumb, .crumb-separator, .crumb-title),
+        .workbench .brand span,
+        .workbench .navigator-column,
+        .workbench .inspector-column,
+        .pane-header .bit-btn,
+        .breakpoints,
+        .bit-bonboarding-arrow {
+            display: none;
+        }
+
+        .workbench .brand {
+            margin-inline-end: auto;
+        }
+
+        .workbench .canvas {
+            padding: 0.5rem;
+
+            &.multi {
+                align-items: center;
+
+                .pane {
+                    height: min(100%, 15rem);
+                }
+
+                .pane-header {
+                    min-height: 0;
+                    flex-wrap: nowrap;
+                }
+
+                .pane-size {
+                    display: none;
+                }
+            }
+        }
+
+        .guide-card .foot {
+            bottom: 0;
+            position: sticky;
+            background-color: var(--bit-clr-bg-pri);
+
+            .bit-btn {
+                min-width: 0;
+            }
+        }
+
+        .bit-bonboarding-popover {
+            overflow-y: auto;
+            top: auto !important;
+            transform: none !important;
+            bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        }
+    }
+
+    // Out of sight but still laid out, as a page loading in a view without a size draws nothing.
+    html[data-wb-tour="head-start"] .workbench .canvas,
+    html[data-wb-tour="live-review"] .workbench .canvas {
+        inset: 0;
+        position: fixed;
+        visibility: hidden;
+    }
+
+    html[data-wb-tour="head-start"] .workbench {
+        grid-template-areas: "top" "nav";
+
+        .navigator-column {
+            display: block;
+        }
+    }
+
+    html[data-wb-tour="live-review"] .workbench {
+        grid-template-areas: "top" "inspector";
+
+        .inspector-column {
+            display: block;
+        }
+    }
+
+    html[data-wb-tour="states"] .workbench,
+    html[data-wb-tour="real-components"] .workbench {
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        grid-template-areas: "top" "canvas" "inspector";
+
+        .inspector-column {
+            display: block;
+            max-height: 11rem;
+        }
+
+        .column-tabs {
+            display: none;
+        }
+    }
+
+    // All the room goes to the phone and the state buttons, which the card already explains.
+    html[data-wb-tour="states"] {
+        .pane-header,
+        #wb-column-panel section:not([data-bonboarding-anchor="data-states"]),
+        [data-bonboarding-anchor="data-states"] > :not(.section-title, .segments) {
+            display: none;
+        }
+    }
+}
+
+// Upright, the card goes under the shell.
+@include lt-sm {
+    html[data-wb-tour] {
+        --wb-tour-card-room: min(18rem, 46dvh);
+
+        .workbench,
+        .flows-page {
+            height: calc(100dvh - var(--wb-tour-card-room));
+        }
+
+        .bit-bonboarding-popover {
+            left: 0.75rem !important;
+            max-width: calc(100vw - 1.5rem);
+            max-height: calc(var(--wb-tour-card-room) - 1.5rem);
+        }
+    }
+}
+
+// Sideways, it goes beside the shell.
+@media screen and (min-width: #{$screen-sm-min}) and (max-height: 500px) {
+    html[data-wb-tour] {
+        --wb-tour-card-room: 20rem;
+
+        .workbench,
+        .flows-page {
+            width: calc(100% - var(--wb-tour-card-room));
+        }
+
+        .bit-bonboarding-popover {
+            left: auto !important;
+            inset-inline-end: 0.75rem;
+            width: calc(var(--wb-tour-card-room) - 1.5rem);
+            max-height: calc(100dvh - 1.5rem);
+        }
     }
 }

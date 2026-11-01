@@ -4,7 +4,8 @@ namespace Boilerplate.Workbench.Components.Pages;
 
 /// <summary>
 /// The tour of what the home page promises. Each step shows its feature for real in the views, undoes it when it is left, and
-/// the end of the tour brings back the views, mode and tab it started from. Its texts are the home page's own.
+/// the end of the tour brings back the views, mode and tab it started from. Its texts are the home page's own. A phone gets the
+/// same steps in the wider screens' shell, which workbench.scss stacks in one column for the step shown.
 /// </summary>
 public partial class WorkbenchViewPage
 {
@@ -13,7 +14,14 @@ public partial class WorkbenchViewPage
     private const string TourStoreDevice = "store-apple-iphone-69";
     private const string TourDataStatesAnchor = "data-states";
 
-    private Task StartTour() => bonboardingService.StartAsync(CreateTour());
+    private bool IsTouring => bonboardingService.FindSession(TourId) is not null;
+
+    private Task StartTour()
+    {
+        isToolsOpen = false;
+
+        return bonboardingService.StartAsync(CreateTour());
+    }
 
     private BonboardingTourDefinition CreateTour()
     {
@@ -24,7 +32,7 @@ public partial class WorkbenchViewPage
         // The building sample shows what a flow is; without its page, the list of flows does.
         var flowsUrl = reviewSession.AllFlows.Any(flow => flow.Id == WorkbenchSampleFlows.BuildingsId) ? WorkbenchUrls.Flow(WorkbenchSampleFlows.BuildingsId) : WorkbenchUrls.Flows;
 
-        return new()
+        BonboardingTourDefinition tour = new()
         {
             Id = TourId,
             Persist = false,
@@ -40,9 +48,14 @@ public partial class WorkbenchViewPage
                     store.ToggleNavigator();
                 }
 
+                if (store.IsInspectorCollapsed)
+                {
+                    store.ToggleInspector();
+                }
+
                 return ValueTask.CompletedTask;
             },
-            OnEnded = _ =>
+            OnEnded = async _ =>
             {
                 SetMode(modeBefore);
                 store.ShowColumn(columnBefore);
@@ -53,7 +66,14 @@ public partial class WorkbenchViewPage
                     BackToTheViews();
                 }
 
-                return ValueTask.CompletedTask;
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("workbench.setTourStep", (string?)null);
+                }
+                catch (JSDisconnectedException)
+                {
+                    // The tab was closed during the tour, and the mark went with it.
+                }
             },
             Steps =
             {
@@ -166,6 +186,24 @@ public partial class WorkbenchViewPage
                 }
             }
         };
+
+        // Marked on the document before the step measures its targets, as the page below can change during the tour.
+        foreach (var step in tour.Steps)
+        {
+            var show = step.OnBeforeShow;
+
+            step.OnBeforeShow = async context =>
+            {
+                await JSRuntime.InvokeVoidAsync("workbench.setTourStep", step.Id);
+
+                if (show is not null)
+                {
+                    await show(context);
+                }
+            };
+        }
+
+        return tour;
     }
 
     private bool IsOnFlowsPage => BonboardingRouteMatcher.Matches($"{WorkbenchUrls.Flows}*", NavigationManager.ToBaseRelativePath(NavigationManager.Uri));

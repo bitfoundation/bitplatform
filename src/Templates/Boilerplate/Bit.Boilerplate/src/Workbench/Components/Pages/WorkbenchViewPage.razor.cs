@@ -108,6 +108,7 @@ public partial class WorkbenchViewPage
 
         reviewSession.Changed += OnReviewChanged;
         WorkbenchComponentSources.Updated += OnCodeUpdated;
+        bonboardingService.SessionsChanged += OnGuidesChanged;
     }
 
     protected override void OnParametersSet()
@@ -168,10 +169,14 @@ public partial class WorkbenchViewPage
         Apply();
         StateHasChanged();
 
-        // The tour points at the shell's columns, which a phone doesn't have.
-        if (startsTour && pageInfo is not null && isSmallScreen is false)
+        if (startsTour && pageInfo is not null)
         {
             await RunStartStep(StartTour);
+        }
+        // The browser's Back on the tour's Flows step: back a step, as the tour would otherwise wait out of sight for that page.
+        else if (bonboardingService.FindSession(TourId) is { WaitReason: BonboardingWaitReason.Route } tour)
+        {
+            await RunStartStep(() => tour.PreviousAsync());
         }
     }
 
@@ -575,6 +580,15 @@ public partial class WorkbenchViewPage
         }
     }
 
+    // On a phone the tour swaps the layout, and it ends on whichever page instance is showing by then.
+    private void OnGuidesChanged(object? sender, EventArgs args)
+    {
+        if (isSmallScreen)
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
     private void OnSmallScreenChanged(bool matched)
     {
         isSmallScreen = matched;
@@ -707,10 +721,11 @@ public partial class WorkbenchViewPage
     {
         reviewSession.Changed -= OnReviewChanged;
         WorkbenchComponentSources.Updated -= OnCodeUpdated;
+        bonboardingService.SessionsChanged -= OnGuidesChanged;
         reference?.Dispose();
 
         // A guide left running would keep pointing at a shell that is gone; the tour goes on when this is its way to the Flows page.
-        var isTourOnItsWay = bonboardingService.FindSession(TourId) is not null && IsOnFlowsPage;
+        var isTourOnItsWay = IsTouring && IsOnFlowsPage;
 
         try
         {

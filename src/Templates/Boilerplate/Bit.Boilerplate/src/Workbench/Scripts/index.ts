@@ -601,6 +601,15 @@ host.workbench = {
         document.querySelector(selector)?.scrollIntoView({ block: 'nearest' });
     },
 
+    /** Marks the step the tour is on, or none when it ends, for the styles that lay out the shell for it on a phone. */
+    setTourStep(stepId: string | null) {
+        if (stepId) {
+            document.documentElement.dataset.wbTour = stepId;
+        } else {
+            delete document.documentElement.dataset.wbTour;
+        }
+    },
+
     /** Tells the shell the view moved to another Workbench page. */
     reportPage(pageKey: string) {
         if (window.parent !== window) {

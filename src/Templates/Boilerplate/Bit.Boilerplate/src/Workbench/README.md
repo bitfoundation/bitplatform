@@ -57,7 +57,7 @@ The Workbench remembers the views you had open, and each view remembers what was
 panel, an accent color, a moved shift), so a reload or a restart comes back to the same place. A screenshot carries that
 too: it shows the view as it was when the button was pressed.
 
-On a phone it shows only the page, with a floating button for the tools.
+On a phone it shows only the page, with a floating button for the tools; its tour still shows everything, one part at a time.
 
 ## Add a page
 

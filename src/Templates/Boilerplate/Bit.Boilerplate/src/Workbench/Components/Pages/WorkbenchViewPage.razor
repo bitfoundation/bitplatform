@@ -12,7 +12,7 @@
         <BitLink Href="/">@Localizer[nameof(WorkbenchStrings.BackToHome)]</BitLink>
     </div>
 }
-else if (isSmallScreen)
+else if (isSmallScreen && IsTouring is false)
 {
     @* On a phone: the selected view's page rendered right here, and the tools in a full-screen panel behind a floating button. *@
     <div class="phone-layout">
@@ -43,9 +43,10 @@ else if (isSmallScreen)
         <BitPanel @bind-IsOpen="isToolsOpen" ModeFull Placement="BitPlacement.End" Class="tools-panel">
             <Header>
                 <BitStack Horizontal VerticalAlign="BitAlignment.Center" Class="tools-header">
-                    <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="" width="24" height="24" />
-                    <BitText Typography="BitTypography.H6">@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]</BitText>
+                    <img src="_content/Boilerplate.Client.Core/images/bit-logo.svg" alt="@Localizer[nameof(WorkbenchStrings.WorkbenchTitle)]" width="24" height="24" />
                     <BitSpacer />
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Help" OnClick="StartTour"
+                               Title="@Localizer[nameof(WorkbenchStrings.TourStart)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.TourStart)]" />
                     <SoundToggle />
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Camera" OnClick="() => DownloadScreenshot(store.SelectedPane)"
                                Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" />
@@ -76,7 +77,7 @@ else if (isSmallScreen)
 }
 else
 {
-    @* Wider screens: the page list, the views as iframes of /preview, and the tabs for the selected view. *@
+    @* Wider screens, and the tour on a phone: the page list, the views as iframes of /preview, and the tabs for the selected view. *@
     <div class="workbench @(store.IsNavigatorCollapsed ? "nav-collapsed" : null) @(store.IsInspectorCollapsed ? "inspector-collapsed" : null)">
         <header class="topbar">
             <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" Class="navigator-toggle"

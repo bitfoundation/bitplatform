@@ -106,17 +106,134 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts.*theme=dark.*device=desktop-1536"));
     }
 
+    private async Task ExpectAboveTheCard(ILocator target)
+    {
+        await Expect(target).ToBeVisibleAsync();
+
+        var box = await target.BoundingBoxAsync();
+        var card = await Popover.BoundingBoxAsync();
+
+        Assert.IsLessThanOrEqualTo(card!.Y, box!.Y + box.Height);
+        Assert.IsGreaterThanOrEqualTo(0, box.X);
+        Assert.IsLessThanOrEqualTo(Page.ViewportSize!.Width, box.X + box.Width);
+    }
+
     [TestMethod]
-    public async Task StartHereOnAPhone_Should_OpenThePageWithoutTheTour()
+    public async Task TheTourOnAPhone_Should_ShowEachFeatureAboveItsCardAndGiveThePhoneLayoutBack()
     {
         await Page.SetViewportSizeAsync(390, 800);
         await Page.GotoAsync(Server.Address.ToString());
-
         await Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }).ClickAsync();
 
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Page.Locator(".phone-layout")).ToHaveCountAsync(0);
+
+        await Advance(WorkbenchStrings.HomeWhyHeadStartTitle);
+        await ExpectAboveTheCard(Page.Locator("#wb-navigator"));
+
+        await Advance(WorkbenchStrings.HomeWhyDevicesTitle);
+        await Expect(Views).ToHaveCountAsync(2);
+        await ExpectAboveTheCard(Views.First);
+        await ExpectAboveTheCard(Views.Last);
+
+        await Advance(WorkbenchStrings.HomeWhyStatesTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex("data=loading"));
+        await ExpectAboveTheCard(Views.First);
+        await ExpectAboveTheCard(Page.Locator("[data-bonboarding-anchor='data-states']"));
+        await Page.Locator("[data-bonboarding-anchor='data-states']").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DataError }).ClickAsync();
+        await Expect(Page).ToHaveURLAsync(new Regex("data=error"));
+
+        await Advance(WorkbenchStrings.HomeWhyStoresTitle);
+        await Expect(Page).ToHaveURLAsync(new Regex("backdrop=ocean"));
+        await ExpectAboveTheCard(Views.First);
+        await ExpectAboveTheCard(Page.Locator("[data-bonboarding-anchor='screenshot']"));
+
+        await Advance(WorkbenchStrings.HomeWhyRealTitle);
+        await Expect(Mode(WorkbenchStrings.ModeInspect)).ToHaveAttributeAsync("aria-pressed", "true");
+        await ExpectAboveTheCard(Page.Locator(".modes"));
+        await ExpectAboveTheCard(Page.Locator("#wb-inspector"));
+
+        await Advance(WorkbenchStrings.HomeWhyLiveTitle);
+        await ExpectAboveTheCard(Page.Locator("#wb-inspector"));
+        await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await Advance(WorkbenchStrings.Flows);
+        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+        await Expect(Page.Locator(".screen-card")).ToHaveCountAsync(3);
+        await ExpectAboveTheCard(Page.Locator(".flow-board"));
+
+        await Advance(WorkbenchStrings.HomeWhySafeTitle);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard"));
-        await Expect(Page.Locator(".inline-surface")).ToBeVisibleAsync();
+
+        await Advance(WorkbenchStrings.HomeWhyCustomizeTitle);
+
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourDone, Exact = true }).ClickAsync();
+
         await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".inline-surface")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".workbench")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task TheBackButtonOnAPhonesFlowsStep_Should_GoBackAStepAndKeepTheViewsDrawn()
+    {
+        await Page.SetViewportSizeAsync(390, 800);
+        await Page.GotoAsync(new Uri(Server.Address, "workbench/pos-dashboard?tour=true").ToString());
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
+
+        foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows })
+        {
+            await Advance(title);
+        }
+
+        await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
+
+        await Page.GoBackAsync();
+
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
+
+        // The card's own Back reloads the view during the step that hides it: it has to keep a size there, or its page draws nothing.
+        await Advance(WorkbenchStrings.Flows);
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }).ClickAsync();
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Views).ToHaveCountAsync(1);
+        Assert.IsNotNull(await Views.First.BoundingBoxAsync());
+    }
+
+    [TestMethod]
+    public async Task TheToolsPanelOnAPhone_Should_StartTheTourAndSkippingIt_Should_GiveThePhoneLayoutBack()
+    {
+        await Page.SetViewportSizeAsync(390, 800);
+        await Page.GotoAsync(new Uri(Server.Address, "workbench/shifts").ToString());
+
+        await Page.Locator(".tools-button").ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(Page.Locator(".tools-panel")).ToHaveCountAsync(0);
+
+        await Advance(WorkbenchStrings.HomeWhyHeadStartTitle);
+        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".inline-surface")).ToBeVisibleAsync();
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
+    }
+
+    [TestMethod]
+    public async Task TheTourOnASidewaysPhone_Should_ShowTheCardBesideTheViews()
+    {
+        await Page.SetViewportSizeAsync(844, 390);
+        await Page.GotoAsync(new Uri(Server.Address, "workbench/pos-dashboard?tour=true").ToString());
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Advance(WorkbenchStrings.HomeWhyHeadStartTitle);
+        await Advance(WorkbenchStrings.HomeWhyDevicesTitle);
+        await Expect(Views).ToHaveCountAsync(2);
+
+        var view = await Views.Last.BoundingBoxAsync();
+        var card = await Popover.BoundingBoxAsync();
+
+        Assert.IsLessThanOrEqualTo(card!.X, view!.X + view.Width);
     }
 
     [TestMethod]
