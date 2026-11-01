@@ -275,6 +275,30 @@ public class PersistenceTests : IDisposable
     }
 
     [TestMethod]
+    public async Task Records_too_far_apart_to_merge_are_refused_without_being_reported_as_damage()
+    {
+        var store = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
+        var corruptions = new List<BcrdtStoreCorruption>();
+        store.CorruptionDetected += corruptions.Add;
+
+        // Each record reads on its own; together they leave a hole in one author's clock range wider
+        // than any replica writes, which the merge refuses rather than fill with billions of gap markers.
+        await store.AppendUpdateAsync("doc", CollectedBlock(0));
+        await store.AppendUpdateAsync("doc", CollectedBlock(2 + (ulong)BcrdtUpdateCodec.MaxClockGap));
+        string logPath = Directory.EnumerateFiles(_root, "*.bcl").Single();
+        byte[] contents = await File.ReadAllBytesAsync(logPath);
+
+        await Assert.ThrowsExactlyAsync<BcrdtFormatException>(async () => await store.LoadAsync("doc"));
+        await Assert.ThrowsExactlyAsync<BcrdtFormatException>(async () => await store.LoadAsync("doc"));
+
+        // Nothing in the log is damaged, so however often it is opened, nothing is copied aside,
+        // rewritten or reported.
+        Assert.IsEmpty(corruptions);
+        Assert.IsEmpty(Directory.EnumerateFiles(_root, "*.corrupt").ToList());
+        CollectionAssert.AreEqual(contents, await File.ReadAllBytesAsync(logPath));
+    }
+
+    [TestMethod]
     public async Task Two_store_instances_on_one_directory_never_lose_an_append_to_a_compaction()
     {
         var appender = new BcrdtFileSystemDocumentStore(_root, flushToDisk: false);
@@ -462,6 +486,27 @@ public class PersistenceTests : IDisposable
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = clientId });
         doc.GetText("body").Insert(0, content);
         return doc.EncodeStateAsUpdate();
+    }
+
+    /// <summary>An update holding one collected unit of client 7's content, at <paramref name="clock"/>.</summary>
+    private static byte[] CollectedBlock(ulong clock)
+    {
+        var writer = new BcrdtBufferWriter(16);
+        try
+        {
+            writer.WriteVarUInt(1);
+            writer.WriteVarUInt(1);
+            writer.WriteVarUInt(7);
+            writer.WriteVarUInt(clock);
+            writer.WriteByte((byte)BcrdtContentRef.GarbageCollected);
+            writer.WriteVarUInt(1);
+            writer.WriteVarUInt(0);
+            return writer.ToArray();
+        }
+        finally
+        {
+            writer.Dispose();
+        }
     }
 
     /// <summary>An in-memory store whose appends take a while.</summary>

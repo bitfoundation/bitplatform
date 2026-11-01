@@ -54,6 +54,10 @@ public sealed class BcrdtContentAny : IBcrdtContent
     public IReadOnlyList<object?> GetContent() =>
         _start == 0 && _count == _values.Count ? _values : new Slice(_values, _start, _count);
 
+    /// <summary>One value of the run, without the view <see cref="GetContent"/> allocates for a slice.</summary>
+    internal object? this[int index] =>
+        (uint)index < (uint)_count ? _values[_start + index] : throw new ArgumentOutOfRangeException(nameof(index));
+
     /// <inheritdoc/>
     public IBcrdtContent Copy() => new BcrdtContentAny(_values.GetRange(_start, _count), true);
 
@@ -81,7 +85,11 @@ public sealed class BcrdtContentAny : IBcrdtContent
             return true;
         }
 
-        if (_start + _count != _values.Count)
+        // Only a run that spans its whole list may grow it in place. A slice that happens to end where
+        // the list ends shares it with the run it was split from, and growing it there would keep
+        // everything it gains alive for as long as that neighbour lives - long after the slice itself
+        // has been deleted and collected.
+        if (_start != 0 || _count != _values.Count)
         {
             _values = _values.GetRange(_start, _count);
             _start = 0;

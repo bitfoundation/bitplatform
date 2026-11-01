@@ -1,5 +1,6 @@
 ﻿using System.Buffers.Binary;
 using System.Collections;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -249,14 +250,16 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
     {
         if (records.Count == 0) return (null, 0);
 
+        BcrdtFormatException? mergeFailure = null;
         try
         {
             if (records.Count > 1) return (BcrdtUpdateOperations.Merge([.. records]), records.Count);
             if (IsDecodable(records[0])) return (records[0].ToArray(), 1);
         }
-        catch (BcrdtFormatException)
+        catch (BcrdtFormatException ex)
         {
-            // Some record is unreadable; find out which below.
+            // Some record is unreadable, or the records cannot be combined; find out which below.
+            mergeFailure = ex;
         }
 
         List<ReadOnlyMemory<byte>> readable = [];
@@ -266,6 +269,11 @@ public sealed class BcrdtFileSystemDocumentStore : IBcrdtDocumentStore
             if (IsDecodable(record)) readable.Add(record);
             else discarded += HeaderSize + record.Length;
         }
+
+        // Every record reads on its own, so it was the records together that the merge refused - a gap
+        // between them wider than any replica writes. There is nothing to set aside: rewriting the log
+        // unchanged and reporting it as damaged on every load would only fill the disk with copies.
+        if (discarded == 0 && mergeFailure is not null) ExceptionDispatchInfo.Throw(mergeFailure);
 
         await QuarantineAsync(documentId, path, readable, discarded, cancellationToken).ConfigureAwait(false);
 

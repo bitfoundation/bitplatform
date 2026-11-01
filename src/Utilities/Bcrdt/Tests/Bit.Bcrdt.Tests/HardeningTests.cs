@@ -1,9 +1,16 @@
+using System.Runtime.CompilerServices;
+
 namespace Bit.Bcrdt.Tests;
 
 /// <summary>
 /// Hostile and extreme inputs found in review: each test failed against the engine as it was before
 /// its fix, and each describes what an application or a peer would observe.
 /// </summary>
+/// <remarks>
+/// The exceptions are fixes that only took out work growing with the square of the input. No assertion
+/// here can see that without timing it, so their tests hold the behavior the faster code must keep,
+/// and say so.
+/// </remarks>
 [TestClass]
 public class HardeningTests
 {
@@ -207,6 +214,10 @@ public class HardeningTests
     [TestMethod]
     public void An_update_whose_every_author_waits_is_held_whole_and_integrates_later()
     {
+        // Holds behavior, not cost. Deferring an author used to search the list of authors still to
+        // visit, so an update of n waiting authors took time in n squared - minutes for the two
+        // million or so a 16 MB message can carry - and the fix that removed the search must still hold
+        // every one of them back and integrate them all later.
         const int Authors = 20_000;
 
         static byte[] Groups(ulong clock) => Build((ref BcrdtBufferWriter writer) =>
@@ -398,6 +409,9 @@ public class HardeningTests
         CollectionAssert.AreEqual(values[offset..], right.GetContent().ToArray());
         CollectionAssert.AreEqual(values[offset..], Written(right));
         Assert.AreEqual(values[offset], right.GetContent()[0]);
+        for (int i = 0; i < right.Length; i++) Assert.AreEqual(values[offset + i], right[i]);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => right[right.Length]);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => left[-1]);
 
         Assert.IsTrue(right.TryMergeWith(new BcrdtContentAny(100L)));
         Assert.IsTrue(left.TryMergeWith(right));
@@ -424,6 +438,38 @@ public class HardeningTests
         CollectionAssert.AreEqual(values[offset..], slice.GetContent().ToArray());
     }
 
+    [TestMethod]
+    public void A_value_appended_to_a_split_run_is_released_once_deleted()
+    {
+        using BcrdtDocument doc = Doc(1);
+        using BcrdtDocument other = Doc(2);
+        doc.GetArray("a").Push([0L, 1L, 2L, 3L]);
+        other.ApplyUpdate(doc.EncodeStateAsUpdate());
+
+        // Another author's insert splits the run in two, and what this author appends next joins the
+        // second half - which shares its values with the first half.
+        other.GetArray("a").Insert(1, [99L]);
+        doc.ApplyUpdate(other.EncodeStateAsUpdate());
+
+        WeakReference appended = AppendThenDeleteTheSecondHalf(doc);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        CollectionAssert.AreEqual(new object?[] { 0L, 99L }, doc.GetArray("a").ToArray());
+        Assert.IsFalse(appended.IsAlive, "the first half of the run kept a deleted value alive");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference AppendThenDeleteTheSecondHalf(BcrdtDocument doc)
+    {
+        BcrdtArray array = doc.GetArray("a");
+        array.Push(new string('v', 32));
+        var appended = new WeakReference(array[array.Length - 1]!);
+        array.Delete(2, array.Length - 2);
+        return appended;
+    }
+
     private static object?[] Written(BcrdtContentAny content)
     {
         var writer = new BcrdtBufferWriter(64);
@@ -442,6 +488,10 @@ public class HardeningTests
     [TestMethod]
     public void A_root_keeps_its_name_through_an_upgrade_among_many_roots()
     {
+        // Holds behavior, not cost. Finding a root's name used to scan every root, once for each block
+        // written directly under one, so encoding a document of n roots took time in n squared; the
+        // name each root now remembers must still be the right one, and a placeholder must stop
+        // answering to it once the typed root replaces it.
         using BcrdtDocument source = Doc(1);
         for (int i = 0; i < 5_000; i++) source.GetArray($"r{i}").Push((long)i);
 

@@ -25,6 +25,11 @@ public static class BcrdtUpdateOperations
     /// receiver waits for them rather than mistaking the result for a complete history.
     /// </para>
     /// </remarks>
+    /// <exception cref="BcrdtFormatException">
+    /// An update is malformed, or the updates leave a gap in one author's clock range wider than any
+    /// replica writes - which only a crafted update produces, and which would otherwise take billions
+    /// of gap markers to describe. Every update can still be well-formed on its own.
+    /// </exception>
     public static byte[] Merge(params ReadOnlyMemory<byte>[] updates) => Merge(updates, BcrdtUpdateCodec.MaxClockGap);
 
     internal static byte[] Merge(ReadOnlyMemory<byte>[] updates, long maxGap)

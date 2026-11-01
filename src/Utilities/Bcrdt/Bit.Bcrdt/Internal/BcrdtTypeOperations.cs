@@ -315,7 +315,7 @@ public static class BcrdtTypeOperations
         for (; cursor is not null; cursor = cursor.Right)
         {
             if (cursor.Deleted || !cursor.Countable) continue;
-            if (index < cursor.Length) return cursor.Content.GetContent()[index];
+            if (index < cursor.Length) return cursor.Content is BcrdtContentAny values ? values[index] : cursor.Content.GetContent()[index];
             index -= cursor.Length;
         }
         return null;
