@@ -48,7 +48,7 @@ The backend that reaches browsers OPFS does not, and the only persistent one tha
 
 Databases are stored as 4096-byte pages in the Cache Storage API, committed through a journal. Batch-atomic writes are not offered, because the Cache API cannot commit several entries as one operation; durability comes from the journal instead.
 
-Prefer OPFS or IndexedDB when you can: OPFS runs on the smallest engine build, and IndexedDB commits a transaction as one batch rather than through a journal.
+Pick it when readers should not queue: it registers its VFS with the `shared` lock policy, which makes it the one browser backend that declares concurrent reads, so a read-heavy app open in several tabs reads in parallel. Otherwise prefer OPFS or IndexedDB: OPFS runs on the smallest engine build, and IndexedDB commits a transaction whose changes fit its 8 MiB page cache as one batch rather than through a journal.
 
 Nothing in selection, the transport or the worker knows it exists: it is built on the public storage contract alone, which is the proof that the contract is usable from outside the library - a backend of your own gets exactly what this one gets.
 

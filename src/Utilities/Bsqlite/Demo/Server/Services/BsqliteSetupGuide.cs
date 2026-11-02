@@ -370,8 +370,9 @@ public static partial class BsqliteSetupGuide
            widest reach, where OPFS is missing.
         3. In-memory (`BsqliteInMemoryStorageProvider`, namespace `Bit.Bsqlite.Storage.InMemory`) only as a declared last
            resort - with `AllowNonPersistentFallback()` - or for demos and tests. Data written to it is gone on reload.
-        4. Cache Storage (`BsqliteCacheStorageProvider`, namespace `Bit.Bsqlite.Storage.CacheStorage`) rarely: it is
-           persistent, but commits through a journal rather than as one batch, and needs JSPI or Asyncify as IndexedDB does.
+        4. Cache Storage (`BsqliteCacheStorageProvider`, namespace `Bit.Bsqlite.Storage.CacheStorage`) for a read-heavy app
+           open in several tabs: it is the one browser backend that declares concurrent reads. Otherwise leave it out - it
+           commits through a journal rather than as one batch, and needs JSPI or Asyncify as IndexedDB does.
         5. Leave the migration mode at `KeepExisting` unless moving a user's database without asking is acceptable.
            `AutomaticOnOpen` copies, verifies and only then flips the binding; `Manual` reports
            `Resolution.BetterProviderAvailable` for the app to act on.
