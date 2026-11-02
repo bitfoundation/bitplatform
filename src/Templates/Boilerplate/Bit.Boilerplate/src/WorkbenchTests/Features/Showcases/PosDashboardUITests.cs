@@ -8,8 +8,6 @@ public class PosDashboardUITests : WorkbenchPageTest
 
     private ILocator Widget(string titleKey) => Page.Locator($"section.widget[aria-label='{WorkbenchStrings.ResourceManager.GetString(titleKey)}']");
 
-    private ILocator Button(string name) => Page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
-
     /// <summary>Hides a widget through its menu, which opens in a layer outside the widget, the only one of them visible.</summary>
     private async Task Hide(ILocator widget)
     {

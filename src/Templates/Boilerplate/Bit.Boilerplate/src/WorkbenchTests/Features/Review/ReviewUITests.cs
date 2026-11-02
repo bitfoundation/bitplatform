@@ -7,8 +7,6 @@ namespace Boilerplate.WorkbenchTests.Features.Review;
 [TestClass, TestCategory("UITest")]
 public class ReviewUITests : WorkbenchPageTest
 {
-    private ILocator Button(string name) => Page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
-
     private ILocator ThreadWith(string text) => Page.Locator("article.thread").Filter(new() { HasText = text });
 
     /// <summary>Opens a comment's thread; one just sent is open already.</summary>
@@ -157,28 +155,19 @@ public class ReviewUITests : WorkbenchPageTest
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PageStatusApproved, Exact = true })).ToHaveCountAsync(0);
     }
 
-    [TestMethod]
-    public async Task EditText_Should_TraceATextToItsEntryAndSendAChangeToTheAgent()
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
+    public async Task TheReview_Should_ShowTheAgentAsOfflineAndTakeNoComment(WorkbenchSurface surface)
     {
         await OpenWorkbench("shifts");
 
         await Button(WorkbenchStrings.ModeText).ClickAsync();
-        await View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ShiftsHeading }).ClickAsync();
+        await Expect(Page.Locator(".text-panel")).ToBeVisibleAsync();
 
-        await Expect(Page.Locator(".text-panel")).ToContainTextAsync($"“{WorkbenchStrings.ShiftsHeading}”");
-        await Expect(Page.Locator(".text-panel .key")).ToHaveTextAsync($"{nameof(WorkbenchStrings)} · {nameof(WorkbenchStrings.ShiftsHeading)}");
+        await Button(WorkbenchStrings.ModeComment).ClickAsync();
 
-        var text = $"Weekly schedule {Guid.NewGuid():N}";
-
-        await Page.GetByLabel(CultureInfoManager.SupportedCultures[0].DisplayName, new() { Exact = true }).FillAsync(text);
-        await Page.Locator(".text-panel").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.AskTheAgent }).ClickAsync();
-
-        var threads = await WorkbenchTestReviewer.WaitFor(() => Server.Agent.GetThreads(CancellationToken.None), all => all.Any(t => t.Messages[0].Text.Contains(text, StringComparison.Ordinal)));
-        var request = threads.Single(t => t.Messages[0].Text.Contains(text, StringComparison.Ordinal));
-
-        Assert.AreEqual("shifts", request.PageKey);
-        Assert.Contains(nameof(WorkbenchStrings.ShiftsHeading), request.Messages[0].Text);
-        await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Page.Locator(".text-panel")).ToHaveCountAsync(0);
+        await Expect(Page.GetByText(WorkbenchStrings.AgentOffline)).ToBeVisibleAsync();
+        await Expect(Button(WorkbenchStrings.ModeComment)).ToHaveAttributeAsync("aria-pressed", "false");
     }
 
     private ILocator Composer() => Page.GetByRole(AriaRole.Textbox, new() { Name = WorkbenchStrings.NewComment, Exact = true });

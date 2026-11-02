@@ -3,8 +3,6 @@ namespace Boilerplate.WorkbenchTests.Features.Shell;
 [TestClass, TestCategory("UITest")]
 public class ShellUITests : WorkbenchPageTest
 {
-    private ILocator Button(string name) => Page.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
-
     [TestMethod]
     public async Task APage_Should_OpenInAViewOfTheShell()
     {

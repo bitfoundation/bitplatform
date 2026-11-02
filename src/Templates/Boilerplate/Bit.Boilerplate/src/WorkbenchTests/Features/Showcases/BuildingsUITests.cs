@@ -195,4 +195,18 @@ public class BuildingsUITests : WorkbenchPageTest
 
         await Expect(Rows.First).ToContainTextAsync("Visitor Centre, Archive and Research Library of the Historic Building");
     }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
+    public async Task WhatTheBrowserKeeps_Should_StillChange(WorkbenchSurface surface)
+    {
+        await OpenPreview("buildings", "?device=desktop-1536");
+
+        await Page.GetByRole(AriaRole.Searchbox, new() { Name = WorkbenchStrings.BuildingsSearch }).FillAsync("Rotterdam");
+        await Expect(Page.Locator(".buildings-grid .bit-dtg-body .name-cell")).ToHaveCountAsync(4);
+
+        await Page.ReloadAsync();
+        await Page.WaitForFunctionAsync("() => window.__workbenchReady === true");
+
+        await Expect(Page.GetByRole(AriaRole.Searchbox, new() { Name = WorkbenchStrings.BuildingsSearch })).ToHaveValueAsync("Rotterdam");
+    }
 }
