@@ -159,17 +159,17 @@ function paneFrames() {
     return Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]'));
 }
 
-/** A click while picking: opens a pin's thread, or starts a comment or a text edit on the element. */
+/** A click on a pin opens its thread in any mode; a click while picking starts a comment or a text edit on the element. */
 function onClick(frame: HTMLIFrameElement, event: MouseEvent) {
-    if (!isPicking()) return;
-
     const target = event.target as Element | null;
     if (!target) return;
 
+    const pin = target.closest<HTMLElement>('.wb-pin');
+
+    if (!pin?.dataset.id && !isPicking()) return;
+
     event.preventDefault();
     event.stopImmediatePropagation();
-
-    const pin = target.closest<HTMLElement>('.wb-pin');
 
     if (pin?.dataset.id) {
         host?.invoke('OpenThread', pin.dataset.id);

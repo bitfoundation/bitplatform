@@ -688,6 +688,46 @@ public class ReviewUITests : ReviewPageTest
         await Expect(Pin(id)).ToHaveClassAsync(new Regex(@"\bselected\b"));
     }
 
+    [TestMethod, EverySurface]
+    public async Task ASelectedPin_Should_OpenItsThreadOutsideCommentModeToo(WorkbenchSurface surface)
+    {
+        var text = Unique("Selected");
+        var id = await SeedComment("shifts", text, anchor: headingSpot);
+
+        await OpenWorkbench("shifts");
+
+        await Expect(Pin(id)).ToHaveCountAsync(0);
+
+        await OpenReview();
+        await OpenThread(text);
+        await Press(ThreadWith(text).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowView }));
+        await WaitForViews();
+
+        await Expect(Pin(id)).ToBeVisibleAsync();
+
+        if (IsPhone)
+        {
+            await Expect(Tools).ToHaveAttributeAsync("inert", string.Empty);
+        }
+        else
+        {
+            await Page.Locator($"#wb-tab-{WorkbenchModes.ViewColumn}").ClickAsync();
+        }
+
+        await Press(Pin(id));
+
+        if (IsPhone)
+        {
+            await ExpectToolsOpen();
+        }
+        else
+        {
+            await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
+        }
+
+        await Expect(ThreadWith(text).Locator("button.thread-head")).ToHaveAttributeAsync("aria-expanded", "true");
+    }
+
     [TestMethod, WithAnAgent]
     public async Task WhatsTyped_Should_StayWhileTheReviewIsOutOfSight(WorkbenchSurface surface)
     {
