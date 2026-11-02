@@ -117,6 +117,15 @@ public class ThemePageUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheMessages_Should_ReadProperlyForEveryColor(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Expect(Section(WorkbenchStrings.ThemeFeedback).Locator(".bit-msg").First).ToBeVisibleAsync();
+        await Expect(Section(WorkbenchStrings.ThemeFeedback).GetByText(new Regex(@"\bA (Info|Error)\b"))).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
     public async Task EveryForcedState_Should_ReachItsComponent(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);
