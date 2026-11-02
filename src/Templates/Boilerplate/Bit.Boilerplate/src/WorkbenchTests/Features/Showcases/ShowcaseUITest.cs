@@ -127,7 +127,7 @@ public abstract class ShowcaseUITest : WorkbenchPageTest
         }
     }
 
-    private static Task Touch(ICDPSession cdp, string type, double x, double y) => cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
+    protected static Task Touch(ICDPSession cdp, string type, double x, double y) => cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
     {
         ["type"] = type,
         ["touchPoints"] = type == "touchEnd" ? Array.Empty<object>() : new object[] { new Dictionary<string, object> { ["x"] = x, ["y"] = y, ["id"] = 1 } }

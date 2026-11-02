@@ -85,6 +85,66 @@ public class BuildingsUITests : ShowcaseUITest
 
     private ILocator DialogButton(string name) => DeleteDialog.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
+    /// <summary>Where the only marker on the map sits in the map's pane, which only the map's own pan and zoom change.</summary>
+    private async Task<(double X, double Y)> PinPlace()
+    {
+        var place = await MapPins.EvaluateAsync<double[]>("""
+            pin => {
+                const box = pin.getBoundingClientRect();
+                const map = pin.closest('.map-pane').getBoundingClientRect();
+                return [box.left - map.left, box.top - map.top];
+            }
+            """);
+
+        return (place[0], place[1]);
+    }
+
+    /// <summary>Waits until the map has stopped moving, as it glides on for a moment after a drag or a zoom.</summary>
+    private async Task<(double X, double Y)> SettledPin()
+    {
+        var (last, reads) = ((double.NaN, double.NaN), 0);
+
+        await WorkbenchTestReviewer.WaitFor(async () =>
+        {
+            var place = await PinPlace();
+
+            reads = place == last ? reads + 1 : 0;
+            last = place;
+
+            return reads;
+        }, count => count >= 6);
+
+        return last;
+    }
+
+    /// <summary>Drags the map from a spot beside its marker: with the mouse on a desktop and a finger on a phone.</summary>
+    private async Task PanTheMap(int byX, int byY)
+    {
+        var box = (await MapPane.BoundingBoxAsync())!;
+        var (x, y) = (box.X + box.Width * 0.7, box.Y + box.Height * 0.3);
+
+        if (IsPhone)
+        {
+            var cdp = await Page.Context.NewCDPSessionAsync(Page);
+
+            await Touch(cdp, "touchStart", x, y);
+
+            for (var step = 1; step <= 8; step++)
+            {
+                await Touch(cdp, "touchMove", x + byX * step / 8d, y + byY * step / 8d);
+            }
+
+            await Touch(cdp, "touchEnd", x + byX, y + byY);
+        }
+        else
+        {
+            await Page.Mouse.MoveAsync((float)x, (float)y);
+            await Page.Mouse.DownAsync();
+            await Page.Mouse.MoveAsync((float)x + byX, (float)y + byY, new() { Steps = 8 });
+            await Page.Mouse.UpAsync();
+        }
+    }
+
     [TestMethod, EverySurface]
     public async Task TheGrid_Should_ShowTheBuildingsWithTheirCityAndProvince(WorkbenchSurface surface)
     {
@@ -476,6 +536,40 @@ public class BuildingsUITests : ShowcaseUITest
 
         await Expect(Notice(WorkbenchStrings.BuildingsOutsideTitle)).ToBeVisibleAsync();
         await Expect(Editor).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheMapsPanAndZoom_Should_StayAfterAReload(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, IsPhone ? string.Empty : Wide);
+
+        await Search.FillAsync("Euromast");
+        await Expect(Names).ToHaveCountAsync(1);
+
+        if (IsPhone)
+        {
+            await Press(MapButton);
+        }
+
+        await Expect(MapPins).ToHaveCountAsync(1);
+
+        var fitted = await SettledPin();
+
+        await Press(MapPane.Locator(".leaflet-control-zoom-in"));
+        await WorkbenchTestReviewer.WaitFor(PinPlace, place => place != fitted);
+
+        var zoomed = await SettledPin();
+
+        await PanTheMap(byX: -40, byY: -30);
+        await WorkbenchTestReviewer.WaitFor(PinPlace, place => place != zoomed);
+
+        var left = await SettledPin();
+
+        await ReloadTheView();
+
+        await Expect(MapPins).ToHaveCountAsync(1);
+
+        await WorkbenchTestReviewer.WaitFor(PinPlace, place => Math.Abs(place.X - left.X) <= 2 && Math.Abs(place.Y - left.Y) <= 2);
     }
 
     [TestMethod, EverySurface]
