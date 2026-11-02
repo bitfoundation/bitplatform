@@ -8,8 +8,6 @@ namespace Boilerplate.Workbench.Components.Shell;
 /// </summary>
 public partial class ReviewPanel
 {
-    private string? draft;
-    private string? reply;
     private bool showDone;
     private bool notificationsBlocked;
     private bool isSending;
@@ -23,6 +21,9 @@ public partial class ReviewPanel
     [AutoInject] private Bit.Butil.WebAudio webAudio = default!;
 
     [Parameter] public WorkbenchPageInfo Page { get; set; } = default!;
+
+    /// <summary>What's typed for a comment or a reply, which the page keeps as this panel comes and goes.</summary>
+    [Parameter] public WorkbenchReviewDrafts Drafts { get; set; } = new();
 
     /// <summary>The spot a new comment is being written for; while it is set, the composer shows.</summary>
     [Parameter] public WorkbenchReviewAnchor? PendingAnchor { get; set; }
@@ -111,7 +112,7 @@ public partial class ReviewPanel
 
     private Task Select(WorkbenchReviewThread thread)
     {
-        reply = null;
+        Drafts.Reply = null;
         confirmingDeleteId = null;
 
         return OnSelect.InvokeAsync(thread);
@@ -123,10 +124,10 @@ public partial class ReviewPanel
     /// </summary>
     private async Task Send()
     {
-        if (string.IsNullOrWhiteSpace(draft) || isSending)
+        if (string.IsNullOrWhiteSpace(Drafts.Comment) || isSending)
             return;
 
-        var text = draft;
+        var text = Drafts.Comment;
         isSending = true;
         showDone = false;
 
@@ -134,7 +135,7 @@ public partial class ReviewPanel
         {
             await UnlockAudio();
             await OnSend.InvokeAsync(text);
-            draft = null;
+            Drafts.Comment = null;
         }
         finally
         {
@@ -197,7 +198,7 @@ public partial class ReviewPanel
 
     private Task CancelPending()
     {
-        draft = null;
+        Drafts.Comment = null;
 
         return OnCancel.InvokeAsync();
     }
@@ -212,12 +213,12 @@ public partial class ReviewPanel
 
     private async Task Reply(WorkbenchReviewThread thread)
     {
-        if (string.IsNullOrWhiteSpace(reply))
+        if (string.IsNullOrWhiteSpace(Drafts.Reply))
             return;
 
         await UnlockAudio();
-        session.Reply(thread.Id, ReviewerName, reply);
-        reply = null;
+        session.Reply(thread.Id, ReviewerName, Drafts.Reply);
+        Drafts.Reply = null;
         await AskToNotify();
     }
 

@@ -62,6 +62,7 @@ else if (isSmallScreen && IsTouring is false)
                     <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
                 }
                 <ReviewPanel Page="pageInfo"
+                             Drafts="drafts"
                              PendingAnchor="pendingComment?.Anchor"
                              SelectedThreadId="@selectedThreadId"
                              ReviewerName="@ReviewerName"
@@ -236,6 +237,7 @@ else
                 else if (store.Column == WorkbenchModes.ReviewColumn)
                 {
                     <ReviewPanel Page="pageInfo"
+                                 Drafts="drafts"
                                  PendingAnchor="pendingComment?.Anchor"
                                  SelectedThreadId="@selectedThreadId"
                                  ReviewerName="@ReviewerName"

@@ -182,6 +182,39 @@ public class ReviewUITests : ReviewPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.PhoneWithAgent)]
+    public async Task ATapOnThePage_Should_OpenTheToolsWithTheDraftAndEndPicking(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("buildings");
+        await StartPicking();
+
+        await Press(AddBuilding);
+
+        await ExpectToolsOpen();
+        await Expect(Composer).ToBeVisibleAsync();
+        await Expect(Composer).ToBeFocusedAsync();
+        await Expect(PickBanner).ToHaveCountAsync(0);
+        await Expect(Tools.GetByText(WorkbenchStrings.DataStateHint)).ToHaveCountAsync(0);
+
+        var text = Unique("Half a thought");
+
+        await Composer.FillAsync(text);
+        await CloseTools();
+
+        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("data-wb-mode", WorkbenchModes.Comment);
+        await Expect(DraftPin).ToBeVisibleAsync();
+        await Expect(BuildingEditor).ToHaveCountAsync(0);
+
+        await Press(AddBuilding);
+
+        await Expect(BuildingEditor).ToBeVisibleAsync();
+        await Expect(Tools).ToHaveAttributeAsync("inert", string.Empty);
+
+        await OpenTools();
+
+        await Expect(Composer).ToHaveValueAsync(text);
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.PhoneWithAgent)]
     public async Task ASwipeWhilePicking_Should_ScrollThePageAndPickNothing(WorkbenchSurface surface)
     {
         await OpenWorkbench("theme");
@@ -653,6 +686,41 @@ public class ReviewUITests : ReviewPageTest
         }
 
         await Expect(Pin(id)).ToHaveClassAsync(new Regex(@"\bselected\b"));
+    }
+
+    [TestMethod, WithAnAgent]
+    public async Task WhatsTyped_Should_StayWhileTheReviewIsOutOfSight(WorkbenchSurface surface)
+    {
+        var commentText = Unique("A comment half typed");
+        var replyText = Unique("A reply half typed");
+        var thread = Unique("To be answered");
+
+        await ClearComments("shifts");
+        await SeedComment("shifts", thread);
+
+        await OpenWorkbench("shifts");
+
+        await PickSpot(ShiftsHeading);
+        await Composer.FillAsync(commentText);
+
+        await LeaveTheToolsAndComeBack();
+
+        await Expect(Composer).ToHaveValueAsync(commentText);
+        await Expect(ToolsButton(WorkbenchStrings.Send)).ToBeEnabledAsync();
+
+        await Press(ToolsButton(WorkbenchStrings.Send));
+        await Expect(ThreadWith(commentText)).ToBeVisibleAsync();
+
+        await OpenThread(thread);
+        await ReplyBox.FillAsync(replyText);
+
+        await LeaveTheToolsAndComeBack();
+
+        await Expect(ReplyBox).ToHaveValueAsync(replyText);
+
+        await OpenThread(commentText);
+
+        await Expect(ReplyBox).ToHaveValueAsync(string.Empty);
     }
 
     [TestMethod, WithAnAgent]

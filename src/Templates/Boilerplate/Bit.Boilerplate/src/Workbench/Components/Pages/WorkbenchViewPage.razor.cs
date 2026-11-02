@@ -25,6 +25,8 @@ public partial class WorkbenchViewPage
     // A comment being written: the view and spot it was pinned to, and the view's state at that moment.
     private (string PaneId, WorkbenchReviewAnchor Anchor, string? State)? pendingComment;
     private string? selectedThreadId;
+    // What's typed for a comment or a reply, kept here as the tools close and other tabs open around the review.
+    private readonly WorkbenchReviewDrafts drafts = new();
     // The pins last sent to the frames as JSON, so an unchanged set isn't sent again on every render.
     private string? shownPins;
     // A view to load with a snapshot once the current render is on screen, for showing a comment as it was left.
