@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace Boilerplate.WorkbenchTests.Features.Inspect;
 
 /// <summary>
@@ -41,7 +39,7 @@ public abstract class WorkbenchCodeCopyPageTest : WorkbenchPageTest
     }
 
     /// <summary>Makes this test's Workbench a published copy, which finds no project to read or change.</summary>
-    protected static void LeaveTheProject() => SetProjectFolder(null);
+    protected static void LeaveTheProject() => WorkbenchFolders.Project = null;
 
     [TestInitialize]
     public void PointTheWorkbenchAtTheCopy()
@@ -63,21 +61,9 @@ public abstract class WorkbenchCodeCopyPageTest : WorkbenchPageTest
             }
         }
 
-        SetProjectFolder(Path.Combine(copyFolder, "Workbench"));
+        WorkbenchFolders.Project = Path.Combine(copyFolder, "Workbench");
     }
 
     [TestCleanup]
-    public void PointTheWorkbenchBack() => SetProjectFolder(null);
-
-    /// <summary>Replaces the value <see cref="WorkbenchFolders.Project"/> found once for the process.</summary>
-    private static void SetProjectFolder(string? folder)
-    {
-        var project = (Lazy<string?>)typeof(WorkbenchFolders).GetField("project", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-
-        _ = project.Value;
-
-        typeof(Lazy<string?>).GetField("_value", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(project, folder);
-
-        Assert.AreEqual(folder, WorkbenchFolders.Project);
-    }
+    public void PointTheWorkbenchBack() => WorkbenchFolders.Project = null;
 }
