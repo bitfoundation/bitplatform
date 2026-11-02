@@ -479,6 +479,22 @@ public class BuildingsUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task SwitchingToTheMap_Should_ShowTheBuildingSelectedInTheList(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Press(Row("Rijksmuseum").GetByRole(AriaRole.Rowheader));
+        await Expect(Row("Rijksmuseum")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await Press(MapButton);
+
+        var marker = MapPane.Locator(".leaflet-marker-icon[alt='Rijksmuseum']");
+
+        await Expect(marker).ToBeVisibleAsync();
+        await Expect(marker).ToHaveAttributeAsync("src", selectedMarkerColor);
+    }
+
+    [TestMethod, EverySurface]
     public async Task AnAdmin_Should_AddABuildingThatShowsInTheGridAndOnTheMapAndStays(WorkbenchSurface surface)
     {
         var name = $"Museum {Guid.NewGuid():N}";

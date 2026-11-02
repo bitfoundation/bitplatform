@@ -256,18 +256,24 @@ public partial class BuildingsPage
         }
     }
 
-    /// <summary>Selects the building everywhere; <paramref name="flyTo"/> also moves the map to it when it is visible.</summary>
+    /// <summary>Selects the building everywhere; <paramref name="flyTo"/> also moves the map to it, at once while it waits behind the list.</summary>
     private async Task Select(Building building, bool flyTo)
     {
         store.Select(building.Id);
         selectedItems = [building];
         BuildMarkers();
 
-        if (flyTo && map is not null && (isNarrow is false || store.IsMapShown))
+        if (flyTo is false || map is null)
+            return;
+
+        if (isNarrow && store.IsMapShown is false)
+        {
+            await map.SetView(new(building.Latitude, building.Longitude), 13, animate: false);
+        }
+        else
         {
             await map.FlyTo(new(building.Latitude, building.Longitude), 13);
         }
-
     }
 
     /// <summary>Delete or Backspace on the map deletes the selected building, after a confirmation.</summary>
