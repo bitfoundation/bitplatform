@@ -122,6 +122,7 @@ public class WorkbenchPageTest : PageTest
         {
             await Page.Locator(".tools-button").TapAsync();
             await Expect(Page.Locator(".tools-header")).ToBeVisibleAsync();
+            await Expect(Tools).Not.ToHaveAttributeAsync("inert", string.Empty);
         }
     }
 
