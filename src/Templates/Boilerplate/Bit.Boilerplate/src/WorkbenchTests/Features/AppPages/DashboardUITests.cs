@@ -1,6 +1,7 @@
 //+:cnd:noEmit
 //#if (module == "Admin")
 using Boilerplate.WorkbenchTests.Features.Chrome;
+using Boilerplate.WorkbenchTests.Features.Showcases;
 
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
@@ -296,12 +297,17 @@ public class DashboardUITests : AppViewPageTest
     }
 
     [TestMethod, EverySurface]
-    public async Task Slow_Should_EndWithTheData(WorkbenchSurface surface)
+    public async Task Slow_Should_ShowPlaceholdersFirstAndEndWithTheData(WorkbenchSurface surface)
     {
+        await PlaceholderTimer.Watch(Page, ".bit-ldn-elp", ".bit-cht-svg");
+
         await OpenWorkbench("dashboard", "?data=slow");
 
         await Expect(Figure(Stats, AppStrings.TotalProducts)).ToHaveTextAsync("50");
         await Expect(View().GetByRole(AriaRole.Application)).ToHaveCountAsync(2);
+        await Expect(Stats.Locator(".bit-ldn-elp")).ToHaveCountAsync(0);
+
+        Assert.IsGreaterThanOrEqualTo(PlaceholderTimer.SlowLoad, await PlaceholderTimer.Read(Page), "The charts came as fast as without the slow state.");
     }
 }
 //#endif

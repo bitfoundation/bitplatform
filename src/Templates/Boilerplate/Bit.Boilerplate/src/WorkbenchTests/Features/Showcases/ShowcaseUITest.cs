@@ -127,6 +127,30 @@ public abstract class ShowcaseUITest : WorkbenchPageTest
         }
     }
 
+    /// <summary>Presses a spot twice in a row, as this surface does: a double click on a desktop and two quick taps on a phone.</summary>
+    protected async Task DoublePressAt(float x, float y)
+    {
+        if (IsPhone)
+        {
+            await Page.Touchscreen.TapAsync(x, y);
+            await Page.Touchscreen.TapAsync(x, y);
+        }
+        else
+        {
+            await Page.Mouse.DblClickAsync(x, y);
+        }
+    }
+
+    /// <summary>Presses the middle of an element twice in a row.</summary>
+    protected async Task DoublePress(ILocator target)
+    {
+        await target.ScrollIntoViewIfNeededAsync();
+
+        var box = (await target.BoundingBoxAsync())!;
+
+        await DoublePressAt(box.X + box.Width / 2, box.Y + box.Height / 2);
+    }
+
     protected static Task Touch(ICDPSession cdp, string type, double x, double y) => cdp.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
     {
         ["type"] = type,
