@@ -3,17 +3,25 @@
 <PageTitle>Edge Label Styling · Blow</PageTitle>
 
 <ExampleScaffold Title="Edge Label Styling"
-                 Summary="The plate behind an edge label can be restyled, padded, rounded or removed. SVG cannot size a rectangle to the text inside it and measuring every label in the browser on every render would be far too costly, so the plate is sized from a character-weighted estimate - the padding controls are there to tune it for an unusual font.">
+                 Summary="An edge's label sits on a plate that can be restyled, padded, rounded or removed, and the text itself styled - all properties of the BlowEdge. Use them to match labels to a theme, to make one label stand out, or to fit the plate to an unusual font.">
     <Toolbar>
         <label>
-            Padding
+            Padding X
             <input type="range" min="0" max="20" step="1" value="@_paddingX"
                    @oninput="@(e => Set(ref _paddingX, e.Value))" />
+            <span class="lbl-value">@_paddingX</span>
+        </label>
+        <label>
+            Padding Y
+            <input type="range" min="0" max="12" step="1" value="@_paddingY"
+                   @oninput="@(e => Set(ref _paddingY, e.Value))" />
+            <span class="lbl-value">@_paddingY</span>
         </label>
         <label>
             Radius
             <input type="range" min="0" max="12" step="1" value="@_radius"
                    @oninput="@(e => Set(ref _radius, e.Value))" />
+            <span class="lbl-value">@_radius</span>
         </label>
     </Toolbar>
     <ChildContent>
@@ -22,10 +30,30 @@
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Compare the four labels: the default plate, a green one with its own text and plate styles, one with no plate at all, and one of letters of very different widths.</li>
+        <li>Move <strong>Padding X</strong> and <strong>Padding Y</strong>: every plate widens or deepens round its text; the label with no plate stays as it is.</li>
+        <li>Move <strong>Radius</strong>: the plates' corners go from square at 0 to pills.</li>
+        <li>Look at the <em>illili vs WWMMWW</em> label at <strong>Padding X</strong> 0: the plate still roughly fits, since narrow and wide letters are counted at different widths.</li>
+        <li><strong>Scroll</strong> to zoom: labels are drawn in the zoomed layer, so they scale with the flow.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>Label</code> is drawn at the path's midpoint, and is also the edge's accessible name.</li>
+        <li><code>LabelStyle</code> is an inline style for the SVG text (<code>fill</code>, <code>font-weight</code>, ...), and <code>LabelBgStyle</code> one for the plate behind it (<code>fill</code>, <code>stroke</code>, ...). The plate's default fill is 85% opaque, so the green one sets <code>fill-opacity:1</code>.</li>
+        <li><code>LabelShowBg</code> (true by default) draws the plate; false leaves the bare text on the line.</li>
+        <li><code>LabelBgPaddingX</code> (4) and <code>LabelBgPaddingY</code> (2) are the space between the text and the plate's edge, and <code>LabelBgBorderRadius</code> (3) rounds its corners; the sliders set them on every edge.</li>
+        <li>SVG cannot size a rectangle to its text, and measuring every label in the browser would cost a round trip per edge per render, so the plate is sized from <code>BlowTextMetrics.EstimateWidth</code>, which weighs each character by its rough width. For an unusual font, tune <code>LabelBgPaddingX</code>.</li>
+        <li>For a label that keeps one size at any zoom, or needs HTML, use <code>EdgeLabelTemplate</code> instead: see the Edge Renderer example.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .lbl-value { display: inline-block; min-width: 1.5rem; text-align: right; }
+</style>
 
 @code {
     private double _paddingX = 4;
+    private double _paddingY = 2;
     private double _radius = 3;
 
     private readonly List<BlowNode> _nodes =
@@ -83,6 +111,7 @@
         foreach (var edge in _edges)
         {
             edge.LabelBgPaddingX = _paddingX;
+            edge.LabelBgPaddingY = _paddingY;
             edge.LabelBgBorderRadius = _radius;
         }
     }

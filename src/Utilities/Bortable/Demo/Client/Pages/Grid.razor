@@ -1,28 +1,90 @@
 ﻿@page "/grid"
 
-<PageTitle>Grid · Bortable</PageTitle>
+<PageTitle>Grid and layouts · Bortable</PageTitle>
 
 <div class="bb-intro">
-    <h1>Grid</h1>
+    <h1>Grid and layouts</h1>
     <p class="bb-subtitle">
-        The component doesn't care about layout - point it at a CSS grid container and you get a sortable grid.
-        Drag the squares to rearrange them.
+        The component doesn't care about layout - point it at a CSS grid container and you get a sortable grid, at a
+        row of chips and you get a horizontal list, at a right-to-left container and it sorts right to left. The list
+        is measured as it is laid out, so the same component serves them all.
     </p>
 </div>
 
-<DemoCode />
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A grid</h3>
+    <p class="bb-card-desc">
+        The list's <code>Class</code> makes it a CSS grid (<code>display: grid</code> with
+        <code>auto-fill</code> columns). Drag the squares to rearrange them: they sort across a row and from row to row.
+    </p>
 
-<div class="bb-demo">
-    <Bortable @bind-Items="_items" TItem="int" Id="grid-list"
-              Class="demo-grid" GhostClass="demo-ghost">
-        <ItemTemplate Context="n">
-            <div class="grid-square">@n</div>
-        </ItemTemplate>
-    </Bortable>
+    <div class="bb-demo">
+        <SortableGrid />
+    </div>
 
-    <p class="demo-order"><strong>Order:</strong> <span id="grid-order">@string.Join(", ", _items)</span></p>
-</div>
+    <DemoCode For="typeof(SortableGrid)" />
+</section>
 
-@code {
-    private IList<int> _items = Enumerable.Range(1, 16).ToList();
-}
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A horizontal list</h3>
+    <p class="bb-card-desc">
+        A row of tags, laid out with <code>display: flex</code> and wrapping when the row is full. No
+        <code>Direction</code> is set: <code>Auto</code> sees the first two items side by side and measures the list
+        left to right.
+    </p>
+
+    <div class="bb-demo">
+        <TagStrip />
+    </div>
+
+    <DemoCode For="typeof(TagStrip)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Right to left</h3>
+    <p class="bb-card-desc">
+        The same row under <code>dir="rtl"</code>: the first step is on the right. An attribute the component does not
+        know as a parameter - <code>dir</code> here, an <code>aria-*</code> or <code>data-*</code> attribute elsewhere -
+        is rendered on the list's container as it is (<code>AdditionalAttributes</code>). The list is measured in its
+        own order, so dragging toward the left moves an item forward, and from the keyboard <kbd>←</kbd> moves it to the
+        next place.
+    </p>
+
+    <div class="bb-demo">
+        <RightToLeftSteps />
+    </div>
+
+    <DemoCode For="typeof(RightToLeftSteps)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>Drag square <em>1</em> onto square <em>7</em>, two rows down: it sorts across rows, not only along one.</li>
+        <li>Drag <em>css</em> to the start of the tags: the others slide right to make room.</li>
+        <li>In the right-to-left row, drag <em>Step 1</em> to the far left: it becomes the last step.</li>
+        <li>
+            From the keyboard the arrows follow the layout: <kbd>←</kbd> <kbd>→</kbd> along a row, <kbd>↑</kbd>
+            <kbd>↓</kbd> from row to row of the grid.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Good to know</h3>
+    <ul class="bb-detail-list">
+        <li>
+            The hit test is two-dimensional, so a grid sorts in every direction. <code>Direction</code> decides only which
+            way an item's swap zones run; the <a href="thresholds">swap thresholds</a> page shows them.
+        </li>
+        <li>
+            Lists reversed with <code>flex-direction: row-reverse</code> or <code>column-reverse</code> are measured in
+            their own order too, like right-to-left ones.
+        </li>
+        <li>
+            The item wrappers are the direct children of the container, so the grid or the flex row lays them out:
+            <code>ItemClass</code> styles them, or - as in the grid - the template inside them.
+        </li>
+        <li>For lists inside the items of another list, see <a href="nested">nested sortables</a>.</li>
+    </ul>
+</section>

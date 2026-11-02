@@ -62,6 +62,32 @@ public sealed class FastPathEquivalenceTests
     }
 
     [TestMethod]
+    public void ABoxWiderThanTheRegionMatchesAddingEveryRepeatedEdgeSample()
+    {
+        foreach (var (width, height, sigma) in new[] { (5, 4, 30f), (3, 50, 20f), (50, 3, 20f), (2, 2, 100f), (1, 1, 60f), (16, 9, 40f), (40, 30, 300f) })
+        {
+            using var source = Noise(width, height, seed: width * 7 + height);
+            using var expected = source.Clone();
+            ReferenceBoxBlur(expected, expected.Bounds, sigma);
+            using var actual = new BlurFilter(sigma).Apply(source, OperationContext.Default);
+            AssertSamePixels(expected, actual, $"sigma {sigma}, {width}x{height}");
+        }
+
+        using var image = Noise(60, 40, seed: 21);
+        var region = new Rectangle(10, 6, 12, 9);
+        using var expectedRegion = image.Clone();
+        ReferenceBoxBlur(expectedRegion, region, 25f);
+        using var actualRegion = new BlurFilter(25f, region).Apply(image, OperationContext.Default);
+        AssertSamePixels(expectedRegion, actualRegion, "region");
+
+        using var tiny = Noise(6, 5, seed: 3);
+        using var expectedTiny = tiny.Clone();
+        ReferenceBoxBlur(expectedTiny, expectedTiny.Bounds, 3000f);
+        using var actualTiny = new BlurFilter(3000f).Apply(tiny, OperationContext.Default);
+        Assert.IsLessThanOrEqualTo(1, TestImages.MaxChannelDifference(expectedTiny, actualTiny));
+    }
+
+    [TestMethod]
     public void TiledWarpsMatchSamplingEveryPixelDirectly()
     {
         using var source = Noise(97, 61, seed: 31);

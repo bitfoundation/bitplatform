@@ -1,0 +1,21 @@
+@page "/prerender-checks"
+@inject Bit.Butil.WebAuthn WebAuthn
+
+@* What particular members answer during a static render. The sweep only asks whether a call completed; a member
+   that answers a security question has to fail closed as well, and that is a question about its value. Its own
+   page rather than a probe on the sweep's, so a check that breaks fails its own test and not the sweep. App.razor
+   renders this page outside Routes, so it is static in every mode; Bit.Butil.Tests.Hosting reads the results out
+   of the HTML. *@
+
+<h1>Butil prerender checks</h1>
+
+@* With no runtime there is no user to verify, so the answer has to be no rather than whatever the defaults add up to. *@
+<p id="check-webauthn-verify">@_webAuthnVerified</p>
+
+@code {
+    public const string Route = "/prerender-checks";
+
+    private bool? _webAuthnVerified;
+
+    protected override async Task OnInitializedAsync() => _webAuthnVerified = await WebAuthn.Verify();
+}

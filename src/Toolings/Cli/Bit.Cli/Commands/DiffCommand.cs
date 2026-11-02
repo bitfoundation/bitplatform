@@ -13,7 +13,7 @@ public static class DiffCommand
         var toArgument = new Argument<string?>("to") { Description = $"The version to compare it with. Default: this bit's own, {BuildInfo.Version}.", Arity = ArgumentArity.ZeroOrOne };
         var projectOption = new Option<string?>("--project") { Description = "The project whose bit.json gives the name, version and options. Default: the current folder. It isn't changed." };
         var nameOption = new Option<string?>("--name") { Description = "The name to create both versions with. Default: the project's own." };
-        var outputOption = new Option<string?>("--output", "-o") { Description = "The folder of the git repository both versions are committed to. Default: <temp>/bit-diff/<name>-<from>-<to>." };
+        var outputOption = new Option<string?>("--output", "-o") { Description = "The folder of the git repository both versions are committed to. Default: ~/.bitplatform/diff/<name>-<from>-<to>." };
         var templatePackageOption = new Option<string?>("--template-package") { Description = "Compare with a local Bit.Boilerplate .nupkg, or the template's folder in a bitplatform checkout." };
 
         var command = new Command("diff", "Show what changed in bit Boilerplate between two versions: creates the project with each into one git repository, so the second commit is the upgrade.")

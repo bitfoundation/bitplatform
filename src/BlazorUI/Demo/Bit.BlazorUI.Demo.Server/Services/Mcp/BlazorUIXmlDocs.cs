@@ -38,6 +38,47 @@ public static partial class BlazorUIXmlDocs
     }
 
     /// <summary>
+    /// The documentation id of a method, its parameter list included -
+    /// <c>M:Bit.BlazorUI.BitModalServiceBase`2.Show``1(System.Boolean)</c> - so each overload is
+    /// answered with its own summary rather than with the first one's. Read off the method as its open
+    /// declaring type declares it, which is what the id is written against: a <c>TReference</c>
+    /// parameter is <c>`0</c> there, whatever the type closing it fills it with.
+    /// </summary>
+    public static string IdOf(MethodInfo method)
+    {
+        var owner = method.DeclaringType is { IsGenericType: true, IsGenericTypeDefinition: false } closed
+            ? closed.GetGenericTypeDefinition()
+            : method.DeclaringType;
+
+        var declared = owner is not null && owner != method.DeclaringType && owner.GetMemberWithSameMetadataDefinitionAs(method) is MethodInfo open
+            ? open
+            : method;
+
+        var generics = declared.IsGenericMethodDefinition ? $"``{declared.GetGenericArguments().Length}" : null;
+        var parameters = declared.GetParameters();
+        var list = parameters.Length == 0 ? null : $"({string.Join(",", parameters.Select(p => ParameterId(p.ParameterType)))})";
+
+        return $"M:{(owner?.FullName ?? owner?.Name ?? string.Empty).Replace('+', '.')}.{declared.Name}{generics}{list}";
+
+        static string ParameterId(Type type)
+        {
+            if (type.IsByRef) return $"{ParameterId(type.GetElementType()!)}@";
+            if (type.IsArray) return $"{ParameterId(type.GetElementType()!)}[{string.Join(",", Enumerable.Repeat(type.GetArrayRank() == 1 ? null : "0:", type.GetArrayRank()))}]";
+            if (type.IsGenericMethodParameter) return $"``{type.GenericParameterPosition}";
+            if (type.IsGenericParameter) return $"`{type.GenericParameterPosition}";
+
+            if (type.IsGenericType)
+            {
+                var name = (type.GetGenericTypeDefinition().FullName ?? type.Name).Replace('+', '.');
+
+                return $"{name[..name.IndexOf('`', StringComparison.Ordinal)]}{{{string.Join(",", type.GetGenericArguments().Select(ParameterId))}}}";
+            }
+
+            return (type.FullName ?? type.Name).Replace('+', '.');
+        }
+    }
+
+    /// <summary>
     /// The summary of a property, following it up the inheritance chain. A component overrides very
     /// few of the parameters it inherits, so the documentation of one is nearly always written on
     /// the type that declared it rather than on the one being asked about.

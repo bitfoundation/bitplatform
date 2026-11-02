@@ -185,6 +185,10 @@ internal static class BormNumber
             case DateOnly d: result = ToOADate(d.ToDateTime(TimeOnly.MinValue)); return true;
             case TimeOnly t: result = t.ToTimeSpan().TotalDays; return true;
             case TimeSpan ts: result = ts.TotalDays; return true;
+            // A month or a week a picker wrote as text stands for its first day, as its date-typed form does.
+            case string s when BormPeriod.TryParseAny(s, out var period):
+                result = ToOADate(period);
+                return true;
             case string s:
                 if (TimeOnly.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
                 {

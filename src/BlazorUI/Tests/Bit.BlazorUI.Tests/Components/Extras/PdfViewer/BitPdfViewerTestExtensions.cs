@@ -1,4 +1,6 @@
-﻿using Bunit;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.PdfViewer;
@@ -21,5 +23,17 @@ internal static class BitPdfViewerTestExtensions
             Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
             Assert.AreEqual(count, component.FindAll(".bit-pdv-pages .bit-pdv-page[data-page]").Count);
         });
+    }
+
+    /// <summary>
+    /// A copy of the JS calls made under <paramref name="identifier"/> so far, taken on the renderer's dispatcher.
+    /// The viewer keeps calling into JS after <see cref="WaitForPages"/> returns (its render loop resumes on the
+    /// dispatcher after each Task.Delay), and bUnit records the calls in a plain dictionary of lists, so a read from
+    /// the test thread could run into one being added ("Collection was modified"). Inside a WaitForAssertion or a
+    /// JS handler, which already run on the dispatcher, the copy is taken inline.
+    /// </summary>
+    public static IReadOnlyList<JSRuntimeInvocation> InvocationsOf(this BunitContext context, string identifier)
+    {
+        return context.Renderer.Dispatcher.InvokeAsync(() => context.JSInterop.Invocations[identifier].ToArray()).GetAwaiter().GetResult();
     }
 }

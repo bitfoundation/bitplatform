@@ -11,6 +11,13 @@
     </p>
 </div>
 
+<div class="bb-note">
+    Nothing below was configured field by field: <code>[Display(Name)]</code> gave the labels, the <code>AccountKind</code>
+    enum became a dropdown of its members, the <code>bool</code> a checkbox, and <code>[Required]</code>,
+    <code>[StringLength]</code> and <code>[EmailAddress]</code> the rules. Leave a field and its rules run - this form was
+    set to validate on blur. The model is shown in the source.
+</div>
+
 <div class="bb-demo">
     <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
     @* ConfigureState settles the state the view builds for you, so wanting one setting does not mean
@@ -33,9 +40,68 @@
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What the generator reads</h3>
+    <p class="bb-card-desc">
+        Attributes keep the meaning DataAnnotations gives them, so the form never accepts a value the model's own
+        validation would then reject.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>On the model</th><th>In the form</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>string</code>, numbers, <code>bool</code>, dates and times, enums</td><td>A text box, a number box, a checkbox, the matching date or time picker, a dropdown of the enum's members (labelled by their <code>[Display(Name)]</code>).</td></tr>
+                <tr><td class="bb-table-key"><code>[Flags]</code> enum, <code>List&lt;TEnum&gt;</code></td><td>A multi-select: a set of tick boxes.</td></tr>
+                <tr><td class="bb-table-key">A class, a <code>struct</code></td><td>A nested group of its own fields. <code>List&lt;T&gt;</code> of a class is a repeater.</td></tr>
+                <tr><td class="bb-table-key"><code>IBrowserFile</code>, <code>List&lt;IBrowserFile&gt;</code></td><td>A file picker. <code>byte[]</code> and <code>Stream</code> are left out.</td></tr>
+                <tr><td class="bb-table-key"><code>[Display(Name, Description, Prompt, Order, GroupName)]</code></td><td>The label, the help text, the placeholder, the order, and a <code>&lt;fieldset&gt;</code> around consecutive fields sharing a group.</td></tr>
+                <tr><td class="bb-table-key"><code>[Required]</code></td><td>Required - on a checkbox, "must be ticked".</td></tr>
+                <tr><td class="bb-table-key"><code>[StringLength]</code>, <code>[MinLength]</code>, <code>[MaxLength]</code>, <code>[Length]</code></td><td>Characters on text; <em>items</em> on a collection - a repeater, a multi-select, a list of files.</td></tr>
+                <tr><td class="bb-table-key"><code>[Range]</code></td><td>Numbers, dates and times, exclusive bounds honoured; also the control's <code>min</code> and <code>max</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>[RegularExpression]</code></td><td>Must match the <em>whole</em> value, as DataAnnotations means it.</td></tr>
+                <tr><td class="bb-table-key"><code>[EmailAddress]</code>, <code>[Url]</code>, <code>[Phone]</code>, <code>[DataType(Password)]</code></td><td>The matching input type and rule; <code>[Url]</code> accepts http, https and ftp.</td></tr>
+                <tr><td class="bb-table-key"><code>[Compare]</code></td><td>A "must match" rule that also revalidates when the other field changes.</td></tr>
+                <tr><td class="bb-table-key"><code>[FileExtensions]</code></td><td>On a file, the picker's <code>accept</code> list and a rule; on a <code>string</code>, a rule on the file name it holds.</td></tr>
+                <tr><td class="bb-table-key">A <code>private</code> or <code>internal</code> setter, a get-only property</td><td>Rendered read-only. A class-typed group or list is edited in place, so a private setter on one is fine.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        <code>BormSchemaGenerator.Generate&lt;T&gt;(options)</code> takes <code>IgnoredProperties</code>, <code>MaxDepth</code>,
+        <code>HonorScaffoldColumn</code>, <code>ReadOnlyProperties</code> (render them read-only, or leave them out) and
+        <code>ConfigureField</code>, a hook run on every generated field for project-wide conventions. To configure the
+        fields one by one, the <a href="builder">fluent builder</a> starts from exactly this and changes only what you say;
+        and <a href="data-annotations"><code>IValidatableObject</code></a> covers the rules that read more than one property.
+    </p>
+</div>
+
 @code {
     private const string Source =
 """
+// Forms/Models.cs - a plain model; nothing in it knows about Borm.
+public enum AccountKind { Personal, Business }
+
+public class AccountSignup
+{
+    [Required, Display(Name = "Full name"), StringLength(60, MinimumLength = 2)]
+    public string FullName { get; set; } = "";
+
+    [Required, EmailAddress]
+    public string Email { get; set; } = "";
+
+    [Display(Name = "Account type")]
+    public AccountKind AccountKind { get; set; }
+
+    [Display(Name = "Company name")]
+    public string? CompanyName { get; set; }
+
+    [Display(Name = "VAT number")]
+    public string? VatNumber { get; set; }
+
+    [Display(Name = "I accept the terms and conditions")]
+    public bool AcceptTerms { get; set; }
+}
+
 @page "/quickstart"
 
 @* ConfigureState settles the state the view builds for you, so wanting one setting does not mean

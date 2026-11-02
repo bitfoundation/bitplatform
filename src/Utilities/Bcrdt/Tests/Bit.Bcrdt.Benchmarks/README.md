@@ -143,3 +143,27 @@ attached after the fixture is loaded, so only the measured work pays for it.
 Every randomized workload - scattered insert positions, probe indices - is drawn from a fixed seed in
 `[GlobalSetup]`, so each iteration performs identical work. A benchmark whose workload varies between
 iterations reports its own variance as though it were the engine's.
+
+## Recorded results
+
+One recorded comparison, for scale rather than as a budget: the library before and after the review that
+rewrote text blocks as string slices (constant-time splits), bounded decoder allocation and added message
+splitting. Both runs used the same machine and settings, so read the ratios, not the absolute numbers.
+
+- **Method:** `dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --inProcess --job short --filter "*TextEditing*" "*Serialization*" "*Merge*"`,
+  once against the previous code and once against the current code. `ShortRun` is three iterations, so the error
+  columns are wide; differences inside them are noise.
+- **Machine:** Intel Core i9-14900K, Windows 11 24H2, .NET 10.0.13 x64, BenchmarkDotNet 0.15.8, October 2026.
+
+| Benchmark (100 000-character document) | Before | After |
+|---|---|---|
+| Append 100 000 characters, one keystroke per transaction | 66.8 ms, 274 MB | 67.0 ms, 266 MB |
+| Insert at a scattered position | 5.6 µs, 53 KB | 1.1 µs, 6.9 KB |
+| Delete a large range in one transaction | 40.5 µs, 1 036 KB | 11.1 µs, 9.5 KB |
+| `EncodeStateAsUpdate` for the whole document | 84.8 µs, 303 KB | 67.7 µs, 103 KB |
+| `ApplyUpdate` of that payload into an empty document | 72.1 µs, 822 KB | 54.6 µs, 432 KB |
+| Merge a divergent replica's whole history (50 000 edits each) | 14.9 ms, 18.7 MB | 7.5 ms, 13.4 MB |
+
+The same run first caught a regression in the rewrite: appending a keystroke to a long block re-encoded the whole
+block, and the 100 000-keystroke case took 4.5 s and allocated 19 GB. It is fixed, and
+`PerformanceBudgetTests.A_keystroke_costs_the_same_whether_the_text_is_short_or_long` now fails if it returns.

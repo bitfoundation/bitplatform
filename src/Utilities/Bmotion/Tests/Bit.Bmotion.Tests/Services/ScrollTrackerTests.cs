@@ -118,6 +118,26 @@ public class ScrollTrackerTests
     }
 
     [TestMethod]
+    public async Task DisposeAsync_WhileObserveIsAwaitingTheBridge_StillUnobservesTheSubscription()
+    {
+        var interop = new FakeBmotionInterop();
+        var gate = new TaskCompletionSource();
+        interop.ObserveScrollGate = gate.Task;
+        var tracker = new BmotionScrollTracker(interop);
+
+        // The owning component goes away within the observe round trip: DisposeAsync finds no key yet.
+        var observing = tracker.ObserveAsync(_ => { });
+        await tracker.DisposeAsync();
+        Assert.AreEqual(0, interop.CountOf("unobserveScroll"));
+
+        gate.SetResult();
+        await observing;
+
+        CollectionAssert.AreEqual(new[] { "scroll-key-1" }, interop.ArgsOf("unobserveScroll").Select(a => (string)a[0]!).ToArray(),
+            "the subscription that came back after disposal must be removed, or the JS listener outlives the tracker");
+    }
+
+    [TestMethod]
     public void IsRegisteredTransient_SoEveryConsumerOwnsItsOwnTracker()
     {
         using var ctx = new BmotionTestContext();

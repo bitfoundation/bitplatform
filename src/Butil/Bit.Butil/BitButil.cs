@@ -137,9 +137,7 @@ public static class BitButil
     /// switch so the trimmer can treat it as a constant in a trimmed publish (the runtime override below is
     /// what keeps <see cref="UseLazyScripts"/> working there regardless).
     /// </summary>
-#if NET9_0_OR_GREATER
     [FeatureSwitchDefinition(LazyScriptsSwitchName)]
-#endif
     internal static bool LazyScriptsFeature => AppContext.TryGetSwitch(LazyScriptsSwitchName, out var enabled) && enabled;
 
     /// <summary>

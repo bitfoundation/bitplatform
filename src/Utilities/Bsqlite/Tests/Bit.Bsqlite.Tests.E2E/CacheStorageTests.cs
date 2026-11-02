@@ -22,10 +22,20 @@ public sealed class CacheStorageTests : BsqliteTest
 
     [TestMethod]
     public async Task Persistence_survives_a_worker_restart()
+        => await SurvivesAWorkerRestartAsync(UniqueName("cache-persist"));
+
+    /// <summary>
+    /// A database name with a folder in it - the bit Boilerplate's is <c>App_Data/AppOffline.db</c> - is one
+    /// segment of every entry's URL, so its slash has to be escaped on the way in and read back on the way out.
+    /// </summary>
+    [TestMethod]
+    public async Task Persistence_survives_a_worker_restart_under_a_folder()
+        => await SurvivesAWorkerRestartAsync($"App_Data/{UniqueName("cache-dir")}");
+
+    private async Task SurvivesAWorkerRestartAsync(string databaseName)
     {
         SkipWhen(BrowserName == "webkit", WebKitDiscardsEntries);
 
-        var databaseName = UniqueName("cache-persist");
         await OpenCacheAsync(Page, databaseName);
         await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
         await ExecAsync(Page, "INSERT INTO product (name) VALUES ('Kept')");
@@ -56,38 +66,6 @@ public sealed class CacheStorageTests : BsqliteTest
 
         await OpenCacheAsync(Page, databaseName);
         AssertJson.AreEqual("""[["Committed"]]""", (await QueryAsync(Page, "SELECT name FROM product ORDER BY id")).Rows);
-    }
-
-    [TestMethod]
-    public async Task Persistence_opens_a_database_that_besql_left_in_bit_Besql()
-    {
-        SkipWhen(BrowserName == "webkit", WebKitDiscardsEntries);
-
-        var databaseName = UniqueName("cache-besql");
-        await OpenCacheAsync(Page, databaseName);
-        await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
-        await ExecAsync(Page, "INSERT INTO product (name) VALUES ('FromBesql')");
-        await Page.EvaluateAsync(
-            """
-            async () => {
-              await globalThis.host.close();
-              globalThis.host.dispose();
-            }
-            """);
-
-        await Page.EvaluateAsync(
-            """
-            async name => {
-              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-cache-admin.js');
-              const image = await admin.exportDatabase(name);
-              await admin.deleteDatabase(name);
-              const besql = await caches.open('bit-Besql');
-              await besql.put(`/data/cache/${name}`, new Response(image));
-            }
-            """, databaseName);
-
-        await OpenCacheAsync(Page, databaseName);
-        AssertJson.AreEqual("""[["FromBesql"]]""", (await QueryAsync(Page, "SELECT name FROM product")).Rows);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -125,6 +103,47 @@ public sealed class CacheStorageTests : BsqliteTest
         Assert.IsTrue(outcome.GetProperty("listed").GetBoolean());
         Assert.IsTrue(outcome.GetProperty("existed").GetBoolean());
         Assert.IsFalse(outcome.GetProperty("existsAfterDelete").GetBoolean());
+    }
+
+    /// <summary>
+    /// What the engine wrote, under a name with a folder in it, goes through the admin module and back: listed by
+    /// its name, exported, deleted, imported again, and opened by the engine with its rows intact.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_round_trips_a_database_the_engine_wrote_under_a_folder()
+    {
+        SkipWhen(BrowserName == "webkit", WebKitDiscardsEntries);
+
+        var databaseName = $"App_Data/{UniqueName("cache-trip")}";
+        await OpenCacheAsync(Page, databaseName);
+        await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+        await ExecAsync(Page, "INSERT INTO product (name) VALUES ('RoundTripped')");
+        await Page.EvaluateAsync(
+            """
+            async () => {
+              await globalThis.host.close();
+              globalThis.host.dispose();
+            }
+            """);
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async name => {
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-cache-admin.js');
+              const listed = (await admin.list()).includes(name);
+              const image = await admin.exportDatabase(name);
+              await admin.deleteDatabase(name);
+              const existsAfterDelete = await admin.exists(name);
+              await admin.importDatabase(name, image);
+              return { listed, existsAfterDelete };
+            }
+            """, databaseName);
+
+        Assert.IsTrue(outcome.GetProperty("listed").GetBoolean());
+        Assert.IsFalse(outcome.GetProperty("existsAfterDelete").GetBoolean());
+
+        await OpenCacheAsync(Page, databaseName);
+        AssertJson.AreEqual("""[["RoundTripped"]]""", (await QueryAsync(Page, "SELECT name FROM product")).Rows);
     }
 
     // ---------------------------------------------------------------------------------------------

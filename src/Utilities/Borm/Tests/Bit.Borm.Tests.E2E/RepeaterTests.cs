@@ -43,10 +43,8 @@ public sealed class RepeaterTests : BormTest
     }
 
     [TestMethod]
-    // Open, not passing: blur validates an empty required field by design (ValidationTrigger.OnChange covers
-    // blur), so whether a field the library focused on the user's behalf should be judged when it is left
-    // untouched is a decision about the library's validation semantics, not a fix this suite can make.
-    [Ignore("Known issue: the blur that a second click causes shows the new line's required message and moves the button before mouseup.")]
+    // The blur still judges the empty line it leaves (ValidationTrigger.OnChange covers blur); what the form does is
+    // draw that message once the mouse is released, so the button is still under the pointer when it is.
     public async Task Clicking_Add_line_again_straight_after_adding_one_adds_a_second_line()
     {
         var page = await OpenAsync("/array");
@@ -146,7 +144,10 @@ public sealed class RepeaterTests : BormTest
         await Expect(Errors(page, "Lines[0].Description")).ToHaveCountAsync(0);
         await Expect(Summary(page).Locator("a")).ToHaveTextAsync(["Description (2): This field is required."]);
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Move line 2 up", Exact = true }).ClickAsync();
+        // From the keyboard, where keeping the focus matters: WebKit never focuses a button a mouse clicks (Safari's
+        // platform convention), so a click would leave nothing to keep there.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Move line 2 up", Exact = true }).FocusAsync();
+        await page.Keyboard.PressAsync("Enter");
 
         // The empty line is first now, and its complaint came along; the filled one is second, still clean.
         await Expect(Control(page, "Lines[0].Description")).ToHaveValueAsync("");

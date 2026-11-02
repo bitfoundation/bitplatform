@@ -25,12 +25,32 @@ public static class E2EEnvironment
     public static string? BaseUrl { get; } = Read("BLOW_E2E_BASE_URL")?.TrimEnd('/');
 
     /// <summary>
+    /// <c>BLOW_E2E_BROWSER</c>: the engine to drive - <c>chromium</c> (the default), <c>firefox</c> or
+    /// <c>webkit</c>, each the build Playwright installs.
+    /// </summary>
+    public static string Browser { get; } = Read("BLOW_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
+    /// <summary>True when the suite drives Chromium, the only engine with the DevTools protocol.</summary>
+    public static bool IsChromium => Browser == "chromium";
+
+    /// <summary>
+    /// Ends a test that presses Shift+F10 or the context-menu key as Inconclusive outside Chromium. The canvas
+    /// relies on the browser turning that key into a <c>contextmenu</c> event, which real Firefox and Safari do,
+    /// but Playwright's Firefox and WebKit deliver only the key.
+    /// </summary>
+    public static void RequireKeyboardContextMenu()
+    {
+        if (IsChromium is false)
+            Assert.Inconclusive($"Playwright's {Browser} does not raise contextmenu for a key press.");
+    }
+
+    /// <summary>
     /// <c>BLOW_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Without it the suite
-    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge.
+    /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge. Chromium only.
     /// </summary>
     public static string? Channel { get; } = Read("BLOW_E2E_CHANNEL");
 
-    /// <summary><c>BLOW_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
+    /// <summary><c>BLOW_E2E_EXECUTABLE</c>: full path to an executable of the engine <see cref="Browser"/> names.</summary>
     public static string? Executable { get; } = Read("BLOW_E2E_EXECUTABLE");
 
     /// <summary><c>BLOW_E2E_HEADED=1</c>: show the browser.</summary>

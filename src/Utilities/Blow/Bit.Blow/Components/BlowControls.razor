@@ -10,18 +10,18 @@
      @oncontextmenu:stopPropagation="true">
     @if (ShowZoom)
     {
-        <button type="button" class="bit-blow-controls-button" title="Zoom in" aria-label="Zoom in"
+        <button type="button" class="bit-blow-controls-button" title="@ZoomInLabel" aria-label="@ZoomInLabel"
                 disabled="@(!Attached || AtMaxZoom)" @onclick="ZoomInAsync">
             <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         </button>
-        <button type="button" class="bit-blow-controls-button" title="Zoom out" aria-label="Zoom out"
+        <button type="button" class="bit-blow-controls-button" title="@ZoomOutLabel" aria-label="@ZoomOutLabel"
                 disabled="@(!Attached || AtMinZoom)" @onclick="ZoomOutAsync">
             <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         </button>
     }
     @if (ShowFitView)
     {
-        <button type="button" class="bit-blow-controls-button" title="Fit view" aria-label="Fit view"
+        <button type="button" class="bit-blow-controls-button" title="@FitViewLabel" aria-label="@FitViewLabel"
                 disabled="@(!Attached)" @onclick="FitViewAsync">
             <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
         </button>
@@ -29,7 +29,7 @@
     @if (ShowInteractive)
     {
         <button type="button" class="bit-blow-controls-button"
-                title="@InteractiveTitle" aria-label="Lock interaction"
+                title="@InteractiveTitle" aria-label="@LockLabel"
                 aria-pressed="@((!Interactive).ToString().ToLowerInvariant())"
                 @onclick="ToggleInteractiveAsync">
             @if (Interactive)
@@ -46,7 +46,9 @@
 </div>
 
 @code {
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.ViewportVersion)] private int ViewportVersion { get; set; }
+    [CascadingParameter(Name = BlowCascadingNames.GraphVersion)] private int GraphVersion { get; set; }
 
     [Parameter] public BlowControlsOrientation Orientation { get; set; } = BlowControlsOrientation.Vertical;
 
@@ -88,6 +90,24 @@
     [Parameter] public BlowFitViewOptions? FitViewOptions { get; set; }
 
     [Parameter] public string AriaLabel { get; set; } = "Flow controls";
+
+    /// <summary>Accessible name and tooltip of the zoom-in button. Replace it to localize the bar.</summary>
+    [Parameter] public string ZoomInLabel { get; set; } = "Zoom in";
+
+    /// <summary>Accessible name and tooltip of the zoom-out button.</summary>
+    [Parameter] public string ZoomOutLabel { get; set; } = "Zoom out";
+
+    /// <summary>Accessible name and tooltip of the fit-view button.</summary>
+    [Parameter] public string FitViewLabel { get; set; } = "Fit view";
+
+    /// <summary>
+    /// Accessible name of the lock button, and its tooltip while the flow is interactive. The name stays the same
+    /// when the flow is locked: the button is a toggle, and a screen reader announces whether it is pressed.
+    /// </summary>
+    [Parameter] public string LockLabel { get; set; } = "Lock interaction";
+
+    /// <summary>Tooltip of the lock button while the flow is locked: what a click will do.</summary>
+    [Parameter] public string UnlockLabel { get; set; } = "Unlock interaction";
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? Style { get; set; }
 
@@ -98,7 +118,7 @@
     // The tooltip says what a click will do. The accessible name stays fixed: it is a toggle, and
     // a screen reader already announces whether it is pressed - "Unlock interaction, pressed"
     // would contradict itself.
-    private string InteractiveTitle => Interactive ? "Lock interaction" : "Unlock interaction";
+    private string InteractiveTitle => Interactive ? LockLabel : UnlockLabel;
 
     /// <summary>
     /// False when the bar was placed outside a <c>BlowCanvas</c>, so there is nothing for it to

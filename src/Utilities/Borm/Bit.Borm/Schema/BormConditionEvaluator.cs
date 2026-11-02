@@ -35,7 +35,7 @@ public static class BormConditionEvaluator
         _ => false
     };
 
-    private static bool IsEmpty(object? value) => value switch
+    internal static bool IsEmpty(object? value) => value switch
     {
         null => true,
         string s => string.IsNullOrWhiteSpace(s),
@@ -53,7 +53,7 @@ public static class BormConditionEvaluator
         _ => null
     };
 
-    private static bool LooseEquals(object? a, object? b)
+    internal static bool LooseEquals(object? a, object? b)
     {
         if (a is null && b is null) return true;
         if (a is null || b is null) return false;
@@ -79,7 +79,7 @@ public static class BormConditionEvaluator
             StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool TryCompare(object? a, object? b, out int result)
+    internal static bool TryCompare(object? a, object? b, out int result)
     {
         result = 0;
         if (a is null || b is null) return false;
@@ -138,7 +138,7 @@ public static class BormConditionEvaluator
                && comparable.CompareTo(coerced) == 0;
     }
 
-    private static bool Contains(object? actual, object? expected)
+    internal static bool Contains(object? actual, object? expected)
     {
         if (expected is null) return false;
 
@@ -161,14 +161,14 @@ public static class BormConditionEvaluator
         return false;
     }
 
-    private static bool In(object? actual, object? expected)
+    internal static bool In(object? actual, object? expected)
     {
         if (expected is IEnumerable e and not string)
             return e.Cast<object?>().Any(x => LooseEquals(actual, x));
         return LooseEquals(actual, expected);
     }
 
-    private static bool StartsOrEnds(object? actual, object? expected, bool start)
+    internal static bool StartsOrEnds(object? actual, object? expected, bool start)
     {
         if (actual is null || expected is null) return false;
         var haystack = BormValueConverter.ToInvariantString(actual);

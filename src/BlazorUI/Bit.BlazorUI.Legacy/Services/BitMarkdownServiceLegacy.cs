@@ -111,6 +111,8 @@ public class BitMarkdownServiceLegacy(IJSRuntime js, IServiceProvider servicePro
         {
             options.Strict();
             options.CancellationToken(cancellationToken);
+            options.TimeoutInterval(TimeSpan.FromSeconds(30));
+            options.Constraints.StackOverflowGuard = true;
             options.Culture(CultureInfo.CurrentUICulture);
         }).Execute(_markedScriptContent!);
 

@@ -186,7 +186,7 @@ public class SafetyTests
     [TestMethod]
     public void Sessions_of_a_server_process_are_never_resolved_by_being_the_only_one_whatever_their_platform()
     {
-        // On .NET 8 a circuit's platform stays unknown until the panel reports it, and a static SSR request scope that
+        // A circuit's platform stays unknown until the panel reports it, and a static SSR request scope that
         // renders nothing never reports one. The host decides: a process with an ASP.NET Core server serves many users.
         var (control, controlScope) = TestHelpers.CreateSession();
         using (controlScope)

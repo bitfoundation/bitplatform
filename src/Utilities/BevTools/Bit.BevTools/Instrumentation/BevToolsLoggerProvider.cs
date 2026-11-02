@@ -57,7 +57,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 return;
             }
 
-            var message = formatter(state, exception);
+            var message = BevRedactor.RedactText(formatter(state, exception));
             var source = category switch
             {
                 _ when category.Contains("Circuit", StringComparison.Ordinal) => "circuit",

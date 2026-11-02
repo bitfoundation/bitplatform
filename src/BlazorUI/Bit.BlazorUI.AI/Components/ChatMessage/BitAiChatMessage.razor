@@ -1,0 +1,172 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    _awaitingDecision = IsAwaitingDecision();
+    _generating = Session is { IsGenerating: true };
+
+    var busy = Message.IsBusy && _awaitingDecision is false;
+    var editDisabled = Disabled || _generating;
+    var saveDisabled = editDisabled || (string.IsNullOrWhiteSpace(_draft) && Message.Attachments.Count == 0);
+}
+
+@* The message is the article a reader moves between, and it is busy for as long as it is being generated, so a screen
+   reader waits for it to settle rather than reading every token - but for a reply waiting on its reader's decision on a
+   tool call, whose question a busy message would keep from being announced (_awaitingDecision). Its identifier and its
+   role are written as data, so an app can find one message, or style the messages of a role of its own. *@
+<article @ref="RootElement"
+         @attributes="HtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()"
+         data-message-id="@Message.MessageId"
+         data-role="@Message.Role.Value"
+         aria-busy="@(busy ? "true" : "false")">
+
+    @if (Message.Role.IsSystem)
+    {
+        <div style="@Styles?.System" class="bit-aicms-pil @Classes?.System">@Message.GetText()</div>
+    }
+    else if (Message.Role.IsUser)
+    {
+        var text = Message.GetText();
+
+        @if (Message.Attachments.Count > 0)
+        {
+            <div style="@Styles?.Attachments" class="bit-aicms-att @Classes?.Attachments">
+                @foreach (var attachment in Message.Attachments)
+                {
+                    <BitAiAttachmentChip Attachment="attachment" @key="attachment.AttachmentId" />
+                }
+            </div>
+        }
+
+        @if (_editing)
+        {
+            @* The field takes the focus as the editor opens, and a plain Escape anywhere in the editor cancels the edit,
+               which data-bit-esc claims so a dialog or a panel around the message stays open (_EditorEscapeClaim). An
+               edit starts a turn of its own, so Save waits for the session to be free, and for words to send - or the
+               attachments, which may go on alone. *@
+            <div style="@Styles?.Editor"
+                 class="bit-aicms-edt @Classes?.Editor"
+                 data-bit-esc="@_EditorEscapeClaim"
+                 @onkeydown="HandleOnEditorKeyDown">
+                <BitTextField @bind-Value="_draft"
+                              Multiline="true"
+                              Rows="3"
+                              Immediate="true"
+                              AutoFocus="true"
+                              AriaLabel="@Strings.Edit"
+                              Disabled="Disabled" />
+
+                <div style="@Styles?.EditorActions" class="bit-aicms-eda @Classes?.EditorActions">
+                    <BitButton OnClick="CancelEdit"
+                               Disabled="Disabled"
+                               Variant="BitVariant.Outline"
+                               Class="bit-btn-dft-ter"
+                               Styles="@Styles?.CancelButton"
+                               Classes="@Classes?.CancelButton">
+                        @Strings.Cancel
+                    </BitButton>
+                    <BitButton OnClick="SaveEditAsync"
+                               Disabled="saveDisabled"
+                               Styles="@Styles?.SaveButton"
+                               Classes="@Classes?.SaveButton">
+                        @Strings.Save
+                    </BitButton>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* Attachments sent on their own have no words to put in a bubble, or to copy. *@
+            @if (text.Length > 0)
+            {
+                <div style="@Styles?.Bubble" class="bit-aicms-bbl @Classes?.Bubble">@text</div>
+            }
+
+            @if (Options.ShowMessageActions && Session is not null)
+            {
+                @* Edit stays where it is while a reply is being generated, unavailable but focusable (BitButton keeps a
+                   disabled button in the tab order), since the session takes the turn an edit starts only once it is
+                   free; it is also where the focus goes back to as the editor closes. *@
+                <div style="@Styles?.Actions" class="bit-aicms-act @Classes?.Actions">
+                    @if (text.Length > 0)
+                    {
+                        <BitAiCopyButton Content="@text" Disabled="Disabled" />
+                    }
+                    <BitButton @ref="_editButton"
+                               IconName="Edit"
+                               OnClick="StartEdit"
+                               Disabled="editDisabled"
+                               Title="@Strings.Edit"
+                               AriaLabel="@Strings.Edit"
+                               Variant="BitVariant.Text"
+                               Class="bit-btn-dft-ter"
+                               Styles="@Styles?.EditButton"
+                               Classes="_EditButtonClasses" />
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <div style="@Styles?.Body" class="bit-aicms-bdy @Classes?.Body">
+            @if (Message.Run is { } run)
+            {
+                <BitAiAgentRunView Run="run" Session="Session" />
+            }
+
+            @* A reply says it is thinking for as long as it is being generated and has nothing to show yet - from the
+               moment it is asked for until its first words, and again after a status line it showed meanwhile clears -
+               with the status as the label while there is one. What the view drew is kept (_awaitingContent), so the
+               first text reaching an empty part takes the indicator away (OnPartChanged). *@
+            @{ _awaitingContent = Message.StatusText is not { Length: > 0 } && IsAwaitingContent(); }
+            @if (Message.StatusText is { Length: > 0 } status)
+            {
+                <BitAiThinkingIndicator Label="@status" />
+            }
+            else if (_awaitingContent)
+            {
+                <BitAiThinkingIndicator />
+            }
+
+            @foreach (var part in Message.Parts)
+            {
+                <BitAiMessagePartView Part="part"
+                                      Message="Message"
+                                      Conversation="Conversation"
+                                      Session="Session"
+                                      OnCitationClick="OnCitationClick"
+                                      @key="part.PartId" />
+            }
+
+            @if (Message.Error is { } error)
+            {
+                <BitAiErrorView Error="error" OnRetry="RetryAsync" />
+            }
+
+            @if (_ShowSourceList)
+            {
+                <BitAiSourceList Citations="Message.Citations" OnSourceClick="OnSourceClick" />
+            }
+
+            @if (ChildContent is not null)
+            {
+                @ChildContent
+            }
+        </div>
+
+        @if (Message.IsBusy is false)
+        {
+            <BitAiMessageActions Message="Message"
+                                 Session="Session"
+                                 Disabled="Disabled"
+                                 CanRegenerate="@IsLatest"
+                                 OnFeedback="OnFeedbackRecorded"
+                                 Styles="@Styles?.MessageActions"
+                                 Classes="@Classes?.MessageActions" />
+        }
+    }
+</article>

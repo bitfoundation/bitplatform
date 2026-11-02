@@ -1,0 +1,158 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack>
+        @if (isFailed)
+        {
+            <SettingsLoadFailed OnRetry="Load" />
+        }
+        else if (isLoading)
+        {
+            <BitShimmer Height="1.5rem" Width="18rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="16rem" Width="16rem" Background="BitColor.PrimaryBackground" />
+        }
+        else if (store.IsTwoFactorEnabled is false)
+        {
+            <BitText>@AppLocalizer[nameof(AppStrings.TfaConfigureAutAppTitle)]</BitText>
+
+            <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                @AppLocalizer[nameof(AppStrings.TfaConfigureAutAppSubtitle)]
+            </BitText>
+
+            <ol style="padding-inline-start: 1rem;">
+                <li>
+                    @(new MarkupString(AppLocalizer[nameof(AppStrings.TfaConfigureAutAppStep1),
+                        "<a href=\"https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en\">Android</a>",
+                        "<a href=\"https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8\">iOS</a>"]))
+                </li>
+                <br />
+                <li>
+                    <BitStack FillContent>
+                        @AppLocalizer[nameof(AppStrings.TfaConfigureAutAppStep2)]
+                        <img src="@SettingsDemoData.QrCodeUrl"
+                             style="width:256px"
+                             alt="@AppLocalizer[nameof(AppStrings.TfaQrCodeAlt)]" />
+                        <BitCard FullWidth>
+                            <BitStack Horizontal VerticalAlign="BitAlignment.Center">
+                                <BitText Typography="BitTypography.Button">@SettingsDemoData.SharedKey</BitText>
+                                <BitSpacer />
+                                <BitButton IconOnly
+                                           Variant="BitVariant.Text"
+                                           OnClick="CopySharedKeyToClipboard"
+                                           IconName="@(isKeyCopiedShown ? BitIconName.Clipboard : BitIconName.Copy)"
+                                           Title="@AppLocalizer[isKeyCopiedShown ? nameof(AppStrings.Copied) : nameof(AppStrings.Copy)]"
+                                           AriaLabel="@AppLocalizer[isKeyCopiedShown ? nameof(AppStrings.Copied) : nameof(AppStrings.Copy)]" />
+                            </BitStack>
+                        </BitCard>
+                    </BitStack>
+                </li>
+                <br />
+                <li>
+                    @AppLocalizer[nameof(AppStrings.TfaConfigureAutAppStep3)]
+                    <br />
+                    <br />
+                    <div>
+                        <BitOtpInput @bind-Value="verificationCode"
+                                     IsLoading="isWaiting"
+                                     OnFill="EnableTwoFactorAuth"
+                                     Label="@AppLocalizer[nameof(AppStrings.TfaConfigureAutAppVerificationCodeLabel)]" />
+                        <br />
+                        <BitButton AutoLoading OnClick="EnableTwoFactorAuth">
+                            @AppLocalizer[nameof(AppStrings.TfaConfigureAutAppVerifyButtonText)]
+                        </BitButton>
+                    </div>
+                </li>
+            </ol>
+        }
+        else
+        {
+            <BitPivot Alignment="BitAlignment.Center">
+                <BitPivotItem HeaderText="@AppLocalizer[nameof(AppStrings.TfaRecoveryCodesHeader)]">
+                    <BitStack>
+                        @if (store.RecoveryCodesLeft == 0)
+                        {
+                            <BitMessage Color="BitColor.Error" Multiline Title="@AppLocalizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftTitle)]">
+                                @AppLocalizer[nameof(AppStrings.TfaRecoveryCodesZeroLeftSubtitle)]
+                            </BitMessage>
+                        }
+                        else if (store.RecoveryCodesLeft == 1)
+                        {
+                            <BitMessage Color="BitColor.SevereWarning" Multiline Title="@AppLocalizer[nameof(AppStrings.TfaRecoveryCodesOneLeftTitle)]">
+                                @AppLocalizer[nameof(AppStrings.TfaRecoveryCodesOneLeftSubtitle)]
+                            </BitMessage>
+                        }
+                        else if (store.RecoveryCodesLeft <= 3)
+                        {
+                            <BitMessage Color="BitColor.Warning" Multiline Title="@AppLocalizer[nameof(AppStrings.TfaRecoveryCodesThreeLeftTitle), store.RecoveryCodesLeft]">
+                                @AppLocalizer[nameof(AppStrings.TfaRecoveryCodesThreeLeftSubtitle)]
+                            </BitMessage>
+                        }
+
+                        @if (store.RecoveryCodes is null)
+                        {
+                            <BitMessage Color="BitColor.Warning" Multiline>
+                                @AppLocalizer[nameof(AppStrings.TfaRecoveryCodesGenerateWraning)]
+                            </BitMessage>
+
+                            <BitButton AutoLoading OnClick="GenerateRecoveryCode">
+                                @AppLocalizer[nameof(AppStrings.TfaRecoveryCodesGenerateButtonText)]
+                            </BitButton>
+                        }
+                        else
+                        {
+                            <BitStack>
+                                <BitMessage Color="BitColor.Warning" Multiline Title="@AppLocalizer[nameof(AppStrings.TfaRecoveryCodesWarningTitle)]">
+                                    @AppLocalizer[nameof(AppStrings.TfaRecoveryCodesWarning)]
+                                </BitMessage>
+
+                                <BitCard FullWidth>
+                                    <BitStack>
+                                        <BitStack Horizontal>
+                                            <BitText><b>@AppLocalizer[nameof(AppStrings.TfaRecoveryCodesTitle)]</b></BitText>
+                                            <BitSpacer />
+                                            <BitButton IconOnly
+                                                       Variant="BitVariant.Text"
+                                                       OnClick="CopyRecoveryCodesToClipboard"
+                                                       IconName="@(isCodesCopiedShown ? BitIconName.Clipboard : BitIconName.Copy)"
+                                                       Title="@AppLocalizer[isCodesCopiedShown ? nameof(AppStrings.Copied) : nameof(AppStrings.Copy)]"
+                                                       AriaLabel="@AppLocalizer[isCodesCopiedShown ? nameof(AppStrings.Copied) : nameof(AppStrings.Copy)]" />
+                                        </BitStack>
+                                        @foreach (var recoveryCode in store.RecoveryCodes)
+                                        {
+                                            <BitText Typography="BitTypography.Button">@recoveryCode</BitText>
+                                        }
+                                    </BitStack>
+                                </BitCard>
+                            </BitStack>
+                        }
+                    </BitStack>
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="@AppLocalizer[nameof(AppStrings.TfaAuthAppHeader)]">
+                    <BitStack>
+                        <BitMessage Color="BitColor.Warning" Multiline Title="@AppLocalizer[nameof(AppStrings.TfaAuthAppWarningTitle)]">
+                            @AppLocalizer[nameof(AppStrings.TfaAuthAppWarning)]
+                        </BitMessage>
+
+                        <BitButton AutoLoading OnClick="ResetAuthenticatorKey">
+                            @AppLocalizer[nameof(AppStrings.TfaAuthAppResetKeyButtonText)]
+                        </BitButton>
+                    </BitStack>
+                </BitPivotItem>
+
+                <BitPivotItem HeaderText="@AppLocalizer[nameof(AppStrings.TfaDisable2faHeader)]">
+                    <BitStack>
+                        <BitMessage Color="BitColor.Warning" Multiline Title="@AppLocalizer[nameof(AppStrings.TfaDisable2faWarningTitle)]">
+                            @AppLocalizer[nameof(AppStrings.TfaDisable2faWarning)]
+                        </BitMessage>
+
+                        <BitButton AutoLoading OnClick="DisableTwoFactorAuth">
+                            @AppLocalizer[nameof(AppStrings.TfaDisable2faButtonText)]
+                        </BitButton>
+                    </BitStack>
+                </BitPivotItem>
+            </BitPivot>
+        }
+    </BitStack>
+</section>

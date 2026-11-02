@@ -7,6 +7,8 @@ namespace Bit.BlazorUI;
 
 internal sealed class BitPdfCffFontParser
 {
+    private const int MaxGlyphNameLength = 127;
+
     public int NumGlyphs { get; private set; }
 
     /// <summary>The CFF FontMatrix (defaults to 1/1000-em).</summary>
@@ -82,11 +84,24 @@ internal sealed class BitPdfCffFontParser
             return false;
         }
 
-        string SidName(int sid) => sid < StdStrings.Length
-            ? StdStrings[sid]
-            : (sid - StdStrings.Length < strings.Count
-                ? System.Text.Encoding.Latin1.GetString(d, strings.Start(sid - StdStrings.Length), strings.Len(sid - StdStrings.Length))
-                : "");
+        var sidNames = new Dictionary<int, string>();
+        string SidName(int sid)
+        {
+            if (sid < StdStrings.Length)
+            {
+                return StdStrings[sid];
+            }
+            if (sidNames.TryGetValue(sid, out var cached))
+            {
+                return cached;
+            }
+            int index = sid - StdStrings.Length;
+            string name = index < strings.Count && strings.Len(index) <= MaxGlyphNameLength
+                ? System.Text.Encoding.Latin1.GetString(d, strings.Start(index), strings.Len(index))
+                : "";
+            sidNames[sid] = name;
+            return name;
+        }
 
         // Charset: gid → SID (name-keyed) or gid → CID (CID-keyed). Predefined
         // offsets 0/1/2 map identity (SID/CID == gid).

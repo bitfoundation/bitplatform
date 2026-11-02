@@ -20,6 +20,7 @@ interface DotNetObjectReference {
 
 // camelCase JSON of BinkInteropOptions. Every field is optional because setOptions merges partial updates.
 interface BinkSurfaceOptions {
+    // Read once, when the canvases' contexts are created at attach.
     lowLatency?: boolean;
     rejectTouchWhilePen?: boolean;
     suppressContextMenu?: boolean;
@@ -184,6 +185,8 @@ const surfaces = (bitBinkGlobal.__bitBinkSurfaces ??= new Map<string, Surface>()
 const SAMPLE_SIZE = 12;
 // The most samples sent to .NET in one interop message when it goes through IJSRuntime: about 12 KB as JSON.
 const SAMPLES_PER_MESSAGE = 128;
+// The most editor text sent in one message: at most 24 KB as JSON, even if every character is escaped.
+const TEXT_PART_LENGTH = 4096;
 const FLAG_COALESCED = 1;
 const FLAG_PREDICTED = 2;
 const FLAG_PRIMARY = 4;
@@ -463,8 +466,12 @@ class Surface {
 
     createContext(canvas: HTMLCanvasElement | null): CanvasRenderingContext2D | null {
         if (!canvas) return null;
-        const attributes: CanvasRenderingContext2DSettings = { alpha: true, desynchronized: this.options.lowLatency !== false };
-        const ctx = canvas.getContext('2d', attributes);
+        // `desynchronized` only when the application asks for it (BinkCanvas.LowLatency). Chromium (seen on Windows
+        // with GPU compositing) shows a desynchronized canvas whose pixels are not all opaque - the overlay always, the
+        // document with a transparent background - as solid black once it sits inside an ancestor that clips to
+        // rounded corners: overflow: hidden with a border-radius, an ordinary card. Only the application knows whether
+        // its canvas has such an ancestor.
+        const ctx = canvas.getContext('2d', { alpha: true, desynchronized: this.options.lowLatency === true });
         if (ctx && typeof ctx.getContextAttributes === 'function') {
             const actual = ctx.getContextAttributes();
             this.lowLatency = !!(actual && actual.desynchronized);
@@ -1162,7 +1169,7 @@ class Surface {
         count = Math.min(count, commands.length);
 
         try {
-            this.replay(rootContext, commands, count, strings);
+            this.replay(rootContext, commands, count, strings, layer !== 'export');
         } catch (error) {
             // An export has a caller waiting for its result, which should hear about the failure.
             if (layer === 'export') throw error;
@@ -1181,7 +1188,7 @@ class Surface {
         if (!this.disposed && this.callback && this.callback.resourcesLost) this.callback.resourcesLost();
     }
 
-    replay(rootContext: CanvasRenderingContext2D, commands: ArrayLike<number>, count: number, strings: string[]): void {
+    replay(rootContext: CanvasRenderingContext2D, commands: ArrayLike<number>, count: number, strings: string[], fetchImages: boolean): void {
         let ctx: CanvasRenderingContext2D = rootContext;
         const groups: IsolatedGroup[] = [];
         let i = 0;
@@ -1370,7 +1377,7 @@ class Surface {
                         this.images.set(uri, image);
                         this.imagesUsedThisFrame.add(uri);
                     }
-                    else this.requestImage(uri);
+                    else if (fetchImages) this.requestImage(uri);
                     if (image && image.complete && image.naturalWidth > 0) {
                         ctx.globalAlpha = alpha;
                         if (hasCrop) ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
@@ -1459,7 +1466,10 @@ class Surface {
         if (lost) this.reportResourcesLost();
     }
 
-    async loadImage(uri: string): Promise<BinkImageMetrics> {
+    // An image newly loaded with more than maxPixels pixels is not kept, so nothing draws it until it is loaded again:
+    // an export asks for what it can afford, and the size a document records for an image is only a claim. The
+    // browser decodes an image when it is first drawn, not when it loads.
+    async loadImage(uri: string, keep = false, maxPixels = Infinity): Promise<BinkImageMetrics> {
         if (this.images.has(uri)) {
             const existing = this.images.get(uri) as HTMLImageElement;
             if (existing.complete && existing.naturalWidth > 0) return { width: existing.naturalWidth, height: existing.naturalHeight };
@@ -1473,9 +1483,10 @@ class Surface {
         });
         image.src = uri;
         await loaded;
-        if (this.disposed) return { width: image.naturalWidth, height: image.naturalHeight };
+        if (this.disposed || image.naturalWidth * image.naturalHeight > maxPixels) return { width: image.naturalWidth, height: image.naturalHeight };
         this.images.delete(uri);
         this.images.set(uri, image);
+        if (keep) this.imagesUsedThisFrame.add(uri);
         this.evictImages();
         return { width: image.naturalWidth, height: image.naturalHeight };
     }
@@ -1486,10 +1497,10 @@ class Surface {
     requestImage(uri: string): void {
         if (this.disposed || !uri || this.pendingImages.has(uri) || this.failedImages.has(uri)) return;
         this.pendingImages.add(uri);
-        this.loadImage(uri).then(
+        this.loadImage(uri, true).then(
             () => {
                 this.pendingImages.delete(uri);
-                this.requestRedraw();
+                if (this.images.has(uri)) this.requestRedraw();
             },
             () => {
                 this.pendingImages.delete(uri);
@@ -1643,13 +1654,20 @@ export function setDotNetCallbacks(id: string, reference: DotNetObjectReference)
         resized: (width: number, height: number, dpr: number) => reference.invokeMethodAsync('OnResized', width, height, dpr).catch(report('resize')),
         key: (key: string, ctrl: boolean, shift: boolean, alt: boolean) => reference.invokeMethodAsync('OnKeyDown', key, ctrl, shift, alt).catch(report('keyboard input')),
         textKey: (key: string, value: string | null | undefined) => {
-            // The editor holds up to 100,000 characters; a long text travels as a stream, as a long paste does.
-            const text = value ?? '';
-            if (text.length > 8192 && dotNet) {
-                const stream = dotNet.createJSStreamReference(new Blob([text], { type: 'text/plain' }));
-                return reference.invokeMethodAsync('OnTextEditorKeyStream', key, stream).catch(report('text editing'));
+            // The editor holds up to 100,000 characters, so a long text goes ahead of the key in parts. Sent in order
+            // and handled in order, they reach .NET before the click that ended the edit, as a short text does; a
+            // stream would be read after it, by when the click may have cancelled the edit. A cancel needs no text.
+            const text = key === 'Escape' ? '' : value ?? '';
+            let start = 0;
+            while (text.length - start > TEXT_PART_LENGTH) {
+                let end = start + TEXT_PART_LENGTH;
+                // Half a surrogate pair is not valid JSON text for .NET, so a pair is never split between parts.
+                const last = text.charCodeAt(end - 1);
+                if (last >= 0xD800 && last <= 0xDBFF) end--;
+                reference.invokeMethodAsync('OnTextEditorTextPart', text.slice(start, end)).catch(report('text editing'));
+                start = end;
             }
-            return reference.invokeMethodAsync('OnTextEditorKey', key, text).catch(report('text editing'));
+            return reference.invokeMethodAsync('OnTextEditorKey', key, text.slice(start)).catch(report('text editing'));
         },
         redraw: () => reference.invokeMethodAsync('OnRedrawRequested').catch(report('redraw')),
         resourcesLost: () => reference.invokeMethodAsync('OnResourcesLost').catch(report('redraw')),
@@ -1835,9 +1853,9 @@ export function setCursor(id: string, cursor: string): void {
     if (surface) surface.hitTarget.style.cursor = cursor;
 }
 
-export function loadImage(id: string, uri: string): Promise<BinkImageMetrics> {
+export function loadImage(id: string, uri: string, maxPixels?: number | null): Promise<BinkImageMetrics> {
     const surface = surfaces.get(id);
-    return surface ? surface.loadImage(uri) : Promise.reject(new Error('Unknown surface.'));
+    return surface ? surface.loadImage(uri, false, maxPixels ?? Infinity) : Promise.reject(new Error('Unknown surface.'));
 }
 
 export function measureText(id: string, text: string, font: string): BinkTextMetrics {

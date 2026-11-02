@@ -1,0 +1,17 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @* The loader is the polite live region (role status) and its label the text it announces, so a screen reader
+       user learns that a response is coming without the announcement interrupting them. Inline, it is drawn at
+       the size of the text it sits in. *@
+    <BitBouncingDotsLoading Inline="true"
+                            Disabled="Disabled"
+                            Label="@(Label ?? Strings.Thinking)"
+                            Classes="@Classes?.Loading"
+                            Styles="@Styles?.Loading" />
+</div>

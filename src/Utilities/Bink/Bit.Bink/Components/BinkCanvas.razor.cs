@@ -75,6 +75,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     private BinkDocument? _previousDocumentParameter;
     private BinkViewport _previousViewportParameter = BinkViewport.Identity;
     private TextEditorState? _textEditor;
+    private readonly List<TextCommit> _textCommits = [];
     private BinkStroke? _lastAddedStroke;
     private bool _watchForAddedStroke;
     private ElementReference _textEditorElement;
@@ -210,6 +211,18 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     /// </summary>
     [Parameter]
     public bool? PredictInk { get; set; }
+
+    /// <summary>
+    /// Whether the canvas is created with the low-latency (<c>desynchronized</c>) hint, which shortens the path from
+    /// drawing command to pixels on browsers that honor it; <see cref="BinkInputCapabilities.LowLatencyCanvas"/> reports
+    /// whether one did. Off by default, because Chromium (seen on Windows with GPU compositing) shows a desynchronized
+    /// canvas whose pixels are not all opaque - the live stroke's layer always, the document's with a transparent
+    /// background - as solid black once it sits inside an ancestor that clips to rounded corners (<c>overflow: hidden</c>
+    /// with a <c>border-radius</c>, an ordinary card). Turn it on for a canvas with no such ancestor, such as a
+    /// full-screen whiteboard. Read when the canvas attaches; changing it afterwards has no effect.
+    /// </summary>
+    [Parameter]
+    public bool LowLatency { get; set; }
 
     /// <summary>
     /// What the mouse wheel and a trackpad do over the canvas. The default, <see cref="BinkWheelMode.None"/>,
@@ -819,7 +832,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             ElementFilter = filter is { Count: > 0 } ? filter : null,
         });
 
-        await EnsureImagesLoadedAsync(cancellationToken).ConfigureAwait(true);
+        await EnsureImagesLoadedAsync(region, options.IncludeHiddenLayers, filter is { Count: > 0 } ? filter : null, options.MaxPixels, cancellationToken).ConfigureAwait(true);
         string mimeType = MimeTypeOf(format);
         // Even an incompressible encoding stays within four bytes a pixel plus its headers.
         long maxBytes = (long)width * height * 4 + (1 << 20);
@@ -991,6 +1004,14 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             SetTool(Tool);
         }
 
+        if (ReadOnly) SettleTextCommits();
+        if (ReadOnly && _textEditor is not null && _activeTool is BinkTextTool editing)
+        {
+            editing.CancelEdit(_toolContext);
+            _textEditor = null;
+            _uiDirty = true;
+        }
+
         if (Brush is not null && !Equals(Brush, _brush))
         {
             _brush = Brush;
@@ -1038,6 +1059,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
 
     private BinkInteropOptions BuildInteropOptions() => new()
     {
+        LowLatency = LowLatency,
         RejectTouchWhilePen = RejectTouchWhilePen,
         HandleKeyboard = EnableKeyboardShortcuts,
         // Only a tool that shows a preview following the pointer asks for hover; for any other it would be traffic
@@ -1183,6 +1205,9 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     private void CancelActiveGesture()
     {
         if (_activeTool is null) return;
+        // Text the editor already reported is kept, as when the tool changes: cancelling the edit would remove a box
+        // placed for it. Settled before a new document is attached, so it stays in the document it was typed into.
+        SettleTextCommits();
         _activeTool.Deactivate(_toolContext);
         _activeTool.Activate(_toolContext);
         _history?.EndOpenGroups();
@@ -1284,6 +1309,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     {
         ArgumentNullException.ThrowIfNull(tool);
         if (ReferenceEquals(tool, _activeTool)) return;
+        SettleTextCommits();
         DetachTextTool();
         _activeTool.Deactivate(_toolContext);
         _activeTool = tool;
@@ -1413,6 +1439,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         switch (sample.Phase)
         {
             case BinkPointerPhase.Down:
+                if (_touchPoints.Count >= BinkPanTool.MaxPointers && !_touchPoints.ContainsKey(sample.PointerId)) return true;
                 _touchPoints[sample.PointerId] = sample.Position;
                 if (!_gestureRouting && _touchPoints.Count >= 2)
                 {
@@ -1430,6 +1457,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
                 break;
             case BinkPointerPhase.Move:
                 if (_touchPoints.ContainsKey(sample.PointerId)) _touchPoints[sample.PointerId] = sample.Position;
+                else if (_gestureRouting) return true;
                 break;
             case BinkPointerPhase.Up:
             case BinkPointerPhase.Cancel:
@@ -1935,7 +1963,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             await TextPasted.InvokeAsync(content).ConfigureAwait(true);
             return;
         }
-        if (!ActiveLayerAdmits()) return;
+        if (ReadOnly || !ActiveLayerAdmits()) return;
         // Plain text becomes a text element in the middle of the view, styled like the text tool's when it is active.
         if (content.Length > BinkTextElement.MaxLength) content = content[..BinkTextElement.MaxLength];
         BinkTextStyle style = _activeTool is BinkTextTool textTool ? textTool.Style : BinkTextStyle.Default with { Color = _brush.Color };
@@ -1959,6 +1987,20 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
 
     /// <summary>State of the inline text editor while a text element is being edited.</summary>
     private sealed record TextEditorState(Guid ElementId, string Text, string Style);
+
+    /// <summary>
+    /// Text the editor reported for an element, applied once the browser has measured it. It is pending while it is in
+    /// <see cref="_textCommits"/>; <see cref="SettleTextCommits"/> takes it off when it applies it without the
+    /// measurement.
+    /// </summary>
+    private sealed class TextCommit(BinkTextTool tool, Guid elementId, string text)
+    {
+        public BinkTextTool Tool { get; } = tool;
+
+        public Guid ElementId { get; } = elementId;
+
+        public string Text { get; } = text;
+    }
 
     /// <summary>
     /// Text editing is the one interaction a canvas cannot own. A real text control is needed for selection,
@@ -2067,10 +2109,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
     /// </summary>
     /// <param name="key">What ended the edit.</param>
     /// <param name="value">The editor's text.</param>
-    /// <param name="elementId">
-    /// The element the editor was open for when the browser sent this. A long text is read as a stream first, and by
-    /// then the user may have clicked another text element, whose editor must not receive this text.
-    /// </param>
+    /// <param name="elementId">The element the editor was open for when the browser sent this.</param>
     void IBinkInteropClient.OnTextEditorKey(string key, string value, Guid elementId)
     {
         if (_disposed || _activeTool is not BinkTextTool tool) return;
@@ -2087,24 +2126,76 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
             return;
         }
 
+        // An edit that ends while the canvas is read-only changes nothing. One that ended before was settled when the
+        // canvas became read-only.
+        if (ReadOnly) return;
         if (current) _textEditor = _textEditor! with { Text = value };
         // The element is fixed now, not after the measuring round trip, for the same reason.
         BinkTextStyle? style = _document.TryGetElement(elementId, out BinkElement? element) && element is BinkTextElement text ? text.Style : null;
-        _ = InvokeAsync(() => CommitTextAsync(tool, elementId, style, value));
+        var commit = new TextCommit(tool, elementId, value);
+        _textCommits.Add(commit);
+        _ = InvokeAsync(() => CommitTextAsync(commit, style));
     }
 
-    private async Task CommitTextAsync(BinkTextTool tool, Guid elementId, BinkTextStyle? style, string value)
+    private async Task CommitTextAsync(TextCommit commit, BinkTextStyle? style)
     {
-        Vector2? measured = style is { } measuredStyle ? await MeasureTextAsync(value, measuredStyle).ConfigureAwait(true) : null;
+        Vector2? measured;
+        bool settled;
+        try
+        {
+            measured = style is { } measuredStyle ? await MeasureTextAsync(commit.Text, measuredStyle).ConfigureAwait(true) : null;
+        }
+        finally
+        {
+            // Taken off even when measuring fails (the interop call timed out): left pending, it would be applied by a
+            // later settle over whatever the element holds by then, and a browser that never answers would grow the
+            // list without end. One already taken off was settled meanwhile.
+            settled = !_textCommits.Remove(commit);
+        }
         // Measuring is a browser round trip. On Blazor Server the user can navigate away during it, and writing
-        // to a disposed document and history manager afterwards would throw on a fire-and-forget task.
-        if (_disposed) return;
-        tool.CommitEdit(_toolContext, elementId, value, measured);
+        // to a disposed document and history manager afterwards would throw on a fire-and-forget task. A commit
+        // settled meanwhile has been applied already.
+        if (_disposed || settled || ReadOnly) return;
+        commit.Tool.CommitEdit(_toolContext, commit.ElementId, commit.Text, measured);
         // The editor closes only if it is still the one this text was typed into.
-        if (_textEditor?.ElementId == elementId) _textEditor = null;
+        if (_textEditor?.ElementId == commit.ElementId) _textEditor = null;
         _uiDirty = true;
         await RenderDirtyAsync().ConfigureAwait(true);
         if (_textEditor is null) await RestoreFocusAsync().ConfigureAwait(true);
+    }
+
+    /// <summary>
+    /// Applies the commits the editor has reported without waiting for their measurements. Measuring is a round trip
+    /// on Blazor Server, and the click that ended the edit arrives meanwhile: when it makes the canvas read-only or
+    /// switches tools, cancelling the edit would lose text typed while editing was allowed, together with a box
+    /// placed for it. Without a measurement the text is sized by estimate, as it is for a host that cannot measure.
+    /// </summary>
+    private void SettleTextCommits()
+    {
+        // An element's commits all leave the list before its text is applied, so a settle that applying causes (a
+        // DocumentChanged handler switching tools) finds only what is still pending.
+        while (_textCommits.Count > 0)
+        {
+            Guid elementId = _textCommits[0].ElementId;
+            // A blur and an Enter can both be on their way for one box; the text reported last is what the user saw.
+            TextCommit latest = _textCommits.FindLast(c => c.ElementId == elementId)!;
+            _textCommits.RemoveAll(c => c.ElementId == elementId);
+            latest.Tool.CommitEdit(_toolContext, latest.ElementId, latest.Text, EstimateTextSize(latest));
+        }
+    }
+
+    /// <summary>
+    /// The size of a commit's text, estimated from the element's style. An element edited before keeps its size when
+    /// none is given, and that size was measured for its old text: hit testing, the selection box and export would
+    /// all use bounds made for different text.
+    /// </summary>
+    private Vector2? EstimateTextSize(TextCommit commit)
+    {
+        // Text the element refuses is reported by CommitEdit; there is nothing to size.
+        if (commit.Text.Length > BinkTextElement.MaxLength) return null;
+        return _document.TryGetElement(commit.ElementId, out BinkElement? element) && element is BinkTextElement text
+            ? (text with { Text = commit.Text, Size = null }).EstimateSize()
+            : null;
     }
 
     private async Task<Vector2?> MeasureTextAsync(string text, BinkTextStyle style)
@@ -2254,13 +2345,45 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         }
     }
 
-    private async Task EnsureImagesLoadedAsync(CancellationToken cancellationToken)
+    private async Task EnsureImagesLoadedAsync(BinkRect region, bool includeHiddenLayers, IReadOnlyCollection<Guid>? filter, long maxPixels, CancellationToken cancellationToken)
     {
         if (_interop is null) return;
-        foreach (BinkElement element in _document.AllElements)
+        HashSet<Guid>? selected = filter is null ? null : [.. filter];
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        var requested = new HashSet<string>(StringComparer.Ordinal);
+        long remaining = maxPixels;
+        foreach (BinkLayer layer in _document.Layers)
         {
-            if (element is BinkImageElement { Source.IsOmitted: false } image) await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(true);
+            if (!layer.IsVisible && !includeHiddenLayers) continue;
+            foreach (BinkElement element in layer.Elements)
+            {
+                if (element is not BinkImageElement { Source.IsOmitted: false } image) continue;
+                if (selected is not null && !selected.Contains(element.Id)) continue;
+                if (!region.IsEmpty && !element.Bounds.Intersects(region)) continue;
+                if (!seen.Add(image.Source.Uri) || !requested.Add(image.Source.Uri)) continue;
+                long pixels = ImagePixels(image.Source);
+                if (pixels > remaining) continue;
+                // Short of a PNG header, the size is only what the document claims. The browser reads the real one as
+                // it loads the image, and does not keep one past what is left, so the export cannot draw it. An image
+                // the canvas already shows is drawn either way.
+                BinkImageMetrics? loaded = await _interop.LoadImageAsync(image.Source.Uri, remaining, cancellationToken).ConfigureAwait(true);
+                if (loaded is not null) pixels = (long)loaded.Width * loaded.Height;
+                if (pixels <= remaining) remaining -= pixels;
+            }
         }
+    }
+
+    private static long ImagePixels(BinkImageSource source)
+    {
+        Span<byte> header = stackalloc byte[24];
+        int comma = source.Uri.IndexOf(',', StringComparison.Ordinal);
+        if (source.IsEmbedded && comma > 0 && source.Uri.Length - comma > 32
+            && Convert.TryFromBase64Chars(source.Uri.AsSpan(comma + 1, 32), header, out _)
+            && BinkPngCodec.TryReadSize(header, out int width, out int height))
+        {
+            return (long)width * height;
+        }
+        return (long)source.Width * source.Height;
     }
 
     private string ContainerClass => string.Join(' ', new[] { "bit-bink-canvas", Class }.Where(static c => !string.IsNullOrWhiteSpace(c)));
@@ -2308,6 +2431,10 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (_disposed) return;
         _disposed = true;
         DetachTextTool();
+        // The click on a link that removes the page is what ended the edit, and the document belongs to the
+        // application, which keeps it. Applied while the history is still alive, and after the component is marked
+        // disposed and detached from the tool, so it neither re-renders the canvas nor raises the canvas's events.
+        SettleTextCommits();
         _activeTool?.Deactivate(_toolContext);
         if (_document is not null) _document.Changed -= OnDocumentChanged;
         if (_history is not null)

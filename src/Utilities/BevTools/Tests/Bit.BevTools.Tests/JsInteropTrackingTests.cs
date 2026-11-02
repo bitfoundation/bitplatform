@@ -73,7 +73,6 @@ public class JsInteropTrackingTests
         }
     }
 
-#if NET10_0_OR_GREATER
     [TestMethod]
     public async Task Value_and_constructor_calls_added_in_net10_reach_the_runtime_and_are_recorded()
     {
@@ -143,7 +142,6 @@ public class JsInteropTrackingTests
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
-#endif
 
     [TestMethod]
     public void Wrapping_is_idempotent_and_disabled_sessions_return_the_original()

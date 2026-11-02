@@ -86,6 +86,38 @@ describe('ConsentManager', () => {
         expect(consent.decided).toBe(false);
     });
 
+    it("adopts another tab's decision, releasing or dropping what it held", () => {
+        const consent = new ConsentManager(config());
+        const changes = [];
+        consent.onChange((previous, next, released) => changes.push([previous, next, released.length]));
+        consent.hold(log({ feature: Features.Errors }));
+        consent.hold(log({ feature: Features.PageViews }));
+
+        // The other tab answered the banner.
+        consent.adopt(JSON.stringify({ v: 1, features: Features.Diagnostics, time: 1 }));
+        expect(consent.decided).toBe(true);
+        expect(consent.granted()).toBe(Features.Diagnostics);
+        expect(changes).toEqual([[0, Features.Diagnostics, 1]]);
+
+        // The same decision again, a removed entry and a corrupt one change nothing.
+        consent.adopt(JSON.stringify({ v: 1, features: Features.Diagnostics, time: 2 }));
+        consent.adopt(null);
+        consent.adopt('{nope');
+        expect(changes).toHaveLength(1);
+
+        // Then revoked a feature there: gone here too, with its storage.
+        sessionStorage.setItem('bit-belemetry-session', '{}');
+        consent.set(Features.Diagnostics | Features.Sessions);
+        consent.adopt(JSON.stringify({ v: 1, features: Features.Diagnostics, time: 3 }));
+        expect(consent.granted()).toBe(Features.Diagnostics);
+        expect(sessionStorage.getItem('bit-belemetry-session')).toBeNull();
+
+        // Without persist there is no shared choice to adopt.
+        const unshared = new ConsentManager(config({ persist: false }));
+        unshared.adopt(JSON.stringify({ v: 1, features: Features.All, time: 4 }));
+        expect(unshared.decided).toBe(false);
+    });
+
     it('releases the held records the decision grants and drops the rest', () => {
         const consent = new ConsentManager(config());
         const released = [];
@@ -144,6 +176,37 @@ describe('ConsentManager', () => {
         expect(localStorage.getItem('bit-belemetry-pseudo-id')).toBeNull();
         expect(sessionStorage.getItem('bit-belemetry-user-id')).toBeNull();
         expect(localStorage.getItem('bit-belemetry-consent')).not.toBeNull();
+    });
+
+    it('clears the stored requests whatever feature is revoked: they can hold its records', () => {
+        const consent = new ConsentManager(config());
+        consent.set(Features.All);
+        localStorage.setItem('bit-belemetry-queue', '[]');
+
+        consent.set(Features.All & ~Features.UserTracking);
+        expect(localStorage.getItem('bit-belemetry-queue')).toBeNull();
+    });
+
+    it('counts the revocations, not the grants', () => {
+        const consent = new ConsentManager(config({ default: Features.Errors }));
+        consent.set(Features.All);
+        expect(consent.revocations(Features.All)).toBe(0);
+        consent.set(Features.All & ~Features.Interactions);
+        expect(consent.revocations(Features.All)).toBe(1);
+        consent.set(Features.All & ~Features.Interactions);
+        expect(consent.revocations(Features.All)).toBe(1);
+        consent.set(Features.All & ~Features.Interactions & ~Features.Logs);
+        expect(consent.revocations(Features.All)).toBe(2);
+    });
+
+    it('counts the revocations per feature, so a mark moves only with its own features', () => {
+        const consent = new ConsentManager(config({ default: Features.Errors }));
+        consent.set(Features.All);
+        const errors = consent.mark(Features.Errors | Features.Logs);
+        const interactions = consent.mark(Features.Interactions);
+        consent.set(Features.All & ~Features.Interactions & ~Features.Persistence & ~Features.Sessions);
+        expect(consent.revocations(errors.features)).toBe(errors.revocations);
+        expect(consent.revocations(interactions.features)).not.toBe(interactions.revocations);
     });
 
     it('notifies listeners with the previous and next grant', () => {

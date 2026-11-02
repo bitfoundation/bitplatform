@@ -1,0 +1,42 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every attachment
+// chip, one set on an ancestor the chips inside it, and one set on the Style of an instance that one alone (a chip holds
+// no other chip):
+//   --bit-AiAttachmentChip-max-width              widest the chip gets before its name is cut short  (default: spacing(32))
+//   --bit-AiAttachmentChip-thumbnail-size         width and height of the thumbnail                  (default: spacing(4.25))
+//   --bit-AiAttachmentChip-thumbnail-radius       corner of the thumbnail                            (default: $shp-radius-sm)
+//   --bit-AiAttachmentChip-thumbnail-background   fill behind the glyph, or a picture that does not
+//                                                 cover its box                                      (default: $clr-bg-sec)
+//   --bit-AiAttachmentChip-thumbnail-color        color of the glyph                                 (default: $clr-fg-sec)
+//
+// The rest of the chip is a BitTag, restyled through its own --bit-Tag-* variables and the Tag classes/styles.
+
+.bit-aiach {
+    display: inline-flex;
+    min-width: 0;
+    max-width: var(--bit-AiAttachmentChip-max-width, #{spacing(32)});
+}
+
+.bit-aiach-tag {
+    min-width: 0;
+}
+
+// An image and the glyph of any other file sit in a box of the same size, so a row of chips lines up whatever they carry.
+.bit-aiach-thm {
+    display: inline-grid;
+    flex-shrink: 0;
+    place-items: center;
+    object-fit: cover;
+    box-sizing: border-box;
+    width: var(--bit-AiAttachmentChip-thumbnail-size, #{spacing(4.25)});
+    height: var(--bit-AiAttachmentChip-thumbnail-size, #{spacing(4.25)});
+    border-radius: var(--bit-AiAttachmentChip-thumbnail-radius, #{$shp-radius-sm});
+    color: var(--bit-AiAttachmentChip-thumbnail-color, #{$clr-fg-sec});
+    background-color: var(--bit-AiAttachmentChip-thumbnail-background, #{$clr-bg-sec});
+}
+
+.bit-aiach-ico {
+    line-height: 1;
+    font-size: $siz-icon-md;
+}

@@ -161,8 +161,7 @@ public class BitDataGridPrerenderTests : BunitTestContext
     public void BitDataGridShouldHandVirtualizeTheServerRowsItAlreadyRead()
     {
         // Fewer rows than the window read ahead at this RowHeight, so that window already holds every row Virtualize
-        // can ask for: how many rows Virtualize asks bUnit's stand-in for its JS for differs between the TFMs, and
-        // net8.0's asks for the whole set.
+        // can ask for, however many rows it asks bUnit's stand-in for its JS for, which differs between the TFMs.
         var all = CreateRows(150);
         var requests = new List<BitDataGridReadRequest>();
         var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>

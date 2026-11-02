@@ -65,7 +65,7 @@ builder.Services.AddBorm();
 - Labels, `aria-*` wiring, focus management, live announcements and an error summary out of the box.
 - Theming through `--bit-borm-*` CSS custom properties, with light, dark and system colour modes, and every built-in
   string localizable through `IBormMessageProvider`.
-- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 8, 9 and 10.
+- Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid on .NET 10 and 11.
 
 ## For AI agents
 

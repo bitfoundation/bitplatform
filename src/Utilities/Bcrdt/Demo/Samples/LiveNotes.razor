@@ -1,0 +1,50 @@
+﻿@* One browser tab of the live page: the document comes from the app's own registration, in every project that
+   renders this component -
+       builder.Services.AddBitBcrdtServices(collaboration => collaboration
+           .UseTransport(new BcrdtSignalRTransportFactory(hubUrl))   // the server's BcrdtHub
+           .UseIndexedDbStore());                                    // a reload starts where it left off
+   - and every tab that opens the same room is another replica. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+
+<BcrdtCollaborationScope DocumentId="@($"live-{Room}")" User="_me" Context="document">
+    @* Shown while the page is prerendered and while the document opens. *@
+    <LoadingContent>
+        <p>Opening the document…</p>
+    </LoadingContent>
+    <ErrorContent Context="error">
+        <p>This tab could not open the document: @error.Message</p>
+    </ErrorContent>
+    <ChildContent>
+        <p>
+            Here now:
+            <BcrdtPresenceView Presence="document.Presence" />
+        </p>
+
+        @* Stops taking input by itself when the server granted this tab read access only. *@
+        <BcrdtTextArea Text="@document.Text("body")" Presence="document.Presence" Field="body" Rows="12"
+                       Placeholder="Type here, then open this page in another tab." />
+
+        <footer>
+            @document.Presence.Others.Count other tab(s) on this document
+            @if (document.IsReadOnly)
+            {
+                <em>read-only - this tab follows the others but cannot edit</em>
+            }
+        </footer>
+    </ChildContent>
+</BcrdtCollaborationScope>
+
+@code {
+    /// <summary>The room every tab that opens the same link shares - from the page's route, say.</summary>
+    [Parameter, EditorRequired] public string Room { get; set; } = "";
+
+    // A random guest is enough here; an application publishes its signed-in user.
+    private readonly BcrdtCollaboratorInfo _me = CreateGuest();
+
+    private static BcrdtCollaboratorInfo CreateGuest()
+    {
+        string id = Guid.NewGuid().ToString("N");
+        return new BcrdtCollaboratorInfo(id, $"Guest {Random.Shared.Next(100, 1000)}", BcrdtPresenceService.SuggestColor(id));
+    }
+}

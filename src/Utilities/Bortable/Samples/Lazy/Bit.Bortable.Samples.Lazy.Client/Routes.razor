@@ -1,0 +1,34 @@
+﻿@* The router waits for OnNavigateAsync before it renders a page, so Bit.Bortable.wasm is there before the board renders
+   its lists. This file renders before the assembly is downloaded, so it may not use Bortable's types itself. The server
+   prerenders it too: it registers LazyAssemblyLoader for that (its Program.cs), and does not set the switch, as it
+   loads Bortable with the rest of the app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    // Set only where Bit.Bortable.wasm is marked (the project file): loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsBortable = AppContext.TryGetSwitch("Bit.Bortable.Samples.Lazy.LazyLoadsBortable", out var on) && on;
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages with lists: fetch Bortable before they render. A second call loads nothing again.
+        if (LazyLoadsBortable && IsBoardPage(context.Path))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bortable.wasm"]);
+    }
+
+    // /board and the routes beneath it (routes match regardless of case), but not /board-settings. The path keeps any
+    // query and fragment.
+    private static bool IsBoardPage(string path)
+    {
+        path = path.Split('?', '#')[0];
+        return path.Equals("board", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("board/", StringComparison.OrdinalIgnoreCase);
+    }
+}

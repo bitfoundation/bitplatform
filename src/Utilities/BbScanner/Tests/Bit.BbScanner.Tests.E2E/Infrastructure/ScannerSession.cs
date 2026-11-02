@@ -26,6 +26,9 @@ public sealed class ScannerSession : IAsyncDisposable
     /// <summary>The page under test.</summary>
     public IPage Page { get; }
 
+    /// <summary>The origin of the application the page is on, without a trailing slash.</summary>
+    public string BaseUrl => _baseUrl;
+
     /// <summary>Console messages logged at error level.</summary>
     public IReadOnlyList<string> ConsoleErrors => _consoleErrors;
 

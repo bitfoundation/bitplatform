@@ -44,11 +44,18 @@ public static class OtlpReceiverEndpoints
 
         // A same-origin endpoint for the browser page's fetch and XHR buttons. It answers with the
         // traceparent it received, so the page can show that the browser span and this request's
-        // server span share one trace id.
-        endpoints.MapGet("/api/demo/echo", (HttpRequest request, ILoggerFactory loggers, string? delay) =>
+        // server span share one trace id. ?delay=ms (at most 3 s) makes it slow enough for the page to
+        // abort the request before the answer arrives.
+        endpoints.MapGet("/api/demo/echo", async (HttpRequest request, ILoggerFactory loggers, int? delay, CancellationToken cancellationToken) =>
         {
             var traceparent = request.Headers.TryGetValue("traceparent", out var value) ? value.ToString() : null;
             loggers.CreateLogger("Bit.Belemetry.Demo.Server.Echo").LogInformation("Echo called with traceparent {Traceparent}", traceparent ?? "(none)");
+
+            if (delay is > 0)
+            {
+                try { await Task.Delay(TimeSpan.FromMilliseconds(Math.Min(delay.Value, 3000)), cancellationToken); }
+                catch (OperationCanceledException) { return Results.Empty; }
+            }
 
             return Results.Ok(new { traceparent, serverTraceId = System.Diagnostics.Activity.Current?.TraceId.ToString(), time = DateTimeOffset.UtcNow });
         });

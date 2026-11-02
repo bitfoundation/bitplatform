@@ -1,0 +1,58 @@
+﻿@page "/e2e/aicopybutton"
+
+<PageTitle>BitAiCopyButton E2E</PageTitle>
+
+<h1>BitAiCopyButton</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitAiCopyButton Id="cpb-basic" Content="Hello from the clipboard" OnCopied="() => _basicCount++" />
+    <p>OnCopied: <span id="cpb-basic-count">@_basicCount</span></p>
+    <textarea id="cpb-paste-target" aria-label="Paste target"></textarea>
+</E2ESection>
+
+<E2ESection Id="duration" Title="ConfirmationDuration">
+    <BitAiCopyButton Id="cpb-short" Content="Short confirmation" ConfirmationDuration="TimeSpan.FromMilliseconds(700)" OnCopied="() => _shortCount++" />
+    <p>OnCopied: <span id="cpb-short-count">@_shortCount</span></p>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label and ShowLabel">
+    <BitAiCopyButton Id="cpb-label" Content="Labelled" ShowLabel />
+    <BitAiCopyButton Id="cpb-custom-label" Content="Some code" Label="Copy code" ShowLabel />
+    <BitAiCopyButton Id="cpb-icon-only" Content="Icon only" Label="Copy the answer" />
+</E2ESection>
+
+<E2ESection Id="unavailable" Title="No content and Disabled">
+    <BitAiCopyButton Id="cpb-null" Content="@null" OnCopied="() => _nullCount++" />
+    <BitAiCopyButton Id="cpb-dis" Content="Never copied" Disabled OnCopied="() => _disabledCount++" />
+    <p>OnCopied: <span id="cpb-null-count">@_nullCount</span> / <span id="cpb-dis-count">@_disabledCount</span></p>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <button id="cpb-before">Before</button>
+    <BitAiCopyButton Id="cpb-kb" Content="Copied with the keyboard" OnCopied="() => _keyboardCount++" />
+    <p>OnCopied: <span id="cpb-kb-count">@_keyboardCount</span></p>
+</E2ESection>
+
+<E2ESection Id="style" Title="Styles and Classes">
+    <BitAiCopyButton Id="cpb-style"
+                     Content="Styled"
+                     Classes="@(new() { Root = "cpb-custom-root", Button = new() { Root = "cpb-custom-button", Icon = "cpb-custom-icon" } })"
+                     Styles="@(new() { Button = new() { Root = "color: rgb(1, 2, 3)" } })" />
+    <div style="--bit-Button-text-color: rgb(4, 5, 6)">
+        <BitAiCopyButton Id="cpb-button-var" Content="Restyled" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiCopyButton Id="cpb-rtl" Dir="BitDir.Rtl" Content="متن" ShowLabel />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _basicCount;
+    private int _shortCount;
+    private int _nullCount;
+    private int _disabledCount;
+    private int _keyboardCount;
+}

@@ -1,0 +1,93 @@
+@using Boilerplate.Shared.Features.Identity.Dtos
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center">
+        @if (Page.IsProfileFailed)
+        {
+            <SettingsLoadFailed OnRetry="Page.LoadProfile" />
+        }
+        else if (Page.IsProfileLoading || Page.Profile is null)
+        {
+            <BitShimmer Height="4.5rem" Circle Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="12.5rem" Background="BitColor.PrimaryBackground" />
+            <br />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+        }
+        else
+        {
+            <BitFileUpload @ref="fileUploadRef"
+                           AutoReset
+                           HideFileView
+                           Accept="image/*"
+                           OnFilesChange="(BitFileInfo[] files) => HandleOnFilesChange(files)">
+                <LabelTemplate>
+                    <BitStack HorizontalAlign="BitAlignment.Center">
+                        @if (isUploading is false)
+                        {
+                            <BitPersona HidePersonaDetails
+                                        ImageUrl="@ProfileImageUrl"
+                                        PrimaryText="@Page.Profile.FullName"
+                                        Size=@BitPersonaSize.Size72
+                                        Presence="BitPersonaPresence.Online" />
+                            <BitLink OnClick="() => fileUploadRef.Browse()" NoUnderline>
+                                <BitText>@AppLocalizer[nameof(AppStrings.UploadNewImage)]</BitText>
+                            </BitLink>
+                        }
+                        else
+                        {
+                            <BitShimmer Height="4.5rem" Circle Background="BitColor.PrimaryBackground" />
+                            <BitShimmer Height="1.5rem" Width="12.5rem" Background="BitColor.PrimaryBackground" />
+                        }
+                    </BitStack>
+                </LabelTemplate>
+            </BitFileUpload>
+
+            @if (Page.Profile.HasPicture)
+            {
+                <BitButton IsLoading=@isSaving OnClick="RemoveProfileImage" Color="BitColor.Error">
+                    @AppLocalizer[nameof(AppStrings.Remove)]
+                </BitButton>
+            }
+            <br />
+            <EditForm EditContext="editContext" OnValidSubmit="SaveProfile" novalidate class="max-width">
+                <Boilerplate.Client.Core.Components.AppDataAnnotationsValidator />
+
+                <BitStack FillContent>
+                    <BitTextField @bind-Value="editUserDto.FullName"
+                                  AutoComplete="@BitAutoCompleteValue.Name"
+                                  Label="@AppLocalizer[nameof(AppStrings.FullName)]"
+                                  Placeholder="@AppLocalizer[nameof(AppStrings.FullName)]" />
+                    <ValidationMessage For="@(() => editUserDto.FullName)" />
+
+                    <BitDatePicker Responsive @bind-Value="editUserDto.BirthDate"
+                                   DisableFuture
+                                   ShowClearButton
+                                   Label="@AppLocalizer[nameof(AppStrings.BirthDate)]"
+                                   GoToTodayTitle="@AppLocalizer[nameof(AppStrings.GoToToday)]"
+                                   Placeholder="@AppLocalizer[nameof(AppStrings.SelectBirthDate)]" />
+                    <ValidationMessage For="@(() => editUserDto.BirthDate)" />
+
+                    <BitChoiceGroup Horizontal
+                                    @bind-Value="editUserDto.Gender"
+                                    TItem="BitChoiceGroupOption<Gender?>" TValue="Gender?"
+                                    Label="@AppLocalizer[nameof(AppStrings.Gender)]">
+                        <BitChoiceGroupOption TValue="Gender?" Value="@Gender.Male" Text="@AppLocalizer[nameof(AppStrings.GenderMale)]" />
+                        <BitChoiceGroupOption TValue="Gender?" Value="@Gender.Female" Text="@AppLocalizer[nameof(AppStrings.GenderFemale)]" />
+                        <BitChoiceGroupOption TValue="Gender?" Value="@Gender.Other" Text="@AppLocalizer[nameof(AppStrings.GenderOther)]" />
+                    </BitChoiceGroup>
+
+                    <BitButton IsLoading="isSaving"
+                               ButtonType="BitButtonType.Submit"
+                               Title="@AppLocalizer[nameof(AppStrings.Save)]">
+                        @AppLocalizer[nameof(AppStrings.Save)]
+                    </BitButton>
+                </BitStack>
+            </EditForm>
+        }
+        <br />
+    </BitStack>
+</section>

@@ -226,6 +226,130 @@ public sealed class JpegCodecTests
         garbage[0] = 0xFF; garbage[1] = 0xD8; garbage[2] = 0xFF;
         Assert.ThrowsExactly<ImageDecodeException>(() => JpegDecoder.Decode(garbage));
     }
+
+    [TestMethod]
+    public void ABaselineJpegRepeatingItsScanStopsAtTheScansItsFrameAllows()
+    {
+        using var source = TestImages.Gradient(32, 24);
+        var encoded = JpegEncoder.Encode(source).Data;
+        var sos = encoded.AsSpan().IndexOf(new byte[] { 0xFF, 0xDA });
+        var header = encoded.AsSpan(sos, 2 + (encoded[sos + 2] << 8 | encoded[sos + 3])).ToArray();
+        var withScans = (int extra) => encoded[..^2].Concat(Enumerable.Repeat(header, extra).SelectMany(h => h)).Concat(new byte[] { 0xFF, 0xD9 }).ToArray();
+
+        // Scans past one per component are ignored, however many there are, and the image decoded by then is kept.
+        using var allowed = JpegDecoder.Decode(withScans(2));
+        foreach (var extra in new[] { 3, 10_000 })
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            using var decoded = JpegDecoder.Decode(withScans(extra));
+            Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"{extra} extra scans took {watch.ElapsedMilliseconds} ms.");
+            Assert.AreEqual(0, TestImages.MaxChannelDifference(allowed, decoded), $"{extra} extra scans");
+        }
+    }
+
+    [TestMethod]
+    public void AProgressiveJpegWithAbsurdlyManyScansStopsAtTheCap()
+    {
+        static byte[] Progressive(int scans)
+        {
+            var jpeg = new List<byte> { 0xFF, 0xD8, 0xFF, 0xDB, 0x00, 0x43, 0x00 };
+            jpeg.AddRange(Enumerable.Repeat((byte)1, 64));
+            jpeg.AddRange([0xFF, 0xC2, 0x00, 0x0B, 0x08, 0x00, 0x08, 0x00, 0x08, 0x01, 0x01, 0x11, 0x00]);
+            jpeg.AddRange([0xFF, 0xC4, 0x00, 0x14, 0x00, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x00]);
+            for (var i = 0; i < scans; i++) jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]);
+            jpeg.AddRange([0xFF, 0xD9]);
+            return [.. jpeg];
+        }
+
+        using var capped = JpegDecoder.Decode(Progressive(500));
+        Assert.AreEqual(8, capped.Width);
+        using var past = JpegDecoder.Decode(Progressive(501));
+        Assert.AreEqual(0, TestImages.MaxChannelDifference(capped, past));
+    }
+
+    /// <summary>
+    /// A grey 8x8 progressive JPEG of four scans: the DC's top bits, the first AC band, then a refinement of each. Every
+    /// scan moves the pixels by more than rounding does, so a scan skipped or misread shows in the result.
+    /// </summary>
+    [TestMethod]
+    public void AProgressiveJpegWithAcAndRefinementScansDecodesToItsCoefficients()
+    {
+        // The bits of a scan, padded with ones and with any 0xFF byte stuffed, as an encoder writes them.
+        static byte[] Bits(string bits)
+        {
+            bits = bits.Replace(" ", "");
+            bits += new string('1', (8 - bits.Length % 8) % 8);
+            var bytes = new List<byte>();
+            for (var i = 0; i < bits.Length; i += 8)
+            {
+                bytes.Add(Convert.ToByte(bits.Substring(i, 8), 2));
+                if (bytes[^1] == 0xFF) bytes.Add(0x00);
+            }
+            return [.. bytes];
+        }
+
+        var jpeg = new List<byte> { 0xFF, 0xD8, 0xFF, 0xDB, 0x00, 0x43, 0x00 };
+        jpeg.AddRange(Enumerable.Repeat((byte)1, 64));
+        jpeg.AddRange([0xFF, 0xC2, 0x00, 0x0B, 0x08, 0x00, 0x08, 0x00, 0x08, 0x01, 0x01, 0x11, 0x00]);
+        // DC table 0: "0" is category 1. AC table 0: "0" is run 0 size 1, "10" is the end of the band.
+        jpeg.AddRange([0xFF, 0xC4, 0x00, 0x14, 0x00, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01]);
+        jpeg.AddRange([0xFF, 0xC4, 0x00, 0x15, 0x10, 0x01, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01, 0x00]);
+        // DC first, Al 6: a difference of 1, so the DC is 64.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x00, 0x06, .. Bits("0 1")]);
+        // AC 1 to 63 first, Al 5: the first coefficient is 1, so 32, then the band ends.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x01, 0x3F, 0x05, .. Bits("0 1 10")]);
+        // DC refinement, Ah 6 Al 5: a one bit, so the DC is 96.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x00, 0x65, .. Bits("1")]);
+        // AC 1 to 63 refinement, Ah 5 Al 4: a new +16 after one zero, passing the first coefficient, whose correction bit
+        // makes it 48, then the band ends.
+        jpeg.AddRange([0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x01, 0x3F, 0x54, .. Bits("0 1 1 10")]);
+        jpeg.AddRange([0xFF, 0xD9]);
+
+        using var decoded = JpegDecoder.Decode([.. jpeg]);
+        Assert.AreEqual(8, decoded.Width);
+        Assert.AreEqual(8, decoded.Height);
+        // DC 96, 48 at the first horizontal frequency and 16 at the first vertical one, through the inverse DCT.
+        static double Basis(int i) => Math.Cos((2 * i + 1) * Math.PI / 16) / (4 * Math.Sqrt(2));
+        for (var y = 0; y < 8; y++)
+            for (var x = 0; x < 8; x++)
+            {
+                var expected = 128 + 96 / 8.0 + 48 * Basis(x) + 16 * Basis(y);
+                var p = decoded[x, y];
+                Assert.AreEqual(expected, p.R, 1.0, $"({x}, {y})");
+                Assert.IsTrue(p.R == p.G && p.G == p.B && p.A == 255, $"({x}, {y}) is {p}, not grey");
+            }
+    }
+
+    /// <summary>FF00 is a stuffed byte, which decoders skip; read as a marker, its "length" jumped over the frame header.</summary>
+    [TestMethod]
+    public void IdentifySkipsAStuffedByteBeforeTheFrameHeader()
+    {
+        using var source = TestImages.Gradient(37, 21);
+        var encoded = JpegEncoder.Encode(source).Data;
+        var sof = encoded.AsSpan().IndexOf(new byte[] { 0xFF, 0xC0 });
+        var stuffed = encoded[..sof].Concat(new byte[] { 0xFF, 0x00, 0x12, 0x34 }).Concat(encoded[sof..]).ToArray();
+
+        var info = new JpegDecoder().Identify(stuffed)!;
+        Assert.AreEqual(37, info.Width);
+        Assert.AreEqual(21, info.Height);
+        using var decoded = JpegDecoder.Decode(stuffed);
+        Assert.AreEqual(37, decoded.Width);
+    }
+
+    [TestMethod]
+    public void ReadOrientationAgreesWithReadMetadata()
+    {
+        using var source = TestImages.Gradient(16, 8);
+        var plain = JpegEncoder.Encode(source).Data;
+        foreach (var orientation in new[] { Orientation.Normal, Orientation.Rotate90, Orientation.FlipHorizontal, Orientation.Rotate270 })
+        {
+            var exif = ExifData.FromOrientation(orientation);
+            var encoded = JpegContainer.WriteMetadata(plain, new ImageMetadata(exif.WithPrimary(exif.Primary.With(ExifTag.Model, ExifValue.FromString("Cam")))));
+            Assert.AreEqual(orientation, JpegContainer.ReadOrientation(encoded), orientation.ToString());
+            Assert.AreEqual(JpegContainer.ReadMetadata(encoded).Orientation, JpegContainer.ReadOrientation(encoded), orientation.ToString());
+        }
+        Assert.AreEqual(Orientation.Normal, JpegContainer.ReadOrientation(plain));
+    }
 }
 
 [TestClass]
@@ -305,6 +429,112 @@ public sealed class GifCodecTests
         Assert.AreEqual(new Rgba32(0, 255, 0), img[3, 0]);
         Assert.AreEqual(new Rgba32(0, 0, 255), img[0, 3]);
         Assert.AreEqual(new Rgba32(255, 255, 255), img[3, 3]);
+    }
+
+    [TestMethod]
+    public void AFrameOverhangingTheLogicalScreenIsClippedToIt()
+    {
+        var shifted = SampleGif;
+        shifted[26] = 1;
+        using (var img = GifDecoder.Decode(shifted))
+        {
+            Assert.AreEqual(4, img.Width);
+            Assert.AreEqual(4, img.Height);
+            Assert.AreEqual(new Rgba32(0, 0, 0, 0), img[0, 0]);
+            Assert.AreEqual(new Rgba32(255, 0, 0), img[1, 0]);
+            Assert.AreEqual(new Rgba32(0, 255, 0), img[3, 0]);
+        }
+
+        // However small the logical screen, the frame itself is still held to the pixel limit.
+        var huge = SampleGif;
+        huge[30] = 0xD0; huge[31] = 0x07; huge[32] = 0xD0; huge[33] = 0x07;
+        using (var img = GifDecoder.Decode(huge)) Assert.AreEqual(4, img.Width);
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => GifDecoder.Decode(huge, DecodeOptions.Default with { Limits = ImageLimits.Default with { MaxPixels = 1_000_000 } }));
+
+        // And to the width and height limits, which a long thin frame stays under the pixel limit by.
+        var wide = SampleGif;
+        wide[30] = 0xFF; wide[31] = 0xFF; wide[32] = 0x10; wide[33] = 0x00;
+        using (var img = GifDecoder.Decode(wide, DecodeOptions.Default with { Limits = ImageLimits.Unrestricted })) Assert.AreEqual(4, img.Width);
+        Assert.ThrowsExactly<ImageLimitExceededException>(() => GifDecoder.Decode(wide));
+    }
+
+    /// <summary>
+    /// The frame is decoded a row at a time, with only the screen's part of each row kept, so codes that run across
+    /// rows and a frame overhanging the screen both come out as they were encoded.
+    /// </summary>
+    [TestMethod]
+    public void AFrameDecodedARowAtATimeKeepsEveryIndex()
+    {
+        static Rgba32 Colour(int i) => new((byte)i, (byte)(255 - i), (byte)(i * 3));
+        var patterns = new Func<int, int, byte>[]
+        {
+            (x, y) => (byte)((x * 7 + y * 13) % 256),
+            // Long runs, so single codes stand for many indices and run on from one row into the next.
+            (x, y) => (byte)((x / 9 + y / 4) % 3),
+        };
+
+        foreach (var index in patterns)
+            foreach (var (screenWidth, screenHeight) in new[] { (40, 30), (10, 10), (1, 1) })
+            {
+                using var img = GifDecoder.Decode(Gif(screenWidth, screenHeight, 40, 30, index));
+                Assert.AreEqual(screenWidth, img.Width);
+                for (var y = 0; y < screenHeight; y++)
+                    for (var x = 0; x < screenWidth; x++)
+                        Assert.AreEqual(Colour(index(x, y)), img[x, y], $"({x}, {y}) on a {screenWidth}x{screenHeight} screen");
+            }
+    }
+
+    /// <summary>A GIF of one LZW coded frame at the screen's origin, with a 256 colour palette.</summary>
+    private static byte[] Gif(int screenWidth, int screenHeight, int frameWidth, int frameHeight, Func<int, int, byte> index)
+    {
+        var gif = new List<byte>("GIF89a"u8.ToArray());
+        gif.AddRange([(byte)screenWidth, (byte)(screenWidth >> 8), (byte)screenHeight, (byte)(screenHeight >> 8), 0xF7, 0, 0]);
+        for (var i = 0; i < 256; i++) gif.AddRange([(byte)i, (byte)(255 - i), (byte)(i * 3)]);
+        gif.AddRange([0x2C, 0, 0, 0, 0, (byte)frameWidth, (byte)(frameWidth >> 8), (byte)frameHeight, (byte)(frameHeight >> 8), 0, 8]);
+
+        const int clear = 256, end = 257;
+        var bits = new List<byte>();
+        ulong buffer = 0;
+        int count = 0, codeSize = 9, next = end + 1;
+        void Emit(int code)
+        {
+            buffer |= (ulong)code << count;
+            for (count += codeSize; count >= 8; count -= 8, buffer >>= 8) bits.Add((byte)buffer);
+        }
+        var table = new Dictionary<(int Prefix, byte Index), int>();
+        Emit(clear);
+        var prefix = -1;
+        for (var y = 0; y < frameHeight; y++)
+            for (var x = 0; x < frameWidth; x++)
+            {
+                var k = index(x, y);
+                if (prefix < 0) { prefix = k; continue; }
+                if (table.TryGetValue((prefix, k), out var code)) { prefix = code; continue; }
+                Emit(prefix);
+                if (next < 4096)
+                {
+                    table[(prefix, k)] = next++;
+                    if (next > 1 << codeSize && codeSize < 12) codeSize++;
+                }
+                else
+                {
+                    Emit(clear);
+                    table.Clear();
+                    (codeSize, next) = (9, end + 1);
+                }
+                prefix = k;
+            }
+        Emit(prefix);
+        Emit(end);
+        if (count > 0) bits.Add((byte)buffer);
+        for (var i = 0; i < bits.Count; i += 255)
+        {
+            var length = Math.Min(255, bits.Count - i);
+            gif.Add((byte)length);
+            gif.AddRange(bits.GetRange(i, length));
+        }
+        gif.AddRange([0, 0x3B]);
+        return [.. gif];
     }
 
     [TestMethod]

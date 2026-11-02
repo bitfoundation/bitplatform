@@ -78,7 +78,7 @@
 
 // Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
 // it is nested in. A private variable added to the component goes in this list.
-$tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, inp-fs, lbl-fs, des-fs, fld-ico-fs,
+$tpc-private-properties: rl-clr, rl-fg, rl-txt, rl-hover, rl-active, rl-focus, inp-h, inp-fs, lbl-fs, des-fs, fld-ico-fs,
                          cell-size, cell-fs, ico-fs, sep-fs, ampm-fs, act-fs;
 
 // What the Color and Size classes publish starts out unset on the root and on the callout alike, so a
@@ -95,9 +95,11 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
 
 // The colors resolve once, on whichever of the two elements the parts live under: the explicit Color first,
 // then the public variable, then the primary role an unset one stands for. Every part reads the resolved
-// slot, so the ranking is written here alone.
+// slot, so the ranking is written here alone. The label of an action button is read on the callout rather than
+// over the role's fill, so it reads the role's text color (clr-fg) where the AM/PM fill reads the main.
 @mixin tpc-color-resolution {
     --bit-tpc-clr: var(--bit-tpc-rl-clr, var(--bit-TimePicker-color, #{$clr-pri}));
+    --bit-tpc-clr-fg: var(--bit-tpc-rl-fg, var(--bit-TimePicker-color, #{$clr-pri}));
     --bit-tpc-clr-txt: var(--bit-tpc-rl-txt, var(--bit-TimePicker-on-color, #{$clr-pri-text}));
     --bit-tpc-clr-hover: var(--bit-tpc-rl-hover, var(--bit-TimePicker-hover-color, #{$clr-pri-hover}));
     --bit-tpc-clr-active: var(--bit-tpc-rl-active, var(--bit-TimePicker-active-color, #{$clr-pri-active}));
@@ -668,7 +670,7 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
     border: none;
     cursor: pointer;
     font-weight: $tg-fw-semibold;
-    color: var(--bit-tpc-clr);
+    color: var(--bit-tpc-clr-fg);
     font-size: var(--bit-tpc-act-fs, var(--bit-TimePicker-action-font-size, #{$tg-fs-sm}));
     --bit-tpc-abn-bg: initial;
     background-color: var(--bit-tpc-abn-bg, transparent);
@@ -740,7 +742,7 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
     }
 
     .bit-tpc-abn:disabled {
-        color: var(--bit-tpc-clr);
+        color: var(--bit-tpc-clr-fg);
     }
 }
 
@@ -809,10 +811,13 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
 // They are applied to the root element and to the callout alike, since the copy of the root the callout is
 // relocated into while it is open leaves the root's bit-tpc-* classes behind. Published only by an explicit
 // Color, and read ahead of the public custom properties by tpc-color-resolution, so a choice outranks the
-// variable that restyles the default.
+// variable that restyles the default. The label of an action button is read on the callout rather than over the
+// role's fill, so it takes the role's text color (role-text): a secondary or a warning main is picked to fill a
+// surface and falls under the 4.5:1 of body text on white.
 @each $role, $tokens in $bit-color-roles {
     .bit-tpc-#{$role} {
         --bit-tpc-rl-clr: #{role($tokens, main)};
+        --bit-tpc-rl-fg: #{role-text($role, $tokens)};
         --bit-tpc-rl-txt: #{role($tokens, on)};
         --bit-tpc-rl-hover: #{role($tokens, hover)};
         --bit-tpc-rl-active: #{role($tokens, active)};

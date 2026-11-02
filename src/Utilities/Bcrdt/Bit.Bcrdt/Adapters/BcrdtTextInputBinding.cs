@@ -255,6 +255,34 @@ public sealed class BcrdtTextInputBinding : IDisposable
         return true;
     }
 
+    /// <summary>
+    /// Applies an edit the control reported as a change - <paramref name="removedLength"/> characters at
+    /// <paramref name="index"/> replaced by <paramref name="inserted"/> - rather than as its whole value.
+    /// </summary>
+    /// <remarks>
+    /// The change is read against what the control is believed to hold: <see cref="Value"/>, or the
+    /// value of an input still waiting for the document to settle. A control that reports changes sends
+    /// a few bytes per keystroke instead of the whole text, which is what keeps a long document editable
+    /// over a connection with a message size limit - Blazor Server's is 32 KB by default.
+    /// </remarks>
+    /// <returns>
+    /// <see langword="false"/> if the change does not fit the value the control is believed to hold,
+    /// which means the two have drifted apart: have the control report its whole value instead, through
+    /// <see cref="ApplyInput"/>. <see langword="true"/> otherwise, whether or not the document changed.
+    /// </returns>
+    public bool TryApplyInputChange(int index, int removedLength, string inserted, int selectionStart, int selectionEnd)
+    {
+        ArgumentNullException.ThrowIfNull(inserted);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        string current = _deferredInput?.Value ?? _value;
+        if (index < 0 || removedLength < 0 || index > current.Length || removedLength > current.Length - index) return false;
+
+        string value = string.Concat(current.AsSpan(0, index), inserted, current.AsSpan(index + removedLength));
+        ApplyInput(value, selectionStart, selectionEnd);
+        return true;
+    }
+
     /// <summary>Records the control's selection.</summary>
     public void SetSelection(int selectionStart, int selectionEnd)
     {

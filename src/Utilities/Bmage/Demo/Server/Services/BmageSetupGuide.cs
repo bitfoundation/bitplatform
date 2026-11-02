@@ -9,9 +9,9 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// register the services (a Blazor Web App has two, and the prerender pass instantiates every
 /// component in the server's), which registration to use (<c>AddBitBmageServices</c> in a browser,
 /// <c>AddBitBmageHeadlessServices</c> without one - and the two register different services), and
-/// which codecs exist at all (WebP and AVIF are browser-only). None of those mistakes fails to
+/// which codecs exist at all (AVIF is encoded only by browsers). None of those mistakes fails to
 /// compile. A missing registration throws at prerender; a headless registration in a browser app
-/// leaves <c>ImageLoader</c> unresolvable; a WebP export on a server throws at the first upload.
+/// leaves <c>ImageLoader</c> unresolvable; an AVIF export on a server throws at the first upload.
 /// </para>
 /// <para>
 /// The guides are composed from plain (uninterpolated) raw string literals: every one of them is
@@ -88,19 +88,20 @@ public static class BmageSetupGuide
     private const string Install = """
         ## 1. Install
 
-        One package holds everything:
+        A browser app installs `Bit.Bmage.Blazor`, which brings the engine, `Bit.Bmage`, along:
 
-        | What you need | Namespace roots |
-        |---|---|
-        | The `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
-        | The engine, browser codecs, loading and export, your own UI | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, ... |
+        | What you need | Package | Namespace roots |
+        |---|---|---|
+        | The `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Blazor` | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
+        | Browser codecs, loading and export, your own UI | `Bit.Bmage.Blazor` | `Bit.Bmage`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, `Bit.Bmage.Capabilities`, ... |
+        | The engine: pipelines, codecs, layers, masks, metadata | `Bit.Bmage` | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Metadata`, ... |
 
         ```bash
-        dotnet add package Bit.Bmage
+        dotnet add package Bit.Bmage.Blazor
         ```
 
         Install it in the project that runs in the browser - in a Blazor Web App, the **.Client** project.
-        Targets .NET 8, 9 and 10.
+        Targets .NET 10 and 11.
 
         Then add the namespaces to `_Imports.razor` of that project. Bmage's types are spread over several
         namespaces, and the ones a page normally needs are these:
@@ -118,8 +119,8 @@ public static class BmageSetupGuide
         @using Bit.Bmage.Editor.Tools
         ```
 
-        The browser bridge (`_content/Bit.Bmage/bit-bmage.js`) is imported by the library on demand. Do not add
-        a `<script>` tag for it: it is an ES module, and loaded as a classic script it fails with a syntax error.
+        The browser bridge (`_content/Bit.Bmage.Blazor/bit-bmage.js`) is imported by the library on demand. Do not
+        add a `<script>` tag for it: it is an ES module, and loaded as a classic script it fails with a syntax error.
         """;
 
     private const string Stylesheet = """
@@ -130,7 +131,7 @@ public static class BmageSetupGuide
         ```razor
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
             <HeadOutlet @rendermode="InteractiveWebAssembly" />
         </head>
         ```
@@ -148,7 +149,7 @@ public static class BmageSetupGuide
         ```html
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
         </head>
         ```
 
@@ -205,7 +206,7 @@ public static class BmageSetupGuide
 
         What goes wrong otherwise is quiet. `IImageCapabilityProvider.GetAsync` does not throw during prerendering:
         it returns the **managed** capability set with `Environment = Prerendering` - so a page that decides its
-        export format in `OnInitializedAsync` concludes that WebP is unsupported on every browser. The calls that
+        export format in `OnInitializedAsync` concludes that AVIF is unsupported on every browser. The calls that
         need the JavaScript bridge - downloads, object URLs, the clipboard, paste listeners, remote URLs - throw
         `ImageCapabilityException` ("Could not load the Bmage browser module") instead.
         """;
@@ -353,7 +354,7 @@ public static class BmageSetupGuide
         |---|---|
         | Loading from files, drag and drop, clipboard, camera, URLs | Full, once interactive |
         | PNG, JPEG, WebP, AVIF, GIF decode | The browser's codecs, probed at runtime |
-        | WebP encode | Most browsers - check `CanEncode` or use `EncodeWithFallbackAsync` |
+        | WebP encode | Everywhere - the browser's encoder, or Bmage's managed one where the browser has none, which runs on the UI thread, so the capabilities leave it out and `EncodeWithFallbackAsync` moves on |
         | AVIF encode | Rarely - always with a fallback |
         | Pipelines, drawing, annotations, editor | Full, in C# on the user's device |
         | During prerendering | Managed codecs only, `Environment = Prerendering`, no JS bridge |
@@ -474,8 +475,8 @@ public static class BmageSetupGuide
         - Never decide anything from capabilities read during prerendering; read them in `OnAfterRenderAsync`, and
           expect `Environment` to be `BrowserServer` on a first visit and `BrowserWebAssembly` afterwards.
         - Use `DecodeOptions.MaxSize` when loading, so a first visit does not stream full-size pixels to the server.
-        - Use `EncodeWithFallbackAsync` for WebP/AVIF: the browser does the encoding in both modes, and not every
-          browser can write them.
+        - Use `EncodeWithFallbackAsync` for AVIF: the browser does the encoding in both modes, and few browsers can
+          write it. WebP needs no fallback: what the browser cannot write, the managed encoder does.
         """;
 
     // -- Standalone WebAssembly ------------------------------------------------
@@ -514,7 +515,8 @@ public static class BmageSetupGuide
     private const string StandaloneCapabilities = """
         ## What works in this mode
 
-        Everything: the browser's codecs (WebP and usually AVIF decode, WebP encode on most browsers), the
+        Everything: the browser's codecs (WebP and usually AVIF decode, WebP encode on most browsers, the managed
+        encoder on the rest), the
         clipboard, the camera, downloads and the editor. Probe rather than assume - `IImageCapabilityProvider`
         encodes a real pixel in each format, because browsers asked for a format they cannot write silently
         hand back a PNG.
@@ -527,8 +529,8 @@ public static class BmageSetupGuide
 
         The components run in compiled .NET inside the app's own process and render into a WebView, which Bmage reaches
         over JavaScript interop. That is the Interactive Server position without the network: `IImageCapabilityProvider`
-        reports `ImageEnvironment.BrowserServer`, PNG, JPEG, BMP and GIF are coded by the managed codecs in the app, and
-        WebP, AVIF and photos with a colour profile other than sRGB by the WebView - their pixels, and the editor's
+        reports `ImageEnvironment.BrowserServer`, images are decoded and encoded by the managed codecs in the app, and
+        AVIF exports and photos whose colours need colour management by the WebView - their pixels, and the editor's
         previews, copied through the WebView's message channel. There is one DI container, and the pages render straight
         into the WebView.
 
@@ -606,11 +608,11 @@ public static class BmageSetupGuide
     private const string HybridCapabilities = """
         ## Writing for this mode
 
-        1. Probe, do not assume by platform: the WebView's engine decides WebP and AVIF - Chromium in WebView2 and the
+        1. Probe, do not assume by platform: the WebView's engine decides AVIF - Chromium in WebView2 and the
            Android System WebView, Safari's in WKWebView on iOS and Mac Catalyst, with its tighter canvas limits. Use
            `EncodeWithFallbackAsync` or `ChooseEncodableFormat`.
-        2. Prefer PNG and JPEG for work that stays in the app: the managed codecs code them, so their pixels never cross
-           the WebView's bridge. Load with `DecodeOptions.MaxSize` when the full size is not needed, so a WebP or AVIF is
+        2. Prefer PNG, JPEG and WebP for work that stays in the app: the managed codecs code them, so their pixels never
+           cross the WebView's bridge. Load with `DecodeOptions.MaxSize` when the full size is not needed, so an AVIF is
            scaled down by the WebView before its pixels cross.
         3. The WebView is there from the first render, so the probe always answers for it. Components shared with a Web
            App still do their browser work in `OnAfterRenderAsync`, which works in both.
@@ -622,13 +624,17 @@ public static class BmageSetupGuide
     private const string HeadlessHeader = """
         # Bit.Bmage without a browser - ASP.NET Core, console, worker
 
-        The same engine with no JavaScript at all. Only the managed codecs exist: PNG, JPEG, BMP and GIF (first
-        frame) for decoding; PNG, JPEG and BMP for encoding. **WebP and AVIF are browser codecs**: asking for them
-        here throws `ImageCapabilityException` ("No encoder is registered for WebP in this environment").
+        The same engine with no JavaScript at all. Only the managed codecs exist: PNG, JPEG, BMP, WebP, AVIF and GIF
+        (first frame) for decoding; PNG, JPEG, BMP and WebP (lossy, or lossless with `Lossless = true`) for encoding.
+        **AVIF is encoded only by browsers**: asking for it here throws `ImageCapabilityException` ("No encoder is
+        registered for Avif in this environment").
         """;
 
     private const string HeadlessInstall = """
         ## 1. Install
+
+        `Bit.Bmage` alone: the engine, with no dependency on Blazor. `Bit.Bmage.Blazor` is only for apps that run in a
+        browser.
 
         ```bash
         dotnet add package Bit.Bmage   # register AddBitBmageHeadlessServices, or construct ImageProcessor yourself
@@ -716,9 +722,10 @@ public static class BmageSetupGuide
 
         | Feature | Status |
         |---|---|
-        | PNG, JPEG, BMP, GIF (first frame) decode | Managed |
-        | PNG, JPEG, BMP encode | Managed |
-        | WebP, AVIF | **Not available** - browser codecs only; throws `ImageCapabilityException` |
+        | PNG, JPEG, BMP, WebP, GIF (first frame) decode | Managed |
+        | AVIF decode | Managed, without colour management: wide gamut and HDR files decode with muted colours |
+        | PNG, JPEG, BMP, WebP encode | Managed; WebP lossy or lossless |
+        | AVIF encode | **Not available** - browser codecs only; throws `ImageCapabilityException` |
         | SVG | Refused everywhere with `ImageDecodeException` (untrusted SVG can run scripts) |
         | Pipelines, `ImageCanvas` drawing, annotations, `DocumentRenderer`, metadata, analysis | Full |
         | Text | `FontTextRasterizer` with a registered TrueType font (`glyf` outlines; CFF fonts throw) |

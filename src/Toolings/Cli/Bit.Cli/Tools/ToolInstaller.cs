@@ -13,11 +13,14 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
     public async Task InstallAsync(IReadOnlyList<ToolCheck> selected, ToolContext context, CancellationToken cancellationToken)
     {
-        var withActions = selected.Where(c => c.Action is not null).ToList();
+        var afterHomebrew = context.Environment.IsMacOS && context.PackageManagers.Brew is null && selected.Any(c => c.Tool.Id is "homebrew" && c.Action is not null);
+        var withActions = selected.Where(c => c.Action is not null || afterHomebrew).ToList();
 
-        foreach (var manual in selected.Where(c => c.Action is null))
+        void InstallYourself(ToolCheck manual) => steps.Add(manual.Tool.Id, StepResult.Warning($"Install {manual.Tool.Name} yourself", manual.Manual ?? "bit can't install it on this machine", manual.Manual));
+
+        foreach (var manual in selected.Where(c => c.Action is null && afterHomebrew is false))
         {
-            steps.Add(manual.Tool.Id, StepResult.Warning($"Install {manual.Tool.Name} yourself", manual.Manual ?? "bit can't install it on this machine", manual.Manual));
+            InstallYourself(manual);
         }
 
         if (withActions.Count == 0)
@@ -33,7 +36,21 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         {
             var adminActions = withActions.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Admin).ToList();
 
-            if (adminActions.Count > 0)
+            if (adminActions.Count > 0 && cli.Administrator is { } administrator)
+            {
+                foreach (var action in adminActions)
+                {
+                    await RunActionAsync(action, useSudo: false, cancellationToken, administrator: administrator);
+                }
+            }
+            else if (adminActions.Count > 0 && cli.AdministratorDeclined)
+            {
+                foreach (var action in adminActions)
+                {
+                    steps.Add(action.ToolId, StepResult.Warning($"{action.Title} was skipped", "administrator permission was declined", string.Join(" && ", action.Commands.Select(c => c.ShellCommandLine(cli.Environment.Os)))));
+                }
+            }
+            else if (adminActions.Count > 0)
             {
                 await RunWindowsAdministratorBatchAsync(adminActions, cancellationToken);
             }
@@ -46,39 +63,57 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         else
         {
             var ordered = withActions.OrderByDescending(c => c.Tool.Id is "homebrew").ToList();
-            var sudoReady = ordered.Any(c => c.Action!.Elevation is Elevation.Sudo) is false || await PrepareSudoAsync(ordered.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Sudo).ToList(), cancellationToken);
+            var anySudo = ordered.Any(c => c.Action?.Elevation is Elevation.Sudo);
+            var sudoReady = anySudo is false || await PrepareSudoAsync(ordered.Select(c => c.Action).OfType<ToolAction>().Where(a => a.Elevation is Elevation.Sudo).ToList(), cancellationToken);
+            using var sudoDone = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var sudoKeptAlive = anySudo && sudoReady && cli.Environment.IsElevated is false ? KeepSudoAliveAsync(sudoDone.Token) : Task.CompletedTask;
 
-            foreach (var check in ordered)
+            try
             {
-                var action = check.Action!;
-
-                if (check.Tool.Id is not "homebrew" && context.Environment.IsMacOS && cli.Runner.FindExecutable("brew") is null)
+                foreach (var check in ordered)
                 {
-                    RefreshPath();
-                    var replanned = check.Tool.PlanInstall(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), check.Status);
-                    action = replanned ?? action;
-                }
+                    var action = check.Action;
 
-                if (action.Elevation is Elevation.Sudo && sudoReady is false)
-                {
-                    var commands = string.Join(" && ", action.Commands.Select(c => "sudo " + c.CommandLine));
-                    steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs sudo", "run it yourself", commands, commands));
-                    continue;
-                }
+                    if (check.Tool.Id is not "homebrew" && context.Environment.IsMacOS && context.PackageManagers.Brew is null)
+                    {
+                        RefreshPath();
+                        var replanned = check.Tool.PlanInstall(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), check.Status);
+                        action = replanned ?? action;
+                    }
 
-                await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken, ct => check.Tool.DetectAsync(context, ct));
+                    if (action is null)
+                    {
+                        InstallYourself(check);
+                        continue;
+                    }
 
-                if (action.ToolId is "homebrew")
-                {
-                    RefreshPath();
+                    if (action.Elevation is Elevation.Sudo && sudoReady is false)
+                    {
+                        var commands = string.Join(" && ", action.Commands.Select(c => "sudo " + c.ShellCommandLine(cli.Environment.Os)));
+                        steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs sudo", "run it yourself", commands, commands));
+                        continue;
+                    }
+
+                    await RunActionAsync(action, useSudo: action.Elevation is Elevation.Sudo && cli.Environment.IsElevated is false, cancellationToken,
+                        ct => check.Tool.DetectAsync(new ToolContext(context.Environment, context.Runner, context.Needs, PackageManagers.Detect(context.Environment, context.Runner)), ct));
+
+                    if (action.ToolId is "homebrew")
+                    {
+                        RefreshPath();
+                    }
                 }
+            }
+            finally
+            {
+                await sudoDone.CancelAsync();
+                await sudoKeptAlive;
             }
         }
 
         RefreshPath();
     }
 
-    private async Task RunActionAsync(ToolAction action, bool useSudo, CancellationToken cancellationToken, Func<CancellationToken, Task<ToolStatus>>? detect = null)
+    private async Task RunActionAsync(ToolAction action, bool useSudo, CancellationToken cancellationToken, Func<CancellationToken, Task<ToolStatus>>? detect = null, AdministratorSession? administrator = null)
     {
         var interactive = action.Interactive || action.Commands.Any(c => c.Interactive);
 
@@ -92,10 +127,10 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
                 if (useSudo)
                 {
-                    spec = spec with { FileName = "sudo", Arguments = ["-n", command.FileName, .. command.Arguments] };
+                    spec = spec.WithSudo(cli.Runner);
                 }
 
-                last = await cli.Runner.RunAsync(spec, ct);
+                last = administrator is null ? await cli.Runner.RunAsync(spec, ct) : await administrator.RunAsync(spec, ct);
 
                 if (action.SuccessExitCodes.Contains(last.ExitCode) is false || last.NotFound || last.TimedOut)
                     break;
@@ -110,8 +145,16 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                 cli.Environment.PrependToPath([directory]);
             }
 
-            if (succeeded && detect is not null && action.InstalledExecutables is [var installed, ..] && File.Exists(installed)
-                && cli.Runner.FindExecutable(Path.GetFileName(installed)) is { } older && older != installed && (await detect(ct)).IsSatisfied is false)
+            ToolStatus? after = null;
+
+            if (succeeded && detect is not null && action.AfterInstall is null)
+            {
+                RefreshPath();
+                after = await detect(ct);
+            }
+
+            if (after is { IsSatisfied: false } && action.InstalledExecutables is [var installed, ..] && File.Exists(installed)
+                && cli.Runner.FindExecutable(Path.GetFileName(installed)) is { } older && older != installed)
             {
                 var links = Path.Combine(cli.Environment.BitDirectory, "bin", action.ToolId);
                 Directory.CreateDirectory(links);
@@ -130,6 +173,9 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     hint: $"This run uses {installed}. Remove {older}, or put {Path.GetDirectoryName(installed)} before {Path.GetDirectoryName(older)} in PATH, so your own builds use it too.");
             }
 
+            if (after is { State: ToolState.Missing or ToolState.Outdated })
+                return StepResult.Warning(done, after.State is ToolState.Missing ? "still not found" : $"still {after.Version ?? "too old"}, {after.Detail}");
+
             if (succeeded)
                 return action.AfterInstall is null || action.Optional
                     ? StepResult.Succeeded(done, action.AfterInstall)
@@ -138,7 +184,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             if (action.Partial is { } partial && last is { NotFound: false, TimedOut: false } && last.ExitCode == partial.ExitCode)
                 return StepResult.Succeeded(done, partial.Detail, partial.Hint);
 
-            var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", action.Commands.Select(c => (useSudo ? "sudo " : "") + c.CommandLine)));
+            var failed = StepResult.FromProcess(last ?? new ProcessResult { ExitCode = -1 }, done, $"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", string.Join(" && ", action.Commands.Select(c => (useSudo ? "sudo " : "") + c.ShellCommandLine(cli.Environment.Os))));
             return action.Optional ? failed with { Status = StepStatus.Warning } : failed;
         }, cancellationToken, needsTerminal: interactive);
     }
@@ -164,7 +210,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
         foreach (var command in actions.SelectMany(a => a.Commands))
         {
-            cli.Console.Out.MarkupLine($"  [grey]sudo {Markup.Escape(command.CommandLine)}[/]");
+            cli.Console.Out.MarkupLine($"  [grey]sudo {Markup.Escape(command.ShellCommandLine(cli.Environment.Os))}[/]");
         }
 
         var authenticated = await cli.Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-v"], Interactive = true }, cancellationToken);
@@ -172,7 +218,66 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         return authenticated.Succeeded;
     }
 
+    private async Task KeepSudoAliveAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                await cli.Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-n", "-v"], Timeout = TimeSpan.FromSeconds(10) }, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
     private async Task RunWindowsAdministratorBatchAsync(IReadOnlyList<ToolAction> actions, CancellationToken cancellationToken)
+    {
+        if (CanRunAsAdministrator(cli) is false)
+        {
+            foreach (var action in actions)
+            {
+                var commands = string.Join(" && ", action.Commands.Select(c => c.ShellCommandLine(cli.Environment.Os)));
+                steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs administrator rights", "run it in an elevated terminal", commands, commands));
+            }
+
+            return;
+        }
+
+        var (declined, exitCodes, log) = await RunAsAdministratorAsync(cli, actions, null, cancellationToken);
+
+        foreach (var action in actions)
+        {
+            var done = DoneTitle(action.Title);
+            var followUp = string.Join(" && ", action.Commands.Select(c => c.ShellCommandLine(cli.Environment.Os)));
+
+            if (declined)
+            {
+                steps.Add(action.ToolId, StepResult.Warning($"{action.Title} was skipped", "administrator permission was declined", followUp));
+            }
+            else if (exitCodes.TryGetValue(action.ToolId, out var exitCode) && action.SuccessExitCodes.Contains(exitCode))
+            {
+                steps.Add(action.ToolId, action.AfterInstall is null || action.Optional
+                    ? StepResult.Succeeded(done, action.AfterInstall)
+                    : StepResult.Warning(done, action.AfterInstall));
+            }
+            else
+            {
+                var detail = exitCodes.TryGetValue(action.ToolId, out var code)
+                    ? code switch { TimedOutCode => "it took too long and was stopped", CancelledCode => "it was cancelled", _ => $"exit code {code}" }
+                    : "it didn't run";
+
+                var failed = StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", detail, followUp, hint: AdministratorOutput(log, action.Title));
+                steps.Add(action.ToolId, action.Optional ? failed with { Status = StepStatus.Warning } : failed);
+            }
+        }
+    }
+
+    public static bool CanRunAsAdministrator(CliServices cli) => cli.Environment.IsElevated || cli.HasTerminal || cli.Environment.IsCI;
+
+    public static async Task<AdministratorRun> RunAsAdministratorAsync(CliServices cli, IReadOnlyList<ToolAction> actions, Action<string>? progress, CancellationToken cancellationToken)
     {
         var directory = Path.Combine(Path.GetTempPath(), "bit-cli", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
@@ -189,27 +294,12 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         var arguments = $"-NoProfile -NonInteractive -EncodedCommand {EncodeBootstrap(scriptPath, script)}";
 
         var declined = false;
-        var title = cli.Environment.IsElevated
-            ? $"Running {actions.Count} administrator step(s)"
-            : "Waiting for administrator permission (Windows will ask once)";
-
-        if (cli.Environment.IsElevated is false && cli.HasTerminal is false && cli.Environment.IsCI is false)
-        {
-            foreach (var action in actions)
-            {
-                var commands = string.Join(" && ", action.Commands.Select(c => c.CommandLine));
-                steps.Add(action.ToolId, StepResult.Warning($"{action.Title} needs administrator rights", "run it in an elevated terminal", commands, commands));
-            }
-
-            return;
-        }
-
         var timeout = TimeSpan.FromTicks(actions.Sum(a => a.Commands.Sum(c => (c.Timeout ?? TimeSpan.FromMinutes(30)).Ticks))) + TimeSpan.FromMinutes(5);
 
-        await cli.Console.RunWithStatusAsync(title, async progress =>
+        async Task<int> RunAsync(Action<string> report)
         {
             using var tail = new CancellationTokenSource();
-            var tailing = TailAsync(logPath, actions.Count, progress, tail.Token);
+            var tailing = TailAsync(logPath, actions.Count, report, tail.Token);
             using var cancelled = cancellationToken.Register(() => TryWriteCancel(cancelPath));
 
             try
@@ -263,7 +353,23 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             }
 
             return 0;
-        });
+        }
+
+        if (progress is null)
+        {
+            await cli.Console.RunWithStatusAsync(cli.Environment.IsElevated
+                ? $"Running {actions.Count} administrator step(s)"
+                : "Waiting for administrator permission (Windows will ask once)", RunAsync);
+        }
+        else
+        {
+            if (cli.Environment.IsElevated is false)
+            {
+                progress("waiting for administrator permission (Windows will ask once)");
+            }
+
+            await RunAsync(progress);
+        }
 
         var log = File.Exists(logPath) ? File.ReadAllText(logPath) : "";
         cli.Log.Write(log);
@@ -278,31 +384,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         {
         }
 
-        foreach (var action in actions)
-        {
-            var done = DoneTitle(action.Title);
-            var followUp = string.Join(" && ", action.Commands.Select(c => c.CommandLine));
-
-            if (declined)
-            {
-                steps.Add(action.ToolId, StepResult.Warning($"{action.Title} was skipped", "administrator permission was declined", followUp));
-            }
-            else if (exitCodes.TryGetValue(action.ToolId, out var exitCode) && action.SuccessExitCodes.Contains(exitCode))
-            {
-                steps.Add(action.ToolId, action.AfterInstall is null || action.Optional
-                    ? StepResult.Succeeded(done, action.AfterInstall)
-                    : StepResult.Warning(done, action.AfterInstall));
-            }
-            else
-            {
-                var detail = exitCodes.TryGetValue(action.ToolId, out var code)
-                    ? code switch { TimedOutCode => "it took too long and was stopped", CancelledCode => "it was cancelled", _ => $"exit code {code}" }
-                    : "it didn't run";
-
-                var failed = StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", detail, followUp, hint: AdministratorOutput(log, action.Title));
-                steps.Add(action.ToolId, action.Optional ? failed with { Status = StepStatus.Warning } : failed);
-            }
-        }
+        return new(declined, exitCodes, log);
     }
 
     public const int TimedOutCode = -2;
@@ -346,8 +428,20 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
 
                 script.AppendLine($"    if (@({successCodes}) -contains $code) {{");
                 script.AppendLine($"        $watchdog = Start-BitWatchdog {seconds}");
+
+                if (command.WorkingDirectory is { } workingDirectory)
+                {
+                    script.AppendLine($"        Push-Location -LiteralPath {Quote(workingDirectory)}");
+                }
+
                 script.AppendLine($"        & {Quote(command.FileName)} {string.Join(' ', command.Arguments.Select(Quote))} 2>&1 | ForEach-Object {{ Write-BitLog \"$_\" }}");
                 script.AppendLine("        $code = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }");
+
+                if (command.WorkingDirectory is not null)
+                {
+                    script.AppendLine("        Pop-Location");
+                }
+
                 script.AppendLine("        Stop-Job $watchdog; Remove-Job $watchdog -Force");
                 script.AppendLine("        if (Test-Path -LiteralPath $stoppedPath) {");
                 script.AppendLine("            $why = (Get-Content -LiteralPath $stoppedPath -Raw).Trim(); Remove-Item -LiteralPath $stoppedPath");

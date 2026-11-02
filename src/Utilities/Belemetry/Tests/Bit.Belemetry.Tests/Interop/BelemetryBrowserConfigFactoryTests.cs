@@ -39,7 +39,8 @@ public class BelemetryBrowserConfigFactoryTests
         var config = Render(LibraryDefaults);
 
         AssertKeys(config, "service", "resource", "sdkVersion", "transport", "exporters", "features", "consent", "pageViews", "interactions",
-                   "performance", "dependencies", "errors", "logs", "privacy", "session", "sampling", "batch", "persistence", "debug");
+                   "performance", "dependencies", "errors", "logs", "privacy", "session", "sampling", "batch", "persistence", "maxValueLength", "debug");
+        Assert.AreEqual(32768, config.GetProperty("maxValueLength").GetInt32());
 
         // instanceId is left to the script: every page load is its own instance (null values are omitted).
         var service = config.GetProperty("service");
@@ -68,10 +69,11 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.IsFalse(pageViews.GetProperty("trackVisitTime").GetBoolean());
 
         var interactions = config.GetProperty("interactions");
-        AssertKeys(interactions, "events", "captureText", "maxTextLength");
+        AssertKeys(interactions, "events", "captureText", "maxTextLength", "rageClicks");
         CollectionAssert.AreEqual(new[] { "click" }, Strings(interactions.GetProperty("events")));
         Assert.IsFalse(interactions.GetProperty("captureText").GetBoolean());
         Assert.AreEqual(64, interactions.GetProperty("maxTextLength").GetInt32());
+        Assert.IsTrue(interactions.GetProperty("rageClicks").GetBoolean());
 
         var performance = config.GetProperty("performance");
         AssertKeys(performance, "webVitals", "documentLoad", "resources", "longTasks");
@@ -88,8 +90,12 @@ public class BelemetryBrowserConfigFactoryTests
         CollectionAssert.AreEqual(new[] { "/_framework/", "/_blazor", "/_content/" }, Strings(dependencies.GetProperty("ignoreUrls")));
 
         var errors = config.GetProperty("errors");
-        AssertKeys(errors, "ignoreMessages");
-        CollectionAssert.AreEqual(new[] { "ResizeObserver loop" }, Strings(errors.GetProperty("ignoreMessages")));
+        AssertKeys(errors, "ignoreMessages", "duplicateWindowMs", "maxPerMinute");
+        CollectionAssert.AreEqual(new[] { "ResizeObserver loop", @"^Script error\.?$" }, Strings(errors.GetProperty("ignoreMessages")));
+        Assert.IsTrue(Regex.IsMatch("Script error.", Strings(errors.GetProperty("ignoreMessages"))[1]), "The cross-origin error with nothing in it.");
+        Assert.IsFalse(Regex.IsMatch("Script error in checkout.js", Strings(errors.GetProperty("ignoreMessages"))[1]));
+        Assert.AreEqual(5000, errors.GetProperty("duplicateWindowMs").GetInt32());
+        Assert.AreEqual(100, errors.GetProperty("maxPerMinute").GetInt32());
 
         var logs = config.GetProperty("logs");
         AssertKeys(logs, "captureConsole", "consoleLevels");
@@ -97,11 +103,16 @@ public class BelemetryBrowserConfigFactoryTests
         CollectionAssert.AreEqual(new[] { "error", "warn" }, Strings(logs.GetProperty("consoleLevels")));
 
         var privacy = config.GetProperty("privacy");
-        AssertKeys(privacy, "redactQueryParameters", "stripQueryString", "stripFragment", "scrubPatterns", "collectUserAgent", "blockedAttributes");
+        AssertKeys(privacy, "redactQueryParameters", "stripQueryString", "stripFragment", "scrubPatterns", "collectUserAgent", "blockedAttributes", "redactedAttributes");
         CollectionAssert.AreEqual(
             new[] { "token", "code", "password", "pwd", "secret", "key", "apikey", "api_key", "auth", "authorization", "session", "sid", "sig", "signature",
-                    "email", "access_token", "id_token", "refresh_token" },
+                    "email", "access_token", "id_token", "refresh_token", "x-amz-signature", "x-amz-credential", "x-amz-security-token", "x-goog-signature",
+                    "x-goog-credential" },
             Strings(privacy.GetProperty("redactQueryParameters")));
+        CollectionAssert.AreEqual(
+            new[] { "password", "passwd", "pwd", "secret", "client_secret", "token", "access_token", "refresh_token", "id_token", "apikey", "api_key", "x-api-key",
+                    "authorization", "proxy-authorization", "cookie", "set-cookie" },
+            Strings(privacy.GetProperty("redactedAttributes")), "The same defaults as config.ts.");
         Assert.IsFalse(privacy.GetProperty("stripQueryString").GetBoolean());
         Assert.IsTrue(privacy.GetProperty("stripFragment").GetBoolean());
         Assert.IsTrue(privacy.GetProperty("scrubPatterns").GetBoolean());
@@ -400,5 +411,101 @@ public class BelemetryBrowserConfigFactoryTests
 
         var element = BelemetryBrowserConfigFactory.ToElement(BelemetryBrowserConfigFactory.Create(settings));
         Assert.AreEqual(json, element.GetRawText());
+    }
+
+    [TestMethod]
+    public void ServerHost_NeverPublishesTheExporterHeaders_OnlyTheBrowserHeaders()
+    {
+        // A server renders this configuration into every page it serves: its own headers (server configuration, an
+        // API key, the Aspire dashboard's key) must not be in it.
+        var settings = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.AddOtlpExporter("https://otel.test", e =>
+            {
+                e.Headers["x-api-key"] = "server-secret";
+                e.Headers["x-shared"] = "server";
+                e.BrowserHeaders["x-ingest-key"] = "public";
+                e.BrowserHeaders["x-shared"] = "browser";
+            });
+            o.AddOtlpExporter("https://other.test", e => e.Headers["x-api-key"] = "server-secret-2");
+        }, webHost: true);
+
+        var json = BelemetryBrowserConfigFactory.ToJson(BelemetryBrowserConfigFactory.Create(settings));
+        Assert.DoesNotContain("server-secret", json);
+
+        var exporters = BelemetryBrowserConfigFactory.Create(settings).Exporters;
+        CollectionAssert.AreEquivalent(new Dictionary<string, string> { ["x-ingest-key"] = "public", ["x-shared"] = "browser" }, exporters[0].Headers);
+        Assert.IsNull(exporters[1].Headers);
+
+        var warning = settings.StartupWarnings.Single();
+        StringAssert.Contains(warning, "https://other.test");
+        StringAssert.Contains(warning, "BrowserHeaders");
+    }
+
+    [TestMethod]
+    [DataRow(false, DisplayName = "Hybrid")]
+    [DataRow(true, DisplayName = "WebAssembly")]
+    public void ClientHosts_SendTheExporterHeaders_WithTheBrowserHeadersOnTop(bool isBrowser)
+    {
+        // The configuration of a WebAssembly or Hybrid app is on the device already; nothing new is exposed.
+        var options = new BelemetryOptions();
+        TestHost.ApplyTestDefaults(options);
+        options.Browser.Transport = BelemetryBrowserTransport.Direct;
+        options.AddOtlpExporter("https://otel.test", e =>
+        {
+            e.Headers["x-api-key"] = "k";
+            e.Headers["x-shared"] = "dotnet";
+            e.BrowserHeaders["x-shared"] = "browser";
+        });
+        var settings = new BelemetrySettings(options, new BelemetryHostDetection(false), isBrowser);
+
+        var headers = BelemetryBrowserConfigFactory.Create(settings).Exporters.Single().Headers;
+
+        CollectionAssert.AreEquivalent(new Dictionary<string, string> { ["x-api-key"] = "k", ["x-shared"] = "browser" }, headers);
+        Assert.IsEmpty(settings.StartupWarnings);
+    }
+
+    [TestMethod]
+    public void ServerHost_PublishesNoExporterEndpointsToIgnore()
+    {
+        // A server's exporters never go through the page's fetch, and an internal collector's address is nobody's
+        // business; the script recognizes the URLs of the exporters it is given on its own.
+        var config = Render(o =>
+        {
+            LibraryDefaults(o);
+            o.AddOtlpExporter("http://otel-collector.internal:4318", e => e.IncludeInBrowser = false);
+            o.AddOtlpExporter("https://public.test");
+            o.AddAzureMonitorExporter(ConnectionString, a => a.IncludeInBrowser = false);
+        }, webHost: true);
+
+        Assert.DoesNotContain("otel-collector.internal", config.GetRawText());
+        Assert.DoesNotContain("livediagnostics", config.GetRawText());
+        CollectionAssert.AreEqual(new[] { "/_framework/", "/_blazor", "/_content/" }, Strings(config.GetProperty("dependencies").GetProperty("ignoreUrls")));
+        Assert.AreEqual("https://public.test/", config.GetProperty("exporters")[0].GetProperty("endpoint").GetString());
+    }
+
+    [TestMethod]
+    public void ServerHost_DoesNotWarn_WhenTheHeadersNeverReachThePage()
+    {
+        var settings = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.AddOtlpExporter("https://a.test", e => { e.Headers["k"] = "v"; e.IncludeInBrowser = false; });
+            o.AddOtlpExporter("http://localhost:4317", e => { e.Headers["k"] = "v"; e.Protocol = BelemetryOtlpProtocol.Grpc; });
+            o.AddOtlpExporter("https://c.test", e => { e.Headers["k"] = "v"; e.BrowserHeaders["k"] = "public"; });
+            o.AddOtlpExporter("https://metrics.test", e => { e.Headers["k"] = "v"; e.Signals = BelemetrySignals.Metrics; });
+        }, webHost: true);
+
+        Assert.IsEmpty(settings.StartupWarnings, string.Join(" | ", settings.StartupWarnings));
+        Assert.IsFalse(BelemetryBrowserConfigFactory.Create(settings).Exporters.Any(e => e.Endpoint == "https://metrics.test/"), "A metrics-only exporter is not handed to the page.");
+
+        var relay = TestHost.CreateSettings(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.Transport = BelemetryBrowserTransport.Relay;
+            o.AddOtlpExporter("https://a.test", e => e.Headers["k"] = "v");
+        }, webHost: true);
+        Assert.IsEmpty(relay.StartupWarnings, "With the Relay transport the page exports nothing itself.");
     }
 }

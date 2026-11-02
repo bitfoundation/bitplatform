@@ -1,0 +1,68 @@
+﻿@page "/e2e/aiartifactview"
+
+<PageTitle>BitAiArtifactView E2E</PageTitle>
+
+<h1>BitAiArtifactView</h1>
+
+<E2ESection Id="kinds" Title="Kinds">
+    <BitAiArtifactView Id="atv-code" Artifact="_code" />
+    <BitAiArtifactView Id="atv-doc" Artifact="_document" />
+    <BitAiArtifactView Id="atv-html" Artifact="_html" />
+    <BitAiArtifactView Id="atv-json" Artifact="_json" />
+    <BitAiArtifactView Id="atv-csv" Artifact="_csv" />
+    <BitAiArtifactView Id="atv-tsv" Artifact="_tsv" />
+    <BitAiArtifactView Id="atv-jtable" Artifact="_jsonTable" />
+    <BitAiArtifactView Id="atv-image" Artifact="_image" />
+    <BitAiArtifactView Id="atv-svg" Artifact="_svg" />
+</E2ESection>
+
+<E2ESection Id="versions" Title="Versions, copy and download">
+    <BitAiArtifactView Id="atv-versions" Artifact="_revised" />
+    <BitAiArtifactView Id="atv-initial" Artifact="_revisedForInitial" InitialVersion="2" />
+</E2ESection>
+
+<E2ESection Id="stream" Title="Streamed through a session">
+    <button id="btn-stream-write" @onclick="WriteAsync">Write</button>
+    <button id="btn-stream-revise" @onclick="ReviseAsync">Revise</button>
+    <p>State: <span id="atv-stream-state">@(_streamSession.IsGenerating ? "generating" : "idle")</span></p>
+    <p>Answers: <span id="atv-stream-answers">@CompletedAnswers(_streamSession)</span></p>
+    @if (_streamSession.Conversation.FindArtifact("artifact-1") is { } streamed)
+    {
+        <BitAiArtifactView Id="atv-stream" Artifact="streamed" />
+    }
+</E2ESection>
+
+<E2ESection Id="fullscreen" Title="Full screen">
+    <BitAiArtifactView Id="atv-full" Artifact="_fullCode" />
+    <BitAiArtifactView Id="atv-full-html" Artifact="_fullHtml" />
+    <button id="btn-open-modal" @onclick="() => _modalOpen = true">Open the modal</button>
+    <p>Modal: <span id="atv-modal-state">@(_modalOpen ? "open" : "closed")</span></p>
+    <BitModal Id="atv-modal" @bind-IsOpen="_modalOpen">
+        <div style="padding: 16px; width: 480px">
+            <BitAiArtifactView Id="atv-in-modal" Artifact="_modalCode" />
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiArtifactView Id="atv-disabled" Disabled Artifact="_revisedForDisabled" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiArtifactView Id="atv-rtl" Dir="BitDir.Rtl" Artifact="_rtlCode" />
+    <div dir="rtl">
+        <BitAiArtifactView Id="atv-rtl-inherited" Artifact="_rtlInheritedCode" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <BitAiArtifactView Id="atv-vars" Artifact="_varsCode"
+                       Style="--bit-AiArtifactView-background: rgb(1, 2, 3); --bit-AiArtifactView-color: rgb(250, 251, 252); --bit-AiArtifactView-border-color: rgb(7, 8, 9); --bit-AiArtifactView-radius: 3px; --bit-AiArtifactView-header-background: rgb(4, 5, 6); --bit-AiArtifactView-header-padding: 5px 7px; --bit-AiArtifactView-header-gap: 11px; --bit-AiArtifactView-expanded-inset: 40px; --bit-AiArtifactView-overlay-background: rgba(255, 0, 0, 0.5); --bit-AiArtifactView-divider-color: rgb(13, 14, 15); --bit-AiArtifactView-icon-color: rgb(10, 11, 12); --bit-AiArtifactView-title-font-size: 21px; --bit-AiArtifactView-title-font-weight: 300; --bit-AiArtifactView-max-height: 60px" />
+    <div id="atv-vars-ancestor" style="--bit-AiArtifactView-frame-height: 77px; --bit-AiArtifactView-frame-background: rgb(200, 201, 202); --bit-AiArtifactView-content-padding: 9px; --bit-AiArtifactView-table-header-background: rgb(30, 31, 32); --bit-AiArtifactView-table-divider-color: rgb(40, 41, 42)">
+        <BitAiArtifactView Id="atv-vars-html" Artifact="_varsHtml" />
+        <BitAiArtifactView Id="atv-vars-doc" Artifact="_varsDocument" />
+        <BitAiArtifactView Id="atv-vars-csv" Artifact="_varsCsv" />
+    </div>
+</E2ESection>
+
+<E2EStatus />

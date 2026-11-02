@@ -213,7 +213,7 @@ public abstract class PerformanceTestBase
 
         var testHostPath = GetTestHostPath();
 
-        // The test host project targets multiple frameworks (net8.0/net9.0/net10.0).
+        // The test host project targets multiple frameworks (net10.0/net11.0).
         // 'dotnet run' refuses to pick one automatically and exits immediately, which
         // previously caused all browser tests to fail with a misleading 30-second timeout.
         // Run the host on the same TFM as the test runner so the right one is used.

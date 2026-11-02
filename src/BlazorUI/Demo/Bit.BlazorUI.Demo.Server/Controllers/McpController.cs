@@ -62,15 +62,16 @@ public partial class McpController : AppControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBitBlazorUIComponent), Title = "Full API of one component",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets the full reference of one bit BlazorUI component: which package it ships in and what that package needs wired up, every parameter with its type, its default and what it does, its public members, the classes and child components it owns (its per-part Classes/Styles bag, its item class), the library types its parameters take, the parameters it inherits, which of them are two-way bindable and what constrains its type arguments, the public --bit-* CSS variables it reads off its root with their defaults, and the titles of its worked examples. Accepts the type name, the name without the Bit prefix, the demo page's route or one of the aliases ('Select', 'Toast', 'Skeleton'). Omit the name to get the catalog of every component instead, grouped by category with its package and a line on what it is for.")]
+    [Description("Gets the full reference of one bit BlazorUI component: which package it ships in and what that package needs wired up, every parameter with its type, its default and what it does, its public members as the C# signatures they are called with, the classes and child components it owns (its per-part Classes/Styles bag, its item class), the library types its parameters take, the parameters it inherits, which of them are two-way bindable and what constrains its type arguments, the public --bit-* CSS variables it reads off its root with their defaults, and the titles of its worked examples. Accepts the type name, the name without the Bit prefix, the demo page's route or one of the aliases ('Select', 'Toast', 'Skeleton'). The largest run to tens of thousands of characters, so narrow it with 'section' when only part of it is wanted. Omit the name to get the catalog of every component instead, grouped by category with its package and a line on what it is for.")]
     public string GetBitBlazorUIComponent(
-        [Description("The component, e.g. 'BitDropdown', 'DatePicker', 'Toast'. Omitted, the whole catalog is returned. 'BitComponentBase', 'BitInputBase' and 'BitTextInputBase' are the inherited parameter sets each component's answer names.")] string? name = null)
+        [Description("The component, e.g. 'BitDropdown', 'DatePicker', 'Toast'. Omitted, the whole catalog is returned. 'BitComponentBase', 'BitInputBase' and 'BitTextInputBase' are the inherited parameter sets each component's answer names.")] string? name = null,
+        [Description("Optional. One part of the reference rather than all of it: a section ('Parameters', 'Public members', 'Inherited parameters', 'CSS variables', 'Worked examples', or one of the component's own types), or the name of one parameter, member or CSS variable ('Items', 'PanTo') for its row alone. Several, separated by commas. Omitted, the whole reference is returned.")] string? section = null)
     {
         if (string.IsNullOrWhiteSpace(name)) return BlazorUIMarkdown.ComponentCatalog();
 
         var component = BlazorUIComponentCatalog.Find(name);
 
-        if (component is not null) return BlazorUIMarkdown.Component(component);
+        if (component is not null) return BlazorUIMarkdown.Component(component, section);
 
         // A near miss is answered with the neighbours rather than with a refusal: the name an agent
         // guessed is usually one edit away from the one this library chose, and a listing of ten

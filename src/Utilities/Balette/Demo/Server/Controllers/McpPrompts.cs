@@ -36,9 +36,10 @@ public static class McpPrompts
                .Client project, for a MAUI/WPF/Windows Forms BlazorWebView host, and for where `@rendermode` is set -
                on `<Routes>` (global interactivity) or per page - then continue with what you find.
             2. Call `GetBaletteSetupGuide` with that render mode and follow it. Registering the services in only one of a
-               Blazor Web App's two DI containers is the most common setup bug - it fails while prerendering, not at
-               compile time. Call `AddBitBaletteServices` in BOTH `Program.cs` files, through one shared extension method
-               so both get the same options.
+               Blazor Web App's two DI containers is the most common setup bug, and nothing catches it at compile time: the
+               palette in the other one runs on the default options and logs a warning that the services are not
+               registered, and code injecting `IBaletteService` there fails while prerendering. Call `AddBitBaletteServices`
+               in BOTH `Program.cs` files, through one shared extension method so both get the same options.
             3. Link `<link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" />` in the host page (`App.razor`,
                or `wwwroot/index.html`), before the app's own stylesheet. It is NOT injected: without it the palette opens
                unstyled.

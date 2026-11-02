@@ -65,7 +65,7 @@ public partial class BitSpinnerRingStylesheetTests
         // animations turn glyphs; everything else that turns a ring includes the mixin and its shared keyframes.
         string[] exempt = [Path.Combine("Progress", "Loading"), Path.Combine("Progress", "Progress"), Path.Combine("Utilities", "Icon")];
 
-        var offenders = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" }
+        var offenders = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI" }
             .Select(project => SourceFiles.GetPath(project, "Components"))
             .Where(Directory.Exists)
             .SelectMany(dir => Directory.EnumerateFiles(dir, "*.scss", SearchOption.AllDirectories))

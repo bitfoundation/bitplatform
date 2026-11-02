@@ -76,6 +76,12 @@ public class BroadcastChannel(IJSRuntime js) : IAsyncDisposable
     /// <see cref="JsonElement"/> so callers can deserialize into whatever shape they expect.
     /// Use the returned <see cref="ButilSubscription"/> to detach.
     /// </summary>
+    /// <remarks>
+    /// Any tab, frame or worker of the origin can post on a channel, so a message's JSON is capped at
+    /// 32 MB, as described on <see cref="ButilMessage"/>: a larger message - or one JSON cannot write,
+    /// such as a cyclic graph - arrives as a string holding just its type name, like
+    /// <c>"[object Object]"</c>.
+    /// </remarks>
     [DynamicDependency(nameof(InvokeBroadcastChannelMessage), typeof(BroadcastChannel))]
     [DynamicDependency(nameof(InvokeBroadcastChannelError), typeof(BroadcastChannel))]
     public async Task<ButilSubscription> Subscribe(string channelName,

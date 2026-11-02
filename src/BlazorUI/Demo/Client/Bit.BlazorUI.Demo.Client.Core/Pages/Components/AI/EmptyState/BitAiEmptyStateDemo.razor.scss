@@ -1,0 +1,23 @@
+﻿// The page is drawn on the secondary background, the one the suggestions are filled with: the empty states that offer
+// them sit on a surface of the primary background, as they do in a chat.
+.example-surface {
+    border-radius: 1rem;
+    background-color: var(--bit-clr-bg-pri);
+}
+
+// The classes handed to the empty state land on its own elements, reached from the plain wrapper of the section.
+::deep {
+    .custom-empty {
+        border-radius: 1rem;
+        border: 1px dashed var(--bit-clr-pri);
+    }
+
+    .custom-empty-icon {
+        transform: rotate(-12deg);
+    }
+
+    .custom-empty-title {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+}

@@ -20,7 +20,10 @@ public abstract class BitMapProviderBase : IBitMapProvider
     /// <summary>Maximum allowed zoom level.</summary>
     public int? MaxZoom { get; set; }
 
-    /// <summary>Show the +/- zoom control buttons.</summary>
+    /// <summary>
+    /// Show the +/- zoom control buttons. On MapLibre and Mapbox they are the zoom half of the
+    /// navigation control, whose compass ShowNavigationControl keeps.
+    /// </summary>
     public bool ZoomControl { get; set; } = true;
 
     /// <summary>Show the attribution control.</summary>

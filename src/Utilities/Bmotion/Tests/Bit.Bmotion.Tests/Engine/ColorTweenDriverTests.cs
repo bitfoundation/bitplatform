@@ -47,7 +47,8 @@ public class ColorTweenDriverTests
         driver.Tick(0);
         bool done = driver.Tick(300); // t=1.0
 
-        Assert.AreEqual("rgba(255,255,255,1)", lastValue);
+        // A pass ends on the authored color itself, not on its sRGB re-encoding.
+        Assert.AreEqual("#ffffff", lastValue);
         Assert.IsTrue(done);
     }
 
@@ -62,7 +63,8 @@ public class ColorTweenDriverTests
 
         bool done = driver.Tick(0);
 
-        Assert.AreEqual("rgba(255,255,255,1)", lastValue);
+        // A pass ends on the authored color itself, not on its sRGB re-encoding.
+        Assert.AreEqual("#ffffff", lastValue);
         Assert.IsTrue(done);
     }
 
@@ -140,9 +142,9 @@ public class ColorTweenDriverTests
 
         driver.Tick(0);   // value → rgba(0,0,0,1) at t=0
         driver.Tick(300); // end of first pass → rgba(255,255,255,1), mirrors
-        driver.Tick(600); // end of reversed pass → rgba(0,0,0,1)
+        driver.Tick(600); // end of reversed pass → the first color, as authored
 
-        Assert.AreEqual("rgba(0,0,0,1)", lastValue);
+        Assert.AreEqual("#000000", lastValue);
     }
 
     // ── Complete() terminal state ─────────────────────────────────────────────

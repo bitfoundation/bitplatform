@@ -288,7 +288,7 @@ public class InPlaceWriteTests
 
         using var transaction = db.BeginTransaction();
         accounts.Insert(Make(1));
-        var savepoint = transaction.Savepoint();
+        var savepoint = transaction.CreateSavepoint();
         accounts.Insert(Make(2));
         accounts.Delete(1);
 

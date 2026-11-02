@@ -2,10 +2,7 @@
     "recommendations": [
         "ms-dotnettools.csharp",
         "Anthropic.claude-code",
-        "ms-dotnettools.csdevkit",
         "EditorConfig.EditorConfig",
-        "ms-dotnettools.dotnet-maui",
-        "ms-azuretools.vscode-docker",
         "microsoft-aspire.aspire-vscode",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",

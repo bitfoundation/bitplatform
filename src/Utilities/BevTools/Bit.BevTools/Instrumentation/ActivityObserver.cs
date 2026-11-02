@@ -49,7 +49,7 @@ internal static class ActivityObserver
     /// <summary>
     /// Puts the observer in the state a .NET 10 app reaches after its first render batch: render_diff measurements
     /// seen. Lets the tests of the diff-matching queue state their precondition instead of inheriting it from whichever
-    /// test happened to render through a real meter first - which also keeps them meaningful on .NET 8 and 9.
+    /// test happened to render through a real meter first.
     /// </summary>
     internal static void MarkBatchMetricsObserved() => Interlocked.Increment(ref _batchMeasurements);
 
@@ -145,17 +145,22 @@ internal static class ActivityObserver
         attribute ??= fromDisplayName.Attribute;
 
         // Interacting with the BevTools panel is not application activity; recording it would bury the developer's
-        // own events under the clicks they made to look for them.
-        if (componentType is not null && IsBevToolsOwnComponent(componentType))
+        // own events under the clicks they made to look for them. That includes a panel an extension contributed from
+        // its own assembly, and what such a panel renders: the registry knows those types only as BevTools'.
+        if (componentType is not null && (IsBevToolsOwnComponent(componentType) || session.Components.IsBevToolsOnlyType(TypeKey(componentType))))
         {
             activity.SetCustomProperty(EventProperty, IgnoredEvent);
             return null;
         }
 
         var shortType = componentType is null ? null : Shorten(componentType);
+        // An inline lambda is reported by its compiled name ("<BuildRenderTree>b__0_1"): name what it calls instead.
+        var handler = componentType is not null && method is not null ? BevLambdaTargets.DescribeEventHandler(componentType, method) : null;
         var title = isEvent
-            ? (attribute ?? "event") + " → " + (shortType ?? "?") + "." + (method ?? "?")
-            : string.IsNullOrEmpty(route) ? DefaultNavigationTitle(activity) : "Navigate to " + route;
+            ? (attribute ?? "event") + " → " + (handler ?? (shortType ?? "?") + "." + (method ?? "?"))
+            // The route tag arrives when the activity stops; its display name ("Route /counter -> App.Pages.Counter") already
+            // has it, and the title reads like the navigations LocationChanged records.
+            : (string.IsNullOrEmpty(route) ? attribute : route) is { Length: > 0 } path ? "Navigate to " + path : DefaultNavigationTitle(activity);
 
         var evt = new BevToolsEvent
         {
@@ -524,7 +529,9 @@ internal static class ActivityObserver
                     }
                 }
 
-                if (type is null)
+                // BevTools' own panels, and the framework components only they render, update their parameters on
+                // every refresh; that is not the application's cost.
+                if (type is null || IsBevToolsOwnComponent(TypeKey(type)) || session.Components.IsBevToolsOnlyType(TypeKey(type)))
                 {
                     return;
                 }

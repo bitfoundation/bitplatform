@@ -186,6 +186,87 @@ public partial class MainLayout
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
             ]
         },
+        // The components of the Bit.BlazorUI.AI package, under /components/ai/ like the Legacy ones under theirs, then
+        // the scenarios: guide pages that put those components together into the cases an AI app actually has, under
+        // /ai/scenarios/ so the component catalog (which counts what is under /components/) leaves them out.
+        new()
+        {
+            Text = "AI",
+            ChildItems =
+            [
+                new() { Text = "AiAgentRunView", Url = "/components/ai/agentrunview", Data = "Agent, Plan, Steps, Agentic, Workflow, Run, Progress" },
+                new() { Text = "AiAgentStatusBadge", Url = "/components/ai/agentstatusbadge", Data = "Agent, Status, Running, Waiting, Failed, Completed" },
+                new() { Text = "AiAgentStepView", Url = "/components/ai/agentstepview", Data = "Agent, Step, Plan, Timing, Summary" },
+                new() { Text = "AiArtifactPartView", Url = "/components/ai/artifactpartview", Data = "Artifact, Document, Inline card" },
+                new() { Text = "AiArtifactView", Url = "/components/ai/artifactview", Description = "Canvas", Data = "Artifact, Document, Code, Versions, Preview, Download, Sandboxed HTML" },
+                new() { Text = "AiAttachmentChip", Url = "/components/ai/attachmentchip", Description = "FileChip", Data = "Attachment, File, Upload, Image preview" },
+                new() { Text = "AiChat", Url = "/components/ai/chat", Description = "Chatbot, Assistant, Copilot", Data = "Chat UI, Conversation, LLM, GPT, Claude, OpenAI, Streaming, Messages, Composer" },
+                new() { Text = "AiChatMessage", Url = "/components/ai/chatmessage", Description = "MessageBubble", Data = "Message, Bubble, Turn, User, Assistant" },
+                new() { Text = "AiCitationMarker", Url = "/components/ai/citationmarker", Data = "Citation, Footnote, Reference, Source, Superscript" },
+                new() { Text = "AiCodeBlockView", Url = "/components/ai/codeblockview", Description = "CodeBlock", Data = "Code, Syntax highlighting, Fenced code, Copy code, Line numbers" },
+                new() { Text = "AiCollapsible", Url = "/components/ai/collapsible", Data = "Expander, Disclosure, Details, Summary" },
+                new() { Text = "AiContextMeter", Url = "/components/ai/contextmeter", Description = "TokenMeter", Data = "Context window, Tokens, Usage, Limit" },
+                new() { Text = "AiConversationList", Url = "/components/ai/conversationlist", Description = "ThreadList", Data = "Conversations, Threads, Chat history, Sidebar" },
+                new() { Text = "AiCopyButton", Url = "/components/ai/copybutton", Description = "CopyToClipboard", Data = "Copy, Clipboard" },
+                new() { Text = "AiDataTable", Url = "/components/ai/datatable", Data = "Table, Structured output, JSON array, Rows" },
+                new() { Text = "AiEmptyState", Url = "/components/ai/emptystate", Data = "Welcome, Suggestions, Starter prompts, Placeholder" },
+                new() { Text = "AiErrorView", Url = "/components/ai/errorview", Data = "Error, Retry, Rate limit, Failure" },
+                new() { Text = "AiForm", Url = "/components/ai/form", Description = "SchemaForm", Data = "JSON Schema, Form builder, Confirmation, Structured input" },
+                new() { Text = "AiGenerativeUiView", Url = "/components/ai/generativeuiview", Data = "Generative UI, Dynamic components, Model-rendered UI, Registry" },
+                new() { Text = "AiImagePartView", Url = "/components/ai/imagepartview", Data = "Image, Generated image, Vision, Lightbox" },
+                new() { Text = "AiJsonView", Url = "/components/ai/jsonview", Description = "JsonViewer", Data = "JSON, Tree, Inspector" },
+                new() { Text = "AiMarkdownView", Url = "/components/ai/markdownview", Data = "Markdown, Rich text, Tables, Code, Math" },
+                new() { Text = "AiMessageActions", Url = "/components/ai/messageactions", Data = "Copy, Regenerate, Edit, Feedback, Thumbs up, Thumbs down" },
+                new() { Text = "AiMessageList", Url = "/components/ai/messagelist", Description = "Transcript", Data = "Messages, Conversation, Chat history, Virtualized, Auto scroll" },
+                new() { Text = "AiMessagePartView", Url = "/components/ai/messagepartview", Data = "Message part, Renderer, Dispatcher" },
+                new() { Text = "AiModelSelector", Url = "/components/ai/modelselector", Description = "ModelPicker", Data = "LLM, Model, Provider, Capabilities" },
+                new() { Text = "AiOptionsProvider", Url = "/components/ai/optionsprovider", Data = "Options, Strings, Localization, Cascading, Configuration" },
+                new() { Text = "AiPromptInput", Url = "/components/ai/promptinput", Description = "Composer, ChatInput", Data = "Prompt, Message box, Slash commands, Mentions, Attachments, Send" },
+                new() { Text = "AiReasoningPartView", Url = "/components/ai/reasoningpartview", Data = "Reasoning, Thinking, Thoughts, Chain of thought" },
+                new() { Text = "AiRendererBoundary", Url = "/components/ai/rendererboundary", Data = "Error boundary, Fallback, Custom renderer" },
+                new() { Text = "AiScrollToLatest", Url = "/components/ai/scrolltolatest", Data = "Scroll, Jump to bottom, New messages" },
+                new() { Text = "AiSourceCard", Url = "/components/ai/sourcecard", Data = "Source, Citation, Reference, Link preview" },
+                new() { Text = "AiSourceList", Url = "/components/ai/sourcelist", Data = "Sources, Citations, References, Bibliography" },
+                new() { Text = "AiStreamingMarkdown", Url = "/components/ai/streamingmarkdown", Data = "Streaming, Markdown, Tokens, Typewriter, Incremental" },
+                new() { Text = "AiStructuredDataView", Url = "/components/ai/structureddataview", Data = "Structured output, Partial JSON, Schema" },
+                new() { Text = "AiTextPartView", Url = "/components/ai/textpartview", Data = "Text, Streaming, Caret" },
+                new() { Text = "AiThinkingIndicator", Url = "/components/ai/thinkingindicator", Description = "TypingIndicator", Data = "Thinking, Generating, Loading dots, Waiting" },
+                new() { Text = "AiTokenUsageView", Url = "/components/ai/tokenusageview", Data = "Tokens, Usage, Cost, Throughput, Latency" },
+                new() { Text = "AiToolApproval", Url = "/components/ai/toolapproval", Data = "Approve, Deny, Human in the loop, Consent, Permission, Destructive" },
+                new() { Text = "AiToolCallView", Url = "/components/ai/toolcallview", Description = "FunctionCall", Data = "Tool, Tool use, Function calling, Arguments, Progress" },
+                new() { Text = "AiToolResultView", Url = "/components/ai/toolresultview", Data = "Tool result, Function result, Output" },
+                new() { Text = "AiVoiceInput", Url = "/components/ai/voiceinput", Description = "Dictation, SpeechToText", Data = "Voice, Microphone, Speech recognition" },
+                new()
+                {
+                    Text = "Scenarios",
+                    ChildItems =
+                    [
+                        new() { Text = "Basic chat", Url = "/ai/scenarios/basic" },
+                        new() { Text = "Streaming", Url = "/ai/scenarios/streaming" },
+                        new() { Text = "Reasoning", Url = "/ai/scenarios/reasoning" },
+                        new() { Text = "Conversations", Url = "/ai/scenarios/conversations" },
+                        new() { Text = "Attachments", Url = "/ai/scenarios/attachments" },
+                        new() { Text = "Commands and mentions", Url = "/ai/scenarios/commands" },
+                        new() { Text = "Citations", Url = "/ai/scenarios/citations" },
+                        new() { Text = "Artifacts", Url = "/ai/scenarios/artifacts" },
+                        new() { Text = "Structured output", Url = "/ai/scenarios/structured" },
+                        new() { Text = "Tool calling", Url = "/ai/scenarios/tools" },
+                        new() { Text = "Tool approval", Url = "/ai/scenarios/approval" },
+                        new() { Text = "Custom tool UI", Url = "/ai/scenarios/custom-tool" },
+                        new() { Text = "Parallel tools", Url = "/ai/scenarios/parallel-tools" },
+                        new() { Text = "Multi-step agent", Url = "/ai/scenarios/agent" },
+                        new() { Text = "Agent asks a question", Url = "/ai/scenarios/agent-input" },
+                        new() { Text = "Agent failure", Url = "/ai/scenarios/agent-failure" },
+                        new() { Text = "Generative UI", Url = "/ai/scenarios/generative" },
+                        new() { Text = "Forms", Url = "/ai/scenarios/forms" },
+                        new() { Text = "Models and usage", Url = "/ai/scenarios/usage" },
+                        new() { Text = "Errors and retry", Url = "/ai/scenarios/errors" },
+                        new() { Text = "Long conversations", Url = "/ai/scenarios/performance" },
+                        new() { Text = "Options & theming", Url = "/ai/scenarios/options-theming" },
+                    ]
+                },
+            ]
+        },
         new()
         {
             Text = "Legacy",

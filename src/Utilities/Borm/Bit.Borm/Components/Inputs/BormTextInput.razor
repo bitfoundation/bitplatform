@@ -6,14 +6,14 @@
 @if (HasAffix)
 {
     <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
-        @if (!string.IsNullOrEmpty(Field.Prefix))
+        @if (!string.IsNullOrEmpty(Context.Prefix))
         {
-            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Context.Prefix</span>
         }
         @Control
-        @if (!string.IsNullOrEmpty(Field.Suffix))
+        @if (!string.IsNullOrEmpty(Context.Suffix))
         {
-            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Context.Suffix</span>
         }
         @if (ShowClear)
         {
@@ -61,29 +61,58 @@ else
 }
 
 @code {
+    // A field written as the user types is bound on input (see BormInputBase.OnTyped); one written on
+    // change keeps its value attribute, which does not change while the user types.
+    private RenderFragment Control => UpdatesOnInput ? LiveControl : CommittedControl;
+
     // The splat comes first on purpose: Blazor applies duplicate attributes in source order and the
     // last one wins, so everything below overrides what the schema supplied. That is what stops a
     // stray aria-describedby in the schema from unhooking the field's own error message.
-    private RenderFragment Control => @<input @attributes="ExtraAttributes"
-                                              id="@Context.ElementId"
-                                              @ref="Element"
-                                              class="@CssClass"
-                                              type="@HtmlType"
-                                              value="@DisplayValue"
-                                              placeholder="@Field.Placeholder"
-                                              disabled="@Disabled"
-                                              readonly="@ReadOnly"
-                                              maxlength="@MaxLengthAttribute"
-                                              list="@SuggestionsId"
-                                              autocomplete="@Field.Autocomplete"
-                                              inputmode="@Field.InputMode"
-                                              aria-required="@AriaRequired"
-                                              aria-invalid="@AriaInvalid"
-                                              aria-label="@AriaLabel"
-                                              aria-describedby="@DescribedBy"
-                                              @onchange="OnChange"
-                                              @oninput="InputHandler"
-                                              @onblur="OnBlur" />
+    private RenderFragment CommittedControl => @<input @attributes="ExtraAttributes"
+                                                       id="@Context.ElementId"
+                                                       name="@Context.InputName"
+                                                       @ref="Element"
+                                                       class="@CssClass"
+                                                       type="@HtmlType"
+                                                       value="@DisplayValue"
+                                                       placeholder="@Context.Placeholder"
+                                                       disabled="@Disabled"
+                                                       readonly="@ReadOnly"
+                                                       maxlength="@MaxLengthAttribute"
+                                                       list="@SuggestionsId"
+                                                       autocomplete="@Field.Autocomplete"
+                                                       inputmode="@Field.InputMode"
+                                                       aria-required="@AriaRequired"
+                                                       aria-invalid="@AriaInvalid"
+                                                       aria-label="@AriaLabel"
+                                                       aria-describedby="@DescribedBy"
+                                                       @onchange="OnChange"
+                                                       @oninput="InputHandler"
+                                                       @onblur="OnBlur" />
+    ;
+
+    private RenderFragment LiveControl => @<input @attributes="ExtraAttributes"
+                                                  id="@Context.ElementId"
+                                                  name="@Context.InputName"
+                                                  @ref="Element"
+                                                  class="@CssClass"
+                                                  type="@HtmlType"
+                                                  @bind:get="LiveValue(DisplayValue)"
+                                                  @bind:set="OnTyped"
+                                                  @bind:event="oninput"
+                                                  placeholder="@Context.Placeholder"
+                                                  disabled="@Disabled"
+                                                  readonly="@ReadOnly"
+                                                  maxlength="@MaxLengthAttribute"
+                                                  list="@SuggestionsId"
+                                                  autocomplete="@Field.Autocomplete"
+                                                  inputmode="@Field.InputMode"
+                                                  aria-required="@AriaRequired"
+                                                  aria-invalid="@AriaInvalid"
+                                                  aria-label="@AriaLabel"
+                                                  aria-describedby="@DescribedBy"
+                                                  @onchange="OnChange"
+                                                  @onblur="OnBlur" />
     ;
 
     private string HtmlType => Field.Type switch
@@ -107,7 +136,7 @@ else
     /// </summary>
     private string DisplayValue => Field.Type == BormFieldType.Color && Context.StringValue.Length == 0
         ? EmptyColour
-        : Context.StringValue;
+        : Context.DisplayText;
 
     /// <summary>The colour an empty picker shows — <c>Attr("emptyColor", "#rrggbb")</c>, else black.</summary>
     private string EmptyColour => Attr("emptyColor", "#000000")!;
@@ -120,7 +149,7 @@ else
     /// page body when it took the wrapper away again.
     /// </summary>
     private bool HasAffix
-        => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix) || ShowReveal || OffersClear;
+        => !string.IsNullOrEmpty(Context.Prefix) || !string.IsNullOrEmpty(Context.Suffix) || ShowReveal || OffersClear;
 
     private bool _revealed;
 
@@ -144,9 +173,9 @@ else
            && Field.Type is not (BormFieldType.Hidden or BormFieldType.Color)
            && !DisabledOrReadOnly;
 
-    private string RevealLabel => Context.Text(_revealed
-        ? BormMessageKeys.PasswordHide
-        : BormMessageKeys.PasswordShow);
+    // One name, whichever way it stands: aria-pressed says whether the password shows. A name that turned into
+    // "Hide password" as well was read out as "Hide password, pressed" - pressed to hide, or hidden?
+    private string RevealLabel => Context.Text(BormMessageKeys.PasswordShow);
 
     private string ClearLabel => Context.Text(BormMessageKeys.Clear);
 
@@ -159,7 +188,10 @@ else
     private async Task Clear()
     {
         await Context.SetValueAsync(null);
-        await FocusAsync();
+        // After the render that empties the box, not before it: Firefox decides whether a later change fires
+        // against the value the box held when it took the focus, so focused while it still showed "France",
+        // typing France again raised nothing, and the field stayed empty with the word in it.
+        RequestFocusAfterRender();
     }
 
     /// <summary>

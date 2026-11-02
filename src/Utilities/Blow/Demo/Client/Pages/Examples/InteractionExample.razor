@@ -3,32 +3,112 @@
 <PageTitle>Interaction · Blow</PageTitle>
 
 <ExampleScaffold Title="Interaction"
-                 Summary="Toggle the interaction options live and see how the flow responds - draggable nodes, selectable elements, zoom and pan behaviours.">
+                 Summary="Every way the canvas takes input is a BlowCanvas parameter: dragging, connecting and selecting, panning with a drag or the wheel, and zooming. Switch them on the toolbar and try the canvas to feel each one - the usual reason is a flow that has to sit quietly inside a page, or a read-only view.">
     <Toolbar>
-        <label><input type="checkbox" checked="@_draggable" @onchange="e => _draggable = (bool)e.Value!" /> nodes draggable</label>
-        <label><input type="checkbox" checked="@_selectable" @onchange="e => _selectable = (bool)e.Value!" /> selectable</label>
-        <label><input type="checkbox" checked="@_zoomScroll" @onchange="e => _zoomScroll = (bool)e.Value!" /> zoom on scroll</label>
-        <label><input type="checkbox" checked="@_panDrag" @onchange="e => _panDrag = (bool)e.Value!" /> pan on drag</label>
-        <label><input type="checkbox" checked="@_zoomDbl" @onchange="e => _zoomDbl = (bool)e.Value!" /> zoom on dbl-click</label>
+        <label><input type="checkbox" checked="@_draggable" @onchange="@(e => _draggable = (bool)e.Value!)" /> Nodes draggable</label>
+        <label><input type="checkbox" checked="@_connectable" @onchange="@(e => _connectable = (bool)e.Value!)" /> Nodes connectable</label>
+        <label><input type="checkbox" checked="@_selectable" @onchange="@(e => _selectable = (bool)e.Value!)" /> Selectable</label>
+        <label><input type="checkbox" checked="@_panOnDrag" @onchange="@(e => _panOnDrag = (bool)e.Value!)" /> Pan on drag</label>
+        <label>Pan buttons
+            <select disabled="@(!_panOnDrag)" @onchange="@(e => _panButtons = e.Value?.ToString() ?? "left")">
+                <option value="left" selected="@(_panButtons == "left")">Left</option>
+                <option value="left-middle" selected="@(_panButtons == "left-middle")">Left + middle</option>
+                <option value="all" selected="@(_panButtons == "all")">Left + middle + right</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_zoomOnScroll" @onchange="@(e => _zoomOnScroll = (bool)e.Value!)" /> Zoom on scroll</label>
+        <label><input type="checkbox" checked="@_panOnScroll" @onchange="@(e => _panOnScroll = (bool)e.Value!)" /> Pan on scroll</label>
+        @* The axis and the speed only apply while the wheel pans, so they are off while it zooms. *@
+        <label>Scroll axis
+            <select disabled="@(!_panOnScroll)" @onchange="@(e => _scrollMode = Enum.Parse<BlowPanOnScrollMode>(e.Value?.ToString() ?? "Free"))">
+                @foreach (var mode in Enum.GetValues<BlowPanOnScrollMode>())
+                {
+                    <option value="@mode" selected="@(mode == _scrollMode)">@mode</option>
+                }
+            </select>
+        </label>
+        <label>Scroll speed @_scrollSpeed.ToString("0.0")
+            <input type="range" min="0.1" max="2" step="0.1" value="@Inv(_scrollSpeed)" disabled="@(!_panOnScroll)"
+                   @oninput="@(e => _scrollSpeed = ToDouble(e.Value, 0.5))" />
+        </label>
+        <label><input type="checkbox" checked="@_zoomOnDoubleClick" @onchange="@(e => _zoomOnDoubleClick = (bool)e.Value!)" /> Zoom on double-click</label>
+        <label><input type="checkbox" checked="@_preventScrolling" @onchange="@(e => _preventScrolling = (bool)e.Value!)" /> Keep the page still</label>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
-                    NodesDraggable="_draggable"
-                    ElementsSelectable="_selectable"
-                    ZoomOnScroll="_zoomScroll"
-                    PanOnDrag="_panDrag"
-                    ZoomOnDoubleClick="_zoomDbl">
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-            <BlowMiniMap />
-        </BlowCanvas>
+        @* A right-button press on the empty pane reaches OnPaneContextMenu, which leaves the browser's menu alone - fine
+           for a right-click, but in the way of a right-button pan, so the page cancels the menu while that button pans. *@
+        <div class="ia-frame" @oncontextmenu:preventDefault="@(_panOnDrag && _panButtons == "all")">
+            <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                        NodesDraggable="_draggable"
+                        NodesConnectable="_connectable"
+                        ElementsSelectable="_selectable"
+                        PanOnDrag="_panOnDrag"
+                        PanButtons="PanButtons"
+                        ZoomOnScroll="_zoomOnScroll"
+                        PanOnScroll="_panOnScroll"
+                        PanOnScrollMode="_scrollMode"
+                        PanOnScrollSpeed="_scrollSpeed"
+                        ZoomOnDoubleClick="_zoomOnDoubleClick"
+                        PreventScrolling="_preventScrolling">
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowMiniMap />
+            </BlowCanvas>
+        </div>
     </ChildContent>
+    <TryIt>
+        <li>Untick <strong>Nodes draggable</strong>: pressing a node still selects it, but it no longer moves.</li>
+        <li>Untick <strong>Nodes connectable</strong>: dragging from a handle (the dot on a node's edge) no longer draws a connection.</li>
+        <li>Untick <strong>Selectable</strong>: clicks and <strong>Shift+drag</strong> no longer select anything, so <strong>Delete</strong> has nothing to remove.</li>
+        <li>Untick <strong>Pan on drag</strong>: <strong>dragging the background</strong> no longer moves the view; the wheel and the control bar still do.</li>
+        <li>Pick <strong>Pan buttons</strong> to choose which mouse buttons pan when dragged on the background: add the <strong>middle</strong> button, or the <strong>right</strong> one too.</li>
+        <li>Untick <strong>Zoom on scroll</strong>: the canvas ignores the wheel, so <strong>scrolling</strong> over it scrolls the page instead; <strong>Ctrl+wheel</strong> (how a trackpad pinch arrives) still zooms.</li>
+        <li>Tick <strong>Pan on scroll</strong>: the wheel pans the view, <strong>Shift+wheel</strong> pans it sideways, and <strong>Ctrl+wheel</strong> still zooms. <strong>Scroll axis</strong> locks the wheel to one direction and <strong>Scroll speed</strong> scales how far each notch travels.</li>
+        <li>Untick <strong>Zoom on double-click</strong>: <strong>double-clicking</strong> the background no longer zooms in (with it on, <strong>Shift+double-click</strong> zooms out).</li>
+        <li>Untick <strong>Keep the page still</strong>, then <strong>scroll</strong> over the canvas: it zooms and the page scrolls along with it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodesDraggable</code>, <code>NodesConnectable</code> and <code>ElementsSelectable</code> (all <code>true</code>) switch dragging, connecting and selecting for the whole flow; a node or edge can still opt out alone with its own <code>Draggable</code>, <code>Connectable</code> or <code>Selectable</code>.</li>
+        <li><code>PanOnDrag</code> (<code>true</code>) lets a drag on the empty pane pan; <code>PanButtons</code> (<code>[0]</code>) lists the mouse buttons that do it - 0 left, 1 middle, 2 right. The page passes <code>[0, 1]</code> or <code>[0, 1, 2]</code>.</li>
+        <li><code>OnPaneContextMenu</code> does not cancel the browser's menu, so while the right button pans the page wraps the canvas in an element with <code>@@oncontextmenu:preventDefault</code>.</li>
+        <li><code>ZoomOnScroll</code> (<code>true</code>) zooms toward the cursor on the wheel. <code>PanOnScroll</code> (<code>false</code>) takes the wheel over for panning; <code>PanOnScrollMode</code> (<code>BlowPanOnScrollMode.Free</code>, or <code>Horizontal</code> / <code>Vertical</code>) restricts it to one axis, and <code>PanOnScrollSpeed</code> (0.5) multiplies the wheel's distance.</li>
+        <li><code>ZoomOnDoubleClick</code> (<code>true</code>) zooms in by 20% about the point double-clicked, and out with Shift held.</li>
+        <li><code>PreventScrolling</code> (<code>true</code>) cancels the page scroll for a wheel the canvas acts on. A wheel it does not act on - zooming off, or a <code>ZoomActivationKey</code> that is not held - always reaches the page.</li>
+        <li>None of these touch the control bar: its buttons zoom and fit the view whatever is switched off.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .ia-frame { height:100%; }
+</style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
-    private bool _draggable = true, _selectable = true, _zoomScroll = true, _panDrag = true, _zoomDbl = true;
+
+    private bool _draggable = true;
+    private bool _connectable = true;
+    private bool _selectable = true;
+    private bool _panOnDrag = true;
+    private string _panButtons = "left";
+    private bool _zoomOnScroll = true;
+    private bool _panOnScroll;
+    private BlowPanOnScrollMode _scrollMode = BlowPanOnScrollMode.Free;
+    private double _scrollSpeed = 0.5;
+    private bool _zoomOnDoubleClick = true;
+    private bool _preventScrolling = true;
+
+    // One instance per choice, so the canvas is handed the same list on every render rather than a fresh one.
+    private static readonly int[] LeftButton = [0];
+    private static readonly int[] LeftAndMiddleButtons = [0, 1];
+    private static readonly int[] AllButtons = [0, 1, 2];
+
+    private IReadOnlyList<int> PanButtons => _panButtons switch
+    {
+        "left-middle" => LeftAndMiddleButtons,
+        "all" => AllButtons,
+        _ => LeftButton,
+    };
 
     protected override void OnInitialized()
     {
@@ -46,4 +126,9 @@
             new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
         ];
     }
+
+    private static double ToDouble(object? raw, double fallback)
+        => double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : fallback;
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

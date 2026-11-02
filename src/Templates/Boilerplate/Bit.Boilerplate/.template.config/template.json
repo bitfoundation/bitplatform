@@ -16,6 +16,157 @@
     "sourceName": "Boilerplate",
     "preferNameDirectory": true,
     "symbols": {
+        "framework": {
+            "displayName": ".NET version",
+            "type": "parameter",
+            "datatype": "choice",
+            "replaces": "net11.0",
+            "defaultValue": "net10.0",
+            "choices": [
+                {
+                    "choice": "net10.0",
+                    "description": ".NET 10 (LTS)"
+                },
+                {
+                    "choice": "net11.0",
+                    "description": ".NET 11"
+                }
+            ],
+            "description": "The .NET version the project targets."
+        },
+        "sdkVersion": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "\"version\": \"11.0.100-rc.3.26522.148\"",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "\"version\": \"10.0.100\""
+                    },
+                    {
+                        "condition": "",
+                        "value": "\"version\": \"11.0.100-rc.3.26522.148\""
+                    }
+                ]
+            }
+        },
+        "sdkRollForward": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "\"rollForward\": \"disable\"",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "\"rollForward\": \"latestFeature\""
+                    },
+                    {
+                        "condition": "",
+                        "value": "\"rollForward\": \"disable\""
+                    }
+                ]
+            }
+        },
+        "devContainerImage": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "mcr.microsoft.com/dotnet/sdk:10.0.403"
+                    },
+                    {
+                        "condition": "",
+                        "value": "mcr.microsoft.com/dotnet/sdk:11.0.100-rc.3"
+                    }
+                ]
+            }
+        },
+        "efToolVersion": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "dotnet-ef@11.0.0-rc.3.26522.148",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "dotnet-ef@10.0.14"
+                    },
+                    {
+                        "condition": "",
+                        "value": "dotnet-ef@11.0.0-rc.3.26522.148"
+                    }
+                ]
+            }
+        },
+        "xcodeVersion": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "xcode-version: '27.0'",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "xcode-version: '27.1'"
+                    },
+                    {
+                        "condition": "",
+                        "value": "xcode-version: '27.0'"
+                    }
+                ]
+            }
+        },
+        "runnerImage": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "ubuntu-26.04",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "ubuntu-24.04"
+                    },
+                    {
+                        "condition": "",
+                        "value": "ubuntu-26.04"
+                    }
+                ]
+            }
+        },
+        "aspNetCoreVersionName": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "ASP.NET Core 11.0",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "ASP.NET Core 10.0"
+                    },
+                    {
+                        "condition": "",
+                        "value": "ASP.NET Core 11.0"
+                    }
+                ]
+            }
+        },
         "helpUrl": {
             "displayName": "More info at",
             "type": "parameter",
@@ -122,27 +273,6 @@
                 }
             ]
         },
-        "pipeline": {
-            "displayName": "CI-CD pipeline",
-            "type": "parameter",
-            "datatype": "choice",
-            "replaces": "bit-option-pipeline",
-            "defaultValue": "GitHub",
-            "choices": [
-                {
-                    "choice": "GitHub",
-                    "description": "GitHub actions"
-                },
-                {
-                    "choice": "Azure",
-                    "description": "Azure DevOps pipelines"
-                },
-                {
-                    "choice": "None",
-                    "description": "None"
-                }
-            ]
-        },
         "module": {
             "displayName": "Module",
             "type": "parameter",
@@ -240,7 +370,7 @@
             "type": "parameter",
             "datatype": "bool",
             "replaces": "bit-option-signalR",
-            "defaultValue": "false",
+            "defaultValue": "true",
             "description": "Adds SignalR sample."
         },
         "offlineDb": {
@@ -543,6 +673,16 @@
             },
             "replaces": "4030"
         },
+        "workbenchPortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 6000,
+                "high": 6300,
+                "fallback": 6030
+            },
+            "replaces": "6030"
+        },
         "apiServerUrl": {
             "displayName": "Server url",
             "type": "parameter",
@@ -571,105 +711,6 @@
                 ]
             },
             "replaces": "use-your-api-server-url-here.com"
-        },
-        "devMcpRemoteUrl": {
-            "type": "generated",
-            "generator": "regex",
-            "dataType": "string",
-            "parameters": {
-                "source": "normalizedServerUrl",
-                "steps": [
-                    {
-                        "regex": "^use-your-api-server-url-here\\.com$",
-                        "replacement": "none"
-                    },
-                    {
-                        "regex": "^(?!none$)(.+)$",
-                        "replacement": "https://$1/dev-mcp"
-                    }
-                ]
-            }
-        },
-        "devMcpWebUrl": {
-            "type": "generated",
-            "generator": "join",
-            "parameters": {
-                "symbols": [
-                    {
-                        "type": "const",
-                        "value": "http://localhost:"
-                    },
-                    {
-                        "type": "ref",
-                        "value": "serverWebPortGenerated"
-                    },
-                    {
-                        "type": "const",
-                        "value": "/dev-mcp"
-                    }
-                ]
-            }
-        },
-        "devMcpApiAndUrl": {
-            "type": "generated",
-            "generator": "join",
-            "parameters": {
-                "symbols": [
-                    {
-                        "type": "ref",
-                        "value": "api"
-                    },
-                    {
-                        "type": "const",
-                        "value": "|http://localhost:"
-                    },
-                    {
-                        "type": "ref",
-                        "value": "serveApiPortGenerated"
-                    },
-                    {
-                        "type": "const",
-                        "value": "/dev-mcp"
-                    }
-                ]
-            }
-        },
-        "devMcpApiUrl": {
-            "type": "generated",
-            "generator": "regex",
-            "dataType": "string",
-            "parameters": {
-                "source": "devMcpApiAndUrl",
-                "steps": [
-                    {
-                        "regex": "^Standalone\\|",
-                        "replacement": ""
-                    },
-                    {
-                        "regex": "^[^|]*\\|.*$",
-                        "replacement": "none"
-                    }
-                ]
-            }
-        },
-        "devMcpLocalUrl": {
-            "type": "generated",
-            "generator": "coalesce",
-            "parameters": {
-                "sourceVariableName": "devMcpApiUrl",
-                "defaultValue": "none",
-                "fallbackVariableName": "devMcpWebUrl"
-            }
-        },
-        "devMcpUrl": {
-            "type": "generated",
-            "generator": "coalesce",
-            "parameters": {
-                "sourceVariableName": "devMcpRemoteUrl",
-                "defaultValue": "none",
-                "fallbackVariableName": "devMcpLocalUrl"
-            },
-            "replaces": "https://use-your-api-server-url-here.com/dev-mcp"
         },
         "webAppUrl": {
             "displayName": "web app url",
@@ -766,18 +807,6 @@
                     ]
                 },
                 {
-                    "condition": "(pipeline != GitHub)",
-                    "exclude": [
-                        ".github/workflows**"
-                    ]
-                },
-                {
-                    "condition": "(pipeline != Azure)",
-                    "exclude": [
-                        ".azure-devops/**"
-                    ]
-                },
-                {
                     "condition": "(module != Admin)",
                     "exclude": [
                         "src/Shared/Features/Dashboard/**",
@@ -787,6 +816,7 @@
                         "src/Shared/Features/Categories/ICategoryController.cs",
                         "src/Shared/Features/Products/IProductController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
+                        "src/Workbench/Components/Pages/AppPages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**",
                         // Drive ProductController / CategoryController, which this same rule removes.
@@ -856,6 +886,7 @@
                 {
                     "condition": "(advancedTests != true)",
                     "exclude": [
+                        "src/WorkbenchTests/**",
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Versioning/**",
@@ -884,7 +915,6 @@
                         "src/Tests/Features/TemplateConfig/ThemeColorLiteralTests.cs",
                         "src/Tests/Features/TemplateConfig/HeadContentUsageTests.cs",
                         "src/Tests/Features/TemplateConfig/PlatformDirectiveTests.cs",
-                        "src/Tests/Features/Culture/CultureCookieParsingTests.cs",
                         "src/Tests/Features/Culture/CultureUrlRedirectionTests.cs",
                         "src/Tests/Features/Culture/ResxParityTests.cs",
                         "src/Tests/Features/Culture/SupportedCultureContractTests.cs",
@@ -924,6 +954,7 @@
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
                         "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
+                        "src/Tests/Features/Identity/ExternalSignInErrorTests.cs",
                         "src/Tests/Features/Identity/NotAuthorizedPageTests.cs",
                         "src/Tests/Features/Identity/WebAuthnEnrolmentElevationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnElevatedAccessTests.cs",
@@ -946,6 +977,7 @@
                         "src/Tests/Features/Identity/ExternalSignInHealthChecksTests.cs",
                         "src/Tests/Features/Identity/GoogleRecaptchaHealthCheckTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
+                        "src/Tests/Features/Attachments/ImageEditorUITests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
                         "src/Tests/Features/TimeZone/TimeZoneSelectionUITests.cs",
@@ -974,13 +1006,13 @@
                         "src/Tests/Features/ErrorHandling/ErrorWriterRobustnessTests.cs",
                         "src/Tests/Features/ErrorHandling/ProblemDetailsConversionTests.cs",
                         "src/Tests/Features/ErrorHandling/ErrorPageStatusCodeTests.cs",
+                        "src/Tests/Features/ErrorHandling/PlainTextErrorTests.cs",
                         "src/Tests/Features/ForceUpdate/ForceUpdateHeaderHardeningTests.cs",
                         "src/Tests/Features/Json/JsonOptionsContractTests.cs",
                         "src/Tests/Features/Urls/AppQueryStringCollectionTests.cs",
                         "src/Tests/Features/TemplateConfig/TemplateConfigurationTests.cs",
                         "src/Tests/Features/Documentation/DocumentationTruthTests.cs",
                         "src/Tests/Features/TemplateConfig/SolutionAndRepoFilesTests.cs",
-                        "src/Tests/Features/TemplateConfig/PipelineFilesTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
                         "src/Tests/Features/OpenApi/OpenApiParameterContractTests.cs",
                         "src/Tests/Features/Urls/WebAppUrlOriginHardeningTests.cs",
@@ -1116,7 +1148,8 @@
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.*",
                         "src/Client/Boilerplate.Client.Core/Components/Layout/AppAiChatPanelCards/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/SystemPromptsPage.*",
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SignalRInfiniteRetryPolicy.cs",
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppHubConnection.cs"
                     ]
                 },
                 {
@@ -1243,6 +1276,7 @@
                     "condition": "(ads != true)",
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
+                        "src/Workbench/Components/Pages/AppPages/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs",
@@ -1254,6 +1288,12 @@
                     "exclude": [
                         "src/Client/Boilerplate.Client.Core/Components/Pages/AppPageBase.BrouterLifecycles.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Common/AppPageData.BrouterLifecycles.cs"
+                    ]
+                },
+                {
+                    "condition": "(framework != 'net11.0')",
+                    "exclude": [
+                        "src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsKioskGuard.cs"
                     ]
                 }
             ]

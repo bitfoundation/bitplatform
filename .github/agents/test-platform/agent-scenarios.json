@@ -2,6 +2,8 @@
   "project": "AgentsApp",
   "options": [
     "--aspire",
+    "false",
+    "--signalR",
     "false"
   ],
   "author": {
@@ -110,6 +112,10 @@
         {
           "skill": "review",
           "long": true
+        },
+        {
+          "called": "browser_navigate",
+          "long": true
         }
       ]
     },
@@ -119,9 +125,6 @@
       "checks": [
         {
           "skill": "ai-dlc"
-        },
-        {
-          "called": "SearchBitPlatformCode"
         },
         {
           "finalMatches": "signalR"
@@ -378,6 +381,9 @@
           "called": "SearchBitBlazorUI"
         },
         {
+          "called": "browser_navigate"
+        },
+        {
           "fileLacks": {
             "path": "src/Client/AgentsApp.Client.Core/Components/Common/FeedbackForm.razor",
             "patterns": [
@@ -397,7 +403,7 @@
       "prompt": "Confirmation emails aren't arriving for users in production.",
       "checks": [
         {
-          "skill": "ai-dlc"
+          "skill": "troubleshoot"
         },
         {
           "finalMatches": "dev-mcp"

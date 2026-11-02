@@ -59,6 +59,30 @@ public sealed class BlazeDbDatabaseOptions
     /// <summary>Descriptors of tables this database will own. Prefer <see cref="AddTable"/>.</summary>
     public List<BlazeDbTableDescriptor> Tables { get; } = [];
 
+    /// <summary>Data migrations to run on open; see <see cref="AddMigration"/>.</summary>
+    public List<BlazeDbMigration> Migrations { get; } = [];
+
+    /// <summary>
+    /// Registers a data migration: when the database is opened with a <see cref="BlazeDbDatabase.UserVersion"/>
+    /// below <paramref name="version"/>, <paramref name="migrate"/> runs - after recovery, before
+    /// <see cref="BlazeDbDatabase.OpenAsync"/> returns - in a transaction that also moves the user version
+    /// to <paramref name="version"/>. Migrations run lowest version first, each at most once, and one that
+    /// throws fails the open and leaves the database at the version before it.
+    /// <para>
+    /// Field-level changes need no migration: a property added later reads as its default from older rows,
+    /// and one removed is skipped (see "Schema evolution" in the guide). A migration is for changes to the
+    /// data itself - filling a new property, splitting one, moving rows between tables. A read-only replica
+    /// does not run them; the writer does, and the replica reads the result.
+    /// </para>
+    /// </summary>
+    public BlazeDbDatabaseOptions AddMigration(long version, Action<BlazeDbDatabase> migrate)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(version);
+        ArgumentNullException.ThrowIfNull(migrate);
+        Migrations.Add(new BlazeDbMigration(version, migrate));
+        return this;
+    }
+
     /// <summary>Registers a table. The descriptor is typically the generated <c>Table</c> member on a <c>[BlazeDbTable]</c> type.</summary>
     public BlazeDbDatabaseOptions AddTable(BlazeDbTableDescriptor descriptor)
     {
@@ -87,6 +111,23 @@ public sealed class BlazeDbDatabaseOptions
         if (ReadOnly && Storage is null)
         {
             throw new ArgumentException("A read-only replica needs a storage backend to read from.", nameof(ReadOnly));
+        }
+        foreach (var table in Tables)
+        {
+            if (table.Name.StartsWith(BlazeDbMetaTable.ReservedPrefix, StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    $"Table name '{table.Name}' starts with '{BlazeDbMetaTable.ReservedPrefix}', which is reserved for the engine's own tables.",
+                    nameof(Tables));
+            }
+        }
+        var versions = new HashSet<long>();
+        foreach (var migration in Migrations)
+        {
+            if (!versions.Add(migration.Version))
+            {
+                throw new ArgumentException($"More than one migration is registered for version {migration.Version}.", nameof(Migrations));
+            }
         }
     }
 }

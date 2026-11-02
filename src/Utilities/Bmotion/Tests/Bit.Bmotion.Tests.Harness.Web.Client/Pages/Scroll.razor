@@ -11,6 +11,11 @@
     <div id="page-progress" class="progress" style="position: fixed; top: 0; left: 0"></div>
 </Bmotion>
 
+@* The same, following the scroll through motion.dev's smoothing spring (stiffness 100, damping 30). *@
+<Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
+    <div id="smooth-progress" class="progress" style="position: fixed; top: 8px; left: 0"></div>
+</Bmotion>
+
 <Readout @ref="_progress" Id="tracker-progress" Initial="0" />
 <Readout @ref="_target" Id="tracker-target" Initial="" />
 

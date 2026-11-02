@@ -46,6 +46,34 @@ public static class FrameFactory
         return Compose($"Data Matrix {matrix.Width}x{matrix.Height}", BbBarcodeFormat.DataMatrix, symbol, width, height, content, 0);
     }
 
+    /// <summary>Renders a PDF417 symbol, tilted the way a hand holds a phone, centred in a camera sized frame.</summary>
+    /// <param name="content">Value to encode.</param>
+    /// <param name="width">Frame width.</param>
+    /// <param name="height">Frame height.</param>
+    /// <param name="scale">Pixels per module.</param>
+    /// <param name="degrees">Rotation, so the measurement includes finding the symbol's orientation.</param>
+    public static Frame Pdf417(string content, int width = 640, int height = 480, int scale = 2, double degrees = 8)
+    {
+        using var matrix = Pdf417Encoder.Encode(content, columns: 5);
+        using var symbol = SyntheticImage.FromMatrix(matrix, scale);
+        using var rotated = ImageTransforms.Rotate(symbol, degrees, background: 232);
+        return Compose($"PDF417 {matrix.Width}x{matrix.Height}", BbBarcodeFormat.Pdf417, rotated, width, height, content, 0);
+    }
+
+    /// <summary>Renders an Aztec symbol, turned a little, centred in a camera sized frame.</summary>
+    /// <param name="content">The text to encode.</param>
+    /// <param name="width">Frame width.</param>
+    /// <param name="height">Frame height.</param>
+    /// <param name="scale">Pixels per module.</param>
+    /// <param name="degrees">Rotation.</param>
+    public static Frame Aztec(string content, int width = 640, int height = 480, int scale = 4, double degrees = 12)
+    {
+        using var matrix = AztecEncoder.Encode(content);
+        using var symbol = SyntheticImage.FromMatrix(matrix, scale);
+        using var rotated = ImageTransforms.Rotate(symbol, degrees, background: 232);
+        return Compose($"Aztec {matrix.Width}x{matrix.Height}", BbBarcodeFormat.Aztec, rotated, width, height, content, 0);
+    }
+
     /// <summary>Renders a linear symbol centred in a camera sized frame.</summary>
     /// <param name="name">Case name.</param>
     /// <param name="format">The symbology.</param>

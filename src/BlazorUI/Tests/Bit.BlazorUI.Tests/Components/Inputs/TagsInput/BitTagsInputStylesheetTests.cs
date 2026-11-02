@@ -111,7 +111,7 @@ public class BitTagsInputStylesheetTests
         // A tags input can sit in a template of another one, which must not inherit the outer field's Color or Size:
         // each root starts the values those classes publish out unset, and the classes - declared further down at
         // the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-tgi-clr", "--bit-tgi-clr-txt", "--bit-tgi-clr-hover", "--bit-tgi-clr-focus", "--bit-tgi-gap",
+        foreach (var property in new[] { "--bit-tgi-clr", "--bit-tgi-clr-fg", "--bit-tgi-clr-txt", "--bit-tgi-clr-hover", "--bit-tgi-clr-focus", "--bit-tgi-gap",
                                          "--bit-tgi-fontsize", "--bit-tgi-iconsize", "--bit-tgi-helperfontsize", "--bit-tgi-tagfontsize",
                                          "--bit-tgi-minheight", "--bit-tgi-padding", "--bit-tgi-tagminheight", "--bit-tgi-tagpadding" })
         {
@@ -120,4 +120,26 @@ public class BitTagsInputStylesheetTests
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TagsInput", "BitTagsInput.scss");
+
+    [TestMethod,
+        DataRow("\n.bit-tgi-tgo {"),
+        DataRow("\n.bit-tgi-tgt {")]
+    public void BitTagsInputShouldDrawTheTextOfAnUnfilledChipInTheRoleTextColor(string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        var variant = SourceFiles.GetScssBlock(stylesheet, selector);
+
+        // The text of an Outline or Text chip sits on the field rather than on the role's fill, so it is drawn in the role's
+        // text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white - and
+        // kept under the pointer, as a BitTag keeps it, where the hover color of such a role is no more readable.
+        StringAssert.Contains(variant, "--bit-tgi-tag-clr: var(--bit-tgi-clr-fg);");
+        StringAssert.Contains(variant, "--bit-tgi-tag-clr-hover: var(--bit-tgi-clr-fg);");
+        StringAssert.Contains(variant, "--bit-tgi-tag-clr-dft: #{$clr-pri};");
+        StringAssert.Contains(variant, "--bit-tgi-tag-clr-hover-dft: #{$clr-pri};");
+
+        // Only the text: the focus ring keeps the role's main.
+        StringAssert.Contains(variant, "--bit-tgi-tag-ring: var(--bit-tgi-clr);");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tgi-#{$role} {"), "--bit-tgi-clr-fg: #{role-text($role, $tokens)};");
+    }
 }

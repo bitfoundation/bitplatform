@@ -14,7 +14,7 @@ public static class CliApp
     public const int ExitUsage = 2;
     public const int ExitCheckFailed = 3;
 
-    private static readonly string[] longRunningCommands = ["new", "setup", "diff", "translate", "doctor", "clean", "aot-profile"];
+    private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline"];
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -22,18 +22,23 @@ public static class CliApp
         {
             NewCommand.Create(services),
             SetupCommand.Create(services),
+            RunCommand.Create(services),
             DiffCommand.Create(services),
             DoctorCommand.Create(services),
             TrustCommand.Create(services),
             CleanCommand.Create(services),
             RenameCommand.Create(services),
             RemoveCommand.Create(services),
+            MigrationCommand.Create(services),
             TranslateCommand.Create(services),
             DecodeCommand.Create(services),
+            KeysCommand.Create(services),
+            PipelineCommand.Create(services),
             AotProfileCommand.Create(services),
             TelemetryCommand.Create(services),
             UpdateCommand.Create(services),
-            AboutCommand.Create(services)
+            AboutCommand.Create(services),
+            AdminHelperCommand.Create(services)
         };
 
         return root;
@@ -57,13 +62,15 @@ public static class CliApp
         var root = BuildRootCommand(() => services!);
         var parseResult = root.Parse(args);
         var command = parseResult.CommandResult.Command;
-        var commandName = command == root ? "bit" : command.Name;
+        var commandPath = CommandPath(parseResult.CommandResult, root);
+        var commandName = commandPath.Count == 0 ? "bit" : string.Join('-', commandPath);
+        var topCommandName = commandPath.Count == 0 ? "bit" : commandPath[0];
 
         using var log = new CliLog(environment.LogsDirectory, commandName);
         services = new CliServices(environment, console, log: log);
         log.Write($"bit {BuildInfo.Version} ({BuildInfo.Commit ?? "local build"}) on {environment.Os} {environment.Architecture}: {string.Join(' ', args.Select(ProcessSpec.Quote))}");
 
-        var isMeta = parseResult.Errors.Count > 0 || command == root || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version");
+        var isMeta = parseResult.Errors.Count > 0 || command == root || commandName is Tools.AdministratorSession.CommandName || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version");
         var decision = TelemetryDecision.Resolve(environment, services.Settings, BuildInfo.TelemetryConnectionString);
 
         if (isMeta is false && commandName is not "telemetry" && TelemetryNotice.ShouldShow(decision, services.Settings))
@@ -73,18 +80,21 @@ public static class CliApp
 
         services.Telemetry = isMeta
             ? CliTelemetry.Disabled(decision)
-            : CliTelemetry.Start(decision, environment, services.Settings, commandName, longRunningCommands.Contains(commandName), Console.Error);
+            : CliTelemetry.Start(decision, environment, services.Settings, commandName, longRunningCommands.Contains(topCommandName), Console.Error);
 
         if (services.Settings.IsFirstRun)
         {
             services.Settings.Save();
         }
 
+        using var title = new ConsoleTitle(isMeta is false && console.IsInteractive && Console.IsOutputRedirected is false && environment.IsCI is false, console.Unicode, $"bit {string.Join(' ', commandPath)}");
+        console.Title = title;
+
         var exitCode = ExitFailed;
 
         try
         {
-            exitCode = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false });
+            exitCode = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = TimeSpan.FromSeconds(10) });
             return exitCode;
         }
         catch (OperationCanceledException)
@@ -114,5 +124,17 @@ public static class CliApp
         {
             services.Telemetry.Complete(exitCode);
         }
+    }
+
+    public static IReadOnlyList<string> CommandPath(System.CommandLine.Parsing.CommandResult result, Command root)
+    {
+        var names = new List<string>();
+
+        for (var current = result; current is not null && current.Command != root; current = current.Parent as System.CommandLine.Parsing.CommandResult)
+        {
+            names.Insert(0, current.Command.Name);
+        }
+
+        return names;
     }
 }

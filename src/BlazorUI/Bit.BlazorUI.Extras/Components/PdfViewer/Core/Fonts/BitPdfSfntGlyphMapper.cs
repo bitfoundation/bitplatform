@@ -9,6 +9,8 @@ namespace Bit.BlazorUI;
 
 internal static class BitPdfSfntGlyphMapper
 {
+    private const int MaxMappedChars = 1 << 18;
+
     /// <summary>
     /// Builds a (3,1) Unicode cmap for the given font so the codepoints the
     /// renderer emits select the right glyphs. Returns null when nothing usable
@@ -217,12 +219,17 @@ internal static class BitPdfSfntGlyphMapper
                 int startO = endO + segX2 + 2;
                 int deltaO = startO + segX2;
                 int rangeO = deltaO + segX2;
+                var work = new BitPdfBudget(MaxMappedChars);
                 for (int s = 0; s < segCount; s++)
                 {
                     int end = U16(f, endO + s * 2);
                     int start = U16(f, startO + s * 2);
                     int delta = U16(f, deltaO + s * 2);
                     int rangeOffset = U16(f, rangeO + s * 2);
+                    if (end >= start && work.TrySpend(end - start + 1) is false)
+                    {
+                        return null;
+                    }
                     for (int ch = start; ch <= end && ch != 0xFFFF; ch++)
                     {
                         int gid;
@@ -254,6 +261,7 @@ internal static class BitPdfSfntGlyphMapper
             case 12: // segmented coverage
             {
                 int nGroups = (int)U32(f, o + 12);
+                var work = new BitPdfBudget(MaxMappedChars);
                 for (int gr = 0; gr < nGroups; gr++)
                 {
                     int rec = o + 16 + gr * 12;
@@ -264,6 +272,11 @@ internal static class BitPdfSfntGlyphMapper
                     long start = U32(f, rec);
                     long end = U32(f, rec + 4);
                     long startGid = U32(f, rec + 8);
+                    long count = Math.Min(end, 0xFFFF) - start + 1;
+                    if (count > 0 && work.TrySpend(count) is false)
+                    {
+                        return null;
+                    }
                     for (long ch = start; ch <= end && ch <= 0xFFFF; ch++)
                     {
                         map[(int)ch] = (int)(startGid + (ch - start));

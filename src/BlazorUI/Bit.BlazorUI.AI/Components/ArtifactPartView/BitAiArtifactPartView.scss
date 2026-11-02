@@ -1,0 +1,9 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// No public CSS variables of its own: the panel is a BitAiArtifactView and the placeholder a BitTag, restyled through
+// their own variables.
+
+// An artifact id can be as long as the transport cares to make it.
+.bit-aiapv-plh {
+    max-width: 100%;
+}

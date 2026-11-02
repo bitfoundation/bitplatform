@@ -124,8 +124,10 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
     function subscribeMessage(dotNetRef: any, listenerId: string) {
         const sw = window.navigator.serviceWorker;
         if (!sw) return;
+        // Bounded like every other structured-clone channel (see utils.boundMessage): Blazor's interop
+        // writes the JSON of whatever it is handed with no cap of its own.
         const handler = (e: MessageEvent) => {
-            butil.utils.dispatch(dotNetRef, 'InvokeServiceWorkerMessage', listenerId, e.data ?? null);
+            butil.utils.dispatch(dotNetRef, 'InvokeServiceWorkerMessage', listenerId, butil.utils.boundMessage(e.data) ?? null);
         };
         _msgListeners[listenerId] = handler;
         sw.addEventListener('message', handler);

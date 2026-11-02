@@ -1,0 +1,124 @@
+﻿@page "/"
+
+<PageTitle>Bortable samples</PageTitle>
+
+<h1>Bortable samples</h1>
+
+<p>
+    The same pages run in every Blazor hosting model: Server, WebAssembly, Auto and MAUI (Blazor Hybrid). The lists
+    have every feature on each of them. The browser always follows the pointer and measures where it is; what differs
+    is where the C# that decides each new drop position runs - in the browser, on the server at the other end of a
+    circuit, or in the app's own process.
+</p>
+
+<section>
+    <h2>This host</h2>
+    <HostFacts>
+        <dt>Last drag made with</dt>
+        <dd>@(_lastInput?.ToString().ToLowerInvariant() ?? "nothing yet")</dd>
+    </HostFacts>
+</section>
+
+<section>
+    <h2>A list</h2>
+    <p>
+        Drag an item to a new place: the others slide out of its way while it moves. A mouse drags with the browser's
+        own drag and drop; a finger rests on an item for a moment first, so a swipe over the list still scrolls the
+        page. From the keyboard, Tab into the list, then Space picks the focused item up, the arrow keys move it, and
+        Space drops it - or Escape puts it back.
+    </p>
+
+    <Bortable @bind-Items="_steps" TItem="string" AriaLabel="Release steps" OnEnd="OnEnd"
+              Class="list" ItemClass="item">
+        <ItemTemplate Context="step">@step</ItemTemplate>
+    </Bortable>
+
+    <p class="muted">Order: @string.Join(", ", _steps)</p>
+</section>
+
+<section>
+    <h2>Two lists</h2>
+    <p>
+        Both lists share a group, so items move between them. While an item is over the other list a placeholder shows
+        where it will land; the item itself moves when it is dropped. Each finished drag is listed below as
+        <code>OnEnd</code> reports it, with the input that made it.
+    </p>
+
+    <div class="columns">
+        <div class="column">
+            <h3>To do</h3>
+            <Bortable @bind-Items="_todo" TItem="string" Group="home" Id="home-todo" AriaLabel="To do" OnEnd="OnEnd"
+                      Class="list" ItemClass="item">
+                <ItemTemplate Context="task">@task</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="column">
+            <h3>Done</h3>
+            <Bortable @bind-Items="_done" TItem="string" Group="home" Id="home-done" AriaLabel="Done" OnEnd="OnEnd"
+                      Class="list" ItemClass="item tinted">
+                <ItemTemplate Context="task">@task</ItemTemplate>
+                <ChildContent>
+                    @if (_done.Count == 0)
+                    {
+                        <div class="empty" role="listitem">Drop finished tasks here.</div>
+                    }
+                </ChildContent>
+            </Bortable>
+        </div>
+    </div>
+
+    @if (_log.Count == 0)
+    {
+        <p class="muted">No drags yet.</p>
+    }
+    else
+    {
+        <ul class="log">
+            @foreach (var entry in _log)
+            {
+                <li>@entry</li>
+            }
+        </ul>
+    }
+</section>
+
+<section>
+    <h2>What each page checks</h2>
+    <ul class="features">
+        <li>This page - the list itself: live reordering, lists that share a group, the keyboard, and the event an app saves from.</li>
+        <li><NavLink href="board">Board</NavLink> - rules a list asks on the host: a column's limit, where a card may come from, a server that has the last word, and moving cards from code.</li>
+        <li><NavLink href="builder">Builder</NavLink> - cloning from a read-only palette, drag handles around inputs that keep working, and an item locked in place.</li>
+        <li><NavLink href="tree">Tree</NavLink> - lists inside the items of lists, to any depth.</li>
+        <li><NavLink href="plugins">Plugins</NavLink> - multi-drag, a selection that moves as one, and swap mode.</li>
+    </ul>
+</section>
+
+@code {
+    /// <summary>How many drags the log keeps; the oldest are dropped as new ones arrive.</summary>
+    private const int LogCapacity = 12;
+
+    private readonly List<string> _log = [];
+    private BortableInput? _lastInput;
+
+    // The lists are changed in place as items are dragged: @bind-Items keeps these fields in step.
+    private IList<string> _steps = new List<string> { "Freeze the branch", "Run the tests", "Tag the release", "Publish the packages", "Announce it" };
+    private IList<string> _todo = new List<string> { "Write the spec", "Review the PR", "Update the docs", "Ship it" };
+    private IList<string> _done = new List<string>();
+
+    // Raised once per drag, on the list it started in, after the bound lists are updated - whatever its outcome.
+    private void OnEnd(BortableEventArgs<string> e)
+    {
+        _lastInput = e.Input;
+
+        var what = e.Canceled ? "cancelled, everything put back"
+            : e.CrossedLists ? $"{e.FromId} to {e.ToId}, at #{e.NewIndex}"
+            : e.OldIndex == e.NewIndex ? "dropped where it was"
+            : $"#{e.OldIndex} to #{e.NewIndex}";
+
+        _log.Insert(0, $"[{e.Input.ToString().ToLowerInvariant()}] {e.Item}: {what}");
+        if (_log.Count > LogCapacity)
+        {
+            _log.RemoveRange(LogCapacity, _log.Count - LogCapacity);
+        }
+    }
+}

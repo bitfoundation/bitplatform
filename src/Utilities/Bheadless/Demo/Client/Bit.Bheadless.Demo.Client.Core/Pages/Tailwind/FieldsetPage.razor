@@ -1,0 +1,192 @@
+﻿@page "/tw/fieldset"
+
+<PageTitle>Fieldset — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Fieldset</h1>
+        <p class="mt-2 text-zinc-500">
+            Group form controls in an accessible — but easy to style — replacement for native <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">fieldset</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">legend</code>.
+        </p>
+        <TwSectionSwitcher Slug="fieldset" />
+    </header>
+
+    <TwDemoBlock Title="Basic example" Code="@_basicCode">
+        <Description>Use <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhFieldset</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhLegend</code> to title a group.</Description>
+        <LiveContent>
+            <BitBhFieldset class="flex max-w-md flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 m-0 shadow-sm data-disabled:bg-zinc-50 data-disabled:shadow-none">
+                <div class="flex flex-col gap-1 border-b border-zinc-100 pb-3">
+                    <BitBhLegend class="text-base font-semibold text-zinc-900 data-disabled:text-zinc-500">Shipping details</BitBhLegend>
+                    <p class="m-0 text-sm text-zinc-500">Where should we deliver your order?</p>
+                </div>
+
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Street address</BitBhLabel>
+                    <BitBhInput name="address" placeholder="123 Main St"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+                </BitBhField>
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Country</BitBhLabel>
+                    <BitBhSelect name="country"
+                              class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed appearance-none pr-8">
+                        <option>Canada</option>
+                        <option>Mexico</option>
+                        <option>United States</option>
+                    </BitBhSelect>
+                </BitBhField>
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Delivery notes</BitBhLabel>
+                    <BitBhTextarea name="notes" rows="3" placeholder="Leave at front door…"
+                                class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed resize-y" />
+                </BitBhField>
+            </BitBhFieldset>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabling a fieldset" Code="@_disabledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> on the fieldset cascades to legend and inputs.</Description>
+        <LiveContent>
+            <BitBhFieldset Disabled="true" class="flex max-w-md flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 m-0 shadow-sm data-disabled:bg-zinc-50 data-disabled:shadow-none">
+                <div class="flex flex-col gap-1 border-b border-zinc-100 pb-3">
+                    <BitBhLegend class="text-base font-semibold text-zinc-900 data-disabled:text-zinc-500">Account (locked)</BitBhLegend>
+                    <p class="m-0 text-sm text-zinc-500">Verify your email to edit these fields.</p>
+                </div>
+
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Username</BitBhLabel>
+                    <BitBhInput type="text" value="alice"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+                </BitBhField>
+                <BitBhField class="flex w-full flex-col gap-1.5">
+                    <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Email</BitBhLabel>
+                    <BitBhInput type="email" value="alice@example.com"
+                             class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+                </BitBhField>
+            </BitBhFieldset>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Toggling at runtime" Code="@_toggleCode">
+        <Description>Bind <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Disabled</code> to a state value.</Description>
+        <LiveContent>
+            <div class="flex w-full max-w-md flex-col gap-3">
+                <div class="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2">
+                    <span class="@($"inline-flex items-center gap-2 text-sm font-medium {(_disabled ? "text-zinc-500" : "text-emerald-700")}")">
+                        <span class="@($"h-2 w-2 rounded-full {(_disabled ? "bg-zinc-400" : "bg-emerald-500")}")"></span>
+                        @(_disabled ? "Read-only" : "Editing")
+                    </span>
+                    <BitBhButton class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100"
+                              OnClick="@(() => _disabled = !_disabled)">
+                        @(_disabled ? "Enable" : "Disable")
+                    </BitBhButton>
+                </div>
+
+                <BitBhFieldset Disabled="_disabled" class="flex max-w-md flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 m-0 shadow-sm data-disabled:bg-zinc-50 data-disabled:shadow-none">
+                    <div class="flex flex-col gap-1 border-b border-zinc-100 pb-3">
+                        <BitBhLegend class="text-base font-semibold text-zinc-900 data-disabled:text-zinc-500">Profile</BitBhLegend>
+                        <p class="m-0 text-sm text-zinc-500">Shown publicly on your profile page.</p>
+                    </div>
+                    <BitBhField class="flex w-full flex-col gap-1.5">
+                        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Display name</BitBhLabel>
+                        <BitBhInput type="text" placeholder="Alice Anderson"
+                                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+                    </BitBhField>
+                    <BitBhField class="flex w-full flex-col gap-1.5">
+                        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Bio</BitBhLabel>
+                        <BitBhTextarea rows="2" placeholder="Tell us about yourself…"
+                                    class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed resize-y" />
+                    </BitBhField>
+                </BitBhFieldset>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool _disabled;
+
+    private const string _basicCode = """
+<BitBhFieldset class="flex max-w-md flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 m-0 shadow-sm data-disabled:bg-zinc-50 data-disabled:shadow-none">
+    <div class="flex flex-col gap-1 border-b border-zinc-100 pb-3">
+        <BitBhLegend class="text-base font-semibold text-zinc-900 data-disabled:text-zinc-500">Shipping details</BitBhLegend>
+        <p class="m-0 text-sm text-zinc-500">Where should we deliver your order?</p>
+    </div>
+
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Street address</BitBhLabel>
+        <BitBhInput name="address" placeholder="123 Main St"
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+    </BitBhField>
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Country</BitBhLabel>
+        <BitBhSelect name="country"
+                  class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed appearance-none pr-8">
+            <option>Canada</option>
+            <option>Mexico</option>
+            <option>United States</option>
+        </BitBhSelect>
+    </BitBhField>
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Delivery notes</BitBhLabel>
+        <BitBhTextarea name="notes" rows="3" placeholder="Leave at front door…"
+                    class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed resize-y" />
+    </BitBhField>
+</BitBhFieldset>
+""";
+
+    private const string _disabledCode = """
+<BitBhFieldset Disabled="true" class="flex max-w-md flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 m-0 shadow-sm data-disabled:bg-zinc-50 data-disabled:shadow-none">
+    <div class="flex flex-col gap-1 border-b border-zinc-100 pb-3">
+        <BitBhLegend class="text-base font-semibold text-zinc-900 data-disabled:text-zinc-500">Account (locked)</BitBhLegend>
+        <p class="m-0 text-sm text-zinc-500">Verify your email to edit these fields.</p>
+    </div>
+
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Username</BitBhLabel>
+        <BitBhInput type="text" value="alice"
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+    </BitBhField>
+    <BitBhField class="flex w-full flex-col gap-1.5">
+        <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Email</BitBhLabel>
+        <BitBhInput type="email" value="alice@example.com"
+                 class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+    </BitBhField>
+</BitBhFieldset>
+""";
+
+    private const string _toggleCode = """
+<div class="flex w-full max-w-md flex-col gap-3">
+    <div class="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2">
+        <span class="@($"inline-flex items-center gap-2 text-sm font-medium {(_disabled ? "text-zinc-500" : "text-emerald-700")}")">
+            <span class="@($"h-2 w-2 rounded-full {(_disabled ? "bg-zinc-400" : "bg-emerald-500")}")"></span>
+            @(_disabled ? "Read-only" : "Editing")
+        </span>
+        <BitBhButton class="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium hover:bg-zinc-100"
+                  OnClick="@(() => _disabled = !_disabled)">
+            @(_disabled ? "Enable" : "Disable")
+        </BitBhButton>
+    </div>
+
+    <BitBhFieldset Disabled="_disabled" class="flex max-w-md flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 m-0 shadow-sm data-disabled:bg-zinc-50 data-disabled:shadow-none">
+        <div class="flex flex-col gap-1 border-b border-zinc-100 pb-3">
+            <BitBhLegend class="text-base font-semibold text-zinc-900 data-disabled:text-zinc-500">Profile</BitBhLegend>
+            <p class="m-0 text-sm text-zinc-500">Shown publicly on your profile page.</p>
+        </div>
+        <BitBhField class="flex w-full flex-col gap-1.5">
+            <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Display name</BitBhLabel>
+            <BitBhInput type="text" placeholder="Alice Anderson"
+                     class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed" />
+        </BitBhField>
+        <BitBhField class="flex w-full flex-col gap-1.5">
+            <BitBhLabel class="text-sm font-semibold text-zinc-900 data-disabled:opacity-50">Bio</BitBhLabel>
+            <BitBhTextarea rows="2" placeholder="Tell us about yourself…"
+                        class="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600 data-disabled:bg-zinc-100 data-disabled:cursor-not-allowed resize-y" />
+        </BitBhField>
+    </BitBhFieldset>
+</div>
+
+@code {
+    private bool _disabled;
+}
+""";
+}

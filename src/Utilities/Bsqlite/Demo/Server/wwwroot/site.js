@@ -362,6 +362,51 @@
 
     // ── Fragments ────────────────────────────────────────────────────────────────────────────
 
+    // ── A page with no interactivity ───────────────────────────────────────────────────────────
+
+    /* A page that stays on the server (MainLayout marks it data-static) runs none of the shell's Blazor handlers. Its
+       header is an interactive island of its own; the docs drawer and the footer's Back to top are worked from here -
+       and only there, so nothing here ever touches markup a running Blazor page is drawing. */
+    function isStaticPage() {
+        var page = document.querySelector('.page');
+        return page !== null && page.dataset.static === 'true';
+    }
+
+    function setStaticDrawer(open, focus) {
+        var panel = document.getElementById('bb-docs-nav');
+        var toggle = document.querySelector('.bb-docs-menu-toggle');
+        if (panel === null || toggle === null) return;
+
+        panel.classList.toggle('bb-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        var label = toggle.querySelector('.bb-docs-menu-label');
+        if (label !== null) label.textContent = open ? 'Hide docs' : 'Browse docs';
+
+        if (!focus) return;
+        var target = open ? panel.querySelector('.bb-docs-close') : toggle;
+        // After the panel is shown: a panel still hidden when the focus call arrives refuses it.
+        if (target !== null) requestAnimationFrame(function () { target.focus(); });
+    }
+
+    function onStaticChrome(e) {
+        if (!isStaticPage() || !(e.target instanceof Element)) return;
+
+        if (e.target.closest('.bb-go-to-top')) {
+            goToTop();
+        } else if (e.target.closest('.bb-docs-menu-toggle')) {
+            var panel = document.getElementById('bb-docs-nav');
+            setStaticDrawer(panel === null || !panel.classList.contains('bb-open'), true);
+        } else if (e.target.closest('.bb-docs-close')) {
+            setStaticDrawer(false, true);
+        }
+    }
+
+    function onStaticEscape(e) {
+        if (e.key !== 'Escape' || !isStaticPage()) return;
+        var panel = document.getElementById('bb-docs-nav');
+        if (panel !== null && panel.classList.contains('bb-open')) setStaticDrawer(false, true);
+    }
+
     /* The skip link. Blazor's router hears every link click at the document, and for a fragment
        it scrolls at most - it never moves focus - so the next Tab after "Skip to content" would land
        in the very header the link exists to skip. Heard here in the capture phase, ahead of the
@@ -374,7 +419,15 @@
         if (link === null || main === null) return;
 
         e.preventDefault();
-        // <main> carries tabindex="-1" for this; the focus ring is suppressed for it in app.css.
+        // On a docs page <main> opens with the nav panel - thirty-odd links - so landing on <main> skipped the header
+        // and left the panel still to tab through. The page's own heading is where the content starts; <main> (which
+        // carries tabindex="-1" for this, its focus ring suppressed in app.css) is the landing page's.
+        var heading = main.querySelector('.bb-docs-content h1');
+        if (heading !== null) {
+            if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+            heading.focus();
+            return;
+        }
         main.focus();
     }
 
@@ -494,6 +547,8 @@
 
         document.addEventListener('keydown', onShortcut);
         document.addEventListener('click', onSkipLink, true);
+        document.addEventListener('click', onStaticChrome);
+        document.addEventListener('keydown', onStaticEscape);
     }
 
     window.bitDemoSite = {

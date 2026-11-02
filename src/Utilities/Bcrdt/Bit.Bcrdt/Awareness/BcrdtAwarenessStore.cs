@@ -46,6 +46,12 @@ public readonly record struct BcrdtAwarenessChangedEventArgs(
 /// </remarks>
 public sealed class BcrdtAwarenessStore : IDisposable
 {
+    /// <summary>The highest awareness clock accepted from a peer.</summary>
+    private const ulong MaxClock = long.MaxValue / 2;
+
+    /// <summary>How far ahead of our own clock a claim about our own entry may be and still be believed.</summary>
+    private const long MaxSelfClockJump = 1L << 32;
+
     private readonly Dictionary<ulong, BcrdtAwarenessEntry> _entries = [];
     private readonly object _gate = new();
     private readonly TimeSpan _timeout;
@@ -333,7 +339,10 @@ public sealed class BcrdtAwarenessStore : IDisposable
         {
             ulong clientId = reader.ReadVarUInt();
             ulong rawClock = reader.ReadVarUInt();
-            if (rawClock > long.MaxValue) throw new BcrdtFormatException("Awareness clock out of range.");
+
+            // Far below the top of the range: a clock is stepped past (+1) when it is ours, and a
+            // value at the very top would overflow into one every peer rejects from then on.
+            if (rawClock > MaxClock) throw new BcrdtFormatException("Awareness clock out of range.");
 
             object? value = BcrdtAnyCodec.Read(ref reader);
             decoded.Add((clientId, (long)rawClock, value as IReadOnlyDictionary<string, object?>));
@@ -359,6 +368,11 @@ public sealed class BcrdtAwarenessStore : IDisposable
                     // Our own entry echoed back at our current clock carries nothing new.
                     bool removedUs = state is null && existing?.State is not null;
                     if (clock < _localClock || (clock == _localClock && !removedUs)) continue;
+
+                    // A claim further ahead than any session could have published is not an earlier
+                    // session of ours; it is forged or corrupt. Stepping past it would hand our clock to
+                    // whoever chose the number, so it is ignored, and peers that believed it time it out.
+                    if (clock - _localClock > MaxSelfClockJump) continue;
 
                     _localClock = clock + 1;
                     _entries[clientId] = existing is null
@@ -503,6 +517,42 @@ public sealed class BcrdtAwarenessStore : IDisposable
                 ? entry
                 : new BcrdtAwarenessEntry(clientId, 0, null, default));
         }
+        return Encode(entries);
+    }
+
+    /// <summary>
+    /// Reads who an awareness update speaks for, without applying it: each entry's client, clock, and
+    /// whether it publishes state or announces a departure.
+    /// </summary>
+    /// <remarks>For a server that polices which connection may speak for which client.</remarks>
+    /// <exception cref="BcrdtFormatException">The update is malformed.</exception>
+    internal static List<(ulong ClientId, long Clock, bool Online)> ReadEntries(ReadOnlyMemory<byte> update)
+    {
+        var reader = new BcrdtBufferReader(update);
+        int count = reader.ValidateCount(reader.ReadVarUInt32(), "awareness entry");
+
+        var entries = new List<(ulong, long, bool)>(count);
+        for (int i = 0; i < count; i++)
+        {
+            ulong clientId = reader.ReadVarUInt();
+            ulong rawClock = reader.ReadVarUInt();
+            if (rawClock > MaxClock) throw new BcrdtFormatException("Awareness clock out of range.");
+
+            object? state = BcrdtAnyCodec.Read(ref reader);
+            entries.Add((clientId, (long)rawClock, state is not null));
+        }
+        return entries;
+    }
+
+    /// <summary>Encodes departures: each client gone, at the clock it was last seen with.</summary>
+    /// <remarks>
+    /// A removal at a client's own current clock supersedes its entry everywhere, and the client's own
+    /// next update - should it in fact still be there - supersedes the removal.
+    /// </remarks>
+    internal static byte[] EncodeRemovals(IReadOnlyList<(ulong ClientId, long Clock)> clients)
+    {
+        var entries = new List<BcrdtAwarenessEntry>(clients.Count);
+        foreach ((ulong clientId, long clock) in clients) entries.Add(new BcrdtAwarenessEntry(clientId, clock, null, default));
         return Encode(entries);
     }
 

@@ -22,6 +22,12 @@ public sealed class BelemetryLogRecord
     /// <summary>The body - the formatted log message.</summary>
     public string? Body { get; set; }
 
+    /// <summary>
+    /// The message template of a <see cref="Body"/> that renders a user id: the body falls back to it when the record
+    /// loses the ids (<see cref="BelemetryFeatures.UserTracking"/> is revoked before it is exported).
+    /// </summary>
+    internal string? BodyTemplate { get; set; }
+
     /// <summary>The event name, for records that represent a named event (e.g. <c>browser.page_view</c>).</summary>
     public string? EventName { get; set; }
 

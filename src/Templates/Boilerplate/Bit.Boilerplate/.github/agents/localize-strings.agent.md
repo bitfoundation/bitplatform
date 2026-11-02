@@ -16,7 +16,7 @@ This is the pass `AGENTS.md` section 5 leaves for later: it moves the English li
 
 - Reuse a key when `AppStrings.resx` already holds the same text.
 - Otherwise add one with a short name that says what the text is for; related keys share a prefix, as the existing `SignIn*` and `Email*` ones do. A placeholder such as `{0}` stays in the value, and the call site keeps passing its argument.
-- Each call site becomes `Localizer[nameof(AppStrings.Key)]`, and the strongly typed class is regenerated with the command in `AGENTS.md` section 4.
+- Each call site becomes `Localizer[nameof(AppStrings.Key)]`, and the strongly typed class is regenerated with the command in `AGENTS.md` section 4. An attribute takes a constant instead, so a DTO's `[Display(Name = "Delivery date")]` becomes `[Display(Name = nameof(AppStrings.DeliveryDate))]`.
 
 ## Every language
 

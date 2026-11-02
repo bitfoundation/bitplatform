@@ -1,0 +1,100 @@
+﻿@page "/sources"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject SampleState State
+
+<PageTitle>Sources · Balette samples</PageTitle>
+
+<h1>Sources</h1>
+
+<p>
+    A source searches what the registry does not hold - an API, a database, a search index. It is asked after a short
+    pause in typing, every newer keystroke cancels the search before it, and a spinner shows while one is pending. This
+    page registers two modes and one source at runtime; they leave with the page.
+</p>
+
+<table>
+    <thead>
+        <tr><th>Registered here</th><th>What it shows</th><th></th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>#</code> Issues mode</td>
+            <td>A paged source, ten issues at a time with a "Show more…" row, in the order the "server" returned them</td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync("#")'>Search issues</button></td>
+        </tr>
+        <tr>
+            <td><code>@@</code> People mode</td>
+            <td>A source whose results are re-ranked by the palette's own fuzzy matcher</td>
+            <td><button type="button" class="btn" @onclick="@(() => Palette.OpenAsync("@"))">Find people</button></td>
+        </tr>
+        <tr>
+            <td>Documentation, in the default mode</td>
+            <td>An in-memory list served through the matcher, next to the registered commands</td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync("modes")'>Search "modes"</button></td>
+        </tr>
+    </tbody>
+</table>
+
+<p>
+    On the empty query the palette lists every mode under "Modes"; choosing one types its prefix. The <code>&gt;</code>
+    mode comes from the options and stays when this page is left.
+</p>
+
+@code {
+    private readonly List<IDisposable> _registrations = [];
+
+    protected override void OnInitialized()
+    {
+        _registrations.Add(Palette.RegisterMode(new BaletteCommandMode
+        {
+            Prefix = "#",
+            Name = "Issues",
+            Description = "Search issues by number or title",
+            Placeholder = "Search issues…",
+            HideRegistryCommands = true,
+            Sources = [new BaletteDelegateSource("Issues", async (query, cursor, context, cancellationToken) =>
+            {
+                var page = await SampleData.SearchIssuesAsync(query, cursor, take: 10, cancellationToken);
+                return new BaletteSourcePage([.. page.Items.Select(ToCommand)], page.NextCursor, page.TotalCount);
+            }, minQueryLength: 0)],
+        }));
+
+        _registrations.Add(Palette.RegisterMode(new BaletteCommandMode
+        {
+            Prefix = "@",
+            Name = "People",
+            Description = "Find a teammate",
+            Placeholder = "Search people…",
+            HideRegistryCommands = true,
+            Sources = [new BaletteDelegateSource("People", async (query, cancellationToken) =>
+            {
+                var people = await SampleData.SearchPeopleAsync(query, cancellationToken);
+                return [.. people.Select(p => BaletteCmd.Action(p.Name, () => State.Record($"Messaged {p.Name}")).Id($"person:{p.Name}").Subtitle(p.Role).Build())];
+            }, minQueryLength: 0, applyMatcher: true)],
+        }));
+
+        // Built once: the source reads the list it is given again on every search, and a lazy query would build every command again too.
+        _registrations.Add(Palette.RegisterSource(new BaletteStaticSource("Documentation",
+            [.. SampleData.DocTopics.Select(t => BaletteCmd.New(t.Title).Id($"docs:{t.Anchor}").Subtitle(t.Summary)
+                .Href($"https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette#{t.Anchor}", newTab: true)
+                .Build())])));
+    }
+
+    private BaletteCommand ToCommand(SampleData.Issue issue) =>
+        BaletteCmd.New($"#{issue.Number} {issue.Title}").Id($"issue:{issue.Number}")
+            .Subtitle(issue.IsOpen ? "Open" : "Closed")
+            .Handler(_ =>
+            {
+                State.Record($"Opened issue #{issue.Number}");
+                return Task.FromResult(BaletteCommandResult.Toast($"Issue #{issue.Number}: {issue.Title}"));
+            });
+
+    public void Dispose()
+    {
+        foreach (var registration in _registrations)
+        {
+            registration.Dispose();
+        }
+    }
+}

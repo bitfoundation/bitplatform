@@ -43,13 +43,13 @@ re-rendered at any size and edited later, rather than being a picture of a drawi
 - **SVG, PNG, JPEG and WebP export** that match the screen, including a pure .NET PNG path for servers and tests.
 - **Real-time collaboration**: transport-agnostic operation sync, presence and offline queueing.
 - **Touch, stylus, mouse and trackpad**: palm rejection, pinch zoom, wheel and trackpad pan and zoom, coalesced
-  samples, high-DPI and low-latency canvases.
+  samples, high-DPI canvases and an opt-in low-latency canvas.
 - **Retained rendering**: the browser keeps every path it has drawn, so a redraw of a large page costs a few
   numbers per element rather than every coordinate, which is what keeps Blazor Server fast too.
 - **Accessibility**: a labelled, focusable, keyboard-operable canvas, a live text summary of the drawing and
   polite announcements.
 - Works unchanged on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, including while
-  prerendering.
+  prerendering, and can be [lazy loaded](#lazy-loading-on-webassembly) on WebAssembly.
 
 ## Quick start
 
@@ -74,7 +74,7 @@ automatically by the package's Blazor initializer. The full walkthrough is in [g
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App or Blazor Hybrid
 
 ### Browser support
@@ -86,7 +86,7 @@ offers; where one is missing the canvas does without it rather than failing.
 | --- | --- | --- | --- | --- |
 | Coalesced pen samples | Yes | Yes (none on Android) | Yes | Fewer samples on very fast strokes |
 | Predicted samples (`PredictInk`) | Yes | 89+ | 18.2+ | About a frame more latency |
-| Low-latency canvas | Windows, ChromeOS | No | 15+ | Normal latency |
+| Low-latency canvas (`LowLatency`, off by default) | Windows, ChromeOS | No | 15+ | Normal latency |
 | WebP export | Yes | Yes | No | `NotSupportedException`; use PNG or JPEG |
 | A picture on the clipboard with a copy | Yes | 127+ | Yes | The copy pastes into canvases only |
 | Eyedropper (`PickColorAsync`) | Desktop | No | No | Returns null |
@@ -108,6 +108,8 @@ Every page explains what it shows, and its source is one click away.
 pages (signature, whiteboard, images, export, collaboration, autosave and canvas lifecycle), hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/MAUI/) (Blazor Hybrid on
 Android, iOS, macOS and Windows), so the same drawing code can be exercised in every hosting model.
+[Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its own whose browser half downloads `Bit.Bink.wasm` only when
+its whiteboard opens (see [lazy loading](#lazy-loading-on-webassembly)).
 
 ## How it fits together
 
@@ -1552,6 +1554,11 @@ Images are the one external reference the output can contain: a `BinkImageElemen
 is written as an `image` element pointing at it. Embed images as data URIs, or refuse remote sources on load with
 `AllowRemoteImages = false`, if the exported file must be self-contained.
 
+An embedded image is written in full wherever it is drawn, so a document that shows one picture many times can
+export to far more text than it holds. A server that exports documents it did not write can cap the output with
+`MaxLength`, in characters: past it the export throws `InvalidOperationException` instead of writing more. There is
+no cap by default.
+
 Injecting arbitrary SVG into a page is a scripting risk regardless of this library. To bring SVG from elsewhere
 into a drawing, import it instead, which turns it into Bink elements and never puts its markup in the page.
 
@@ -1604,6 +1611,14 @@ await canvas.SavePngAsync("drawing.png");
 
 Rendering happens on an offscreen canvas, so real fonts and every image format the browser can decode are
 included. This is the right choice for anything a user downloads.
+
+Before drawing, the export loads the images it shows: those in the exported region, on the layers it includes and,
+for a selection, in the selection. With nothing selected, a selection export covers the page and loads every image
+on it. Together they may hold at most `MaxPixels` pixels. An embedded PNG is sized from
+its header before it is loaded; anything else is first judged by the natural size the document records, then by the
+size the browser reads from the image as it loads it, since a document can record any size at all. An image past
+the limit is not kept, and is left out of the export unless the canvas already shows it. Unlike `BinkPngExporter`,
+the browser export has no report of what it left out.
 
 The browser encodes JPEG and WebP too, which are far smaller for a drawing over a photo:
 
@@ -1661,9 +1676,23 @@ var options = new BinkPngExportOptions
 ```
 
 Embedded images are decoded within the same limit: each image, and all images together, may decode to at most
-`MaxPixels`, an image larger than 4096 by 4096 is only decoded where it is drawn at no more than eight source
-pixels per device pixel along each axis, and the decoder grows its buffers as data actually arrives, so a small
-file that claims a huge image cannot allocate for it. Anything refused is counted in `SkippedImages`.
+`MaxPixels`, an image larger than 4096 by 4096 is only decoded where it has no more than eight pixels per output
+pixel along each axis, and the decoder grows its buffers as data actually arrives, so a small file that claims a
+huge image cannot allocate for it. Anything refused is counted in `SkippedImages`.
+
+The whole image is decoded whatever part of it is shown, so the eight-per-pixel rule compares all of its pixels
+with the output pixels it actually covers: a crop, or a part outside the exported region, does not count. A large
+photo cropped to a small detail, or exported through a small `Custom` region, is therefore skipped where the same
+photo drawn whole would not be. Export at a larger `Scale`, or crop the image data itself before embedding it.
+
+Rasterizing takes time in proportion to the geometry: every edge of a shape is tested on each sub-row of every
+pixel row it spans, and every element is drawn across its bounds. A document built to be expensive, with thousands
+of edges crossing every row or thousands of elements that each cover the page, can keep one export busy for
+minutes. A server that exports documents it did not write can cap that work with `MaxRasterWork`, counted in edge
+tests, sorted crossings and pixels touched: past it the export throws `InvalidOperationException`. There is no cap
+by default; a page of handwriting at screen size needs well under a hundred million. An embedded image is judged
+by the area it is drawn over before it is decoded, so one too costly to draw fails the export without being
+decompressed, even if its data would have turned out unreadable.
 
 `Scale` is independent of the display the drawing was made on. A signature captured on a phone and one captured
 on a desktop export at exactly the same resolution.
@@ -1704,43 +1733,176 @@ No configuration is needed.
 A WebAssembly app can download Bink only when someone first opens a page that draws. Nothing has to be taken out of
 `Program.cs`, because nothing of Bink's is registered there: the canvas takes only the framework's `IJSRuntime` and
 `NavigationManager` from the app's container, and imports its browser module itself when it attaches. Mark the
-assembly as lazy loaded:
+assembly as lazy loaded in the project that runs in the browser, and set a runtime switch next to the mark so the
+router knows the assembly is there to load:
 
 ```xml
+<!-- AOT builds are left out: see below. -->
 <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
   <BlazorWebAssemblyLazyLoad Include="Bit.Bink.wasm" />
+  <RuntimeHostConfigurationOption Include="MyApp.LazyLoadsBink" Value="true" Trim="true" />
 </ItemGroup>
 ```
 
-Then load it before the first component that uses Bink renders, typically from the router's `OnNavigateAsync`:
+Then load it before the first page that uses Bink renders, from the router's `OnNavigateAsync`:
 
 ```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
 @using Microsoft.AspNetCore.Components.WebAssembly.Services
 @inject LazyAssemblyLoader LazyAssemblyLoader
 
-<Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="LoadBinkAsync">
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
     ...
 </Router>
 
 @code {
-    private async Task LoadBinkAsync(NavigationContext context)
+    // Set only where Bit.Bink.wasm is marked: loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsBink = AppContext.TryGetSwitch("MyApp.LazyLoadsBink", out var on) && on;
+
+    private async Task OnNavigateAsync(NavigationContext context)
     {
-        if (context.Path == "whiteboard") await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+        // The pages that draw: fetch Bink before they render. A second call loads nothing again.
+        if (LazyLoadsBink && IsDrawingPage(context.Path))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+    }
+
+    // /whiteboard and the routes beneath it, such as /Whiteboard/2 (routes match regardless of case), but not
+    // /whiteboard-settings. Add every other route that renders Bink. The path keeps any query and fragment.
+    private static bool IsDrawingPage(string path)
+    {
+        path = path.Split('?', '#')[0];
+        return path.Equals("whiteboard", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("whiteboard/", StringComparison.OrdinalIgnoreCase);
     }
 }
 ```
 
-Nothing else changes. The stylesheet and the initializer that injects it are static web assets rather than part of
-the assembly, so they still load when the app starts, both small, and a canvas is laid out correctly from its first
-render. The zero-copy render path works from the lazily loaded assembly as well.
+`Program.cs` stays as it is. The stylesheet and the initializer that injects it are static web assets rather than part
+of the assembly, so they still load when the app starts, both small, and a canvas is laid out correctly from its first
+render. The zero-copy render path works from the lazily loaded assembly as well. The rest of the app has to keep to
+these rules:
 
-Your own code that names a Bink type has to run after the load too: register custom brushes and element types
-(`BinkBrushRegistry.Default.Register`, `BinkElementRegistry.Default.Register`) right after `LoadAssembliesAsync`,
-not in `Program.cs`. Both replace an earlier registration of the same kind, so registering again on a later
-navigation does no harm.
+- Only what renders after the assembly has loaded may use Bink's types - the pages it is loaded for and a layout only
+  they use, not `App.razor`, `Routes.razor`, a layout every page shares or `Program.cs`. A page in the app's own
+  assembly can hold a `<BinkCanvas>`, a `BinkDocument` field and fields of Bink's other types, structs included,
+  since the router loads Bink before it creates the page. The method that calls `LoadAssembliesAsync` cannot use them
+  either: WebAssembly resolves what a method refers to when the method first runs, which is before the load, and does
+  not retry what it failed to resolve.
+- No public type in an assembly the router reads in the browser - the app's own assembly first of all, the client
+  project's in a Blazor Web App - may derive from or implement one of Bink's, close a generic type over one of them
+  or constrain a type parameter to one: no public `BinkBrush` or `BinkElement` of your own, no public
+  `BinkElementConverter<T>`, `IBinkTool` or `BinkToolBase`, no public `IBinkRenderContext`, `IBinkTextRasterizer`,
+  `IBinkCollaborationTransport` or `IBinkDocumentStore`, no component that `@inherits` one of Bink's (a `.razor`
+  component is public), no public class that derives from `List<BinkStroke>` or implements `IComparer<BinkElement>`,
+  and no component with `@typeparam TElement where TElement : BinkElement`. The router reads the public types of those
+  assemblies once, when it first builds its route table, which is after the first navigation's `OnNavigateAsync`; on
+  WebAssembly a type whose base type, interface or constraint needs an assembly that is not loaded yet throws a
+  `ReflectionTypeLoadException` there. So such a type goes unnoticed when the app is opened at a page Bink is loaded
+  for, and fails the app on its first page when it is opened anywhere else: try the app from a page that does not
+  draw. Only a type's declaration counts: its fields and properties can be of Bink's types, structs included, and its
+  methods can take and return them. The router reads only public types, so an `internal` class - the default for a
+  class with no modifier - or a `private` one nested in a page is fine: it loads the first time it is used, which is
+  after Bink. A type that has to be public belongs in a library of your own, referenced from the client project and
+  lazy loaded together with Bit.Bink: mark it in the same `ItemGroup`
+  (`<BlazorWebAssemblyLazyLoad Include="MyApp.Drawing.wasm" />`) and load both
+  (`LoadAssembliesAsync(["Bit.Bink.wasm", "MyApp.Drawing.wasm"])`).
+- Register custom brushes and element types from code that runs after the load, such as a method of that library
+  called from the drawing page, and register them once. `BinkBrushRegistry.Default.Register` and
+  `BinkElementRegistry.Default.Register` replace an earlier registration of the same kind, and the brush registry
+  drops the default brush it has cached for that kind, so registering on every page open rebuilds that brush each
+  time. A static constructor runs once, however often the page opens and on however many threads:
 
-The condition leaves AOT builds out: AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
-to download later, and lazy loading an AOT-compiled assembly can fail at startup.
+  ```csharp
+  // MyApp.Drawing, lazy loaded with Bit.Bink
+  public static class DrawingExtensions
+  {
+      static DrawingExtensions()
+      {
+          BinkBrushRegistry.Default.Register<DashedBrush>();
+          BinkElementRegistry.Default.Register(new StickyNoteConverter());
+      }
+
+      // The first call runs the static constructor; later ones do nothing.
+      public static void Register() { }
+  }
+  ```
+
+  ```razor
+  @* Whiteboard.razor *@
+  @code {
+      protected override void OnInitialized() => DrawingExtensions.Register();
+  }
+  ```
+
+- In a Blazor Web App only the browser lazy loads, so give `Routes` a render mode in `App.razor` that brings the
+  router - and its `OnNavigateAsync` - to the browser. Under `InteractiveWebAssembly` it runs there once the app has
+  started. Under `InteractiveAuto` it runs over a server circuit on the first visit, while the WebAssembly runtime
+  downloads, and in the browser on later visits: a first visit draws on the server, and the browser downloads Bink on
+  a later one.
+- With per-page render modes the router renders statically on the server and never runs `OnNavigateAsync` in the
+  browser, so a page that draws fails there as it becomes interactive, with `Could not load file or assembly
+  'Bit.Bink'` - or `Could not load type of field`, naming one of the page's fields. Such a page loads Bink itself. It
+  names none of Bink's types, loads the assembly in `OnInitializedAsync`, and only then renders a component of yours
+  that holds the canvas:
+
+  ```razor
+  @* Pages/Whiteboard.razor, in the client project. WhiteboardEditor is a component of yours without a route, in the
+     same project, that holds the canvas: the page creates it only once Bink has loaded. *@
+  @page "/whiteboard"
+  @rendermode InteractiveWebAssembly
+  @using Microsoft.AspNetCore.Components.WebAssembly.Services
+  @inject LazyAssemblyLoader LazyAssemblyLoader
+
+  @if (_loaded)
+  {
+      <WhiteboardEditor />
+  }
+
+  @code {
+      // The switch set next to the mark: unset on the server and in an AOT build, where the editor renders at once.
+      private static readonly bool LazyLoadsBink = AppContext.TryGetSwitch("MyApp.LazyLoadsBink", out var on) && on;
+
+      private bool _loaded;
+
+      protected override async Task OnInitializedAsync()
+      {
+          if (LazyLoadsBink)
+              await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+
+          _loaded = true;
+      }
+  }
+  ```
+
+  While the assembly downloads, the canvas the server prerendered gives way to nothing; render a placeholder in an
+  `else` branch if that matters.
+- Every host other than standalone WebAssembly registers `LazyAssemblyLoader` itself if a component it renders
+  injects it - the server project of a Blazor Web App, where `Routes.razor` runs while it is prerendered and over the
+  circuit under `InteractiveAuto`, and a Hybrid (MAUI, WPF, Windows Forms) host that shares the router's file:
+  `builder.Services.AddScoped<LazyAssemblyLoader>()`. A component's services are resolved when it is created, whether
+  or not the switch lets it load anything, and only a WebAssembly host registers this one by itself. There is still
+  nothing of Bink's to register: those hosts load Bink with the rest of the app. Outside the browser
+  `LazyAssemblyLoader` downloads nothing: it loads each assembly the call names from the ones the app already
+  references, and throws if one is not among them. A library lazy loaded with Bit.Bink reaches the server through the
+  client project's reference to it.
+- The condition leaves AOT builds out. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
+  to download later, and lazy loading an AOT-compiled assembly can fail at startup. The switch is set only where the
+  mark is, so an AOT build skips `LoadAssembliesAsync` as well - loading an assembly that is not marked throws.
+- `Could not load file or assembly 'Bit.Bink'` (or `Could not load type of field`) means something used Bink's types
+  before the assembly loaded: load it in `OnNavigateAsync` for every route that renders them - from the page itself,
+  for a page with its own render mode - and keep them out of `Program.cs`, `App.razor`, the layouts every page shares
+  and the method that loads it. If it comes in a `ReflectionTypeLoadException` from the router on the first page -
+  and only when the app is opened away from a page that draws - a public type in an assembly the router reads derives
+  from, implements or is constrained to one of Bink's: make it internal, or move it into the library lazy loaded with
+  Bit.Bink. `... must be marked with 'BlazorWebAssemblyLazyLoad' item group` names an assembly the call loads that the
+  project file does not mark.
+
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App - its project file leaves the mark and the
+switch out of AOT builds, and its server registers `LazyAssemblyLoader` and nothing of Bink's - and the
+[end-to-end suite](Tests/Bit.Bink.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the home
+page never downloads `Bit.Bink.wasm`, and the whiteboard - opened from the home page or by a deep link the server
+prerenders - downloads it once, takes the zero-copy render path and draws a stroke with the mouse.
 
 ### Blazor Server
 
@@ -1791,6 +1953,10 @@ Prerendering is handled: the canvas renders its markup on the server, discovers 
 stays inert, and attaches when interactivity arrives. `AttachFailed` is null in that case, because nothing failed.
 
 Put the component in the client project so its assembly is available to WebAssembly.
+
+A page with its own render mode cannot use Bink from a [lazily loaded](#lazy-loading-on-webassembly) assembly as it
+is: the router that loads it runs statically on the server, so the page fails once it is interactive. Give `Routes`
+the render mode instead, or have each such page load the assembly itself, as that section shows.
 
 ### Blazor Hybrid
 
@@ -1918,8 +2084,18 @@ redraws at the new size. The document is unaffected: it has its own coordinate s
 
 ### Low-latency canvas
 
-The canvas is requested with the `desynchronized` hint, which shortens the path from drawing command to pixels on
-browsers that support it. `Capabilities.LowLatencyCanvas` reports whether the browser honoured it.
+`LowLatency` asks the browser for the `desynchronized` hint, which shortens the path from drawing command to pixels
+on browsers that support it. `Capabilities.LowLatencyCanvas` reports whether the browser honoured it.
+
+```razor
+<BinkCanvas LowLatency="true" />
+```
+
+It is off by default. Chromium (seen on Windows with GPU compositing) shows a desynchronized canvas that is not
+fully opaque as solid black once it sits inside an element that clips to rounded corners (`overflow: hidden` with
+a `border-radius`, an ordinary card), and the layer the live stroke is drawn on is never fully opaque. Turn it on
+for a canvas with no such ancestor, such as a full-screen whiteboard or a note-taking page. It is read when the
+canvas attaches.
 
 ### Pointer prediction
 
@@ -2448,7 +2624,11 @@ that is already on the dispatcher, such as the one the demo uses, needs nothing 
 ## Extending Bink
 
 Six extension points cover the things applications actually need to change. Each is a small interface or an
-abstract record, and none of them requires touching the engine.
+abstract record, and none of them requires touching the engine. An app that [lazy loads](#lazy-loading-on-webassembly)
+Bink on WebAssembly keeps the implementations its browser code uses in a library lazy loaded together with it, never
+in the client's own assembly. Ones only the server uses, such as a document store the server saves to or a text
+engine for server-side PNG export, can stay in a Blazor Web App's server project, which loads Bink with the rest of
+the app.
 
 ### A custom brush
 

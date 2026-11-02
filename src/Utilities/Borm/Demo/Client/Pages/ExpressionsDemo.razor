@@ -1,0 +1,270 @@
+﻿@page "/expressions"
+@implements IDisposable
+
+<PageTitle>Expressions · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Expressions</h1>
+    <p class="bb-subtitle">
+        Every total, condition and rule in this quote is written as text: <code>{Quantity} * {UnitPrice}</code>,
+        <code>{Total} &gt;= 10000</code>, <code>{ValidUntil} &gt; {IssuedOn}</code>. Text travels - it is exported
+        to JSON Schema and imported back - so a form a server sends can compute, decide and judge with no code
+        behind it. An expression reads the answers and calls a fixed list of functions, and nothing else.
+    </p>
+</div>
+
+<div class="bb-note">
+    Add a line or two and watch the line totals and the quote total follow. Choose <em>Company</em> and the
+    VAT number appears, required and checked against a pattern. Push the total past 10,000 and the quote
+    asks who approved it. A validity of more than 90 days is a warning, not an error: the quote can still be sent.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send quote" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Sent ✓</strong><pre>@_json</pre></div>
+}
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Try an expression against the answers above</span></div>
+    <div class="bb-fields">
+        <label class="bb-field expression-probe">
+            Expression
+            <input type="text" value="@_probe" spellcheck="false" autocomplete="off"
+                   @oninput="e => _probe = e.Value?.ToString() ?? string.Empty" />
+            <small>Try <code>count({Lines})</code>, <code>upper({Customer})</code>, <code>dateDiff({IssuedOn}, {ValidUntil})</code>, <code>iif({Total} &gt; 100, 'big', 'small')</code> or <code>round({Total} * vatRate('NL'), 2)</code>.</small>
+        </label>
+    </div>
+    <div class="demo-readout" aria-live="polite">
+        <p class="bb-overline">@(ProbeError is null ? "Answer" : "Does not parse")</p>
+        <pre id="expression-answer">@(ProbeError ?? ProbeAnswer)</pre>
+    </div>
+</div>
+
+<div class="bb-toolbar">
+    <button type="button" class="btn btn-secondary" aria-expanded="@(_showSchema ? "true" : "false")" @onclick="() => _showSchema = !_showSchema">
+        @(_showSchema ? "Hide" : "Show") the schema as JSON
+    </button>
+</div>
+@if (_showSchema)
+{
+    <div class="demo-readout">
+        <p class="bb-overline">BormJsonSchemaExporter.Export - every expression as it travels</p>
+        <pre>@BormJsonSchemaExporter.Export(_state.Definition)</pre>
+    </div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The language</h3>
+    <ul class="bb-detail-list">
+        <li><strong>Fields</strong> are written in braces: <code>{Email}</code>, <code>{Address.City}</code>, <code>{Lines[0].Product}</code>.
+            A path resolves against the object that owns the field first, so on a repeater's row <code>{Quantity}</code> is that
+            row's. <code>[]</code> means every row: <code>{Lines[].LineTotal}</code> is the list of every line's total.</li>
+        <li><strong>Values</strong>: numbers (<code>12</code>, <code>0.5</code>, <code>1e3</code>), text in single or double quotes,
+            <code>true</code>, <code>false</code>, <code>null</code>, and lists <code>['a', 'b']</code>.</li>
+        <li><strong>Operators</strong>: <code>+ - * / %</code>, <code>=</code> (or <code>==</code>), <code>!=</code> (or <code>&lt;&gt;</code>),
+            <code>&lt; &lt;= &gt; &gt;=</code>, <code>in</code>, <code>not in</code>, <code>and</code> (<code>&amp;&amp;</code>), <code>or</code>
+            (<code>||</code>), <code>not</code> (<code>!</code>). Comparisons do not chain: write <code>1 &lt; {x} and {x} &lt; 5</code>.</li>
+        <li><strong>Numbers are decimals</strong>, so <code>0.1 + 0.2</code> is <code>0.3</code> and money adds up. Text joins with
+            <code>+</code>; text compares without regard to case. A date plus a number moves it by that many days, and one date
+            minus another is the days between them.</li>
+        <li><strong>A missing answer</strong> reads as <code>null</code>. A comparison that needs one is <em>unknown</em>: a
+            condition that is unknown is false, so a field depending on a missing answer stays hidden, and a <em>rule</em> that is
+            unknown passes - saying a value is missing is <code>Required()</code>'s job. Dividing by zero is no answer, not an error.</li>
+    </ul>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Kind</th><th>Functions</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key">Logic</td><td><code>iif(condition, then, else)</code>, <code>coalesce(a, b, …)</code>, <code>isEmpty(x)</code>, <code>isNotEmpty(x)</code></td></tr>
+                <tr><td class="bb-table-key">Text</td><td><code>len</code> / <code>length</code> (a list's count too), <code>lower</code>, <code>upper</code>, <code>trim</code>, <code>concat(…)</code>, <code>substring(text, start, length?)</code>, <code>contains</code>, <code>startsWith</code>, <code>endsWith</code>, <code>matches(text, 'pattern')</code></td></tr>
+                <tr><td class="bb-table-key">Numbers</td><td><code>abs</code>, <code>round(x, digits?)</code>, <code>floor</code>, <code>ceil</code>, <code>number(x)</code>, <code>text(x)</code></td></tr>
+                <tr><td class="bb-table-key">Aggregates</td><td><code>sum</code>, <code>avg</code>, <code>min</code>, <code>max</code>, <code>count</code> - each takes values, lists or both, and skips what has not been answered</td></tr>
+                <tr><td class="bb-table-key">Dates</td><td><code>today()</code>, <code>now()</code>, <code>year</code>, <code>month</code>, <code>day</code>, <code>age(birthDate)</code>, <code>dateDiff(from, to, unit?)</code> (<code>'days'</code>, <code>'weeks'</code>, <code>'months'</code>, <code>'years'</code>, <code>'hours'</code>, <code>'minutes'</code>), <code>addDays</code>, <code>addMonths</code>, <code>addYears</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Where an expression goes</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>In C#</th><th>In JSON Schema</th><th>Means</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>VisibleWhen</code>, <code>RequiredWhen</code>, <code>DisabledWhen</code>, <code>ReadOnlyWhen</code>, a step's <code>VisibleWhen</code></td><td><code>x-visibleWhen</code>, <code>x-requiredWhen</code>, …, a step's <code>visibleWhen</code></td><td>A condition.</td></tr>
+                <tr><td class="bb-table-key"><code>Computed("{Quantity} * {UnitPrice}")</code></td><td><code>x-computed</code></td><td>A value derived from others, read-only by default.</td></tr>
+                <tr><td class="bb-table-key"><code>Must(expression, message, severity)</code></td><td><code>x-rules</code></td><td>A rule on one field. It revalidates whenever a field it reads changes.</td></tr>
+                <tr><td class="bb-table-key"><code>MustAll(expression, message, field)</code></td><td><code>x-rules</code> on the root</td><td>A rule on the whole form, its message put on <code>field</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>When(expression, w =&gt; …)</code></td><td>-</td><td>Rules that apply only while it holds.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        The fields an expression reads are its dependencies, so it is evaluated again exactly when one of them changes -
+        there is no <code>dependsOn</code> to keep in step. Expressions are synchronous and pure: a rule that calls a
+        service stays a delegate (<code>MustAsync</code>, <code>OptionsFrom</code>) and works alongside them.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Safe to take from anyone - and functions of your own</h3>
+    <p class="bb-card-desc">
+        An expression is not a program. It reads the form's values and calls the functions above, and nothing else: no member
+        access, no reflection, no assignment, no loops - so one from an untrusted document always finishes and can read nothing
+        but the answers. Parsing is bounded (4,096 characters, 48 levels of nesting, 1,024 parts), <code>matches</code> takes its
+        pattern only as a literal and with a time limit, and evaluating never throws. An expression that does not parse fails
+        the import, naming the field, rather than being dropped.
+    </p>
+    <p class="bb-card-desc">
+        Registered functions are the trust boundary: an expression from any document can call them, so register only what is
+        safe with any argument. This site registers <code>vatRate</code> at startup - try it in the console above:
+    </p>
+    <pre class="bb-code">BormExpressionFunctions.Register(<span class="s">"vatRate"</span>, args =&gt; args[0] <span class="k">is string</span> country
+    ? country.ToUpperInvariant() <span class="k">switch</span> { <span class="s">"NL"</span> =&gt; 0.21m, <span class="s">"DE"</span> =&gt; 0.19m, <span class="s">"FR"</span> <span class="k">or</span> <span class="s">"GB"</span> =&gt; 0.20m, _ =&gt; <span class="k">null</span> }
+    : <span class="k">null</span>, minArgs: 1, maxArgs: 1);
+
+<span class="c">// "x-computed": "round({net} * (1 + vatRate({country})), 2)"</span></pre>
+    <p class="bb-card-desc">
+        <code>today()</code> and <code>now()</code> read <code>BormExpressionFunctions.TimeProvider</code>, which a test can replace
+        with a fixed clock. <code>BormExpression.TryParse</code> and <code>Evaluate</code> - what the console uses - run one on its own.
+    </p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/expressions"
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send quote" />
+
+@code {
+    private readonly Quote _model = new() { IssuedOn = DateOnly.FromDateTime(DateTime.Today) };
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Quote>()
+            .Title("Quote")
+            .Field(x => x.Customer, f => f.Required())
+            .Field(x => x.CustomerType, f => f.AsRadio().Options(("person", "Person"), ("company", "Company")))
+            .Field(x => x.VatNumber, f => f
+                .VisibleWhen("{CustomerType} = 'company'")
+                .RequiredWhen("{CustomerType} = 'company'")
+                .Must("matches({VatNumber}, '^[A-Z]{2}[0-9A-Z]{8,12}$')",
+                      "Two letters, then 8 to 12 letters or digits."))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Product, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Must("{Quantity} >= 1", "Order at least one."))
+                    .Field(l => l.UnitPrice, f => f.Step(0.01).Must("{UnitPrice} > 0", "Give the line a price."))
+                    // This row's quantity and price: a path resolves against the row first.
+                    .Computed(l => l.LineTotal, "{Quantity} * {UnitPrice}"),
+                f => f.Attr("itemNoun", "line"))
+            .Field(x => x.Discount, f => f.Must("{Discount} <= sum({Lines[].LineTotal})",
+                                                "The discount cannot be more than the lines."))
+            // [] is every row. A missing discount is no discount.
+            .Computed(x => x.Total, "round(sum({Lines[].LineTotal}) - coalesce({Discount}, 0), 2)")
+            .Field(x => x.Approver, f => f
+                .VisibleWhen("{Total} >= 10000")
+                .RequiredWhen("{Total} >= 10000")
+                .Help("A quote of 10,000 or more needs an approver."))
+            .Field(x => x.IssuedOn, f => f.Required())
+            .Field(x => x.ValidUntil, f => f
+                .Must("{ValidUntil} > {IssuedOn}", "A quote is valid until some day after it is issued.")
+                .Must("dateDiff({IssuedOn}, {ValidUntil}) <= 90",
+                      "More than 90 days is unusual - check with finance.", BormValidationSeverity.Warning))
+            .MustAll("count({Lines}) > 0", "Add at least one line.", nameof(Quote.Lines))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private readonly Quote _model = new() { IssuedOn = DateOnly.FromDateTime(DateTime.Today) };
+    private BormState _state = default!;
+    private bool _submitted;
+    private bool _showSchema;
+    private string _json = "";
+    private string _probe = "sum({Lines[].LineTotal})";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Quote>()
+            .Title("Quote")
+            .Field(x => x.Customer, f => f.Required())
+            .Field(x => x.CustomerType, f => f.AsRadio().Options(("person", "Person"), ("company", "Company")))
+            .Field(x => x.VatNumber, f => f
+                .VisibleWhen("{CustomerType} = 'company'")
+                .RequiredWhen("{CustomerType} = 'company'")
+                .Must("matches({VatNumber}, '^[A-Z]{2}[0-9A-Z]{8,12}$')",
+                      "Two letters, then 8 to 12 letters or digits."))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Product, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Must("{Quantity} >= 1", "Order at least one."))
+                    .Field(l => l.UnitPrice, f => f.Step(0.01).Must("{UnitPrice} > 0", "Give the line a price."))
+                    .Computed(l => l.LineTotal, "{Quantity} * {UnitPrice}"),
+                f => f.Attr("itemNoun", "line"))
+            .Field(x => x.Discount, f => f.Must("{Discount} <= sum({Lines[].LineTotal})",
+                                                "The discount cannot be more than the lines."))
+            .Computed(x => x.Total, "round(sum({Lines[].LineTotal}) - coalesce({Discount}, 0), 2)")
+            .Field(x => x.Approver, f => f
+                .VisibleWhen("{Total} >= 10000")
+                .RequiredWhen("{Total} >= 10000")
+                .Help("A quote of 10,000 or more needs an approver."))
+            .Field(x => x.IssuedOn, f => f.Required())
+            .Field(x => x.ValidUntil, f => f
+                .Must("{ValidUntil} > {IssuedOn}", "A quote is valid until some day after it is issued.")
+                .Must("dateDiff({IssuedOn}, {ValidUntil}) <= 90",
+                      "More than 90 days is unusual - check with finance.", BormValidationSeverity.Warning))
+            .MustAll("count({Lines}) > 0", "Add at least one line.", nameof(Quote.Lines))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        // The console below reads the answers, so it follows every change to them.
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    // Parsing is bounded and evaluating never throws, so a box anyone can type into is safe to evaluate live.
+    private string? ProbeError => BormExpression.TryParse(_probe, out _, out var error) ? null : error;
+
+    private string ProbeAnswer => BormExpression.TryParse(_probe, out var expression, out _)
+        ? Describe(expression!.Evaluate(_state.Data))
+        : string.Empty;
+
+    private static string Describe(object? value) => value switch
+    {
+        null => "null - no answer",
+        string text => $"'{text}'",
+        bool b => b ? "true" : "false",
+        System.Collections.IEnumerable list => "[" + string.Join(", ", list.Cast<object?>().Select(Describe)) + "]",
+        IFormattable formattable => formattable.ToString(null, System.Globalization.CultureInfo.InvariantCulture),
+        _ => value.ToString() ?? string.Empty
+    };
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        _state.Dispose();
+    }
+}

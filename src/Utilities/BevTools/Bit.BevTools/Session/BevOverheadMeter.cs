@@ -15,6 +15,7 @@ public sealed class BevOverheadMeter
     private long _inspectionTicks;
     private long _diagnosticsTicks;
     private long _treeRefreshTicks;
+    private long _domMapTicks;
     private long _uiRenderCount;
     private long _appRenderCount;
     private readonly long _startTicks = Stopwatch.GetTimestamp();
@@ -38,7 +39,10 @@ public sealed class BevOverheadMeter
 
     public double UptimeSeconds => Stopwatch.GetElapsedTime(_startTicks).TotalSeconds;
 
-    public double TotalMs => InstrumentationMs + BevToolsRenderMs + InspectionMs + DiagnosticsMs + TreeRefreshMs;
+    /// <summary>Time spent mapping components to the page and back: highlighting, picking, render flashes.</summary>
+    public double PageMappingMs => Stopwatch.GetElapsedTime(0, Volatile.Read(ref _domMapTicks)).TotalMilliseconds;
+
+    public double TotalMs => InstrumentationMs + BevToolsRenderMs + InspectionMs + DiagnosticsMs + TreeRefreshMs + PageMappingMs;
 
     /// <summary>Average per-render bookkeeping cost in microseconds.</summary>
     public double InstrumentationPerRenderMicroseconds => AppRenderCount == 0 ? 0 : InstrumentationMs * 1000 / AppRenderCount;
@@ -60,4 +64,6 @@ public sealed class BevOverheadMeter
     internal void AddDiagnostics(long ticks) => Interlocked.Add(ref _diagnosticsTicks, ticks);
 
     internal void AddTreeRefresh(long ticks) => Interlocked.Add(ref _treeRefreshTicks, ticks);
+
+    internal void AddPageMapping(long ticks) => Interlocked.Add(ref _domMapTicks, ticks);
 }

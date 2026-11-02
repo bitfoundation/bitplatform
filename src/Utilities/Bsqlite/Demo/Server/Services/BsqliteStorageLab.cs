@@ -61,52 +61,72 @@ public static class BsqliteStorageLab
         CancellationToken cancellationToken)
     {
         var candidateNames = Names(candidates ?? DefaultCandidates);
-        string[] registeredNames = registered is null ? [.. candidateNames.Distinct(StringComparer.OrdinalIgnoreCase)] : Names(registered);
-        var unavailableNames = Names(unavailable).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var nonPersistentNames = Names(nonPersistent).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var registeredList = registered is null ? candidateNames : Names(registered);
+        var unavailableList = Names(unavailable);
+        var nonPersistentList = Names(nonPersistent);
         var binding = string.IsNullOrWhiteSpace(existingBinding) ? null : existingBinding.Trim();
         var database = string.IsNullOrWhiteSpace(databaseName) ? DefaultDatabaseName : databaseName.Trim();
 
-        var notes = new List<string>();
-
+        var invalid = Validate(candidateNames, registeredList, unavailableList, nonPersistentList, binding, database);
         var mode = BsqliteStorageMigrationMode.KeepExisting;
-        var configurationError = Validate(candidateNames, registeredNames, unavailableNames, nonPersistentNames, binding, database);
 
         // Parsed by name only: Enum.TryParse also takes "2" or "Manual, KeepExisting", neither of which is
         // something WithMigrationMode could be handed in code.
-        if (configurationError is null && string.IsNullOrWhiteSpace(migrationMode) is false)
+        if (invalid is null && string.IsNullOrWhiteSpace(migrationMode) is false)
         {
-            var modeName = MigrationModes.FirstOrDefault(name => string.Equals(name, migrationMode.Trim(), StringComparison.OrdinalIgnoreCase));
+            var modeText = migrationMode.Trim();
+            var modeName = MigrationModes.FirstOrDefault(name => string.Equals(name, modeText, StringComparison.OrdinalIgnoreCase));
 
-            if (modeName is null) configurationError = $"'{migrationMode}' is not a migration mode. Use one of: {string.Join(", ", MigrationModes)}.";
+            if (modeName is null) invalid = $"'{BsqliteText.Quote(modeText)}' is not a migration mode. Use one of: {string.Join(", ", MigrationModes)}.";
             else mode = Enum.Parse<BsqliteStorageMigrationMode>(modeName);
         }
+
+        // Input no configuration has is refused before anything is built from it - a provider per name, a
+        // report and a C# snippet of what was refused, which for an unknown mode would show KeepExisting. A
+        // configuration the library refuses is still planned below, since its report shows what was refused.
+        if (invalid is not null)
+        {
+            return new BsqliteStoragePlanDto
+            {
+                Opens = false,
+                Candidates = [],
+                Error = invalid,
+                Configuration = string.Empty,
+                Log = [],
+                Notes = []
+            };
+        }
+
+        // Built only from input that passed: a refused list may end in the whole unsplit rest of the text.
+        string[] registeredNames = registered is null ? [.. candidateNames.Distinct(StringComparer.OrdinalIgnoreCase)] : registeredList;
+        var unavailableNames = unavailableList.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var nonPersistentNames = nonPersistentList.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var notes = new List<string>();
+
+        string? configurationError = null;
 
         // The builder is what UseStorage(...) runs at startup, so a preference order it refuses is refused
         // with the exception the application would see, rather than with a paraphrase of it.
         BsqliteStorageSelection? selection = null;
 
-        if (configurationError is null)
+        try
         {
-            try
+            selection = BsqliteStorageSelectionBuilder.Create(builder =>
             {
-                selection = BsqliteStorageSelectionBuilder.Create(builder =>
+                for (var index = 0; index < candidateNames.Length; index++)
                 {
-                    for (var index = 0; index < candidateNames.Length; index++)
-                    {
-                        if (index == 0) builder.Prefer(candidateNames[index]);
-                        else builder.Fallback(candidateNames[index]);
-                    }
+                    if (index == 0) builder.Prefer(candidateNames[index]);
+                    else builder.Fallback(candidateNames[index]);
+                }
 
-                    if (allowNonPersistentFallback) builder.AllowNonPersistentFallback();
+                if (allowNonPersistentFallback) builder.AllowNonPersistentFallback();
 
-                    builder.WithMigrationMode(mode);
-                });
-            }
-            catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
-            {
-                configurationError = exception.Message;
-            }
+                builder.WithMigrationMode(mode);
+            });
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
+        {
+            configurationError = exception.Message;
         }
 
         var providers = registeredNames.Select(name => new LabProvider(
@@ -435,7 +455,7 @@ public static class BsqliteStorageLab
         {
             builder.Append(BsqliteStorageCatalog.Find(name) is { } known && BsqliteStorageCatalog.Instance(name) is not null
                 ? $"    .AddStorageProvider<{known.TypeName}>()\n"
-                : $"    .AddStorageProvider<YourStorageProvider>()   // Name == \"{name}\"\n");
+                : $"    .AddStorageProvider<YourStorageProvider>()   // Name == {Literal(name)}\n");
         }
 
         builder.Append("    .UseStorage(s => s");
@@ -448,7 +468,7 @@ public static class BsqliteStorageLab
         if (allowNonPersistentFallback) builder.Append("\n        .AllowNonPersistentFallback()");
         if (mode is not BsqliteStorageMigrationMode.KeepExisting) builder.Append($"\n        .WithMigrationMode(BsqliteStorageMigrationMode.{mode})");
 
-        builder.Append($")\n    .AddDatabase(\"{database}\"));");
+        builder.Append($")\n    .AddDatabase({Literal(database)}));");
 
         return builder.ToString();
     }
@@ -456,31 +476,42 @@ public static class BsqliteStorageLab
     private static string NameExpression(string name)
         => BsqliteStorageCatalog.Instance(name) is not null && BsqliteStorageCatalog.Find(name) is { } known
             ? $"{known.TypeName}.ProviderName"
-            : $"\"{name}\"";
+            : Literal(name);
 
-    private static string? Validate(string[] candidates, string[] registered, HashSet<string> unavailable, HashSet<string> nonPersistent, string? binding, string database)
+    /// <summary>
+    /// A name the caller wrote as a C# string literal: a quote or a backslash in it is escaped rather than ending
+    /// the literal, and a character that would end the line or reorder the snippet around it - as shown, not as
+    /// compiled - is written as its \uXXXX escape, which is the same character to the compiler.
+    /// </summary>
+    private static string Literal(string text)
+        => $"\"{BsqliteText.Escape(text.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal))}\"";
+
+    private static string? Validate(string[] candidates, string[] registered, string[] unavailable, string[] nonPersistent, string? binding, string database)
     {
-        foreach (var (list, label) in new[] { (candidates, "candidates"), (registered, "registered"), (unavailable.ToArray(), "unavailable"), (nonPersistent.ToArray(), "nonPersistent") })
+        // Every name reaches the library's log lines and the C# snippet. Both escape what could forge a line or
+        // reorder one, yet no provider name holds such a character, so a name that does is refused as the mistake
+        // it is. Lengths are checked first: a refused list may end in the whole unsplit rest of the text.
+        foreach (var (list, label) in new[] { (candidates, "candidates"), (registered, "registered"), (unavailable, "unavailable"), (nonPersistent, "nonPersistent") })
         {
-            if (list.Length > MaxNames) return $"'{label}' names {list.Length} backends; this tool plans for at most {MaxNames}.";
+            if (list.Length > MaxNames) return $"'{label}' names more than {MaxNames} backends; this tool plans for at most {MaxNames}.";
 
-            if (list.FirstOrDefault(name => name.Length > MaxNameLength) is { } longName) return $"'{longName[..20]}...' is longer than a provider name can usefully be ({MaxNameLength} characters).";
+            if (list.FirstOrDefault(name => name.Length > MaxNameLength) is { } longName) return $"'{BsqliteText.Quote(longName, 20)}' is longer than a provider name can usefully be ({MaxNameLength} characters).";
+
+            if (list.Any(BsqliteText.HasUnsafeCharacter)) return $"'{label}' names a backend with a control or format character, which no provider name has.";
         }
 
         if (binding?.Length > MaxNameLength) return $"existingBinding is longer than a provider name can usefully be ({MaxNameLength} characters).";
 
-        // Both reach the library's log lines, which this tool reports back: a line break in either would forge
-        // lines the library never wrote. The candidate lists cannot carry one - Names splits on it.
-        if (binding?.Any(char.IsControl) is true) return "existingBinding contains a control character, which no provider name has.";
+        if (binding is not null && BsqliteText.HasUnsafeCharacter(binding)) return "existingBinding contains a control or format character, which no provider name has.";
 
         if (database.Length > 256) return "databaseName is longer than 256 characters.";
 
-        return database.Any(char.IsControl) ? "databaseName contains a control character, which no database name should." : null;
+        return BsqliteText.HasUnsafeCharacter(database) ? "databaseName contains a control or format character, which no database name should." : null;
     }
 
     /// <summary>A list of provider names as a caller writes one: "opfs, indexeddb", "opfs indexeddb" or "opfs;indexeddb".</summary>
     private static string[] Names(string? text)
-        => string.IsNullOrWhiteSpace(text) ? [] : text.Split([',', ';', ' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        => string.IsNullOrWhiteSpace(text) ? [] : text.Split([',', ';', ' ', '\t', '\r', '\n'], MaxNames + 1, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     /// <summary>A SQLite header followed by zeros: what the migrator checks and compares, and nothing an engine could open.</summary>
     private static byte[] StandInDatabase()
@@ -579,11 +610,22 @@ public static class BsqliteStorageLab
 
         public ILogger<T> For<T>() => new Sink<T>(this);
 
+        /// <summary>
+        /// One entry, one line. The library writes each message on one line, but a message quotes the names it
+        /// was given: whatever in one could end the line or reorder it is escaped here, where every line is made,
+        /// rather than left to each caller of the library to have refused.
+        /// </summary>
         private void Write(LogLevel level, string message, Exception? exception)
         {
-            _lines.Add(exception is null ? $"{level}: {message}" : $"{level}: {message} ({exception.GetType().Name}: {exception.Message})");
+            if (exception is null)
+            {
+                _lines.Add($"{level}: {BsqliteText.Escape(message)}");
+                return;
+            }
 
-            if (exception is not null) LastException = exception.Message;
+            LastException = BsqliteText.Escape(exception.Message);
+
+            _lines.Add($"{level}: {BsqliteText.Escape(message)} ({exception.GetType().Name}: {LastException})");
         }
 
         private sealed class Sink<T>(LabLog log) : ILogger<T>

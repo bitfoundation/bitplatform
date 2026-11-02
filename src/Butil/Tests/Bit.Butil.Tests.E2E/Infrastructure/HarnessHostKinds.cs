@@ -40,7 +40,7 @@ public static class HarnessHostKinds
         _ => ["dotnet", "browser"],
     };
 
-    /// <summary>The <c>RendererInfo.Name</c> values the harness page may report in this host (.NET 9 and later).</summary>
+    /// <summary>The <c>RendererInfo.Name</c> values the harness page may report in this host.</summary>
     public static IReadOnlyList<string> ExpectedRenderers(string host) => host switch
     {
         Standalone or WebAssembly or WebAssemblyNoPrerender => ["WebAssembly"],

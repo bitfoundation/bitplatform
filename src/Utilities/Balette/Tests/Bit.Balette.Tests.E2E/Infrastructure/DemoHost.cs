@@ -39,7 +39,7 @@ public sealed class DemoHost : IAsyncDisposable
         // bit-balette.js and bit-balette.css among them) through the development manifest, which Development
         // switches on.
         var process = ChildProcess.Start("dotnet", [assembly, "--urls", baseUrl], Path.GetDirectoryName(RepoLayout.DemoServerProject())!,
-            new Dictionary<string, string> { ["ASPNETCORE_ENVIRONMENT"] = "Development" });
+            new Dictionary<string, string> { ["ASPNETCORE_ENVIRONMENT"] = "Development", ["Demo__RenderMode"] = E2EEnvironment.RenderMode });
 
         try
         {

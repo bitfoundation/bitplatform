@@ -277,6 +277,18 @@
             <BitPhoneInput DefaultValue="5551234" ShowClearButton ClearButtonIconName="@Own" />
         </BitParams>
     </section>
+
+    <section id="ai-empty-state-cascaded">
+        <BitParams Parameters="[new BitAiEmptyStateParams { IconName = Cascaded }]">
+            <BitAiEmptyState />
+        </BitParams>
+    </section>
+
+    <section id="ai-empty-state-own">
+        <BitParams Parameters="[new BitAiEmptyStateParams { Icon = CascadedIcon }]">
+            <BitAiEmptyState IconName="@Own" />
+        </BitParams>
+    </section>
 </div>
 
 @code {

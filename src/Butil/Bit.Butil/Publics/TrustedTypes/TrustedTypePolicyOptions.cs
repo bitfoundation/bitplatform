@@ -19,6 +19,17 @@ public class TrustedTypePolicyOptions
     /// With sanitizing on, a browser that has no sanitizing sink makes the policy fail rather than
     /// pass the markup through - a policy that silently stopped sanitizing would be worse than no
     /// policy at all.
+    /// <para>
+    /// <see cref="TrustedTypes.SetHtml"/> sanitizes in the target element's own context. Everywhere
+    /// else - <see cref="TrustedTypes.CreateHtml"/>, and every sink a <c>"default"</c> policy is run
+    /// for - the policy hands back a string that the sink parses again, in a context the policy never
+    /// sees: a table, an SVG element, a framework's markup container. So the markup is sanitized in the
+    /// most permissive HTML context there is, a <c>&lt;template&gt;</c>'s, which keeps table rows and
+    /// cells, and the policy refuses it when a raw-text element such as <c>&lt;style&gt;</c> is left
+    /// holding a <c>&lt;</c>. That text is written out unescaped, and parsed again inside an SVG or
+    /// MathML element it is markup rather than text - the shape of a mutation XSS. Everything else is
+    /// escaped on the way out and parses back into the tree that was sanitized.
+    /// </para>
     /// </remarks>
     public bool SanitizeHtml { get; set; } = true;
 

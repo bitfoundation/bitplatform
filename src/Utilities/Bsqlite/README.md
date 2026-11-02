@@ -1,7 +1,8 @@
 ﻿# bit Bsqlite
 
 SQLite in the browser for Blazor, with EF Core on top. The same entities and the same migrations run on the client as
-on the server, and the database lives in the user's browser tab - in OPFS, IndexedDB, Cache Storage or memory.
+on the server, and the database lives in the user's browser tab - in OPFS, IndexedDB, Cache Storage or memory - or, in a
+Blazor Hybrid app, in a file on the device, with the same registration and the same code.
 
 ```csharp
 // Program.cs
@@ -23,12 +24,16 @@ var open = await db.Orders.Where(o => o.Status == OrderStatus.Open).ToListAsync(
 That query runs in a dedicated worker in the browser: SQLite 3.53 (via [wa-sqlite](https://github.com/rhashimoto/wa-sqlite)
 1.1.2), the stock EF Core SQLite provider, and a storage backend chosen and remembered per database.
 
-> Targets **.NET 8, 9, and 10** with the matching EF Core · Runs on **Blazor WebAssembly**, and in a **Blazor Web App** on
-> **Interactive WebAssembly** or **Interactive Auto** once the page runs on WebAssembly. Prerendered pages render on the
-> server and open their database once interactive.
+> Targets **.NET 10 and 11** with the matching EF Core · Runs on **Blazor WebAssembly**, in a **Blazor Web App** on
+> **Interactive WebAssembly** or **Interactive Auto** once the page runs on WebAssembly, and in **Blazor Hybrid** apps
+> (MAUI, WPF, Windows Forms) on the device's native SQLite. Prerendered pages render on the server and open their database
+> once interactive.
 
 Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Demo/) - run the
 `Demo/Server` project, or visit [bsqlite.bitplatform.dev](https://bsqlite.bitplatform.dev).
+[`Samples/Lazy`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Samples/Lazy/) stands
+apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and EF Core only when its products page opens
+(see [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)).
 
 ---
 
@@ -40,8 +45,8 @@ Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundati
 - [Composition without dependency injection](#composition-without-dependency-injection)
 - [Live queries](#live-queries)
 - [Where it runs](#where-it-runs)
+- [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)
 - [What this release does not claim](#what-this-release-does-not-claim)
-- [Moving off Bit.Besql](#moving-off-bitbesql)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Tests](#tests)
 - [Documentation](#documentation)
@@ -69,7 +74,7 @@ Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundati
 
 | Package | Role |
 | --- | --- |
-| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, and the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite` |
+| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite`, and the native transport and SQLite engine Blazor Hybrid apps run on |
 | `Bit.Bsqlite.Testing` | An in-process transport for browser-free unit tests, plus the MSTest conformance kit every storage provider must pass |
 
 The storage backends, each in its own namespace and each registered with `AddStorageProvider<T>()`:
@@ -78,8 +83,9 @@ The storage backends, each in its own namespace and each registered with `AddSto
 | --- | --- | --- |
 | `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Persistent, synchronous engine build (the smallest download), several connections |
 | `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Persistent, JSPI or Asyncify engine build, widest reach |
-| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, and the migration path off `Bit.Besql` |
+| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, JSPI or Asyncify engine build, pages in the Cache API |
 | `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Volatile: tests, demos, and a declared last resort |
+| `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
 
 ## Installation
 
@@ -115,6 +121,12 @@ The engine (`.wasm`), the worker and the VFSes are static web assets under `_con
 demand: registering a backend costs nothing until it is selected, and a session downloads one engine build and the VFS of
 the backend it selected. Nothing needs to be added to the host page.
 
+The same registration serves a Blazor Hybrid app: .NET runs natively there, so Bsqlite registers the `file-system`
+backend, ranks it ahead of the browser ones, and opens the database as a file in the app's own folder with the native
+SQLite the app brings - `SQLitePCLRaw.bundle_e_sqlite3`, or the SQLitePCLRaw bundle it already uses.
+`ConfigureFileSystemStorage(o => o.RootDirectory = ...)` moves the folder; nothing else is needed. The native engine
+stays out of the WebAssembly build.
+
 ## Composition without dependency injection
 
 `AddBitBsqliteServices` registers everything above. Without dependency injection, the same pieces compose by hand:
@@ -147,14 +159,50 @@ live.Changed += (_, rows) => InvokeAsync(StateHasChanged);
 | Blazor Web App, Interactive WebAssembly | Everything |
 | Blazor Web App, Interactive Auto | Everything once the page runs on WebAssembly |
 | Prerendering | Register the services on the server as well; they resolve there, and the database opens once the page runs in the browser (`RendererInfo.IsInteractive` on Interactive WebAssembly, `OperatingSystem.IsBrowser()` on Interactive Auto) |
-| Interactive Server | Not supported: the engine runs in the user's tab, and EF Core on the server would need a native SQLite of its own |
+| Blazor Hybrid (MAUI, WPF, Windows Forms) | Everything, on a SQLite file on the device - the same registration, async rules and live queries as in the browser; two windows share the file the way two tabs do |
+| Interactive Server | Not supported: a user's database lives in their browser, and Bsqlite will not keep one file on the server for every user |
 
 Every service that reaches the browser, or holds a database session, is registered as scoped: one for the whole
-application on WebAssembly, and one per circuit or request on a server, so nothing is ever shared between users.
+application on WebAssembly, one per web view in Blazor Hybrid, and one per circuit or request on a server, so nothing is
+ever shared between users.
 
-EF Core's own feature set follows the target framework. The SQLite provider translates `SUM` over a `decimal` from EF
-Core 9 on and `ORDER BY` a `decimal` from EF Core 10 on; an application on .NET 8 gets the same `NotSupportedException`
-from those queries in the browser as from the stock provider on its server.
+## Lazy loading on WebAssembly
+
+EF Core and Bsqlite are most of what a WebAssembly app downloads for its database - about 2.1 MB, compressed with
+Brotli, for a small app on the demo's model. An app whose database only some pages use can mark them
+`BlazorWebAssemblyLazyLoad` and load them from the router's `OnNavigateAsync` before those pages render. `Program.cs`
+then registers nothing of Bsqlite's, and the pages build the same services the first time one of them asks:
+
+```csharp
+// Called only from the pages the assemblies are loaded for, once they run in the browser - and, to register, from a
+// server that prerenders them or a Blazor Hybrid app that shares them: public for those.
+public static class AppDatabase
+{
+    public static void Register(IServiceCollection services)
+    {
+        services.AddBitBsqliteServices(sqlite => sqlite
+            .AddStorageProvider<BsqliteOpfsStorageProvider>()
+            .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+            .UseStorage(s => s
+                .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
+            .AddDatabase("app.db"));
+
+        services.AddBitBsqliteDbContext<AppDbContext>();
+    }
+
+    public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
+        .GetBitBsqliteServices(Register)
+        .GetRequiredService<IBsqliteDbContextFactory<AppDbContext>>();
+}
+```
+
+`GetBitBsqliteServices` makes that registration once, on WebAssembly, in a container of Bsqlite's own in front of the
+app's, and takes the same method on every call. Where the app called `AddBitBsqliteServices` after all - a Blazor
+Hybrid app sharing the pages, which registers with `AppDatabase.Register(builder.Services)` - it returns the app's own
+container, once it has checked that what the method registers is there. Which assemblies to mark, the router's code, and the rules the rest of the app keeps - no public `DbContext` or migration in an assembly
+the router reads, nothing of EF Core's in `Program.cs`, the database asked for only once a page is interactive, no AOT - are in the *Getting started* guide's
+[Lazy loading on WebAssembly](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#lazy-loading-on-webassembly).
 
 ## What this release does not claim
 
@@ -166,16 +214,10 @@ from those queries in the browser as from the stock provider on its server.
   multithreaded WebAssembly is not Blazor's default.
 - `in-memory` has no admin view of live data. It registers no VFS, so a database opened on it lives in the engine's own
   heap inside the worker; `Admin` describes only images passed to it directly. Export, list, and migration away from
-  this backend do not see what a connection wrote. Persistent backends do not have this gap.
+  this backend do not see what a connection wrote, and a migration onto it does not reach the database a connection
+  opens - the source is deleted and the next open starts empty. Persistent backends do not have this gap.
 - `indexeddb` serializes readers. `IDBBatchAtomicVFS` is registered with `WebLocksMixin`'s default `exclusive` lock
   policy, so a read holds the same lock a write does. `SupportsConcurrentReads` reports that honestly.
-
-## Moving off Bit.Besql
-
-[Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) keeps a whole SQLite file in Cache Storage
-and syncs it from Blazor's in-memory file system. The `cache-storage` backend (`BsqliteCacheStorageProvider`) reads that
-file: a database Bit.Besql left in its `bit-Besql` cache is imported losslessly into Bsqlite's own page layout the first
-time it is opened, so an application that switches keeps its users' data.
 
 ## MCP server (for AI agents)
 
@@ -190,7 +232,7 @@ The wa-sqlite engine and the upstream VFS files are vendored at restore, verifie
 
 ```bash
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests && dotnet test        # ADO.NET, EF Core and storage selection, every target framework
-cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test    # the worker, the engine and every VFS in a real browser, plus the demo
+cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test    # the worker, the engine and every VFS in a real browser, plus the demo and the lazy loading sample
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.Mcp && dotnet test    # the MCP server, hosted in-memory
 cd src/Utilities/Bsqlite/Tests/bit-bsqlite-js && npm ci && npm test   # the JavaScript that needs no browser
 ```
@@ -200,7 +242,7 @@ for the browser matrix, the soak suite and the benchmark page.
 
 ## Documentation
 
-- [Getting started](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md) - registration, contexts, raw ADO.NET, the shared database
+- [Getting started](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md) - registration, contexts, raw ADO.NET, the shared database, lazy loading on WebAssembly
 - [Storage](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/storage.md) - backends, selection rules, migration, admin, writing a provider
 - [Live queries](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/live-queries.md) - EF and ADO.NET live queries, cross-tab notifications
 - [Architecture and performance](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/architecture.md) - the worker, the binary wire format, the statement cache, change tracking

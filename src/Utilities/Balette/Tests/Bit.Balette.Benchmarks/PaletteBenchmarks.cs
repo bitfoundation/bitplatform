@@ -159,20 +159,22 @@ public class RankerBenchmarks
 }
 
 /// <summary>
-/// One keystroke end to end, measured on everything whose cost grows with the registry. It repeats what the
-/// palette component does on the root page in the default mode: snapshot the registered commands, keep the visible
-/// top-level ones, parse the query once, match every candidate (keeping <see cref="BaletteCommand.AlwaysShow"/>
-/// commands that miss) and rank the matches down to <see cref="BaletteOptions.MaxResults"/>. Grouping the ranked
-/// matches into rows and rendering them is left out: it is bounded by MaxResults, whatever the registry size. This
-/// mirrors private component code, so it has to follow changes to <c>Balette.Rebuild</c>.
+/// One keystroke end to end, as <c>Balette.Rebuild</c> runs it: parse the query once, match the root page's candidates
+/// (every visible command without a parent), match the nested commands the root finds too
+/// (<see cref="BaletteOptions.SearchNestedCommands"/>), and rank the matches down to <see cref="BaletteOptions.MaxResults"/>.
+/// The snapshot of the registry is taken once, outside the keystroke, as the palette now does: it re-reads the registry
+/// only when it changed (see <see cref="SnapshotBenchmarks"/>). Grouping the ranked matches into rows and rendering
+/// them is left out: it is bounded by MaxResults, whatever the registry size. This mirrors private component code, so it
+/// has to follow changes to <c>Balette.Rebuild</c>.
 /// </summary>
 [MemoryDiagnoser]
 public class KeystrokeBenchmarks
 {
     private readonly BaletteOptions _options = new();
-    private BaletteService _service = null!;
     private BaletteRanker _ranker = null!;
     private BaletteHistory _history = null!;
+    private List<BaletteCommand> _all = null!;
+    private Dictionary<string, BaletteCommand> _byId = null!;
 
     /// <summary>Commands in the registry.</summary>
     [Params(200, 2_000, 20_000)]
@@ -190,18 +192,99 @@ public class KeystrokeBenchmarks
     public void Setup()
     {
         BaletteCommand[] registry = Workloads.Registry(Commands);
-        _service = new BaletteService(_options);
-        _service.Register(registry);
+        var service = new BaletteService(_options);
+        service.Register(registry);
         _ranker = new BaletteRanker(_options);
         _history = Workloads.History(registry, _options);
+        _all = [.. service.Commands];
+        _byId = _all.ToDictionary(c => c.Id, StringComparer.Ordinal);
     }
 
     /// <summary>Turning the current search text into the ranked matches the palette renders.</summary>
     [Benchmark]
-    public int Keystroke()
+    public int Keystroke() => KeystrokeMirror.Run(_all, _byId, Query, _options, _ranker, _history);
+}
+
+/// <summary>
+/// The same keystroke over a registry where a quarter of the commands are nested, two levels deep - pages such as
+/// "Theme" or "Language" with their options - so the nested pass (an ancestor chain per command, one more field to
+/// match) is measured on real work rather than skipped.
+/// </summary>
+[MemoryDiagnoser]
+public class NestedKeystrokeBenchmarks
+{
+    private readonly BaletteOptions _options = new();
+    private BaletteRanker _ranker = null!;
+    private BaletteHistory _history = null!;
+    private List<BaletteCommand> _all = null!;
+    private Dictionary<string, BaletteCommand> _byId = null!;
+
+    /// <summary>Commands in the registry, nested ones included.</summary>
+    [Params(2_000, 20_000)]
+    public int Commands { get; set; }
+
+    /// <summary>A first keystroke, a word, a word with an ancestor's title, and a query that matches nothing.</summary>
+    [Params("s", "sett", "area sett", "qjz")]
+    public string Query { get; set; } = string.Empty;
+
+    [GlobalSetup]
+    public void Setup()
     {
-        // Snapshot, as RefreshSnapshot does before every rebuild.
-        var all = AllCommands().ToList();
+        BaletteCommand[] flat = Workloads.Registry(Commands);
+        var nestedCount = Commands / 4;
+        var roots = flat.Skip(nestedCount).ToList();
+
+        // Pages of ten options each, every fifth page one level deeper under the page before it.
+        var pages = new List<BaletteCommand>();
+        for (int i = 0, page = 0; i < nestedCount; i += 10, page++)
+        {
+            pages.Add(BaletteCmd.New($"Area {page}").Group("Areas").Id($"area-{page}").Children(flat.Skip(i).Take(10)).Build());
+        }
+
+        for (var i = 4; i < pages.Count; i += 5)
+        {
+            pages[i] = pages[i].With(b => b.Parent(pages[i - 1].Id));
+        }
+
+        var service = new BaletteService(_options);
+        service.Register([.. roots, .. pages]);
+        _ranker = new BaletteRanker(_options);
+        _history = Workloads.History(roots, _options);
+        _all = [.. service.Commands];
+        _byId = _all.ToDictionary(c => c.Id, StringComparer.Ordinal);
+    }
+
+    /// <summary>The keystroke, nested pass included.</summary>
+    [Benchmark]
+    public int Keystroke() => KeystrokeMirror.Run(_all, _byId, Query, _options, _ranker, _history);
+}
+
+/// <summary>
+/// The snapshot the palette takes of the registry: once when it opens on a changed registry, and after every change of
+/// it - no longer on every keystroke. This is the work the keystroke no longer does.
+/// </summary>
+[MemoryDiagnoser]
+public class SnapshotBenchmarks
+{
+    private BaletteService _service = null!;
+
+    /// <summary>Commands in the registry.</summary>
+    [Params(200, 2_000, 20_000)]
+    public int Commands { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _service = new BaletteService(new BaletteOptions());
+        _service.Register(Workloads.Registry(Commands));
+    }
+
+    /// <summary>One command per id, the parents that have pages, and the lookup by id, as RefreshSnapshot builds them.</summary>
+    [Benchmark]
+    public int Snapshot()
+    {
+        var byId = new Dictionary<string, BaletteCommand>(StringComparer.Ordinal);
+        var all = _service.Commands.Where(c => byId.TryAdd(c.Id, c)).ToList();
         var parentIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (BaletteCommand command in all)
         {
@@ -211,41 +294,82 @@ public class KeystrokeBenchmarks
             }
         }
 
-        string effectiveQuery = Query.Trim();
+        return all.Count + parentIds.Count;
+    }
+}
+
+/// <summary>What <c>Balette.Rebuild</c> and <c>MatchCandidates</c> do per keystroke, for the benchmarks above.</summary>
+internal static class KeystrokeMirror
+{
+    public static int Run(List<BaletteCommand> all, Dictionary<string, BaletteCommand> byId, string text, BaletteOptions options, BaletteRanker ranker, BaletteHistory history)
+    {
+        string effectiveQuery = text.Trim();
         bool hasQuery = effectiveQuery.Length > 0;
-        IBaletteMatcher matcher = _options.Matcher;
+        IBaletteMatcher matcher = options.Matcher;
         var query = BaletteQuery.Parse(effectiveQuery);
 
-        // The root page's candidates, matched as MatchCandidates does.
-        var registryMatches = new List<BaletteMatch>();
-        foreach (BaletteCommand command in all.Where(c => c.Parent is null).Where(c => c.IsVisible?.Invoke() != false))
+        // The root page's candidates.
+        var matches = new List<BaletteMatch>();
+        foreach (BaletteCommand command in all)
         {
-            BaletteMatch? match = matcher.Match(command, query, _options.Weights);
+            if (command.Parent is not null || command.IsVisible?.Invoke() == false)
+            {
+                continue;
+            }
+
+            BaletteMatch? match = matcher.Match(command, query, options.Weights);
             if (match is null)
             {
                 if (command.AlwaysShow)
                 {
-                    registryMatches.Add(new BaletteMatch(command, double.NegativeInfinity, [], [], null));
+                    matches.Add(new BaletteMatch(command, double.NegativeInfinity, [], [], null));
                 }
 
                 continue;
             }
 
-            registryMatches.Add(match);
+            matches.Add(match);
         }
 
-        // The registry matches are copied before async source results would be interleaved into them.
-        var matches = new List<BaletteMatch>(registryMatches);
-        List<BaletteMatch> ranked = _ranker.Rank(matches, hasQuery, id => _history.Frecency(id), _options.MaxResults);
-        return ranked.Count + parentIds.Count;
+        // Nested commands, with their ancestors' titles as one more field (ChainOf, memoized per keystroke).
+        if (hasQuery && options.SearchNestedCommands)
+        {
+            var chains = new Dictionary<string, (string[] Titles, string Text)?>(StringComparer.Ordinal);
+            foreach (BaletteCommand command in all)
+            {
+                if (command.Parent is null || command.IsVisible?.Invoke() == false || Chain(command.Parent, byId, chains) is not { } chain)
+                {
+                    continue;
+                }
+
+                if (matcher.Match(command, query, options.Weights, chain.Text) is { } match)
+                {
+                    matches.Add(match with { Score = match.Score - chain.Titles.Length, Path = chain.Titles });
+                }
+            }
+        }
+
+        List<BaletteMatch> ranked = ranker.Rank(matches, hasQuery, id => history.Frecency(id), options.MaxResults);
+        return ranked.Count;
     }
 
-    private IEnumerable<BaletteCommand> AllCommands()
+    private static (string[] Titles, string Text)? Chain(string id, Dictionary<string, BaletteCommand> byId, Dictionary<string, (string[] Titles, string Text)?> memo)
     {
-        foreach (BaletteCommand command in _service.Commands)
+        if (memo.TryGetValue(id, out var known))
         {
-            yield return command;
+            return known;
         }
+
+        (string[] Titles, string Text)? chain = null;
+        if (byId.TryGetValue(id, out var command) && !command.Disabled && !command.MultiSelectChildren && command.IsVisible?.Invoke() != false)
+        {
+            chain = command.Parent is null
+                ? ([command.Title], command.Title)
+                : Chain(command.Parent, byId, memo) is { } parent ? ([.. parent.Titles, command.Title], parent.Text + " " + command.Title) : null;
+        }
+
+        memo[id] = chain;
+        return chain;
     }
 }
 

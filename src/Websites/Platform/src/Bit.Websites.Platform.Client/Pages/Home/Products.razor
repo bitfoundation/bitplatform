@@ -48,8 +48,8 @@
                     <BitIcon IconName="ChevronRight" /> <span>bit</span> <span>new</span> <span>MyAwesomeProject</span>
                     <span>--database</span>
                     <span class="animation-container"><span class="animated a-2">sqlite&nbsp;&nbsp;&nbsp;</span> <span class="animated a-2 delayed d-2">sqlserver</span></span>
-                    <span>--pipeline</span>
-                    <span class="animation-container"><span class="animated a-3">github</span> <span class="animated a-3 delayed d-3">azure</span></span>
+                    <span>--api</span>
+                    <span class="animation-container"><span class="animated a-3">integrated</span> <span class="animated a-3 delayed d-3">standalone</span></span>
                     <span>--module</span>
                     <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">sales</span></span>
                 </div>
@@ -110,20 +110,6 @@
                     <img src="/images/home/bswup.webp" style="max-width:100%;" alt="bit Bswup service worker update flow in a Blazor PWA" loading="lazy" />
                 </div>
                 <br />
-            </text>
-        },
-        new()
-        {
-            Title = "Works with no connection (Offline)",
-            Subtitle = "bit Besql · Entity Framework and SQLite inside the browser",
-            LinkUrl = Urls.Besql,
-            Body = @<text>
-                <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Besql facilitates the use of Entity Framework and SQLite in web browsers with Blazor WebAssembly.
-                </BitText>
-                <div>
-                    <CodeBox HideCopyButton>services.AddBesqlDbContextFactory();</CodeBox>
-                </div>
             </text>
         },
         new()
@@ -423,6 +409,30 @@ public partial class CounterStore
                 <div>
                     <CodeBox HideCopyButton>builder.Services.AddBitBelemetryServices(o =>
     o.AddOtlpExporter("http://localhost:4318"));</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Accessibility without the styling",
+            Subtitle = "bit Bheadless · accessible, unstyled UI primitives for Blazor",
+            LinkUrl = Urls.Bheadless,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bheadless gives Blazor the hard parts of interactive UI - keyboard interaction, focus management,
+                    WAI-ARIA semantics, positioning and dismissal - as unstyled components that render semantic HTML, so
+                    plain CSS, Tailwind or your own design system does the rest. An accessibility test toolkit built on
+                    bUnit ships with it.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BitBhMenu>
+    &lt;BitBhMenuButton class="btn">Options&lt;/BitBhMenuButton>
+    &lt;BitBhMenuItems class="menu">
+        &lt;BitBhMenuItem OnClick="Edit">Edit&lt;/BitBhMenuItem>
+        &lt;BitBhMenuItem OnClick="Share">Share&lt;/BitBhMenuItem>
+    &lt;/BitBhMenuItems>
+&lt;/BitBhMenu></CodeBox>
                 </div>
             </text>
         },

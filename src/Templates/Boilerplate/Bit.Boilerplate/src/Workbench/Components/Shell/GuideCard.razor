@@ -1,0 +1,37 @@
+@inherits WorkbenchComponentBase
+
+@* Made of bit BlazorUI's own components, so a guide follows the app's theme and button styles. *@
+<div class="guide-card">
+    @if (Model.Options.Progress is not BonboardingProgressStyle.None)
+    {
+        <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Model.ProgressText</BitText>
+    }
+    <div class="head">
+        <BitText Typography="BitTypography.Subtitle1" Element="h2" Class="title">@Model.Title</BitText>
+        @if (Model.Options.ShowClose)
+        {
+            <BitButton IconOnly Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Cancel"
+                       Title="@Model.Labels.Close" AriaLabel="@Model.Labels.Close" OnClick="Model.CloseAsync" />
+        }
+    </div>
+    <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@Model.Description</BitText>
+    <div class="foot">
+        <BitSpacer />
+        @if (Model.Options.ShowSkip && Model.IsLast is false)
+        {
+            <BitButton Variant="BitVariant.Text" Size="BitSize.Small" OnClick="Model.SkipAsync">@Model.SkipLabel</BitButton>
+        }
+        @if (Model.Options.ShowPrevious && Model.IsFirst is false)
+        {
+            <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" OnClick="Model.PreviousAsync">@Model.PreviousLabel</BitButton>
+        }
+        @if (Model.Options.ShowNext)
+        {
+            <BitButton Size="BitSize.Small" data-bonboarding-autofocus="true" OnClick="Model.NextAsync">@Model.NextLabel</BitButton>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required BonboardingStepRenderContext Model { get; set; }
+}

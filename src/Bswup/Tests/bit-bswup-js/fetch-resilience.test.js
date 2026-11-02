@@ -12,6 +12,7 @@
 //   2. The managed path never rejects - it degrades cache -> network -> stale cache -> error.
 
 import { describe, it, expect } from 'vitest';
+import { createHash, webcrypto } from 'node:crypto';
 import { createServiceWorkerContext, ORIGIN, FakeBlob, FakeResponse, decodeBody } from './harness.js';
 
 function boot({ config = {}, assets = [{ url: 'app.js', hash: 'h1' }], fetchHandler, cacheStorageError, configure } = {}) {
@@ -385,6 +386,118 @@ describe('active-mode lazy heal respects integrity', () => {
         expect(response.status).toBe(206);
         expect(seen).toHaveLength(1);
         expect(seen[0].includes('?v=')).toBe(false); // plain request, Range preserved
+    });
+});
+
+describe('a full answer to a ranged request with integrity enabled', () => {
+    const TEXT = '0123456789';
+    const hash = `sha256-${createHash('sha256').update(TEXT).digest('base64')}`;
+    const includeMp4 = c => { c.self.assetsInclude = c.array([c.regex('\\.mp4$')]); };
+
+    const bootServing = (isPassive, body) => boot({
+        config: { isPassive, enableIntegrityCheck: true, crypto: webcrypto },
+        assets: [{ url: 'clip.mp4', hash }],
+        fetchHandler: async () => new FakeResponse(body, { status: 200, headers: { 'content-type': 'video/mp4' } }),
+        configure: includeMp4,
+    });
+
+    for (const isPassive of [false, true]) {
+        const mode = isPassive ? 'passive' : 'active';
+
+        it(`does not cache bytes that do not match the hash in ${mode} mode`, async () => {
+            const sw = bootServing(isPassive, 'tampered!!');
+
+            const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+            expect(response.status).toBe(200);
+            expect(decodeBody(response)).toBe('tampered!!');
+            expect(sw.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
+        });
+
+        it(`caches bytes that match the hash in ${mode} mode`, async () => {
+            const sw = bootServing(isPassive, TEXT);
+
+            const { response } = await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+            expect(response.status).toBe(200);
+            expect(sw.caches.snapshot()[ASSET_CACHE]).toEqual([`${ORIGIN}/clip.mp4.${hash}`]);
+
+            const cached = await (await openAssetCache(sw)).match(`${ORIGIN}/clip.mp4.${hash}`);
+            expect(cached.status).toBe(200);
+            expect(decodeBody(cached)).toBe(TEXT);
+        });
+    }
+
+    it('caches bytes that match a hash written without base64 padding', async () => {
+        const unpadded = hash.replace(/=+$/, '');
+        const sw = boot({
+            config: { isPassive: false, enableIntegrityCheck: true, crypto: webcrypto },
+            assets: [{ url: 'clip.mp4', hash: unpadded }],
+            fetchHandler: async () => new FakeResponse(TEXT, { status: 200 }),
+            configure: includeMp4,
+        });
+
+        await sw.fetchEvent({ url: `${ORIGIN}/clip.mp4`, headers: { range: 'bytes=2-5' } });
+        expect(sw.caches.snapshot()[ASSET_CACHE]).toEqual([`${ORIGIN}/clip.mp4.${unpadded}`]);
+    });
+});
+
+// The other two ways an integrity-checked asset reaches lazyFill through a request that carried no
+// integrity attribute: the verified request could not be built (createNewAssetRequest throws on a
+// URL it cannot compose, and the guarded call sites fall back to the page's own request), and an
+// opaque answer, whose bytes cannot be read - so cannot be hashed - at all.
+describe('bytes fetched without the integrity attribute', () => {
+    const TEXT = 'console.log(1);';
+    const hash = `sha256-${createHash('sha256').update(TEXT).digest('base64')}`;
+
+    // Only the integrity-carrying request fails to build; the worker's other Requests are untouched.
+    const failVerifiedRequest = c => {
+        const Request = c.self.Request;
+        c.self.Request = function (url, init) {
+            if (init && init.integrity) throw new TypeError("Failed to construct 'Request': Invalid URL");
+            return new Request(url, init);
+        };
+    };
+
+    const bootServing = (isPassive, body) => boot({
+        config: { isPassive, enableIntegrityCheck: true, crypto: webcrypto },
+        assets: [{ url: 'app.js', hash }],
+        fetchHandler: async () => new FakeResponse(body, { status: 200 }),
+        configure: failVerifiedRequest,
+    });
+
+    for (const isPassive of [false, true]) {
+        const mode = isPassive ? 'passive' : 'active';
+
+        it(`hashes what the page's own request fetched when the verified one cannot be built in ${mode} mode`, async () => {
+            const tampered = bootServing(isPassive, 'tampered');
+            const { response } = await tampered.fetchEvent({ url: `${ORIGIN}/app.js` });
+            expect(decodeBody(response)).toBe('tampered');
+            expect(tampered.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
+
+            const genuine = bootServing(isPassive, TEXT);
+            await genuine.fetchEvent({ url: `${ORIGIN}/app.js` });
+            expect(genuine.caches.snapshot()[ASSET_CACHE]).toEqual([`${ORIGIN}/app.js.${hash}`]);
+        });
+    }
+
+    it('serves but does not cache an opaque answer it cannot verify', async () => {
+        const CDN = 'https://cdn.example.com/clip.mp4';
+        // A browser hands the worker none of an opaque answer's bytes. This one hands over bytes that
+        // WOULD match the hash, with a crypto to hash them: so only lazyFill's opaque guard keeps it
+        // out of the cache - not a hash mismatch, and not a fixture too thin to read, whose failure
+        // lazyFill's catch would swallow just the same and pass this test with the guard gone.
+        const opaque = () => Object.assign(new FakeResponse(TEXT, { status: 0 }), { type: 'opaque', clone: opaque });
+        const sw = boot({
+            config: { isPassive: true, enableIntegrityCheck: true, crypto: webcrypto },
+            assets: [],
+            fetchHandler: async () => opaque(),
+            configure: c => { c.self.externalAssets = c.array([{ url: CDN, hash }]); },
+        });
+
+        // A ranged media request goes out as the page sent it - here a cross-origin no-cors one.
+        const { handled, response } = await sw.fetchEvent({ url: CDN, mode: 'no-cors', headers: { range: 'bytes=0-1' } });
+        expect(handled).toBe(true);
+        expect(response.type).toBe('opaque');
+        expect(sw.caches.snapshot()[ASSET_CACHE] || []).toHaveLength(0);
     });
 });
 

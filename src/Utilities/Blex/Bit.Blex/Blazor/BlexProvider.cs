@@ -29,15 +29,17 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
     /// <summary>
-    /// Enables the Redux DevTools connection. Defaults to <c>true</c>.
+    /// Enables the Redux DevTools connection. Defaults to <c>false</c>.
     /// </summary>
     /// <remarks>
     /// When enabled, the entire application state tree is serialized and exposed to the Redux
-    /// DevTools browser extension on every action. This is intended for development only; set
-    /// this to <c>false</c> in production (for example, bind it to your host environment) to
-    /// avoid leaking application state to an installed extension.
+    /// DevTools browser extension on every action, and the monitor can dispatch actions and replace
+    /// state. This is intended for development only; enable it only there (for example, bind it to
+    /// your host environment) so production never leaks application state to an installed extension.
+    /// Under interactive server rendering the bridge runs on the server, so any script on the page -
+    /// not only the extension - can read the state tree, dispatch any action and replace the state.
     /// </remarks>
-    [Parameter] public bool EnableDevTools { get; set; } = true;
+    [Parameter] public bool EnableDevTools { get; set; }
 
     /// <summary>
     /// Hands prerendered store state to the interactive render via Blazor's
@@ -113,15 +115,11 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
     /// Whether the queries' requests leave from the device the browser runs on -- WebAssembly, or a BlazorWebView --
     /// so the browser going offline pauses them. On Blazor Server they leave from the server, which the browser's
     /// network says nothing about (and an "offline" event delivered late over a reconnecting circuit could only
-    /// leave the cache thinking it is offline). .NET 8 cannot tell a WebView from a circuit: only WebAssembly reports there.
+    /// leave the cache thinking it is offline).
     /// </summary>
     private bool RequestsLeaveFromTheDevice()
     {
-#if NET9_0_OR_GREATER
         return RendererInfo.Name is "WebAssembly" or "WebView";
-#else
-        return OperatingSystem.IsBrowser();
-#endif
     }
 
     private async Task StartDurableStateAsync(bool rethrowInteropUnavailable)
@@ -155,31 +153,22 @@ public sealed class BlexProvider : ComponentBase, IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// It has to be explicit: a Blazor Web App that registers more than one interactive render mode cannot
-    /// infer it for the persistence callback, and fails the whole prerendered response when it has to. From
-    /// .NET 9 on the provider knows its own mode (null in a host without render modes, BlazorWebView, which
-    /// never prerenders). .NET 8 cannot tell a component its mode, so the state is offered to either
-    /// interactive runtime - which is what <c>InteractiveAuto</c> means.
+    /// infer it for the persistence callback, and fails the whole prerendered response when it has to. The
+    /// provider knows its own mode (null in a host without render modes, BlazorWebView, which never
+    /// prerenders).
     /// </remarks>
     private IComponentRenderMode? HandoffRenderMode()
     {
-#if NET9_0_OR_GREATER
         return AssignedRenderMode;
-#else
-        return Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveAuto;
-#endif
     }
 
     /// <summary>
     /// True for a provider rendered with static server-side rendering: no interactive render follows it, so
-    /// there is no prerendered state to restore and none worth handing over. .NET 8 cannot tell.
+    /// there is no prerendered state to restore and none worth handing over.
     /// </summary>
     private bool IsStaticRender()
     {
-#if NET9_0_OR_GREATER
         return AssignedRenderMode is null && RendererInfo.IsInteractive is false;
-#else
-        return false;
-#endif
     }
 
     /// <inheritdoc />

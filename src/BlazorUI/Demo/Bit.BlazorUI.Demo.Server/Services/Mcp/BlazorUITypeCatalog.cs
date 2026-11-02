@@ -18,7 +18,7 @@ public sealed record BlazorUIType(Type Clr, string Name, string Kind, BlazorUIPa
 }
 
 /// <summary>
-/// Every public type of the five packages, so an agent can resolve any name a signature hands it -
+/// Every public type of the six packages, so an agent can resolve any name a signature hands it -
 /// the enums a parameter takes, the item and option classes a list is built from, the injectable
 /// services, the static catalogs of constants.
 /// <para>
@@ -31,20 +31,22 @@ public sealed record BlazorUIType(Type Clr, string Name, string Kind, BlazorUIPa
 public static class BlazorUITypeCatalog
 {
     /// <summary>
-    /// The types <c>AddBitBlazorUIServices</c> and <c>AddBitBlazorUIExtrasServices</c> put in DI.
+    /// The types <c>AddBitBlazorUIServices</c>, <c>AddBitBlazorUIExtrasServices</c> and <c>AddBitBlazorUIAIServices</c> put in DI.
     /// Named here rather than inferred, because "injectable" is a fact about the registration
     /// extensions and not about the shape of the class.
     /// </summary>
     private static readonly HashSet<string> _services = new(StringComparer.Ordinal)
     {
         "BitModalService", "BitSnackBarService", "BitMessageBoxService", "BitAccentColorService",
-        "BitThemeManager", "BitThemeNotifications", "BitExternalThemeLoader", "BitPageVisibility", "BitExtraServices"
+        "BitThemeManager", "BitThemeNotifications", "BitExternalThemeLoader", "BitPageVisibility", "BitExtraServices",
+        "BitAiChatSessionFactory", "IBitAiToolRegistry", "IBitAiToolApprovalPolicy", "BitAiChatSessionOptions", "BitAiUiOptions",
+        "BitAiRendererRegistry", "BitAiGenerativeUiRegistry", "IBitAiGenerativeUiRegistry"
     };
 
     private static readonly Lazy<BlazorUIType[]> _types = new(Build, LazyThreadSafetyMode.PublicationOnly);
     private static readonly Lazy<FrozenDictionary<string, BlazorUIType>> _byName = new(BuildIndex, LazyThreadSafetyMode.PublicationOnly);
 
-    /// <summary>Every public type of the five packages.</summary>
+    /// <summary>Every public type of the six packages.</summary>
     public static BlazorUIType[] Types => _types.Value;
 
     /// <summary>

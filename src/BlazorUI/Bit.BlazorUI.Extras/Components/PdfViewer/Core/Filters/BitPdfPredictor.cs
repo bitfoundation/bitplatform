@@ -10,6 +10,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 internal static class BitPdfPredictor
 {
+    private const int MaxTiffColors = 32;
+
     public static byte[] Apply(byte[] data, int predictor, int colors, int bitsPerComponent, int columns)
     {
         if (predictor <= 1)
@@ -46,7 +48,7 @@ internal static class BitPdfPredictor
 
     private static byte[] ApplyTiff(byte[] data, int colors, int bpc, int columns, int rowBytes)
     {
-        if (rowBytes == 0)
+        if (rowBytes == 0 || data.Length < rowBytes || colors > MaxTiffColors)
         {
             return data;
         }

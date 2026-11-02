@@ -1,0 +1,36 @@
+﻿<div class="bb-demo-bar">
+    <button type="button" class="btn btn-secondary" @onclick="AddStep">Add step</button>
+</div>
+
+<div style="height: 22rem">
+    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowBackground />
+        <BlowControls />
+    </BlowCanvas>
+</div>
+
+@code {
+    private BlowCanvas? _flow;
+    private int _next = 4;
+
+    private List<BlowNode> _nodes =
+    [
+        new BlowNode { Id = "1", Type = "input", Label = "Order placed", Position = new(0, 0) },
+        new BlowNode { Id = "2", Label = "Payment", Position = new(0, 100) },
+        new BlowNode { Id = "3", Type = "output", Label = "Shipped", Position = new(0, 200) },
+    ];
+
+    private List<BlowEdge> _edges =
+    [
+        new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+        new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
+    ];
+
+    private async Task AddStep()
+    {
+        if (_flow is null) return;
+        var id = (_next++).ToString();
+        _flow.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(220, (_next - 5) * 70) });
+        await _flow.FitViewAsync(300);
+    }
+}

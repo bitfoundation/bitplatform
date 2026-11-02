@@ -11,15 +11,15 @@ namespace Bit.Bsqlite.Demo.Server.Services;
 /// Bsqlite's setup is short, which is exactly why an agent gets it wrong: it registers the services
 /// only in the client of a Blazor Web App and prerendering fails, opens the database in
 /// OnInitializedAsync and prerendering fails differently, reaches for Interactive Server, calls
-/// SaveChanges(), or ranks a new backend above the one a Bit.Besql app's data is in and starts every
-/// returning user on an empty database. None of those is a compiler error. Each scenario here leads with
+/// SaveChanges(), or reorders the backends of an app already in use and expects the databases to follow.
+/// None of those is a compiler error. Each scenario here leads with
 /// the rule that prevents its version of the mistake, and the documents it quotes say the rest in the
 /// library's own words, so the caveats cannot drift from a paraphrase of them.
 /// </para>
 /// </summary>
 public static partial class BsqliteSetupGuide
 {
-    public static readonly string[] Scenarios = ["standalone-wasm", "wasm", "auto", "server", "storage", "move-from-besql", "testing", "custom-provider"];
+    public static readonly string[] Scenarios = ["standalone-wasm", "wasm", "auto", "server", "hybrid", "storage", "testing", "custom-provider"];
 
     /// <summary>The demo files that make up the wiring of a prerendered Blazor Web App on InteractiveWebAssembly - the demo's own model.</summary>
     private static readonly string[] _webAppFiles =
@@ -63,8 +63,8 @@ public static partial class BsqliteSetupGuide
             "webassembly" or "interactivewebassembly" or "blazor-web-app" or "web-app" or "prerendering" or "prerendered" => "wasm",
             "interactiveauto" or "interactive-auto" => "auto",
             "interactiveserver" or "interactive-server" or "blazor-server" => "server",
-            "storage-providers" or "providers" or "backends" or "storage-backends" or "opfs" or "indexeddb" => "storage",
-            "besql" or "bit.besql" or "from-besql" or "migrate-from-besql" or "cache-storage" => "move-from-besql",
+            "blazor-hybrid" or "maui" or "maui-blazor" or "wpf" or "winforms" or "windows-forms" or "file-system" or "native" => "hybrid",
+            "storage-providers" or "providers" or "backends" or "storage-backends" or "opfs" or "indexeddb" or "cache-storage" => "storage",
             "tests" or "test" or "unit-testing" or "unit-tests" or "mstest" or "bit.bsqlite.testing" => "testing",
             "provider" or "custom-storage" or "storage-provider" or "custom-storage-provider" or "custom-backend" or "vfs" => "custom-provider",
             _ => key
@@ -79,7 +79,11 @@ public static partial class BsqliteSetupGuide
             "standalone Blazor WebAssembly",
             """
             One project and no prerendering: the app runs on WebAssembly from its first render, so a page can open the
-            database whenever it likes - OnInitializedAsync included - and everything Bsqlite does is available.
+            database whenever it likes - OnInitializedAsync included - and everything Bsqlite does is available. An app
+            whose database only some pages use can also download Bsqlite and EF Core only when one of those pages first
+            opens: `Program.cs` then registers nothing of Bsqlite's, and the pages make the same registration with
+            `GetBitBsqliteServices` - see
+            `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
             HostingChecklist,
             StandaloneCode,
@@ -96,9 +100,16 @@ public static partial class BsqliteSetupGuide
             touches the browser until a page opens the database. And a page opens it only once
             `RendererInfo.IsInteractive` is true: during prerendering OnInitializedAsync runs on the server, where there
             is no browser to open a database in. The demo shares one registration method between the two projects and
-            gates every page through one component; both are below, as they ship.
+            gates every page through one component; both are below, as they ship. A client that lazy loads Bit.Bsqlite
+            and EF Core registers nothing of Bsqlite's in its `Program.cs` and builds the services with
+            `GetBitBsqliteServices` instead - only in the browser, so its pages ask for them only once
+            `RendererInfo.IsInteractive` is true, unless the server project registers them too - gives `Routes` the
+            InteractiveWebAssembly render mode - as the demo does - so the router's `OnNavigateAsync` runs in the browser,
+            and registers `LazyAssemblyLoader` in the server project (`builder.Services.AddScoped<LazyAssemblyLoader>()`),
+            which loads Bsqlite with the rest of the app - see
+            `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
-            HostingChecklist + "\n" + WebAppChecklist,
+            LoadedWithTheApp + "\n" + HostingChecklist + "\n" + WebAppChecklist,
             WebAppCode,
             _webAppFiles,
             [("readme", "Installation"), ("readme", "Where it runs")],
@@ -114,8 +125,11 @@ public static partial class BsqliteSetupGuide
             `OperatingSystem.IsBrowser()` is. And a component that started on the circuit stays there until the next
             full load, so the reliable setup is per-page render modes: InteractiveWebAssembly for the pages that use the
             database, Auto for the rest. Everything else is the InteractiveWebAssembly setup, whose files are the demo's.
+            With per-page render modes the router never runs `OnNavigateAsync` in the browser, so a client that lazy loads
+            Bit.Bsqlite and EF Core loads them from each page that uses the database, before it renders the component that
+            does - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
             """,
-            HostingChecklist + "\n" + WebAppChecklist + "\n" + AutoChecklist,
+            LoadedWithTheApp + "\n" + HostingChecklist + "\n" + WebAppChecklist + "\n" + AutoChecklist,
             AutoCode,
             _webAppFiles,
             [("readme", "Where it runs")],
@@ -124,8 +138,8 @@ public static partial class BsqliteSetupGuide
         "server" => new Scenario(
             "Blazor Web App - InteractiveServer (not supported)",
             """
-            Not supported, by design: the engine runs in the user's browser tab, in a worker, and EF Core on the server
-            would need a native SQLite of its own rather than a database in someone's browser. A server-rendered app can
+            Not supported, by design: a user's database lives in their browser tab - or, in a Blazor Hybrid app, on their
+            device - and a database on the server would be one file shared by every user. A server-rendered app can
             still use Bsqlite for the pages that need an on-device database: render those with InteractiveWebAssembly
             (they live in a .Client project) and keep Interactive Server for the rest. If the data belongs on the server
             instead, that is Microsoft.EntityFrameworkCore.Sqlite or any other server database - not Bsqlite.
@@ -135,6 +149,28 @@ public static partial class BsqliteSetupGuide
             [],
             [("readme", "Where it runs")],
             "For the pages that do run on WebAssembly, follow `GetBsqliteSetupGuide(scenario: \"wasm\")`."),
+
+        "hybrid" => new Scenario(
+            "Blazor Hybrid - MAUI, WPF, Windows Forms",
+            """
+            Supported with no code of its own. In a Blazor Hybrid app .NET runs natively next to the web view, so
+            `AddBitBsqliteServices` adds the `file-system` backend (`BsqliteFileSystemStorageProvider`, namespace
+            `Bit.Bsqlite.Storage.FileSystem`) and ranks it ahead of the browser backends - which need .NET running in the
+            browser and are passed over without being probed. The database is a SQLite file in the app's own folder,
+            opened in-process by the native SQLite the app brings for Android, iOS, Mac Catalyst, Windows and macOS.
+            So the registration a WebAssembly client uses - typically one extension method in a shared Razor class
+            library - serves the Hybrid app unchanged, and so do the pages. Nothing is downloaded in a Hybrid app, so
+            nothing is lazy loaded: a Hybrid app that shares pages with a WebAssembly client that lazy loads Bit.Bsqlite
+            registers the services with the method the pages pass to `GetBitBsqliteServices`, which then hands them its
+            container - it builds none in a web view, which would leave its databases open when it closes - and a host
+            that shares the router's file registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`)
+            - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
+            """,
+            HybridChecklist,
+            HybridCode,
+            [],
+            [("storage", "File system (Blazor Hybrid)"), ("architecture", "Blazor Hybrid: the same stack, in-process")],
+            NextHosting),
 
         "storage" => new Scenario(
             "Choosing and adding storage backends",
@@ -152,24 +188,6 @@ public static partial class BsqliteSetupGuide
             "`PlanBsqliteStorageSelection` runs this selection on a browser you describe - which backends are available, " +
             "where the data already is, which migration mode - and reports every candidate's fate. " +
             "`GetBsqliteStorageProviders(provider: \"...\")` has one backend in full."),
-
-        "move-from-besql" => new Scenario(
-            "Moving off Bit.Besql",
-            """
-            Bit.Besql keeps a whole SQLite file in Cache Storage - the `bit-Besql` cache, at `/data/cache/{file name}`.
-            The `cache-storage` backend reads that file: the first time a database is opened on it and Bsqlite has no
-            copy of its own, the Besql file of the same name is imported losslessly into Bsqlite's page layout, so the
-            app's users keep their data. Two things decide whether that happens: the database name must be Besql's
-            Data Source exactly, and `cache-storage` must be the first choice - a database with no binding yet is
-            created on the first available candidate, so any other backend ranked above it starts every returning user
-            on an empty database and the Besql file is never read.
-            """,
-            BesqlChecklist,
-            BesqlCode,
-            [],
-            [("readme", "Moving off Bit.Besql"), ("storage", "Cache Storage")],
-            "`GetBsqliteStorageProviders(provider: \"cache-storage\")` has the backend in full; for the page lifecycle " +
-            "under prerendering, `GetBsqliteSetupGuide(scenario: \"wasm\")`."),
 
         "testing" => new Scenario(
             "Unit testing with Bit.Bsqlite.Testing",
@@ -274,6 +292,17 @@ public static partial class BsqliteSetupGuide
            scaffold migrations with `dotnet ef` against the stock SQLite provider: the same migrations apply in the browser.
         """;
 
+    private const string LoadedWithTheApp = """
+        ## Loaded with the app, or lazy loaded
+
+        The checklist and the code below - Bsqlite registered in each `Program.cs`, a page that injects
+        `IBsqliteDbContextFactory<AppDbContext>` - are the path of a client that loads Bit.Bsqlite and EF Core with the
+        app, as the demo does. A client that lazy loads them does not take it: it registers nothing of Bsqlite's in its
+        `Program.cs`, which runs before the assemblies are there, and a component that uses the database injects
+        `IServiceProvider` and gets the factory from `GetBitBsqliteServices`, passing it the one method that makes the
+        registration below - see `GetBsqliteDocument(name: "getting-started", section: "Lazy loading on WebAssembly")`.
+        """;
+
     private const string WebAppChecklist = """
         ### In a Blazor Web App
 
@@ -281,8 +310,7 @@ public static partial class BsqliteSetupGuide
            the registration in one extension method in the .Client project and call it from both Program.cs files, as the
            demo's `AddDemoServices` is.
         9. Open the database only once the page is interactive: `if (RendererInfo.IsInteractive is false) return;` before
-           the first `CreateDbContextAsync()` (on .NET 8, which has no `RendererInfo`, `OperatingSystem.IsBrowser()`). The
-           demo's `SessionLifecycle` component does it for every page.
+           the first `CreateDbContextAsync()`. The demo's `SessionLifecycle` component does it for every page.
         10. Render the pages that use the database with InteractiveWebAssembly - the demo sets it once, on `<Routes>`.
         11. Drop live queries and contexts when `BsqliteDatabase.Closing` fires and reload on `Opened`: that is how a page
             survives the database being moved or replaced underneath it.
@@ -309,6 +337,30 @@ public static partial class BsqliteSetupGuide
            interactive on WebAssembly.
         """;
 
+    private const string HybridChecklist = """
+        ## Checklist
+
+        1. `dotnet add package Bit.Bsqlite` to the project that registers the services - the MAUI, WPF or Windows Forms
+           app, or the Razor class library it shares with a WebAssembly client - and `dotnet add package
+           SQLitePCLRaw.bundle_e_sqlite3` beside it: the native SQLite engine, which NuGet builds for the app's platform
+           and keeps out of a WebAssembly client's build. An app already on another SQLitePCLRaw bundle, such as
+           `bundle_e_sqlcipher`, keeps that one instead.
+        2. Register exactly as for WebAssembly - `AddBitBsqliteServices` with the browser backends and their preference,
+           `AddDatabase`, `AddBitBsqliteDbContext`. Do not add `BsqliteFileSystemStorageProvider` or rank `file-system`
+           yourself: it is registered and put first for a Blazor Hybrid app, and never offered anywhere else.
+        3. Optionally move the folder with `ConfigureFileSystemStorage(o => o.RootDirectory = ...)`. The default is
+           `{local application data}/{entry assembly name}/bit-bsqlite`; a database name is a path under it, without `..`,
+           without `<>:"|?*` or control characters, and without a segment ending in a dot or a space.
+        4. Keep the async API - `ToListAsync`, `SaveChangesAsync`, `MigrateAsync` - as in the browser: synchronous members
+           throw here too, so one code path serves both hosts, and the UI thread never waits on the disk.
+        5. A page may open the database whenever it likes - there is no prerendering in a Hybrid app. Two windows are two
+           scopes on one file: migrations and first-use steps take a lock shared between them, and live queries in each
+           re-run on the other's writes.
+        6. `Database.Resolution` names `file-system` and the folder; `provider.Admin` exports and imports the files as
+           plain SQLite databases, for backups or a pre-populated database - inside `Database.WhileClosedAsync`, and with
+           the database closed in every other window too: while one still has the file open, they throw.
+        """;
+
     private const string StorageChecklist = """
         ## Checklist
 
@@ -318,8 +370,9 @@ public static partial class BsqliteSetupGuide
            widest reach, where OPFS is missing.
         3. In-memory (`BsqliteInMemoryStorageProvider`, namespace `Bit.Bsqlite.Storage.InMemory`) only as a declared last
            resort - with `AllowNonPersistentFallback()` - or for demos and tests. Data written to it is gone on reload.
-        4. Cache Storage (`BsqliteCacheStorageProvider`, namespace `Bit.Bsqlite.Storage.CacheStorage`) when moving off
-           Bit.Besql - see that scenario - and otherwise not: it exists for the import.
+        4. Cache Storage (`BsqliteCacheStorageProvider`, namespace `Bit.Bsqlite.Storage.CacheStorage`) for a read-heavy app
+           open in several tabs: it is the one browser backend that declares concurrent reads. Otherwise leave it out - it
+           commits through a journal rather than as one batch, and needs JSPI or Asyncify as IndexedDB does.
         5. Leave the migration mode at `KeepExisting` unless moving a user's database without asking is acceptable.
            `AutomaticOnOpen` copies, verifies and only then flips the binding; `Manual` reports
            `Resolution.BetterProviderAvailable` for the app to act on.
@@ -327,37 +380,10 @@ public static partial class BsqliteSetupGuide
            every candidate, its probe and why it was passed over.
         """;
 
-    private const string BesqlChecklist = """
-        ## Checklist
-
-        1. `dotnet remove package Bit.Besql`, then `dotnet add package Bit.Bsqlite` - the `cache-storage` backend that
-           reads Besql's file ships in it.
-        2. Remove `<script src="_content/Bit.Besql/bit-besql.js"></script>` from the host page; Bsqlite needs nothing there.
-        3. Replace `AddBesqlDbContextFactory<TContext>(...)` with `AddBitBsqliteServices` and
-           `AddBitBsqliteDbContext<TContext>`, naming the database exactly as Besql's `Data Source` - the import looks for
-           `/data/cache/{that name}`.
-        4. Make `cache-storage` the first (or only) choice, as above. A database that has been opened is bound there for
-           good; moving it to OPFS later is a deliberate migration (see the last step), never a reordering.
-        5. Move what Besql's `dbContextInitializer` did: `MigrateAsync` is the default schema step, anything else goes in
-           `OnFirstUse`. A compiled model passed to `UseModel` moves to `options.Configure`. Drop the calls to Besql's
-           `ConfigureSqliteJournalMode()` - Bsqlite never runs in WAL mode.
-        6. Code that injects `IDbContextFactory<TContext>` keeps working, but every synchronous call has to become async:
-           Besql ran SQLite on the main thread, Bsqlite runs it in a worker, and `SaveChanges()`, `ToList()` and the like
-           throw `BsqliteSynchronousApiNotSupportedException`. `CreateDbContext()` works only after the first
-           `CreateDbContextAsync()`.
-        7. Where Besql said "use the factory in OnAfterRender", open the database once `RendererInfo.IsInteractive` is
-           true (see the `wasm` scenario). If the app also ran on Blazor Server or Hybrid, where Besql fell back to a file
-           on disk, keep `Microsoft.EntityFrameworkCore.Sqlite` for those hosts: Bsqlite is for pages running on WebAssembly.
-        8. To move the data to OPFS once it is in Bsqlite, migrate it explicitly - inject `BsqliteStorageMigrator`, the
-           providers and `IBsqliteStorageBindingStore`, and call `MigrateAsync` inside `BsqliteDatabase.WhileClosedAsync`,
-           as the demo's `BrowserDatabase.SwitchStorageAsync` does. Ranking OPFS above `cache-storage` instead would start
-           users who have not opened the new version yet on an empty OPFS database.
-        """;
-
     private const string TestingChecklist = """
         ## Checklist
 
-        1. A desktop test project (net8.0, net9.0 or net10.0) on MSTest, and `dotnet add package Bit.Bsqlite.Testing` - it
+        1. A desktop test project (net10.0 or net11.0) on MSTest, and `dotnet add package Bit.Bsqlite.Testing` - it
            brings Microsoft.Data.Sqlite with its native engine, which belongs in tests and never in the browser app.
         2. `new BsqliteInProcessTransport()` is a private in-memory database; wrap it in
            `new BsqliteConnection(transport, "test.db")`, `await connection.OpenAsync()`, and hand the connection to
@@ -568,6 +594,60 @@ public static partial class BsqliteSetupGuide
         ```
         """;
 
+    private const string HybridCode = """
+        ## The code
+
+        ### A shared registration - the WebAssembly client and the Hybrid app both call it
+
+        ```csharp
+        using Bit.Bsqlite.Storage.IndexedDb;
+        using Bit.Bsqlite.Storage.Opfs;
+
+        public static class BsqliteServiceCollectionExtensions
+        {
+            public static IServiceCollection AddAppDatabase(this IServiceCollection services)
+            {
+                services.AddBitBsqliteServices(sqlite => sqlite
+                    .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                    .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+                    .UseStorage(s => s
+                        .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                        .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
+                    .AddDatabase("app.db"));     // in a Hybrid app: {app folder}/app.db, on the file-system backend
+
+                services.AddBitBsqliteDbContext<AppDbContext>();
+                return services;
+            }
+        }
+        ```
+
+        ### `MauiProgram.cs`
+
+        ```csharp
+        var builder = MauiApp.CreateBuilder();
+        builder.UseMauiApp<App>();
+        builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddAppDatabase();
+        return builder.Build();
+        ```
+
+        ### A page
+
+        ```razor
+        @inject IBsqliteDbContextFactory<AppDbContext> Contexts
+
+        @code {
+            private List<Order> _open = [];
+
+            protected override async Task OnInitializedAsync()
+            {
+                await using var db = await Contexts.CreateDbContextAsync();   // opens the file, migrates once
+                _open = await db.Orders.Where(o => o.Status == OrderStatus.Open).ToListAsync();
+            }
+        }
+        ```
+        """;
+
     private const string StorageCode = """
         ### Every first-party backend, in the recommended order
 
@@ -597,54 +677,6 @@ public static partial class BsqliteSetupGuide
 
         // resolution.Provider.Name, resolution.IsFirstChoice, resolution.WasDecidedByExistingData,
         // resolution.BetterProviderAvailable, and every candidate in resolution.Attempts with its status and reason.
-        ```
-        """;
-
-    private const string BesqlCode = """
-        ## The code
-
-        ### Before - Bit.Besql
-
-        ```csharp
-        services.AddBesqlDbContextFactory<OfflineDbContext>((sp, optionsBuilder) =>
-        {
-            optionsBuilder
-                .UseModel(OfflineDbContextModel.Instance)
-                .UseSqlite("Data Source=Offline-Client.db");
-        }, dbContextInitializer: async (sp, dbContext) => await dbContext.Database.MigrateAsync());
-        ```
-
-        ### After - Bit.Bsqlite
-
-        ```csharp
-        using Bit.Bsqlite.Storage.CacheStorage;
-
-        services.AddBitBsqliteServices(sqlite => sqlite
-            .AddStorageProvider<BsqliteCacheStorageProvider>()
-            .UseStorage(s => s.Prefer(BsqliteCacheStorageProvider.ProviderName))
-            .AddDatabase("Offline-Client.db"));             // Besql's Data Source, exactly
-
-        services.AddBitBsqliteDbContext<OfflineDbContext>(options =>
-        {
-            // Migrate is the default schema step; Configure runs after UseBitBsqlite on every context's options.
-            options.Configure = (sp, builder) => builder.UseModel(OfflineDbContextModel.Instance);
-        });
-        ```
-
-        ### In a component
-
-        ```razor
-        @* IDbContextFactory<T> is still registered, next to IBsqliteDbContextFactory<T>. *@
-        @inject IDbContextFactory<OfflineDbContext> Contexts
-
-        @code {
-            private async Task SaveAsync(Todo todo)
-            {
-                await using var db = await Contexts.CreateDbContextAsync();
-                db.Todos.Add(todo);
-                await db.SaveChangesAsync();   // SaveChanges() throws: the engine is in a worker
-            }
-        }
         ```
         """;
 

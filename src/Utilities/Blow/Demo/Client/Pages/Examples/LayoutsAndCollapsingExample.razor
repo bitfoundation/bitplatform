@@ -1,0 +1,234 @@
+﻿@page "/examples/layouts-and-collapsing"
+<PageTitle>Layouts &amp; Collapsing · Blow</PageTitle>
+
+<ExampleScaffold Title="Layouts &amp; Collapsing"
+                 Summary="Tree, radial and force layouts beside the layered and grid ones, applied with LayoutAsync to the whole graph or - with nodes selected - to the selection alone, each run one undo step. The Services group folds away with SetCollapsedAsync: its children hide, and the edges that ran into them are drawn to the group instead.">
+    <Toolbar>
+        @foreach (var (key, label, _) in _layouts)
+        {
+            <button class="btn @(key == _current ? "btn-primary" : "btn-secondary")" @onclick="@(() => Choose(key))">@label</button>
+        }
+        <span class="lc-sep"></span>
+        <button class="btn btn-secondary" @onclick="ToggleGroup">@(Group?.Collapsed == true ? "Expand" : "Collapse") group</button>
+        <button class="btn btn-secondary" disabled="@(!_history.CanUndo)" @onclick="Undo">↶ Undo @_history.UndoLabel</button>
+        <span class="lc-hint">@Hint</span>
+        @* The chosen layout's own options, on a row of their own. A slider applies when it is let go rather than on
+           every step of the drag, so each adjustment is one undo step and not dozens. *@
+        <div class="lc-options">
+            @switch (_current)
+            {
+                case "tree":
+                    <strong>Tree</strong>
+                    <label>Direction
+                        <select @onchange="SetTreeDirection">
+                            @foreach (var direction in Enum.GetValues<BlowLayoutDirection>())
+                            {
+                                <option value="@direction" selected="@(direction == _tree.Direction)">@direction</option>
+                            }
+                        </select>
+                    </label>
+                    <label>Level gap @_tree.LevelGap.ToString("0")
+                        <input type="range" min="20" max="200" step="10" value="@Inv(_tree.LevelGap)"
+                               @oninput="@(e => _tree.LevelGap = ToDouble(e.Value, 60))" @onchange="Reapply" />
+                    </label>
+                    <label>Node gap @_tree.NodeGap.ToString("0")
+                        <input type="range" min="0" max="120" step="10" value="@Inv(_tree.NodeGap)"
+                               @oninput="@(e => _tree.NodeGap = ToDouble(e.Value, 30))" @onchange="Reapply" />
+                    </label>
+                    break;
+
+                case "radial":
+                    <strong>Radial</strong>
+                    <label>Ring gap @_radial.RingGap.ToString("0")
+                        <input type="range" min="0" max="240" step="20" value="@Inv(_radial.RingGap)"
+                               @oninput="@(e => _radial.RingGap = ToDouble(e.Value, 60))" @onchange="Reapply" />
+                    </label>
+                    <label>Start angle @_radial.StartAngle.ToString("0")°
+                        <input type="range" min="0" max="345" step="15" value="@Inv(_radial.StartAngle)"
+                               @oninput="@(e => _radial.StartAngle = ToDouble(e.Value, 0))" @onchange="Reapply" />
+                    </label>
+                    <label>Node gap @_radial.NodeGap.ToString("0")
+                        <input type="range" min="0" max="120" step="10" value="@Inv(_radial.NodeGap)"
+                               @oninput="@(e => _radial.NodeGap = ToDouble(e.Value, 20))" @onchange="Reapply" />
+                    </label>
+                    break;
+
+                case "force":
+                    <strong>Force</strong>
+                    <label>Edge length @_force.IdealEdgeLength.ToString("0")
+                        <input type="range" min="60" max="400" step="20" value="@Inv(_force.IdealEdgeLength)"
+                               @oninput="@(e => _force.IdealEdgeLength = ToDouble(e.Value, 180))" @onchange="Reapply" />
+                    </label>
+                    <label>Iterations @_force.Iterations
+                        <input type="range" min="0" max="600" step="25" value="@_force.Iterations"
+                               @oninput="@(e => _force.Iterations = (int)ToDouble(e.Value, 300))" @onchange="Reapply" />
+                    </label>
+                    <label><input type="checkbox" checked="@_force.StartFromCurrentPositions" @onchange="SetFromCurrent" /> Start from where they are</label>
+                    <label><input type="checkbox" checked="@(_force.IsPinned is not null)" @onchange="SetPinned" /> Pin the API gateway</label>
+                    break;
+
+                case "layered":
+                    <span><strong>Layered</strong>, left to right - tuned on the <a href="examples/layouting">Layouting</a> sample.</span>
+                    break;
+
+                case "grid":
+                    <span><strong>Grid</strong>, roughly square - tuned on the <a href="examples/layouting">Layouting</a> sample.</span>
+                    break;
+
+                default:
+                    <span class="lc-muted">Pick a layout to arrange the graph and tune it here.</span>
+                    break;
+            }
+        </div>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" HistoryEnabled="true"
+                    OnHistoryChanged="s => _history = s"
+                    OnSelectionChange="s => _selected = s.Nodes.Count"
+                    OnNodeDoubleClick="OnDoubleClick">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap Pannable="true" Zoomable="true" />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Press <strong>Layered</strong>, <strong>Tree</strong>, <strong>Radial</strong>, <strong>Force</strong> or <strong>Grid</strong> to arrange the graph; the Services group is placed as one block, by what its children connect to.</li>
+        <li>On the second row of the toolbar, tune the chosen layout and let go of a slider to apply it: the tree's <strong>Direction</strong> and gaps, the radial layout's <strong>Ring gap</strong>, <strong>Start angle</strong> and <strong>Node gap</strong>, the force layout's <strong>Edge length</strong> and <strong>Iterations</strong> (0 leaves the nodes on the spiral they start from).</li>
+        <li>Move a few nodes, tick <strong>Start from where they are</strong> and press Force again: it tidies your arrangement instead of replacing it. Tick <strong>Pin the API gateway</strong> and the gateway stays put while the rest settle around it.</li>
+        <li><strong>Shift+drag</strong> a box round two or more nodes (or <strong>Shift+click</strong> them) and press a layout: only the selection is arranged, where it stands. Select children inside the group to arrange them among themselves.</li>
+        <li>Press <strong>Collapse group</strong>, or <strong>double-click</strong> the group: its four children disappear, the edges into them now end on the group, and its border turns dashed. Press <strong>Expand group</strong> to bring them back.</li>
+        <li>Press <strong>Undo</strong> to step back through layouts and collapses, one at a time; the button names what it will undo.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>LayoutAsync(layout, nodes)</code> arranges nodes on the canvas with any <code>IBlowLayout</code>. Given no nodes it takes the selection when there is one, else every top-level node; only nodes sharing one parent are arranged together, and hidden ones stay put.</li>
+        <li>The arrangement keeps its top-left corner where the nodes' was, so a selection is tidied in place. An edge into a group's child counts as an edge into the group, and the canvas's <code>NodeOrigin</code> is handed to the layout for you.</li>
+        <li>Every built-in options class is an <code>IBlowLayout</code>: <code>BlowTreeLayoutOptions</code> (<code>Direction</code>, <code>LevelGap</code> 60, <code>NodeGap</code> 30), <code>BlowRadialLayoutOptions</code> (<code>RingGap</code> 60, <code>StartAngle</code> 0 degrees clockwise from twelve o'clock, <code>NodeGap</code> 20), <code>BlowForceLayoutOptions</code>, <code>BlowLayeredLayoutOptions</code> and <code>BlowGridLayoutOptions</code>.</li>
+        <li>Radial's <code>IsRoot</code> chooses the roots; left <code>null</code> it takes the nodes nothing leads to. One root goes in the centre and several share the first ring - here Web app and Mobile app share it round an empty centre.</li>
+        <li><code>BlowForceLayoutOptions</code>: <code>IdealEdgeLength</code> (180) is how far apart connected nodes settle, <code>Iterations</code> (300) the simulation steps, <code>StartFromCurrentPositions</code> (off) starts from the current positions instead of a spiral, and <code>IsPinned</code> names nodes that must not move - with any pinned, the result stays where the pins hold it. <code>Theta</code> (0.9) only matters past 500 nodes, where far-off groups push as one, so it has nothing to do on this page.</li>
+        <li><code>HistoryEnabled</code> records each layout as one undo step labelled "layout"; <code>OnHistoryChanged</code> hands the page a <code>BlowHistoryState</code> for the Undo button, and <code>UndoAsync()</code> steps back.</li>
+        <li><code>SetCollapsedAsync(node)</code> toggles a node with children: it sets <code>Collapsed</code>, hides everything nested in it and redraws edges from outside to the node itself. One undo step either way, and the node gets the <code>collapsed</code> class, which this page styles with a dashed border. <code>OnNodeDoubleClick</code> calls it for the group.</li>
+        <li><code>OnSelectionChange</code> counts the selected nodes for the hint, and <code>UpdateNodeInternals()</code> re-measures the handles after a layout turns them to face its direction.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .lc-sep { display: inline-block; width: 1rem; }
+    .lc-hint { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
+    .lc-options { display: flex; flex-wrap: wrap; flex-basis: 100%; align-items: center; gap: .5rem 1rem; }
+    .lc-muted { color: var(--bb-text-soft); }
+    .bit-blow-node-group.collapsed { border-style: dashed; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowHistoryState _history;
+    private int _selected;
+    private string? _current;
+
+    // One options object per layout, kept for the page's life: the sliders retune them in place, and pressing a layout
+    // again applies it as it was last tuned.
+    private readonly BlowLayeredLayoutOptions _layered = new() { Direction = BlowLayoutDirection.LeftToRight };
+    private readonly BlowTreeLayoutOptions _tree = new();
+    private readonly BlowRadialLayoutOptions _radial = new();
+    private readonly BlowForceLayoutOptions _force = new();
+    private readonly BlowGridLayoutOptions _grid = new();
+
+    private (string Key, string Label, IBlowLayout Layout)[] _layouts = [];
+
+    private BlowNode? Group => _nodes.FirstOrDefault(n => n.Id == "services");
+
+    private string Hint => _selected > 1
+        ? $"Layouts arrange the {_selected} selected nodes"
+        : "Layouts arrange the whole graph; select some nodes to arrange just those";
+
+    protected override void OnInitialized()
+    {
+        _layouts =
+        [
+            ("layered", "Layered", _layered),
+            ("tree", "Tree", _tree),
+            ("radial", "Radial", _radial),
+            ("force", "Force", _force),
+            ("grid", "Grid", _grid),
+        ];
+
+        BlowNode Node(string id, string label, double x, double y, string? parent = null) =>
+            new() { Id = id, Label = label, Position = new(x, y), Width = 130, Height = 40, ParentId = parent, ExtentParent = parent is not null };
+
+        _nodes =
+        [
+            Node("web", "Web app", 0, 0),
+            Node("mobile", "Mobile app", 0, 120),
+            Node("gateway", "API gateway", 220, 60),
+            new() { Id = "services", Type = "group", Label = "Services", Position = new(440, -40), Width = 360, Height = 300 },
+            Node("orders", "Orders", 30, 50, "services"),
+            Node("billing", "Billing", 200, 50, "services"),
+            Node("stock", "Stock", 30, 160, "services"),
+            Node("mail", "Mail", 200, 160, "services"),
+            Node("db", "Database", 880, 0),
+            Node("queue", "Queue", 880, 160),
+        ];
+
+        _edges =
+        [
+            new() { Id = "web-gw", Source = "web", Target = "gateway" },
+            new() { Id = "mob-gw", Source = "mobile", Target = "gateway" },
+            new() { Id = "gw-orders", Source = "gateway", Target = "orders" },
+            new() { Id = "gw-billing", Source = "gateway", Target = "billing" },
+            new() { Id = "orders-stock", Source = "orders", Target = "stock" },
+            new() { Id = "billing-mail", Source = "billing", Target = "mail" },
+            new() { Id = "orders-db", Source = "orders", Target = "db" },
+            new() { Id = "billing-db", Source = "billing", Target = "db" },
+            new() { Id = "mail-queue", Source = "mail", Target = "queue" },
+        ];
+    }
+
+    private Task Choose(string key)
+    {
+        _current = key;
+        return Reapply();
+    }
+
+    private async Task Reapply()
+    {
+        if (_flow is null || _layouts.FirstOrDefault(l => l.Key == _current).Layout is not { } layout) return;
+
+        // The selection when it is more than one node, as the hint says; a single node clicked on is not a set to arrange,
+        // and handing it over would lay out that one node and nothing else.
+        await _flow.LayoutAsync(layout, _selected > 1 ? null : _nodes.Where(n => n.ParentId is null));
+        _flow.UpdateNodeInternals();
+        if (_selected <= 1) _flow.FitView();
+    }
+
+    private Task SetTreeDirection(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<BlowLayoutDirection>(e.Value?.ToString(), out var direction)) _tree.Direction = direction;
+        return Reapply();
+    }
+
+    private Task SetFromCurrent(ChangeEventArgs e)
+    {
+        _force.StartFromCurrentPositions = (bool)e.Value!;
+        return Reapply();
+    }
+
+    private Task SetPinned(ChangeEventArgs e)
+    {
+        _force.IsPinned = (bool)e.Value! ? n => n.Id == "gateway" : null;
+        return Reapply();
+    }
+
+    private Task Undo() => _flow?.UndoAsync() ?? Task.CompletedTask;
+
+    private Task ToggleGroup() => Group is { } group && _flow is not null ? _flow.SetCollapsedAsync(group) : Task.CompletedTask;
+
+    private Task OnDoubleClick(BlowNodeMouseEvent e)
+        => e.Node.Type == "group" && _flow is not null ? _flow.SetCollapsedAsync(e.Node) : Task.CompletedTask;
+
+    private static double ToDouble(object? raw, double fallback)
+        => double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : fallback;
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

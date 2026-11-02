@@ -1,9 +1,7 @@
 ﻿<Project>
 
-    <!-- The .NET 9+ SDK half of the publish-time asset trimming (see Bit.BlazorUI.targets): defines the trimmed bundles
-         with content fingerprinting and gives them endpoints. Kept in its own file, imported only on those SDKs, because
-         the tasks and parameters used here do not exist on the .NET 8 SDK and MSBuild rejects them even under a false
-         condition. -->
+    <!-- The endpoints half of the publish-time asset trimming (see Bit.BlazorUI.targets): defines the trimmed bundles
+         with content fingerprinting and gives them endpoints. -->
 
     <UsingTask TaskName="Bit.BlazorUI.Build.RelabelBitBlazorUIEndpoints" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" Condition="'$(_BitBlazorUITasksFromSource)' != 'true'" />
     <UsingTask TaskName="Bit.BlazorUI.Build.RelabelBitBlazorUIEndpoints" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" TaskFactory="TaskHostFactory" Condition="'$(_BitBlazorUITasksFromSource)' == 'true'" />

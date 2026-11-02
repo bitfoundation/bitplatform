@@ -1,0 +1,18 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject FilterState Filter
+
+@* Planted leak (problem 16): the handler is a lambda subscribed in OnInitialized and never removed, so FilterState -
+   scoped, as long-lived as the circuit or the app - keeps every PriceAlert ever shown, and everything it references. *@
+<div class="bb-callout">
+    <strong>Price alert</strong> · max price @Filter.MaxPrice.ToString("C0") · @_notifications filter change@(_notifications == 1 ? "" : "s") seen
+</div>
+
+@code {
+    private int _notifications;
+
+    protected override void OnInitialized() => Filter.Changed += () =>
+    {
+        _notifications++;
+        _ = InvokeAsync(StateHasChanged);
+    };
+}

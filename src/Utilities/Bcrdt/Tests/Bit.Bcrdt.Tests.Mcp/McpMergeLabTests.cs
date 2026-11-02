@@ -170,6 +170,22 @@ public class McpMergeLabTests
     }
 
     [TestMethod]
+    public void Two_concurrent_moves_in_a_long_array_still_name_the_duplicate()
+    {
+        var report = BcrdtMergeLab.Inspect($"""
+            base: array todo push {string.Join(' ', Enumerable.Range(0, 3_000))}
+            A: array todo move 0 3
+            B: array todo move 0 2
+            """);
+
+        Assert.IsNull(report.Error);
+        Assert.IsTrue(report.Converged);
+        Assert.AreEqual(3_001, report.Merged!["todo"]!.AsArray().Count);
+        Assert.AreEqual("a moved element is duplicated", report.Decisions!.Single().Outcome);
+        Assert.Contains("twice: 0 now appears more often", report.Decisions!.Single().Detail);
+    }
+
+    [TestMethod]
     public async Task Concurrent_array_inserts_all_survive()
     {
         var report = await InspectAsync("A: array todo push \"x\"; B: array todo push \"y\"; C: array todo insert 0 \"z\"");

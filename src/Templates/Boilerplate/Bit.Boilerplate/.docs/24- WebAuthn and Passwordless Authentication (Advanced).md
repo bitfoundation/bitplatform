@@ -456,6 +456,19 @@ services.AddScoped(sp =>
 - `GetAssertionOptions()` - Generates assertion options
 - `MakeAssertionAsync()` - Validates assertion response
 
+### Security note
+
+The RP ID and the accepted origin come from `Request.GetWebAppUrl()` on every request. Outside Development a caller
+can only make that this server's own URL, a `TrustedOrigins` entry, or `localhost` / `127.0.0.1` on any port, so a
+remote site can't pick the RP ID.
+
+Blazor Hybrid is the case to know about: its passkeys are created on `http://localhost:<port>` (see the local HTTP
+server above), so their RP ID is the shared name `localhost`. Any local process or app that serves a page on
+localhost can run an assertion for those passkeys that this server accepts, as long as the user approves the
+platform prompt. To bind Hybrid passkeys to your own domain, run the WebAuthn ceremonies under that domain over HTTPS:
+the platform passkey APIs with associated domains (iOS, macOS) or Digital Asset Links (Android), or an HTTPS page on
+your domain that hands the result back to the app through a verified app link.
+
 ---
 
 ### AI Wiki

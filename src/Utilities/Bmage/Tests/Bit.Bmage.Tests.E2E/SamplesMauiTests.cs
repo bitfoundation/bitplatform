@@ -8,7 +8,7 @@ namespace Bit.Bmage.Tests.E2E;
 /// <summary>
 /// The MAUI sample as a Windows app: the same pages as <see cref="SamplesBrowserTests"/>, on the Blazor Hybrid renderer,
 /// with .NET in the app's own process and the WebView2 reached over JS interop - the host Bmage reports as
-/// <c>BrowserServer</c>, so PNG, JPEG, BMP and GIF are coded by .NET and only WebP and AVIF by the WebView.
+/// <c>BrowserServer</c>, so images are coded by .NET and only AVIF exports by the WebView.
 /// </summary>
 /// <remarks>
 /// One app for the whole class, as a person would use it: every test starts from the page the previous one left and
@@ -52,7 +52,7 @@ public class SamplesMauiTests
     {
         var (app, page) = await GoToAsync("Process");
 
-        // The scene is encoded to PNG and decoded back by .NET; the WebP is written by the WebView.
+        // The scene is encoded to PNG and decoded back by .NET, which writes the WebP too.
         await page.ClickAsync("#process-sample");
         await Expect(page.Locator("#process-source")).ToHaveTextAsync("Sample scene: 1600 × 1066");
         await Expect(page.Locator("#process-result")).ToContainTextAsync(new Regex("^800 × 533 WebP,"));

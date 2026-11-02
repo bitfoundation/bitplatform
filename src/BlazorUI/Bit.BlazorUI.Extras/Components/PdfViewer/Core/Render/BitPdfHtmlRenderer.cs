@@ -18,6 +18,9 @@ namespace Bit.BlazorUI;
 public sealed class BitPdfHtmlRenderer
 {
     private const int MaxFormDepth = 12;
+    private const long MaxRenderWork = 64L * 1024 * 1024;
+    private const int ContentRunCost = 1024;
+    private const long MaxRenderImagePixels = 1L << 27;
     private const int CurveSegments = 12;
     private const double AscentFactor = 0.8; // approximate baseline offset
 
@@ -214,6 +217,8 @@ public sealed class BitPdfHtmlRenderer
     private StringBuilder? _realHtml;
     private HashSet<string>? _ocgOff;
     private int _formDepth;
+    private BitPdfBudget _work = new(MaxRenderWork);
+    private BitPdfBudget _imagePixels = new(MaxRenderImagePixels);
 
     // Set by a Type3 glyph's `d1` operator: the glyph is a shape only, so its
     // colour comes from the text-showing context and colour operators inside the
@@ -275,6 +280,8 @@ public sealed class BitPdfHtmlRenderer
         _viewH = viewH;
         _ops = EmitCanvasOps ? new List<object?[]>() : null;
         _tilesEmitted = 0;
+        _work = new(MaxRenderWork);
+        _imagePixels = new(MaxRenderImagePixels);
 
         List<BitPdfOperation> ops;
         try
@@ -891,7 +898,7 @@ public sealed class BitPdfHtmlRenderer
     private void DrawImage(BitPdfBaseStream stream)
     {
         var fill = ParseRgb(_state.FillColor);
-        string? uri = BitPdfImage.BuildDataUri(stream, _xref, _resources, fill);
+        string? uri = BitPdfImage.BuildDataUri(stream, _xref, _resources, fill, _imagePixels);
         if (uri is null)
         {
             return;
@@ -908,7 +915,7 @@ public sealed class BitPdfHtmlRenderer
         }
         var stream = new BitPdfStream(data, 0, data.Length, dict);
         var fill = ParseRgb(_state.FillColor);
-        string? uri = BitPdfImage.BuildDataUri(stream, _xref, _resources, fill, inline: true);
+        string? uri = BitPdfImage.BuildDataUri(stream, _xref, _resources, fill, _imagePixels, inline: true);
         if (uri is not null)
         {
             EmitImage(uri, PixelSize(dict, "Width", "W"), PixelSize(dict, "Height", "H"), Interpolate(dict));
@@ -1140,7 +1147,10 @@ public sealed class BitPdfHtmlRenderer
         try
         {
             byte[] content = BitPdfStreamDecoder.Decode(stream);
-            RunOps(new BitPdfContentParser(content).Parse());
+            if (_work.TrySpend(content.Length + ContentRunCost))
+            {
+                RunOps(new BitPdfContentParser(content).Parse());
+            }
         }
         catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
@@ -1663,7 +1673,10 @@ public sealed class BitPdfHtmlRenderer
         try
         {
             byte[] content = BitPdfStreamDecoder.Decode(proc);
-            RunOps(new BitPdfContentParser(content).Parse());
+            if (_work.TrySpend(content.Length + ContentRunCost))
+            {
+                RunOps(new BitPdfContentParser(content).Parse());
+            }
         }
         catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
@@ -2379,8 +2392,10 @@ public sealed class BitPdfHtmlRenderer
 
         (int iStart, int iEnd) = CellRange(pMinX, pMaxX, xStep);
         (int jStart, int jEnd) = CellRange(pMinY, pMaxY, yStep);
-        long tileCount = (long)(iEnd - iStart + 1) * (jEnd - jStart + 1);
-        if (tileCount is <= 0 or > MaxTiles)
+        long columns = (long)iEnd - iStart + 1;
+        long rows = (long)jEnd - jStart + 1;
+        long tileCount = columns * rows;
+        if (columns <= 0 || rows <= 0 || tileCount > MaxTiles)
         {
             return false;
         }
@@ -2403,9 +2418,9 @@ public sealed class BitPdfHtmlRenderer
         }
         _html.Append('\'').Append(clipData).Append("')\">");
 
-        for (int j = jStart; j <= jEnd; j++)
+        for (long j = jStart; j < jStart + rows; j++)
         {
-            for (int i = iStart; i <= iEnd; i++)
+            for (long i = iStart; i < iStart + columns; i++)
             {
                 BitPdfMatrix cellCtm = BitPdfMatrix.Concat(patToDevice, new BitPdfMatrix(1, 0, 0, 1, i * xStep, j * yStep));
                 RunPatternCell(patStream, cellCtm, patRes, bbox);
@@ -2472,7 +2487,10 @@ public sealed class BitPdfHtmlRenderer
         try
         {
             byte[] content = BitPdfStreamDecoder.Decode(patStream);
-            RunOps(new BitPdfContentParser(content).Parse());
+            if (_work.TrySpend(content.Length + ContentRunCost))
+            {
+                RunOps(new BitPdfContentParser(content).Parse());
+            }
         }
         catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {

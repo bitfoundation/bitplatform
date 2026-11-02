@@ -1,0 +1,40 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The root is the box the table scrolls in sideways, so a wide table never widens the conversation around it. A box that
+   scrolls has to be reachable by the keyboard to be scrolled by it, and WebKit does not make a scroller focusable on its
+   own as the other engines do, so it is a named group in the tab order while the table overflows it (data-bit-ai-scroll,
+   see BitAiScrollStops.ts) - unless a tabindex written on the table says otherwise. A group rather than a region: a
+   region is a landmark, and the tables of a page or a chat would be a run of landmarks of one name. Its name comes from
+   the AriaLabel, an aria-label written on the table, or the string table. *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     role="group"
+     tabindex="@GetSplattedAttribute("tabindex")"
+     data-bit-ai-scroll
+     aria-label="@(ResolveAriaLabel() ?? Strings.Table)">
+    <table style="@Styles?.Table" class="bit-aidtb-tbl @Classes?.Table">
+        <thead>
+            <tr style="@Styles?.HeaderRow" class="bit-aidtb-hrw @Classes?.HeaderRow">
+                @foreach (var column in _columns)
+                {
+                    <th scope="col" style="@Styles?.HeaderCell" class="bit-aidtb-hcl @Classes?.HeaderCell">@BitAiStructuredDataView.Humanize(column)</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _rows)
+            {
+                <tr style="@Styles?.Row" class="bit-aidtb-row @Classes?.Row">
+                    @foreach (var column in _columns)
+                    {
+                        <td style="@Styles?.Cell" class="bit-aidtb-cel @Classes?.Cell">@Cell(row, column)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

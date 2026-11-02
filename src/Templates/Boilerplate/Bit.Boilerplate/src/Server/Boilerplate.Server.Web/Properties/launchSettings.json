@@ -31,7 +31,15 @@
                 "WebAppRender:BlazorMode": "BlazorWebAssembly"
             },
             "dotnetRunMessages": true,
+            //#if (framework == 'net10.0')
+            //#if (IsInsideProjectTemplate)
+            /*
+            //#endif
             "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+            //#if (IsInsideProjectTemplate)
+            */
+            //#endif
+            //#endif
             "applicationUrl": "http://localhost:5030;http://*:5030"
         },
         "WSL": {

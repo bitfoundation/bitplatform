@@ -1,0 +1,24 @@
+@inherits WorkbenchComponentBase
+
+<div class="conversations">
+    <BitAiConversationList Conversations="Conversations"
+                           SelectedId="@SelectedId"
+                           Disabled="IsLoading || IsFailed"
+                           OnSelect="OnSelect"
+                           OnNew="OnNewChat"
+                           OnDelete="OnDelete" />
+
+    @if (IsLoading)
+    {
+        <div class="placeholder">
+            @for (var i = 0; i < 4; i++)
+            {
+                <BitShimmer Height="2.25rem" />
+            }
+        </div>
+    }
+    else if (IsFailed is false && Conversations.Count is 0)
+    {
+        <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary" Class="empty">@Localizer[nameof(WorkbenchStrings.AssistantNoHistory)]</BitText>
+    }
+</div>

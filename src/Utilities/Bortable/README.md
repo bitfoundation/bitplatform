@@ -3,11 +3,12 @@
 A Blazor-native drag-and-drop sortable list, inspired by [SortableJS](https://github.com/SortableJS/Sortable):
 reorder the items of a list, or drag them between lists that share a group.
 
-Bortable runs on the browser's own HTML5 drag-and-drop events, handled by Blazor in C#. It is **not** a
-JavaScript-interop wrapper around SortableJS: the sorting engine - where the item goes, which list may take it,
-what is moved, cloned or swapped, and which events are raised - is written in C#. A small JavaScript module does
-only what needs the DOM: drag handles, measuring where the pointer is (the swap thresholds), and the FLIP
-animations that slide items into place.
+Bortable is **not** a JavaScript-interop wrapper around SortableJS: the sorting engine - which list may take an
+item, what a position means, what is moved, cloned or swapped, and which events are raised - is written in C#, over
+your own `IList<TItem>`. A small JavaScript module does what has to happen where the pointer is: it follows the
+browser's drag events, measures where the pointer is against the items (the swap thresholds), and calls .NET only
+when the drop position changes - so a drag stays smooth on Blazor Server too - and it plays the FLIP animations
+that slide items into place.
 
 ```razor
 <Bortable @bind-Items="_tasks" TItem="string">
@@ -37,12 +38,22 @@ order a user makes is the order your code reads back.
 - **Swap mode** (the SortableJS Swap plugin): drop an item onto another to trade their places.
 - **Multi-drag** (the SortableJS MultiDrag plugin): select several items and drag them together.
 - **Drag handles, filters** for locked items, and **per-item classes** that follow an item from list to list.
-- **Any layout**: vertical lists, horizontal strips, grids and nested trees.
+- **Rules**: `CanDrop` vets every position before it is shown (the SortableJS `onMove`), `MaxItems` caps a list,
+  and `ConfirmDrop` asks your code - a server, a dialog - before a drop is kept, putting everything back if it says
+  no.
+- **Cancel and spill**: a cancelled drag leaves no partial change behind; `RevertOnSpill` puts a drag released
+  outside every list back where it was.
+- **Moves from code**: `MoveAsync` and `MoveToAsync` move an item as a drag would - the rules, the animation and
+  the events included - for "move up" buttons and item menus.
+- **Keyboard and screen readers**: pick an item up with Space, move it with the arrow keys - within its list and
+  across to the next one - and drop it; every step is announced, in words you can translate.
+- **Any layout**: vertical lists, horizontal strips, grids, right-to-left and reversed layouts, and nested trees.
 - **Two-way binding** with `@bind-Items`, and the SortableJS lifecycle events (`OnStart`, `OnEnd`, `OnAdd`,
-  `OnRemove`, `OnUpdate`, `OnSort`, `OnChange`).
+  `OnRemove`, `OnUpdate`, `OnSort`, `OnChange`), which also say how the drag was made and whether it was
+  cancelled.
 - **Generic and strongly typed**: `Bortable<TItem>`.
-- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 8, 9 and 10, and is
-  trimming and AOT friendly.
+- Works on **Blazor WebAssembly, Blazor Server, Blazor Web App and Blazor Hybrid**, on .NET 10 and 11, is
+  trimming and AOT friendly, and can be [lazy loaded](#lazy-loading-on-webassembly) on WebAssembly.
 
 ## Quick start
 
@@ -80,26 +91,57 @@ The full walkthrough is in [getting started](#getting-started).
 
 ## Requirements
 
-- .NET 8, .NET 9 or .NET 10
+- .NET 10 or .NET 11
 - Blazor WebAssembly, Blazor Server, Blazor Web App (any interactive render mode) or Blazor Hybrid
-- A browser with HTML5 drag and drop - every evergreen desktop browser, and the mobile browsers that support it
+- Any evergreen browser: the mouse uses HTML5 drag and drop, a finger or a pen pointer events, so touch screens work
+  whether or not their browser drags natively
 
 ## The demo
 
-The demo site, [bortable.bitplatform.dev](https://bortable.bitplatform.dev), mirrors the SortableJS demo: a simple
-list, shared lists, cloning, disabling sorting, a handle, a filter, the swap thresholds with a live view of the
-swap zones, a grid, nested lists, an events log, and the multi-drag and swap plugins. Every page shows its own
-source.
+The demo site, [bortable.bitplatform.dev](https://bortable.bitplatform.dev), mirrors the SortableJS demo and goes
+past it: a simple list, shared lists with an empty state, cloning from a list and from a read-only palette, `Sort`,
+`Put`, `Pull` and `Disabled`, a handle, a filter, the swap thresholds with a live view of the swap zones, the
+keyboard and translated screen reader announcements, a board with rules, touch and pen, a large list, a grid with
+horizontal and right-to-left rows, nested lists, the stylesheet's custom properties and classes, an events log, and
+the multi-drag and swap plugins. Every page shows its own source and the parameters it uses.
+
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (a list and two shared lists with their drag log, a board with rules and moves from code, a form builder that
+clones from a palette, a tree of nested lists, and multi-drag and swap mode), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
+Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be tried with the same lists. Every
+page says which renderer it is on and where a drop position is decided: in the browser, on the server across the
+circuit, or in the app's own process. [Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its own whose browser
+half downloads `Bit.Bortable.wasm` only when its board opens (see
+[lazy loading](#lazy-loading-on-webassembly)).
+
+```bash
+dotnet run --project src/Utilities/Bortable/Samples/Server
+dotnet run --project src/Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm
+dotnet run --project src/Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto
+dotnet run --project src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy
+dotnet build -t:Run -f net10.0-android src/Utilities/Bortable/Samples/Maui
+```
+
+`Bit.Bortable.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows) targets
+need the `maui-*` workloads - `dotnet workload restore` from `src/Utilities/Bortable` installs them. Without them the
+solution build fails with `NETSDK1147`; the library, the demo, the tests and the web samples still build as projects
+of their own.
 
 ## How it fits together
 
 ```text
-dragstart (an item)         Bortable records the drag on the scoped BortableService
-  -> dragover (a list)      bit-bortable.js measures the pointer against the items (swap thresholds)
+dragstart (an item)         bit-bortable.js names the item to its list; Bortable records the drag on the scoped
+                            BortableService and answers which lists take it
+  -> the pointer moves      bit-bortable.js finds the list under the pointer that takes the drag, measures the
+                            pointer against its items (swap thresholds), and calls .NET only for a new position
        the home list        the item is moved in the bound list, live, and Blazor moves its DOM node
        another list         a placeholder previews where the item will land; the item itself stays put
        swap mode            the item under the pointer is highlighted as the swap target
-  -> drop / dragend         the pending move, clone or swap is committed to the bound lists
+       CanDrop says no      nothing moves, and the pointer shows it cannot drop there
+  -> drop / release         the pending move, clone or swap is committed to the bound lists (or, cancelled,
+                            everything is put back)
+  -> ConfirmDrop            the destination may still refuse it, which puts everything back
   -> ItemsChanged, events   once per changed list, then OnUpdate / OnRemove / OnAdd / OnSort / OnEnd
 ```
 
@@ -108,8 +150,8 @@ Everything ships in one package, `Bit.Bortable`, under one namespace, `Bit.Borta
 | Part | Contents |
 | --- | --- |
 | The component | `Bortable<TItem>`, the list. |
-| The model | `BortablePull`, `BortableDirection` and `BortableEventArgs<TItem>`. |
-| The services | `AddBitBortableServices`, which registers the scoped coordinator that tracks the active drag across lists. |
+| The model | `BortablePull`, `BortableDirection`, `BortableInput` and `BortableEventArgs<TItem>`. |
+| The services | `AddBitBortableServices`, which registers the scoped coordinator that tracks the active drag across lists. A WebAssembly app that lazy loads Bortable goes without it and sets the `Bit.Bortable.Unregistered` runtime switch instead. |
 | The browser layer | `bit-bortable.js` (hit testing, drag handles, FLIP animations) and `bit-bortable.css` (the drag states). |
 
 ## MCP server
@@ -146,10 +188,17 @@ every event raised, in order. Every tool is read-only.
 - [Filtering items](#filtering-items)
 - [Swap mode](#swap-mode)
 - [Multi-drag](#multi-drag)
+- [Rules](#rules)
+- [Cancelling a drag](#cancelling-a-drag)
+- [Moving items from code](#moving-items-from-code)
+- [Touch, pen and mouse](#touch-pen-and-mouse)
+- [The keyboard](#the-keyboard)
+- [Accessibility](#accessibility)
 - [Events](#events)
 - [Styling](#styling)
 - [Hosting models](#hosting-models)
 - [How it works](#how-it-works)
+- [Performance](#performance)
 - [API reference](#api-reference)
 - [Coming from SortableJS](#coming-from-sortablejs)
 - [Limitations](#limitations)
@@ -164,7 +213,8 @@ dotnet add package Bit.Bortable
 ```
 
 In a Blazor Web App with an interactive client, the package belongs in the `.Client` project, and the services are
-registered in both projects (see [hosting models](#hosting-models)).
+registered in both projects (see [hosting models](#hosting-models)), unless the client
+[lazy loads](#lazy-loading-on-webassembly) Bortable.
 
 ### Register the services
 
@@ -175,7 +225,28 @@ builder.Services.AddBitBortableServices();
 It registers one scoped service, the coordinator that holds the drag in progress so that lists sharing a group can
 hand an item to each other. Scoped means one per circuit on Blazor Server and one per application on WebAssembly,
 so two users never share a drag. Calling it more than once is harmless. Without it, the first `Bortable` that
-renders throws, because it cannot be given the service it injects.
+renders throws "Bit.Bortable's services are not registered", on every host. Only a WebAssembly app that downloads
+Bortable when a page with a list opens skips this step, and says so with a runtime switch; see
+[lazy loading](#lazy-loading-on-webassembly).
+
+### App-wide defaults
+
+The same call takes defaults for every list of the app - the texts in its language, a longer long press, a slower
+slide:
+
+```csharp
+builder.Services.AddBitBortableServices(options =>
+{
+    options.Messages = MyTexts.German;
+    options.TouchDelay = 300;
+    options.Animation = 200;
+});
+```
+
+A default replaces the parameter's own default for every list that does not set the parameter itself; a list that
+does keeps its value. `BortableOptions` covers `Animation`, `SwapThreshold`, `Delay`, `TouchDelay`, `DelayTolerance`,
+`ForceFallback`, `Scroll`, `ScrollSensitivity`, `ScrollSpeed`, `Keyboard`, `RevertOnSpill`, `Messages`, and the
+classes `GhostClass`, `ChosenClass`, `DragClass`, `SwapClass` and `SelectedClass`. Several calls add up, in order.
 
 ### Reference the stylesheet
 
@@ -434,19 +505,266 @@ group, as long as each list could take the other's item. A swap always trades th
 ## Multi-drag
 
 `MultiDrag="true"` lets several items move as one - the SortableJS MultiDrag plugin. A click toggles an item's
-selection (highlighted with `SelectedClass`, default `bit-bortable-selected`). Dragging a selected item moves the
+selection (highlighted with `SelectedClass`, default `bit-bortable-selected`), Shift+click selects every item from
+the one last clicked, and from the keyboard Shift+Space toggles the focused item. Dragging a selected item moves the
 whole selection, which lands as a contiguous block in its original order; dragging an unselected item clears the
-selection and moves just that item. It works within a list and across lists that share a group.
+selection and moves just that item. It works within a list and across lists that share a group, with the pointer
+and with the keyboard.
 
 ```razor
-<Bortable @bind-Items="_items" TItem="string" MultiDrag="true">
+<Bortable @bind-Items="_items" @bind-SelectedItems="_selected" TItem="string" MultiDrag="true">
     <ItemTemplate Context="item">@item</ItemTemplate>
 </Bortable>
+
+<button @onclick="() => _selected = []">Clear the selection</button>
+
+@code {
+    private IList<string> _items = new List<string> { "One", "Two", "Three" };
+    private IReadOnlyCollection<string> _selected = [];
+}
 ```
+
+`@bind-SelectedItems` keeps the selection in step with your field both ways: the list reports every change - a
+click, a range, Shift+Space, a drag that moves the selection (which spends it) or picks up an unselected item (which
+clears it) - and takes a selection you set. Items that are not in the list, or are locked by `Filter`, are left out.
 
 The `Items` property of the event arguments lists every item a drag moved. Multi-drag moves; combined with a clone
 pull, dragging into another list clones only the dragged item. Items that leave the list, or are replaced along
 with the whole `Items` list, leave the selection too.
+
+## Rules
+
+`Group`, `Pull`, `Put` and `Sort` decide which lists exchange items. Three more parameters bring your own rules -
+a kanban board's workflow, a column's work-in-progress limit, a server that has the last word.
+
+### CanDrop
+
+`CanDrop` is asked whether the dragged item may take a position in this list, as the item reaches it and before
+anything is shown - for a reorder within the list and for an item coming in from another list alike. It receives
+the proposed move as `BortableEventArgs<TItem>`: `Item` (and `Items` for a multi-drag), `FromId` and `FromGroup`
+(where it comes from), `OldIndex`, and `NewIndex`, the index the item would have here. Return `false` to refuse: the
+item stays where it was, and the pointer shows that it cannot be dropped there. This is the SortableJS `onMove`.
+
+```razor
+@* "Done" takes cards from "Review" only, and never above the pinned first card. *@
+<Bortable @bind-Items="_done" TItem="Card" Group="board" Id="done"
+          CanDrop='e => (e.FromId is "review" or "done") && e.NewIndex > 0'>
+    <ItemTemplate Context="card">@card.Title</ItemTemplate>
+</Bortable>
+```
+
+In swap mode it is asked about the dragged item alone - not the rest of a multi-drag selection - with `NewIndex` the
+index of the item under the pointer, whose place it would take; a swap across lists also asks the list the dragged
+item is in about the item that would come back to it, so `Item` is then that item and `FromId` the list it leaves. A
+multi-drag asks once more on the drop, with the index the dragged item has once the rest of the selection is gathered
+next to it: a refusal puts every selected item back where it was, and `OnEnd` reports `Canceled`.
+
+A `CanDrop` that throws refuses the position it was asked about, and the exception is passed on once that step of
+the drag is done - on the drop, once the drag is put back and reported: it is thrown to the code that called
+`MoveAsync` or `MoveToAsync`, and, during a drag the user makes, raised as the list's own, which the nearest
+`ErrorBoundary` handles, as it would an exception thrown by an event handler.
+
+It runs while the pointer moves, so keep it fast and free of side effects.
+
+### MaxItems
+
+`MaxItems` caps how many items a list holds. A full list takes nothing from other lists - the pointer passes over
+it to the list around it, or shows that it cannot drop - while its own items still sort. A multi-drag counts every
+item it carries; a swap brings one item and takes one, so it is never refused for room.
+
+```razor
+<Bortable @bind-Items="_inProgress" TItem="Card" Group="board" MaxItems="3">
+```
+
+### ConfirmDrop
+
+`ConfirmDrop` is asked once an item has been dropped into the list - for a check that has to wait: a server call, a
+confirmation dialog. The drop shows at once, and the lists stay as dropped while the task runs. Return `true` to keep
+it, and the usual events follow; return `false` to put back every list the drag changed, with the items sliding back:
+`OnEnd` then reports `Canceled`, and no `OnUpdate`, `OnAdd`, `OnRemove` or `OnSort` is raised. `ItemsChanged` is
+raised for the lists put back - your page may have rendered them as dropped while the task ran - with what they held
+before the drag.
+
+```razor
+<Bortable @bind-Items="_done" TItem="Card" Group="board" ConfirmDrop="SaveAsync">
+    <ItemTemplate Context="card">@card.Title</ItemTemplate>
+</Bortable>
+
+@code {
+    private async Task<bool> SaveAsync(BortableEventArgs<Card> e)
+        => await Api.TryMoveAsync(e.Item.Id, e.ToId, e.NewIndex);
+}
+```
+
+It is asked on the list the item lands in, with the move as committed: `NewIndex` is where the item is now. No other
+drag starts until it answers, and the lists must not be changed meanwhile - a refusal puts back what they held
+before the drag. A `ConfirmDrop` that throws puts the lists back too, raises `OnEnd` with `Canceled`, and the
+exception is passed on as one `CanDrop` throws is.
+
+## Cancelling a drag
+
+A drag that is cancelled leaves nothing behind: a live reorder is undone, an item previewed in another list goes
+back home, a pending swap or multi-drag is dropped, and `OnEnd` reports `Canceled` - with no `ItemsChanged`,
+`OnUpdate`, `OnAdd`, `OnRemove` or `OnSort`. Only the dragged item's own move is undone, so an item your code added
+to the list meanwhile stays.
+
+What counts as a cancel depends on how the item is dragged:
+
+- **A mouse drag** is the browser's native drag, which reports Escape exactly like a release outside every list.
+  Both keep what the drag did, as in SortableJS - an item previewed in another list lands there - unless the list
+  the drag started in has `RevertOnSpill="true"`, which puts both back.
+- **A keyboard, touch or pen drag** is told apart: Escape (or a pointer the system takes over) always cancels.
+
+```razor
+@* Released outside every list, the card goes back where it was. *@
+<Bortable @bind-Items="_backlog" TItem="Card" Group="board" RevertOnSpill="true">
+```
+
+## Moving items from code
+
+`MoveAsync(item, newIndex)` moves an item within its list, and `MoveToAsync(item, listId, newIndex)` into another
+list of the group, exactly as a drag would: the same rules decide (`Sort`, `Disabled`, `Pull`, `Put`, `Group`,
+`MaxItems`, `CanDrop`), `ConfirmDrop` is asked, the items slide into place, and the drag's events follow with
+`Input` set to `BortableInput.Api`. Both return `true` when the item moved. A clone source puts a copy in the
+target; a swap-mode list trades the item with the one at `newIndex`. `Filter` locks an item against the user's drags
+only, and a multi-drag selection is not carried along.
+
+That is what an accessible list offers next to dragging (WCAG 2.5.7): "move up", "move to top" buttons, or an item
+menu that moves a card to another column.
+
+```razor
+<Bortable @ref="_list" @bind-Items="_items" TItem="string">
+    <ItemTemplate Context="item">
+        @item
+        <button @onclick="() => _list.MoveAsync(item, Math.Max(0, _items.IndexOf(item) - 1))"
+                aria-label="@($"Move {item} up")">↑</button>
+    </ItemTemplate>
+</Bortable>
+
+@code {
+    private Bortable<string> _list = default!;
+    private IList<string> _items = new List<string> { "One", "Two", "Three" };
+}
+```
+
+A move is refused while a drag is in progress. It is announced to screen readers, like a keyboard drag's.
+
+## Touch, pen and mouse
+
+A mouse drags with the browser's own drag and drop, as SortableJS does on the desktop: the browser draws the drag
+image and the cursor. A finger or a pen drags with pointer events instead - the item stays in its list, dimmed, while
+a copy of it follows the pointer - which works the same in every browser and web view, whether or not it supports
+HTML5 drag and drop on touch. Both feed the same router: the same lists take the drag, the same hit test places the
+item, the same events follow.
+
+| Parameter | Default | |
+| --- | --- | --- |
+| `TouchDelay` | `200` | A finger must rest on an item this long (ms) before it drags it, so a swipe over the list still scrolls the page. |
+| `Delay` | `0` | The same for the mouse and a pen. |
+| `DelayTolerance` | `5` | How far (px) the pointer may move while the delay runs; further, and the press is a scroll or a click. |
+| `ForceFallback` | `false` | The mouse drags like a finger, with the preview: for a preview of your own style, or a web view without HTML5 drag and drop. |
+| `DragClass` | `bit-bortable-drag` | The class of the preview, which is a copy of the item placed above the page. |
+
+Once a finger drags an item the page does not scroll under it; Escape, a system gesture that takes the pointer
+over (`pointercancel`), or leaving the page cancels the drag and puts everything back. The click a browser follows a
+press with is swallowed after a drag, so dropping an item does not also click it. A press on a control inside an
+item - a button, a link, an input - is left to the control.
+
+Near an edge, a pointer drag scrolls (`Scroll`, on by default): the innermost scrolling element under the pointer
+that can still scroll that way - the list itself, a panel around it - then the page, faster the closer the pointer
+comes (`ScrollSensitivity`, `ScrollSpeed`), and the items under the pointer are measured again as they pass. A mouse
+dragging natively is scrolled by the browser; a keyboard drag scrolls the focused item into view.
+
+For a handle that drags at once on a touch screen, without the long press, give it `touch-action: none` and set
+`TouchDelay="0"`:
+
+```razor
+<Bortable @bind-Items="_items" TItem="string" Handle=".grip" TouchDelay="0">
+    <ItemTemplate Context="item"><span class="grip" style="touch-action: none">⠿</span> @item</ItemTemplate>
+</Bortable>
+```
+
+## The keyboard
+
+Every list can be sorted without a pointer (`Keyboard`, on by default):
+
+| Key | Not dragging | Dragging |
+| --- | --- | --- |
+| <kbd>Tab</kbd> | Enters the list at its last focused item; the list is a single tab stop. | Drops the item where it is, and moves on. |
+| Arrow keys | Move the focus to the item in that direction. | Move the item to the next place in that direction; past the end of its list, into the nearest list of the group that way. |
+| <kbd>Home</kbd> / <kbd>End</kbd> | Focus the first / last item. | Move the item to the start / end of its list. |
+| <kbd>Space</kbd> / <kbd>Enter</kbd> | Pick the focused item up. | Drop it. |
+| <kbd>Shift</kbd>+<kbd>Space</kbd> | In a `MultiDrag` list, select or deselect the focused item. | - |
+| <kbd>Escape</kbd> | - | Put it back where it was. |
+
+The arrows follow the layout - up and down a vertical list, along a row, right to left in an RTL one, row to row in a
+grid, from column to column of a board, into a nested list - because the browser layer looks for the next item, or
+list, in the direction of the key. A keyboard drag moves the item itself, into another list too, and the focus
+follows it; a clone source puts a copy in the other list, which goes away again if it is carried back. In swap
+mode the arrows move the swap highlight instead, and the drop trades the two items.
+
+Every rule applies as for a pointer: a position `CanDrop` refuses, a full list, a list of another group are
+announced as refused and the item stays put, and `ConfirmDrop` is asked on the drop.
+
+Keys pressed inside an item - in an input, on a button of its own - are left alone: only an item itself, or its
+drag handle, answers them. With a `Handle`, make the handle a `<button type="button">` with an accessible name, and
+it picks the item up too. `Keyboard="false"` turns it all off, and a `Disabled` list is not focusable.
+
+## Accessibility
+
+A list is a `list` of `listitem`s, each described as a "sortable item" with the keyboard instructions, and named to
+assistive technology by `AriaLabel`:
+
+```razor
+<Bortable @bind-Items="_cards" TItem="Card" AriaLabel="In progress" ItemLabel="c => c.Title">
+```
+
+Each step of a drag is announced through a live region - picked up, moved, dropped, cancelled, refused - with the
+item's name (`ItemLabel`, or its `ToString()`), its position and the list it is in: "Picked up Write the spec. It is
+at position 2 of 5 in In progress." A pointer drag is announced when it starts and ends, a keyboard drag at every
+step, and a move made by code when it lands.
+
+The texts are a `BortableMessages`, to translate or reword through `Messages` - one shared instance for the app, say:
+
+```csharp
+public static readonly BortableMessages German = new()
+{
+    Instructions = "Leertaste oder Eingabe zum Aufnehmen, Pfeiltasten zum Verschieben, Escape zum Abbrechen.",
+    RoleDescription = "sortierbares Element",
+    PickedUp = a => $"{a.Item} aufgenommen, Position {a.Position} von {a.Count}.",
+    Moved = a => $"{a.Item} auf Position {a.Position} von {a.Count} verschoben.",
+    Dropped = a => $"{a.Item} auf Position {a.Position} von {a.Count} abgelegt.",
+    Canceled = a => $"Abgebrochen. {a.Item} ist wieder auf Position {a.Position}.",
+};
+```
+
+| Message | When |
+| --- | --- |
+| `Instructions` | Read with every item (`aria-describedby`). |
+| `RoleDescription` | What an item is called in place of "list item" (`aria-roledescription`). |
+| `PickedUp` | A drag starts. |
+| `Moved` | A keyboard drag, or a move made by code, moves the item. |
+| `SwapTarget` | In swap mode, the item the dragged one will trade places with changes. |
+| `Dropped` | The drag ends with a drop. |
+| `Canceled` | The drag is cancelled, or its drop refused: by `ConfirmDrop`, or, for a multi-drag's gathering, by `CanDrop`. |
+| `Refused` | A position the keyboard asked for is refused. |
+| `Locked` | A locked (`Filter`) item is asked to be picked up. |
+| `SelectionInstructions` | Added to `Instructions` in a `MultiDrag` list. |
+| `Selected` / `Deselected` | Shift+Space selects or deselects an item of a `MultiDrag` list. |
+
+Each takes a `BortableAnnouncement`: `Item`, `Position` and `Count` (from 1), `List`, `OldPosition`, `FromList`,
+`Returned` (back in the list and at the position it was picked up from), in swap mode `Target`, and for a selection
+`Selected`, the number of items selected.
+
+A list's `ChildContent` - an empty-state message, say - is rendered inside the `list`, where only items belong: give
+it `role="listitem"` (it is then read as part of the list), or render it next to the list. The drop placeholder and
+the preview that follows a finger are pictures of the item: hidden from assistive technology and inert, so a control
+the template renders in them can be neither focused nor clicked.
+
+Dragging is never the only way: a keyboard drag covers keyboard and switch users, and `MoveAsync` / `MoveToAsync`
+give an app the buttons and menus that WCAG 2.5.7 (dragging movements) asks for and that some screen readers in
+browse mode need. The focus outline of an item and of a picked-up item are drawn by the stylesheet, also in forced
+colours (Windows high contrast), and the slide animations are skipped when the system asks for reduced motion.
 
 ## Events
 
@@ -485,6 +803,9 @@ All events are `EventCallback<BortableEventArgs<TItem>>`:
 | `FromGroup` | `string?` | Group of the source list. |
 | `ToGroup` | `string?` | Group of the destination list. |
 | `CrossedLists` | `bool` | `true` when the item moved between lists. |
+| `Input` | `BortableInput` | How the drag was made: `Mouse`, `Touch`, `Pen`, `Keyboard`, or `Api` for a move made by code. |
+| `IsClone` | `bool` | `true` when a copy goes into another list and the original stays. |
+| `Canceled` | `bool` | On `OnEnd`: the drag kept nothing - cancelled, spilled with `RevertOnSpill`, refused by `ConfirmDrop` or, for a multi-drag's gathering, by `CanDrop`, or ended as its list left the page with a `ConfirmDrop` to ask (see below). |
 
 Give the lists an `Id` of your own when a handler needs to tell them apart; otherwise each gets a generated one.
 
@@ -500,7 +821,31 @@ say - never holds up the next drag.
 A drag can also end before it is released: when its source list leaves the page (a tab or a panel closing over
 it), or when the browser never reports its end and the next drag starts. It ends where it is: a preview in another
 list is dropped, while a live reorder of the source list stays, and is reported like any other - `ItemsChanged`,
-`OnUpdate`, `OnSort` - followed by `OnEnd`.
+`OnUpdate`, `OnSort` - followed by `OnEnd`. When the next drag ends one that changed a list, the destination's
+`ConfirmDrop` is asked first, as for a drop, and the next drag starts once it answers. When its list leaves the page,
+`ConfirmDrop` is not asked - the page may be going away, and a dialog it opens with it - so a destination that has
+one does not keep the drag: the lists it changed are put back, as if it had refused, with `ItemsChanged` for them and
+`OnEnd` reporting `Canceled`.
+
+A cancelled drag raises `OnEnd` alone, with `Canceled` set (see [cancelling a drag](#cancelling-a-drag)); one
+`ConfirmDrop` refused raises `ItemsChanged` for the lists it put back, then `OnEnd` with `Canceled`. With a
+`ConfirmDrop`, the completion events wait for its answer.
+
+### Proposed, committed, cancelled
+
+Every drag goes through the same stages, whatever made it:
+
+| Stage | What happens | What you see |
+| --- | --- | --- |
+| Started | The item is picked up. | `OnStart` |
+| Proposed | Each new position is put to `CanDrop` (and `MaxItems`, `Put`, `Pull`...) before it is shown. | `OnChange` for each one shown |
+| Released | Dropped on a list, released elsewhere, or cancelled. | - |
+| Committed | The pending move, clone or swap is applied to the bound lists. | - |
+| Confirmed | The destination's `ConfirmDrop`, if any, keeps it - or puts everything back. | - |
+| Reported | Once per changed list, then the completion events. | `ItemsChanged`, `OnUpdate` / `OnRemove` / `OnAdd`, `OnSort`, `OnEnd` |
+
+A drag is finished exactly once: a drop followed by the browser's `dragend`, or a list that leaves the page as the
+drag ends, never commits it twice.
 
 ## Styling
 
@@ -521,6 +866,15 @@ through `Class` and `Style` on the container and `ItemClass` and `ItemClassSelec
 | `--bit-bortable-selected-bg` | the accent at 25% | A multi-drag selected item's background. |
 | `--bit-bortable-selected-ring` | `inset` 2px accent at 80% | A multi-drag selected item's ring (a `box-shadow`). |
 | `--bit-bortable-filtered-opacity` | `0.7` | A filtered item. |
+| `--bit-bortable-focus-outline` | `2px solid` accent at 90% | The outline of an item focused from the keyboard. |
+| `--bit-bortable-focus-offset` | `2px` | How far that outline sits outside the item. |
+| `--bit-bortable-lifted-outline-style` | `dashed` | The outline style of an item picked up from the keyboard. |
+| `--bit-bortable-drag-opacity` | `0.92` | The preview that follows a finger, a pen or a `ForceFallback` mouse. |
+| `--bit-bortable-drag-shadow` | `0 10px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.12)` | That preview's shadow. |
+| `--bit-bortable-accepts-outline` | `none` | During a drag, the outline of every list that takes it. |
+| `--bit-bortable-over-outline` | `none` | The outline of the list under the pointer. |
+| `--bit-bortable-refused-outline` | `none` | The outline of that list when it refused the position. |
+| `--bit-bortable-target-offset` | `2px` | How far those outlines sit outside the list. |
 
 Override them on `:root`, on one list's `Class`, or inline through `Style`:
 
@@ -542,9 +896,32 @@ Override them on `:root`, on one list's `Class`, or inline through `Style`:
 | `bit-bortable-filtered` | Items the `Filter` excludes. |
 | `bit-bortable-disabled` | The container of a `Disabled` list. |
 | `bit-bortable-has-handle` | The container of a list with a `Handle`. |
+| `bit-bortable-instructions` | The hidden keyboard instructions every item refers to. |
+| `bit-bortable-drag` (`DragClass`) | The preview that follows a finger, a pen or a `ForceFallback` mouse. |
 
 `GhostClass`, `ChosenClass`, `SwapClass` and `SelectedClass` replace the class used for their state, for a list
 that wants its own look instead of the stylesheet's.
+
+### Valid and invalid drop targets
+
+While a drag runs, the lists carry attributes the app can style - set by the browser layer, so they cost no render:
+
+| Attribute | On |
+| --- | --- |
+| `data-bortable-accepts` | Every list that takes the drag. |
+| `data-bortable-over` | The list under the pointer (from the keyboard: the list the item is in). |
+| `data-bortable-refused` | That list, when it refused the last position (`CanDrop`). |
+| `data-bortable-dragging` | The page's `<html>`, set to `native`, `pointer` or `keyboard`. |
+
+The stylesheet draws nothing for them until you set its custom properties - a board that shows where a card may go:
+
+```css
+.board { --bit-bortable-accepts-outline: 2px dashed #94a3b8; --bit-bortable-over-outline: 2px solid #2563eb;
+         --bit-bortable-refused-outline: 2px solid #dc2626; }
+```
+
+A mouse dragging natively also shows the cursor: a copy over another list of a clone drag, no drop over a refused
+position.
 
 ### Per-item classes
 
@@ -563,14 +940,128 @@ to another list - and the drop placeholder shows it too, so the preview looks li
 ### Blazor WebAssembly
 
 Register the services in `Program.cs` and link the stylesheet from `wwwroot/index.html`. Every drag event is
-handled in the browser.
+handled in the browser. An app that is not compiled ahead of time can download the library only when a page with a
+list opens - see [lazy loading](#lazy-loading-on-webassembly).
+
+### Lazy loading on WebAssembly
+
+A WebAssembly app can fetch Bortable only when someone opens a part of the app that has a list. Its `Program.cs`
+cannot call `AddBitBortableServices` then - the assembly is not there yet when it runs - so the app says that it
+leaves the registration out on purpose, with the `Bit.Bortable.Unregistered` runtime switch, and the lists create
+their drag coordinator themselves: once per scope, which on WebAssembly is once per application, shared as the
+registered one would be, so lists of a group still hand items to each other. Without the switch a list that finds no
+registration throws, so an app that merely forgot it still hears of it.
+
+In the project that runs in the browser, set that switch, mark the assembly as lazy loaded, and set a switch of your
+own next to the mark so the router knows the assembly is there to load:
+
+```xml
+<ItemGroup>
+  <!-- Program.cs leaves AddBitBortableServices out, in every build: the lists create their own coordinator. -->
+  <RuntimeHostConfigurationOption Include="Bit.Bortable.Unregistered" Value="true" />
+</ItemGroup>
+<!-- AOT builds load Bit.Bortable with the rest of the app: see below. -->
+<ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bortable.wasm" />
+  <RuntimeHostConfigurationOption Include="MyApp.LazyLoadsBortable" Value="true" Trim="true" />
+</ItemGroup>
+```
+
+Then load it before the first page that uses it renders, from the router's `OnNavigateAsync`:
+
+```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    // Set only where Bit.Bortable.wasm is marked: loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsBortable = AppContext.TryGetSwitch("MyApp.LazyLoadsBortable", out var on) && on;
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages with lists: fetch Bortable before they render. A second call loads nothing again.
+        if (LazyLoadsBortable && IsBoardPage(context.Path))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bortable.wasm"]);
+    }
+
+    // /board and the routes beneath it, such as /Board/2 (routes match regardless of case), but not
+    // /board-settings. Add every other route that renders a list. The path keeps any query and fragment.
+    private static bool IsBoardPage(string path)
+    {
+        path = path.Split('?', '#')[0];
+        return path.Equals("board", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("board/", StringComparison.OrdinalIgnoreCase);
+    }
+}
+```
+
+Those pages hold their lists as usual. The stylesheet is a plain `<link>`, served whether the assembly has loaded or
+not, and the lists import their script module the first time one renders interactively. The rest of the app has to
+keep to these rules:
+
+- Leave `AddBitBortableServices` out of that project's `Program.cs`: calling it references Bortable's types before
+  the assembly is there. For the same reason only what renders after the assembly has loaded may use Bortable's
+  types - the pages it is loaded for and a layout only they use, not `App.razor`, `Routes.razor`, a layout every page
+  shares or `Program.cs`. A page in the app's own assembly can hold a `<Bortable>` and a `BortableMessages` field,
+  since the router loads Bortable before it renders the page. The method that calls `LoadAssembliesAsync` cannot use
+  them either: WebAssembly resolves what a method refers to when the method first runs, which is before the load,
+  and does not retry what it failed to resolve.
+- No public type in an assembly the router reads when the app starts in the browser - the app's own assembly first of
+  all, the client project's in a Blazor Web App - may derive from one of Bortable's, or from a generic type closed
+  over one of them: no component that inherits `Bortable<TItem>`, no class that derives from `BortableMessages`, and
+  no class that derives from `List<BortableEventArgs<Card>>`. The router reads the public types of those assemblies
+  at startup, and on WebAssembly a type whose base type needs an assembly that is not loaded yet fails to load - and
+  keeps failing after Bit.Bortable has loaded. Make such a type `internal`, or put it in a library of your own that is
+  lazy loaded together with Bit.Bortable: mark it in the same `ItemGroup`
+  (`<BlazorWebAssemblyLazyLoad Include="MyApp.Boards.wasm" />`) and load both
+  (`LoadAssembliesAsync(["Bit.Bortable.wasm", "MyApp.Boards.wasm"])`). Keep the pages in the app's own assembly and
+  only the types they use in that library: the router finds routes only in `AppAssembly` and `AdditionalAssemblies`,
+  so a page in the library would need `OnNavigateAsync` to add what `LoadAssembliesAsync` returns to a list the router
+  takes as `AdditionalAssemblies` - and an AOT build, which skips that call, would not find it at all.
+- Without the registration there are no [app-wide defaults](#app-wide-defaults): every list starts from its
+  parameters' own defaults. Set what you need on the lists themselves - `Messages`, `TouchDelay`, `Animation`, the
+  classes - for instance from one static class the pages share:
+  `<Bortable Messages="BoardTexts.German" TouchDelay="300" ...>`.
+- `Bit.Bortable.Unregistered` belongs only in the project that lazy loads. Everywhere else - Blazor Server, Blazor
+  Hybrid, the server project of a Blazor Web App, a WebAssembly app that loads Bortable with the rest - register the
+  services and leave the switch out, so that a missing registration throws "Bit.Bortable's services are not
+  registered" where it happens rather than quietly costing the lists their app-wide defaults.
+- In a Blazor Web App only the browser lazy loads, so give `Routes` the `InteractiveWebAssembly` or
+  `InteractiveAuto` render mode in `App.razor`, which brings the router - and its `OnNavigateAsync` - to the browser.
+  Under `InteractiveAuto` it runs over a server circuit on the first visit, while the WebAssembly runtime downloads,
+  and in the browser on later ones. With per-page render modes the router renders statically on the server and never
+  loads the assembly in the browser.
+- The server project of a Blazor Web App loads Bortable with the rest of the app and keeps its
+  `AddBitBortableServices()` - it prerenders the lists, and under `InteractiveAuto` runs them on the first visit - and
+  registers `LazyAssemblyLoader`, which `Routes.razor` injects whenever it runs on the server:
+  `builder.Services.AddScoped<LazyAssemblyLoader>()`. Outside the browser `LazyAssemblyLoader` downloads nothing: it
+  loads each assembly the call names from the ones the server already references. Give the server's registration no
+  defaults the client's lists do not set as parameters as well, or a list changes its texts or classes as it turns
+  interactive.
+- The condition leaves AOT builds out. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
+  to download later, and lazy loading an AOT-compiled assembly can fail at startup. The router's switch is set only
+  where the mark is, so an AOT build skips `LoadAssembliesAsync` as well - loading an assembly that is not marked
+  throws. `Bit.Bortable.Unregistered` stays outside the condition: an AOT build loads Bortable with the app, but runs
+  the same `Program.cs`, without the registration.
+
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App, and the
+[end-to-end suite](Tests/Bit.Bortable.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the home page never
+downloads `Bit.Bortable.wasm`, and the board - opened from the home page or by a deep link the server prerenders -
+downloads it and hands items between its lists.
 
 ### Blazor Server
 
-Register the services in `Program.cs` and link the stylesheet from `App.razor`. Each drag event is a round trip
-over the circuit: the list keeps up because a `dragover` that arrives while the previous one is still being handled
-is skipped rather than queued, but the preview trails the pointer by the network's latency. The coordinator is
-scoped to the circuit, so users never see each other's drags.
+Register the services in `Program.cs` and link the stylesheet from `App.razor`. The pointer is followed and
+measured in the browser, and the circuit carries only what changes: the start of a drag, each new drop position,
+and its end. While one call is on its way the browser keeps measuring, and sends the latest position once the call
+returns, so the last position is always acted on; the preview trails the pointer by the network's latency only when
+it moves to a new position. The coordinator is scoped to the circuit, so users never see each other's drags.
 
 ### Blazor Web App
 
@@ -582,8 +1073,10 @@ the stylesheet from the server's `App.razor`.
 
 ### Blazor Hybrid
 
-Register the services in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`. Drag and drop is the
-web view's own, so it works wherever the platform's web view supports HTML5 drag and drop.
+Register the services in `MauiProgram.cs` and link the stylesheet from `wwwroot/index.html`, as the
+[MAUI sample](Samples/Maui/wwwroot/index.html) does. A finger or a pen drags with pointer events, which every
+platform's web view supports; only the mouse uses the web view's own HTML5 drag and drop. Where a web view's native
+mouse drag fails, set `ForceFallback` and the mouse drags with pointer events too.
 
 ### Prerendering
 
@@ -600,17 +1093,32 @@ parameter does, when you set it.
 
 ## How it works
 
-### Native drag events
+### The browser routes, .NET decides
 
-Each item wrapper is `draggable`, and the component handles `dragstart`, `dragover`, `drop` and `dragend` in C#.
-The handlers of every list are serialized through the scoped coordinator, so a burst of `dragover` events can never
-act on stale positions, and whichever of `drop` and `dragend` comes first finishes the drag.
+Each item wrapper is `draggable` and carries a key of its own (`data-bortable-key`). Every list registers with the
+browser layer after its first interactive render, handing it an object to call it through and the options the hit
+test needs. From then on:
+
+1. On `dragstart` the browser layer names the item, by its key, to its list. The list records the drag on the
+   scoped coordinator and answers with the lists that take it - its own, and every list that could receive the item
+   (or trade an item for it, in swap mode).
+2. On each `dragover` the browser layer finds the innermost of those lists under the pointer - a nested list that
+   does not take the drag leaves it to the list around it - and hit-tests it. Only a new drop position is sent to
+   .NET; while a call is on its way, the latest position waits for it and is sent once it returns.
+3. The list answers whether anything changed - or that it refused the position, which the pointer then shows.
+4. On `drop`, or on `dragend` when the item was released elsewhere, the browser layer tells the list how the drag
+   ended.
+
+The calls are serialized through the coordinator, and whichever of `drop` and `dragend` comes first finishes the
+drag. An item is named by its key, never by an index the page may have moved on from.
 
 The browser layer marks the drags of the lists with a data type of their own, `application/x-bit-bortable`, when it
 lets an item start one. Any other drag - a file, selected text, a link or an element of your own inside an item -
 is left alone: a list neither starts a sort for it nor allows it to be dropped, and its events reach your own
 handlers, around the list or inside its items. The `dragover` and `drop` events of a list's drag stop at the list
-that takes them.
+that takes them. A browser that carries none of a drag's data to the events of the drag (WebKit on Windows shows
+only standard types while it runs) hides that mark: there, the drag in progress, which started from a list's item, is
+taken for the list's - unless it carries files - as SortableJS does everywhere.
 
 ### Live reordering within a list
 
@@ -625,14 +1133,42 @@ keeps it visible). The data moves when the drag ends, on drop or on release anyw
 
 ### FLIP animations
 
-Before each change the lists that are about to change record the position of every item; after Blazor has updated
-the DOM, each item is moved back to where it was with a transform and transitioned to its new place.
+Right before a call that may change the lists, the browser layer records the position of every item of the lists
+the drag has touched; as soon as Blazor's update of a list arrives - before the browser paints it - each item is
+moved back to where it was with a transform and transitioned to its new place. A change .NET makes on its own (a
+move made by code, a refused drop sliding back) is recorded and played the same way, around the render. With the
+system's reduced-motion setting on, nothing slides.
 
 ### The browser layer
 
-`bit-bortable.js` marks the lists' own drags and allows their drop, measures the pointer against the items for
-the swap thresholds, installs the `pointerdown` listener behind drag handles, refuses a drop into the dragged item's
-own subtree, and plays the animations. It keeps no copy of the lists and decides nothing about them.
+`bit-bortable.js` routes the input to the lists that take the drag, marks the lists' own drags and allows their
+drop, measures the pointer against the items for the swap thresholds, decides on `pointerdown` whether a drag
+handle lets an item be dragged, refuses a drop into the dragged item's own subtree, and plays the animations. It
+keeps no copy of the lists and decides nothing about them.
+
+## Performance
+
+What a drag costs, step by step:
+
+- **The pointer**: followed and measured in the browser. A step that does not change the drop position - the
+  pointer resting, moving within an item - never reaches .NET. A step that does is one call, and while it is on its
+  way the browser keeps the latest position for when it returns, so no position is lost and none queues up.
+- **A new position**: the list changes its bound list in place and renders once; the browser snapshots the items
+  before the call and slides them when the render lands, without another round trip.
+- **The render**: a list renders all its items, so a step of a drag through a list of a thousand items with a heavy
+  template renders a thousand templates. `IsolateItems="true"` puts each template in a component of its own that a
+  step skips - only the wrappers move - and renders again when the item changes or the page renders the list. Leave
+  it off when a template shows something other items' moves change, such as an item's position number: that would
+  only catch up when the drag ends.
+
+The browser layer counts its own work: in the browser's console,
+`(await import('/_content/Bit.Bortable/bit-bortable.js')).diagnostics()` returns the drags started, the positions
+sent to .NET (how many changed a list or were refused), the keyboard steps, the ends, and the average and slowest
+round trip of a position in milliseconds; `resetDiagnostics()` starts the count again.
+
+A list renders every item it is given: virtualizing a long list (Blazor's `Virtualize`) is not supported, as the
+items that are not rendered could be neither measured nor dropped beside. Page a list that is too long to render, or
+let a filter narrow it.
 
 ## API reference
 
@@ -649,6 +1185,10 @@ own subtree, and plays the animations. It keeps no copy of the lists and decides
 | `Pull` | `BortablePull` | `Move` | How items leave this list: `Move`, `None` or `Clone`. |
 | `Put` | `bool` | `true` | Whether items from the group may be dropped here. |
 | `Sort` | `bool` | `true` | Whether the list can be reordered. |
+| `CanDrop` | `Func<BortableEventArgs<TItem>, bool>?` | `null` | Whether the item may take a position here; asked before it is shown (SortableJS `onMove`). |
+| `MaxItems` | `int?` | `null` | The most items the list holds; a full list takes nothing from other lists. |
+| `ConfirmDrop` | `Func<BortableEventArgs<TItem>, Task<bool>>?` | `null` | Asked after a drop here whether to keep it; `false` puts everything back. |
+| `RevertOnSpill` | `bool` | `false` | A drag from this list released outside every list is put back (SortableJS `revertOnSpill`). |
 | `SwapThreshold` | `double` | `1` | Fraction (0-1) of an item that is an active swap zone, measured from its centre. |
 | `InvertSwap` | `bool` | `false` | Moves the swap zones to the item's edges. |
 | `InvertedSwapThreshold` | `double` | `0` | Fraction (0-1) used for the inverted zones; `0` means `SwapThreshold`. |
@@ -668,11 +1208,49 @@ own subtree, and plays the animations. It keeps no copy of the lists and decides
 | `SwapClass` | `string` | `bit-bortable-swap-highlight` | Class of the highlighted swap target. |
 | `MultiDrag` | `bool` | `false` | Selects several items and drags them together (MultiDrag plugin). |
 | `SelectedClass` | `string` | `bit-bortable-selected` | Class of the items in the multi-drag selection. |
+| `SelectedItems` | `IReadOnlyCollection<TItem>?` | `null` | The multi-drag selection, to read or set; bind with `@bind-SelectedItems`. |
+| `SelectedItemsChanged` | `EventCallback<IReadOnlyCollection<TItem>>` | | Raised with the selection, in list order, when it changes. |
+| `IsolateItems` | `bool` | `false` | Renders each item's template in a component of its own, skipped on the steps of a drag. See [performance](#performance). |
+| `Delay` | `int` | `0` | Milliseconds a mouse or pen press must be held before a drag starts (SortableJS `delay`). |
+| `TouchDelay` | `int` | `200` | Milliseconds a finger must rest on an item before it drags it (a long press); a swipe scrolls instead. |
+| `DelayTolerance` | `int` | `5` | Pixels the pointer may move while a delay runs before the press counts as a scroll or a click. |
+| `ForceFallback` | `bool` | `false` | The mouse drags like a finger: with pointer events and a preview, not the browser's drag (SortableJS `forceFallback`). |
+| `DragClass` | `string` | `bit-bortable-drag` | Class of the preview that follows a finger, a pen, or a `ForceFallback` mouse. |
+| `Scroll` | `bool` | `true` | A finger, pen or `ForceFallback` drag near an edge scrolls the list, the panels around it, or the page. |
+| `ScrollSensitivity` | `int` | `40` | How close (px) to an edge the pointer must come to scroll it. |
+| `ScrollSpeed` | `int` | `16` | The most pixels an edge scrolls per frame, at the very edge. |
+| `Keyboard` | `bool` | `true` | Items can be picked up, moved and dropped from the keyboard. See [the keyboard](#the-keyboard). |
+| `AriaLabel` | `string?` | `null` | The list's accessible name, which announcements name it by. |
+| `ItemLabel` | `Func<TItem, string>?` | `null` | How announcements name an item; the item's `ToString()` without it. |
+| `Messages` | `BortableMessages?` | `null` | The instructions and announcements, to translate or reword; `BortableMessages.Default` without it. |
+| `AdditionalAttributes` | `IReadOnlyDictionary<string, object>?` | `null` | Any other attribute, rendered on the list's container. |
 | `OnStart`, `OnEnd`, `OnAdd`, `OnRemove`, `OnUpdate`, `OnSort`, `OnChange` | `EventCallback<BortableEventArgs<TItem>>` | | See [events](#events). |
+
+### Bortable methods
+
+| Method | Description |
+| --- | --- |
+| `MoveAsync(TItem item, int newIndex)` | Moves the item within the list as a drag would; `true` when it moved. See [moving items from code](#moving-items-from-code). |
+| `MoveToAsync(TItem item, string listId, int newIndex)` | Moves the item into the list with that `Id` as a drag would; `true` when it moved. |
 
 ### BortableEventArgs
 
 See [event arguments](#event-arguments).
+
+### BortableMessages
+
+See [accessibility](#accessibility). `BortableMessages.Default` holds the English texts every list uses unless it is
+given its own.
+
+### BortableInput
+
+| Value | Meaning |
+| --- | --- |
+| `Mouse` | A mouse or a trackpad. |
+| `Touch` | A finger on a touch screen. |
+| `Pen` | A pen or stylus. |
+| `Keyboard` | Keys: the item was picked up, moved and dropped from the keyboard. |
+| `Api` | Code: `MoveAsync` or `MoveToAsync`. |
 
 ### BortablePull
 
@@ -694,7 +1272,13 @@ See [event arguments](#event-arguments).
 
 | Method | Description |
 | --- | --- |
-| `AddBitBortableServices(this IServiceCollection)` | Registers the scoped drag coordinator. Required. |
+| `AddBitBortableServices(this IServiceCollection)` | Registers the scoped drag coordinator. Required, except in a WebAssembly app that [lazy loads](#lazy-loading-on-webassembly) Bortable and sets the `Bit.Bortable.Unregistered` switch. |
+| `AddBitBortableServices(this IServiceCollection, Action<BortableOptions>)` | The same, with [app-wide defaults](#app-wide-defaults) for every list. |
+
+### BortableOptions
+
+The defaults every list takes for the parameters it does not set itself; every property is nullable, and `null`
+leaves the parameter's own default. See [app-wide defaults](#app-wide-defaults).
 
 ## Coming from SortableJS
 
@@ -711,25 +1295,49 @@ See [event arguments](#event-arguments).
 | `onStart`, `onEnd`, `onAdd`, `onRemove`, `onUpdate`, `onSort`, `onChange` | `OnStart`, `OnEnd`, `OnAdd`, `OnRemove`, `OnUpdate`, `OnSort`, `OnChange` |
 | Swap plugin: `swap`, `swapClass` | `Swap`, `SwapClass` |
 | MultiDrag plugin: `multiDrag`, `selectedClass` | `MultiDrag`, `SelectedClass` |
-| `toArray()`, `sort()`, `store` | Not needed: the bound `IList<TItem>` is the state |
-| `forceFallback` and the `fallback*` options | Not supported: only native drag and drop is used |
-| `easing`, `dragClass`, `onMove`, `onClone`, `onChoose`, `onFilter`, `multiDragKey` | Not supported |
+| `onMove` (return `false`) | `CanDrop` (return `false`) |
+| OnSpill plugin: `revertOnSpill` | `RevertOnSpill` |
+| `group: { put: (to) => ... }` with a count | `MaxItems` |
+| `toArray()`, `store` | Not needed: the bound `IList<TItem>` is the state |
+| `sort(order)` | `MoveAsync`, `MoveToAsync` - one item at a time, as a drag would move it |
+| `forceFallback`, `dragClass` | `ForceFallback`, `DragClass` (touch and pen always drag this way) |
+| `delay`, `delayOnTouchOnly`, `touchStartThreshold` | `Delay` (mouse and pen), `TouchDelay` (touch), `DelayTolerance` |
+| AutoScroll plugin: `scroll`, `scrollSensitivity`, `scrollSpeed` | `Scroll`, `ScrollSensitivity`, `ScrollSpeed` |
+| MultiDrag: Shift-click range selection | Shift+click, and `@bind-SelectedItems` |
+| `easing`, `fallbackOnBody`, `fallbackTolerance`, `onClone`, `onChoose`, `onFilter`, `multiDragKey`, `removeOnSpill` | Not supported |
+| No keyboard support | The keyboard, and screen reader announcements: see [the keyboard](#the-keyboard) |
 
 ## Limitations
 
 - Items must be unique within a list, as Blazor's `@key` requires. An item is never dropped into a list that
   already holds an equal one, so a value-equal duplicate (the same string twice) is refused rather than breaking
   rendering. For clone mode, use a reference type and a `Clone` factory that returns a distinct object.
-- An item moving between lists is committed when the drag ends, with a live placeholder preview meanwhile, rather
-  than physically moving between lists mid-drag.
-- Drag and drop is the browser's own HTML5 implementation, with its own drag image and auto-scrolling. There is no
-  pointer-event fallback for browsers or devices without it.
-- Custom easing, `onMove`-style veto callbacks and the `toArray`/`sort`/`store` helpers are not implemented.
+- An item moving between lists with the pointer is committed when the drag ends, with a live placeholder preview
+  meanwhile, rather than physically moving between lists mid-drag. (A keyboard drag moves the item itself.)
+- A mouse drags with the browser's own HTML5 drag and drop, with its drag image and auto-scrolling, unless the list
+  has `ForceFallback`; a finger and a pen always drag with pointer events.
+- Lists are not virtualized: every item is rendered (see [performance](#performance)).
+- Custom easing and the `toArray`/`store` helpers are not implemented.
+- The lists that take a drag are settled when it starts: a list that appears mid-drag, or one whose `Put`, `Group`
+  or `MaxItems` changes mid-drag, is not offered the item until the next drag. `CanDrop` is asked anew at every
+  position.
 
 ## Troubleshooting
 
-**"Cannot provide a value for property 'Service' on type 'Bit.Bortable.Bortable\`1[...]'. There is no registered
-service of type 'Bit.Bortable.BortableService'."** - the services are not registered. Call `builder.Services.AddBitBortableServices()`, in both projects of a Blazor Web App.
+**"Bit.Bortable's services are not registered: call builder.Services.AddBitBortableServices() in Program.cs"** -
+call it in the `Program.cs` of the project the list rendered in; in a Blazor Web App, in both projects, through one
+shared method. A WebAssembly app that [lazy loads](#lazy-loading-on-webassembly) Bortable cannot, and sets the
+`Bit.Bortable.Unregistered` runtime switch in its project file instead; when such an app gets this error anyway, the
+switch is not in the project that runs in the browser, or sits inside the `ItemGroup` an AOT build leaves out.
+
+**`Could not load file or assembly 'Bit.Bortable'`** in an app that lazy loads it - something used Bortable's types
+before the assembly loaded: load it in `OnNavigateAsync` for every route that renders a list, and keep its types out
+of `Program.cs`, `App.razor`, the layouts every page shares and the method that loads it. If it fails as the app
+starts and keeps failing once the assembly has loaded, a public type in an assembly the router reads at startup
+derives from one of Bortable's - a component inheriting `Bortable<TItem>`, a `BortableMessages` subclass: make it
+`internal` or move it into a library that is lazy loaded together with Bit.Bortable. `... must be marked with
+'BlazorWebAssemblyLazyLoad' item group` names an assembly the call loads that the project file does not mark. See
+[lazy loading](#lazy-loading-on-webassembly).
 
 **The items render, but nothing can be dragged** - the page is not interactive. Give it, or the app, an interactive
 render mode.

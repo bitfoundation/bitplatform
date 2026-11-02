@@ -45,6 +45,31 @@ public class ClientSettingsValidationTests
     /// come from the settings validation itself.
     /// </summary>
     [TestMethod]
+    //#if (framework == 'net11.0')
+    public async Task AnInvalidSetting_Should_FailTheHostsThatRunNoStartupValidator()
+    {
+        using var serviceProvider = BuildClientServiceProvider(new() { ["ServerAddress"] = "   " });
+
+        var startupValidators = serviceProvider.GetServices<IAsyncStartupValidator>().ToArray();
+
+        Assert.IsNotEmpty(startupValidators,
+            "No IAsyncStartupValidator is registered, so the explicit ValidateAsync() calls the non-IHost client hosts make would silently do nothing.");
+
+        await Assert.ThrowsExactlyAsync<OptionsValidationException>(async () =>
+        {
+            foreach (var startupValidator in startupValidators)
+            {
+                await startupValidator.ValidateAsync();
+            }
+        }, "Settings validation passed for a ClientCoreSettings whose [Required] ServerAddress is whitespace.");
+
+        Assert.ThrowsExactly<OptionsValidationException>(() => serviceProvider.GetRequiredService<ClientCoreSettings>(),
+            "Resolving the settings returned an invalid instance instead of failing, which is what happens when the injected copy bypasses the options pipeline.");
+    }
+    //#else
+    //#if (IsInsideProjectTemplate == true)
+    /*
+    //#endif
     public void AnInvalidSetting_Should_FailTheHostsThatRunNoStartupValidator()
     {
         using var serviceProvider = BuildClientServiceProvider(new() { ["ServerAddress"] = "   " });
@@ -60,6 +85,10 @@ public class ClientSettingsValidationTests
         Assert.ThrowsExactly<OptionsValidationException>(() => serviceProvider.GetRequiredService<ClientCoreSettings>(),
             "Resolving the settings returned an invalid instance instead of failing, which is what happens when the injected copy bypasses the options pipeline.");
     }
+    //#if (IsInsideProjectTemplate == true)
+    */
+    //#endif
+    //#endif
 
     private static ServiceProvider BuildClientServiceProvider(Dictionary<string, string?>? overrides = null)
     {

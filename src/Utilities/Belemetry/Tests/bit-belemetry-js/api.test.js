@@ -128,6 +128,34 @@ describe('public API', () => {
         expect(localStorage.getItem('bit-belemetry-pseudo-id')).toBeNull();
     });
 
+    it('does not add an id the configuration blocks', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 }, privacy: { blockedAttributes: ['user.id', 'session.id'] } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        api.setUser('alice');
+        api.trackEvent('e');
+        await api.flush();
+        const event = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs).find(l => l.eventName === 'e');
+        expect(event.attributes['enduser.pseudo.id']).toMatch(/^[0-9a-f]{32}$/);
+        expect(event.attributes['user.id']).toBeUndefined();
+        expect(event.attributes['session.id']).toBeUndefined();
+        expect(api.getContext().userId).toBe('alice'); // still the context .NET is kept in step with
+    });
+
+    it('takes the ids of a record from consent, never from its attributes', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 & ~64 } }));
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        api.trackEvent('e', { 'user.id': 'jane@example.com', 'enduser.pseudo.id': 'p', 'app.kind': 'k' });
+        await api.flush();
+        const event = dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs).find(l => l.eventName === 'e');
+        expect(event.attributes['app.kind']).toBe('k');
+        expect(event.attributes['user.id']).toBeUndefined();
+        expect(event.attributes['enduser.pseudo.id']).toBeUndefined();
+    });
+
     it('purges queued records of revoked features', async () => {
         await load();
         api.start(relayConfig({ consent: { default: 0 } }));
@@ -171,6 +199,46 @@ describe('public API', () => {
         await load();
         await api.sendRequests([{ exporter: 'azureMonitor', url: 'https://dc.test/v2.1/track', contentType: 'application/json', headers: { a: 'b' }, body: btoa('[]') }]);
         expect(fetch.calls[0].init.headers).toMatchObject({ a: 'b', 'Content-Type': 'application/json' });
+    });
+
+    it('gives up a .NET request holding a feature the page no longer grants', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        await load();
+        api.start(relayConfig({ consent: { default: 0 } }));
+        api.setConsent(4095 & ~api.Features.Logs);
+        const request = features => ({ exporter: 'otlp', url: 'https://collector.test/v1/logs', contentType: 'application/json', body: btoa('{}'), features });
+        // Built by .NET before it heard of the page's revoke of Logs.
+        await api.sendRequests([request(api.Features.Logs | api.Features.Errors), request(api.Features.Errors)]);
+        expect(fetch.calls).toHaveLength(1);
+        expect(api.getStats().requests.withdrawn).toBe(1);
+    });
+
+    it('withdraws a batch whose feature is revoked while it is compressed, and only such a batch', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        await load();
+        api.start({
+            ...relayConfig({ transport: 'direct' }),
+            consent: { default: 0 },
+            exporters: [{ type: 'otlp', endpoint: 'https://collector.test', protocol: 'http/json', compression: 'gzip' }],
+        });
+        api.setConsent(4095);
+        expect(api._getState().pipeline.size).toBe(1);
+        // The initial page view leaves the queue, and is compressed after the revoke: it is not sent.
+        let flushed = api.flush();
+        api.setConsent(4095 & ~api.Features.PageViews);
+        await flushed;
+        await api._getState().transport.idle();
+        expect(fetch.calls).toHaveLength(0);
+
+        // A revoke of features the batch does not hold leaves it alone.
+        api.trackEvent('a');
+        flushed = api.flush();
+        api.setConsent(4095 & ~api.Features.PageViews & ~api.Features.Interactions & ~api.Features.Persistence);
+        await flushed;
+        await api._getState().transport.idle();
+        expect(fetch.calls).toHaveLength(1);
     });
 
     it('reports the grant within the configured features', async () => {
@@ -234,5 +302,116 @@ describe('public API', () => {
         expect(() => api.attachDotNet({ invokeMethodAsync: () => { throw new Error('x'); } }, { relay: true })).not.toThrow();
         expect(() => api.setConsent(4095)).not.toThrow();
         await expect(api.flush()).resolves.toBeUndefined();
+    });
+});
+
+describe('a second start', () => {
+    it('adds the ignored URLs it brings (a WebAssembly client\'s exporters) to those of the first', async () => {
+        await load();
+        vi.stubGlobal('fetch', mockFetch(200));
+        api.start(relayConfig({ consent: { default: 4095 }, dependencies: { fetch: true, xhr: false } }));
+        api.start(relayConfig({ consent: { default: 4095 }, dependencies: { ignoreUrls: ['/_framework/', '^https://wasm-collector\\.test/'] } }));
+        expect(api._getState().config.dependencies.ignoreUrls).toEqual(['/_framework/', '/_blazor', '/_content/', '^https://wasm-collector\\.test/']);
+
+        const before = api._getState().pipeline.size;
+        await window.fetch('https://wasm-collector.test/v1/logs', { method: 'POST' });
+        await window.fetch('https://api.test/items');
+        const spans = api._getState().pipeline.queue.slice(before);
+        expect(spans.map(s => s.attributes['url.full'])).toEqual(['https://api.test/items']);
+    });
+});
+
+describe('getStats', () => {
+    it('says what was dropped and why, and what became of the requests', async () => {
+        await load();
+        const fetch = mockFetch(200, 400);
+        vi.stubGlobal('fetch', fetch);
+        api.start({
+            service: { name: 'shop' },
+            performance: { webVitals: false, documentLoad: false },
+            dependencies: { fetch: false, xhr: false },
+            consent: { default: 0, pendingLimit: 2 },
+            exporters: [{ type: 'otlp', endpoint: 'https://collector.test' }],
+        });
+        // Held before the decision: the initial page view plus 3 events, in a hold of 2.
+        api.trackEvent('a');
+        api.trackEvent('b');
+        api.trackEvent('c');
+        api.addProcessor(record => record.eventName !== 'c');
+        // Errors only: the held page view and event are not consented.
+        api.setConsent(1);
+        api.trackEvent('after');
+        for (let i = 0; i < 3; i++) api.trackException('TypeError', 'boom', 'TypeError: boom\n    at loop (app.js:1:2)');
+        await api.flush();
+        await api._getState().transport.idle();
+
+        // pending_full: the page view and 'a' made room for 'b' and 'c'; not_consented: 'b' and 'c' at the decision,
+        // then 'after'; error_limit: the loop's two duplicates.
+        expect(api.getStats()).toEqual({
+            dropped: { pending_full: 2, not_consented: 3, error_limit: 2 },
+            requests: { delivered: 1 },
+            queued: 0,
+            pending: 0,
+        });
+
+        api.trackException('RangeError', 'other');
+        await api.flush();
+        await api._getState().transport.idle();
+        expect(api.getStats().requests).toEqual({ delivered: 1, rejected: 1 });
+    });
+});
+
+describe('processors and global attributes', () => {
+    const relayed = dotnet => dotnet.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs);
+
+    it('runs the processors at export, so one added after the start still sees the initial page view', async () => {
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        const seen = [];
+        api.addProcessor(record => {
+            seen.push(record.eventName);
+            record.attributes['app.processed'] = true;
+        });
+        const remove = api.addProcessor(record => record.eventName !== 'noise');
+        api.addProcessor(() => {
+            throw new Error('broken processor');
+        });
+        api.trackEvent('noise');
+        api.trackEvent('checkout');
+
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        await api.flush();
+        expect(seen).toEqual(['browser.page_view', 'noise', 'checkout']);
+        expect(relayed(dotnet).map(l => l.eventName)).toEqual(['browser.page_view', 'checkout']);
+        expect(relayed(dotnet).every(l => l.attributes['app.processed'] === true)).toBe(true);
+
+        remove();
+        api.trackEvent('noise');
+        await api.flush();
+        expect(relayed(dotnet).map(l => l.eventName)).toEqual(['browser.page_view', 'checkout', 'noise']);
+    });
+
+    it('adds global attributes to every record, scrubbed, never over the record or the consent-governed ids', async () => {
+        await load();
+        api.setAttributes({ 'app.tenant': 'contoso', 'app.contact': 'ops@contoso.test', 'user.id': 'sneaky', 'event.kind': 'global' });
+        api.start(relayConfig({ consent: { default: 4095 }, pageViews: { trackHashChanges: false } }));
+        api.trackEvent('checkout', { 'event.kind': 'own' });
+        api.setAttributes({ 'app.tenant': null, 'app.flag': true });
+        api.trackEvent('later');
+
+        const dotnet = fakeDotNet();
+        api.attachDotNet(dotnet, { relay: true });
+        await api.flush();
+        const [, checkout, later] = relayed(dotnet);
+        expect(checkout.attributes).toMatchObject({ 'app.tenant': 'contoso', 'app.contact': '[email]', 'event.kind': 'own' });
+        expect(checkout.attributes['user.id']).toBeUndefined();
+        expect(later.attributes['app.tenant']).toBeUndefined();
+        expect(later.attributes['app.flag']).toBe(true);
+
+        api.setAttributes(null);
+        api.trackEvent('last');
+        await api.flush();
+        expect(relayed(dotnet).pop().attributes['app.contact']).toBeUndefined();
     });
 });

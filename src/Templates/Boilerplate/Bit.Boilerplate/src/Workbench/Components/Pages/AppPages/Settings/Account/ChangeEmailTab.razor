@@ -1,0 +1,99 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack HorizontalAlign="BitAlignment.Center">
+        @if (ShowConfirmation is false)
+        {
+            <EditForm Model="sendModel" OnValidSubmit="SendToken" novalidate class="max-width">
+                <Boilerplate.Client.Core.Components.AppDataAnnotationsValidator />
+
+                <BitStack FillContent>
+                    @if (Page.Profile?.Email is { } email)
+                    {
+                        <BitTextField Value="@email" ReadOnly NoValidate Label="@AppLocalizer[nameof(AppStrings.Email)]" />
+                    }
+
+                    <BitTextField @bind-Value="sendModel.Email"
+                                  Type="BitInputType.Email"
+                                  Label="@AppLocalizer[nameof(AppStrings.NewEmail)]"
+                                  Placeholder="@AppLocalizer[nameof(AppStrings.NewEmailPlaceholder)]" />
+                    <ValidationMessage For="@(() => sendModel.Email)" />
+
+                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                        @AppLocalizer[nameof(AppStrings.Submit)]
+                    </BitButton>
+
+                    <div>
+                        @AppLocalizer[nameof(AppStrings.ConfirmMessageInProfile)]
+                        <BitButton ButtonType="BitButtonType.Button"
+                                   Variant="BitVariant.Text"
+                                   OnClick="() => store.RequestEmailChange(string.Empty)">
+                            @AppLocalizer[nameof(AppStrings.Confirm)]
+                        </BitButton>
+                    </div>
+                    <br />
+                </BitStack>
+            </EditForm>
+        }
+        else
+        {
+            <BitText Typography="BitTypography.Subtitle1" Gutter>
+                @AppLocalizer[nameof(AppStrings.ConfirmEmailSubtitle)]
+                <br />
+                @AppLocalizer[nameof(AppStrings.ConfirmEmailMessage)]
+            </BitText>
+
+            <EditForm Model="changeModel" OnValidSubmit="ChangeEmail" novalidate class="max-width">
+                <Boilerplate.Client.Core.Components.AppDataAnnotationsValidator />
+
+                <BitStack FillContent>
+                    <BitTextField @bind-Value="changeModel.Email"
+                                  Disabled="IsEmailUnavailable is false"
+                                  Type="BitInputType.Email"
+                                  Label="@AppLocalizer[nameof(AppStrings.Email)]"
+                                  Placeholder="@AppLocalizer[nameof(AppStrings.EmailPlaceholder)]" />
+                    <ValidationMessage For="@(() => changeModel.Email)" />
+
+                    <BitOtpInput @bind-Value="changeModel.Token"
+                                 IsLoading="isWaiting"
+                                 AutoFocus
+                                 OnFill="ChangeEmail"
+                                 Label="@AppLocalizer[nameof(AppStrings.EmailToken)]" />
+                    <ValidationMessage For="@(() => changeModel.Token)" />
+
+                    <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                        @AppLocalizer[nameof(AppStrings.EmailTokenConfirmButtonText)]
+                    </BitButton>
+
+                    <div>
+                        <BitButton ButtonType="BitButtonType.Button"
+                                   Variant="BitVariant.Text"
+                                   IconName="@BitIconName.Back"
+                                   OnClick="GoBack">
+                            @AppLocalizer[nameof(AppStrings.GoBack)]
+                        </BitButton>
+                    </div>
+                </BitStack>
+            </EditForm>
+
+            @if (IsEmailUnavailable is false)
+            {
+                <BitText Typography="BitTypography.Body1" Gutter>
+                    @AppLocalizer[nameof(AppStrings.NotReceivedEmailMessage)]
+                </BitText>
+
+                <BitText Typography="BitTypography.Body1" Gutter>
+                    @AppLocalizer[nameof(AppStrings.CheckSpamMailMessage)]
+                </BitText>
+
+                <BitButton IsLoading="isWaiting"
+                           Variant="BitVariant.Outline"
+                           OnClick="SendToken"
+                           ButtonType="BitButtonType.Button">
+                    @AppLocalizer[nameof(AppStrings.ResendEmailTokenButtonText)]
+                </BitButton>
+            }
+            <br />
+        }
+    </BitStack>
+</section>

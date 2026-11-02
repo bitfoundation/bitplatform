@@ -16,12 +16,12 @@ public sealed class NativeDragTests : BdndTest
 {
     private const string TwoFiles =
         """
-        dt.items.add(new File(['hello'], 'hello.txt', { type: 'text/plain' }));
+        dt.items.add(new File(['hello'], 'hello.txt', { type: 'text/plain', lastModified: Date.UTC(2024, 0, 15, 12) }));
         dt.items.add(new File([new Uint8Array(2048)], 'data.bin'))
         """;
 
     [TestMethod]
-    public async Task Files_dragged_in_from_the_system_are_listed_with_their_name_type_and_size()
+    public async Task Files_dragged_in_from_the_system_are_listed_with_their_name_type_size_and_contents()
     {
         var page = await OpenAsync("/other/native-files");
         var bin = page.Locator(".dustbin");
@@ -42,13 +42,99 @@ public sealed class NativeDragTests : BdndTest
         await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Dropped files (2)" })).ToBeVisibleAsync();
         var rows = page.Locator(".demo-table tbody tr");
         await Expect(rows).ToHaveCountAsync(2);
-        await Expect(rows.Nth(0).Locator("td")).ToHaveTextAsync(["hello.txt", "text/plain", "5 B"]);
-        await Expect(rows.Nth(1).Locator("td")).ToHaveTextAsync(["data.bin", "-", "2 KB"]);
+        // the text file's contents are streamed from the browser into .NET
+        await Expect(rows.Nth(0).Locator("td:not(.native-modified)")).ToHaveTextAsync(["hello.txt", "text/plain", "5 B", "hello"]);
+        await Expect(rows.Nth(1).Locator("td:not(.native-modified)")).ToHaveTextAsync(["data.bin", "-", "2 KB", "-"]);
+        // its date, shown in the browser's time zone: noon UTC is the 15th or the 16th anywhere
+        await Expect(rows.Nth(0).Locator(".native-modified")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex(@"^2024-01-1[56] \d\d:\d\d$"));
 
         // No dragleave follows a drop: the hover is cleared all the same, and the browser was kept from opening the files.
         await Expect(bin).ToHaveTextAsync("Drag files here from your OS");
         var (count, prevented) = await DropsAsync(page.MainFrame);
         Assert.AreEqual((1, 1), (count, prevented), "the drop reached the page and was kept from the browser");
+    }
+
+    [TestMethod]
+    public async Task A_target_taking_images_only_refuses_other_files_while_they_hover_and_leaves_them_out_of_a_drop()
+    {
+        var page = await OpenAsync("/other/native-files");
+        var zone = page.Locator(".native-images");
+
+        // a text file: its MIME type, which the browser tells while dragging, is not an image
+        var text = await NativeDataTransferAsync(page, "dt.items.add(new File(['x'], 'notes.txt', { type: 'text/plain' }))");
+        await DispatchDragAsync(zone, "dragenter", text);
+        await DispatchDragAsync(zone, "dragover", text);
+        var refused = await LastDragOverAsync(zone);
+        Assert.AreEqual("none", refused.DropEffect, $"a drag of no image is refused: {refused}");
+        await Expect(zone).ToHaveTextAsync("Images only");
+        // even a drop the browser would not raise is not taken
+        await DispatchDragAsync(zone, "drop", text);
+        await WaitForQuietAsync(page);
+        await Expect(page.Locator(".native-images-status")).ToHaveCountAsync(0);
+
+        // an image and a text file: taken, and the text file left out on drop
+        var mixed = await NativeDataTransferAsync(page,
+            "dt.items.add(new File([new Uint8Array(10)], 'cat.png', { type: 'image/png' })); dt.items.add(new File(['x'], 'notes.txt', { type: 'text/plain' }))");
+        await DispatchDragAsync(zone, "dragenter", mixed);
+        await DispatchDragAsync(zone, "dragover", mixed);
+        var taken = await LastDragOverAsync(zone);
+        Assert.IsTrue(taken.Prevented, $"a drag with an image is taken: {taken}");
+        await Expect(zone).ToHaveTextAsync("Release to drop the images");
+        await DispatchDragAsync(zone, "drop", mixed);
+
+        await Expect(page.Locator(".native-images-status")).ToHaveTextAsync("1 image dropped (1 file left out).");
+    }
+
+    [TestMethod]
+    public async Task A_target_listing_an_extension_takes_any_file_drag_and_sorts_the_files_out_on_drop()
+    {
+        var page = await OpenAsync("/other/native-files");
+        var zone = page.Locator(".native-documents");
+        var files = await NativeDataTransferAsync(page,
+            "dt.items.add(new File(['%PDF'], 'report.pdf', { type: 'application/pdf' })); dt.items.add(new File([new Uint8Array(4)], 'cat.png', { type: 'image/png' }))");
+
+        // the PDF's MIME type matches no MIME type the target lists, but its extension does: names are known at the
+        // drop only, so the drag is taken while it hovers
+        await DispatchDragAsync(zone, "dragenter", files);
+        await DispatchDragAsync(zone, "dragover", files);
+        Assert.IsTrue((await LastDragOverAsync(zone)).Prevented, "the drag is taken");
+        await Expect(zone).ToHaveTextAsync("Release to drop the documents");
+        await DispatchDragAsync(zone, "drop", files);
+
+        await Expect(page.Locator(".native-documents-status")).ToHaveTextAsync("1 document dropped (1 file left out).");
+    }
+
+    [TestMethod]
+    public async Task A_target_hands_over_no_more_files_than_its_limit()
+    {
+        var page = await OpenAsync("/other/native-files");
+        var zone = page.Locator(".native-images");
+        var files = await NativeDataTransferAsync(page, string.Join("; ",
+            Enumerable.Range(1, 4).Select(i => $"dt.items.add(new File([new Uint8Array(4)], 'p{i}.png', {{ type: 'image/png' }}))")));
+
+        await DispatchDragAsync(zone, "dragenter", files);
+        await DispatchDragAsync(zone, "dragover", files);
+        await DispatchDragAsync(zone, "drop", files);
+
+        await Expect(page.Locator(".native-images-status")).ToHaveTextAsync("3 images dropped (1 file left out).");
+    }
+
+    [TestMethod]
+    public async Task A_drop_of_many_files_reaches_dotnet_in_full()
+    {
+        // more file descriptions than one message carries: the rest are read page by page
+        var page = await OpenAsync("/other/native-files");
+        var bin = page.Locator(".dustbin");
+        var files = await NativeDataTransferAsync(page,
+            "for (let i = 0; i < 120; i++) dt.items.add(new File(['x'], 'file-' + i + '.bin'))");
+
+        await DispatchDragAsync(bin, "dragenter", files);
+        await DispatchDragAsync(bin, "dragover", files);
+        await DispatchDragAsync(bin, "drop", files);
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Dropped files (100 of 120)" })).ToBeVisibleAsync();
+        await Expect(page.Locator(".demo-table tbody tr")).ToHaveCountAsync(100);
+        await Expect(page.Locator(".demo-table tbody tr").Last.Locator("td").First).ToHaveTextAsync("file-99.bin");
     }
 
     [TestMethod]
@@ -83,9 +169,13 @@ public sealed class NativeDragTests : BdndTest
         await Expect(result.Locator("h4")).ToHaveTextAsync("Last native drop - __NATIVE_HTML__");
         await Expect(result).ToContainTextAsync("URLs: https://react-dnd.github.io/react-dnd");
         await Expect(result).ToContainTextAsync("Text: https://react-dnd.github.io/react-dnd");
-        var html = await result.Locator("pre").TextContentAsync() ?? "";
-        StringAssert.Contains(html, "href=\"https://react-dnd.github.io/react-dnd\"", "the dropped markup");
-        StringAssert.Contains(html, ">link inside</a>", "the dropped markup");
+        // WebKit lists text/html for a dragged link and hands over none: there only the URL and the text are carried
+        if (Browser.BrowserType.Name != "webkit")
+        {
+            var html = await result.Locator("pre").TextContentAsync() ?? "";
+            StringAssert.Contains(html, "href=\"https://react-dnd.github.io/react-dnd\"", "the dropped markup");
+            StringAssert.Contains(html, ">link inside</a>", "the dropped markup");
+        }
 
         // Nothing followed the link: no navigation, no new tab, and the target is idle again.
         await Expect(bin).ToHaveTextAsync("Drag selected text / a link here");
@@ -93,6 +183,23 @@ public sealed class NativeDragTests : BdndTest
         Assert.HasCount(1, page.Context.Pages, "the drop opened another page");
         var (count, prevented) = await DropsAsync(page.MainFrame);
         Assert.AreEqual((1, 1), (count, prevented), "the drop reached the page and was kept from the browser");
+    }
+
+    [TestMethod]
+    public async Task An_in_app_drag_carries_its_native_data_out_and_is_no_native_drop_inside_the_page()
+    {
+        var page = await OpenAsync("/other/native-html");
+        var bin = page.Locator(".dustbin");
+        var source = page.Locator(".native-out");
+
+        await DragAsync(page, source, bin);
+
+        var start = (await DragStartsAsync(page.MainFrame)).Last();
+        Assert.IsNotNull(start.Tag, "an in-app drag, tagged by the module");
+        CollectionAssert.IsSubsetOf(new[] { "text/plain", "text/uri-list" }, start.Types, string.Join(", ", start.Types));
+        Assert.AreEqual("copy", start.EffectAllowed);
+        // the page's own native target does not take it for a native drag
+        await Expect(page.Locator(".native-drop-result")).ToHaveCountAsync(0);
     }
 
     [TestMethod]
@@ -125,5 +232,33 @@ public sealed class NativeDragTests : BdndTest
 
         await Expect(bin).ToHaveTextAsync("Drag selected text / a link here");
         await Expect(result.Locator("h4")).ToHaveTextAsync("Last native drop - __NATIVE_TEXT__");
+    }
+
+    [TestMethod]
+    public async Task Text_dropped_on_a_field_inside_a_target_is_the_fields_and_around_it_the_targets()
+    {
+        var page = await OpenAsync("/other/native-html");
+        var notes = page.Locator(".native-notes");
+        var field = page.Locator(".native-notes__field");
+        var last = page.Locator(".native-notes__last");
+
+        // over the field the browser decides: the module neither accepts nor refuses the drag there, and no drop
+        // reaches the target
+        var text = await NativeDataTransferAsync(page, "dt.setData('text/plain', 'into the field')");
+        await DispatchDragAsync(field, "dragenter", text);
+        await DispatchDragAsync(field, "dragover", text);
+        var over = await LastDragOverAsync(field);
+        Assert.IsFalse(over.Prevented, $"the module took a text drag over an editable field: {over}");
+        await DispatchDragAsync(field, "drop", text);
+        await WaitForQuietAsync(page);
+        await Expect(last).ToHaveTextAsync("Dropped around the field: nothing yet");
+
+        // around the field it is the target's, which takes text only
+        text = await NativeDataTransferAsync(page, "dt.setData('text/plain', 'around the field')");
+        await DispatchDragAsync(notes, "dragenter", text);
+        await Expect(notes).ToHaveAttributeAsync("data-bit-bdnd-over", "");
+        await DispatchDragAsync(notes, "dragover", text);
+        await DispatchDragAsync(notes, "drop", text);
+        await Expect(last).ToHaveTextAsync("Dropped around the field: around the field");
     }
 }

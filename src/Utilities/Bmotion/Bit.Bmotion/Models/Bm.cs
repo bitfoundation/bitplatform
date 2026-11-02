@@ -204,13 +204,22 @@ public static class Bm
     /// var velocity = Bm.Velocity(Scroll.ScrollYValue);
     /// var skew = velocity.Transform([-2000, 0, 2000], [-8, 0, 8]);
     /// </code>
+    /// It returns to 0 shortly after the source stops changing - within a few of the source's own update
+    /// intervals - so an effect driven by it comes back to rest when the scroll ends. Follow it with
+    /// <see cref="BmotionAnimateService.Spring"/> to ease that return instead of landing on it. That return
+    /// runs on the thread the source's last change came from, so it needs a source changed from the
+    /// renderer's (as the scroll tracker's and a component's own changes are): one changed from a background
+    /// thread keeps its last speed until the next change. Dispose the value when done with it.
     /// </summary>
     public static BmValue<double> Velocity(BmValue<double> source)
     {
         ArgumentNullException.ThrowIfNull(source);
         // The source tracks velocity as part of every set, so the derived value only has to read it
-        // back after each change - no separate frame loop, and it works on Blazor Server too.
-        return source.Transform(_ => source.GetVelocity());
+        // back after each change - no separate frame loop, and it works on Blazor Server too. A source that
+        // stops sends no further change, though, so the settle brings the velocity back to 0 once it is still.
+        var velocity = source.Transform(_ => source.GetVelocity());
+        velocity.AttachUpstream(new BmVelocitySettle(source, velocity));
+        return velocity;
     }
 
     /// <summary>Constrains <paramref name="value"/> to the inclusive <c>[min, max]</c> range.</summary>

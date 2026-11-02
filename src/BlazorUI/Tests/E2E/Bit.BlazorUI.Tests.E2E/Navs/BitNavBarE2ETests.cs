@@ -1181,7 +1181,8 @@ public class BitNavBarE2ETests : E2ETestBase
         var success = await ResolveColorAsync("var(--bit-clr-suc)");
         var selected = Item("nbr-vars-explicit", "Selected");
 
-        await Expect(selected).ToHaveCSSAsync("color", success);
+        // The label is text read on the page, so it takes the role's foreground shade; the indicator keeps the main.
+        await Expect(selected).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-suc-fg)"));
         Assert.AreEqual(success, await AfterStyleAsync(selected, "background-color"));
         await Expect(selected).Not.ToHaveCSSAsync("min-height", "70px");
         await Expect(selected.Locator(".bit-nbr-ico")).Not.ToHaveCSSAsync("font-size", "25px");

@@ -2,8 +2,8 @@
 
 /// <summary>
 /// How the bit BlazorUI packages load their JavaScript: from the bundles an app references with a <c>&lt;script&gt;</c> tag
-/// each (<c>bit.blazorui.js</c>, <c>bit.blazorui.extras.js</c>, <c>bit.blazorui.legacy.js</c>) - the default - or as
-/// lazy scripts, one module per script imported the first time something calls into it.
+/// each (<c>bit.blazorui.js</c>, <c>bit.blazorui.extras.js</c>, <c>bit.blazorui.ai.js</c>, <c>bit.blazorui.legacy.js</c>) -
+/// the default - or as lazy scripts, one module per script imported the first time something calls into it.
 /// </summary>
 /// <remarks>
 /// The preferred way to turn the lazy scripts on is the <c>&lt;BitBlazorUILazyScripts&gt;true&lt;/BitBlazorUILazyScripts&gt;</c>
@@ -33,9 +33,7 @@ public static class BitBlazorUIScripts
     /// project ends up here as an <see cref="AppContext"/> switch. A feature switch, so a trimmed publish can treat it as a
     /// constant; the runtime override is what keeps <see cref="UseLazyScripts"/> working there regardless.
     /// </summary>
-#if NET9_0_OR_GREATER
     [System.Diagnostics.CodeAnalysis.FeatureSwitchDefinition(LazyScriptsSwitchName)]
-#endif
     internal static bool LazyScriptsFeature => AppContext.TryGetSwitch(LazyScriptsSwitchName, out var enabled) && enabled;
 
     // Read once: AppContext.TryGetSwitch takes a lock, and the mode is asked for on every interop call of the packages,

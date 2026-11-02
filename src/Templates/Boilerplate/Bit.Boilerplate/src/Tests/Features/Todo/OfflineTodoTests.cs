@@ -66,6 +66,8 @@ public partial class OfflineTodoTests : AppPageTest
         // The field being on screen is not the app being ready for it, and the first thing this page is asked to do
         // happens while the browser is offline - where a value dropped by hydration cannot be diagnosed from the result.
         await Page.WaitForBlazorInteractive();
+
+        await Expect(Page.Locator(".todo-list")).ToBeVisibleAsync();
     }
 
     private async Task AddTodoItem(string title)

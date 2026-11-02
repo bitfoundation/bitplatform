@@ -2,110 +2,127 @@
 <PageTitle>Align &amp; Distribute · Blow</PageTitle>
 
 <ExampleScaffold Title="Align &amp; Distribute"
-                 Summary="Select two or more nodes - shift-drag a box round them, or shift-click them one at a time - and line them up or space them out. This is the tidy-up pass every drawing tool has, and it writes nothing but Node.Position, so it composes with undo, extents and sub-flows.">
+                 Summary="Line up and space out the selected nodes - the tidy-up pass every drawing tool has - with AlignSelectionAsync and DistributeSelectionAsync. Each writes nothing but the nodes' positions and is one undo step.">
     <Toolbar>
-        <span class="group-label">Align</span>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Left)" title="Align left edges">⇤</button>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterX)" title="Centre horizontally">⇹</button>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Right)" title="Align right edges">⇥</button>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Top)" title="Align top edges">⤒</button>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterY)" title="Centre vertically">⇳</button>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Bottom)" title="Align bottom edges">⤓</button>
+        <span class="ad-group">Align</span>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Left)" title="Align left edges" aria-label="Align left edges">⇤</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterX)" title="Centre horizontally" aria-label="Centre horizontally">⇹</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Right)" title="Align right edges" aria-label="Align right edges">⇥</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Top)" title="Align top edges" aria-label="Align top edges">⤒</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterY)" title="Centre vertically" aria-label="Centre vertically">⇳</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Bottom)" title="Align bottom edges" aria-label="Align bottom edges">⤓</button>
 
-        <span class="group-label">Distribute</span>
+        <span class="ad-group">Distribute</span>
         <button class="btn btn-secondary" disabled="@(_selected < 3)" @onclick="() => Distribute(true)">Horizontally</button>
         <button class="btn btn-secondary" disabled="@(_selected < 3)" @onclick="() => Distribute(false)">Vertically</button>
 
-        <span class="group-label">Gap</span>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Pack(true)">Pack 24px →</button>
-        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Pack(false)">Pack 24px ↓</button>
+        <span class="ad-group">Pack</span>
+        <label>Gap @_gap.ToString("0")
+            <input type="range" min="0" max="80" step="4" value="@_gap"
+                   @oninput="@(e => _gap = ToDouble(e.Value, 24))" />
+        </label>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Pack(true)">Pack →</button>
+        <button class="btn btn-secondary" disabled="@TooFew" @onclick="() => Pack(false)">Pack ↓</button>
 
+        <span class="ad-sep"></span>
         <button class="btn btn-secondary" @onclick="SelectAll">Select all</button>
+        <button class="btn btn-secondary" disabled="@(!_history.CanUndo)" @onclick="Undo">↶ Undo @_history.UndoLabel</button>
         <button class="btn btn-secondary" @onclick="Scatter">Scatter</button>
 
-        <span class="selection-count">@_selected selected</span>
+        <span class="ad-count">@_selected selected</span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas @ref="_flow"
                     Nodes="_nodes"
                     Edges="_edges"
-                    SelectionOnDrag="false"
+                    HistoryEnabled="true"
+                    OnHistoryChanged="s => _history = s"
                     OnSelectionChange="OnSelectionChange"
                     FitViewOnInit="true">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="24" />
             <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                <div class="hint">
-                    Distribute keeps the two outermost nodes where they are and evens out the gaps
-                    between everything else. Pack ignores the span and lays them out from the first
-                    node at a fixed gap.
-                </div>
-            </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Four nodes start selected. Select others with <strong>Shift+drag</strong> (a box round them), <strong>Shift+click</strong> (one at a time), <strong>Select all</strong> or <strong>Ctrl+A</strong>; the count at the end of the toolbar follows.</li>
+        <li>The six <strong>Align</strong> buttons line the selection up on its left edges, horizontal centres, right edges, top edges, vertical centres or bottom edges. The nodes differ in size, so lining up by an edge and by the centre give different results.</li>
+        <li><strong>Distribute</strong> spaces three or more selected nodes evenly: the two outermost stay where they are and the gaps between all of them are made equal. If the nodes do not fit in that span, they are packed edge to edge from the first.</li>
+        <li>Drag <strong>Gap</strong>, then press <strong>Pack →</strong> or <strong>Pack ↓</strong>: two or more selected nodes are laid out from the first one at exactly that gap, whatever span they had.</li>
+        <li>Press <strong>Undo</strong> (or <strong>Ctrl+Z</strong>, and <strong>Ctrl+Y</strong> to redo) to take a step back; each align or distribute is one step. <strong>Scatter</strong> puts the nodes back where they started - as an undo step of its own.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>AlignSelectionAsync(edge)</code> takes a <code>BlowAlignEdge</code> - <code>Left</code>, <code>CenterX</code>, <code>Right</code>, <code>Top</code>, <code>CenterY</code> or <code>Bottom</code>. Edges line up with the outermost node; centres with the middle of the selection's bounding box. It needs two movable nodes.</li>
+        <li><code>DistributeSelectionAsync(horizontal)</code> evens out the gaps across the span the nodes already cover, keeping their order, and needs three; <code>DistributeSelectionAsync(horizontal, gap)</code> sets a fixed gap from the first node instead, and needs two.</li>
+        <li>Hidden nodes and nodes that cannot be dragged are left alone, and nothing moves while <code>NodesDraggable</code> is off. Each node is kept inside its extent and grows a parent that expands, and screen readers hear how many nodes moved.</li>
+        <li>With <code>HistoryEnabled</code> each call is one undo step, labelled "align" or "distribute"; <code>OnHistoryChanged</code> feeds the Undo button, which calls <code>UndoAsync()</code>. Scatter refills the lists inside <code>EditAsync(edit, "scatter")</code>, so it is a step too.</li>
+        <li><code>SelectAllAsync()</code> selects every selectable, visible node and edge, as Ctrl+A does, and <code>OnSelectionChange</code> reports the new selection for the count.</li>
+        <li>The arithmetic is public on <code>BlowAlign</code> - <code>Align</code>, <code>DistributeHorizontally</code>, <code>DistributeVertically</code> and <code>Distribute</code> - as pure functions over any list of nodes, returning the ones that moved. They take no selection and record no undo step, so they suit code that tidies a graph before it is shown. Positions are parent-relative, so pass siblings.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
-    .group-label:first-child { margin-left: 0; }
-    .selection-count { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
-    .hint {
-        max-width: 240px;
-        padding: 6px 10px;
-        font-size: 11px;
-        line-height: 1.45;
-        background: var(--bit-blow-surface);
-        color: var(--bit-blow-text);
-        border: 1px solid var(--bit-blow-border);
-        border-radius: 6px;
-    }
+    .ad-group { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
+    .ad-group:first-child { margin-left: 0; }
+    .ad-sep { display: inline-block; width: .75rem; }
+    .ad-count { margin-left: auto; font-size: 12px; color: var(--bb-text-soft); }
 </style>
 
 @code {
-    private BlowCanvas _flow = default!;
-    private List<BlowNode> _nodes = [];
-    private List<BlowEdge> _edges = [];
+    private BlowCanvas? _flow;
+    private readonly List<BlowNode> _nodes = [];
+    private readonly List<BlowEdge> _edges = [];
+    private BlowHistoryState _history;
     private int _selected;
+    private double _gap = 24;
 
     private bool TooFew => _selected < 2;
 
-    protected override void OnInitialized() => Scatter();
+    protected override void OnInitialized() => Fill();
 
-    private void Scatter()
+    // Back to the ragged start, deleted nodes and all. Through EditAsync, so even this is an undo step ("scatter")
+    // rather than a change made behind the history's back.
+    private Task Scatter() => _flow?.EditAsync(Fill, "scatter") ?? Task.CompletedTask;
+
+    private void Fill()
     {
         // Deliberately ragged, and deliberately different sizes, so aligning by edge and by
-        // centre are visibly different operations rather than the same line twice.
-        _nodes =
+        // centre are visibly different operations rather than the same line twice. Filled in place: the canvas edits
+        // these very lists, so they are refilled rather than replaced.
+        _nodes.Clear();
+        _nodes.AddRange(
         [
             new BlowNode { Id = "a", Label = "Ingest",   Position = new(40, 40),   Width = 160, Height = 56, Selected = true },
             new BlowNode { Id = "b", Label = "Validate", Position = new(230, 130), Width = 120, Height = 80, Selected = true },
             new BlowNode { Id = "c", Label = "Transform",Position = new(420, 70),  Width = 200, Height = 48, Selected = true },
             new BlowNode { Id = "d", Label = "Score",    Position = new(660, 165), Width = 130, Height = 64, Selected = true },
             new BlowNode { Id = "e", Label = "Publish",  Position = new(300, 320), Width = 150, Height = 56 },
-        ];
+        ]);
 
-        _edges =
+        _edges.Clear();
+        _edges.AddRange(
         [
             new BlowEdge { Id = "a-b", Source = "a", Target = "b" },
             new BlowEdge { Id = "b-c", Source = "b", Target = "c" },
             new BlowEdge { Id = "c-d", Source = "c", Target = "d" },
             new BlowEdge { Id = "b-e", Source = "b", Target = "e" },
-        ];
+        ]);
 
+        // Nodes that arrive selected raise no OnSelectionChange of their own, so the count is taken here.
         _selected = _nodes.Count(n => n.Selected);
     }
 
     private void OnSelectionChange(BlowSelectionChange change) => _selected = change.Nodes.Count;
 
-    private Task Align(BlowAlignEdge edge) => _flow.AlignSelectionAsync(edge);
+    private Task Align(BlowAlignEdge edge) => _flow?.AlignSelectionAsync(edge) ?? Task.CompletedTask;
 
-    private Task Distribute(bool horizontal) => _flow.DistributeSelectionAsync(horizontal);
+    private Task Distribute(bool horizontal) => _flow?.DistributeSelectionAsync(horizontal) ?? Task.CompletedTask;
 
-    private Task Pack(bool horizontal) => _flow.DistributeSelectionAsync(horizontal, gap: 24);
+    private Task Pack(bool horizontal) => _flow?.DistributeSelectionAsync(horizontal, gap: _gap) ?? Task.CompletedTask;
 
-    private void SelectAll()
-    {
-        foreach (var n in _nodes) n.Selected = true;
-        _selected = _nodes.Count;
-    }
+    private Task SelectAll() => _flow?.SelectAllAsync() ?? Task.CompletedTask;
+
+    private Task Undo() => _flow?.UndoAsync() ?? Task.CompletedTask;
+
+    private static double ToDouble(object? raw, double fallback)
+        => double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : fallback;
 }

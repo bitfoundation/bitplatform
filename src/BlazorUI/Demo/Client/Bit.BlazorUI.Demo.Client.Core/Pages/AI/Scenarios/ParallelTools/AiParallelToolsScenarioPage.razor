@@ -1,0 +1,62 @@
+﻿@page "/ai/scenarios/parallel-tools"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/parallel-tools"
+            Title="Parallel AI tool calls"
+            Keywords="parallel tool calls, concurrent function calling, Blazor AI tools, BitAiToolCallView, LLM tools UI"
+            Description="Two AI tool calls in flight at once in a bit BlazorUI chat, each with its own card, status and timing, run concurrently by the session." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Parallel tools"
+             Lead="Two calls in flight at once, each with its own card, status, and timing."
+             GitHubUrl="AI/Scenarios/ParallelTools/AiParallelToolsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Compare two cities: the model asks for the weather in both at once.">
+            <DemoExample Title="Two calls in one round" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Compare two cities"
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport asks for both calls in one response: two <code>BitAiToolCallStartedEvent</code>s, each with
+                its <code>Arguments</code> complete from the start - which makes the delta and completion events
+                unnecessary - then <code>BitAiFinishReason.ToolCalls</code>. The session runs every call of the round
+                concurrently, each through its own approval check, and waits for all of them before asking again; the
+                transport then finds both results on the request and answers from them. Each card updates on its own,
+                because each <code>BitAiToolCallPart</code> raises its own change event and only its own view re-renders -
+                which is where a serial tool UI falls apart.
+            </p>
+            <p>
+                A declined or failed call does not stop the others. Its failure is recorded on that call and sent back to the
+                model with the rest. <code>BitAiChatSessionOptions.MaxToolRoundtrips</code> caps how many rounds of tools one
+                turn may take - ten by default, six for the sessions of this site, set with <code>ai.ConfigureSessions</code>.
+                This page builds its session over a transport of its own, so it hands it those configured options
+                (<code>BitAiChatSessionFactory.Defaults</code>) together with the tool registry. A model still asking for
+                tools when the limit is reached gets no more: the reply ends with an error part saying the limit was hit.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - one card per call, each with its own status and timing.</li>
+                <li><BitLink Href="/components/ai/messagepartview"><code>BitAiMessagePartView</code></BitLink> - what re-renders one part, and only that part, when it changes.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

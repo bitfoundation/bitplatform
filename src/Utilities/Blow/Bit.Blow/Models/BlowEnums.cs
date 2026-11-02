@@ -54,7 +54,14 @@ public enum BlowEdgeType
     /// A bezier whose control points always project straight out along the handle axis,
     /// producing a flatter, more predictable curve than <see cref="Bezier"/>.
     /// </summary>
-    SimpleBezier
+    SimpleBezier,
+
+    /// <summary>
+    /// Orthogonal segments with rounded corners that go around the nodes in the way, keeping a margin from them
+    /// (<c>BlowCanvas.Routing</c>; <see cref="BlowEdgeRouting"/>). Re-routed whenever a node moves, so it costs more
+    /// than the other types on a large, busy graph. Falls back to <see cref="SmoothStep"/> when no route is found.
+    /// </summary>
+    Routed,
 }
 
 /// <summary>
@@ -192,4 +199,24 @@ public enum BlowMarkerType
 
     /// <summary>A closed (filled) arrowhead.</summary>
     ArrowClosed
+}
+
+/// <summary>
+/// Whether the flow animates: viewport transitions that ease rather than jump, and the marching dash of animated
+/// edges. Motion helps most people keep their bearings and makes some people unwell, which is what the operating
+/// system's "reduce motion" setting is for.
+/// </summary>
+public enum BlowReducedMotion
+{
+    /// <summary>Follow the operating system's <c>prefers-reduced-motion</c> setting (the default).</summary>
+    System,
+
+    /// <summary>
+    /// Never animate: viewport transitions jump straight to where they were going, and animated edges keep their
+    /// dash but stop moving.
+    /// </summary>
+    Always,
+
+    /// <summary>Always animate, whatever the operating system says.</summary>
+    Never,
 }

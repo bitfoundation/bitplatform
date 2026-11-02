@@ -1,8 +1,11 @@
 ﻿@namespace Bit.Balette
 @implements IDisposable
-@inject IBaletteService Palette
+@inject IServiceProvider Services
 
 @code {
+    // Resolved rather than injected, so the commands also register when the app never called AddBitBaletteServices.
+    private IBaletteService Palette => field ??= Services.GetBaletteService();
+
     private IDisposable? _registration;
     private IEnumerable<BaletteCommand>? _last;
 

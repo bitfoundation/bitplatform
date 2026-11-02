@@ -1,0 +1,15 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// No public CSS variables of its own: the button is a BitToggleButton, restyled through its own --bit-ToggleButton-*
+// variables and the Button classes/styles of the voice input.
+
+.bit-aivci {
+    // The containing block of the visually hidden live region.
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.bit-aivci-sts {
+    @include visually-hidden;
+}

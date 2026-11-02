@@ -1,0 +1,9 @@
+description = "Find and fix a problem reported in Test or Production: the code that environment runs (develop or main), its own dev-mcp, its errors, data, background jobs and logs, a reproduction before any change, and the fix through ai-dlc with a test that fails without it."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/troubleshoot.agent.md}
+
+The problem, where and when it was seen: {{args}}
+"""

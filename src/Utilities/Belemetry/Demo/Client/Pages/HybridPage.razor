@@ -61,6 +61,14 @@
         <li>No CORS configuration on the collector - the app process is not a web page.</li>
         <li>Exporter headers and connection strings stay in the app process, never in the WebView.</li>
         <li>An <code>IBelemetryProcessor</code> sees the browser's records too.</li>
+        <li>
+            Consent is app-wide: one decision governs the WebView's script and the app's .NET pipeline, and
+            <code>IBelemetry</code> calls go straight through the .NET pipeline.
+        </li>
+        <li>
+            Error floods are capped on both sides by <code>options.Errors</code>: the script limits the WebView's errors
+            before relaying them, and the .NET pipeline limits the app's own.
+        </li>
     </ul>
     <p>
         More on the <a href="/transport">Transport</a> page.

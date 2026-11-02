@@ -1,0 +1,73 @@
+﻿@page "/products"
+@using Bit.Bsqlite.Samples.Lazy.Data
+@using Microsoft.EntityFrameworkCore
+@inject IServiceProvider Services
+
+<PageTitle>Products - Bsqlite lazy loading sample</PageTitle>
+
+<h1>Products</h1>
+
+<p>
+    <code>Bit.Bsqlite.wasm</code>, EF Core and the library with the app's model were downloaded as this page opened. The
+    page builds Bsqlite's services itself, through <code>AppDatabase</code>: the app does not register them. What it adds
+    stays in the browser's storage, and is there again after a reload.
+</p>
+
+<p>
+    <input id="name" aria-label="Product name" @bind="_name" @bind:event="oninput" disabled="@(_loaded is false)" />
+    <button type="button" id="add" disabled="@(_loaded is false || string.IsNullOrWhiteSpace(_name))" @onclick="AddAsync">Add</button>
+</p>
+
+<section id="products" data-loaded="@(_loaded ? "true" : "false")">
+    @if (_loaded is false)
+    {
+        <p>Opening the database once the page runs in the browser...</p>
+    }
+    else if (_products.Count == 0)
+    {
+        <p>No products yet.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var product in _products)
+            {
+                <li>@product.Name</li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private List<Product> _products = [];
+    private string _name = string.Empty;
+    private bool _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // A prerendered page runs this on the server first, where there is no database to open: wait for the browser.
+        if (!RendererInfo.IsInteractive)
+            return;
+
+        await LoadAsync();
+        _loaded = true;
+    }
+
+    private async Task AddAsync()
+    {
+        await using (var db = await AppDatabase.Contexts(Services).CreateDbContextAsync())
+        {
+            db.Products.Add(new Product { Name = _name.Trim() });
+            await db.SaveChangesAsync();
+        }
+
+        _name = string.Empty;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        await using var db = await AppDatabase.Contexts(Services).CreateDbContextAsync();
+        _products = await db.Products.OrderBy(p => p.Name).ToListAsync();
+    }
+}

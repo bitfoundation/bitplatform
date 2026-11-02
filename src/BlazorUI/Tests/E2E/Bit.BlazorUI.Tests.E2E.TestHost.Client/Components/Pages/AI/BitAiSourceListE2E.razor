@@ -1,0 +1,111 @@
+﻿@page "/e2e/aisourcelist"
+
+<PageTitle>BitAiSourceList E2E</PageTitle>
+
+<h1>BitAiSourceList</h1>
+
+@* Four citations of three sources: the first source is cited twice (as 3 and as 1), the third without a number. *@
+<E2ESection Id="dedupe" Title="One card per source, by number">
+    <BitAiSourceList Id="srl-dedupe" Citations="_citations" />
+</E2ESection>
+
+<E2ESection Id="empty" Title="Nothing to list">
+    <div id="srl-empty-host"><BitAiSourceList Id="srl-empty" Citations="_none" /></div>
+    <div id="srl-null-host"><BitAiSourceList Id="srl-null" /></div>
+</E2ESection>
+
+<E2ESection Id="heading" Title="Without the heading">
+    <BitAiSourceList Id="srl-no-heading" Citations="_citations" ShowHeading="false" />
+</E2ESection>
+
+<E2ESection Id="click" Title="Cards that hand the source over">
+    <p>Clicked: <span id="srl-clicked">@_clicked</span> (<span id="srl-clicks">@_clicks</span>)</p>
+    <BitAiSourceList Id="srl-click" Citations="_citations" OnSourceClick="Click" />
+</E2ESection>
+
+@* A list growing as a message streams its citations in. *@
+<E2ESection Id="growing" Title="A list that grows">
+    <button id="btn-growing-add" @onclick="AddCitation">Add a citation</button>
+    <button id="btn-growing-clear" @onclick="() => _growing = []">Clear</button>
+    <div id="srl-growing-host"><BitAiSourceList Id="srl-growing" Citations="_growing" /></div>
+</E2ESection>
+
+<E2ESection Id="grid" Title="The grid">
+    <div id="srl-grid-host" style="width: 900px; max-width: 100%">
+        <BitAiSourceList Id="srl-grid" Citations="_citations" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiSourceList Id="srl-disabled" Citations="_citations" Disabled="true" OnSourceClick="Click" />
+</E2ESection>
+
+<E2ESection Id="vars" Title="Public variables, Styles and Classes">
+    <div style="width: 900px;
+                --bit-AiSourceList-gap: 13px;
+                --bit-AiSourceList-column-min-width: 400px;
+                --bit-AiSourceList-header-color: rgb(1, 2, 3);
+                --bit-AiSourceList-header-font-size: 17px;">
+        <BitAiSourceList Id="srl-vars" Citations="_citations" />
+    </div>
+    <BitAiSourceList Id="srl-styles"
+                     Citations="_citations"
+                     Styles="@(new() { Header = "color: rgb(40, 41, 42)", SourceCard = new() { Title = "font-style: italic" } })"
+                     Classes="@(new() { List = "e2e-srl-list", SourceCard = new() { Root = "e2e-srl-card" } })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width: 900px">
+        <BitAiSourceList Id="srl-rtl" Dir="BitDir.Rtl" Citations="_citations" />
+        <div dir="rtl">
+            <BitAiSourceList Id="srl-rtl-inherited" Citations="_citations" />
+        </div>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitAiCitationSource _renderModes = new("src-1", "Blazor render modes")
+    {
+        Kind = BitAiSourceKind.Web,
+        Url = "https://learn.microsoft.com/aspnet/core/blazor/components/render-modes",
+        SiteName = "Microsoft Learn",
+    };
+
+    private static readonly BitAiCitationSource _circuits = new("src-2", "SignalR circuit lifetime")
+    {
+        Kind = BitAiSourceKind.Document,
+        Url = "https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr",
+    };
+
+    private static readonly BitAiCitationSource _runbook = new("src-3", "The internal runbook") { Kind = BitAiSourceKind.Document };
+
+    private static readonly IReadOnlyList<BitAiCitation> _citations =
+    [
+        new BitAiCitation("cit-a", _renderModes) { Number = 3 },
+        new BitAiCitation("cit-b", _runbook),
+        new BitAiCitation("cit-c", _circuits) { Number = 2 },
+        new BitAiCitation("cit-d", _renderModes) { Number = 1 },
+    ];
+
+    private static readonly IReadOnlyList<BitAiCitation> _none = [];
+
+    private IReadOnlyList<BitAiCitation> _growing = [];
+
+    private string _clicked = "-";
+    private int _clicks;
+
+    private void Click(BitAiCitationSource source)
+    {
+        _clicked = source.SourceId;
+        _clicks++;
+    }
+
+    private void AddCitation()
+    {
+        var sources = new[] { _renderModes, _circuits, _runbook };
+        var n = _growing.Count + 1;
+        _growing = [.. _growing, new BitAiCitation($"grow-{n}", sources[(n - 1) % sources.Length]) { Number = n }];
+    }
+}

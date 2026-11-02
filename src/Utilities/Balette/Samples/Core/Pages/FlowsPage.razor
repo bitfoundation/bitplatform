@@ -1,0 +1,180 @@
+﻿@page "/flows"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject SampleState State
+
+<PageTitle>Flows · Balette samples</PageTitle>
+
+<h1>Flows</h1>
+
+<p>
+    A command can open a page of further commands, ask for text, collect a selection or take a while, and every step
+    happens inside the same box, with breadcrumbs above it and <kbd>Esc</kbd> or <kbd>Backspace</kbd> to step back.
+    Each button opens the palette on one of them.
+</p>
+
+<BaletteCommands Commands="_commands" />
+
+<div class="card">
+    <dl>
+        <dt>Project</dt>
+        <dd id="project">@State.ProjectName</dd>
+        <dt>Assignee</dt>
+        <dd id="assignee">@(State.Assignee ?? "nobody")</dd>
+        <dt>Labels</dt>
+        <dd id="labels">@(State.Labels.Count == 0 ? "none" : string.Join(", ", State.Labels))</dd>
+    </dl>
+</div>
+
+<table>
+    <thead>
+        <tr><th>Flow</th><th>Declared with</th><th></th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Static page: <em>Theme</em></td>
+            <td><code>.Children(a, b, c)</code></td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "preferences.theme")'>Open</button></td>
+        </tr>
+        <tr>
+            <td>Lazy page: <em>Assign to…</em></td>
+            <td><code>.Children(async (ctx, ct) =&gt; ...)</code></td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "flows.assign")'>Open</button></td>
+        </tr>
+        <tr>
+            <td>Searching page: <em>Find a person…</em></td>
+            <td><code>.Source("Directory", async (query, ct) =&gt; ...)</code></td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "flows.find-person")'>Open</button></td>
+        </tr>
+        <tr>
+            <td>Prompt: <em>Rename project…</em> (validated, and "admin" refused)</td>
+            <td><code>BaletteCommandResult.Prompt(...)</code></td>
+            <td><button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("flows.rename")'>Run</button></td>
+        </tr>
+        <tr>
+            <td>Multi-select: <em>Set labels…</em> (<kbd>Ctrl</kbd> <kbd>Enter</kbd> applies)</td>
+            <td><code>.MultiSelect()</code></td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "flows.labels")'>Open</button></td>
+        </tr>
+        <tr>
+            <td>Ad-hoc page: <em>Export…</em></td>
+            <td><code>BaletteCommandResult.Page(...)</code></td>
+            <td><button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("flows.export")'>Run</button></td>
+        </tr>
+        <tr>
+            <td>Long-running: <em>Synchronize</em> (cancelled when the palette closes)</td>
+            <td><code>ctx.CancellationToken</code></td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync("synchronize")'>Search</button></td>
+        </tr>
+        <tr>
+            <td>A handler that throws: <em>Publish release</em></td>
+            <td>Reported in the palette, logged</td>
+            <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync("publish release")'>Search</button></td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    private IReadOnlyList<BaletteCommand> _commands = [];
+    private (string? Assignee, string ProjectName)? _shown;
+
+    protected override void OnInitialized()
+    {
+        UpdateCommands();
+        State.Changed += OnStateChanged;
+    }
+
+    // A new list re-registers every command, so one is built only when a value the commands show has changed: most
+    // changes - a person found, an export run - touch none of them.
+    private void UpdateCommands()
+    {
+        var shown = (State.Assignee, State.ProjectName);
+        if (_shown == shown) return;
+
+        _shown = shown;
+        _commands = BuildCommands();
+    }
+
+    private BaletteCommand[] BuildCommands() =>
+    [
+        // The page opens at once with a loading state, and fills in when the provider returns.
+        BaletteCmd.New("Assign to…").Id("flows.assign").Group("Flows").Value(State.Assignee)
+            .Children(async (ctx, cancellationToken) =>
+            {
+                var people = await SampleData.GetPeopleAsync(cancellationToken);
+                return [.. people.Select(p => BaletteCmd.Action(p.Name, () => State.Assign(p.Name)).Subtitle(p.Role).Build())];
+            }, placeholder: "Pick an assignee…"),
+
+        // Asks the "server" for every query typed on the page, instead of listing everything up front.
+        BaletteCmd.New("Find a person…").Id("flows.find-person").Group("Flows")
+            .ChildrenPlaceholder("Search the directory…")
+            .Source("Directory", async (query, cancellationToken) =>
+            {
+                var people = await SampleData.SearchPeopleAsync(query, cancellationToken);
+                return [.. people.Select(p => BaletteCmd.Action(p.Name, () => State.Record($"Found {p.Name}")).Subtitle(p.Role).Build())];
+            }),
+
+        BaletteCmd.New("Rename project…").Id("flows.rename").Group("Flows").Value(State.ProjectName)
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+                "New project name",
+                ctx =>
+                {
+                    var name = ctx.PromptValue!.Trim();
+
+                    // A check only the "server" can make: Error keeps the prompt open, so the value can be corrected.
+                    if (string.Equals(name, "admin", StringComparison.OrdinalIgnoreCase))
+                        return Task.FromResult(BaletteCommandResult.Error("That name is reserved."));
+
+                    State.Rename(name);
+                    return Task.FromResult(BaletteCommandResult.Toast($"Renamed to “{name}”"));
+                },
+                validate: value => string.IsNullOrWhiteSpace(value) ? "A project needs a name." : null,
+                placeholder: "Project name…",
+                initialValue: State.ProjectName))),
+
+        BaletteCmd.New("Set labels…").Id("flows.labels").Group("Flows")
+            .MultiSelect()
+            .ChildrenPlaceholder("Toggle labels, Ctrl+Enter to apply…")
+            .Children(Label("bug"), Label("enhancement"), Label("documentation"), Label("question"))
+            .Handler(ctx =>
+            {
+                State.SetLabels(ctx.SelectedCommands.Select(c => c.Title));
+                return Task.FromResult(BaletteCommandResult.Toast(State.LastAction!));
+            }),
+
+        // The handler decides what the page lists; these commands are registered nowhere else.
+        BaletteCmd.New("Export…").Id("flows.export").Group("Flows")
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Page("Export format",
+            [
+                BaletteCmd.Action("CSV", () => State.Record("Exported CSV")).Subtitle("Comma separated values").Build(),
+                BaletteCmd.Action("JSON", () => State.Record("Exported JSON")).Subtitle("Pretty printed").Build(),
+            ]))),
+
+        // Still running after 150 ms, the palette shows it busy; closing it cancels the token.
+        BaletteCmd.New("Synchronize").Id("flows.sync").Group("Flows").Subtitle("Takes three seconds")
+            .Handler(async ctx =>
+            {
+                await Task.Delay(3000, ctx.CancellationToken);
+                State.Record("Synchronized");
+                return BaletteCommandResult.Toast("Synchronized");
+            }),
+
+        // The palette catches it, reports it in the footer and logs it; a Server circuit survives it.
+        BaletteCmd.New("Publish release").Id("flows.publish").Group("Flows").Subtitle("Fails on purpose")
+            .Handler(async ctx =>
+            {
+                await Task.Delay(300, ctx.CancellationToken);
+                throw new InvalidOperationException("The release server is unreachable (simulated).");
+            }),
+    ];
+
+    private static BaletteCommand Label(string name) => BaletteCmd.New(name).Id($"flows.labels.{name}");
+
+    private void OnStateChanged()
+    {
+        UpdateCommands();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => State.Changed -= OnStateChanged;
+}

@@ -18,6 +18,13 @@
 //     bg-sec and bg-ter; brd-pri stays >= 3:1 over all three (SC 1.4.11). brd-sec and brd-ter are
 //     the decorative stroke tiers (spinner tracks, menu separators, calendar grid lines) and are
 //     tuned for definition rather than to a contrast floor.
+//   - the main tier is solved as a FILL, not as text. A role read on the page (the label of an
+//     outlined or text-only variant) is drawn in its '-fg' shade (family-tokens.scss), which
+//     keeps >= 4.5:1 over bg-pri and bg-sec (>= 3:1 over bg-ter), and >= 4.5:1 over the role's
+//     '-tint' laid on bg-pri (a selected outlined tag). The primary main is the one exception,
+//     read as text as it is (the brand's link color), so it keeps >= 4.5:1 over bg-pri itself
+//     and >= 3:1 over bg-sec and bg-ter. The '-light' tier is a pale pastel here, as light as
+//     '-fg', which is why a role's text is read over '-tint' instead.
 :root[bit-theme="dark"],
 :root [bit-theme="dark"],
 :root[bit-theme="fluent-dark"],

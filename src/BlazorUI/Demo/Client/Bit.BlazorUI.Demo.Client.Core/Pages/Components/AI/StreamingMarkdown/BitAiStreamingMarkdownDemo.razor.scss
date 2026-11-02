@@ -1,0 +1,46 @@
+﻿// The wrappers are written in this page, so they carry the scope attribute themselves and are styled without ::deep.
+.stream-grid {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.stream-grid > div {
+    min-width: 0;
+}
+
+.stream-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.stream-raw {
+    margin: 0;
+    padding: 0.75rem;
+    overflow: auto;
+    min-height: 6rem;
+    max-height: 28rem;
+    font-size: 0.8125rem;
+    white-space: pre-wrap;
+    border-radius: 0.5rem;
+    background-color: var(--bit-clr-bg-sec);
+}
+
+::deep {
+    .custom-class {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        background-color: #1e293b;
+        color: #e2e8f0;
+    }
+
+    .custom-root {
+        border-inline-start: 4px solid tomato;
+        padding-inline-start: 0.75rem;
+    }
+
+    .custom-heading {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+}

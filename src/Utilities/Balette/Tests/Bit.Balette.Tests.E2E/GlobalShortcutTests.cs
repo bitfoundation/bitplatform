@@ -19,9 +19,33 @@ public sealed class GlobalShortcutTests : BaletteTest
         await page.Keyboard.PressAsync("g");
         await page.Keyboard.PressAsync("s");
 
-        await page.WaitForURLAsync("**/commands#settings");
+        await ExpectUrlAsync(page, "/commands#settings");
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Registering commands");
         await ExpectClosedAsync(page);
+    }
+
+    [TestMethod]
+    public async Task After_the_first_key_of_a_sequence_the_page_says_the_next_one_is_awaited()
+    {
+        var page = await OpenAsync("/");
+        var hint = page.Locator("[data-balette='sequence']");
+        await Assertions.Expect(hint).ToHaveAttributeAsync("role", "status");
+        await Assertions.Expect(hint).Not.ToHaveAttributeAsync("data-pending", "true");
+
+        await page.Keyboard.PressAsync("g");
+
+        await Assertions.Expect(hint).ToHaveAttributeAsync("data-pending", "true");
+        await Assertions.Expect(hint).ToContainTextAsync("waiting for the next key");
+        await Assertions.Expect(hint).ToBeVisibleAsync();
+
+        // Completed, the sequence runs and the hint goes; so it does when the sequence times out.
+        await page.Keyboard.PressAsync("s");
+        await ExpectUrlAsync(page, "/commands#settings");
+        await Assertions.Expect(hint).Not.ToHaveAttributeAsync("data-pending", "true");
+
+        await page.Keyboard.PressAsync("g");
+        await Assertions.Expect(hint).ToHaveAttributeAsync("data-pending", "true");
+        await Assertions.Expect(hint).Not.ToHaveAttributeAsync("data-pending", "true", new() { Timeout = 5_000 });
     }
 
     [TestMethod]
@@ -48,7 +72,7 @@ public sealed class GlobalShortcutTests : BaletteTest
         await field.BlurAsync();
         await page.Keyboard.PressAsync("g");
         await page.Keyboard.PressAsync("s");
-        await page.WaitForURLAsync("**/commands#settings");
+        await ExpectUrlAsync(page, "/commands#settings");
     }
 
     [TestMethod]
@@ -75,7 +99,7 @@ public sealed class GlobalShortcutTests : BaletteTest
         await Assertions.Expect(Prompt(page)).ToContainTextAsync("New project name");
         await Assertions.Expect(Input(page)).ToHaveValueAsync("Acme Dashboard");
 
-        await Input(page).FillAsync("Renamed by F2");
+        await ReplaceQueryAsync(page, "Acme Dashboard", "Renamed by F2");
         await page.Keyboard.PressAsync("Enter");
         await ExpectClosedAsync(page);
         await Assertions.Expect(page.Locator("main")).ToContainTextAsync("Project: Renamed by F2");
@@ -88,7 +112,7 @@ public sealed class GlobalShortcutTests : BaletteTest
 
         await page.Keyboard.PressAsync("Control+/");
 
-        await page.WaitForURLAsync("**/keyboard#shortcuts");
+        await ExpectUrlAsync(page, "/keyboard#shortcuts");
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Keyboard & shortcuts");
         await ExpectClosedAsync(page);
     }

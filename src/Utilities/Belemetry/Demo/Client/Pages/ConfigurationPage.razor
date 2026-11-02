@@ -58,7 +58,8 @@
     <p>
         Outside the browser, with <code>options.UseEnvironmentVariables</code> (on by default), the standard
         variables fill in what the code leaves unset - this is how the .NET Aspire AppHost and most container
-        platforms wire telemetry in. Explicit options always win.
+        platforms wire telemetry in. A value set in code always wins, as in the OpenTelemetry SDKs (headers merge per
+        key) - except <code>OTEL_SDK_DISABLED</code>, the operator's kill switch.
     </p>
     <div class="bb-scroll">
         <table class="bb-table">
@@ -66,6 +67,7 @@
                 <tr><th scope="col">Variable</th><th scope="col">Effect</th></tr>
             </thead>
             <tbody>
+                <tr><td><code>OTEL_SDK_DISABLED</code></td><td><code>true</code> (any case) turns Belemetry off entirely, whatever the code says</td></tr>
                 <tr><td><code>OTEL_SERVICE_NAME</code></td><td><code>service.name</code></td></tr>
                 <tr><td><code>OTEL_RESOURCE_ATTRIBUTES</code></td><td>Extra resource attributes (<code>k=v,k2=v2</code>)</td></tr>
                 <tr><td><code>OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td>Adds an OTLP exporter when none is configured, and fills unset endpoints</td></tr>
@@ -108,6 +110,12 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> <span>Belemetry<wbr>Browser<wbr>Options</span></h3>
     <p><code>options.Browser</code> - see <a href="/browser">Browser instrumentation</a> and <a href="/transport">Transport</a>.</p>
     <ApiTable TypeName="BelemetryBrowserOptions" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> <span>Belemetry<wbr>Error<wbr>Options</span></h3>
+    <p><code>options.Errors</code> - the error-flood limits, applied by the script and by the .NET pipeline of WebAssembly and Hybrid apps; see <a href="/browser">Browser instrumentation</a>.</p>
+    <ApiTable TypeName="BelemetryErrorOptions" />
 </div>
 
 <div class="bb-card">
@@ -247,7 +255,13 @@
 
             // Privacy rules, applied on both sides before anything is queued.
             options.Privacy.RedactQueryParameters.Add("voucher");
+            options.Privacy.RedactedAttributes.Add("iban");
             options.Privacy.BlockedAttributes.Add("user_agent.original");
+            options.MaxValueLength = 16384;                                    // cut longer strings (default 32768)
+
+            // Error floods: one record per identical error per window, at most so many a minute.
+            options.Errors.DuplicateWindow = TimeSpan.FromSeconds(10);
+            options.Errors.MaxPerMinute = 60;
 
             // The browser script.
             options.Browser.Transport = BelemetryBrowserTransport.Auto;      // Relay in Hybrid, Direct elsewhere
@@ -255,12 +269,14 @@
             options.Browser.PropagateTraceContextTo.Add(@"^https://api\.contoso\.com/");
             options.Browser.IgnoreUrls.Add("/health");
             options.Browser.SessionSampleRatio = 0.5;
+            options.Browser.TrackPageVisitTime = true;
 
             // The .NET collectors.
             options.Logs.MinimumLevel = LogLevel.Information;
             options.Traces.Sources.Add("MyShop*");
             options.Traces.SamplingRatio = 0.25;
             options.Metrics.Meters.Add("MyShop*");
+            options.Metrics.Meters.Add("Bit.Belemetry");                      // Belemetry's own health
             options.Metrics.ExportInterval = TimeSpan.FromSeconds(30);
 
             // Delivery.
@@ -275,6 +291,7 @@
             {
                 otlp.Protocol = BelemetryOtlpProtocol.HttpProtobuf;
                 otlp.BrowserEndpoint = new Uri("https://otel.contoso.com");  // public, CORS-enabled
+                otlp.BrowserHeaders["x-ingest-key"] = "public-key";         // the page's key; Headers stay on the server
                 otlp.Compression = BelemetryCompression.Gzip;
             });
 

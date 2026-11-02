@@ -38,6 +38,7 @@
     <Project Path="Tests/Bit.Belemetry.Tests.Mcp/Bit.Belemetry.Tests.Mcp.csproj" />
     <Project Path="Tests/Bit.Belemetry.Tests.Hosting/Bit.Belemetry.Tests.Hosting.csproj" />
     <Project Path="Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Benchmarks/Bit.Belemetry.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/Tests/Harness/">
     <Project Path="Tests/Bit.Belemetry.Tests.Harness/Bit.Belemetry.Tests.Harness.csproj" />

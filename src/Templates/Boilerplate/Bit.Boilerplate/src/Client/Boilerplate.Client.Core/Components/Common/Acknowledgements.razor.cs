@@ -78,6 +78,7 @@ public partial class Acknowledgements
         //#endif
         //#if (offlineDb == true)
         new("Community Toolkit Datasync", "https://github.com/CommunityToolkit/Datasync", "https://github.com/CommunityToolkit/Datasync", "MIT"),
+        new("wa-sqlite", "https://github.com/rhashimoto/wa-sqlite", "https://github.com/rhashimoto/wa-sqlite", "MIT"),
         //#endif
         new("SQLite", "https://sqlite.org", "https://github.com/sqlite/sqlite", "Public Domain"),
         new("Microsoft.Identity.Web", "https://github.com/AzureAD/microsoft-identity-web", "https://github.com/AzureAD/microsoft-identity-web", "MIT"),
@@ -151,11 +152,8 @@ public partial class Acknowledgements
     private static readonly Dependency[] IdeExtensions =
     [
         new("C# (ms-dotnettools.csharp)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp", "https://github.com/dotnet/vscode-csharp", "MIT"),
-        new("C# Dev Kit", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit", null, "Proprietary"),
-        new(".NET MAUI (VS Code)", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui", null, "Proprietary"),
         new("Aspire (VS Code)", "https://marketplace.visualstudio.com/items?itemName=microsoft-aspire.aspire-vscode", "https://github.com/microsoft/aspire", "MIT"),
         new(".NET Install Tool", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-dotnet-runtime", "https://github.com/dotnet/vscode-dotnet-runtime", "MIT"),
-        new("Container Tools (Docker)", "https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker", "https://github.com/microsoft/vscode-docker", "MIT"),
         new("Dev Containers", "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers", null, "Proprietary"),
         new("Blazor WASM Companion", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion", "https://github.com/dotnet/razor", "MIT"),
         new("ResX Manager", "https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager", "https://github.com/dotnet/ResXResourceManager", "MIT"),
@@ -182,27 +180,18 @@ public partial class Acknowledgements
     ];
 
     /// <summary>
-    /// CI/CD and deployment tooling taken from the pipeline definitions: GitHub Actions (.github/workflows) or
-    /// Azure Pipelines (.azure-devops), plus the optional Cloudflare CDN integration. Everything here is build/deploy
-    /// time only and never ships inside the app.
+    /// CI/CD and deployment tooling taken from the pipeline definitions in .github/workflows, plus the optional
+    /// Cloudflare CDN integration. Everything here is build/deploy time only and never ships inside the app.
     /// </summary>
     private static readonly Dependency[] Deployment =
     [
-        //#if (pipeline == "GitHub")
         new("GitHub Actions", "https://github.com/features/actions", "https://github.com/actions/runner", "MIT"),
-        new("Azure WebApps Deploy", "https://github.com/Azure/webapps-deploy", "https://github.com/Azure/webapps-deploy", "MIT"),
         new("setup-xcode", "https://github.com/maxim-lobanov/setup-xcode", "https://github.com/maxim-lobanov/setup-xcode", "MIT"),
         new("Apple Actions", "https://github.com/Apple-Actions", "https://github.com/Apple-Actions", "MIT"),
         new("base64-to-file", "https://github.com/timheuer/base64-to-file", "https://github.com/timheuer/base64-to-file", "MIT"),
         new("variable-substitution", "https://github.com/devops-actions/variable-substitution", "https://github.com/devops-actions/variable-substitution", "MIT"),
-        //#endif
-        //#if (pipeline == "Azure")
-        new("Azure Pipelines", "https://azure.microsoft.com/products/devops/pipelines", null, "Proprietary"),
-        //#endif
         //#if (cloudflare == true)
         new("Cloudflare", "https://www.cloudflare.com", null, "Proprietary"),
-        //#endif
-        //#if (pipeline == "GitHub" && cloudflare == true)
         new("cloudflare-purge-action", "https://github.com/jakejarvis/cloudflare-purge-action", "https://github.com/jakejarvis/cloudflare-purge-action", "MIT"),
         //#endif
     ];

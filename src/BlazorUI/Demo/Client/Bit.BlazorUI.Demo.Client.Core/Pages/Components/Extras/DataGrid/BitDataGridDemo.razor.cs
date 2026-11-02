@@ -519,6 +519,8 @@ public partial class BitDataGridDemo : AppComponentBase
     private readonly List<Product> apiProducts = SampleData.Generate(200);
     private BitDataGrid<Product>? apiGrid;
     private string apiLog = "The grid reports every view change here.";
+    private IReadOnlyList<Product> apiViewItems = [];
+    private string apiViewLog = "";
 
     private async Task ApiSortByPrice() { if (apiGrid is not null) await apiGrid.SortByAsync(nameof(Product.Price), BitDataGridSortDirection.Descending); }
     private async Task ApiClearSorts() { if (apiGrid is not null) await apiGrid.ClearSortsAsync(); }
@@ -530,6 +532,19 @@ public partial class BitDataGridDemo : AppComponentBase
     private async Task ApiPageSize50() { if (apiGrid is not null) await apiGrid.SetPageSizeAsync(50); }
     private async Task ApiPriceFirst() { if (apiGrid is not null) await apiGrid.MoveColumnAsync(nameof(Product.Price), 0); }
     private async Task ApiRefresh() { if (apiGrid is not null) await apiGrid.RefreshAsync(); }
+
+    private async Task ApiRevealRandom()
+    {
+        if (apiGrid is null || apiViewItems.Count == 0) return;
+        var product = apiViewItems[Random.Shared.Next(apiViewItems.Count)];
+        if (await apiGrid.RevealItemAsync(product)) apiLog = $"Revealed {product.Name} (#{product.Id}) on page {apiGrid.CurrentPage}.";
+    }
+
+    private void OnApiViewChange(IReadOnlyList<Product> rows)
+    {
+        apiViewItems = rows;
+        apiViewLog = $"{rows.Count} row(s) in the view, from {rows.FirstOrDefault()?.Name ?? "-"} to {rows.LastOrDefault()?.Name ?? "-"}.";
+    }
 
     private void OnApiSortChange(IReadOnlyList<BitDataGridSortDescriptor> sorts)
         => apiLog = sorts.Count == 0 ? "Sorting cleared." : $"Sorting by {string.Join(", ", sorts.Select(s => $"{s.ColumnId} {s.Direction}"))}.";

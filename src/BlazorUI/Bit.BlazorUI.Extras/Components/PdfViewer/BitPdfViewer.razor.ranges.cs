@@ -406,9 +406,10 @@ public partial class BitPdfViewer
         {
             var attachments = new List<BitPdfAttachment>();
             var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+            var budget = BitPdfEmbeddedFiles.CreateContentBudget();
             async Task AddFileAsync(object? spec, int? page, string? name)
             {
-                var file = await ReadRangeDetailAsync(d => BitPdfEmbeddedFiles.ReadFile(d.XRef, spec, page, name), null, token);
+                var file = await ReadRangeDetailAsync(d => BitPdfEmbeddedFiles.ReadFile(d.XRef, spec, page, name, budget, seen), null, token);
                 CheckRangeOperation(source, version, token);
                 if (file is not null && seen.Add(file.Identity)) attachments.Add(file.Attachment);
             }

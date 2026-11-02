@@ -1,0 +1,33 @@
+﻿@page "/board"
+@using Bit.Bortable
+
+<PageTitle>Board - Bortable lazy loading sample</PageTitle>
+
+<h1>Board</h1>
+
+<p>
+    <code>Bit.Bortable.wasm</code> was downloaded as this page opened. The two lists share a group, and hand their items
+    to each other through a drag coordinator they created themselves: the app does not register Bortable's services.
+</p>
+
+<div class="columns">
+    <div class="column">
+        <h3>To do</h3>
+        <Bortable @bind-Items="_todo" TItem="string" Group="board" Id="lazy-todo" AriaLabel="To do" Class="list" ItemClass="item">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+        <p class="order">Order: <span id="lazy-todo-order">@string.Join(", ", _todo)</span></p>
+    </div>
+    <div class="column">
+        <h3>Done</h3>
+        <Bortable @bind-Items="_done" TItem="string" Group="board" Id="lazy-done" AriaLabel="Done" Class="list" ItemClass="item">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+        <p class="order">Order: <span id="lazy-done-order">@string.Join(", ", _done)</span></p>
+    </div>
+</div>
+
+@code {
+    private IList<string> _todo = new List<string> { "Write", "Review", "Ship" };
+    private IList<string> _done = new List<string> { "Plan" };
+}

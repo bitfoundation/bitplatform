@@ -193,12 +193,9 @@
         <!-- Same appending trick, for the stage that gathers the assets themselves (see
              BitButilSelectScriptAssets). The SDK collects them from three places in a fixed order - the
              package assets it updates, this project's own, then the referenced projects' - and names the
-             three in the dependency list of one target: ResolveCoreStaticWebAssets on the .NET 9+ SDK,
-             ResolveStaticWebAssetsInputs on .NET 8, which has no such stage. Appending to both lists puts
-             the selection after every source has contributed, whichever SDK is in play; the second one to
-             be reached finds the target already built and does nothing. -->
+             three in the dependency list of one target, ResolveCoreStaticWebAssets. Appending to that list
+             puts the selection after every source has contributed. -->
         <ResolveCoreStaticWebAssetsDependsOn>$(ResolveCoreStaticWebAssetsDependsOn);BitButilSelectScriptAssets</ResolveCoreStaticWebAssetsDependsOn>
-        <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);BitButilSelectScriptAssets</ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <!-- The runtime switch the C# side reads (BitButil.LazyScriptsEnabled): an AppContext switch through the
@@ -285,7 +282,7 @@
             <_BitButilRemovedAsset Include="@(_BitButilAsset)" Condition="'$(BitButilIncludeScriptBundle)' != 'true' and '%(_BitButilAsset._IsBundle)' == 'True'" />
             <_BitButilRemovedAsset Include="@(_BitButilAsset)" Condition="'$(BitButilIncludeScriptModules)' != 'true' and '%(_BitButilAsset._IsModule)' == 'True'" />
 
-            <!-- Endpoints (.NET 9 SDK and later) are keyed by the asset file they serve. -->
+            <!-- Endpoints are keyed by the asset file they serve. -->
             <_BitButilRemovedEndpointKey Include="@(_BitButilRemovedAsset)">
                 <AssetFile>%(_BitButilRemovedAsset._Path)</AssetFile>
             </_BitButilRemovedEndpointKey>
@@ -334,7 +331,7 @@
             <_BitButilRemovedAsset Include="@(_BitButilAsset)" Condition="'$(BitButilIncludeScriptBundle)' != 'true' and '%(_BitButilAsset._IsBundle)' == 'True'" />
             <_BitButilRemovedAsset Include="@(_BitButilAsset)" Condition="'$(BitButilIncludeScriptModules)' != 'true' and '%(_BitButilAsset._IsModule)' == 'True'" />
 
-            <!-- Endpoints (.NET 9 SDK and later) are keyed by the asset file they serve. -->
+            <!-- Endpoints are keyed by the asset file they serve. -->
             <_BitButilRemovedEndpointKey Include="@(_BitButilRemovedAsset)">
                 <AssetFile>%(_BitButilRemovedAsset._Path)</AssetFile>
             </_BitButilRemovedEndpointKey>
@@ -356,24 +353,14 @@
     SDK's own tasks, so its fingerprint, integrity, endpoints and (afterwards) compressed variants are all
     computed from the new content.
 
-    Three targets rather than one because the .NET 8 SDK has neither endpoints nor content fingerprinting, and
-    MSBuild rejects an unknown task (or task parameter) even under a false condition: the pieces that need the
-    .NET 9+ tasks live in Bit.Butil.Endpoints.targets, imported only on those SDKs, and slot in between the
-    assembling and the applying step through AfterTargets.
+    The pieces that define the asset and its endpoints live in Bit.Butil.Endpoints.targets and slot in between
+    the assembling and the applying step through AfterTargets.
 
-      _BitButilAssembleTrimmedBundle   runs the bundler and prepares the candidate asset + the stale set
-      _BitButilDefineTrimmedBundle     defines the asset (plain form here, fingerprinted form in the 9+ file)
-      BitButilTrimScriptBundle         swaps the assets and endpoints in the static web asset lists
-      BitButilTrimScriptModules        drops the per-module files the app can no longer import
+      _BitButilAssembleTrimmedBundle             runs the bundler and prepares the candidate asset + the stale set
+      _BitButilDefineTrimmedBundleWithEndpoints  defines the fingerprinted asset and its endpoints
+      BitButilTrimScriptBundle                   swaps the assets and endpoints in the static web asset lists
+      BitButilTrimScriptModules                  drops the per-module files the app can no longer import
     -->
-    <PropertyGroup>
-        <!-- Evaluation time, because the Import at the foot of this file conditions on it. Everything else
-             the trimming is gated on is decided in _BitButilResolveScriptTrimming instead: it has to read
-             @(BitButilScriptModule), and MSBuild evaluates every property in every import before it reaches
-             any item, so a property that read that item here would always find it empty. -->
-        <_BitButilSdkHasEndpoints>false</_BitButilSdkHasEndpoints>
-        <_BitButilSdkHasEndpoints Condition="'$(NETCoreSdkVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</_BitButilSdkHasEndpoints>
-    </PropertyGroup>
 
     <!--
     Which signal the trimming runs on, and whether it runs at all. A target rather than a plain property
@@ -482,15 +469,11 @@
 
     Which project that is, is read off the SDK it loaded, and only off that. StaticWebAssetProjectMode
     looks like the SDK's own answer to "is this the root of the asset graph or a library contributing to
-    someone else's", but it answers neither half of the question this asks. It is not sufficient: a MAUI
+    someone else's", but it does not answer the question this asks. It is not sufficient: a MAUI
     hybrid head IS Root - Microsoft.AspNetCore.Components.WebView.Maui makes it the root of its own graph
     so that it can package its wwwroot - which is the one shape the cycle above stands the feature down
-    for. And it is not necessary: only the .NET 10 Web SDK sets Root (Sdk.Server.props), while the .NET 8
-    and .NET 9 Web SDKs leave a Blazor Server app or a Blazor Web App host on the 'Default' that
-    ResolveStaticWebAssetsConfiguration fills in for everything, so requiring it would stand the whole
-    feature down on exactly the hosts the scan was written for, on two of the three frameworks this
-    package targets. Being neither, it is not read at all. UsingMicrosoftNETSdkWeb and the two WebAssembly
-    markers are what is left: set identically on 8, 9 and 10, and between them they name every project
+    for. So it is not read at all. UsingMicrosoftNETSdkWeb and the two WebAssembly
+    markers are what is left: set the same way by every SDK, and between them they name every project
     shape that publishes an app rather than contributing to one. A Razor class library (Sdk.Razor) and a
     hybrid head (the plain SDK plus UseMaui) match none of them, which is the point. All three are set in
     the SDK's .props, so they are readable here, at evaluation time, which is what lets the dependency
@@ -627,14 +610,6 @@
         </PropertyGroup>
     </Target>
 
-    <!-- .NET 8 SDK: no fingerprinting, no endpoints. The .NET 9+ counterpart is in Bit.Butil.Endpoints.targets. -->
-    <Target Name="_BitButilDefineTrimmedBundle" AfterTargets="_BitButilAssembleTrimmedBundle"
-            Condition="'$(_BitButilTrimEnabled)' == 'true' and '$(_BitButilSdkHasEndpoints)' != 'true' and '@(_BitButilTrimmedBundleCandidate)' != ''">
-        <DefineStaticWebAssets CandidateAssets="@(_BitButilTrimmedBundleCandidate)">
-            <Output TaskParameter="Assets" ItemName="_BitButilTrimmedBundleAsset" />
-        </DefineStaticWebAssets>
-    </Target>
-
     <Target Name="BitButilTrimScriptBundle" DependsOnTargets="_BitButilAssembleTrimmedBundle" Condition="'$(_BitButilTrimEnabled)' == 'true'">
         <ItemGroup Condition="'@(_BitButilTrimmedBundleAsset)' != ''">
             <StaticWebAssetEndpoint Remove="@(_BitButilStaleEndpointKey)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
@@ -706,7 +681,7 @@
             <_BitButilRemovedModule Include="@(_BitButilModuleCandidate)"
                 Condition="'%(_BitButilModuleCandidate._IsModule)' == 'True' and '%(_BitButilModuleCandidate._Reachable)' != 'True'" />
 
-            <!-- Endpoints (.NET 9 SDK and later) are keyed by the asset file they serve. -->
+            <!-- Endpoints are keyed by the asset file they serve. -->
             <_BitButilRemovedModuleEndpointKey Include="@(_BitButilRemovedModule)">
                 <AssetFile>%(_BitButilRemovedModule._Path)</AssetFile>
             </_BitButilRemovedModuleEndpointKey>
@@ -741,11 +716,11 @@
     a new version - and so is the service worker script that names that version, which is what makes the browser
     install the update. The new files are defined as fresh assets in place of the client's, exactly as the trimmed
     bundle is, so integrity, endpoints and the compressed copies are all computed from the rewritten content.
-    Three targets for the same reason as the bundle's: the .NET 9+ definition is in Bit.Butil.Endpoints.targets.
+    As with the bundle, the definition is in Bit.Butil.Endpoints.targets.
 
-      _BitButilRewriteServiceWorker      rewrites the files (UpdateButilServiceWorker) and lists what they replace
-      _BitButilDefineServiceWorker       defines the new assets (plain form here, with endpoints in the 9+ file)
-      BitButilUpdateServiceWorker        swaps the assets and endpoints in the static web asset lists
+      _BitButilRewriteServiceWorker               rewrites the files (UpdateButilServiceWorker) and lists what they replace
+      _BitButilDefineServiceWorkerWithEndpoints   defines the new assets and their endpoints
+      BitButilUpdateServiceWorker                 swaps the assets and endpoints in the static web asset lists
     -->
     <Target Name="_BitButilRewriteServiceWorker" DependsOnTargets="BitButilTrimScriptBundle;BitButilTrimScriptModules" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
         <UpdateButilServiceWorker StaticWebAssets="@(StaticWebAsset)"
@@ -760,14 +735,6 @@
             <_BitButilServiceWorkerDropped Remove="@(_BitButilServiceWorkerDropped)" />
             <_BitButilServiceWorkerTrimmed Remove="@(_BitButilServiceWorkerTrimmed)" />
         </ItemGroup>
-    </Target>
-
-    <!-- .NET 8 SDK: no endpoints. The .NET 9+ counterpart is in Bit.Butil.Endpoints.targets. -->
-    <Target Name="_BitButilDefineServiceWorker" AfterTargets="_BitButilRewriteServiceWorker"
-            Condition="'$(_BitButilSdkHasEndpoints)' != 'true' and '@(_BitButilServiceWorkerCandidate)' != ''">
-        <DefineStaticWebAssets CandidateAssets="@(_BitButilServiceWorkerCandidate)">
-            <Output TaskParameter="Assets" ItemName="_BitButilServiceWorkerAsset" />
-        </DefineStaticWebAssets>
     </Target>
 
     <Target Name="BitButilUpdateServiceWorker" DependsOnTargets="_BitButilRewriteServiceWorker" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
@@ -787,6 +754,6 @@
         </ItemGroup>
     </Target>
 
-    <Import Project="Bit.Butil.Endpoints.targets" Condition="'$(_BitButilSdkHasEndpoints)' == 'true'" />
+    <Import Project="Bit.Butil.Endpoints.targets" />
 
 </Project>

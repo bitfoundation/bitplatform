@@ -86,6 +86,44 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task Revoking_PurgesRelayedRecordsToo_AndTakesTheUserIdsOffWhatIsLeft()
+    {
+        await using var host = TestHost.Create(o => o.Browser.Transport = BelemetryBrowserTransport.Relay, consentDefault: BelemetryFeatures.None);
+        host.Consent.Decide(BelemetryFeatures.All);
+        host.Consent.SetContext("s-1", "pseudo-1", "user-1");
+
+        host.Pipeline.Relay(new BelemetryRelayBatch { Logs = [new BelemetryRelayLog { Body = "click", Feature = (int)BelemetryFeatures.Interactions }] });
+        host.Pipeline.Enqueue(Log("log", BelemetryFeatures.Logs));
+
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Interactions & ~BelemetryFeatures.UserTracking);
+        await host.FlushAsync();
+
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual("log", log.Body, "A relayed record of a revoked feature is discarded like any other.");
+        Assert.AreEqual("s-1", log.Attributes["session.id"]);
+        Assert.IsFalse(log.Attributes.Contains("enduser.pseudo.id"));
+        Assert.IsFalse(log.Attributes.Contains("user.id"));
+    }
+
+    [TestMethod]
+    public async Task BeforeADecision_TheBrowsersNarrowerGrant_IsAdopted()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All);
+        var bridge = new BelemetryJsBridge(host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>());
+
+        bridge.Apply(new BelemetryJsContext { Consent = (int)(BelemetryFeatures.All & ~BelemetryFeatures.Analytics), Decided = false });
+
+        Assert.IsFalse(host.Pipeline.CanRecord(BelemetryFeatures.Events), "Global Privacy Control took the analytics features away in the page.");
+        Assert.IsTrue(host.Pipeline.CanRecord(BelemetryFeatures.Errors));
+        Assert.IsFalse(host.Consent.IsDecided);
+
+        host.Consent.Decide(BelemetryFeatures.Errors);
+        bridge.Apply(new BelemetryJsContext { Consent = (int)BelemetryFeatures.None, Decided = false });
+
+        Assert.IsTrue(host.Pipeline.CanRecord(BelemetryFeatures.Errors), "An undecided page does not undo a decision .NET already holds.");
+    }
+
+    [TestMethod]
     public async Task Server_CollectsNothingByDefault()
     {
         await using var host = TestHost.Create(o => o.Host = BelemetryHostKind.Server);
@@ -274,6 +312,62 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task AProcessorThatThrows_IsReportedOnce()
+    {
+        // Silently, a broken enrichment would look like data that is just not there.
+        var capture = new CapturingLoggerProvider();
+        await using var host = TestHost.Create(o => o.AddProcessor(new ThrowingProcessor()), configureServices: s => s.AddSingleton<ILoggerProvider>(capture));
+        host.StartLogging();
+
+        for (var i = 0; i < 5; i++) host.Pipeline.Enqueue(Log("kept", BelemetryFeatures.Logs));
+        host.Pipeline.Enqueue(Records.Span());
+        await host.FlushAsync();
+
+        Assert.HasCount(5, host.Memory.Logs, "A record is kept when a processor throws on it.");
+        var reports = capture.Entries.Where(e => e.Category == BelemetryLogger.DiagnosticsCategory && e.Message.Contains(nameof(ThrowingProcessor), StringComparison.Ordinal)).ToList();
+        Assert.HasCount(1, reports);
+        Assert.AreEqual(LogLevel.Warning, reports[0].Level);
+    }
+
+    [TestMethod]
+    public async Task SelfTelemetry_CountsDropsAndExports_OnTheBitBelemetryMeter()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Metrics.Meters.Add(BelemetrySelfTelemetry.MeterName);
+            o.Batch.MaxQueueSize = 2;
+            o.AddProcessor(new TestProcessor()); // drops "drop"
+        });
+        host.StartLogging();
+
+        host.Pipeline.Enqueue(Log("drop", BelemetryFeatures.Logs));
+        for (var i = 0; i < 3; i++) host.Pipeline.Enqueue(Log("x" + i, BelemetryFeatures.Logs));
+        await host.FlushAsync();
+        await host.FlushAsync(includeMetrics: true);
+
+        long Value(string name, string key, string value) => host.Memory.Metrics.Last(m => m.Name == name).Points
+            .Single(p => p.Attributes.GetString(key) == value).LongValue;
+        Assert.AreEqual(1, Value("belemetry.records.dropped", "belemetry.reason", "filtered"));
+        Assert.AreEqual(1, Value("belemetry.records.dropped", "belemetry.reason", "queue_full"));
+        Assert.AreEqual(2, Value("belemetry.records.exported", "belemetry.outcome", "delivered"), "Counted inside the export, where other measurements are suppressed.");
+        Assert.AreEqual("in-memory", host.Memory.Metrics.Last(m => m.Name == "belemetry.records.exported").Points[0].Attributes.GetString("belemetry.exporter"));
+    }
+
+    [TestMethod]
+    public async Task APendingLimitOfZero_HoldsNothing_AndDoesNotThrow()
+    {
+        // It used to remove the first element of an empty list on the first undecided record.
+        await using var host = TestHost.Create(o => o.Consent.PendingLimit = 0, consentDefault: BelemetryFeatures.None);
+
+        host.Pipeline.Enqueue(Log("undecided", BelemetryFeatures.Logs));
+        host.Consent.Decide(BelemetryFeatures.All);
+        host.Pipeline.Enqueue(Log("decided", BelemetryFeatures.Logs));
+        await host.FlushAsync();
+
+        Assert.AreEqual("decided", host.Memory.Logs.Single().Body);
+    }
+
+    [TestMethod]
     public async Task MetricProcessors_CanDrop_AndMetricsNeedConsent()
     {
         using var meter = new Meter("Tests.Pipeline." + Guid.NewGuid().ToString("N"));
@@ -302,6 +396,29 @@ public class BelemetryPipelineTests
     }
 
     [TestMethod]
+    public async Task MetricPointAttributes_GoThroughThePrivacyRules()
+    {
+        using var meter = new Meter("Tests.Pipeline." + Guid.NewGuid().ToString("N"));
+        await using var host = TestHost.Create(o =>
+        {
+            o.Metrics.Meters.Add(meter.Name);
+            o.Privacy.BlockedAttributes.Add("tenant.id");
+        });
+        host.StartLogging();
+
+        meter.CreateCounter<int>("logins").Add(1,
+            new KeyValuePair<string, object?>("user.email", "jane@example.com"),
+            new KeyValuePair<string, object?>("api_key", "k-123"),
+            new KeyValuePair<string, object?>("tenant.id", "t-1"));
+        await host.FlushAsync(includeMetrics: true);
+
+        var attributes = host.Memory.Metrics.Single().Points.Single().Attributes;
+        Assert.AreEqual("[email]", attributes["user.email"]);
+        Assert.AreEqual("REDACTED", attributes["api_key"]);
+        Assert.IsFalse(attributes.Contains("tenant.id"));
+    }
+
+    [TestMethod]
     public async Task Enrichment_AddsSessionAndUserOnlyWithUserTracking()
     {
         await using var host = TestHost.Create(consentDefault: BelemetryFeatures.None);
@@ -325,6 +442,21 @@ public class BelemetryPipelineTests
         host.Consent.Decide(BelemetryFeatures.Logs);
         Assert.IsNull(host.Consent.PseudoId, "Revoking UserTracking forgets the ids.");
         Assert.IsNull(host.Consent.UserId);
+    }
+
+    [TestMethod]
+    public async Task Enrichment_DoesNotAddAnIdTheOperatorBlocked()
+    {
+        await using var host = TestHost.Create(o => o.Privacy.BlockedAttributes.Add("user.id"), consentDefault: BelemetryFeatures.None);
+        host.Consent.Decide(BelemetryFeatures.Logs | BelemetryFeatures.UserTracking);
+        host.Consent.SetContext("s-1", "pseudo-1", "user-1");
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs));
+
+        await host.FlushAsync();
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual("s-1", log.Attributes["session.id"]);
+        Assert.AreEqual("pseudo-1", log.Attributes["enduser.pseudo.id"]);
+        Assert.IsFalse(log.Attributes.Contains("user.id"));
     }
 
     [TestMethod]
@@ -393,6 +525,273 @@ public class BelemetryPipelineTests
         Assert.AreEqual("exception", logs[2].EventName);
         Assert.AreEqual(BelemetryFeatures.Errors, logs[2].Feature);
         Assert.AreEqual("System.InvalidOperationException", logs[2].Attributes["exception.type"]);
+    }
+
+    [TestMethod]
+    public async Task WithoutUserTracking_NoRecordCarriesAUserId_WhoeverPassesOne()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        using var scope = host.Services.CreateScope();
+        var api = (IBelemetry)ActivatorUtilities.CreateInstance<BelemetryService>(scope.ServiceProvider, new BelemetryJsBridge(
+            host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>(), new Bunit.BunitJSInterop().JSRuntime));
+        var logger = host.StartLogging().CreateLogger("MyApp.Checkout");
+
+        api.TrackEvent("checkout", new Dictionary<string, object?> { ["user.id"] = "jane@example.com", ["enduser.pseudo.id"] = "p", ["amount"] = 9.5 });
+        using (logger.BeginScope(new Dictionary<string, object?> { ["user.id"] = "jane@example.com", ["TenantId"] = "t1" }))
+        {
+            logger.LogInformation("Paid");
+        }
+
+        await host.FlushAsync();
+        var logs = host.Memory.Logs.ToList();
+        Assert.AreEqual(9.5, logs.Single(l => l.EventName == "checkout").Attributes["amount"]);
+        Assert.AreEqual("t1", logs.Single(l => l.Body == "Paid").Attributes["TenantId"]);
+        Assert.IsTrue(logs.All(l => l.Attributes.Contains("user.id") is false && l.Attributes.Contains("enduser.pseudo.id") is false), "Consent governs the user ids.");
+    }
+
+    [TestMethod]
+    public async Task WithoutUserTracking_ALogMessage_DoesNotRenderAUserId()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        var logger = host.StartLogging().CreateLogger("MyApp.Checkout");
+
+        logger.LogInformation("Paid by {user.id}", "u-42");
+        host.Consent.Decide(BelemetryFeatures.All);
+        logger.LogInformation("Paid by {user.id}", "u-42");
+        // The decision wakes the export loop, which may still be sending the first record.
+        await host.FlushUntilAsync(() => host.Memory.Logs.Count == 2);
+
+        var hidden = host.Memory.Logs.Single(l => l.Body == "Paid by {user.id}");
+        Assert.IsFalse(hidden.Attributes.Contains("user.id"), "The rendered message would carry the id the record may not.");
+        Assert.AreEqual("u-42", host.Memory.Logs.Single(l => l.Body == "Paid by u-42").Attributes["user.id"]);
+    }
+
+    [TestMethod]
+    public async Task WithoutUserTracking_NoSpanEventOrLinkCarriesAUserId()
+    {
+        await using var host = TestHost.Create(consentDefault: BelemetryFeatures.All);
+
+        static BelemetrySpan SpanWithIds(string name)
+        {
+            var span = Records.Span(name: name);
+            var e = new BelemetrySpanEvent { Name = "checkout" };
+            e.Attributes.Set("user.id", "u-42").Set("step", "pay");
+            span.Events.Add(e);
+            var link = new BelemetrySpanLink { TraceId = Records.LinkTraceId, SpanId = Records.LinkSpanId };
+            link.Attributes.Set("enduser.pseudo.id", "p-1");
+            span.Links.Add(link);
+            return span;
+        }
+
+        host.Pipeline.Enqueue(SpanWithIds("queued"));
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        host.Pipeline.Enqueue(SpanWithIds("after"));
+        await host.FlushAsync();
+
+        var spans = host.Memory.Spans.ToList();
+        Assert.HasCount(2, spans);
+        foreach (var span in spans)
+        {
+            Assert.IsFalse(span.Events.Single().Attributes.Contains("user.id"), span.Name);
+            Assert.AreEqual("pay", span.Events.Single().Attributes["step"]);
+            Assert.IsFalse(span.Links.Single().Attributes.Contains("enduser.pseudo.id"), span.Name);
+        }
+    }
+
+    [TestMethod]
+    public async Task RevokingUserTracking_TakesTheIdOutOfAQueuedLogMessage()
+    {
+        await using var host = TestHost.Create();
+        var logger = host.StartLogging().CreateLogger("MyApp.Checkout");
+
+        logger.LogInformation("Paid by {user.id}", "u-42");
+        host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        // The decision wakes the export loop, which may be the one to export it.
+        await host.FlushUntilAsync(() => host.Memory.Logs.Count == 1);
+
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual("Paid by {user.id}", log.Body, "Rendered while the id was granted, it falls back to its template as the id leaves.");
+        Assert.IsFalse(log.Attributes.Contains("user.id"));
+    }
+
+    [TestMethod]
+    public async Task WithoutUserTracking_AMetricPointCarriesNoUserId()
+    {
+        using var meter = new Meter("Tests.Pipeline." + Guid.NewGuid().ToString("N"));
+        await using var host = TestHost.Create(o => o.Metrics.Meters.Add(meter.Name), consentDefault: BelemetryFeatures.All & ~BelemetryFeatures.UserTracking);
+        host.StartLogging();
+
+        meter.CreateCounter<int>("logins").Add(1,
+            new KeyValuePair<string, object?>("user.id", "u-42"),
+            new KeyValuePair<string, object?>("enduser.pseudo.id", "p-1"),
+            new KeyValuePair<string, object?>("tenant.id", "t-1"));
+        await host.FlushAsync(includeMetrics: true);
+
+        var attributes = host.Memory.Metrics.Single().Points.Single().Attributes;
+        Assert.IsFalse(attributes.Contains("user.id"));
+        Assert.IsFalse(attributes.Contains("enduser.pseudo.id"));
+        Assert.AreEqual("t-1", attributes["tenant.id"]);
+    }
+
+    [TestMethod]
+    public async Task ARevokeDuringAnExport_WithdrawsTheBatchFromEveryExporterStillToGetIt()
+    {
+        var handler = new FakeHttpMessageHandler();
+        await using var host = TestHost.Create(o =>
+        {
+            o.Metrics.Meters.Add(BelemetrySelfTelemetry.MeterName);
+            o.AddOtlpExporter("http://collector.test:4318", e => e.Signals = BelemetrySignals.Logs);
+        }, configureServices: s => s.AddSingleton(new BelemetryHttpMessageHandlerProvider(handler)));
+        handler.Enqueue(System.Net.HttpStatusCode.ServiceUnavailable, r =>
+        {
+            r.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.Zero);
+            host.Consent.Decide(BelemetryFeatures.All & ~BelemetryFeatures.Logs);
+        });
+        host.StartLogging();
+
+        host.Pipeline.Enqueue(Log("paid", BelemetryFeatures.Logs));
+        await host.FlushAsync();
+        await host.FlushAsync(includeMetrics: true);
+
+        Assert.HasCount(1, handler.Requests, "Not retried.");
+        Assert.IsEmpty(host.Memory.Logs, "Nor handed to the exporters after it.");
+        var exported = host.Memory.Metrics.Last(m => m.Name == "belemetry.records.exported").Points;
+        long Withdrawn(string exporter) => exported.Single(p => p.Attributes.GetString("belemetry.exporter") == exporter && p.Attributes.GetString("belemetry.outcome") == "withdrawn").LongValue;
+        Assert.AreEqual(1, Withdrawn("otlp"));
+        Assert.AreEqual(1, Withdrawn("in-memory"));
+        Assert.IsFalse(exported.Any(p => p.Attributes.GetString("belemetry.outcome") == "failed"), "Withdrawn is not a delivery failure.");
+    }
+
+    [TestMethod]
+    public async Task ExportLoop_RunsOffTheStartersContext()
+    {
+        // The pipeline starts with the first resolution of the logger factory - on a MAUI/WPF UI thread, or inside a
+        // request. The loop must not resume on that thread's SynchronizationContext, nor carry its ambient Activity.
+        var probe = new ContextProbe();
+        await using var host = TestHost.Create(o =>
+        {
+            o.AddExporter(probe);
+            o.Batch.MaxBatchSize = 1;
+        });
+
+        var ui = new RecordingContext();
+        var previous = SynchronizationContext.Current;
+        var starter = new Activity("starter").Start();
+        SynchronizationContext.SetSynchronizationContext(ui);
+        try
+        {
+            host.StartLogging();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+            starter.Stop();
+        }
+
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs)); // a full batch wakes the loop
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+
+        Assert.AreEqual(1, probe.Exports, "The loop exported the full batch on its own.");
+        Assert.IsFalse(probe.SawContext, "The export ran on the starter's SynchronizationContext.");
+        Assert.IsNull(probe.Activity, "The export carried the starter's Activity.Current.");
+        Assert.AreEqual(0, ui.Posts);
+    }
+
+    [TestMethod]
+    public async Task Start_WithTheFlowAlreadySuppressed_StillStartsTheLoop()
+    {
+        // ExecutionContext.SuppressFlow throws when the flow is suppressed already - a library resolving services
+        // lazily inside its own suppressed block must not break logging.
+        var probe = new ContextProbe();
+        await using var host = TestHost.Create(o =>
+        {
+            o.AddExporter(probe);
+            o.Batch.MaxBatchSize = 1;
+        });
+
+        using (ExecutionContext.SuppressFlow())
+        {
+            host.StartLogging();
+        }
+
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs));
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (probe.Exports == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+        Assert.AreEqual(1, probe.Exports);
+    }
+
+    [TestMethod]
+    public void ExporterNames_AreTheContractTheScriptRetriesBy()
+    {
+        // transport.ts picks Azure Monitor's retry policy for requests .NET hands it by these names
+        // (/^azuremonitor\d*$/i); renaming an exporter would silently give its requests the OTLP policy.
+        var settings = TestHost.CreateSettings(o =>
+        {
+            o.AddOtlpExporter("http://a.test:4318");
+            o.AddOtlpExporter("http://b.test:4318");
+            o.AddAzureMonitorExporter("InstrumentationKey=00000000-0000-0000-0000-000000000001");
+            o.AddAzureMonitorExporter("InstrumentationKey=00000000-0000-0000-0000-000000000002");
+        });
+        var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+        var pipeline = new BelemetryPipeline(settings, new BelemetryConsentState(BelemetryFeatures.All, decided: true), services);
+
+        var names = pipeline.Exporters.HttpExporters.Select(e => e.Name).ToArray();
+
+        CollectionAssert.AreEqual(new[] { "otlp", "otlp1", "azuremonitor", "azuremonitor1" }, names);
+        Assert.IsTrue(names.Where(n => n.StartsWith("azure", StringComparison.Ordinal)).All(n => System.Text.RegularExpressions.Regex.IsMatch(n, @"^azuremonitor\d*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)));
+        Assert.IsFalse(names.Where(n => n.StartsWith("otlp", StringComparison.Ordinal)).Any(n => System.Text.RegularExpressions.Regex.IsMatch(n, @"^azuremonitor\d*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task Dispose_FlushesOnce_AndIsIdempotent()
+    {
+        await using var host = TestHost.Create();
+        host.StartLogging();
+        host.Pipeline.Enqueue(Log("a", BelemetryFeatures.Logs));
+
+        await host.Pipeline.DisposeAsync();
+        Assert.AreEqual("a", host.Memory.Logs.Single().Body, "Disposing flushes.");
+
+        // Again, and once more when the container disposes it.
+        await host.Pipeline.DisposeAsync();
+    }
+
+    private sealed class ContextProbe : IBelemetryExporter
+    {
+        public string Name => "context-probe";
+
+        public int Exports { get; private set; }
+
+        public bool SawContext { get; private set; }
+
+        public Activity? Activity { get; private set; }
+
+        public ValueTask<BelemetryExportResult> ExportAsync(BelemetryBatch batch, CancellationToken cancellationToken)
+        {
+            SawContext |= SynchronizationContext.Current is RecordingContext;
+            Activity ??= Activity.Current;
+            Exports++;
+            return ValueTask.FromResult(BelemetryExportResult.Success);
+        }
+    }
+
+    /// <summary>Stands for a UI thread's context: runs posted work on the thread pool, as itself.</summary>
+    private sealed class RecordingContext : SynchronizationContext
+    {
+        private int _posts;
+
+        public int Posts => _posts;
+
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            Interlocked.Increment(ref _posts);
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                SetSynchronizationContext(this);
+                d(state);
+            });
+        }
     }
 
     private sealed class TestProcessor : IBelemetryProcessor

@@ -1,0 +1,18 @@
+﻿@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/Admin" Guard="@Deny">
+        <Content><div data-testid="secret">should not render</div></Content>
+    </Broute>
+    <Broute Path="/admin">
+        <Content><div data-testid="login">login</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    private ValueTask Deny(BrouterNavigationContext ctx)
+    {
+        ctx.Redirect("/admin");
+        return ValueTask.CompletedTask;
+    }
+}

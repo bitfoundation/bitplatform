@@ -108,7 +108,7 @@ public partial class BitButtonStylesheetTests
         // A button can sit in the child content or a template of another one, which must not inherit the outer button's
         // Color, Size or Rounded: each root starts the values those classes publish out unset, and the classes - declared
         // further down at the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-btn-clr", "--bit-btn-clr-txt", "--bit-btn-clr-hover", "--bit-btn-clr-active", "--bit-btn-clr-focus",
+        foreach (var property in new[] { "--bit-btn-clr", "--bit-btn-clr-fg", "--bit-btn-clr-txt", "--bit-btn-clr-hover", "--bit-btn-clr-active", "--bit-btn-clr-focus",
                                          "--bit-btn-clr-dis", "--bit-btn-clr-dis-text", "--bit-btn-lbl-fontsize", "--bit-btn-prt-fontsize",
                                          "--bit-btn-sct-fontsize", "--bit-btn-icn-size", "--bit-btn-spn-size", "--bit-btn-min-height",
                                          "--bit-btn-icn-margintop", "--bit-btn-gap", "--bit-btn-pad-ntx", "--bit-btn-padding", "--bit-btn-radius",
@@ -117,6 +117,25 @@ public partial class BitButtonStylesheetTests
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
+    }
+
+    [TestMethod,
+        DataRow(".bit-btn-otl", "outline"),
+        DataRow(".bit-btn-txt", "text")]
+    public void BitButtonShouldDrawTheLabelOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The label of an Outline or Text button sits on the page rather than on the role's fill, so it is drawn in the
+        // role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{"),
+                              $"color: var(--bit-btn-sfg, var(--bit-btn-clr-fg, var(--bit-Button-{variant}-color, var(--bit-Button-color, var(--bit-btn-dft-clr-fg, #{{$clr-pri}})))));");
+
+        // Only the label: the outline keeps the role's main, which is what keeps the button reading as that role.
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-outline-border-color, ");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btn-#{$role} {"), "--bit-btn-clr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btn-dft-#{$role} {"), "--bit-btn-dft-clr-fg: #{role-text($role, $tokens)};");
     }
 
     [TestMethod]

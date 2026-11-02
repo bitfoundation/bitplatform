@@ -93,7 +93,7 @@
         <div class="bb-fields">
             <label class="bb-field">
                 Backend
-                <select @bind="_importProvider">
+                <select @bind="ImportProvider">
                     @foreach (var provider in Database.Providers)
                     {
                         <option value="@provider.Name">@SampleStorage.Title(provider.Name)</option>
@@ -132,23 +132,36 @@
     private string? _error;
     private string? _info;
     private bool _busy;
-    private string _importProvider = "opfs";
+    // The backend the reader picked to import into; until they pick one, the backend the session is on.
+    private string? _importPicked;
     private byte[]? _importBytes;
 
     private static Task NoopAsync() => Task.CompletedTask;
 
+    private string ImportProvider
+    {
+        get => _importPicked ?? Database.Resolution?.Provider.Name ?? "opfs";
+        set => _importPicked = value;
+    }
+
     private async Task LoadAsync()
     {
+        string? failure = null;
         try
         {
             await Database.EnsureSessionAsync();
-            _importProvider = Database.Resolution?.Provider.Name ?? "opfs";
-            await ListAllAsync();
         }
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
-            _error = ex.Message;
+            failure = ex.Message;
+        }
+
+        // Listed whether or not the database opened: one that does not open is the one to find here.
+        await ListAllAsync();
+        if (failure is not null)
+        {
+            _error = failure;
         }
     }
 
@@ -217,7 +230,19 @@
             await using var stream = args.File.OpenReadStream(maxAllowedSize: 32 * 1024 * 1024);
             using var memory = new MemoryStream();
             await stream.CopyToAsync(memory);
-            _importBytes = memory.ToArray();
+            var bytes = memory.ToArray();
+
+            // Refused here rather than on the next open: once imported and bound, a file that is not a
+            // database would fail every page until it was deleted.
+            if (bytes.Length > 0 && !bytes.AsSpan().StartsWith("SQLite format 3\0"u8))
+            {
+                _importBytes = null;
+                _info = null;
+                _error = $"{args.File.Name} is not a SQLite database: it does not start with the 'SQLite format 3' header.";
+                return;
+            }
+
+            _importBytes = bytes;
             _info = $"Ready to import {args.File.Name} ({SampleFormat.Bytes(_importBytes.LongLength)}).";
         }
         catch (Exception ex)
@@ -235,10 +260,10 @@
         }
 
         var provider = Database.Providers.FirstOrDefault(p =>
-            string.Equals(p.Name, _importProvider, StringComparison.OrdinalIgnoreCase));
+            string.Equals(p.Name, ImportProvider, StringComparison.OrdinalIgnoreCase));
         if (provider is null)
         {
-            _error = $"No registered provider named {_importProvider}.";
+            _error = $"No registered provider named {ImportProvider}.";
             return;
         }
 
@@ -247,11 +272,15 @@
         _info = null;
         try
         {
-            await Database.CloseSessionAsync();
-            await provider.Admin.ImportAsync(BrowserDatabase.DatabaseName, _importBytes);
-            await Database.Bindings.SetProviderNameAsync(BrowserDatabase.DatabaseName, provider.Name);
+            var bytes = _importBytes;
+            await Database.WhileClosedAsync(async ct =>
+            {
+                await provider.Admin.ImportAsync(BrowserDatabase.DatabaseName, bytes, ct);
+                await Database.Bindings.SetProviderNameAsync(BrowserDatabase.DatabaseName, provider.Name, ct);
+            });
 
-            // Reopened here so migrations and the seed run before the pages come back for it.
+            // Opened here as well, for a database that was not open before: migrations and the seed run
+            // before the pages come back for it.
             await using (await Database.OpenContextAsync())
             {
             }
@@ -261,6 +290,10 @@
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
+
+            // Listed again all the same: an import that fails to reopen has still replaced the file and
+            // moved the binding, and the lists are where the reader finds it to delete.
+            await ListAllAsync();
             _error = ex.Message;
         }
         finally
@@ -276,11 +309,16 @@
         _info = null;
         try
         {
+            // From the binding when no session is open: a database that no longer opens - a file that
+            // is not a database, say - is the one most in need of deleting.
             var provider = Database.Resolution?.Provider
-                ?? throw new InvalidOperationException("Open a session before deleting.");
-            await Database.CloseSessionAsync();
-            await provider.Admin.DeleteAsync(BrowserDatabase.DatabaseName);
-            await Database.Bindings.RemoveAsync(BrowserDatabase.DatabaseName);
+                ?? await Database.BoundProviderAsync()
+                ?? throw new InvalidOperationException("There is nothing to delete: no session is open, and no backend holds the database.");
+            await Database.WhileClosedAsync(async ct =>
+            {
+                await provider.Admin.DeleteAsync(BrowserDatabase.DatabaseName, ct);
+                await Database.Bindings.RemoveAsync(BrowserDatabase.DatabaseName, ct);
+            });
 
             await using (await Database.OpenContextAsync())
             {
@@ -291,6 +329,7 @@
         catch (Exception ex)
         {
             SampleLog.Exception(ex);
+            await ListAllAsync();
             _error = ex.Message;
         }
         finally

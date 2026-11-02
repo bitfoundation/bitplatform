@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Text.Json.Nodes;
 using Bit.Bink.Demo.Server.Dtos;
+using Bit.Bink.Demo.Server.Services;
 
 namespace Bit.Bink.Tests.Mcp;
 
@@ -163,6 +164,38 @@ public class McpDocumentLabTests
 
         Assert.IsFalse(report.Valid);
         Assert.IsTrue(report.Notes.Any(note => note.Contains("2097152 bytes", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task A_document_too_costly_to_rasterize_is_reported_without_rendering_it()
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 500, Height = 500 });
+        var builder = new BinkPathBuilder(50_004).MoveTo(0, 0);
+        for (var i = 0; i < 50_000; i++) builder.LineTo(i / 100f, (i & 1) == 0 ? 500 : 0);
+        document.AddElement(new BinkPathElement(builder.Close().ToGeometry()) { Style = new BinkShapeStyle { FillColor = BinkColor.Black, StrokeWidth = 0 } });
+
+        var report = await InspectAsync(BinkSerializer.Serialize(document));
+
+        Assert.IsTrue(report.Valid);
+        Assert.IsNull(report.Png);
+        Assert.IsTrue(report.Notes.Any(note => note.Contains("could not render", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task An_svg_that_repeats_a_shared_picture_is_cut_at_the_limit()
+    {
+        var png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
+        var source = BinkImageSource.FromBytes([.. png, .. new byte[20_000]], "image/png", 1, 1);
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 400, Height = 400 });
+        for (var i = 0; i < 200; i++) document.AddElement(new BinkImageElement(source, new BinkRect(i, i, 20, 20)));
+        var json = BinkSerializer.Serialize(document);
+
+        var report = await InspectAsync(json, includeSvg: true);
+
+        Assert.IsTrue(report.Valid);
+        Assert.IsLessThanOrEqualTo(BinkDocumentLab.MaxSvgLength, report.Svg!.Length);
+        Assert.StartsWith(report.Svg, BinkSvgExporter.Export(BinkSerializer.Deserialize(json)));
+        Assert.IsTrue(report.Notes.Any(note => note.Contains($"longer than {BinkDocumentLab.MaxSvgLength} characters", StringComparison.Ordinal)));
     }
 
     internal static Task<BinkDocumentReportDto> InspectAsync(string? json, bool includeSvg = false, string? region = null)

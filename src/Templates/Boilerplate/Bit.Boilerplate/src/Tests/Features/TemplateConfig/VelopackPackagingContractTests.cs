@@ -40,7 +40,7 @@ public class VelopackPackagingContractTests
         Assert.AreNotEqual(string.Empty, libraryVersion, "No Velopack PackageVersion in src/Directory.Packages.props - if the package was renamed or removed, retarget this test rather than deleting it.");
 
         // both pipelines pack with it, and either one of them can be the one that drifts
-        foreach (var pipeline in (string[])[".github/workflows/cd-template.yml", ".azure-devops/workflows/cd.yml"])
+        foreach (var pipeline in (string[])[".github/workflows/cd-template.yml"])
         {
             var toolVersion = Regex.Match(ReadTemplateFile(pipeline), @"dnx\s+vpk@(?<version>[^\s]+)").Groups["version"].Value;
 

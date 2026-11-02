@@ -287,6 +287,11 @@ public static class BdndApiCatalog
             // same on every record and documented nowhere; listing it on each of the library's many records
             // would bury the members someone wrote on purpose.
             if (method.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), inherit: false)) continue;
+            // An override of what every object has, which the type does not document, says nothing about the
+            // type - and split into words it answers questions it has nothing to do with: to a search,
+            // GetHashCode is "code", and the top hit for anything done from code.
+            var summary = Documentation(method, BdndXmlDocs.GetSummary);
+            if (summary is null && method.Name is "Equals" or "GetHashCode" or "ToString") continue;
             if (IsHidden(method)) continue;
 
             // A generic method is named with its type parameters: IBdndMonitor.GetItem<T>() and GetItem()
@@ -302,7 +307,7 @@ public static class BdndApiCatalog
                 Kind = "Method",
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
-                Summary = Documentation(method, BdndXmlDocs.GetSummary),
+                Summary = summary,
                 Remarks = Documentation(method, BdndXmlDocs.GetRemarks)
             };
         }

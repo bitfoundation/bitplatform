@@ -3,32 +3,51 @@
 <PageTitle>Click Distance · Blow</PageTitle>
 
 <ExampleScaffold Title="Click Distance"
-                 Summary="NodeClickDistance and PaneClickDistance set how far the pointer may travel between press and release and still count as a click. Press a node or the empty pane, move a little, and let go: within the distance OnNodeClick / OnPaneClick still fire; past it the gesture was a drag or a pan, and the click is suppressed.">
+                 Summary="A hand on a mouse or a finger on a screen wobbles. NodeClickDistance and PaneClickDistance set how far the pointer may travel between press and release and still count as a click, so OnNodeClick and OnPaneClick are not lost to a shaky hand; NodeDragThreshold sets how far it must travel before the node starts to move.">
     <Toolbar>
-        <label>node click distance:
+        <label>Node click distance @_nodeDistance px
             <input type="range" min="0" max="60" step="1" value="@_nodeDistance"
-                   @oninput="e => _nodeDistance = int.Parse(e.Value!.ToString()!)" />
-            @_nodeDistance px
+                   @oninput="@(e => _nodeDistance = int.Parse(e.Value!.ToString()!))" />
         </label>
-        <label>pane click distance:
+        <label>Pane click distance @_paneDistance px
             <input type="range" min="0" max="60" step="1" value="@_paneDistance"
-                   @oninput="e => _paneDistance = int.Parse(e.Value!.ToString()!)" />
-            @_paneDistance px
+                   @oninput="@(e => _paneDistance = int.Parse(e.Value!.ToString()!))" />
+        </label>
+        <label>Drag threshold @_dragThreshold px
+            <input type="range" min="0" max="60" step="1" value="@_dragThreshold"
+                   @oninput="@(e => _dragThreshold = int.Parse(e.Value!.ToString()!))" />
         </label>
         <span class="bb-muted">
-            node clicks: <strong>@_nodeClicks</strong> · pane clicks: <strong>@_paneClicks</strong> · last: @_last
+            node clicks: <strong>@_nodeClicks</strong> · pane clicks: <strong>@_paneClicks</strong> · node moves: <strong>@_nodeMoves</strong> · last: @_last
         </span>
     </Toolbar>
     <ChildContent>
         <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
                     NodeClickDistance="_nodeDistance"
                     PaneClickDistance="_paneDistance"
+                    NodeDragThreshold="_dragThreshold"
                     OnNodeClick="OnNodeClick"
-                    OnPaneClick="OnPaneClick">
+                    OnPaneClick="OnPaneClick"
+                    OnNodeDragStart="OnNodeDragStart"
+                    OnNodeDragStop="OnNodeDragStop">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Click</strong> a node: <strong>node clicks</strong> goes up and <strong>last</strong> names it. <strong>Click</strong> the empty background: <strong>pane clicks</strong> goes up.</li>
+        <li><strong>Press</strong> a node, move a few pixels and let go: the node moves (<strong>node moves</strong> goes up) and it still counts as a click, because the pointer stayed within the node click distance (20 px to begin with).</li>
+        <li><strong>Drag</strong> a node further than that: it moves, but no click is reported. Do the same on the background: past the pane click distance the press was a pan, not a click.</li>
+        <li>Drag <strong>Node click distance</strong> or <strong>Pane click distance</strong> to 0 and even the slightest wobble stops being a click; raise them and longer slips still count.</li>
+        <li>Raise <strong>Drag threshold</strong> to the node click distance: now a small wobble neither moves the node nor stops being a click - the node only moves once the press is clearly a drag.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>NodeClickDistance</code> (3 px by default; 20 here) is how far the pointer may travel during a press on a node and still raise <code>OnNodeClick</code> with the <code>BlowNode</code> on release.</li>
+        <li><code>PaneClickDistance</code> (3 px; 20 here) does the same for <code>OnPaneClick</code> on the empty pane, which carries the <code>MouseEventArgs</code>. Past it the press was a pan, and a click that would also have cleared the selection does nothing.</li>
+        <li><code>NodeDragThreshold</code> (1 px) is how far the pointer must travel before the node starts to follow it. It is independent of the click distance, so with the defaults a press that moves 2 px both moves the node and is a click.</li>
+        <li>All three are measured in screen pixels, so they feel the same at any zoom.</li>
+        <li><code>OnNodeDragStart</code> and <code>OnNodeDragStop</code> are raised for every press on a draggable node, moved or not; the page compares the node's <code>Position</code> between the two to count the presses that actually moved it.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {
@@ -36,9 +55,12 @@
     private List<BlowEdge> _edges = [];
     private int _nodeDistance = 20;
     private int _paneDistance = 20;
+    private int _dragThreshold = 1;
     private int _nodeClicks;
     private int _paneClicks;
+    private int _nodeMoves;
     private string _last = "-";
+    private BlowXYPosition _pressedAt;
 
     protected override void OnInitialized()
     {
@@ -61,5 +83,12 @@
     {
         _paneClicks++;
         _last = "click on the pane";
+    }
+
+    private void OnNodeDragStart(BlowNode node) => _pressedAt = node.Position;
+
+    private void OnNodeDragStop(BlowNode node)
+    {
+        if (node.Position != _pressedAt) _nodeMoves++;
     }
 }

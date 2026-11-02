@@ -79,6 +79,18 @@ public sealed class BcrdtTransaction
     internal bool IntegratedRemoteContent { get; set; }
 
     /// <summary>
+    /// Whether blocks from an update are being placed right now - as opposed to blocks this replica is
+    /// creating, which is everything placed while this is false.
+    /// </summary>
+    /// <remarks>
+    /// What a block may do differs between the two: a local insertion that breaks a rule is refused with
+    /// an exception to its caller, while a block from a peer that breaks the same rule is dropped the same
+    /// way on every replica. Deciding by the block's identifier instead would let a peer forge one that
+    /// looks local.
+    /// </remarks>
+    internal bool IntegratingRemoteBlocks { get; set; }
+
+    /// <summary>
     /// Whether this transaction integrated content carrying the document's own client identifier
     /// that arrived from somewhere else - the proof that another replica is using the same identity.
     /// </summary>
@@ -116,9 +128,33 @@ public sealed class BcrdtTransaction
         }
     }
 
+    /// <summary>
+    /// Deleted content an undo stack stopped protecting, to be reclaimed when this transaction settles.
+    /// </summary>
+    /// <remarks>
+    /// The collector otherwise only looks at what a transaction deleted, so content that was kept for
+    /// an undo step deleted long ago would be released and then never reclaimed.
+    /// </remarks>
+    internal BcrdtDeleteSet? ReleasedForCollection { get; private set; }
+
+    internal void ReleaseForCollection(BcrdtDeleteSet ranges)
+    {
+        ReleasedForCollection ??= new BcrdtDeleteSet();
+        foreach ((ulong client, List<BcrdtDeleteRange> clientRanges) in ranges.Clients)
+        {
+            foreach (BcrdtDeleteRange range in clientRanges) ReleasedForCollection.Add(client, range.Clock, range.Length);
+        }
+    }
+
     /// <summary>Records that a type changed, so an event is raised for it at commit.</summary>
     internal void AddChangedType(BcrdtAbstractType type, string? key)
     {
+        // Content placed from an update can land anywhere in the type, so index positions cached on
+        // the assumption of local edits only are void from this moment - not just from when the
+        // type's observer runs. A local edit later in the same transaction, or one an observer of
+        // another type makes before this type's observer has run, must not look them up.
+        if (IntegratedRemoteContent) type.InvalidateSearchMarkers();
+
         BcrdtItem? item = type.ContainingItem;
 
         // A type created during this very transaction has nothing to report: subscribers never saw

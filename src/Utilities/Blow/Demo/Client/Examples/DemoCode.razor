@@ -1,8 +1,9 @@
 ﻿@namespace Bit.Blow.Demo.Client.Examples
 @inject NavigationManager Nav
 
-@* A collapsible "View code" panel that shows the .razor source of the current demo page.
-   The source is resolved from the build-generated DemoSources lookup, keyed by route. *@
+@* A collapsible "View code" panel under a demo's sample that shows the .razor source of the current page,
+   coloured as a CodeBlock. The source is resolved from the build-generated DemoSources lookup, keyed by
+   route. *@
 
 <div class="bb-source demo-code">
     <button type="button"
@@ -14,16 +15,14 @@
         @(_open ? "Hide code" : "View code")
     </button>
 
-    @if (_open)
+    @if (_source is not null)
     {
-        @if (_source is null)
-        {
-            <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
-        }
-        else
-        {
-            <pre class="bb-code demo-code__pre"><code class="demo-code__code">@_source</code></pre>
-        }
+        @* Kept once shown, and hidden while the panel is closed, so that opening it again does not lex the page again. *@
+        <CodeBlock Code="@_source" Class="demo-code__pre" hidden="@(!_open)" />
+    }
+    else if (_open)
+    {
+        <div class="bb-empty demo-code__empty">Source for this page is not available.</div>
     }
 </div>
 

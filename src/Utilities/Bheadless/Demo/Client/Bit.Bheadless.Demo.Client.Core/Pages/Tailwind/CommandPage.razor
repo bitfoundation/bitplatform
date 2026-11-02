@@ -1,0 +1,785 @@
+﻿@page "/tw/command"
+
+<PageTitle>Command Palette — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Command Palette</h1>
+        <p class="mt-2 text-zinc-500">A cmdk-style command menu — fuzzy search, groups, nested pages and a ⌘K palette — with zero visual opinion.</p>
+        <TwSectionSwitcher Slug="command" />
+    </header>
+
+    <TwDemoBlock Title="Inline command menu" Code="@_basicCode">
+        <Description>
+            A search field over a filterable list of actions. The input is a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">combobox</code> that drives a
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">listbox</code> through <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-activedescendant</code>, so focus never leaves it. Type to
+            fuzzy-filter — "smiley" finds Search emoji through its <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Keywords</code> — then use ↑ / ↓
+            (or Ctrl+N / Ctrl+P), Alt+↑ / Alt+↓ to jump between groups, and Enter to run. Empty groups hide,
+            separators disappear while searching, the disabled item is skipped, and the result count is announced.
+        </Description>
+        <LiveContent>
+            <BitBhCommand Label="Command menu" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+                <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+                    <span class="text-zinc-400" aria-hidden="true">⌕</span>
+                    <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Type a command or search…" />
+                </div>
+                <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+                    <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
+                    <BitBhCommandGroup Heading="Suggestions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                        <BitBhCommandItem Value="Calendar" OnSelect='@(() => Run("Calendar"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">📅</span> Calendar
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Search emoji" Keywords='@(["emoji", "smiley", "reaction"])'
+                                       OnSelect='@(() => Run("Search emoji"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">😀</span> Search emoji
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Calculator" Disabled="true" class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">🧮</span> Calculator
+                        </BitBhCommandItem>
+                    </BitBhCommandGroup>
+                    <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
+                    <BitBhCommandGroup Heading="Settings" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                        <BitBhCommandItem Value="Profile" OnSelect='@(() => Run("Profile"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">👤</span> Profile
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘P</span>
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Billing" Keywords='@(["invoice", "payment", "plan"])'
+                                       OnSelect='@(() => Run("Billing"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">💳</span> Billing
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘B</span>
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Settings" Keywords='@(["preferences", "options"])'
+                                       OnSelect='@(() => Run("Settings"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">⚙️</span> Settings
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘S</span>
+                        </BitBhCommandItem>
+                    </BitBhCommandGroup>
+                </BitBhCommandList>
+            </BitBhCommand>
+
+            <span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Nested pages" Code="@_pagesCode">
+        <Description>
+            Turn one menu into a drill-down. Wrap each level in a <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhCommandPage</code> (no
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Name</code> = the root) and navigate with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">PushPageAsync</code> on the context its
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Template</code> receives — the search clears on every push. Backspace in an empty input goes
+            back one level, and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">PageChanged</code> keeps the breadcrumb in sync. Try Settings → Change theme.
+        </Description>
+        <LiveContent>
+            <BitBhCommand Label="Workspace commands" PageChanged="OnPageChanged" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+                <div class="flex flex-wrap items-center gap-1.5 px-3.5 pt-2.5 text-xs text-zinc-500">
+                    <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-700">Home</span>
+                    @foreach (var crumb in crumbs)
+                    {
+                        <span class="text-zinc-300" aria-hidden="true">›</span>
+                        <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-700">@crumb</span>
+                    }
+                    @if (crumbs.Count > 0)
+                    {
+                        <span class="ml-auto text-zinc-400">Backspace to go back</span>
+                    }
+                </div>
+                <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+                    <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="@PagePlaceholder" />
+                </div>
+                <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+                    <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
+
+                    <BitBhCommandPage>
+                        <Template Context="cmd">
+                            <BitBhCommandGroup Heading="Workspace" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                                <BitBhCommandItem Value="Search projects" OnSelect='@(() => cmd.PushPageAsync("Projects"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                                    <span class="w-5 shrink-0 text-center" aria-hidden="true">📁</span> Search projects…
+                                    <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
+                                </BitBhCommandItem>
+                                <BitBhCommandItem Value="Settings" OnSelect='@(() => cmd.PushPageAsync("Settings"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                                    <span class="w-5 shrink-0 text-center" aria-hidden="true">⚙️</span> Settings…
+                                    <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
+                                </BitBhCommandItem>
+                                <BitBhCommandItem Value="Invite teammates" OnSelect='@(() => CompleteAsync(cmd, "Invite teammates"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                                    <span class="w-5 shrink-0 text-center" aria-hidden="true">✉️</span> Invite teammates
+                                </BitBhCommandItem>
+                            </BitBhCommandGroup>
+                        </Template>
+                    </BitBhCommandPage>
+
+                    <BitBhCommandPage Name="Projects">
+                        <Template Context="cmd">
+                            @foreach (var project in projects)
+                            {
+                                <BitBhCommandItem Value="@project" OnSelect='@(() => CompleteAsync(cmd, $"Open {project}"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                                    <span class="w-5 shrink-0 text-center" aria-hidden="true">📁</span> @project
+                                </BitBhCommandItem>
+                            }
+                        </Template>
+                    </BitBhCommandPage>
+
+                    <BitBhCommandPage Name="Settings">
+                        <Template Context="cmd">
+                            <BitBhCommandItem Value="Change theme" OnSelect='@(() => cmd.PushPageAsync("Theme"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                                <span class="w-5 shrink-0 text-center" aria-hidden="true">🎨</span> Change theme…
+                                <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
+                            </BitBhCommandItem>
+                            <BitBhCommandItem Value="Notifications" OnSelect='@(() => CompleteAsync(cmd, "Notification settings"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                                <span class="w-5 shrink-0 text-center" aria-hidden="true">🔔</span> Notifications
+                            </BitBhCommandItem>
+                        </Template>
+                    </BitBhCommandPage>
+
+                    <BitBhCommandPage Name="Theme">
+                        <Template Context="cmd">
+                            @foreach (var option in themes)
+                            {
+                                <BitBhCommandItem Value="@option" OnSelect='@(() => SetThemeAsync(cmd, option))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                                    @option
+                                    @if (option == theme)
+                                    {
+                                        <span class="ml-auto font-semibold text-blue-600" aria-hidden="true">✓</span>
+                                    }
+                                </BitBhCommandItem>
+                            }
+                        </Template>
+                    </BitBhCommandPage>
+                </BitBhCommandList>
+            </BitBhCommand>
+
+            <span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong> · Theme: <strong class="text-zinc-900">@theme</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="⌘K command palette" Code="@_dialogCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhCommandDialog</code> puts a command menu in a modal dialog and registers a global
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Shortcut</code> (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">"mod+k"</code> = ⌘K on macOS, Ctrl+K elsewhere — press it anywhere on this page).
+            Running a command closes the palette, Escape or an outside click dismisses it, and focus returns where it was.
+            Drive it with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Open</code>; <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OpenChanged</code> reports the changes the palette makes itself
+            (shortcut, Escape, outside click, running a command).
+        </Description>
+        <LiveContent>
+            <button type="button" class="flex w-full max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-zinc-300 bg-white py-2 pr-2 pl-3 text-left text-sm text-zinc-500 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" @onclick="() => paletteOpen = true">
+                <span class="text-zinc-400" aria-hidden="true">⌕</span>
+                Search or jump to…
+                <span class="ml-auto inline-flex gap-0.5" aria-hidden="true">
+                    <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">Ctrl</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">K</kbd>
+                </span>
+            </button>
+
+            <BitBhCommandDialog Open="paletteOpen" OpenChanged="OnPaletteOpenChanged" Shortcut="mod+k"
+                             Label="Command palette" Loop="true"
+                             OverlayClass="fixed inset-0 bg-zinc-900/45 backdrop-blur-[2px]"
+                             ContentClass="relative z-10 mx-auto mt-[12vh] w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl outline-none transition duration-150 ease-out starting:scale-98 starting:opacity-0"
+                             CommandClass="flex flex-col">
+                <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+                    <span class="text-zinc-400" aria-hidden="true">⌕</span>
+                    <BitBhCommandInput class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Type a command or search…" />
+                    <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600" aria-hidden="true">Esc</kbd>
+                </div>
+                <BitBhCommandList class="max-h-[min(22rem,50vh)] scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+                    <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
+                    <BitBhCommandGroup Heading="Actions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                        <BitBhCommandItem Value="New document" OnSelect='@(() => Run("New document"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">📝</span> New document
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘N</span>
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Share" Keywords='@(["invite", "link", "collaborate"])'
+                                       OnSelect='@(() => Run("Share"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">🔗</span> Share…
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Duplicate" OnSelect='@(() => Run("Duplicate"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">📄</span> Duplicate
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘D</span>
+                        </BitBhCommandItem>
+                    </BitBhCommandGroup>
+                    <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
+                    <BitBhCommandGroup Heading="Appearance" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                        <BitBhCommandItem Value="Toggle dark mode" Keywords='@(["theme", "night", "light"])'
+                                       OnSelect='@(() => Run("Toggle dark mode"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">🌙</span> Toggle dark mode
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Zoom in" Keywords='@(["bigger", "font size"])'
+                                       OnSelect='@(() => Run("Zoom in"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">🔍</span> Zoom in
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘+</span>
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Zoom out" Keywords='@(["smaller", "font size"])'
+                                       OnSelect='@(() => Run("Zoom out"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">🔎</span> Zoom out
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘−</span>
+                        </BitBhCommandItem>
+                    </BitBhCommandGroup>
+                    <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
+                    <BitBhCommandGroup Heading="Help" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                        <BitBhCommandItem Value="Keyboard shortcuts" OnSelect='@(() => Run("Keyboard shortcuts"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">⌨️</span> Keyboard shortcuts
+                            <span class="ml-auto text-xs tracking-widest text-zinc-500">?</span>
+                        </BitBhCommandItem>
+                        <BitBhCommandItem Value="Contact support" Keywords='@(["help", "email", "feedback"])'
+                                       OnSelect='@(() => Run("Contact support"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">💬</span> Contact support
+                        </BitBhCommandItem>
+                    </BitBhCommandGroup>
+                </BitBhCommandList>
+                <div class="flex items-center gap-4 border-t border-zinc-200 bg-zinc-50 px-3.5 py-2 text-xs text-zinc-500" aria-hidden="true">
+                    <span class="inline-flex items-center gap-1"><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">↑</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">↓</kbd> navigate</span>
+                    <span class="inline-flex items-center gap-1"><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">↵</kbd> run</span>
+                    <span class="inline-flex items-center gap-1"><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">Esc</kbd> close</span>
+                </div>
+            </BitBhCommandDialog>
+
+            <span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong> · Opened by the palette itself: <strong class="text-zinc-900">@selfOpens</strong>×</span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Server-side search" Code="@_serverCode">
+        <Description>
+            Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">ShouldFilter="false"</code> when results come from somewhere else (an API, a database):
+            the menu then renders exactly the items you give it. Handle <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">SearchChanged</code>, fetch, and
+            re-render the list — highlight, keyboard navigation, the empty state and the results announcement keep
+            working. This demo fakes a 350 ms round-trip and drops stale responses.
+        </Description>
+        <LiveContent>
+            <BitBhCommand Label="Search the docs" ShouldFilter="false" SearchChanged="SearchDocsAsync" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+                <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+                    <span class="text-zinc-400" aria-hidden="true">⌕</span>
+                    <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Search components…" />
+                    @if (searching)
+                    {
+                        <span class="size-4 shrink-0 animate-spin rounded-full border-2 border-zinc-200 border-t-blue-600" aria-hidden="true"></span>
+                    }
+                </div>
+                <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+                    @if (!searching)
+                    {
+                        <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No components match “@docsQuery”.</BitBhCommandEmpty>
+                    }
+                    @foreach (var doc in docResults)
+                    {
+                        <BitBhCommandItem @key="doc.Name" Value="@doc.Name" OnSelect='@(() => Run($"Open {doc.Name} docs"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <span class="w-5 shrink-0 text-center" aria-hidden="true">📄</span>
+                            <span class="flex min-w-0 flex-col leading-tight">
+                                <span class="font-medium">@doc.Name</span>
+                                <span class="truncate text-xs text-zinc-600">@doc.Summary</span>
+                            </span>
+                        </BitBhCommandItem>
+                    }
+                </BitBhCommandList>
+            </BitBhCommand>
+
+            <span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Relevance sorting and highlight binding" Code="@_sortedCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Sort="true"</code> ranks matches by relevance through the CSS <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">order</code> property (so the
+            list is a flex column) and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Loop="true"</code> wraps the arrow keys. <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-Value</code>
+            follows the highlighted item, and an item's <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Template</code> receives whether it is highlighted —
+            here it reveals an ↵ hint. Type "bar" and watch the best matches move to the top.
+        </Description>
+        <LiveContent>
+            <BitBhCommand Label="Go to file" Sort="true" Loop="true" @bind-Value="highlightedFile" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+                <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+                    <span class="text-zinc-400" aria-hidden="true">⌕</span>
+                    <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Go to file…" />
+                </div>
+                <BitBhCommandList class="flex max-h-72 scroll-py-1.5 flex-col overflow-y-auto overscroll-contain p-1.5">
+                    <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No matching files.</BitBhCommandEmpty>
+                    @foreach (var file in files)
+                    {
+                        <BitBhCommandItem Value="@file" OnSelect='@(() => Run($"Open {file}"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                            <Template Context="highlighted">
+                                <span class="w-5 shrink-0 text-center" aria-hidden="true">@(file.EndsWith(".razor") ? "🧩" : "📄")</span>
+                                @file
+                                @if (highlighted)
+                                {
+                                    <kbd class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600" aria-hidden="true">↵</kbd>
+                                }
+                            </Template>
+                        </BitBhCommandItem>
+                    }
+                </BitBhCommandList>
+            </BitBhCommand>
+
+            <span class="text-sm text-zinc-500">Highlighted: <strong class="text-zinc-900">@(highlightedFile ?? "(none)")</strong> · Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong></span>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private string? lastCommand;
+
+    private void Run(string command) => lastCommand = command;
+
+    // ── Nested pages ───────────────────────────────────────────────────────────
+
+    private readonly List<string> crumbs = new();
+    private readonly string[] projects = ["bit Bheadless", "Docs site", "Demo app", "Design tokens"];
+    private readonly string[] themes = ["Light", "Dark", "System"];
+    private string theme = "System";
+
+    private string PagePlaceholder => crumbs.Count == 0
+        ? "What do you need?"
+        : $"Search {crumbs[^1].ToLowerInvariant()}…";
+
+    // PageChanged reports the new current page: a pushed page, the page
+    // Backspace went back to, or null for the root.
+    private void OnPageChanged(string? page)
+    {
+        var index = page is null ? -1 : crumbs.IndexOf(page);
+        if (page is not null && index < 0) crumbs.Add(page);
+        else crumbs.RemoveRange(index + 1, crumbs.Count - index - 1);
+    }
+
+    // Run the command, then return to the root page.
+    private async Task CompleteAsync(BitBhCommandContext cmd, string command)
+    {
+        lastCommand = command;
+        await cmd.ClearSearchAsync();
+        while (cmd.Page is not null)
+            await cmd.PopPageAsync();
+    }
+
+    private Task SetThemeAsync(BitBhCommandContext cmd, string option)
+    {
+        theme = option;
+        return CompleteAsync(cmd, $"Theme: {option}");
+    }
+
+    // ── ⌘K palette ─────────────────────────────────────────────────────────────
+
+    private bool paletteOpen;
+    private int selfOpens;
+
+    // Fires when the palette changes its own state: the ⌘K / Ctrl+K shortcut,
+    // Escape, an outside click, or running a command (which closes it).
+    private void OnPaletteOpenChanged(bool open)
+    {
+        paletteOpen = open;
+        if (open) selfOpens++;
+    }
+
+    // ── Server-side search ─────────────────────────────────────────────────────
+
+    private sealed record Doc(string Name, string Summary);
+
+    private static readonly Doc[] _docs =
+    [
+        new("Accordion", "Vertically stacked, collapsible sections"),
+        new("Checkbox", "Two- or three-state toggle with a label"),
+        new("Combobox", "Text input with a filterable list of options"),
+        new("Command Palette", "Searchable, keyboard-first list of actions"),
+        new("Dialog", "Modal window with a focus trap"),
+        new("Disclosure", "Show and hide a section of content"),
+        new("Hover Card", "Rich preview shown when hovering a link"),
+        new("Listbox", "Pick one or many options from a list"),
+        new("Menu", "Dropdown list of actions"),
+        new("Menubar", "Horizontal application menu bar"),
+        new("Popover", "Floating panel anchored to a trigger"),
+        new("Radio Group", "Pick exactly one option from a set"),
+        new("Switch", "On / off toggle"),
+        new("Tabs", "Layered panels shown one at a time"),
+        new("Toast", "Brief, non-blocking notifications"),
+        new("Toolbar", "Group of controls with a single tab stop"),
+        new("Tooltip", "Short hint shown on hover or focus"),
+        new("Tree", "Hierarchical list with expandable nodes"),
+    ];
+
+    private IReadOnlyList<Doc> docResults = _docs.Take(6).ToList();
+    private string docsQuery = "";
+    private bool searching;
+    private int searchVersion;
+
+    private async Task SearchDocsAsync(string query)
+    {
+        docsQuery = query;
+        var version = ++searchVersion;
+        searching = true;
+
+        await Task.Delay(350); // pretend this is an HTTP call
+        if (version != searchVersion) return; // a newer keystroke superseded this one
+
+        docResults = string.IsNullOrWhiteSpace(query)
+            ? _docs.Take(6).ToList()
+            : BitBhFilter.Fuzzy(_docs, query, d => d.Name).ToList();
+        searching = false;
+    }
+
+    // ── Sorted results ─────────────────────────────────────────────────────────
+
+    private readonly string[] files =
+    [
+        "App.razor", "BitBhAnchorOptions.cs", "BitBhCommand.cs", "BitBhCommandDialog.cs",
+        "BitBhCommandItem.cs", "BitBhMenubar.cs", "BitBhToggleGroup.cs", "BitBhToolbar.cs",
+        "CommandPage.razor", "MenubarPage.razor", "Program.cs", "ToolbarPage.razor",
+    ];
+    private string? highlightedFile;
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhCommand Label="Command menu" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+    <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+        <span class="text-zinc-400" aria-hidden="true">⌕</span>
+        <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Type a command or search…" />
+    </div>
+    <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+        <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
+        <BitBhCommandGroup Heading="Suggestions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+            <BitBhCommandItem Value="Calendar" OnSelect='@(() => Run("Calendar"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">📅</span> Calendar
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Search emoji" Keywords='@(["emoji", "smiley", "reaction"])'
+                           OnSelect='@(() => Run("Search emoji"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">😀</span> Search emoji
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Calculator" Disabled="true" class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">🧮</span> Calculator
+            </BitBhCommandItem>
+        </BitBhCommandGroup>
+        <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
+        <BitBhCommandGroup Heading="Settings" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+            <BitBhCommandItem Value="Profile" OnSelect='@(() => Run("Profile"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">👤</span> Profile
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘P</span>
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Billing" Keywords='@(["invoice", "payment", "plan"])'
+                           OnSelect='@(() => Run("Billing"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">💳</span> Billing
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘B</span>
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Settings" Keywords='@(["preferences", "options"])'
+                           OnSelect='@(() => Run("Settings"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">⚙️</span> Settings
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘S</span>
+            </BitBhCommandItem>
+        </BitBhCommandGroup>
+    </BitBhCommandList>
+</BitBhCommand>
+
+<span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong></span>
+
+@code {
+    private string? lastCommand;
+
+    private void Run(string command) => lastCommand = command;
+}
+""";
+
+    private const string _pagesCode = """
+<BitBhCommand Label="Workspace commands" PageChanged="OnPageChanged" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+    <div class="flex flex-wrap items-center gap-1.5 px-3.5 pt-2.5 text-xs text-zinc-500">
+        <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-700">Home</span>
+        @foreach (var crumb in crumbs)
+        {
+            <span class="text-zinc-300" aria-hidden="true">›</span>
+            <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-700">@crumb</span>
+        }
+        @if (crumbs.Count > 0)
+        {
+            <span class="ml-auto text-zinc-400">Backspace to go back</span>
+        }
+    </div>
+    <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+        <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="@PagePlaceholder" />
+    </div>
+    <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+        <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
+
+        <BitBhCommandPage>
+            <Template Context="cmd">
+                <BitBhCommandGroup Heading="Workspace" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+                    <BitBhCommandItem Value="Search projects" OnSelect='@(() => cmd.PushPageAsync("Projects"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                        <span class="w-5 shrink-0 text-center" aria-hidden="true">📁</span> Search projects…
+                        <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Settings" OnSelect='@(() => cmd.PushPageAsync("Settings"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                        <span class="w-5 shrink-0 text-center" aria-hidden="true">⚙️</span> Settings…
+                        <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
+                    </BitBhCommandItem>
+                    <BitBhCommandItem Value="Invite teammates" OnSelect='@(() => CompleteAsync(cmd, "Invite teammates"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                        <span class="w-5 shrink-0 text-center" aria-hidden="true">✉️</span> Invite teammates
+                    </BitBhCommandItem>
+                </BitBhCommandGroup>
+            </Template>
+        </BitBhCommandPage>
+
+        <BitBhCommandPage Name="Projects">
+            <Template Context="cmd">
+                @foreach (var project in projects)
+                {
+                    <BitBhCommandItem Value="@project" OnSelect='@(() => CompleteAsync(cmd, $"Open {project}"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                        <span class="w-5 shrink-0 text-center" aria-hidden="true">📁</span> @project
+                    </BitBhCommandItem>
+                }
+            </Template>
+        </BitBhCommandPage>
+
+        <BitBhCommandPage Name="Settings">
+            <Template Context="cmd">
+                <BitBhCommandItem Value="Change theme" OnSelect='@(() => cmd.PushPageAsync("Theme"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                    <span class="w-5 shrink-0 text-center" aria-hidden="true">🎨</span> Change theme…
+                    <span class="ml-auto text-zinc-400" aria-hidden="true">›</span>
+                </BitBhCommandItem>
+                <BitBhCommandItem Value="Notifications" OnSelect='@(() => CompleteAsync(cmd, "Notification settings"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                    <span class="w-5 shrink-0 text-center" aria-hidden="true">🔔</span> Notifications
+                </BitBhCommandItem>
+            </Template>
+        </BitBhCommandPage>
+
+        <BitBhCommandPage Name="Theme">
+            <Template Context="cmd">
+                @foreach (var option in themes)
+                {
+                    <BitBhCommandItem Value="@option" OnSelect='@(() => SetThemeAsync(cmd, option))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                        @option
+                        @if (option == theme)
+                        {
+                            <span class="ml-auto font-semibold text-blue-600" aria-hidden="true">✓</span>
+                        }
+                    </BitBhCommandItem>
+                }
+            </Template>
+        </BitBhCommandPage>
+    </BitBhCommandList>
+</BitBhCommand>
+
+<span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong> · Theme: <strong class="text-zinc-900">@theme</strong></span>
+
+@code {
+    private readonly List<string> crumbs = new();
+    private readonly string[] projects = ["bit Bheadless", "Docs site", "Demo app", "Design tokens"];
+    private readonly string[] themes = ["Light", "Dark", "System"];
+    private string theme = "System";
+    private string? lastCommand;
+
+    private string PagePlaceholder => crumbs.Count == 0
+        ? "What do you need?"
+        : $"Search {crumbs[^1].ToLowerInvariant()}…";
+
+    // PageChanged reports the new current page: a pushed page, the page
+    // Backspace went back to, or null for the root.
+    private void OnPageChanged(string? page)
+    {
+        var index = page is null ? -1 : crumbs.IndexOf(page);
+        if (page is not null && index < 0) crumbs.Add(page);
+        else crumbs.RemoveRange(index + 1, crumbs.Count - index - 1);
+    }
+
+    // Run the command, then return to the root page.
+    private async Task CompleteAsync(BitBhCommandContext cmd, string command)
+    {
+        lastCommand = command;
+        await cmd.ClearSearchAsync();
+        while (cmd.Page is not null)
+            await cmd.PopPageAsync();
+    }
+
+    private Task SetThemeAsync(BitBhCommandContext cmd, string option)
+    {
+        theme = option;
+        return CompleteAsync(cmd, $"Theme: {option}");
+    }
+}
+""";
+
+    private const string _dialogCode = """
+<button type="button" class="flex w-full max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-zinc-300 bg-white py-2 pr-2 pl-3 text-left text-sm text-zinc-500 transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" @onclick="() => paletteOpen = true">
+    <span class="text-zinc-400" aria-hidden="true">⌕</span>
+    Search or jump to…
+    <span class="ml-auto inline-flex gap-0.5" aria-hidden="true">
+        <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">Ctrl</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">K</kbd>
+    </span>
+</button>
+
+<BitBhCommandDialog Open="paletteOpen" OpenChanged="OnPaletteOpenChanged" Shortcut="mod+k"
+                 Label="Command palette" Loop="true"
+                 OverlayClass="fixed inset-0 bg-zinc-900/45 backdrop-blur-[2px]"
+                 ContentClass="relative z-10 mx-auto mt-[12vh] w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl outline-none transition duration-150 ease-out starting:scale-98 starting:opacity-0"
+                 CommandClass="flex flex-col">
+    <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+        <span class="text-zinc-400" aria-hidden="true">⌕</span>
+        <BitBhCommandInput class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Type a command or search…" />
+        <kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600" aria-hidden="true">Esc</kbd>
+    </div>
+    <BitBhCommandList class="max-h-[min(22rem,50vh)] scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+        <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No results found.</BitBhCommandEmpty>
+        <BitBhCommandGroup Heading="Actions" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+            <BitBhCommandItem Value="New document" OnSelect='@(() => Run("New document"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">📝</span> New document
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘N</span>
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Share" Keywords='@(["invite", "link", "collaborate"])'
+                           OnSelect='@(() => Run("Share"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">🔗</span> Share…
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Duplicate" OnSelect='@(() => Run("Duplicate"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">📄</span> Duplicate
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘D</span>
+            </BitBhCommandItem>
+        </BitBhCommandGroup>
+        <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
+        <BitBhCommandGroup Heading="Appearance" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+            <BitBhCommandItem Value="Toggle dark mode" Keywords='@(["theme", "night", "light"])'
+                           OnSelect='@(() => Run("Toggle dark mode"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">🌙</span> Toggle dark mode
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Zoom in" Keywords='@(["bigger", "font size"])'
+                           OnSelect='@(() => Run("Zoom in"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">🔍</span> Zoom in
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘+</span>
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Zoom out" Keywords='@(["smaller", "font size"])'
+                           OnSelect='@(() => Run("Zoom out"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">🔎</span> Zoom out
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">⌘−</span>
+            </BitBhCommandItem>
+        </BitBhCommandGroup>
+        <BitBhCommandSeparator class="-mx-1.5 my-1.5 h-px bg-zinc-200" />
+        <BitBhCommandGroup Heading="Help" class="[&_[data-bit-bh-command-group-heading]]:px-2.5 [&_[data-bit-bh-command-group-heading]]:pt-2 [&_[data-bit-bh-command-group-heading]]:pb-1 [&_[data-bit-bh-command-group-heading]]:text-xs [&_[data-bit-bh-command-group-heading]]:font-medium [&_[data-bit-bh-command-group-heading]]:text-zinc-500">
+            <BitBhCommandItem Value="Keyboard shortcuts" OnSelect='@(() => Run("Keyboard shortcuts"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">⌨️</span> Keyboard shortcuts
+                <span class="ml-auto text-xs tracking-widest text-zinc-500">?</span>
+            </BitBhCommandItem>
+            <BitBhCommandItem Value="Contact support" Keywords='@(["help", "email", "feedback"])'
+                           OnSelect='@(() => Run("Contact support"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">💬</span> Contact support
+            </BitBhCommandItem>
+        </BitBhCommandGroup>
+    </BitBhCommandList>
+    <div class="flex items-center gap-4 border-t border-zinc-200 bg-zinc-50 px-3.5 py-2 text-xs text-zinc-500" aria-hidden="true">
+        <span class="inline-flex items-center gap-1"><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">↑</kbd><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">↓</kbd> navigate</span>
+        <span class="inline-flex items-center gap-1"><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">↵</kbd> run</span>
+        <span class="inline-flex items-center gap-1"><kbd class="inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600">Esc</kbd> close</span>
+    </div>
+</BitBhCommandDialog>
+
+<span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong> · Opened by the palette itself: <strong class="text-zinc-900">@selfOpens</strong>×</span>
+
+@code {
+    private bool paletteOpen;
+    private int selfOpens;
+    private string? lastCommand;
+
+    private void Run(string command) => lastCommand = command;
+
+    // Fires when the palette changes its own state: the ⌘K / Ctrl+K shortcut,
+    // Escape, an outside click, or running a command (which closes it).
+    private void OnPaletteOpenChanged(bool open)
+    {
+        paletteOpen = open;
+        if (open) selfOpens++;
+    }
+}
+""";
+
+    private const string _serverCode = """
+<BitBhCommand Label="Search the docs" ShouldFilter="false" SearchChanged="SearchDocsAsync" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+    <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+        <span class="text-zinc-400" aria-hidden="true">⌕</span>
+        <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Search components…" />
+        @if (searching)
+        {
+            <span class="size-4 shrink-0 animate-spin rounded-full border-2 border-zinc-200 border-t-blue-600" aria-hidden="true"></span>
+        }
+    </div>
+    <BitBhCommandList class="max-h-72 scroll-py-1.5 overflow-y-auto overscroll-contain p-1.5">
+        @if (!searching)
+        {
+            <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No components match “@docsQuery”.</BitBhCommandEmpty>
+        }
+        @foreach (var doc in docResults)
+        {
+            <BitBhCommandItem @key="doc.Name" Value="@doc.Name" OnSelect='@(() => Run($"Open {doc.Name} docs"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <span class="w-5 shrink-0 text-center" aria-hidden="true">📄</span>
+                <span class="flex min-w-0 flex-col leading-tight">
+                    <span class="font-medium">@doc.Name</span>
+                    <span class="truncate text-xs text-zinc-600">@doc.Summary</span>
+                </span>
+            </BitBhCommandItem>
+        }
+    </BitBhCommandList>
+</BitBhCommand>
+
+<span class="text-sm text-zinc-500">Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong></span>
+
+@code {
+    private sealed record Doc(string Name, string Summary);
+
+    private static readonly Doc[] _docs =
+    [
+        new("Accordion", "Vertically stacked, collapsible sections"),
+        new("Checkbox", "Two- or three-state toggle with a label"),
+        new("Combobox", "Text input with a filterable list of options"),
+        new("Command Palette", "Searchable, keyboard-first list of actions"),
+        new("Dialog", "Modal window with a focus trap"),
+        // …
+    ];
+
+    private IReadOnlyList<Doc> docResults = _docs.Take(6).ToList();
+    private string docsQuery = "";
+    private bool searching;
+    private int searchVersion;
+    private string? lastCommand;
+
+    private void Run(string command) => lastCommand = command;
+
+    private async Task SearchDocsAsync(string query)
+    {
+        docsQuery = query;
+        var version = ++searchVersion;
+        searching = true;
+
+        await Task.Delay(350); // pretend this is an HTTP call
+        if (version != searchVersion) return; // a newer keystroke superseded this one
+
+        docResults = string.IsNullOrWhiteSpace(query)
+            ? _docs.Take(6).ToList()
+            : BitBhFilter.Fuzzy(_docs, query, d => d.Name).ToList();
+        searching = false;
+    }
+}
+""";
+
+    private const string _sortedCode = """
+<BitBhCommand Label="Go to file" Sort="true" Loop="true" @bind-Value="highlightedFile" class="flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-600 focus-within:ring-3 focus-within:ring-blue-600/15">
+    <div class="flex items-center gap-2 border-b border-zinc-200 px-3.5">
+        <span class="text-zinc-400" aria-hidden="true">⌕</span>
+        <BitBhCommandInput AutoFocus="false" class="h-11 min-w-0 flex-1 border-0 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400" placeholder="Go to file…" />
+    </div>
+    <BitBhCommandList class="flex max-h-72 scroll-py-1.5 flex-col overflow-y-auto overscroll-contain p-1.5">
+        <BitBhCommandEmpty class="px-4 py-8 text-center text-sm text-zinc-500">No matching files.</BitBhCommandEmpty>
+        @foreach (var file in files)
+        {
+            <BitBhCommandItem Value="@file" OnSelect='@(() => Run($"Open {file}"))' class="flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-zinc-800 data-selected:bg-blue-50 data-selected:text-blue-700 data-disabled:cursor-not-allowed data-disabled:opacity-40">
+                <Template Context="highlighted">
+                    <span class="w-5 shrink-0 text-center" aria-hidden="true">@(file.EndsWith(".razor") ? "🧩" : "📄")</span>
+                    @file
+                    @if (highlighted)
+                    {
+                        <kbd class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded border border-b-2 border-zinc-200 bg-zinc-50 px-1 font-sans text-[0.68rem] text-zinc-600" aria-hidden="true">↵</kbd>
+                    }
+                </Template>
+            </BitBhCommandItem>
+        }
+    </BitBhCommandList>
+</BitBhCommand>
+
+<span class="text-sm text-zinc-500">Highlighted: <strong class="text-zinc-900">@(highlightedFile ?? "(none)")</strong> · Last command: <strong class="text-zinc-900">@(lastCommand ?? "(none)")</strong></span>
+
+@code {
+    private readonly string[] files =
+    [
+        "App.razor", "BitBhAnchorOptions.cs", "BitBhCommand.cs", "BitBhCommandDialog.cs",
+        "BitBhCommandItem.cs", "BitBhMenubar.cs", "BitBhToggleGroup.cs", "BitBhToolbar.cs",
+        "CommandPage.razor", "MenubarPage.razor", "Program.cs", "ToolbarPage.razor",
+    ];
+    private string? highlightedFile;
+    private string? lastCommand;
+
+    private void Run(string command) => lastCommand = command;
+}
+""";
+}

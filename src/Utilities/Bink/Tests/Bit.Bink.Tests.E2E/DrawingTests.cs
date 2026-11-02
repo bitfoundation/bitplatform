@@ -170,6 +170,27 @@ public sealed class DrawingTests : BinkTest
     }
 
     [TestMethod]
+    public async Task A_long_text_is_committed_whole_with_a_character_across_a_message_boundary()
+    {
+        var page = await OpenAsync("/whiteboard");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Text", Exact = true }).First.ClickAsync();
+        var box = (await page.Locator(".bit-bink-input").First.BoundingBoxAsync())!;
+        await page.Mouse.ClickAsync(box.X + 200, box.Y + 180);
+        var editor = page.Locator("textarea.bit-bink-text-editor");
+        await Expect(editor).ToBeFocusedAsync();
+
+        // A text over 4,096 characters goes to .NET in parts ahead of the key. The emoji's two halves fall either side
+        // of the first boundary, and half a surrogate pair is not JSON text .NET accepts.
+        string text = new string('a', 4095) + "\U0001F600" + new string('b', 5000) + "end";
+        await editor.FillAsync(text);
+        await page.Keyboard.PressAsync("Enter");
+
+        await Expect(editor).ToHaveCountAsync(0);
+        await Expect(page.Locator(".bit-bink-visually-hidden").First).ToContainTextAsync("Text: " + text);
+    }
+
+    [TestMethod]
     public async Task The_canvas_reports_its_contents_to_assistive_technology()
     {
         var page = await OpenAsync("/whiteboard");

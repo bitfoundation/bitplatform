@@ -1,8 +1,14 @@
 ﻿using Bit.BevTools;
+using Bit.BevTools.Demo.Client.Extension;
 using Bit.BevTools.Demo.Client.Models;
 using Bit.BevTools.Demo.Client.Services;
 using Bit.BevTools.Demo.Server.Components;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
+
+DemoCulture.Apply();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,15 +21,26 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddDemoServices();
+// The server calls its own API at an address it decides (DemoApiAddress), never at one a visitor names: not at
+// NavigationManager.BaseUri, which ProductApi falls back to in the browser and which in an interactive Server circuit is
+// whatever the browser sent when the circuit started, and not at the request's Host header either.
+builder.Services.AddHttpClient("api").ConfigureHttpClient((services, client) => client.BaseAddress = DemoApiAddress.Resolve(services));
 
 // One line. An application leaves Enabled alone and BevTools turns itself on in Development only; this demo exists to
 // show BevTools, wherever it is deployed (bevtools.bitplatform.dev included), so it is on in every environment.
-builder.Services.AddBitBevToolsServerServices(o => o.Enabled = true);
+// Outside Development a process that serves many users reads no application values unless told to; this demo's data
+// is made up and shown on purpose, so it says so. An application in production would keep that default.
+builder.Services.AddBitBevToolsServerServices(o =>
+{
+    o.Enabled = true;
+    o.ValueAccess = BevValueAccess.Full;
+    // The same extension the client registers, so its panel, rule and commands are there on either runtime.
+    o.Extensions.Add(new DemoBevToolsExtension());
+});
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.All;
-    options.ForwardedHostHeaderName = "X-Host";
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
     options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
     options.ForwardLimit = 1;
@@ -31,15 +48,20 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
+
+// A Content Security Policy that forbids frames: the site embeds none, and the Errors page's "Embed a frame the CSP
+// forbids" gives BevTools a real violation to report. It carries Blazor's own frame-ancestors directive too (switched off
+// below), so the response has one policy header: a browser that keeps only one of several would otherwise drop a part.
+app.Use((context, next) =>
+{
+    context.Response.Headers.ContentSecurityPolicy = "frame-src 'none'; frame-ancestors 'self'";
+    return next(context);
+});
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseForwardedHeaders();
@@ -61,15 +83,54 @@ api.MapGet("/orders", async (int? delay) =>
     await Task.Delay(delay is > 0 ? Math.Min(delay.Value, 10_000) : Random.Shared.Next(1200, 2600));
     return DemoCatalog.Orders;
 });
+api.MapGet("/orders/{id:int}", async (int id) =>
+{
+    await Task.Delay(Random.Shared.Next(40, 160));
+    return DemoCatalog.Orders.Any(o => o.Id == id)
+        ? Results.Ok(new OrderDetails(id, 1 + id % 5, id % 3 == 0 ? "express" : "standard"))
+        : Results.NotFound();
+});
 api.MapGet("/flaky", () => Random.Shared.Next(3) == 0 ? Results.Ok("ok") : Results.Problem("The flaky endpoint failed (simulated).", statusCode: 500));
 api.MapGet("/profile", () => new Profile("ada.lovelace", "ada@example.com", "secret-access-token-from-api", "Pro"));
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
+    .AddInteractiveServerRenderMode(o => o.ContentSecurityFrameAncestorsPolicy = null)
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.BevTools.Demo.Client._Imports).Assembly);
 
 app.Run();
+
+/// <summary>
+/// Where the server reaches its own API. Configuration names it (<c>DemoApiBaseAddress</c>) where the server cannot reach
+/// an address it listens on: behind IIS out of process, Kestrel takes only the requests IIS forwards with its pairing
+/// token, so the deployment's web.config names the public address. Otherwise it is an address the server listens on,
+/// at <c>localhost</c> when that is every interface, HTTPS first: plain HTTP is redirected there anyway when both are.
+/// </summary>
+internal static class DemoApiAddress
+{
+    public static Uri Resolve(IServiceProvider services)
+    {
+        if (services.GetRequiredService<IConfiguration>()["DemoApiBaseAddress"] is { Length: > 0 } configured)
+        {
+            return new Uri(configured);
+        }
+
+        var address = services.GetRequiredService<IServer>().Features.GetRequiredFeature<IServerAddressesFeature>().Addresses
+            .OrderBy(address => address.StartsWith("https:", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .FirstOrDefault() ?? throw new InvalidOperationException("The server is not listening on any address yet.");
+
+        // A wildcard binding (http://+:80, http://*:80, http://[::]:80, http://0.0.0.0:80) names every interface, not one
+        // to connect to.
+        var uri = new UriBuilder(address.Replace("://+:", "://localhost:").Replace("://*:", "://localhost:"));
+        if (System.Net.IPAddress.TryParse(uri.Host.Trim('[', ']'), out var ip) && (ip.Equals(System.Net.IPAddress.Any) || ip.Equals(System.Net.IPAddress.IPv6Any)))
+        {
+            uri.Host = "localhost";
+        }
+
+        uri.Path = "/";
+        return uri.Uri;
+    }
+}
 
 internal static class DemoCatalog
 {

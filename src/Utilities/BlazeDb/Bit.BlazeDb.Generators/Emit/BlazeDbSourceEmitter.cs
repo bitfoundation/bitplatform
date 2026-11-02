@@ -23,6 +23,29 @@ internal static class BlazeDbSourceEmitter
     private static string Members(params string[] names) =>
         "new string[] { " + string.Join(", ", Array.ConvertAll(names, Literal)) + " }";
 
+    /// <summary>
+    /// The prefix of every member the generated partial declares besides <c>Table</c> and <c>Indexes</c>. Each of
+    /// these names would collide with a member of the same name declared by the type, or with the type's own name.
+    /// </summary>
+    private const string ReservedPrefix = "__Blaze";
+
+    /// <summary>The nested class whose fields hold the descriptor and the index definitions; see <see cref="Emit"/>.</summary>
+    private const string Holder = ReservedPrefix + "Table";
+
+    /// <summary>The holder's field for the index named <paramref name="indexName"/>.</summary>
+    private static string HolderField(string indexName) => "Index_" + indexName;
+
+    /// <summary>Whether the generated partial declares a member named <paramref name="name"/>, or may.</summary>
+    public static bool IsReserved(string name) =>
+        name == "Table" || name == "Indexes" || name.StartsWith(ReservedPrefix, StringComparison.Ordinal);
+
+    /// <summary>
+    /// <paramref name="name"/> as an identifier in generated code. An index name only has to be a valid
+    /// identifier, and a keyword such as <c>event</c> is one, but only when it is escaped.
+    /// </summary>
+    private static string Identifier(string name) =>
+        SyntaxFacts.GetKeywordKind(name) == SyntaxKind.None ? name : "@" + name;
+
     public static string Emit(BlazeDbTableModel model)
     {
         var self = model.Namespace is null
@@ -45,74 +68,86 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}partial {model.TypeKeyword} {model.TypeName}");
         sb.AppendLine($"{indent}{{");
 
-        // Descriptor.
-        var indexed = model.Props.Where(p => p.HashIndexName != null || p.OrderedIndexName != null).ToList();
-        var indexRefs = new List<string>();
-        foreach (var prop in indexed)
+        // The descriptor and the index definitions are fields of a nested holder class, and the type and its Indexes
+        // class reach them through properties. A field of one of Bit.BlazeDb's types would make the runtime load
+        // Bit.BlazeDb as soon as it lays the type out, which merely naming the type does - typeof(TodoItem), a
+        // new TodoItem() - and a WebAssembly app that lazy loads Bit.BlazeDb may name a table type before the assembly
+        // is there: in a layout every page shares, or as a DTO. The type would then fail to load, and keep failing
+        // after Bit.BlazeDb has loaded. The holder is laid out on first use, through Table or an index, by which time
+        // Bit.BlazeDb is in use anyway. The holder's members carry a prefix, so no index name can collide with
+        // Descriptor, with a comparer class or with the holder's own name.
+        var indexes = new List<(string Name, string Type, string Initializer)>();
+        foreach (var prop in model.Props)
         {
             if (prop.HashIndexName != null)
             {
-                indexRefs.Add("Indexes." + prop.HashIndexName);
+                indexes.Add((prop.HashIndexName,
+                    $"global::Bit.BlazeDb.BlazeDbHashIndexDefinition<{self}, {prop.TypeDisplay}>",
+                    $"new({Literal(prop.HashIndexName)}, static row => row.{prop.Name}, null, {Bool(prop.HashIndexUnique)}, {Members(prop.Name)})"));
             }
             if (prop.OrderedIndexName != null)
             {
-                indexRefs.Add("Indexes." + prop.OrderedIndexName);
+                indexes.Add((prop.OrderedIndexName,
+                    $"global::Bit.BlazeDb.BlazeDbOrderedIndexDefinition<{self}, {prop.TypeDisplay}>",
+                    $"new({Literal(prop.OrderedIndexName)}, static row => row.{prop.Name}, null, {Bool(prop.OrderedIndexUnique)}, {Members(prop.Name)})"));
             }
         }
         foreach (var compound in model.CompoundIndexes)
         {
-            indexRefs.Add("Indexes." + compound.Name);
+            var ctor = "(" + string.Join(", ", compound.Props.ConvertAll(p => "row." + p.Name)) + ")";
+            var defType = compound.Ordered ? "BlazeDbOrderedIndexDefinition" : "BlazeDbHashIndexDefinition";
+            indexes.Add((compound.Name,
+                $"global::Bit.BlazeDb.{defType}<{self}, {compound.TupleType}>",
+                $"new({Literal(compound.Name)}, static row => {ctor}, {CompoundComparer(compound)}, {Bool(compound.Unique)}, {Members(compound.Props.ConvertAll(p => p.Name).ToArray())})"));
         }
-        var indexArg = indexRefs.Count == 0
+        var indexArg = indexes.Count == 0
             ? "null"
-            : $"new global::Bit.BlazeDb.BlazeDbIndexDefinition<{self}>[] {{ {string.Join(", ", indexRefs)} }}";
+            : $"new global::Bit.BlazeDb.BlazeDbIndexDefinition<{self}>[] {{ {string.Join(", ", indexes.Select(index => HolderField(index.Name)))} }}";
+        var descriptorType = $"global::Bit.BlazeDb.BlazeDbTableDescriptor<{keyType}, {self}>";
 
         sb.AppendLine($"{indent}    /// <summary>Generated BlazeDb table descriptor for this type.</summary>");
-        sb.AppendLine($"{indent}    public static readonly global::Bit.BlazeDb.BlazeDbTableDescriptor<{keyType}, {self}> Table = new(");
-        sb.AppendLine($"{indent}        {Literal(model.TableName)},");
-        sb.AppendLine($"{indent}        static row => row.{key.Name},");
-        sb.AppendLine($"{indent}        __BlazeWriteRow,");
-        sb.AppendLine($"{indent}        __BlazeReadRow,");
-        sb.AppendLine($"{indent}        __BlazeWriteKey,");
-        sb.AppendLine($"{indent}        __BlazeReadKey,");
-        sb.AppendLine($"{indent}        {indexArg},");
-        sb.AppendLine($"{indent}        keyMember: {Literal(key.Name)});");
+        sb.AppendLine($"{indent}    public static {descriptorType} Table => {Holder}.Descriptor;");
         sb.AppendLine();
 
         // Index definitions.
-        if (indexRefs.Count > 0)
+        if (indexes.Count > 0)
         {
             sb.AppendLine($"{indent}    /// <summary>Generated secondary index definitions.</summary>");
             sb.AppendLine($"{indent}    public static class Indexes");
             sb.AppendLine($"{indent}    {{");
-            foreach (var prop in indexed)
+            foreach (var index in indexes)
             {
-                if (prop.HashIndexName != null)
-                {
-                    sb.AppendLine($"{indent}        public static readonly global::Bit.BlazeDb.BlazeDbHashIndexDefinition<{self}, {prop.TypeDisplay}> {prop.HashIndexName} =");
-                    sb.AppendLine($"{indent}            new({Literal(prop.HashIndexName!)}, static row => row.{prop.Name}, null, {Bool(prop.HashIndexUnique)}, {Members(prop.Name)});");
-                }
-                if (prop.OrderedIndexName != null)
-                {
-                    sb.AppendLine($"{indent}        public static readonly global::Bit.BlazeDb.BlazeDbOrderedIndexDefinition<{self}, {prop.TypeDisplay}> {prop.OrderedIndexName} =");
-                    sb.AppendLine($"{indent}            new({Literal(prop.OrderedIndexName!)}, static row => row.{prop.Name}, null, {Bool(prop.OrderedIndexUnique)}, {Members(prop.Name)});");
-                }
-            }
-            foreach (var compound in model.CompoundIndexes)
-            {
-                var tuple = compound.TupleType;
-                var ctor = "(" + string.Join(", ", compound.Props.ConvertAll(p => "row." + p.Name)) + ")";
-                var defType = compound.Ordered ? "BlazeDbOrderedIndexDefinition" : "BlazeDbHashIndexDefinition";
-                sb.AppendLine($"{indent}        public static readonly global::Bit.BlazeDb.{defType}<{self}, {tuple}> {compound.Name} =");
-                sb.AppendLine($"{indent}            new({Literal(compound.Name)}, static row => {ctor}, {CompoundComparer(compound)}, {Bool(compound.Unique)}, {Members(compound.Props.ConvertAll(p => p.Name).ToArray())});");
-            }
-            foreach (var compound in model.CompoundIndexes)
-            {
-                EmitCompoundComparer(sb, compound, indent);
+                // Qualified: inside Indexes, an index named after the holder would hide it.
+                sb.AppendLine($"{indent}        public static {index.Type} {Identifier(index.Name)} => {self}.{Holder}.{HolderField(index.Name)};");
             }
             sb.AppendLine($"{indent}    }}");
             sb.AppendLine();
         }
+
+        sb.AppendLine($"{indent}    private static class {Holder}");
+        sb.AppendLine($"{indent}    {{");
+        // Indexes first: static fields are initialized in declaration order, and the descriptor takes them.
+        foreach (var index in indexes)
+        {
+            sb.AppendLine($"{indent}        public static readonly {index.Type} {HolderField(index.Name)} =");
+            sb.AppendLine($"{indent}            {index.Initializer};");
+            sb.AppendLine();
+        }
+        sb.AppendLine($"{indent}        public static readonly {descriptorType} Descriptor = new(");
+        sb.AppendLine($"{indent}            {Literal(model.TableName)},");
+        sb.AppendLine($"{indent}            static row => row.{key.Name},");
+        sb.AppendLine($"{indent}            __BlazeWriteRow,");
+        sb.AppendLine($"{indent}            __BlazeReadRow,");
+        sb.AppendLine($"{indent}            __BlazeWriteKey,");
+        sb.AppendLine($"{indent}            __BlazeReadKey,");
+        sb.AppendLine($"{indent}            {indexArg},");
+        sb.AppendLine($"{indent}            keyMember: {Literal(key.Name)});");
+        foreach (var compound in model.CompoundIndexes)
+        {
+            EmitCompoundComparer(sb, compound, indent);
+        }
+        sb.AppendLine($"{indent}    }}");
+        sb.AppendLine();
 
         EmitWriteRow(sb, model, self, indent);
         sb.AppendLine();
@@ -188,7 +223,7 @@ internal static class BlazeDbSourceEmitter
     {
         sb.AppendLine($"{indent}    private static void __BlazeWriteRow({Writer} writer, {self} row)");
         sb.AppendLine($"{indent}    {{");
-        foreach (var prop in model.Props)
+        foreach (var prop in model.Props.Where(p => !p.IndexOnly))
         {
             var tag = $"writer.WriteTag({prop.FieldNumber}, {BlazeDbTypeMap.WireType(prop.Kind)});";
             switch (prop.Category)
@@ -217,6 +252,7 @@ internal static class BlazeDbSourceEmitter
 
                 case BlazeDbPropCategory.ListCollection:
                 case BlazeDbPropCategory.ArrayCollection:
+                case BlazeDbPropCategory.SetCollection:
                     sb.AppendLine($"{indent}        if (row.{prop.Name} is not null)");
                     sb.AppendLine($"{indent}        {{");
                     sb.AppendLine($"{indent}            foreach (var __element in row.{prop.Name})");
@@ -236,7 +272,8 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}    private static {self} __BlazeReadRow(ref {Reader} reader)");
         sb.AppendLine($"{indent}    {{");
 
-        foreach (var prop in model.Props)
+        var stored = model.Props.Where(p => !p.IndexOnly).ToList();
+        foreach (var prop in stored)
         {
             var local = "__v" + prop.FieldNumber;
             switch (prop.Category)
@@ -250,6 +287,7 @@ internal static class BlazeDbSourceEmitter
                     break;
                 case BlazeDbPropCategory.ListCollection:
                 case BlazeDbPropCategory.ArrayCollection:
+                case BlazeDbPropCategory.SetCollection:
                     sb.AppendLine($"{indent}        global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>? {local} = null;");
                     break;
             }
@@ -260,7 +298,7 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}            var (__field, __wire) = reader.ReadTag();");
         sb.AppendLine($"{indent}            switch (__field)");
         sb.AppendLine($"{indent}            {{");
-        foreach (var prop in model.Props)
+        foreach (var prop in stored)
         {
             var local = "__v" + prop.FieldNumber;
             var read = BlazeDbTypeMap.ReadExpr(prop.Kind, "reader", prop.ScalarTypeDisplay);
@@ -273,6 +311,7 @@ internal static class BlazeDbSourceEmitter
             {
                 case BlazeDbPropCategory.ListCollection:
                 case BlazeDbPropCategory.ArrayCollection:
+                case BlazeDbPropCategory.SetCollection:
                     sb.AppendLine($"{indent}                    ({local} ??= new global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>()).Add({read});");
                     break;
                 default:
@@ -287,25 +326,38 @@ internal static class BlazeDbSourceEmitter
         sb.AppendLine($"{indent}            }}");
         sb.AppendLine($"{indent}        }}");
 
-        sb.AppendLine($"{indent}        return new {self}");
+        // A type without a parameterless constructor - a positional record, say - is built through the
+        // constructor whose parameters name its properties; whatever that constructor does not take is
+        // set in the initializer, as for every other type.
+        var arguments = string.Join(", ", model.ConstructorArguments.Select(p => Value(p, "__v" + p.FieldNumber)));
+        sb.AppendLine($"{indent}        return new {self}({arguments})");
         sb.AppendLine($"{indent}        {{");
-        foreach (var prop in model.Props)
+        // A required member is set here even when the constructor took it, because the compiler insists
+        // unless the constructor is marked [SetsRequiredMembers]; setting it twice to the same value is harmless.
+        foreach (var prop in stored.Where(p => !p.BoundByConstructor || p.IsRequired))
         {
-            var local = "__v" + prop.FieldNumber;
-            var nullableCollection = prop.TypeDisplay.EndsWith("?");
-            var assignment = prop.Category switch
-            {
-                BlazeDbPropCategory.ListCollection => nullableCollection
-                    ? local
-                    : $"{local} ?? new global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>()",
-                BlazeDbPropCategory.ArrayCollection => nullableCollection
-                    ? $"{local}?.ToArray()"
-                    : $"{local} is null ? global::System.Array.Empty<{prop.ScalarTypeDisplay}>() : {local}.ToArray()",
-                _ => local,
-            };
-            sb.AppendLine($"{indent}            {prop.Name} = {assignment},");
+            sb.AppendLine($"{indent}            {prop.Name} = {Value(prop, "__v" + prop.FieldNumber)},");
         }
         sb.AppendLine($"{indent}        }};");
         sb.AppendLine($"{indent}    }}");
+    }
+
+    /// <summary>The expression that turns a read local into the value the property is given.</summary>
+    private static string Value(BlazeDbPropModel prop, string local)
+    {
+        var nullableCollection = prop.TypeDisplay.EndsWith("?");
+        return prop.Category switch
+        {
+            BlazeDbPropCategory.ListCollection => nullableCollection
+                ? local
+                : $"{local} ?? new global::System.Collections.Generic.List<{prop.ScalarTypeDisplay}>()",
+            BlazeDbPropCategory.ArrayCollection => nullableCollection
+                ? $"{local}?.ToArray()"
+                : $"{local} is null ? global::System.Array.Empty<{prop.ScalarTypeDisplay}>() : {local}.ToArray()",
+            BlazeDbPropCategory.SetCollection => nullableCollection
+                ? $"{local} is null ? null : new global::System.Collections.Generic.HashSet<{prop.ScalarTypeDisplay}>({local})"
+                : $"{local} is null ? new global::System.Collections.Generic.HashSet<{prop.ScalarTypeDisplay}>() : new global::System.Collections.Generic.HashSet<{prop.ScalarTypeDisplay}>({local})",
+            _ => local,
+        };
     }
 }

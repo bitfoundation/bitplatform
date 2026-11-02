@@ -1,6 +1,7 @@
 using Boilerplate.Shared.Features.Todo;
 using CommunityToolkit.Datasync.Client.Http;
 using CommunityToolkit.Datasync.Client.Offline;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -9,6 +10,14 @@ namespace Boilerplate.Client.Core.Infrastructure.Data;
 public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> options) : OfflineDbContext(options)
 {
     public virtual DbSet<TodoItemDto> TodoItems { get; set; }
+
+    public async Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        if (AppEnvironment.IsDevelopment() is false && Model.GetType() == typeof(RuntimeModel))
+            throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'bit migration optimize' before publishing and after every model change; 'bit migration add <Name> --offline' and 'bit migration remove --offline' run it for you. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
+
+        await Database.MigrateAsync(cancellationToken);
+    }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

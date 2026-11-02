@@ -15,9 +15,7 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
 {
     // What IComponentActivator.CreateInstance declares; an implementation has to repeat it exactly.
     private const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.PublicConstructors;
-#if NET9_0_OR_GREATER
     private static readonly ConcurrentDictionary<Type, ObjectFactory> Factories = new();
-#endif
     private IComponentActivator? _interceptor;
     private IComponentActivator? _untracked;
 
@@ -38,8 +36,8 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
         inner is not null ? inner.CreateInstance(componentType) : CreateDefault(services, componentType);
 
     /// <summary>
-    /// Creates a component exactly as the framework's own DefaultComponentActivator does on each runtime: constructor
-    /// injection arrived in .NET 9. Bit.BevTools' activator creates components through it too, so neither one changes
+    /// Creates a component exactly as the framework's own DefaultComponentActivator does, constructor injection
+    /// included. Bit.BevTools' activator creates components through it too, so neither one changes
     /// what an app can construct.
     /// </summary>
     internal static IComponent CreateDefault(IServiceProvider services, [DynamicallyAccessedMembers(Component)] Type componentType)
@@ -49,7 +47,6 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
             throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
         }
 
-#if NET9_0_OR_GREATER
         // Not GetOrAdd: the annotation does not flow into its callback (IL2111). Building an entry twice is harmless.
         if (!Factories.TryGetValue(componentType, out var factory))
         {
@@ -58,10 +55,6 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
         }
 
         return (IComponent)factory(services, []);
-#else
-        _ = services;
-        return (IComponent)Activator.CreateInstance(componentType)!;
-#endif
     }
 
     /// <summary>

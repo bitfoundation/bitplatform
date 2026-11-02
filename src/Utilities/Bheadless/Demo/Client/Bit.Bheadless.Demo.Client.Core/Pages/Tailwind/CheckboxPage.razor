@@ -1,0 +1,378 @@
+﻿@page "/tw/checkbox"
+
+<PageTitle>Checkbox — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Checkbox</h1>
+        <p class="mt-2 text-zinc-500">An accessible tri-state checkbox primitive styled with Tailwind utilities.</p>
+        <TwSectionSwitcher Slug="checkbox" />
+    </header>
+
+    <TwDemoBlock Title="Basic Checkbox (Uncontrolled)" Code="@_basicCode">
+        <Description>Native <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;button&gt;</code> with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="checkbox"</code>. Click or press Space to toggle.</Description>
+        <LiveContent>
+            <BitBhCheckbox aria-label="Remember me" class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-state-indeterminate:bg-blue-600 data-state-indeterminate:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="c">
+                    @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                </Template>
+            </BitBhCheckbox>
+            <BitBhCheckbox aria-label="Keep me signed in" DefaultChecked="true"
+                        class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-state-indeterminate:bg-blue-600 data-state-indeterminate:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="c">
+                    @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                </Template>
+            </BitBhCheckbox>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
+        <Description>External <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Checked</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnCheckedChange</code>.</Description>
+        <LiveContent>
+            <div class="flex items-center gap-4">
+                <BitBhCheckbox aria-label="Accept the terms" Checked="@acceptedTerms" OnCheckedChange="v => acceptedTerms = v"
+                            class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="c">
+                        @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                    </Template>
+                </BitBhCheckbox>
+                <span class="text-sm text-zinc-500">
+                    Terms accepted: <strong class="text-zinc-900">@(acceptedTerms ? "yes" : "no")</strong>
+                </span>
+                <BitBhButton OnClick="() => acceptedTerms = !acceptedTerms"
+                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                    Toggle from outside
+                </BitBhButton>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled" Code="@_disabledCode">
+        <Description>The custom <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> variant applies the disabled visuals.</Description>
+        <LiveContent>
+            <BitBhCheckbox aria-label="Unavailable option" Disabled="true"
+                        class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="c">
+                    @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                </Template>
+            </BitBhCheckbox>
+            <BitBhCheckbox aria-label="Locked option" DefaultChecked="true" Disabled="true"
+                        class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                <Template Context="c">
+                    @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                </Template>
+            </BitBhCheckbox>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Indeterminate (Select All pattern)" Code="@_indeterminateCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-state-indeterminate:</code> styles the mixed state — the parent reflects partial child selection.
+        </Description>
+        <LiveContent>
+            <div class="flex flex-col gap-2">
+                <label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+                    <BitBhCheckbox Checked="@SelectAllChecked" Indeterminate="@SelectAllIndeterminate" OnCheckedChange="HandleSelectAll"
+                                class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-state-indeterminate:bg-blue-600 data-state-indeterminate:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="c">
+                            @if (c.IsIndeterminate) { <span class="text-base leading-none font-bold">–</span> }
+                            else if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                        </Template>
+                    </BitBhCheckbox>
+                    <strong>Select all</strong>
+                </label>
+                <div class="flex flex-col gap-1.5 ml-6">
+                    @for (var i = 0; i < items.Length; i++)
+                    {
+                        var captured = i;
+                        <label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+                            <BitBhCheckbox Checked="@items[captured]" OnCheckedChange="v => HandleItemChange(captured, v)"
+                                        class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                                <Template Context="c">
+                                    @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                                </Template>
+                            </BitBhCheckbox>
+                            <span>Item @(captured + 1)</span>
+                        </label>
+                    }
+                </div>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="With label" Code="@_labelCode">
+        <Description>Wrap in <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;label&gt;</code> for clickable text.</Description>
+        <LiveContent>
+            <label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+                <BitBhCheckbox class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="c">
+                        @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                    </Template>
+                </BitBhCheckbox>
+                <span>Send me product updates</span>
+            </label>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Form Submission" Code="@_formCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Name</code> renders an adjacent hidden input.</Description>
+        <LiveContent>
+            <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true"
+                  class="flex flex-col items-start gap-2">
+                <label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+                    <BitBhCheckbox Name="agree" Value="yes"
+                                class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                        <Template Context="c">
+                            @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                        </Template>
+                    </BitBhCheckbox>
+                    <span>I agree to the terms</span>
+                </label>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
+                    Submit
+                </button>
+                @if (lastSubmitted is not null)
+                {
+                    <span class="text-sm text-zinc-500">@lastSubmitted</span>
+                }
+            </form>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Group with select all" Code="@_groupCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhCheckboxGroup</code> binds one collection with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-Values</code>;
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">SelectAll="true"</code> makes the tri-state parent (<code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-checked="mixed"</code> when only some are selected).
+            The box is styled from the checkbox with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">group-data-state-checked:</code> / <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">group-data-state-indeterminate:</code>.
+        </Description>
+        <LiveContent>
+            <div class="flex flex-col gap-4">
+                <BitBhCheckboxGroup @bind-Values="toppings" aria-label="Pizza toppings" class="flex flex-col gap-2">
+                    <BitBhCheckbox SelectAll="true"
+                                class="group inline-flex items-center gap-2 self-start rounded text-sm font-semibold text-zinc-900 cursor-pointer select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        <span class="inline-flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white transition-colors group-hover:border-zinc-400 group-data-state-checked:border-blue-600 group-data-state-checked:bg-blue-600 group-data-state-indeterminate:border-blue-600 group-data-state-indeterminate:bg-blue-600">
+                            <BitBhCheckboxIndicator class="text-xs font-bold leading-none">
+                                <Template Context="state">@(state.IsIndeterminate ? "–" : "✓")</Template>
+                            </BitBhCheckboxIndicator>
+                        </span>
+                        All toppings
+                    </BitBhCheckbox>
+                    <div class="ml-6 flex flex-col gap-1.5">
+                        @foreach (var topping in allToppings)
+                        {
+                            <BitBhCheckbox Value="@topping"
+                                        class="group inline-flex items-center gap-2 self-start rounded text-sm text-zinc-900 cursor-pointer select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                                <span class="inline-flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white transition-colors group-hover:border-zinc-400 group-data-state-checked:border-blue-600 group-data-state-checked:bg-blue-600">
+                                    <BitBhCheckboxIndicator class="text-xs font-bold leading-none">✓</BitBhCheckboxIndicator>
+                                </span>
+                                @topping
+                            </BitBhCheckbox>
+                        }
+                    </div>
+                </BitBhCheckboxGroup>
+
+                <span class="text-sm text-zinc-500">
+                    Values: <strong class="text-zinc-900">@(toppings.Count == 0 ? "(none)" : string.Join(", ", toppings))</strong>
+                </span>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool acceptedTerms;
+    private string[] allToppings = new[] { "Cheese", "Mushrooms", "Olives", "Peppers" };
+    private IReadOnlyCollection<string> toppings = new[] { "Cheese", "Olives" };
+    private bool[] items = new[] { false, false, false };
+    private string? lastSubmitted;
+
+    private bool SelectAllChecked => items.All(x => x);
+    private bool SelectAllIndeterminate => items.Any(x => x) && !SelectAllChecked;
+
+    private void HandleSelectAll(bool checkAll)
+    {
+        for (var i = 0; i < items.Length; i++)
+            items[i] = checkAll;
+    }
+
+    private void HandleItemChange(int index, bool value) => items[index] = value;
+
+    private void HandleFormSubmit() =>
+        lastSubmitted = "(submitted — when checked, the form posts agree=yes)";
+
+    private const string _groupCode = """
+<BitBhCheckboxGroup @bind-Values="toppings" aria-label="Pizza toppings" class="flex flex-col gap-2">
+    @* Tri-state parent: checked / mixed / unchecked from the group's values *@
+    <BitBhCheckbox SelectAll="true"
+                class="group inline-flex items-center gap-2 self-start rounded text-sm font-semibold cursor-pointer select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+        <span class="inline-flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white transition-colors group-hover:border-zinc-400 group-data-state-checked:border-blue-600 group-data-state-checked:bg-blue-600 group-data-state-indeterminate:border-blue-600 group-data-state-indeterminate:bg-blue-600">
+            <BitBhCheckboxIndicator class="text-xs font-bold leading-none">
+                <Template Context="state">@(state.IsIndeterminate ? "–" : "✓")</Template>
+            </BitBhCheckboxIndicator>
+        </span>
+        All toppings
+    </BitBhCheckbox>
+
+    <div class="ml-6 flex flex-col gap-1.5">
+        @foreach (var topping in allToppings)
+        {
+            <BitBhCheckbox Value="@topping"
+                        class="group inline-flex items-center gap-2 self-start rounded text-sm cursor-pointer select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                <span class="inline-flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white transition-colors group-hover:border-zinc-400 group-data-state-checked:border-blue-600 group-data-state-checked:bg-blue-600">
+                    <BitBhCheckboxIndicator class="text-xs font-bold leading-none">✓</BitBhCheckboxIndicator>
+                </span>
+                @topping
+            </BitBhCheckbox>
+        }
+    </div>
+</BitBhCheckboxGroup>
+
+<span class="text-sm text-zinc-500">
+    Values: <strong class="text-zinc-900">@(toppings.Count == 0 ? "(none)" : string.Join(", ", toppings))</strong>
+</span>
+
+@code {
+    private string[] allToppings = new[] { "Cheese", "Mushrooms", "Olives", "Peppers" };
+    private IReadOnlyCollection<string> toppings = new[] { "Cheese", "Olives" };
+}
+""";
+
+    private const string _basicCode = """
+<BitBhCheckbox aria-label="Remember me" class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-state-indeterminate:bg-blue-600 data-state-indeterminate:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+    <Template Context="c">
+        @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+    </Template>
+</BitBhCheckbox>
+
+<BitBhCheckbox aria-label="Keep me signed in" DefaultChecked="true"
+            class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-state-indeterminate:bg-blue-600 data-state-indeterminate:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+    <Template Context="c">
+        @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+    </Template>
+</BitBhCheckbox>
+""";
+
+    private const string _controlledCode = """
+<div class="flex items-center gap-4">
+    <BitBhCheckbox aria-label="Accept the terms" Checked="@acceptedTerms" OnCheckedChange="v => acceptedTerms = v"
+                class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+        <Template Context="c">
+            @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+        </Template>
+    </BitBhCheckbox>
+    <span class="text-sm text-zinc-500">
+        Terms accepted: <strong class="text-zinc-900">@(acceptedTerms ? "yes" : "no")</strong>
+    </span>
+    <BitBhButton OnClick="() => acceptedTerms = !acceptedTerms"
+              class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+        Toggle from outside
+    </BitBhButton>
+</div>
+
+@code {
+    private bool acceptedTerms;
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhCheckbox aria-label="Unavailable option" Disabled="true"
+            class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+    <Template Context="c">
+        @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+    </Template>
+</BitBhCheckbox>
+
+<BitBhCheckbox aria-label="Locked option" DefaultChecked="true" Disabled="true"
+            class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+    <Template Context="c">
+        @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+    </Template>
+</BitBhCheckbox>
+""";
+
+    private const string _indeterminateCode = """
+<div class="flex flex-col gap-2">
+    <label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+        <BitBhCheckbox Checked="@SelectAllChecked" Indeterminate="@SelectAllIndeterminate" OnCheckedChange="HandleSelectAll"
+                    class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-state-indeterminate:bg-blue-600 data-state-indeterminate:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="c">
+                @if (c.IsIndeterminate) { <span class="text-base leading-none font-bold">–</span> }
+                else if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+            </Template>
+        </BitBhCheckbox>
+        <strong>Select all</strong>
+    </label>
+    <div class="flex flex-col gap-1.5 ml-6">
+        @for (var i = 0; i < items.Length; i++)
+        {
+            var captured = i;
+            <label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+                <BitBhCheckbox Checked="@items[captured]" OnCheckedChange="v => HandleItemChange(captured, v)"
+                            class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                    <Template Context="c">
+                        @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+                    </Template>
+                </BitBhCheckbox>
+                <span>Item @(captured + 1)</span>
+            </label>
+        }
+    </div>
+</div>
+
+@code {
+    private bool[] items = new[] { false, false, false };
+
+    private bool SelectAllChecked => items.All(x => x);
+    private bool SelectAllIndeterminate => items.Any(x => x) && !SelectAllChecked;
+
+    private void HandleSelectAll(bool checkAll)
+    {
+        for (var i = 0; i < items.Length; i++) items[i] = checkAll;
+    }
+
+    private void HandleItemChange(int index, bool value) => items[index] = value;
+}
+""";
+
+    private const string _labelCode = """
+<label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+    <BitBhCheckbox class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+        <Template Context="c">
+            @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+        </Template>
+    </BitBhCheckbox>
+    <span>Send me product updates</span>
+</label>
+""";
+
+    private const string _formCode = """
+<form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true"
+      class="flex flex-col items-start gap-2">
+    <label class="inline-flex items-center gap-2 cursor-pointer text-sm select-none">
+        <BitBhCheckbox Name="agree" Value="yes"
+                    class="inline-flex h-[1.15rem] w-[1.15rem] flex-shrink-0 items-center justify-center rounded border border-zinc-300 bg-white text-white cursor-pointer transition-colors outline-none hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-checked:bg-blue-600 data-state-checked:border-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+            <Template Context="c">
+                @if (c.IsChecked) { <span class="text-sm leading-none">✓</span> }
+            </Template>
+        </BitBhCheckbox>
+        <span>I agree to the terms</span>
+    </label>
+    <button type="submit"
+            class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
+        Submit
+    </button>
+    @if (lastSubmitted is not null)
+    {
+        <span class="text-sm text-zinc-500">@lastSubmitted</span>
+    }
+</form>
+
+@code {
+    private string? lastSubmitted;
+
+    private void HandleFormSubmit() =>
+        lastSubmitted = "(submitted — when checked, the form posts agree=yes)";
+}
+""";
+}

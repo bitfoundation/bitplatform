@@ -15,4 +15,6 @@ public interface ILocalHttpServer : IAsyncDisposable
     int Port { get; }
 
     string? Origin { get; }
+
+    string? CreateExternalSignInNonce();
 }

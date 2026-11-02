@@ -5,7 +5,7 @@
 <PageTitle>Indexes · BlazeDb</PageTitle>
 
 <PageHeader Eyebrow="Indexes" Title="Two index kinds, both maintained for you"
-            Lead="A hash index answers equality in constant time. An ordered index answers range and sort questions in logarithmic time. Every insert, update and delete keeps both in step - there is no reindex step and no stale index.">
+            Lead="A hash index answers equality in constant time. An ordered index answers range and sort questions in logarithmic time. Either can be unique, span several properties, or key on a computed value - and every insert, update, delete and rollback keeps them in step: there is no reindex step and no stale index.">
     <span class="bb-badge">3 hash</span>
     <span class="bb-badge">2 ordered</span>
     <span class="bb-badge bd-badge-neutral">@(_todos?.Count ?? 0) rows</span>
@@ -104,8 +104,9 @@ else
                         A row whose indexed property is <code>null</code> is recorded in that index
                         under null, so <code>Lookup(Category, null)</code> finds the uncategorised rows
                         in one probe and an ordered index lists them first. Only a bounded
-                        <code>Range</code> leaves them out - null is inside no interval - and a unique
-                        index never counts them as duplicates.
+                        <code>Range</code> leaves them out - null is inside no interval - and a single-property
+                        unique index never counts them as duplicates. (A compound unique index compares the whole
+                        tuple, so there null members are not exempt.)
                     </p>
                     <dl class="bb-params">
                         <dt>Rows in table</dt>
@@ -121,6 +122,27 @@ else
                         <code>CountBy</code> over the named categories plus the null bucket adds up to
                         <code>table.Count</code>.
                     </p>
+                </Panel>
+
+                <Panel Title="Every value with its count" IconName="list" Sub="CountBy(index) - filter facets">
+                    <p>
+                        Without a value, <code>CountBy</code> walks the index's buckets rather than the rows and returns
+                        every distinct value with how many rows carry it - one step per value. Null is counted under null.
+                    </p>
+                    <div class="bb-scroll">
+                        <table class="bb-table">
+                            <thead><tr><th>todos.CountBy(Indexes.Category)</th><th class="bd-num">Rows</th></tr></thead>
+                            <tbody>
+                                @foreach (var facet in _todos.CountBy(TodoEntry.Indexes.Category).OrderByDescending(f => f.Value))
+                                {
+                                    <tr>
+                                        <td class="bb-mono">@(facet.Key is null ? "null" : $"\"{facet.Key}\"")</td>
+                                        <td class="bd-num">@facet.Value</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </Panel>
 
                 <Panel Title="Index versus scan" IconName="gauge">
@@ -158,7 +180,7 @@ else
     </Section>
 
     <Section Title="Ordered indexes - ranges and sort order"
-             Lead="Range takes two inclusive bounds and walks the index in either direction. An unbounded end leaves the range open, and an implicit conversion means a bare value is accepted wherever a bound is expected.">
+             Lead="Range takes two bounds - inclusive unless made with BlazeDbBound.Exclusive - and walks the index in either direction. An unbounded end leaves the range open, and an implicit conversion means a bare value is accepted wherever a bound is expected.">
         <div class="bd-main-side">
             <Panel Title="Compose a range" IconName="filter">
                 <div class="bb-fields">
@@ -182,21 +204,29 @@ else
                 {
                     <div class="bb-fields">
                         <div class="bb-field">
-                            <label for="eff-from">From (inclusive)</label>
+                            <label for="eff-from">From (@(_fromExclusive ? "exclusive" : "inclusive"))</label>
                             <input id="eff-from" class="bb-mono" type="number" min="0" max="600" disabled="@_fromUnbounded"
                                    @bind="_effortFrom" @bind:after="RunOrdered" />
                             <label class="bb-check">
                                 <input type="checkbox" @bind="_fromUnbounded" @bind:after="RunOrdered" />
                                 BlazeDbBound&lt;int&gt;.Unbounded
                             </label>
+                            <label class="bb-check">
+                                <input type="checkbox" disabled="@_fromUnbounded" @bind="_fromExclusive" @bind:after="RunOrdered" />
+                                BlazeDbBound&lt;int&gt;.Exclusive
+                            </label>
                         </div>
                         <div class="bb-field">
-                            <label for="eff-to">To (inclusive)</label>
+                            <label for="eff-to">To (@(_toExclusive ? "exclusive" : "inclusive"))</label>
                             <input id="eff-to" class="bb-mono" type="number" min="0" max="600" disabled="@_toUnbounded"
                                    @bind="_effortTo" @bind:after="RunOrdered" />
                             <label class="bb-check">
                                 <input type="checkbox" @bind="_toUnbounded" @bind:after="RunOrdered" />
                                 BlazeDbBound&lt;int&gt;.Unbounded
+                            </label>
+                            <label class="bb-check">
+                                <input type="checkbox" disabled="@_toUnbounded" @bind="_toExclusive" @bind:after="RunOrdered" />
+                                BlazeDbBound&lt;int&gt;.Exclusive
                             </label>
                         </div>
                     </div>
@@ -288,6 +318,146 @@ else
                 </Panel>
             </div>
         </div>
+    </Section>
+
+    <Section Title="Compound, unique, prefix and computed indexes"
+             Lead="TodoEntry declares only single-property indexes. This private database holds a second table, Person, that declares every other shape the attributes can express - each one live below.">
+        <CodeBlock Title="Data/DemoModels.cs" Code="@PersonSource" />
+
+        @if (_people is not null)
+        {
+            <div class="bb-split">
+                <Panel Title="A compound hash index" IconName="index" Sub="one lookup for several equalities">
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="cr-city">City</label>
+                            <select id="cr-city" @bind="_city">
+                                @foreach (var city in _people.Scan().Select(p => p.City).Distinct().Order())
+                                {
+                                    <option value="@city">@city</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="bb-field">
+                            <label for="cr-role">Role</label>
+                            <select id="cr-role" @bind="_role">
+                                <option value="engineer">engineer</option>
+                                <option value="researcher">researcher</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="bb-log bd-out">people.Lookup(Person.Indexes.CityRole, ("@_city", "@_role")) → @string.Join(", ", _people.Lookup(Person.Indexes.CityRole, (_city, _role)).Select(p => p.Name).DefaultIfEmpty("no rows"))</div>
+                    <p class="bd-foot">
+                        Keyed by the value tuple, so a filter on both members is one probe - not a lookup on one and a
+                        scan of the other. The EF Core provider picks it when several equalities match its members.
+                    </p>
+                </Panel>
+
+                <Panel Title="A prefix scan" IconName="search" Sub="StartsWith over an ordinal string index">
+                    <div class="bb-fields">
+                        <div class="bb-field">
+                            <label for="pf-prefix">Name starts with</label>
+                            <input id="pf-prefix" class="bb-mono" @bind="_prefix" @bind:event="oninput" />
+                        </div>
+                    </div>
+                    <div class="bb-log bd-out">people.StartsWith(Person.Indexes.Name, "@_prefix") → @string.Join(", ", _people.StartsWith(Person.Indexes.Name, _prefix).Select(p => p.Name).DefaultIfEmpty("no rows"))
+
+BlazeDbQuery&lt;int, Person&gt;.From(people).UseIndexPrefix(Person.Indexes.Name, "@_prefix", descending: true).Explain()
+@PrefixPlan()</div>
+                    <p class="bd-foot">
+                        A range from the prefix to the first string that sorts after every string carrying it. The match is
+                        ordinal, so <code>"a"</code> does not find <code>"Ada"</code>, and an index declared with a comparer
+                        of its own refuses the call: strings that share a prefix need not sort together under it.
+                    </p>
+                </Panel>
+            </div>
+
+            <div class="bb-split">
+                <Panel Title="Keyset paging" IconName="sort" Sub="Range from Exclusive(last row)">
+                    <div class="bb-scroll">
+                        <table class="bb-table bb-compare">
+                            <thead><tr><th>Joined</th><th class="bd-num">Id</th><th>Name</th></tr></thead>
+                            <tbody>
+                                @foreach (var person in _page)
+                                {
+                                    <tr>
+                                        <td class="bb-mono bd-small">@person.Joined.ToString("yyyy-MM-dd")</td>
+                                        <td class="bd-num">@person.Id</td>
+                                        <td class="bd-strong">@person.Name</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-secondary" @onclick="FirstPage"><Icon Name="refresh" /> First page</button>
+                        <button type="button" class="btn btn-secondary" disabled="@(_page.Count < PeoplePageSize)" @onclick="NextPage"><Icon Name="arrow-down" /> Next page</button>
+                    </div>
+                    <div class="bb-log bd-out">@_pageCode</div>
+                    <p class="bd-foot">
+                        The next page starts strictly after the last row of this one. Two people joined on 2024-03-02, so
+                        paging on the date alone would skip or repeat one; the compound index ends in the unique Id, which
+                        makes every position distinct.
+                    </p>
+                </Panel>
+
+                <div class="bb-flex">
+                    <Panel Title="An index-only computed property" IconName="tag" Sub="indexed, never stored">
+                        <div class="bb-scroll">
+                            <table class="bb-table">
+                                <thead><tr><th>people.CountBy(Person.Indexes.Domain)</th><th class="bd-num">Rows</th></tr></thead>
+                                <tbody>
+                                    @foreach (var facet in _people.CountBy(Person.Indexes.Domain).OrderByDescending(f => f.Value).ThenBy(f => f.Key))
+                                    {
+                                        <tr>
+                                            <td class="bb-mono">"@facet.Key"</td>
+                                            <td class="bd-num">@facet.Value</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="bd-foot">
+                            <code>Domain =&gt; Email[(Email.IndexOf('@@') + 1)..]</code> is computed from a stored property; the
+                            index keys on it while the row bytes leave it out.
+                        </p>
+                    </Panel>
+
+                    <Panel Title="A unique index" IconName="key" Sub="Person.Indexes.Email">
+                        <dl class="bb-params">
+                            <dt>Email.IsUnique</dt>
+                            <dd>@Person.Indexes.Email.IsUnique.ToString().ToLowerInvariant()</dd>
+                            <dt>CountBy(Email, null)</dt>
+                            <dd>@_people.CountBy(Person.Indexes.Email, null) - nulls are never duplicates on a single-property index</dd>
+                        </dl>
+                        <p class="bd-foot">
+                            Every write path checks it before anything changes, <code>TryInsert</code> included -
+                            <a href="writes">see it refuse a duplicate</a>.
+                        </p>
+                    </Panel>
+                </div>
+            </div>
+
+            <Panel Title="Person.Table.Indexes - what the generator emitted" IconName="layers" Flush="true">
+                <div class="bb-scroll">
+                    <table class="bb-table">
+                        <thead><tr><th>Name</th><th>Kind</th><th>Members</th><th>Unique</th></tr></thead>
+                        <tbody>
+                            @foreach (var index in Person.Table.Indexes)
+                            {
+                                var hash = index.GetType().Name.StartsWith("BlazeDbHash", StringComparison.Ordinal);
+                                <tr>
+                                    <td class="bd-strong">@index.Name</td>
+                                    <td><span class="@Tones.Badge(hash ? "info" : "accent")">@(hash ? "hash" : "ordered")</span></td>
+                                    <td class="bb-mono">@string.Join(", ", index.Members)</td>
+                                    <td>@(index.IsUnique ? "unique" : "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </Panel>
+        }
     </Section>
 
     <Section Title="Indexes follow every mutation"
@@ -391,6 +561,8 @@ else
     private bool _descending;
     private bool _fromUnbounded;
     private bool _toUnbounded;
+    private bool _fromExclusive;
+    private bool _toExclusive;
     private int _effortFrom = 40;
     private int _effortTo = 100;
     private DateTime _dateFrom = DateTime.UtcNow.AddDays(-14);
@@ -412,13 +584,32 @@ else
     private int _sandboxDocs;
     private int _sandboxCritical;
 
+    // the people database
+    private const int PeoplePageSize = 2;
+    private BlazeDbDatabase? _peopleDb;
+    private BlazeDbTable<int, Person>? _people;
+    private string _city = "London";
+    private string _role = "engineer";
+    private string _prefix = "A";
+    private List<Person> _page = [];
+    private string _pageCode = "";
+
     protected override async Task OnInitializedAsync()
     {
         await Db.GetDatabaseAsync();
         _todos = Db.Todos;
+        if (DemoData.MedianCreatedAt(_todos) is { } median)
+        {
+            _dateFrom = median;
+        }
 
         _sandbox = await DemoSandbox.OpenAsync();
         _sandboxTable = _sandbox.GetTable(TodoEntry.Table);
+
+        _peopleDb = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(Person.Table));
+        _people = _peopleDb.GetTable(Person.Table);
+        _people.InsertMany(DemoData.People());
+        FirstPage();
 
         RunHash();
         RunOrdered();
@@ -532,15 +723,17 @@ else
 
         if (_orderedIndex == "Effort")
         {
-            var from = _fromUnbounded ? BlazeDbBound<int>.Unbounded : BlazeDbBound<int>.At(_effortFrom);
-            var to = _toUnbounded ? BlazeDbBound<int>.Unbounded : BlazeDbBound<int>.At(_effortTo);
+            var from = _fromUnbounded ? BlazeDbBound<int>.Unbounded
+                : _fromExclusive ? BlazeDbBound<int>.Exclusive(_effortFrom) : BlazeDbBound<int>.At(_effortFrom);
+            var to = _toUnbounded ? BlazeDbBound<int>.Unbounded
+                : _toExclusive ? BlazeDbBound<int>.Exclusive(_effortTo) : BlazeDbBound<int>.At(_effortTo);
 
             _orderedRows = _todos.Range(TodoEntry.Indexes.Effort, from, to, _descending).ToList();
             _orderByCount = _todos.OrderBy(TodoEntry.Indexes.Effort, _descending).Count();
             _orderedCode =
                 $"todos.Range(TodoEntry.Indexes.Effort,\n" +
-                $"            {(_fromUnbounded ? "BlazeDbBound<int>.Unbounded" : _effortFrom.ToString())},\n" +
-                $"            {(_toUnbounded ? "BlazeDbBound<int>.Unbounded" : _effortTo.ToString())},\n" +
+                $"            {BoundCode("int", _fromUnbounded, _fromExclusive, _effortFrom.ToString())},\n" +
+                $"            {BoundCode("int", _toUnbounded, _toExclusive, _effortTo.ToString())},\n" +
                 $"            descending: {_descending.ToString().ToLowerInvariant()})";
         }
         else
@@ -675,13 +868,75 @@ else
 
     private static string Literal(string? value) => value is null ? "null" : $"\"{value}\"";
 
+    /// <summary>A bound as the code that builds it: Unbounded, Exclusive(v), or the bare value the implicit conversion takes.</summary>
+    private static string BoundCode(string type, bool unbounded, bool exclusive, string value) =>
+        unbounded ? $"BlazeDbBound<{type}>.Unbounded" : exclusive ? $"BlazeDbBound<{type}>.Exclusive({value})" : value;
+
+    /// <summary>The prefix scan as a query source, and the plan it reports.</summary>
+    private string PrefixPlan() =>
+        BlazeDbQuery<int, Person>.From(_people!).UseIndexPrefix(Person.Indexes.Name, _prefix, descending: true).Explain();
+
+    // ------------------------------------------------------------ keyset paging
+
+    private void FirstPage()
+    {
+        if (_people is null)
+        {
+            return;
+        }
+
+        _page = _people.OrderBy(Person.Indexes.JoinedId).Take(PeoplePageSize).ToList();
+        _pageCode = $"people.OrderBy(Person.Indexes.JoinedId).Take({PeoplePageSize})";
+    }
+
+    private void NextPage()
+    {
+        if (_people is null || _page.Count == 0)
+        {
+            return;
+        }
+
+        var last = _page[^1];
+        _page = _people.Range(Person.Indexes.JoinedId,
+                BlazeDbBound<(DateOnly, int)>.Exclusive((last.Joined, last.Id)),
+                BlazeDbBound<(DateOnly, int)>.Unbounded)
+            .Take(PeoplePageSize)
+            .ToList();
+        _pageCode =
+            $"people.Range(Person.Indexes.JoinedId,\n" +
+            $"    BlazeDbBound<(DateOnly, int)>.Exclusive((new DateOnly({last.Joined.Year}, {last.Joined.Month}, {last.Joined.Day}), {last.Id})),\n" +
+            $"    BlazeDbBound<(DateOnly, int)>.Unbounded).Take({PeoplePageSize})";
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_sandbox is not null)
         {
             await _sandbox.DisposeAsync();
         }
+        if (_peopleDb is not null)
+        {
+            await _peopleDb.DisposeAsync();
+        }
     }
+
+    private const string PersonSource = """
+        [BlazeDbTable("people")]
+        [BlazeDbCompoundIndex("CityRole", nameof(City), nameof(Role))]              // hash over a tuple
+        [BlazeDbCompoundOrderedIndex("JoinedId", nameof(Joined), nameof(Id))]       // ordered, ends unique
+        public partial class Person
+        {
+            [BlazeDbKey] public int Id { get; set; }
+            [BlazeDbIndex(Unique = true)] public string? Email { get; set; }        // unique, nulls allowed
+            [BlazeDbOrderedIndex] public string Name { get; set; } = "";            // ordinal: prefix scans
+            public string City { get; set; } = "";
+            public string Role { get; set; } = "";
+            public DateOnly Joined { get; set; }
+
+            [BlazeDbIndex]                                                          // computed: index-only
+            public string Domain => Email is { } email ? email[(email.IndexOf('@') + 1)..] : "";
+        }
+        """;
 
     private const string BoundSnippet = """
         // Both ends inclusive.
@@ -700,5 +955,16 @@ else
 
         // Reverse traversal.
         todos.Range(index, 40, 100, descending: true);
+
+        // Exclusive ends: strictly after 40, strictly before 100 - the next page of a keyset pager.
+        todos.Range(index, BlazeDbBound<int>.Exclusive(40), BlazeDbBound<int>.Exclusive(100));
+
+        // Ordinal prefix scan, over an ordered index on a string property.
+        people.StartsWith(Person.Indexes.Name, "Al");
+
+        // A compound ordered index takes a tuple - the next keyset page.
+        people.Range(Person.Indexes.JoinedId,
+                     BlazeDbBound<(DateOnly, int)>.Exclusive((last.Joined, last.Id)),
+                     BlazeDbBound<(DateOnly, int)>.Unbounded);
         """;
 }

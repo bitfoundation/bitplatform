@@ -15,8 +15,7 @@
 /// <b>Two things they cannot do, and what to write instead.</b> They are static properties rather
 /// than <c>const</c>s, so one cannot be a <c>case</c> label, an attribute argument or a default
 /// parameter value; and extension members are a C# 14 feature on the READING side too, so a consumer
-/// compiling at an older language version - the default for a <c>net8.0</c> or <c>net9.0</c> app,
-/// which this package still targets - cannot read one at all
+/// that lowers its <c>LangVersion</c> below 14 cannot read one at all
 /// (<c>error CS9202: Feature 'extensions' is not available in C# 12.0</c>). Both cases name
 /// <see cref="BitExtraThemePresets"/>, whose <c>const</c>s these members return, and which is public
 /// for exactly that.

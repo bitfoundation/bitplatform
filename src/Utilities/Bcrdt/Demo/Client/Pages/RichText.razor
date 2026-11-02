@@ -1,0 +1,242 @@
+﻿@page "/rich-text"
+@inherits ReplicaPageBase
+
+<PageTitle>Rich text · Bcrdt</PageTitle>
+
+<div class="bb-intro">
+    <h1>Rich text</h1>
+    <p class="bb-subtitle">
+        A <code>BcrdtText</code> carries formatting as well as characters: marks such as bold or italic that occupy no
+        position in the text, merge like any other edit, and read back as a Quill-style delta. Two replicas of one
+        paragraph, each with a plain editor, formatting buttons and the formatted result rendered from that delta.
+    </p>
+</div>
+
+@* Each panel carries an editor, a toolbar, a rendered preview and a delta read-out, so the panels take the width the "on this page" rail would. *@
+<div class="bb-card bb-page-wide">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas, formatted</h3>
+    <p class="bb-card-desc">
+        Select some words in either editor, then press <em>Bold</em>, <em>Italic</em> or <em>Underline</em> - the
+        buttons format the text you last selected in that panel. The editor itself stays plain, because a
+        <code>&lt;textarea&gt;</code> cannot show formatting; under it, <em>Rendered</em> is the same text drawn from
+        <code>ToDelta()</code>, and <em>Delta</em> is that delta step by step.
+    </p>
+
+    @if (!Ready)
+    {
+        <p class="loading bb-empty"><span class="bb-spinner" aria-hidden="true"></span> Opening two replicas…</p>
+    }
+    else
+    {
+        <div class="bb-split replicas">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                (int Start, int End)? selected = Selected(replica);
+                IReadOnlyList<BcrdtDeltaOperation> delta = Text(replica).ToDelta();
+
+                <ReplicaPanel Replica="replica">
+                    <ChildContent>
+                        <BcrdtTextArea Text="Text(replica)"
+                                       Presence="replica.Document.Presence"
+                                       Field="@Field"
+                                       Rows="4"
+                                       Class="editor"
+                                       Placeholder="Type, then select some words and format them." />
+
+                        <div class="toolbar bb-toolbar">
+                            <button type="button" class="btn btn-secondary" disabled="@(selected is null)" @onclick="() => Format(replica, Bold)"><strong>Bold</strong></button>
+                            <button type="button" class="btn btn-secondary" disabled="@(selected is null)" @onclick="() => Format(replica, Italic)"><em>Italic</em></button>
+                            <button type="button" class="btn btn-secondary" disabled="@(selected is null)" @onclick="() => Format(replica, Underline)"><u>Underline</u></button>
+                            <button type="button" class="btn btn-secondary" disabled="@(selected is null)" @onclick="() => Format(replica, Plain)">Remove formatting</button>
+                        </div>
+                        <p class="rich-selection">
+                            @if (selected is { } range)
+                            {
+                                <text>Formats “@Excerpt(replica, range)” (@range.Start to @range.End)</text>
+                            }
+                            else
+                            {
+                                <text>Select some text in the editor above first.</text>
+                            }
+                        </p>
+
+                        <h4 class="sub">Rendered</h4>
+                        <div class="rich-preview">
+                            @foreach (BcrdtDeltaOperation step in delta)
+                            {
+                                if (step.Content is string run && !step.IsEmbed)
+                                {
+                                    <span class="@ClassOf(step.Attributes)">@run</span>
+                                }
+                            }
+                        </div>
+
+                        <h4 class="sub">Delta</h4>
+                        <pre class="bb-code rich-delta">@DescribeDelta(delta)</pre>
+                    </ChildContent>
+
+                    <Footer>
+                        <span class="metric">@Text(replica).Count characters</span>
+                        <span class="metric">@delta.Count delta step(s)</span>
+                    </Footer>
+                </ReplicaPanel>
+            }
+        </div>
+    }
+
+    <CodeSnippet Sample="RichTextEditor.razor" />
+
+    <div class="bb-note bb-note-warn">
+        <strong>The thing worth trying.</strong> Take <em>Replica B</em> offline. In A, select "quick brown" and press
+        <em>Bold</em>. In B, select "brown fox" and press <em>Italic</em>, then type a few letters into the middle of
+        "jumps" and, back in A, bold "jumps". Bring B back online. "quick" is bold, "fox" is italic and "brown" is
+        both - each mark is its own attribute, so neither replaces the other - and the letters B typed inside "jumps"
+        are bold too, because they landed between the marks A placed around the word.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Formatting is not a character</h3>
+    <p class="bb-card-desc">
+        <code>Format(index, length, attributes)</code> does not touch the characters it formats. It places a mark at
+        each end of the run, and the marks take up no position: the character count, every caret and every index
+        stay exactly where they were, which is why the plain editors above are not disturbed when a word turns bold.
+        A mark is still a block in the document like any character, though, so it is sent, merged and undone the
+        same way - and text typed between two marks takes on their formatting, whoever typed it.
+    </p>
+    <pre class="bb-code">BcrdtText text = document.Text(<span class="s">"rich"</span>);
+
+text.Format(4, 11, <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">object</span>?&gt; { [<span class="s">"bold"</span>] = <span class="k">true</span> });    <span class="c">// null removes an attribute</span>
+text.Insert(0, <span class="s">"Note: "</span>, <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">object</span>?&gt; { [<span class="s">"italic"</span>] = <span class="k">true</span> });
+text.InsertEmbed(text.Count, <span class="k">new</span> Dictionary&lt;<span class="k">string</span>, <span class="k">object</span>?&gt; { [<span class="s">"image"</span>] = <span class="s">"chart.png"</span> });
+
+IReadOnlyList&lt;BcrdtDeltaOperation&gt; delta = text.ToDelta();   <span class="c">// what an editor renders</span>
+text.ApplyDelta(changeFromTheEditor);                          <span class="c">// what an editor reports back</span>
+<span class="k">string</span> plain = text.ToString();                                <span class="c">// formatting and embeds left out</span></pre>
+    <p class="bb-card-desc">
+        Attribute names and values are yours to choose - <code>bold</code>, a link's address, a colour - as long as
+        the values are ones a document can store. An embed - an image, a mention, a nested type - occupies exactly
+        one position.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Bringing your own editor</h3>
+    <p class="bb-card-desc">
+        bit Bcrdt ships no rich-text editor component - <code>BcrdtTextArea</code> is plain text - but the delta is the
+        shape Quill and most editors built like it already speak, so the bridge is two calls. Outbound, render
+        <code>ToDelta()</code> once, then patch the editor with each change's own delta from <code>Observe</code>,
+        which says exactly what moved. Inbound, hand what the editor reports to <code>ApplyDelta</code>: a retain
+        leaves the underlying blocks alone, so concurrent edits inside a retained span survive - it is an edit, not a
+        replacement.
+    </p>
+    <pre class="bb-code">text.Observe((change, transaction) =&gt;
+{
+    <span class="k">if</span> (!transaction.Local) editor.UpdateContents(change.Delta);   <span class="c">// a collaborator's change</span>
+});
+
+editor.OnTextChange(delta =&gt; text.ApplyDelta(delta));              <span class="c">// the user's change</span></pre>
+    <p class="bb-card-desc">
+        There is no XML or tree type for ProseMirror-style editors: what this models is a run of text with marks and
+        embeds, the Quill model.
+    </p>
+</div>
+
+@code {
+    private const string Field = "rich";
+    private const string Sample = "The quick brown fox jumps over the lazy dog.";
+
+    private static readonly Dictionary<string, object?> Bold = new() { ["bold"] = true };
+    private static readonly Dictionary<string, object?> Italic = new() { ["italic"] = true };
+    private static readonly Dictionary<string, object?> Underline = new() { ["underline"] = true };
+
+    // A null value removes an attribute, so this clears all three marks the buttons can place.
+    private static readonly Dictionary<string, object?> Plain = new() { ["bold"] = null, ["italic"] = null, ["underline"] = null };
+
+    // The last range each panel's editor selected, kept as presence published it: anchored to characters, so
+    // it still names the same words after anyone types elsewhere.
+    private readonly Dictionary<DemoReplica, BcrdtCollaboratorSelection> _selections = [];
+
+    protected override string DocumentId => "demo-rich-text";
+
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B"];
+
+    protected override void OnReplicasOpened()
+    {
+        // Written once, by one replica, so both format the same characters rather than two look-alike
+        // sentences. The other replica receives it like any other edit.
+        BcrdtText first = Text(Replicas[0]);
+        if (first.Count == 0) first.Insert(0, Sample);
+
+        foreach (DemoReplica replica in Replicas)
+        {
+            DemoReplica captured = replica;
+
+            // The editor withdraws its selection when it loses focus - which pressing a button does -
+            // so the page remembers the last real selection rather than reading the current one.
+            void Remember()
+            {
+                BcrdtCollaborator? self = captured.Document.Presence.Participants.FirstOrDefault(participant => participant.IsLocal);
+                if (self?.Selection is { IsCaret: false } selection && selection.Field == Field) _selections[captured] = selection;
+            }
+
+            captured.Document.Presence.Changed += Remember;
+            TrackDisposable(new Unsubscribe(() => captured.Document.Presence.Changed -= Remember));
+        }
+    }
+
+    private static BcrdtText Text(DemoReplica replica) => replica.Document.Text(Field);
+
+    private (int Start, int End)? Selected(DemoReplica replica)
+    {
+        if (!_selections.TryGetValue(replica, out BcrdtCollaboratorSelection? selection)) return null;
+
+        // Null while the anchored characters are unknown, and empty once they have all been deleted.
+        return selection.Resolve(replica.Document.Crdt) is { } range && range.End > range.Start ? range : null;
+    }
+
+    private void Format(DemoReplica replica, Dictionary<string, object?> attributes)
+    {
+        if (Selected(replica) is not { } range) return;
+        Text(replica).Format(range.Start, range.End - range.Start, attributes);
+    }
+
+    private static string Excerpt(DemoReplica replica, (int Start, int End) range)
+    {
+        const int shown = 40;
+        string text = Text(replica).ToString();
+        int start = Math.Min(range.Start, text.Length);
+        int length = Math.Min(range.End, text.Length) - start;
+        string excerpt = text.Substring(start, length);
+        return excerpt.Length > shown ? excerpt[..shown] + "…" : excerpt;
+    }
+
+    private static string? ClassOf(IReadOnlyDictionary<string, object?>? attributes)
+    {
+        if (attributes is null) return null;
+
+        List<string> classes = [];
+        if (attributes.GetValueOrDefault("bold") is true) classes.Add("rich-bold");
+        if (attributes.GetValueOrDefault("italic") is true) classes.Add("rich-italic");
+        if (attributes.GetValueOrDefault("underline") is true) classes.Add("rich-underline");
+        return classes.Count == 0 ? null : string.Join(' ', classes);
+    }
+
+    private static string DescribeDelta(IReadOnlyList<BcrdtDeltaOperation> delta)
+    {
+        if (delta.Count == 0) return "(empty)";
+
+        return string.Join('\n', delta.Select(step =>
+        {
+            string attributes = step.Attributes is { Count: > 0 } marks
+                ? " { " + string.Join(", ", marks.Select(mark => $"{mark.Key}: {(mark.Value is bool flag ? (flag ? "true" : "false") : mark.Value)}")) + " }"
+                : string.Empty;
+            return step.ToString() + attributes;
+        }));
+    }
+
+    private sealed class Unsubscribe(Action action) : IDisposable
+    {
+        public void Dispose() => action();
+    }
+}

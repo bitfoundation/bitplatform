@@ -1,0 +1,399 @@
+﻿@page "/tw/popover"
+
+<PageTitle>Popover — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Popover</h1>
+        <p class="mt-2 text-zinc-500">Non-modal floating panel with focus management and group coordination.</p>
+        <TwSectionSwitcher Slug="popover" />
+    </header>
+
+    <TwDemoBlock Title="Basic Popover" Code="@_basicCode">
+        <Description>Click to open. Escape or outside click closes; focus returns to the button.</Description>
+        <LiveContent>
+            <BitBhPopover class="relative inline-block">
+                <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                    <Template Context="b">
+                        Learn more
+                        <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+                    <h3 class="text-sm font-semibold text-zinc-900 m-0">bit Bheadless</h3>
+                    <p class="text-sm text-zinc-500 m-0">A headless component library for Blazor. Zero styles, full accessibility, complete control over your design.</p>
+                    <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" class="text-sm text-blue-600 no-underline hover:underline">View on GitHub →</a>
+                    <BitBhPopoverButton
+                                     class="bg-transparent border-0 p-0 text-xs text-zinc-500 cursor-pointer underline underline-offset-2">
+                        <Template Context="closeBtn">
+                            Close
+                        </Template>
+                    </BitBhPopoverButton>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Popover Group (mutual exclusion)" Code="@_groupCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhPopoverGroup</code> auto-closes siblings.</Description>
+        <LiveContent>
+            <BitBhPopoverGroup class="flex items-center gap-2">
+                <BitBhPopover class="relative inline-block">
+                    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                        <Template Context="b">
+                            Products
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhPopoverButton>
+                    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+                        <h3 class="text-sm font-semibold text-zinc-900 m-0">Products</h3>
+                        <ul class="list-none p-0 m-0 flex flex-col gap-1">
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Analytics</a></li>
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Automation</a></li>
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Commerce</a></li>
+                        </ul>
+                    </BitBhPopoverPanel>
+                </BitBhPopover>
+                <BitBhPopover class="relative inline-block">
+                    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                        <Template Context="b">
+                            Solutions
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhPopoverButton>
+                    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+                        <h3 class="text-sm font-semibold text-zinc-900 m-0">Solutions</h3>
+                        <ul class="list-none p-0 m-0 flex flex-col gap-1">
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Marketing</a></li>
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Engineering</a></li>
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Finance</a></li>
+                        </ul>
+                    </BitBhPopoverPanel>
+                </BitBhPopover>
+                <BitBhPopover class="relative inline-block">
+                    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                        <Template Context="b">
+                            Company
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhPopoverButton>
+                    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+                        <h3 class="text-sm font-semibold text-zinc-900 m-0">Company</h3>
+                        <ul class="list-none p-0 m-0 flex flex-col gap-1">
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">About</a></li>
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Blog</a></li>
+                            <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Careers</a></li>
+                        </ul>
+                    </BitBhPopoverPanel>
+                </BitBhPopover>
+            </BitBhPopoverGroup>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
+        <Description>External <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Open</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnOpenChange</code>.</Description>
+        <LiveContent>
+            <div class="flex flex-col gap-4 items-start">
+                <div class="flex flex-wrap items-center gap-3">
+                    <BitBhButton OnClick="ToggleControlled"
+                              class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                        Toggle from outside
+                    </BitBhButton>
+                    <span class="text-sm text-zinc-500">Open: <strong class="text-zinc-900">@controlledOpen.ToString().ToLowerInvariant()</strong></span>
+                </div>
+                <BitBhPopover Open="controlledOpen" OnOpenChange="v => controlledOpen = v" class="relative inline-block">
+                    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                        <Template Context="b">
+                            Internal trigger
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhPopoverButton>
+                    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+                        <p class="text-sm text-zinc-500 m-0">Either trigger updates the same state.</p>
+                    </BitBhPopoverPanel>
+                </BitBhPopover>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Anchor Positioning" Code="@_anchorCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Anchor</code> auto-positions the panel with viewport-aware flip + shift.</Description>
+        <LiveContent>
+            <div class="flex flex-wrap items-start gap-6">
+                <BitBhPopover class="inline-block">
+                    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                        <Template Context="b">
+                            Bottom Start
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhPopoverButton>
+                    <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 8 })"
+                                    class="z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg">
+                        <p class="text-sm text-zinc-500 m-0">Anchored to <strong>bottom start</strong>. Auto-flips when there's not enough space.</p>
+                    </BitBhPopoverPanel>
+                </BitBhPopover>
+                <BitBhPopover class="inline-block">
+                    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                        <Template Context="b">
+                            Top End
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhPopoverButton>
+                    <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "top end", Gap = 8 })"
+                                    class="z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg">
+                        <p class="text-sm text-zinc-500 m-0">Anchored to <strong>top end</strong>. Auto-flips when there's not enough space.</p>
+                    </BitBhPopoverPanel>
+                </BitBhPopover>
+                <BitBhPopover class="inline-block">
+                    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                        <Template Context="b">
+                            Right
+                            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                        </Template>
+                    </BitBhPopoverButton>
+                    <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })"
+                                    class="z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg">
+                        <p class="text-sm text-zinc-500 m-0">Anchored to <strong>right</strong>. Auto-flips when there's not enough space.</p>
+                    </BitBhPopoverPanel>
+                </BitBhPopover>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Rich panel content" Code="@_richCode">
+        <Description>Any markup works inside the panel.</Description>
+        <LiveContent>
+            <BitBhPopover class="relative inline-block">
+                <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+                    <Template Context="b">
+                        Notifications
+                        <span class="ml-1 inline-flex items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-xs font-bold text-white">3</span>
+                        <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+                    </Template>
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-88 rounded-lg border border-zinc-200 bg-white shadow-lg overflow-hidden">
+                    <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
+                        <h3 class="text-sm font-semibold text-zinc-900 m-0">Notifications</h3>
+                        <span class="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">3 new</span>
+                    </div>
+                    <ul class="list-none m-0 py-1">
+                        <li class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-zinc-50">
+                            <span class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-600"></span>
+                            <div class="flex flex-col gap-0.5">
+                                <strong class="text-sm text-zinc-900">Alice commented on your post</strong>
+                                <span class="text-xs text-zinc-500">2 minutes ago</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-zinc-50">
+                            <span class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-600"></span>
+                            <div class="flex flex-col gap-0.5">
+                                <strong class="text-sm text-zinc-900">Your export is ready</strong>
+                                <span class="text-xs text-zinc-500">15 minutes ago</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-zinc-50">
+                            <span class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-600"></span>
+                            <div class="flex flex-col gap-0.5">
+                                <strong class="text-sm text-zinc-900">New team member joined</strong>
+                                <span class="text-xs text-zinc-500">1 hour ago</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="#" class="block border-t border-zinc-200 py-2.5 text-center text-sm text-blue-600 no-underline hover:bg-zinc-50">View all notifications →</a>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool controlledOpen;
+
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+
+    private const string _basicCode = """
+<BitBhPopover class="relative inline-block">
+    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+        <Template Context="b">
+            Learn more
+            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+        </Template>
+    </BitBhPopoverButton>
+    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+        <h3 class="text-sm font-semibold text-zinc-900 m-0">bit Bheadless</h3>
+        <p class="text-sm text-zinc-500 m-0">A headless component library for Blazor. Zero styles, full accessibility, complete control over your design.</p>
+        <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" class="text-sm text-blue-600 no-underline hover:underline">View on GitHub →</a>
+        <BitBhPopoverButton
+                         class="bg-transparent border-0 p-0 text-xs text-zinc-500 cursor-pointer underline underline-offset-2">
+            <Template Context="closeBtn">
+                Close
+            </Template>
+        </BitBhPopoverButton>
+    </BitBhPopoverPanel>
+</BitBhPopover>
+""";
+
+    private const string _groupCode = """
+<BitBhPopoverGroup class="flex items-center gap-2">
+    <BitBhPopover class="relative inline-block">
+        <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+            <Template Context="b">
+                Products
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhPopoverButton>
+        <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+            <h3 class="text-sm font-semibold text-zinc-900 m-0">Products</h3>
+            <ul class="list-none p-0 m-0 flex flex-col gap-1">
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Analytics</a></li>
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Automation</a></li>
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Commerce</a></li>
+            </ul>
+        </BitBhPopoverPanel>
+    </BitBhPopover>
+    <BitBhPopover class="relative inline-block">
+        <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+            <Template Context="b">
+                Solutions
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhPopoverButton>
+        <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+            <h3 class="text-sm font-semibold text-zinc-900 m-0">Solutions</h3>
+            <ul class="list-none p-0 m-0 flex flex-col gap-1">
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Marketing</a></li>
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Engineering</a></li>
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Finance</a></li>
+            </ul>
+        </BitBhPopoverPanel>
+    </BitBhPopover>
+    <BitBhPopover class="relative inline-block">
+        <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+            <Template Context="b">
+                Company
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhPopoverButton>
+        <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+            <h3 class="text-sm font-semibold text-zinc-900 m-0">Company</h3>
+            <ul class="list-none p-0 m-0 flex flex-col gap-1">
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">About</a></li>
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Blog</a></li>
+                <li><a href="#" class="text-sm text-blue-600 no-underline hover:underline">Careers</a></li>
+            </ul>
+        </BitBhPopoverPanel>
+    </BitBhPopover>
+</BitBhPopoverGroup>
+""";
+
+    private const string _controlledCode = """
+<div class="flex flex-col gap-4 items-start">
+    <div class="flex flex-wrap items-center gap-3">
+        <BitBhButton OnClick="ToggleControlled"
+                  class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+            Toggle from outside
+        </BitBhButton>
+        <span class="text-sm text-zinc-500">Open: <strong class="text-zinc-900">@controlledOpen.ToString().ToLowerInvariant()</strong></span>
+    </div>
+    <BitBhPopover Open="controlledOpen" OnOpenChange="v => controlledOpen = v" class="relative inline-block">
+        <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+            <Template Context="b">
+                Internal trigger
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhPopoverButton>
+        <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg flex flex-col gap-2.5">
+            <p class="text-sm text-zinc-500 m-0">Either trigger updates the same state.</p>
+        </BitBhPopoverPanel>
+    </BitBhPopover>
+</div>
+
+@code {
+    private bool controlledOpen;
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+}
+""";
+
+    private const string _anchorCode = """
+<div class="flex flex-wrap items-start gap-6">
+    <BitBhPopover class="inline-block">
+        <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+            <Template Context="b">
+                Bottom Start
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhPopoverButton>
+        <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 8 })"
+                        class="z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg">
+            <p class="text-sm text-zinc-500 m-0">Anchored to <strong>bottom start</strong>. Auto-flips when there's not enough space.</p>
+        </BitBhPopoverPanel>
+    </BitBhPopover>
+    <BitBhPopover class="inline-block">
+        <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+            <Template Context="b">
+                Top End
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhPopoverButton>
+        <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "top end", Gap = 8 })"
+                        class="z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg">
+            <p class="text-sm text-zinc-500 m-0">Anchored to <strong>top end</strong>. Auto-flips when there's not enough space.</p>
+        </BitBhPopoverPanel>
+    </BitBhPopover>
+    <BitBhPopover class="inline-block">
+        <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+            <Template Context="b">
+                Right
+                <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+            </Template>
+        </BitBhPopoverButton>
+        <BitBhPopoverPanel Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })"
+                        class="z-30 min-w-64 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg">
+            <p class="text-sm text-zinc-500 m-0">Anchored to <strong>right</strong>. Auto-flips when there's not enough space.</p>
+        </BitBhPopoverPanel>
+    </BitBhPopover>
+</div>
+""";
+
+    private const string _richCode = """
+<BitBhPopover class="relative inline-block">
+    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm font-medium cursor-pointer transition-colors hover:border-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-state-open:border-blue-600">
+        <Template Context="b">
+            Notifications
+            <span class="ml-1 inline-flex items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-xs font-bold text-white">3</span>
+            <span class="@($"text-zinc-500 transition-transform duration-200 {(b.IsOpen ? "rotate-180" : "")}")">▾</span>
+        </Template>
+    </BitBhPopoverButton>
+    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-88 rounded-lg border border-zinc-200 bg-white shadow-lg overflow-hidden">
+        <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
+            <h3 class="text-sm font-semibold text-zinc-900 m-0">Notifications</h3>
+            <span class="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">3 new</span>
+        </div>
+        <ul class="list-none m-0 py-1">
+            <li class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-zinc-50">
+                <span class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-600"></span>
+                <div class="flex flex-col gap-0.5">
+                    <strong class="text-sm text-zinc-900">Alice commented on your post</strong>
+                    <span class="text-xs text-zinc-500">2 minutes ago</span>
+                </div>
+            </li>
+            <li class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-zinc-50">
+                <span class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-600"></span>
+                <div class="flex flex-col gap-0.5">
+                    <strong class="text-sm text-zinc-900">Your export is ready</strong>
+                    <span class="text-xs text-zinc-500">15 minutes ago</span>
+                </div>
+            </li>
+            <li class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-zinc-50">
+                <span class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-blue-600"></span>
+                <div class="flex flex-col gap-0.5">
+                    <strong class="text-sm text-zinc-900">New team member joined</strong>
+                    <span class="text-xs text-zinc-500">1 hour ago</span>
+                </div>
+            </li>
+        </ul>
+        <a href="#" class="block border-t border-zinc-200 py-2.5 text-center text-sm text-blue-600 no-underline hover:bg-zinc-50">View all notifications →</a>
+    </BitBhPopoverPanel>
+</BitBhPopover>
+""";
+}

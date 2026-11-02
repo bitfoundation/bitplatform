@@ -1,0 +1,86 @@
+﻿@page "/ai/scenarios/citations"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/citations"
+            Title="AI citations and sources"
+            Keywords="Blazor AI citations, inline citation markers, RAG sources UI, BitAiCitationMarker, BitAiSourceList, grounded answers"
+            Description="Numbered citation markers placed exactly where a claim is made, and a deduplicated source list under the answer, in a bit BlazorUI AI chat." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Citations"
+             Lead="Numbered markers placed exactly where the claim is made, and a deduplicated source list under the answer."
+             GitHubUrl="AI/Scenarios/Citations/AiCitationsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ask the starter question, then click a citation marker: the source it points at is shown beside the chat.">
+            <DemoExample Title="Anchored citations" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame AsideLabel="Selected source">
+                    <Aside>
+                        <BitText Element="h4" Typography="BitTypography.Subtitle2">Selected source</BitText>
+                        @if (_selected is { } citation)
+                        {
+                            <BitAiSourceCard Source="citation.Source" Number="citation.Number" />
+                            @if (citation.Quote is { Length: > 0 } quote)
+                            {
+                                <BitText Element="p" Typography="BitTypography.Body2"><i>“@quote”</i></BitText>
+                            }
+                        }
+                        else
+                        {
+                            <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">Click a citation marker in the answer.</BitText>
+                        }
+                    </Aside>
+                    <ChildContent>
+                        <BitAiChat Session="_session"
+                                   EmptyTitle="Ask about render modes"
+                                   Suggestions="_suggestions"
+                                   OnCitationClick="OnCitationClicked" />
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport first shows what it is doing (<code>BitAiStatusEvent("Searching the documentation")</code>,
+                cleared with <code>BitAiStatusEvent(null)</code>), then writes the answer a sentence at a time, sending a
+                <code>BitAiCitationEvent</code> after each sentence it can source. Its <code>BitAiCitation</code> names a
+                <code>BitAiCitationSource</code> - an id, a title, its <code>Kind</code> (web page, document...), its
+                <code>Url</code>, <code>SiteName</code> and <code>Description</code> - and the <code>Quote</code> it relies
+                on. A citation sent without offsets is not anchored anywhere: it only adds its source to the list under the
+                answer.
+            </p>
+            <p>
+                A <code>BitAiCitation</code> carries character offsets into the text it supports
+                (<code>StartIndex</code>, <code>EndIndex</code>). The renderer inserts a marker at each offset before
+                parsing, so the superscript lands mid-sentence instead of being collected into a footnote nobody connects to
+                anything. The sources the citations name are deduplicated and numbered under the answer, each number matching
+                its markers.
+            </p>
+            <p>
+                Offsets that reach past the text received so far are held back, so a marker never appears in the wrong
+                sentence while the answer streams. <code>OnCitationClick</code> and <code>OnSourceClick</code> hand the
+                citation or the source to the app, to open it in a panel of its own as this page does.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/citationmarker"><code>BitAiCitationMarker</code></BitLink> - the numbered chip where a claim is made.</li>
+                <li><BitLink Href="/components/ai/sourcelist"><code>BitAiSourceList</code></BitLink> - the deduplicated sources under the answer.</li>
+                <li><BitLink Href="/components/ai/sourcecard"><code>BitAiSourceCard</code></BitLink> - one source, in that list and beside the chat.</li>
+                <li><BitLink Href="/components/ai/textpartview"><code>BitAiTextPartView</code></BitLink> - the text the citations are woven into.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

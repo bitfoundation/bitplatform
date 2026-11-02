@@ -83,10 +83,10 @@ public sealed class TemplateSelection(TemplateManifest manifest)
     {
         var arguments = new List<string>();
 
-        foreach (var (parameter, value) in NonDefaultValues())
+        foreach (var parameter in Manifest.Parameters.Where(p => HasExplicitValue(p.Name)))
         {
             arguments.Add($"--{parameter.Name}");
-            arguments.Add(value);
+            arguments.Add(this[parameter.Name]);
         }
 
         return arguments;

@@ -5,8 +5,16 @@ public static class FolderRemover
     public static (IReadOnlyList<PathFailure> Failures, bool OnlyEmptyFoldersLeft) Delete(string folder)
     {
         var failures = new List<PathFailure>();
+        var root = new DirectoryInfo(folder);
 
-        DeleteTree(new DirectoryInfo(folder), failures);
+        if (root.Exists && root.Attributes.HasFlag(FileAttributes.ReparsePoint))
+        {
+            TryDelete(root, failures);
+        }
+        else
+        {
+            DeleteTree(root, failures);
+        }
 
         if (Directory.Exists(folder) is false)
             return ([], false);
@@ -53,11 +61,27 @@ public static class FolderRemover
         try
         {
             ClearReadOnly(entry);
-            entry.Delete();
+            Delete(entry);
         }
         catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
         {
             failures.Add(new PathFailure(entry.FullName, exp.Message));
+        }
+    }
+
+    private static void Delete(FileSystemInfo entry)
+    {
+        var path = OperatingSystem.IsWindows() is false || entry.FullName.StartsWith(@"\\?\", StringComparison.Ordinal) || entry.FullName.StartsWith(@"\\.\", StringComparison.Ordinal) ? entry.FullName
+            : entry.FullName.StartsWith(@"\\", StringComparison.Ordinal) ? $@"\\?\UNC\{entry.FullName[2..]}"
+            : $@"\\?\{entry.FullName}";
+
+        if (entry is DirectoryInfo)
+        {
+            Directory.Delete(path);
+        }
+        else
+        {
+            File.Delete(path);
         }
     }
 

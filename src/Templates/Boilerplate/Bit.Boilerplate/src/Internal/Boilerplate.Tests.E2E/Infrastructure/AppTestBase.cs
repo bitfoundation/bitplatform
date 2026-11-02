@@ -17,6 +17,15 @@ public abstract class AppTestBase : AppPageTest
     /// <summary>Stops what an <see cref="IAppOpener"/> launched, at the end of exactly this test.</summary>
     public void RegisterForCleanup(Func<Task> stop) => cleanups.Add(stop);
 
+    public override BrowserNewContextOptions ContextOptions()
+    {
+        var options = base.ContextOptions();
+
+        options.IgnoreHTTPSErrors = false;
+
+        return options;
+    }
+
     /// <summary>
     /// A live page of <paramref name="app"/>; inconclusive when it has no build on this platform, so a coverage gap
     /// shows up as skipped rather than hiding as a pass.
@@ -223,6 +232,30 @@ public abstract class AppTestBase : AppPageTest
         await BitOtpInputUtils.FillOtpInputs(page, token);
 
         await Expect(page).Not.ToHaveURLAsync(new Regex("sign-in", RegexOptions.IgnoreCase));
+
+        await WaitUntilSessionsHoldASignalRConnection(email, sessions: 1);
+    }
+
+    protected async Task WaitUntilSessionsHoldASignalRConnection(string email, int sessions)
+    {
+        var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(TestContext.CancellationToken);
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(1);
+
+        while (true)
+        {
+            await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(TestContext.CancellationToken);
+
+            var connectedSessions = await dbContext.UserSessions.IgnoreQueryFilters()
+                .CountAsync(session => session.User!.NormalizedEmail == email.ToUpperInvariant() && session.SignalRConnectionId != null, TestContext.CancellationToken);
+
+            if (connectedSessions >= sessions)
+                return;
+
+            if (DateTimeOffset.UtcNow > deadline)
+                Assert.Fail($"A minute after signing in, {connectedSessions} of {email}'s {sessions} sessions hold a SignalR connection.");
+
+            await Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken);
+        }
     }
 
     /// <summary>

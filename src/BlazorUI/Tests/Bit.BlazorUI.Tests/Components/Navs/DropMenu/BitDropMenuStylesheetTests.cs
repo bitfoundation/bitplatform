@@ -111,6 +111,24 @@ public class BitDropMenuStylesheetTests
     }
 
     [TestMethod]
+    public void BitDropMenuShouldWriteTheLabelOfAnUnpaintedSurfaceInTheRoleTextColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An Outline, Text or Transparent drop menu writes its label on the page rather than on the role's fill, so every
+        // role draws it in its text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as
+        // text on white, and a background role's main is the page itself. The same role-text every unfilled control reads.
+        var roles = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-drm-#{$role} {");
+        StringAssert.Contains(roles, "--bit-drm-clr-flt: #{role-text($role, $tokens)};");
+        StringAssert.DoesNotMatch(roles, new Regex(@"--bit-drm-clr-flt: #\{role\(\$tokens, on\)\}"));
+
+        foreach (var selector in new[] { "\n.bit-drm-otl {", "\n.bit-drm-tex {", "\n.bit-drm-trn {" })
+        {
+            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, selector), "--bit-drm-rst-txt: var(--bit-drm-clr-flt);");
+        }
+    }
+
+    [TestMethod]
     public void BitDropMenuShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
     {
         var stylesheet = ReadStylesheet();

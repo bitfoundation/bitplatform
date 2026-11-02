@@ -6,6 +6,8 @@ public sealed record Product(int Id, string Name, string Category, decimal Price
 
 public sealed record Order(int Id, string Customer, decimal Total, string Status, DateTimeOffset PlacedAt);
 
+public sealed record OrderDetails(int Id, int Lines, string Shipping);
+
 public sealed record Profile(string UserName, string Email, string AccessToken, string Plan);
 
 public sealed class CartLine

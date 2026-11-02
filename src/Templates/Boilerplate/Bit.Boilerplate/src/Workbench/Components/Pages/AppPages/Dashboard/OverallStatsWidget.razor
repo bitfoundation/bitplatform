@@ -1,0 +1,22 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack>
+        @if (isFailed)
+        {
+            <BitMessage Color="BitColor.Warning" Multiline Title="@Localizer[nameof(WorkbenchStrings.LoadFailed)]">
+                <Actions>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="GetData">@Localizer[nameof(WorkbenchStrings.PosRetry)]</BitButton>
+                </Actions>
+            </BitMessage>
+        }
+        <BitStack Horizontal Wrap Gap="1rem">
+            <OverallStatusCard Loading="isLoading" Value="totalCategories" Label="@AppLocalizer[nameof(AppStrings.TotalCategories)]" IconName="@BitIconName.BuildQueue" />
+            <OverallStatusCard Loading="isLoading" Value="categoriesWithProductCount" Label="@AppLocalizer[nameof(AppStrings.CategoriesWithProductCount)]" IconName="@BitIconName.BarChart3" />
+        </BitStack>
+        <BitStack Horizontal Wrap Gap="1rem">
+            <OverallStatusCard Loading="isLoading" Value="totalProducts" Label="@AppLocalizer[nameof(AppStrings.TotalProducts)]" IconName="@BitIconName.Product" />
+            <OverallStatusCard Loading="isLoading" Value="last30DaysProductCount" Label="@AppLocalizer[nameof(AppStrings.Last30DaysProductCount)]" IconName="@BitIconName.BarChartVerticalFill" />
+        </BitStack>
+    </BitStack>
+</section>

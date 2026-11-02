@@ -261,6 +261,11 @@ _book
 /src/BlazorUI/Bit.BlazorUI.Legacy/wwwroot/**/*.css.gz
 !/src/BlazorUI/Bit.BlazorUI.Legacy/wwwroot/quilljs/*.css
 
+/src/BlazorUI/Bit.BlazorUI.AI/**/*.css
+/src/BlazorUI/Bit.BlazorUI.AI/Scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.AI/wwwroot/scripts/*.js
+/src/BlazorUI/Bit.BlazorUI.AI/wwwroot/**/*.css.gz
+
 /src/BlazorUI/Bit.BlazorUI.Assets/**/*.css
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/scripts/*.js
 /src/BlazorUI/Bit.BlazorUI.Assets/wwwroot/**/*.css.gz
@@ -284,9 +289,10 @@ _book
 
 /src/Utilities/BevTools/Bit.BevTools/Scripts/**/*.js
 /src/Utilities/BevTools/Bit.BevTools/wwwroot/**/*.js
+/src/Utilities/BevTools/Bit.BevTools.Extension/dist/
 
-/src/Utilities/Bmage/Bit.Bmage/Scripts/**/*.js
-/src/Utilities/Bmage/Bit.Bmage/wwwroot/**/*.js
+/src/Utilities/Bmage/Bit.Bmage.Blazor/Scripts/**/*.js
+/src/Utilities/Bmage/Bit.Bmage.Blazor/wwwroot/**/*.js
 
 # The compiled modules, plus the pinned wa-sqlite engine and VFSes the restore vendors next to them and the build
 # verifies by checksum (see src/Utilities/Bsqlite/Bit.Bsqlite/engine/wa-sqlite.lock.props): none of it is committed.
@@ -305,6 +311,7 @@ _book
 /src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.css
 /src/Utilities/BlazeDb/Bit.BlazeDb/Scripts/**/*.js
 /src/Utilities/BlazeDb/Bit.BlazeDb/wwwroot/**/*.js
+/src/Utilities/BlazeDb/Samples/Server/App_Data/
 
 /src/Utilities/Bdnd/Bit.Bdnd/Scripts/**/*.js
 /src/Utilities/Bdnd/Bit.Bdnd/wwwroot/**/*.js
@@ -330,6 +337,16 @@ _book
 
 /src/Utilities/Belemetry/Bit.Belemetry/Scripts/**/*.js
 /src/Utilities/Belemetry/Bit.Belemetry/wwwroot/**/*.js
+
+/src/Utilities/Bheadless/Bit.Bheadless/Scripts/**/*.js
+/src/Utilities/Bheadless/Bit.Bheadless/wwwroot/**/*.js
+/src/Utilities/Bheadless/Demo/Client/Bit.Bheadless.Demo.Client.Core/wwwroot/tailwind.css
+
+# Its outputs from before it moved here from src/BlazorHeadlessUI: git moves only tracked files, so a checkout that
+# built it there keeps them behind.
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/Scripts/**/*.js
+/src/BlazorHeadlessUI/Bit.BlazorHeadlessUI/wwwroot/**/*.js
+/src/BlazorHeadlessUI/Demo/Client/Bit.BlazorHeadlessUI.Demo.Client.Core/wwwroot/tailwind.css
 
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js

@@ -3,27 +3,45 @@
 <PageTitle>Selection Gestures · Blow</PageTitle>
 
 <ExampleScaffold Title="Selection Gestures"
-                 Summary="A selection is a thing in its own right, not just several selected nodes. Dragging one member moves them all and reports it as a single OnSelectionDrag rather than a burst of node drags; right-clicking one of them offers the whole selection. The key that opens a selection box is configurable separately from the one that adds to a selection.">
+                 Summary="Everything about making and using a selection: which key opens a selection box and which one adds to a selection, what the box picks up, and the events for the box, for dragging several nodes as one (OnSelectionDragStart, OnSelectionDrag, OnSelectionDragStop) and for right-clicking a whole selection (OnSelectionContextMenu).">
     <Toolbar>
         <label>
             Selection key
             <select @bind="_selectionKey">
-                <option value="Shift">Shift</option>
+                <option value="Shift">Shift (default)</option>
                 <option value="Alt">Alt</option>
                 <option value="Control">Control</option>
-                <option value="None">none (drag pans)</option>
+                <option value="None">none</option>
             </select>
         </label>
         <label>
             Multi-select key
             <select @bind="_multiKey">
-                <option value="Shift">Shift</option>
+                <option value="Shift">Shift (default)</option>
                 <option value="Alt">Alt</option>
                 <option value="Control">Control</option>
             </select>
         </label>
         <label>
             <input type="checkbox" @bind="_selectionOnDrag" /> Selection on plain drag
+        </label>
+        <label>
+            Pan key
+            <select @bind="_panKey">
+                <option value="Space">Space (default)</option>
+                <option value="Alt">Alt</option>
+                <option value="None">none</option>
+            </select>
+        </label>
+        <label>
+            Box picks
+            <select @bind="_selectionMode">
+                <option value="@BlowSelectionMode.Partial">nodes it touches (Partial, default)</option>
+                <option value="@BlowSelectionMode.Full">nodes it encloses (Full)</option>
+            </select>
+        </label>
+        <label>
+            <input type="checkbox" @bind="_boxSelectsEdges" /> Box selects edges
         </label>
         <button class="btn btn-secondary" @onclick="ClearLog">Clear log</button>
     </Toolbar>
@@ -33,46 +51,60 @@
                     SelectionKey="SelectionKey"
                     MultiSelectionKey="MultiKey"
                     SelectionOnDrag="_selectionOnDrag"
+                    PanActivationKey="PanKey"
+                    SelectionMode="_selectionMode"
+                    SelectEdgesOnSelectionBox="_boxSelectsEdges"
+                    OnSelectionStart="OnSelectionStart"
+                    OnSelectionEnd="OnSelectionEnd"
+                    OnNodeDrag="@(() => _nodeMoves++)"
+                    OnNodeDragStop="OnNodeDragStop"
                     OnSelectionDragStart="OnSelectionDragStart"
+                    OnSelectionDrag="@(() => _selectionMoves++)"
                     OnSelectionDragStop="OnSelectionDragStop"
+                    OnNodeContextMenu="OnNodeContextMenu"
                     OnSelectionContextMenu="OnSelectionContextMenu"
-                    OnNodeDragStart="OnNodeDragStart"
                     FitViewOnInit="true">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
             <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                <div class="log">
-                    <div class="log-title">Events</div>
-                    @if (_log.Count == 0)
-                    {
-                        <div class="log-empty">
-                            Box-select a few nodes, then drag one of them - or right-click one.
-                        </div>
-                    }
-                    @foreach (var entry in _log)
-                    {
-                        <div class="log-row">@entry</div>
-                    }
-                </div>
-            </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        @* Under the canvas: a log over it grew across the nodes as the events came in. *@
+        <div class="log-title">Events, newest first</div>
+        @if (_log.Count == 0)
+        {
+            <div class="log-empty">
+                Shift+drag across a few nodes to select them, then drag one of them - or right-click one.
+            </div>
+        }
+        @foreach (var entry in _log)
+        {
+            <div class="log-row">@entry</div>
+        }
+    </Footer>
+    <TryIt>
+        <li><strong>Shift+drag</strong> across the background to draw a selection box round a few nodes: the log shows the box starting and ending, and what it selected.</li>
+        <li>Switch <strong>Box picks</strong> to Full and draw again: only nodes entirely inside the box are picked, not every node it touches. Untick <strong>Box selects edges</strong> and the box leaves the edges between the picked nodes unselected.</li>
+        <li><strong>Drag</strong> one of the selected nodes: they all move together, and the log shows one selection drag - with how many <code>OnSelectionDrag</code> moves it took - next to the drag of the node you grabbed. Drag a node that is not selected: only it moves, and only a node drag is logged.</li>
+        <li><strong>Right-click</strong> one of several selected nodes: the log shows the node's menu event and then the whole selection's. Right-click a node on its own and only the node's event comes. No browser menu opens over a node.</li>
+        <li>Change <strong>Selection key</strong> to Alt or Control and that key opens the box instead; with <strong>none</strong>, only a plain drag with <strong>Selection on plain drag</strong> ticked draws one.</li>
+        <li>Hold the <strong>Multi-select key</strong> and <strong>click</strong> nodes to add them one at a time; held while drawing a box, it adds the box's catch to the selection rather than replacing it.</li>
+        <li>Tick <strong>Selection on plain drag</strong>: now a drag on the background draws a box, and holding the <strong>Pan key</strong> (<strong>Space</strong>) turns it back into a pan. Pick <strong>none</strong> and the background can no longer be dragged to pan - the wheel and the control bar still move the view.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>SelectionKey</code> (<code>BlowModifierKey.Shift</code>) held turns a drag on the pane into a selection box; <code>null</code> leaves boxes to <code>SelectionOnDrag</code> (<code>false</code>), which makes every plain drag draw one.</li>
+        <li><code>PanActivationKey</code> (<code>" "</code>, Space) held turns any drag on the pane into a pan, even with <code>SelectionOnDrag</code>; it is a <code>KeyboardEvent.key</code> name, and <code>null</code> disables it.</li>
+        <li><code>MultiSelectionKey</code> (<code>BlowModifierKey.Shift</code>) adds a clicked node or edge to the selection, and makes a box add to it. Both keys default to Shift, so Shift+drag draws a box that adds.</li>
+        <li><code>SelectionMode</code> (<code>BlowSelectionMode.Partial</code>) picks every node the box touches; <code>Full</code> only those it encloses. <code>SelectEdgesOnSelectionBox</code> (<code>true</code>) also picks the edges whose two nodes the box picked.</li>
+        <li><code>OnSelectionStart</code> and <code>OnSelectionEnd</code> bracket a box with the <code>PointerEventArgs</code> of the press and the release; by the end the selection is final.</li>
+        <li><code>OnNodeDragStart</code>, <code>OnNodeDrag</code> and <code>OnNodeDragStop</code> report the node grabbed, as a <code>BlowNode</code>. When more than one node moves, <code>OnSelectionDragStart</code>, <code>OnSelectionDrag</code> and <code>OnSelectionDragStop</code> report all of them as a <code>BlowSelectionMouseEvent</code> (<code>Nodes</code>, <code>Event</code>), so the group can be treated as one edit. The start events come at the press, so a stop with no moves since was a click.</li>
+        <li><code>OnNodeContextMenu</code> (a <code>BlowNodeMouseEvent</code>) reports the node right-clicked; when it is one of several selected, <code>OnSelectionContextMenu</code> follows with the whole selection. Handling either suppresses the browser's menu over nodes.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .log {
-        width: 240px;
-        max-height: 260px;
-        overflow-y: auto;
-        padding: 8px 10px;
-        font-size: 11px;
-        background: var(--bit-blow-surface);
-        color: var(--bit-blow-text);
-        border: 1px solid var(--bit-blow-border);
-        border-radius: 6px;
-    }
     .log-title { font-weight: 600; margin-bottom: 4px; }
-    .log-empty { color: var(--bit-blow-text-muted); line-height: 1.45; }
+    .log-empty { color: var(--bb-text-soft); line-height: 1.45; }
     .log-row { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 0; }
 </style>
 
@@ -83,7 +115,14 @@
 
     private string _selectionKey = "Shift";
     private string _multiKey = "Shift";
+    private string _panKey = "Space";
     private bool _selectionOnDrag;
+    private BlowSelectionMode _selectionMode = BlowSelectionMode.Partial;
+    private bool _boxSelectsEdges = true;
+
+    // Pointer moves of the drag under way, counted rather than logged: there is one for every move of the mouse.
+    private int _nodeMoves;
+    private int _selectionMoves;
 
     private BlowModifierKey? SelectionKey => _selectionKey switch
     {
@@ -98,6 +137,14 @@
         "Alt" => BlowModifierKey.Alt,
         "Control" => BlowModifierKey.Control,
         _ => BlowModifierKey.Shift,
+    };
+
+    // Key names as KeyboardEvent.key reports them: the space bar is a single space.
+    private string? PanKey => _panKey switch
+    {
+        "Alt" => "Alt",
+        "None" => null,
+        _ => " ",
     };
 
     protected override void OnInitialized()
@@ -120,15 +167,44 @@
         ];
     }
 
-    private void OnNodeDragStart(BlowNode node) => Log($"node drag: {node.Id}");
+    private void OnSelectionStart(PointerEventArgs e) => Log("box start");
 
-    private void OnSelectionDragStart(BlowSelectionMouseEvent e) => Log($"selection drag start: {Ids(e)}");
+    private void OnSelectionEnd(PointerEventArgs e)
+    {
+        var nodes = Join(_nodes.Where(n => n.Selected).Select(n => n.Id));
+        var edges = Join(_edges.Where(ed => ed.Selected).Select(ed => ed.Id));
+        Log($"box end - selected nodes {nodes}, edges {edges}");
+    }
 
-    private void OnSelectionDragStop(BlowSelectionMouseEvent e) => Log($"selection drag stop: {Ids(e)}");
+    private void OnNodeDragStop(BlowNode node)
+    {
+        // Raised for a plain click on a node as well; only a press that moved it is worth a line.
+        if (_nodeMoves > 0) Log($"node drag: {node.Id}, {_nodeMoves} OnNodeDrag moves");
+        _nodeMoves = 0;
+    }
+
+    private void OnSelectionDragStart(BlowSelectionMouseEvent e)
+    {
+        _selectionMoves = 0;
+        Log($"selection drag start: {Ids(e)}");
+    }
+
+    private void OnSelectionDragStop(BlowSelectionMouseEvent e)
+        => Log(_selectionMoves > 0
+            ? $"selection drag stop: {Ids(e)}, {_selectionMoves} OnSelectionDrag moves"
+            : $"selection drag stop: {Ids(e)}, nothing moved - it was a click");
+
+    private void OnNodeContextMenu(BlowNodeMouseEvent e) => Log($"node menu: {e.Node.Id}");
 
     private void OnSelectionContextMenu(BlowSelectionMouseEvent e) => Log($"selection menu: {Ids(e)}");
 
-    private static string Ids(BlowSelectionMouseEvent e) => string.Join(", ", e.Nodes.Select(n => n.Id));
+    private static string Ids(BlowSelectionMouseEvent e) => Join(e.Nodes.Select(n => n.Id));
+
+    private static string Join(IEnumerable<string> ids)
+    {
+        var list = string.Join(", ", ids);
+        return list.Length == 0 ? "none" : list;
+    }
 
     private void Log(string message)
     {

@@ -46,7 +46,7 @@
     </p>
     <h4>The client project</h4>
     <p>
-        Reference <code>Bit.Bmage</code> from the client, which is the project that runs in the
+        Reference <code>Bit.Bmage.Blazor</code> from the client, which is the project that runs in the
         browser.
     </p>
     <CodeSnippet Code="@ClientServicesSnippet" Language="C#" Expanded="true" />
@@ -121,8 +121,8 @@
         Everything works. The components run in compiled .NET inside the app's own process and render
         into a WebView, which Bmage reaches over JavaScript interop - the same position as Interactive
         Server, so <code>IImageCapabilityProvider</code> reports <code>ImageEnvironment.BrowserServer</code>
-        and picks codecs the same way: PNG, JPEG, BMP and GIF are coded by .NET in the app, and WebP,
-        AVIF and photos with a colour profile other than sRGB by the WebView. Nothing crosses a network,
+        and picks codecs the same way: images are decoded and encoded by .NET in the app, and AVIF
+        exports and photos whose colours need colour management by the WebView. Nothing crosses a network,
         but those pixels and the editor's previews are copied through the WebView's message channel.
     </p>
     <p>
@@ -151,14 +151,15 @@
         <code>BmageEditor</code> also works without the registration, so a WebAssembly app can download
         Bmage only when someone opens the editor. When <code>ImageLoader</code> is not registered, the
         editor builds every service it needs itself, once per browser connection, with the
-        <code>BitBmageOptions</code> the app registered or the defaults. Mark the assembly as lazy
-        loaded, and load it before the editor first renders:
+        <code>BitBmageOptions</code> the app registered or the defaults. Mark both assemblies as lazy
+        loaded, and load them before the editor first renders:
     </p>
     <CodeSnippet Code="@LazyProjectSnippet" Language="XML" Expanded="true" />
     <CodeSnippet Code="@LazyLoadSnippet" Language="Razor" Expanded="true" />
     <ul class="bb-detail-list">
-        <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assembly is there.</li>
+        <li>Leave <code>AddBitBmageServices</code> out of that project's <code>Program.cs</code>: calling it references Bmage's types before the assemblies are there.</li>
         <li>Code of your own that injects <code>ImageLoader</code> or <code>ImageExporter</code> needs the registration, so lazy loading suits an app whose only use of Bmage is the editor.</li>
+        <li>In a Blazor Web App only the browser lazy loads. Give <code>Routes</code> the <code>InteractiveWebAssembly</code> or <code>InteractiveAuto</code> render mode in <code>App.razor</code>, so the router - and its <code>OnNavigateAsync</code> - runs in the browser. The server project loads Bmage with the rest of the app and keeps its <code>AddBitBmageServices()</code>, and registers <code>LazyAssemblyLoader</code>, which the router's file injects while it is prerendered there: <code>builder.Services.AddScoped&lt;LazyAssemblyLoader&gt;()</code>.</li>
         <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
     </ul>
 </div>
@@ -167,8 +168,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Web Workers and a Content Security Policy</h3>
     <p>
         In the browser, decoding, encoding and building the editor's working copy run in a small pool of
-        Web Workers loaded from <code>_content/Bit.Bmage/bit-bmage-worker.js</code>, so the page's thread -
-        which on WebAssembly is also .NET's - keeps painting while a photo decodes. A Content Security
+        Web Workers loaded from <code>_content/Bit.Bmage.Blazor/bit-bmage-worker.js</code>, so the page's
+        thread - which on WebAssembly is also .NET's - keeps painting while a photo decodes. A Content Security
         Policy that lists sources explicitly has to allow them, with <code>worker-src 'self'</code> or a
         <code>script-src 'self'</code> it falls back to; Blob URLs are never used for workers.
     </p>
@@ -280,7 +281,7 @@
     private const string AppRazorSnippet = """
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
             <HeadOutlet @rendermode="InteractiveWebAssembly" />
         </head>
 
@@ -332,7 +333,7 @@
         <!-- wwwroot/index.html -->
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
         </head>
         """;
 
@@ -369,6 +370,7 @@
         <!-- The browser project's .csproj -->
         <ItemGroup>
           <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+          <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Blazor.wasm" />
         </ItemGroup>
         """;
 
@@ -386,7 +388,7 @@
             {
                 // The page with the editor on it: fetch Bmage before it renders.
                 if (context.Path == "edit")
-                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm", "Bit.Bmage.Blazor.wasm"]);
             }
         }
         """;

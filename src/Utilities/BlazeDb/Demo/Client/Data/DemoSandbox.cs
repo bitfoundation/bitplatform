@@ -157,4 +157,27 @@ public static class DemoData
     }
 
     public static readonly string[] Categories = ["engine", "browser", "bench", "codegen", "docs"];
+
+    /// <summary>
+    /// The six people the pages over <see cref="Person"/> start from: two share a join date, two share a
+    /// mail domain, two cities hold more than one person, and one has no email address.
+    /// </summary>
+    public static Person[] People() =>
+    [
+        new() { Id = 1, Name = "Ada Lovelace", Email = "ada@analytical.org", City = "London", Role = "engineer", Joined = new(2024, 1, 10) },
+        new() { Id = 2, Name = "Grace Hopper", Email = "grace@navy.mil", City = "Arlington", Role = "engineer", Joined = new(2024, 3, 2) },
+        new() { Id = 3, Name = "Alan Turing", Email = "alan@bletchley.uk", City = "London", Role = "researcher", Joined = new(2024, 3, 2) },
+        new() { Id = 4, Name = "Katherine Johnson", Email = "katherine@nasa.gov", City = "Hampton", Role = "researcher", Joined = new(2024, 6, 15) },
+        new() { Id = 5, Name = "Linus Torvalds", Email = null, City = "Portland", Role = "engineer", Joined = new(2025, 1, 20) },
+        new() { Id = 6, Name = "Margaret Hamilton", Email = "margaret@nasa.gov", City = "Boston", Role = "engineer", Joined = new(2025, 4, 1) },
+    ];
+
+    /// <summary>
+    /// When the middle row by CreatedAt was created, or null for an empty table. The rows are as old as
+    /// the tab's database - seeded over a few days some weeks back, and on OPFS possibly long before this
+    /// visit - so a date range that opens with a fixed "last N days" can match nothing at all. Starting
+    /// it here puts about half the table inside the range and half outside it.
+    /// </summary>
+    public static DateTime? MedianCreatedAt(BlazeDbTable<Guid, TodoEntry> table) =>
+        table.OrderBy(TodoEntry.Indexes.CreatedAt, descending: true).ElementAtOrDefault(table.Count / 2)?.CreatedAt;
 }

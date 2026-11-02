@@ -24,6 +24,12 @@ public static class BlowErrorCode
     public const string MissingParentNode = "missing-parent-node";
 
     /// <summary>
+    /// Following a node's parents leads back to it (a node can even name itself). The cycle is broken where it was
+    /// found: the node whose parent closes it is laid out as a root.
+    /// </summary>
+    public const string ParentCycle = "parent-cycle";
+
+    /// <summary>
     /// A node carries two handles of the same type sharing an id (or both without one), so an
     /// edge naming that handle cannot say which it means.
     /// </summary>

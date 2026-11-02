@@ -1,12 +1,14 @@
 ﻿@namespace Bit.Blow
 @implements IDisposable
 
-<div class="bit-blow-handle bit-blow-handle-@PositionClass @TypeClass @(CanStart || CanEnd ? "connectable" : null) @StateClass @Class"
+<div class="bit-blow-handle bit-blow-handle-@PositionClass @TypeClass @(CanStart || CanEnd ? "connectable" : null) @StateClass @ValidationClass @Class"
      data-id="@(Attached ? NodeId : null)"
      data-handle-id="@(Id ?? string.Empty)"
      data-handle-type="@TypeClass"
      data-handle-pos="@PositionClass"
-     data-connectable-end="@(CanEnd ? null : "false")"
+     data-connectable-end="@(AcceptsDrops ? null : "false")"
+     data-port-type="@EffectiveDataType"
+     title="@Port?.Label"
      style="@Style"
      @onpointerdown="OnPointerDown"
      @onpointerdown:stopPropagation="true"
@@ -18,7 +20,9 @@
 
 @code {
     [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.GraphVersion)] private int GraphVersion { get; set; }
+    [CascadingParameter(Name = BlowCascadingNames.ConnectionVersion)] private int ConnectionVersion { get; set; }
 
     /// <summary>Whether this handle is a connection source or target.</summary>
     [Parameter] public BlowHandleType Type { get; set; } = BlowHandleType.Source;
@@ -48,6 +52,19 @@
     /// </summary>
     [Parameter] public Func<BlowConnection, bool>? IsValidConnection { get; set; }
 
+    /// <summary>
+    /// The kind of value the handle carries, for connections to be refused between incompatible handles. Overrides
+    /// the <see cref="BlowPort.DataType"/> of the node's declared port with this handle's type and id, when there
+    /// is one. Rendered as <c>data-port-type</c>, so handles can be styled by type.
+    /// </summary>
+    [Parameter] public string? DataType { get; set; }
+
+    /// <summary>
+    /// The most edges the handle may have; at the limit it neither accepts nor starts connections. Overrides the
+    /// <see cref="BlowPort.MaxConnections"/> of the node's declared port, when there is one.
+    /// </summary>
+    [Parameter] public int? MaxConnections { get; set; }
+
     /// <summary>Extra CSS classes for the handle element, after the built-in ones.</summary>
     [Parameter] public string? Class { get; set; }
 
@@ -69,8 +86,31 @@
     /// <summary>The handle only participates when the node and the canvas both allow connecting.</summary>
     private bool Enabled => Attached && IsConnectable && Node.Connectable && Flow.NodesConnectable;
 
-    private bool CanStart => Enabled && IsConnectableStart;
-    private bool CanEnd => Enabled && IsConnectableEnd;
+    /// <summary>A handle at its connection limit takes no part in connecting until one of its edges goes.</summary>
+    private bool AtLimit => Attached && Flow.IsHandleAtLimit(NodeId, Id, Type);
+
+    private bool CanStart => Enabled && IsConnectableStart && !AtLimit;
+
+    /// <summary>The port declared on the node's model for this handle, if any.</summary>
+    private BlowPort? Port => Attached ? Node.FindPort(Type, Id) : null;
+
+    private string? EffectiveDataType => DataType ?? Port?.DataType;
+    private bool CanEnd => AcceptsDrops && !AtLimit;
+
+    /// <summary>
+    /// Whether the handle takes drops at all - what it says about itself, not whether its port happens to be full
+    /// right now. The limit is the rules' to judge live: an edge being reconnected may be dropped back onto its own
+    /// full handle, and a handle freed a moment ago must not keep refusing because of a stale measurement.
+    /// </summary>
+    private bool AcceptsDrops => Enabled && IsConnectableEnd;
+
+    /// <summary>Marks a port the canvas's validation found a problem at.</summary>
+    private string? ValidationClass => !Attached ? null : Flow.ValidationSeverityAt(NodeId, Type, Id) switch
+    {
+        BlowValidationSeverity.Error => "bit-blow-handle-error",
+        BlowValidationSeverity.Warning => "bit-blow-handle-warning",
+        _ => null,
+    };
 
     private string StateClass
     {
@@ -84,7 +124,7 @@
             if (Flow.IsConnectionSource(NodeId, Id, Type))
                 return "bit-blow-handle-connectingfrom";
 
-            if (CanEnd && Flow.IsValidConnectionTarget(NodeId, Id, Type))
+            if (AcceptsDrops && Flow.IsValidConnectionTarget(NodeId, Id, Type))
                 return "bit-blow-handle-valid";
 
             return "bit-blow-handle-invalid";
@@ -95,10 +135,14 @@
     {
         if (!Attached || e.Button != 0) return;
 
-        // In click-to-connect mode, a second handle click completes the pending connection.
+        // A press is the pointer starting something of its own: whatever the keyboard was connecting ends first.
+        Flow.PointerPressed();
+
+        // In click-to-connect mode, a second handle click completes the pending connection. A full port is the
+        // canvas's to refuse, with its reason, as a drop on it would be.
         if (Flow.ConnectOnClick && Flow.IsConnecting)
         {
-            if (CanEnd) Complete();
+            if (AcceptsDrops) Complete();
             return;
         }
 
@@ -108,7 +152,7 @@
     private void OnPointerUp(PointerEventArgs e)
     {
         // In click-to-connect mode, completion happens on the next handle's pointer-down.
-        if (!Attached || Flow.ConnectOnClick || !CanEnd) return;
+        if (!Attached || Flow.ConnectOnClick || !AcceptsDrops) return;
         Complete();
     }
 
@@ -130,7 +174,7 @@
         // as an inert dot beats bringing the page down with a null reference.
         if (Flow is null || NodeContext is null) return;
 
-        var wanted = IsValidConnection is not null || OnConnect.HasDelegate
+        var wanted = IsValidConnection is not null || OnConnect.HasDelegate || DataType is not null || MaxConnections is not null
             ? BlowHandleRegistration.Key(NodeId, Type, Id)
             : null;
 
@@ -150,6 +194,8 @@
         {
             IsValidConnection = IsValidConnection,
             OnConnect = OnConnect,
+            DataType = DataType,
+            MaxConnections = MaxConnections,
         };
         Flow.RegisterHandle(wanted, _registration);
     }
@@ -168,7 +214,8 @@
 
     private void OnPointerEnter(PointerEventArgs e)
     {
-        if (Attached && Flow.IsConnecting && CanEnd) Flow.SetConnectionHover(NodeId, Id, Type, true);
+        // Reported whatever the handle accepts: the canvas works out the verdict, and wants the reason for a refusal.
+        if (Attached && Flow.IsConnecting) Flow.SetConnectionHover(NodeId, Id, Type, true);
     }
 
     private void OnPointerLeave(PointerEventArgs e)

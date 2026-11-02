@@ -1,0 +1,23 @@
+﻿// The wrappers are written in this page, so they carry the scope attribute themselves and are styled without ::deep.
+.example-stack {
+    gap: 1rem;
+    display: flex;
+    max-width: 36rem;
+    flex-direction: column;
+}
+
+::deep {
+    .custom-result {
+        border-width: 2px;
+        border-style: dashed;
+    }
+
+    .custom-result-header {
+        color: #fff;
+        background-color: #0b7a75;
+    }
+
+    .custom-result-body {
+        padding: 1rem 1.5rem;
+    }
+}

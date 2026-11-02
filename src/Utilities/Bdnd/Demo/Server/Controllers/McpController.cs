@@ -59,7 +59,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBdndSetupGuide), Title = "Setup guide for one render mode", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the complete wiring needed to add Bit.Bdnd to a Blazor app in one render mode: 'server' (InteractiveServer), 'wasm' (InteractiveWebAssembly, which is how this demo is built and comes with its real files), 'auto' (InteractiveAuto), 'standalone-wasm' or 'hybrid' (MAUI, WPF, Windows Forms). Call this before writing setup code - builder.Services.AddBitBdndServices() is required (in a Blazor Web App in both Program.cs files), there is no stylesheet to link, every component must sit inside a BdndProvider, and the page must render interactively.")]
+    [Description("Gets the complete wiring needed to add Bit.Bdnd to a Blazor app in one render mode: 'server' (InteractiveServer), 'wasm' (InteractiveWebAssembly, which is how this demo is built and comes with its real files), 'auto' (InteractiveAuto), 'standalone-wasm' or 'hybrid' (MAUI, WPF, Windows Forms). Call this before writing setup code - builder.Services.AddBitBdndServices() belongs in every Program.cs that renders the components (in a Blazor Web App both; only a WebAssembly app that lazy loads Bit.Bdnd leaves it out), there is no stylesheet to link, every component must sit inside a BdndProvider, and the page must render interactively.")]
     public string GetBdndSetupGuide(
         // Declared rather than merely described: the values then sit in the JSON schema itself,
         // where a model cannot pass another one past them, and a client offers them as completions.
@@ -82,8 +82,12 @@ public class McpController : ControllerBase
 
         if (section is not null) return Truncate(section);
 
+        // The closest first: top-level sections, then headings that start with what was asked for - so the main
+        // sections stay among the suggestions however many sub-sections mention the word.
         var candidates = BdndSourceCatalog.GuideSections
             .Where(s => s.Heading.Contains(heading, StringComparison.OrdinalIgnoreCase) || heading.Contains(s.Heading, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(s => s.Level)
+            .ThenBy(s => s.Heading.StartsWith(heading, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
             .Select(s => $"'{s.Key}'")
             .Distinct(StringComparer.Ordinal)
             .Take(10)

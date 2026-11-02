@@ -207,11 +207,13 @@ public class BelemetryLoggerTests
         var logger = host.StartLogging().CreateLogger("MyApp");
 
         string traceId, spanId;
+        int flags;
         using (var activity = new Activity("op").SetIdFormat(ActivityIdFormat.W3C))
         {
             activity.ActivityTraceFlags = ActivityTraceFlags.Recorded;
             activity.Start();
             traceId = activity.TraceId.ToHexString();
+            flags = (int)activity.ActivityTraceFlags;
             spanId = activity.SpanId.ToHexString();
             logger.LogInformation("inside");
         }
@@ -221,7 +223,7 @@ public class BelemetryLoggerTests
         var logs = host.Memory.Logs.ToList();
         Assert.AreEqual(traceId, logs[0].TraceId);
         Assert.AreEqual(spanId, logs[0].SpanId);
-        Assert.AreEqual(1, logs[0].Flags);
+        Assert.AreEqual(flags, logs[0].Flags);
         Assert.IsNull(logs[1].TraceId);
         Assert.IsNull(logs[1].SpanId);
     }

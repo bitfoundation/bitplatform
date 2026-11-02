@@ -1,4 +1,4 @@
-﻿#if NET10_0_OR_GREATER
+﻿#if NET11_0_OR_GREATER
 using System.Net;
 using Bit.Bswup.Tests.Hosting.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;

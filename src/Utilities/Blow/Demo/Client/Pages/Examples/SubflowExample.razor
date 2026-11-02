@@ -3,39 +3,71 @@
 <PageTitle>Subflow · Blow</PageTitle>
 
 <ExampleScaffold Title="Subflow"
-                 Summary="Nodes nested inside group containers via ParentId. Dragging a group moves its children; children with ExtentParent stay within their group's bounds.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        <BlowMiniMap />
-    </BlowCanvas>
+                 Summary="Nodes nested in group containers through ParentId, with a group nested inside another. A child is positioned relative to its parent and moves with it; with ExtentParent it also cannot be dragged out of it.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_contained" @onchange="ToggleContained" /> keep children inside their group</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag a group</strong> by its background: its children move with it. Dragging Group B carries Group C, and C's child, along too.</li>
+        <li><strong>Drag a child</strong> towards its group's border: it stops there. Group C is itself a child of Group B, so it stops at B's border.</li>
+        <li>Untick <strong>keep children inside their group</strong> and drag a child out: it leaves the box, yet still moves with its group - <code>ParentId</code>, not where a node sits, decides what it belongs to.</li>
+        <li><strong>Shift+drag</strong> a box around a group and its children, then drag them: each child moves once, together with its parent.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>A node with <code>ParentId</code> is a child: its <code>Position</code> is relative to the parent's top-left corner, and it moves when the parent does.</li>
+        <li><code>Type = "group"</code> is the built-in look for a container - translucent and dashed, its label in the corner, no handles - but any node can be a parent, and groups nest: Group C is a child of Group B. Each group here gets a tint through its <code>Style</code>.</li>
+        <li><code>ExtentParent = true</code> keeps a child inside its parent's box, by pointer and by arrow keys alike; the checkbox sets it on every child.</li>
+        <li>With the default <code>ZIndexMode.Auto</code>, deeper nodes are drawn after shallower ones, so a child is never hidden behind its group.</li>
+        <li>Edges are drawn beneath every node, children included, which is why the groups are translucent: an opaque one would hide the edges running inside it.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private bool _contained = true;
 
     protected override void OnInitialized()
     {
         _nodes =
         [
             new BlowNode { Id = "A", Type = "group", Label = "Group A", Position = new(0, 0), Width = 320, Height = 220,
-                       Style = "background:rgba(99,102,241,0.08);" },
+                           Style = "background:rgba(99,102,241,0.08);" },
             new BlowNode { Id = "A-1", Label = "Child A1", Position = new(20, 40), ParentId = "A", ExtentParent = true },
             new BlowNode { Id = "A-2", Label = "Child A2", Position = new(160, 120), ParentId = "A", ExtentParent = true },
 
-            new BlowNode { Id = "B", Type = "group", Label = "Group B", Position = new(400, 60), Width = 280, Height = 180,
-                       Style = "background:rgba(16,185,129,0.08);" },
-            new BlowNode { Id = "B-1", Label = "Child B1", Position = new(30, 50), ParentId = "B", ExtentParent = true },
+            new BlowNode { Id = "B", Type = "group", Label = "Group B", Position = new(400, 0), Width = 330, Height = 220,
+                           Style = "background:rgba(16,185,129,0.08);" },
+            new BlowNode { Id = "B-1", Label = "Child B1", Position = new(20, 50), ParentId = "B", ExtentParent = true },
 
-            new BlowNode { Id = "out", Type = "output", Label = "Output", Position = new(250, 320) },
+            // A group inside a group: its own position is relative to Group B, and its child's to it.
+            new BlowNode { Id = "C", Type = "group", Label = "Group C", Position = new(160, 60), Width = 150, Height = 130,
+                           ParentId = "B", ExtentParent = true, Style = "background:rgba(245,158,11,0.10);" },
+            new BlowNode { Id = "C-1", Label = "Child C1", Position = new(25, 55), ParentId = "C", ExtentParent = true },
+
+            new BlowNode { Id = "out", Type = "output", Label = "Output", Position = new(310, 320) },
         ];
 
         _edges =
         [
             new BlowEdge { Id = "eA1-A2", Source = "A-1", Target = "A-2" },
             new BlowEdge { Id = "eA2-B1", Source = "A-2", Target = "B-1", Type = BlowEdgeType.SmoothStep },
-            new BlowEdge { Id = "eB1-out", Source = "B-1", Target = "out" },
+            new BlowEdge { Id = "eB1-C1", Source = "B-1", Target = "C-1" },
+            new BlowEdge { Id = "eC1-out", Source = "C-1", Target = "out" },
         ];
+    }
+
+    private void ToggleContained(ChangeEventArgs e)
+    {
+        // Membership stays as it is either way: only whether a drag may take the child out of its parent's box changes.
+        _contained = (bool)e.Value!;
+        foreach (var n in _nodes.Where(n => n.ParentId is not null)) n.ExtentParent = _contained;
     }
 }

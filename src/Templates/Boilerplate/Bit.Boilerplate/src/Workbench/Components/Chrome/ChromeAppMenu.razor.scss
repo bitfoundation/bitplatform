@@ -1,0 +1,68 @@
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+::deep {
+    // On phones the menu opens as a sheet along the screen's edge, inside the safe area.
+    .app-menu-callout {
+        @include lt-sm {
+            height: unset;
+            box-shadow: none;
+            width: min(20rem, 75vw);
+            top: $bit-env-inset-top !important;
+            bottom: $bit-env-inset-bottom !important;
+            inset-inline-end: $bit-env-inset-inline-end !important;
+        }
+    }
+
+    .app-menu-card {
+        @include lt-sm {
+            box-shadow: none;
+        }
+    }
+
+    .persona {
+        max-width: 12rem;
+    }
+
+    // The menu button shows only the photo; the name beside it is a separate text.
+    .persona-details {
+        display: none;
+    }
+
+    .menu-chevron,
+    .menu-displayname {
+        @include lt-sm {
+            display: none;
+        }
+    }
+
+    // Lets a long account name shrink instead of widening the menu.
+    .account-button {
+        .bit-acb-inn,
+        .bit-acb-con,
+        .bit-prs {
+            min-width: 0;
+        }
+    }
+
+    .time-zone-row {
+        width: 100%;
+        padding-inline-start: 8px;
+    }
+
+    .time-zone-picker {
+        min-width: 0;
+        flex-grow: 1;
+    }
+
+    .accent-color-switcher {
+        gap: 8px;
+        width: 100%;
+        padding: 0 8px;
+    }
+
+    .accent-color-swatch {
+        width: 20px;
+        height: 20px;
+    }
+}

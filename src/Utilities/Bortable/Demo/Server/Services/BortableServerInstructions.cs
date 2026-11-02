@@ -47,7 +47,9 @@ public static class BortableServerInstructions
           the component is `Bortable<TItem>` and the rest is `BortablePull`, `BortableDirection`,
           `BortableEventArgs<TItem>` and `AddBitBortableServices`. `GetBortableApi` gives the real names and defaults.
         - Call `GetBortableSetupGuide` before writing wiring: `AddBitBortableServices()` is required - in both projects
-          of a Blazor Web App - the stylesheet link is required, and the lists must render interactively.
+          of a Blazor Web App, and left out only by a WebAssembly client that lazy loads Bit.Bortable and sets the
+          `Bit.Bortable.Unregistered` runtime switch - the stylesheet link is required, and the lists must render
+          interactively.
         - Bind `@bind-Items` to an `IList<TItem>` field holding a mutable list of unique items; the list is changed in
           place. Restyle the drag states through the `--bit-bortable-*` properties `GetBortableTheme` lists.
         - To learn what a drag will do - whether a list takes the item, what lands where, which events fire in which

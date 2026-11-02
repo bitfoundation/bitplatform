@@ -42,8 +42,7 @@ public static class AotProfileCommand
 
             if (error is not null)
             {
-                cli.Console.Fail(error);
-                return Task.FromResult(CliApp.ExitUsage);
+                return Task.FromResult(cli.UsageError("properties-invalid", error));
             }
 
             var request = new AotProfileRequest(

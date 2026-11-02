@@ -15,9 +15,13 @@
 
 @* data-scripts is how the WebAssembly client learns the script-loading mode this host was started in. *@
 <body data-mode="@Mode" data-scripts="@Scripts">
-    @if (IsPrerenderSweep)
+    @if (IsRequested(PrerenderSweepPage.Route))
     {
         <PrerenderSweepPage />
+    }
+    else if (IsRequested(PrerenderChecksPage.Route))
+    {
+        <PrerenderChecksPage />
     }
     else
     {
@@ -44,7 +48,7 @@
 
     private IComponentRenderMode? RenderMode => HarnessRenderModes.Resolve(Mode);
 
-    // Rendered here, outside Routes, so it is always static whatever the mode: the sweep is about the runtime a
-    // static render hands out, and Samples.Core's router does not know the page anyway.
-    private bool IsPrerenderSweep => HttpContext?.Request.Path.StartsWithSegments(PrerenderSweepPage.Route) is true;
+    // The prerender pages are rendered here, outside Routes, so they are always static whatever the mode: they are
+    // about the runtime a static render hands out, and Samples.Core's router does not know them anyway.
+    private bool IsRequested(string route) => HttpContext?.Request.Path.StartsWithSegments(route) is true;
 }

@@ -1,5 +1,7 @@
 ﻿@page "/getting-started"
+@implements IDisposable
 @inject IBaletteService Palette
+@inject DemoState State
 
 <PageTitle>Getting started · Balette</PageTitle>
 
@@ -22,29 +24,35 @@
         interactive client, the package belongs in the <code>.Client</code> project, and the services are registered in
         both projects.
     </p>
+    <p>
+        It needs .NET 10 or 11; Blazor WebAssembly, Blazor Server, a Blazor Web App in any interactive render mode, or
+        Blazor Hybrid; and a browser with the <code>&lt;dialog&gt;</code> element - every evergreen browser since 2022. It
+        is trimming and AOT friendly.
+    </p>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Register the services</h3>
-    <pre class="bb-code">@RegisterExample</pre>
+    <CodeBlock Language="csharp" Code="@RegisterExample" />
     <p>
         The options are a singleton. The registry, the open state and the history are scoped: one per circuit on Blazor
         Server, one per application on WebAssembly. Every page of a Blazor Web App is prerendered on the server before it
         runs in the browser, so anything a component injects must resolve in both containers - share one extension
         method between the two <code>Program.cs</code> files, the way this demo does with <code>AddDemoServices</code>.
+        Every option is listed, with this site's value, on <a href="options">Options &amp; security</a>.
     </p>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Reference the stylesheet</h3>
-    <pre class="bb-code">&lt;link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" /&gt;</pre>
+    <CodeBlock Code="@StylesheetExample" />
     <p>
         In <code>App.razor</code> or <code>index.html</code>, before your own stylesheet, so your overrides of its
         <code>--bit-balette-*</code> variables win. It is a plain stylesheet with no dependencies, and it is not added for
         you: leave it out and set <code>Unstyled="true"</code> to style everything yourself. Add the namespace to
         <code>_Imports.razor</code> as well:
     </p>
-    <pre class="bb-code">@@using Bit.Balette</pre>
+    <CodeBlock Code="@ImportsExample" />
 </section>
 
 <section class="bb-card">
@@ -53,39 +61,61 @@
         Put one <code>Balette</code> where it is rendered interactively on every page, and a <code>BaletteTrigger</code>
         wherever a visible entry point helps:
     </p>
-    <pre class="bb-code">@LayoutExample</pre>
+    <CodeBlock Code="@LayoutExample" />
     <p>
         The palette renders a closed <code>&lt;dialog&gt;</code> until it is opened, so it costs nothing while it is not in
         use. It needs an interactive render mode: a statically rendered palette never attaches its keyboard handling.
         This site renders it from <code>Components/AppPalette.razor</code>, which <code>Routes.razor</code> puts next to
-        the router so the one palette outlives every page and layout.
+        the router so the one palette outlives every page and layout. One palette per scope is the rule: every instance
+        listens to the same service, so two of them would open together.
     </p>
+    <p>
+        <code>BaletteTrigger</code> is a button that opens the palette and shows its toggle shortcut in the platform's own
+        symbols - <kbd>⌘</kbd> <kbd>K</kbd> on a Mac, <kbd>Ctrl</kbd> <kbd>K</kbd> elsewhere - and declares it with
+        <code>aria-keyshortcuts</code>. <code>Label</code> is its text, <code>Query</code> opens the palette with a query
+        already typed (a mode prefix included), <code>PageCommandId</code> opens it on a command's page,
+        <code>ShowShortcut="false"</code> drops the hint, <code>IsMac</code> forces one platform's symbols instead of the
+        detected one, <code>Class</code> adds classes, and <code>ChildContent</code> replaces the whole content. Any other
+        attribute lands on the button. These three are live:
+    </p>
+    <CodeBlock Code="@TriggerExample" />
+    <div class="bb-try">
+        <BaletteTrigger Label="Find a teammate" Query="@("@")" aria-label="Find a teammate" />
+        <BaletteTrigger Label="Change theme" PageCommandId="preferences.theme" ShowShortcut="false" aria-label="Change theme" />
+        <BaletteTrigger Query=">" aria-label="Commands mode">
+            <kbd>&gt;</kbd> Commands mode
+        </BaletteTrigger>
+    </div>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Register commands</h3>
     <p>Inject <code>IBaletteService</code> wherever commands belong and register them:</p>
-    <pre class="bb-code">@CommandsExample</pre>
+    <CodeBlock Code="@CommandsExample" />
     <p>
         <code>Register</code> returns an <code>IDisposable</code>: dispose it to remove the commands again. Commands that
         belong to the whole app are registered once, from the layout or at startup through <code>options.Commands</code>;
         <code>&lt;BaletteCommands Commands="_commands" /&gt;</code> registers a list while it is rendered and removes it
-        when it goes.
+        when it goes. <a href="commands">Registering commands</a> covers every member a command can have.
     </p>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Open it</h3>
     <p>
-        <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac) toggles the palette. Code opens it through the
-        service, optionally with a query - a mode prefix included - or directly on a command's page:
+        <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a Mac) toggles the palette; this site adds
+        <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>P</kbd> for hands trained on VS Code. Code opens it through the service,
+        optionally with a query - a mode prefix included - or directly on a command's page, and runs a command by its id
+        without opening anything:
     </p>
-    <pre class="bb-code">@OpenExample</pre>
+    <CodeBlock Language="csharp" Code="@OpenExample" />
     <div class="bb-try">
         <button type="button" class="btn btn-secondary" @onclick="() => Palette.OpenAsync()">Open the palette</button>
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(">")'>Commands mode</button>
         <button type="button" class="btn btn-secondary" @onclick='() => Palette.OpenAsync(pageCommandId: "preferences.theme")'>Straight to the Theme page</button>
+        <button type="button" class="btn btn-secondary" @onclick='() => Palette.ExecuteAsync("toggle:wordwrap")'>Run “Word wrap” by its id</button>
     </div>
+    <p class="bb-muted demo-small" role="status">Word wrap is <strong>@(State.WordWrap ? "on" : "off")</strong>.</p>
 </section>
 
 <section class="bb-card">
@@ -94,14 +124,16 @@
     <ul class="bb-detail-list">
         <li>Type <code>rc</code> - fuzzy matching jumps to <em>Registering commands</em>, with the word starts highlighted.</li>
         <li>Type <code>theme</code> and press <kbd>Enter</kbd> - a nested page; <kbd>Backspace</kbd> on an empty box goes back.</li>
-        <li>Type <code>&gt;</code> for commands only, <code>#105</code> to look up an issue, <code>@@ada</code> to search people (async).</li>
+        <li>Type <code>francais</code> - a command nested under <em>Language</em>, found from the root without its accent.</li>
+        <li>Type <code>settigns</code> - nothing matches as typed, so the palette retries allowing a typo.</li>
+        <li>Type <code>&gt;</code> for commands only, <code>#105</code> to look up an issue, <code>@@ada</code> to search people (async), <code>?</code> for help.</li>
         <li>Type <code>doc theming</code> - both terms must match, and the async documentation source answers too.</li>
         <li>Pick <em>Set labels…</em> - a multi-select page; <kbd>Ctrl</kbd> <kbd>Enter</kbd> applies.</li>
-        <li>Pick <em>Rename project…</em> - a free-text prompt step.</li>
+        <li>Pick <em>Rename project…</em> (or press <kbd>F2</kbd> anywhere) - a free-text prompt step, validated as you type.</li>
         <li>Pick <em>Delete project</em> - destructive, so it needs a second <kbd>Enter</kbd>.</li>
         <li>Press <kbd>Tab</kbd> on any row - the action panel: pin, forget, and the row's own actions.</li>
         <li>Close the palette and press <kbd>G</kbd> then <kbd>S</kbd> - a sequence shortcut opens the settings.</li>
-        <li>Try the operators <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code> and <code>!exclude</code>.</li>
+        <li>Try the operators <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code>, <code>!exclude</code>, <code>"a phrase"</code> and <code>a | b</code>.</li>
     </ul>
 </section>
 
@@ -110,6 +142,7 @@
     <pre class="bb-code">Key press (browser)
   -&gt; bit-balette.js     toggle, global chords and G-then-X sequences, navigation keys
   -&gt; Balette            query, mode prefix, page stack, active row     (C#)
+  -&gt; BaletteQuery       terms and operators, parsed once per keystroke
   -&gt; IBaletteMatcher    fzf-style score and highlight positions per field
   -&gt; BaletteRanker      score + priority + frecency, the best MaxResults kept
   -&gt; rows               groups, pinned, recents, async source blocks
@@ -127,6 +160,95 @@
     </div>
 </section>
 
+<section class="bb-card" id="hosting">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Hosting models</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Host</th><th>Setup</th><th>What to know</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">WebAssembly</td>
+                    <td>Services in <code>Program.cs</code>, the stylesheet in <code>index.html</code>, <code>&lt;Balette /&gt;</code> in <code>MainLayout.razor</code>.</td>
+                    <td>Search runs on the browser's one thread: a keystroke whose search took longer than a frame paints first, and keys typed meanwhile fold into one search. Outside AOT builds the library can be <a href="getting-started#lazy-loading">lazy loaded</a> instead.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Blazor Server</td>
+                    <td>The same.</td>
+                    <td>Shortcuts and navigation keys are handled in the browser, so only the query and the chosen command cross the circuit. Handlers run on the server, in the circuit's scope; keys typed faster than a round trip are all kept.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Blazor Web App</td>
+                    <td>Services in <strong>both</strong> projects, the stylesheet in <code>App.razor</code>.</td>
+                    <td>With global interactivity (<code>&lt;Routes @@rendermode="..." /&gt;</code>) the palette goes in <code>MainLayout.razor</code>. With per-page interactivity the layout is static: wrap the palette in a small component the layout renders interactively - <code>&lt;PaletteHost @@rendermode="InteractiveAuto" /&gt;</code>, below - and register commands from components in the same mode, because the registry is scoped to one circuit or one WebAssembly runtime.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Blazor Hybrid</td>
+                    <td>The same as WebAssembly, in a MAUI, WPF or Windows Forms <code>BlazorWebView</code>.</td>
+                    <td>Works unchanged; the history goes to the web view's <code>localStorage</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeBlock Code="@PerPageExample" />
+    <p>
+        While prerendering, the palette renders a closed dialog. It attaches its keyboard handling once it is interactive and
+        then marks the dialog <code>data-ready="true"</code> - what an end-to-end test waits for before pressing
+        <kbd>Ctrl</kbd> <kbd>K</kbd> on a prerendered page.
+    </p>
+    <div class="bb-note">
+        <strong>Content security policy.</strong> The browser layer is a JavaScript module imported from
+        <code>_content/Bit.Balette/bit-balette.js</code>; there are no inline scripts and no <code>eval</code>, so
+        <code>script-src 'self'</code> is enough.
+    </div>
+</section>
+
+<section class="bb-card" id="lazy-loading">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Lazy loading on WebAssembly</h3>
+    <p>
+        The components also work without <code>AddBitBaletteServices</code>, so a WebAssembly app can fetch Balette only
+        when someone opens a part of the app that has a palette. When the services are not registered,
+        <code>Balette</code>, <code>BaletteTrigger</code> and <code>BaletteCommands</code> create every service they need
+        themselves, once per browser connection, and <code>IServiceProvider.GetBaletteService()</code> hands the app's own
+        code the same <code>IBaletteService</code>. Mark the assembly as lazy loaded in the project that runs in the
+        browser, and load it before the first page that uses it renders:
+    </p>
+    <CodeBlock Code="@LazyProjectExample" />
+    <CodeBlock Code="@LazyRouterExample" />
+    <p>
+        Those pages, or a layout only they use, hold the palette and register commands through
+        <code>GetBaletteService()</code> instead of injecting <code>IBaletteService</code>:
+    </p>
+    <CodeBlock Code="@LazyLayoutExample" />
+    <ul class="bb-detail-list">
+        <li>Leave <code>AddBitBaletteServices</code> out of that project's <code>Program.cs</code>: calling it references Balette's types before the assembly is there. For the same reason only what renders after the assembly has loaded may use Balette's types - the pages it is loaded for and a layout only they use, not <code>App.razor</code>, a layout every page shares or <code>Program.cs</code>.</li>
+        <li>No type in an assembly the router reads when the app starts - the app's own assembly first of all - may derive from or implement one of Balette's: no <code>IBaletteSource</code> class, no <code>IBaletteHistoryStore</code>, no component that inherits <code>Balette</code>. The router reads the types of those assemblies at startup, and on WebAssembly a type whose base type or interface lives in an assembly that is not loaded yet fails to load - and keeps failing after Bit.Balette has loaded, breaking the app's use of it for the rest of the session. Put such a class in a library that is lazy loaded together with Bit.Balette.</li>
+        <li>The stylesheet is a plain <code>&lt;link&gt;</code>, served whether the assembly has loaded or not, and the palette imports its JavaScript module the first time it renders.</li>
+        <li>Without the registration the palette runs on the default <code>BaletteOptions</code>. Its parameters override most of them per instance (<code>Strings</code>, <code>ToggleShortcut</code>, <code>Theme</code>, <code>Density</code>, <code>Loop</code>, <code>EnableHistory</code>, ...) - a <code>BaletteTrigger</code> shows and announces the toggle shortcut and the strings of the palette it opens - and modes, sources and commands are registered through <code>GetBaletteService()</code>. The rest - such as <code>GroupOrder</code>, <code>AdditionalToggleShortcuts</code>, the field weights, the matcher and <code>AllowedUrlSchemes</code> - keep their defaults; an app that needs them registers the services rather than lazy loading.</li>
+        <li>The history store cannot be replaced either: recents, pins and frecency go to the browser's <code>localStorage</code> under the default <code>HistoryStorageKey</code>, <code>bit-balette.history</code>, which every app on the same origin shares. An app that must not write to the browser sets <code>EnableHistory="false"</code> on its palettes.</li>
+        <li>The palette logs one warning that the services are not registered - expected here; it is what tells an app that should have registered them, such as the client project of a Blazor Web App that forgot to, why its options are ignored. <code>builder.Logging.AddFilter("Bit.Balette.BitBalette", LogLevel.None)</code> in <code>Program.cs</code> silences it without referencing Balette's types.</li>
+        <li>Do not lazy load in an AOT build. AOT compiles every assembly into <code>dotnet.native.wasm</code>, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.</li>
+    </ul>
+</section>
+
+<section class="bb-card" id="troubleshooting">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Troubleshooting</h3>
+    <ul class="bb-detail-list">
+        <li><strong><kbd>Ctrl</kbd> <kbd>K</kbd> does nothing.</strong> The palette is not interactive: it is in a statically rendered layout. Also check that no other script calls <code>preventDefault</code> on the key first.</li>
+        <li><strong>Options from <code>Program.cs</code> stop working once the page turns interactive</strong> - a toggle shortcut, the group order, commands added through <code>options.Commands</code>. The services are registered in only one project of a Blazor Web App, and the palette in the other runs on the default options; it logs a warning saying the services are not registered. Call <code>AddBitBaletteServices</code> in both, through one shared method.</li>
+        <li><strong>The palette opens unstyled.</strong> The stylesheet link is missing.</li>
+        <li><strong>A toggle shows its old state.</strong> Commands are immutable: register a new command with the same id, call <code>Palette.Update</code>, or give <code>BaletteCommands</code> a new list.</li>
+        <li><strong>Recents forget a command whose title changed.</strong> Its id was derived from the title; set an explicit <code>Id</code>.</li>
+        <li><strong>A page's commands are still listed after leaving it.</strong> Dispose the handle <code>Register</code> returned, or use <code>&lt;BaletteCommands&gt;</code>.</li>
+        <li><strong>A global shortcut does not fire in a text box.</strong> Deliberate for plain keys; use a chord with a modifier, or set <code>SuppressShortcutsInEditableElements = false</code>.</li>
+        <li><strong>Two palettes open at once.</strong> Place one <code>Balette</code> per scope; every instance listens to the same service.</li>
+        <li><strong>A command does nothing, or the wrong one runs.</strong> Look at the app's log: the palette warns about duplicate ids, shortcuts several commands claim or the toggle takes, links it refused, and logs every failed command and page.</li>
+        <li><strong>A command's shortcut works only after opening the palette.</strong> Its <code>VisibleWhen</code> changed while the palette was closed: call <code>Palette.Refresh()</code> after the state it reads changes.</li>
+        <li><strong>Commands passed to the <code>Commands</code> parameter do not update.</strong> Assign a new list, or call <code>Palette.Refresh()</code> after changing the same one.</li>
+    </ul>
+</section>
+
 @code {
     private const string RegisterExample = """
         builder.Services.AddBitBaletteServices(options =>
@@ -137,6 +259,14 @@
             // Groups appear in this order on the empty query; any others follow alphabetically.
             options.GroupOrder.AddRange(["Navigation", "Actions", "Preferences", "Help"]);
         });
+        """;
+
+    private const string StylesheetExample = """
+        <link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" />
+        """;
+
+    private const string ImportsExample = """
+        @using Bit.Balette
         """;
 
     private const string LayoutExample = """
@@ -151,8 +281,15 @@
         <Balette />
         """;
 
+    private const string TriggerExample = """
+        <BaletteTrigger Label="Find a teammate" Query="@" />
+        <BaletteTrigger Label="Change theme" PageCommandId="preferences.theme" ShowShortcut="false" />
+        <BaletteTrigger Query=">"><kbd>&gt;</kbd> Commands mode</BaletteTrigger>
+        """;
+
     private const string CommandsExample = """
         @inject IBaletteService Palette
+        @inject ProjectsApi Api
         @implements IDisposable
 
         @code {
@@ -183,6 +320,72 @@
         await Palette.OpenAsync();
         await Palette.OpenAsync(">");                                // commands mode
         await Palette.OpenAsync(pageCommandId: "preferences.theme"); // straight to the Theme page
-        await Palette.ExecuteAsync("navigation.settings");          // run a command without opening anything
+        await Palette.ExecuteAsync("toggle:wordwrap");               // run a command by its id, nothing opened
         """;
+
+    // PaletteHost.razor, which a static layout renders as <PaletteHost @rendermode="InteractiveAuto" />.
+    private const string PerPageExample = """
+        <Balette />
+        <BaletteCommands Commands="_appCommands" />
+
+        @code {
+            // Registered from inside the interactive component, so they land in the same scope as the palette.
+            private readonly List<BaletteCommand> _appCommands = [ /* ... */ ];
+        }
+        """;
+
+    private const string LazyProjectExample = """
+        <!-- The browser project's .csproj -->
+        <ItemGroup>
+          <BlazorWebAssemblyLazyLoad Include="Bit.Balette.wasm" />
+        </ItemGroup>
+        """;
+
+    private const string LazyRouterExample = """
+        @* App.razor: the router waits for OnNavigateAsync before it renders the page. *@
+        @using Microsoft.AspNetCore.Components.WebAssembly.Services
+        @inject LazyAssemblyLoader LazyAssemblyLoader
+
+        <Router AppAssembly="typeof(App).Assembly" OnNavigateAsync="OnNavigateAsync">
+            ...
+        </Router>
+
+        @code {
+            private async Task OnNavigateAsync(NavigationContext context)
+            {
+                // The pages with the palette: fetch Balette before they render. A second call loads nothing again. Routes
+                // match regardless of case, so /Admin/users is one of them too.
+                if (context.Path.StartsWith("admin", StringComparison.OrdinalIgnoreCase))
+                    await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Balette.wasm"]);
+            }
+        }
+        """;
+
+    private const string LazyLayoutExample = """
+        @* AdminLayout.razor *@
+        @inherits LayoutComponentBase
+        @inject IServiceProvider Services
+        @implements IDisposable
+
+        <BaletteTrigger Label="Search…" />
+        @Body
+        <Balette />
+
+        @code {
+            private IDisposable? _commands;
+
+            protected override void OnInitialized()
+                => _commands = Services.GetBaletteService().Register(
+                    BaletteCmd.Navigate("Users", "/admin/users").Group("Navigation"),
+                    BaletteCmd.Navigate("Billing", "/admin/billing").Group("Navigation"));
+
+            public void Dispose() => _commands?.Dispose();
+        }
+        """;
+
+    protected override void OnInitialized() => State.Changed += Refresh;
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= Refresh;
 }

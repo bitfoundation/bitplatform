@@ -1,11 +1,11 @@
-﻿#if NET10_0_OR_GREATER
+﻿#if NET11_0_OR_GREATER
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace ButilTests.Hosting.Infrastructure;
 
 /// <summary>
 /// The Blazor Web App hosting samples (Samples/Server, Samples/Wasm and Samples/Auto), in memory, one shared factory
-/// each. They target net10.0 only, so this exists on that framework only.
+/// each. They target net11.0 only, so this exists on that framework only.
 /// </summary>
 public static class SampleHostFactories
 {

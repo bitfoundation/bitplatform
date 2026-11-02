@@ -54,7 +54,8 @@ public sealed class AudioWorkletNodeHandle : AudioNodeHandle
     /// </summary>
     /// <remarks>
     /// A message that is not already a string arrives as its JSON text, so a processor can post an
-    /// ordinary object without either side agreeing on a type first.
+    /// ordinary object without either side agreeing on a type first. That JSON is capped at 32 MB, as
+    /// described on <see cref="ButilMessage"/>: a larger message arrives as just its type name.
     /// </remarks>
     [JSInvokable(MessageMethodName)]
     public void InvokeAudioWorkletMessage(Guid id, string message)

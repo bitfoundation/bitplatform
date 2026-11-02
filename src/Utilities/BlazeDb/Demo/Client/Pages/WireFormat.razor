@@ -188,8 +188,11 @@
                 </p>
             </Panel>
             <Callout Tone="warn" Title="Pin your numbers before you ship.">
-                Add <code>[BlazeDbField(n)]</code> to every property once real data exists. After that you can
-                reorder, rename and delete properties safely - only the numbers matter.
+                Add <code>[BlazeDbField(n)]</code> - any number from 1 to 536,870,911 - to every property once real data
+                exists. After that you can reorder, rename and delete properties safely: only the numbers matter. The
+                generator warns (<code>BLZ013</code>) when a type pins some numbers but not others, which is where an
+                automatic number moves most easily, and refuses a number used twice (<code>BLZ005</code>) or out of range
+                (<code>BLZ014</code>).
             </Callout>
         </div>
     </div>
@@ -219,7 +222,9 @@
                     The reverse case needs no machinery: a field that is absent leaves its local
                     variable at its default, so a property added later reads back as
                     <code>null</code>, <code>0</code> or an empty collection. Adding a property is
-                    always a compatible change.
+                    always a compatible change, and so is removing one - its field is skipped like any
+                    unknown one. Neither needs a migration; <a href="backups">migrations</a> are for
+                    changing the data itself.
                 </p>
             </Panel>
 
@@ -568,17 +573,19 @@
     private const string PrimitivesSnippet = """
         // Writer
         WriteVarInt / WriteVarUInt        WriteFixed32 / WriteFixed64
-        WriteBool / WriteSingle / WriteDouble / WriteDecimal
-        WriteString / WriteBytes / WriteGuid
-        WriteDateTime / WriteDateTimeOffset / WriteTimeSpan
+        WriteBool / WriteByte / WriteSingle / WriteDouble / WriteHalf / WriteDecimal
+        WriteInt128 / WriteUInt128
+        WriteString / WriteBytes / WriteGuid / WriteRaw
+        WriteDateTime / WriteDateTimeOffset / WriteTimeSpan / WriteDateOnly / WriteTimeOnly
         WriteTag(fieldNumber, wireType)
-        WrittenSpan / WrittenMemory / ToArray() / Reset()
+        WrittenSpan / WrittenMemory / Length / ToArray() / Reset()
 
         // Reader - a ref struct over a ReadOnlySpan<byte>
         ReadVarInt / ReadVarUInt / ReadFixed32 / ReadFixed64
-        ReadBool / ReadSingle / ReadDouble / ReadDecimal
-        ReadString / ReadBytes / ReadGuid
-        ReadDateTime / ReadDateTimeOffset / ReadTimeSpan
+        ReadBool / ReadByte / ReadSingle / ReadDouble / ReadHalf / ReadDecimal
+        ReadInt128 / ReadUInt128
+        ReadString / ReadBytes / ReadGuid / ReadRaw
+        ReadDateTime / ReadDateTimeOffset / ReadTimeSpan / ReadDateOnly / ReadTimeOnly
         ReadTag() / SkipField(wireType) / Position / Remaining
         """;
 }

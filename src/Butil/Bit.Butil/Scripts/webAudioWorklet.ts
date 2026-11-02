@@ -29,7 +29,7 @@ var BitButil = (window as any).BitButil = (window as any).BitButil || {};
             const node = new Ctor(ctx, name, init);
             if (dotNetRef) {
                 node.port.onmessage = (e: any) => butil.utils.dispatch(dotNetRef, method, id,
-                    typeof e.data === 'string' ? e.data : JSON.stringify(e.data));
+                    typeof e.data === 'string' ? e.data : butil.utils.messageJson(e.data));
             }
             return butil.webAudioNodes.register(id, node);
         } catch {

@@ -135,10 +135,16 @@ public static class BormDataAnnotationsScanner
             field.Autocomplete ??= "email";
             field.AddValidator(new BormEmailRule(ExplicitMessage(email)));
         }
-        if (member.GetCustomAttribute<PhoneAttribute>() is not null)
+        if (member.GetCustomAttribute<PhoneAttribute>() is { } phone)
         {
             field.Type = BormFieldType.Tel;
             field.Autocomplete ??= "tel";
+            // Judged by [Phone] itself: digits, with the spaces, dashes, dots, brackets, leading + and extension
+            // people write them with. It used to choose the keyboard and nothing more, and "not a phone!!" was saved.
+            var message = ExplicitMessage(phone);
+            field.AddValidator(new BormDelegateRule(ctx => ctx.Value is not string { Length: > 0 } text || phone.IsValid(text)
+                ? BormRuleResult.Success()
+                : BormRuleResult.Fail(message ?? ctx.Message(BormMessageKeys.Pattern))));
         }
         if (member.GetCustomAttribute<UrlAttribute>() is { } url)
         {

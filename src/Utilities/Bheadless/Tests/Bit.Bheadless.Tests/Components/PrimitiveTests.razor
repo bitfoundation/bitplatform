@@ -1,0 +1,90 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Progress_reports_value_and_text()
+    {
+        var cut = Render(@<BitBhProgress Value="30" Max="120" aria-label="Upload"><BitBhProgressIndicator /></BitBhProgress>);
+        var bar = cut.Find("[role=progressbar]");
+        Assert.AreEqual("0", bar.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("120", bar.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("30", bar.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("25%", bar.GetAttribute("aria-valuetext"));
+        Assert.AreEqual("loading", bar.GetAttribute("data-state"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Indeterminate_progress_omits_the_value()
+    {
+        var cut = Render(@<BitBhProgress aria-label="Loading" />);
+        var bar = cut.Find("[role=progressbar]");
+        Assert.IsNull(bar.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("indeterminate", bar.GetAttribute("data-state"));
+    }
+
+    [TestMethod]
+    public void Meter_reports_value_and_level()
+    {
+        var cut = Render(@<BitBhMeter Value="0.9" Max="1" High="0.8" aria-label="Disk usage" ValueText="@(v => $"{v:P0} used")" />);
+        var meter = cut.Find("[role=meter]");
+        Assert.AreEqual("0.9", meter.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("high", meter.GetAttribute("data-level"));
+        Assert.EndsWith("used", meter.GetAttribute("aria-valuetext"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Separator_is_semantic_unless_decorative()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhSeparator />
+                <BitBhSeparator Orientation="BitBhOrientation.Vertical" />
+                <BitBhSeparator Decorative="true" />
+            </div>);
+        var all = cut.FindAll("div > *");
+        Assert.AreEqual("separator", all[0].GetAttribute("role"));
+        Assert.AreEqual("vertical", all[1].GetAttribute("aria-orientation"));
+        Assert.AreEqual("none", all[2].GetAttribute("role"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Visually_hidden_content_stays_in_the_accessibility_tree()
+    {
+        var cut = Render(@<button><span aria-hidden="true">×</span><BitBhVisuallyHidden>Close</BitBhVisuallyHidden></button>);
+        Assert.AreEqual("Close", cut.Find("button").AccessibleName());
+        Assert.Contains("clip", cut.Find("span + span").GetAttribute("style")!);
+    }
+
+    [TestMethod]
+    public void Live_region_politeness()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhLiveRegion>Saved</BitBhLiveRegion>
+                <BitBhLiveRegion Politeness="BitBhPoliteness.Assertive">Error</BitBhLiveRegion>
+            </div>);
+        var regions = cut.FindAll("div > *");
+        Assert.AreEqual("status", regions[0].GetAttribute("role"));
+        Assert.AreEqual("polite", regions[0].GetAttribute("aria-live"));
+        Assert.AreEqual("alert", regions[1].GetAttribute("role"));
+        Assert.AreEqual("assertive", regions[1].GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void Direction_provider_flips_arrow_keys_for_descendants()
+    {
+        var cut = Render(
+            @<BitBhDirectionProvider Dir="BitBhDirection.Rtl">
+                <BitBhRadioGroup aria-label="Size" DefaultValue="s">
+                    <BitBhRadio Value="s">S</BitBhRadio>
+                    <BitBhRadio Value="m">M</BitBhRadio>
+                </BitBhRadioGroup>
+            </BitBhDirectionProvider>);
+        cut.FindAll("[role=radio]")[0].Press("ArrowLeft");
+        Assert.AreEqual("true", cut.FindAll("[role=radio]")[1].GetAttribute("aria-checked"));
+    }
+}

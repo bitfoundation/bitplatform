@@ -15,9 +15,12 @@ public abstract class BdndComponentTestBase : BunitContext
 {
     protected const string ModulePath = "./_content/Bit.Bdnd/bit-bdnd.js";
 
-    protected BdndComponentTestBase()
+    /// <param name="registerServices">
+    /// False leaves <c>AddBitBdndServices</c> out, as an app that lazy loads Bit.Bdnd on WebAssembly does.
+    /// </param>
+    protected BdndComponentTestBase(bool registerServices = true)
     {
-        Services.AddBitBdndServices();
+        if (registerServices) Services.AddBitBdndServices();
         // loose: getDragStartRect answers null (the Blazor Server path) unless a test plans it
         JSInterop.Mode = JSRuntimeMode.Loose;
         Module = JSInterop.SetupModule(ModulePath);

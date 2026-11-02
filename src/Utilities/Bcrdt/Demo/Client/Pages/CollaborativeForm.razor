@@ -7,15 +7,17 @@
     <h1>Collaborative form</h1>
     <p class="bb-subtitle">
         Two replicas of one form, there to make a single decision visible: which field type you pick determines what
-        happens when two people edit the same thing at once - one value wins for a map entry, both edits survive in a
-        nested text.
+        happens when two people edit the same thing at once - one value wins for a map entry, both additions survive
+        in a nested set, and both edits survive in a nested text.
     </p>
 </div>
 
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two replicas of one form</h3>
     <p class="bb-card-desc">
-        Three map entries and one nested text. Edit a field in either replica and watch the other follow.
+        Three map entries, one nested set and one nested text, all inside one <code>BcrdtMap</code> called
+        <code>form</code>. Edit a field in either replica and watch the other follow. Under each field, a note says
+        how it merges.
     </p>
 
     @if (!Ready)
@@ -66,6 +68,23 @@
                             <small class="field-note">map entry - a menu is a natural fit for last-writer-wins</small>
                         </label>
 
+                        @* A group of checkboxes is one field, so it is a fieldset with a legend rather than a label. *@
+                        <fieldset class="field bb-field form-labels">
+                            <legend class="field-label">Labels</legend>
+                            <div class="label-options">
+                                @foreach (string label in LabelOptions)
+                                {
+                                    <label class="bb-check">
+                                        <input type="checkbox"
+                                               checked="@Labels(replica).Contains(label)"
+                                               @onchange="@(args => ToggleLabel(replica, label, args))" />
+                                        @label
+                                    </label>
+                                }
+                            </div>
+                            <small class="field-note">nested BcrdtSet - two people's labels both stay</small>
+                        </fieldset>
+
                         <label class="field bb-field">
                             <span class="field-label">Notes</span>
                             @*
@@ -91,18 +110,20 @@
         </div>
     }
 
+    <CodeSnippet Sample="TicketForm.razor" />
+
     <div class="bb-note bb-note-warn">
         <strong>The thing worth trying.</strong> Take <em>Replica B</em> offline. In A, set the
-        title to <em>one thing</em> and add a sentence to the notes. In B, set the title to
-        <em>something else</em> and add a different sentence to the notes. Bring B back online.
-        One of the two titles wins outright and the other is lost - while <em>both</em> sentences
-        appear in the notes. Same two clients, same moment, same conflict; different outcome purely
-        because of how the field was modelled.
+        title to <em>one thing</em>, tick <em>urgent</em> and add a sentence to the notes. In B, set the title to
+        <em>something else</em>, tick <em>blocked</em> and add a different sentence to the notes. Bring B back
+        online. One of the two titles wins outright and the other is lost - while <em>both</em> labels stay ticked
+        and <em>both</em> sentences appear in the notes. Same two clients, same moment, same conflict; different
+        outcome purely because of how the field was modelled.
     </div>
 </div>
 
 <div class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Map entries and a nested text</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Map entries, a nested set and a nested text</h3>
     <p class="bb-card-desc">
         Most collaborative features are not documents. They are forms, settings panels and entity
         editors whose shape is already a C# type. This page is two replicas of one such form, and it
@@ -117,11 +138,50 @@
         deterministically but arbitrarily, and the other is gone.
     </p>
     <p class="bb-card-desc">
+        The labels are a nested <code>BcrdtSet</code>: a member is a value, present or not. Labels ticked by two
+        people at once are both kept, the same label ticked by both is kept once, and a label one person unticks
+        while the other unticks and ticks it again stays ticked - an add wins over a concurrent remove. (A tick of a
+        label that is already ticked writes nothing, so it cannot outvote a removal; the
+        <a href="conflicts">conflict lab</a> runs both cases.)
+    </p>
+    <p class="bb-card-desc">
         The notes field at the bottom is a nested <code>BcrdtText</code> instead. Concurrent edits to
         it merge character by character, exactly as on the text page.
     </p>
-    <pre class="bb-code">form.EnsureText(<span class="s">"notes"</span>).Insert(0, <span class="s">"..."</span>);   <span class="c">// a nested text: both edits merge</span>
-form.Set(<span class="s">"title"</span>, <span class="s">"..."</span>);                    <span class="c">// a map entry: one side wins</span></pre>
+    <pre class="bb-code">BcrdtMap form = document.GetMap(<span class="s">"form"</span>);
+
+form.Set(<span class="s">"title"</span>, <span class="s">"..."</span>);                    <span class="c">// a map entry: one side wins</span>
+form.EnsureSet(<span class="s">"labels"</span>).Add(<span class="s">"urgent"</span>);      <span class="c">// a nested set: both additions stay</span>
+form.EnsureText(<span class="s">"notes"</span>).Insert(0, <span class="s">"..."</span>);   <span class="c">// a nested text: both edits merge</span></pre>
+    <p class="bb-card-desc">
+        <code>EnsureSet</code> and <code>EnsureText</code> create the nested type the first time and return it
+        after that. Two replicas creating it at the same moment on an empty document race like any map entry - one
+        of the two nested types wins, with whatever was written into the other - so a real application creates
+        a document's structure once, when the document is first made.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A form that is already a C# class</h3>
+    <p class="bb-card-desc">
+        When the form's shape is a type you already have, keep the type as the model.
+        <code>BcrdtObjectBinding&lt;T&gt;</code> binds the properties of a plain object to the keys of a
+        <code>BcrdtMap</code>, raises <code>INotifyPropertyChanged</code> when a collaborator changes one, and on
+        save writes back only the properties you actually changed - so saving never reverts a field somebody else
+        edited meanwhile.
+    </p>
+    <pre class="bb-code"><span class="k">using var</span> binding = <span class="k">new</span> BcrdtObjectBinding&lt;Ticket&gt;(document.GetMap(<span class="s">"form"</span>));
+
+Ticket ticket = binding.ToObject();        <span class="c">// reads the form</span>
+ticket.Owner = <span class="s">"Ada"</span>;
+binding.FromObject(ticket);                <span class="c">// writes only Owner</span>
+
+binding.Set(t =&gt; t.Status, <span class="s">"Approved"</span>);  <span class="c">// or one property at a time</span></pre>
+    <p class="bb-card-desc">
+        For a value stored whole, <code>map.SetObject("assignee", person)</code> flattens an object onto the
+        values a document can hold, and <code>map.Get&lt;Person&gt;("assignee")</code> reads it back - one value,
+        last writer wins.
+    </p>
 </div>
 
 @if (Ready)
@@ -142,6 +202,7 @@ form.Set(<span class="s">"title"</span>, <span class="s">"..."</span>);         
                 </div>
             }
         </div>
+        <CodeSnippet Sample="FormJson.razor" />
     </div>
 }
 
@@ -151,8 +212,11 @@ form.Set(<span class="s">"title"</span>, <span class="s">"..."</span>);         
     private const string OwnerKey = "owner";
     private const string StatusKey = "status";
     private const string NotesKey = "notes";
+    private const string LabelsKey = "labels";
 
     private static readonly string[] StatusOptions = ["Draft", "In review", "Approved", "Archived"];
+
+    private static readonly string[] LabelOptions = ["urgent", "customer", "internal", "blocked"];
 
     protected override string DocumentId => "demo-form";
 
@@ -168,4 +232,16 @@ form.Set(<span class="s">"title"</span>, <span class="s">"..."</span>);         
     // replicas calling it concurrently on an empty document is itself a last-writer-wins race, so a
     // real application would create the structure once when the document is first provisioned.
     private static BcrdtText Notes(DemoReplica replica) => replica.Document.GetMap(FormKey).EnsureText(NotesKey);
+
+    // The same race as the notes, for the same reason: created on first use, by whichever replica renders first.
+    private static BcrdtSet Labels(DemoReplica replica) => replica.Document.GetMap(FormKey).EnsureSet(LabelsKey);
+
+    // Add and Remove rather than one write of the whole selection: a set merges per member, so a label
+    // ticked here never overwrites one ticked elsewhere.
+    private static void ToggleLabel(DemoReplica replica, string label, ChangeEventArgs args)
+    {
+        BcrdtSet labels = Labels(replica);
+        if (args.Value is true) labels.Add(label);
+        else labels.Remove(label);
+    }
 }

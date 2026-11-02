@@ -1,0 +1,18 @@
+﻿.example-content {
+    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+::deep {
+    .custom-class {
+        padding: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: #dcfce7;
+    }
+
+    .custom-tag {
+        box-shadow: 0 0 0.5rem #f59e0b;
+    }
+}

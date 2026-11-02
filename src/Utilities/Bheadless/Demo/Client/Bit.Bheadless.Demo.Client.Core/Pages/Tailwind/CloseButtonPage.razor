@@ -1,0 +1,206 @@
+﻿@page "/tw/close-button"
+
+<PageTitle>CloseButton — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">CloseButton</h1>
+        <p class="mt-2 text-zinc-500">A utility button pre-wired to close the nearest enclosing Dialog, Popover, or Disclosure.</p>
+        <TwSectionSwitcher Slug="close-button" />
+    </header>
+
+    <TwDemoBlock Title="Inside a Dialog" Code="@_dialogCode">
+        <Description>Drop <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;BitBhCloseButton&gt;</code> anywhere inside a Dialog and it auto-wires the close action.</Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => dialogOpen = true"
+                      class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
+                Open dialog
+            </BitBhButton>
+            <BitBhDialog Open="dialogOpen" OnClose="() => dialogOpen = false">
+                <BitBhDialogBackdrop class="bg-black/50" />
+                <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+                    <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Deactivate account</BitBhDialogTitle>
+                    <BitBhDialogDescription class="text-sm text-zinc-500">
+                        This will permanently deactivate your account. All of your data will be permanently removed.
+                    </BitBhDialogDescription>
+                    <div class="mt-2 flex justify-end gap-2">
+                        <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Cancel</BitBhCloseButton>
+                        <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">Deactivate</BitBhCloseButton>
+                    </div>
+                </BitBhDialogPanel>
+            </BitBhDialog>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Inside a Popover" Code="@_popoverCode">
+        <Description>Use inside a popover panel to close it on click.</Description>
+        <LiveContent>
+            <BitBhPopover class="relative inline-block">
+                <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
+                    Solutions ▾
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-56 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg flex flex-col gap-1.5">
+                    <h3 class="text-sm font-semibold m-0">Navigation</h3>
+                    <BitBhCloseButton As="a" href="#analytics"  class="py-1 text-sm text-blue-600 no-underline hover:underline">Analytics</BitBhCloseButton>
+                    <BitBhCloseButton As="a" href="#engagement" class="py-1 text-sm text-blue-600 no-underline hover:underline">Engagement</BitBhCloseButton>
+                    <BitBhCloseButton As="a" href="#security"   class="py-1 text-sm text-blue-600 no-underline hover:underline">Security</BitBhCloseButton>
+                    <hr class="my-1 border-t border-zinc-200" />
+                    <BitBhCloseButton class="block w-full rounded-md p-1.5 text-center text-xs text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">Dismiss ✕</BitBhCloseButton>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Inside a Disclosure" Code="@_disclosureCode">
+        <Description>Same pattern in a Disclosure.</Description>
+        <LiveContent>
+            <BitBhDisclosure DefaultOpen="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 font-medium hover:bg-zinc-100 data-state-open:bg-zinc-100">
+                    Show details
+                </BitBhDisclosureButton>
+                <BitBhDisclosurePanel>
+                    <div class="border-t border-zinc-200 px-5 py-3.5 flex flex-col gap-3 text-sm text-zinc-500">
+                        <p>Here are some details you can collapse.</p>
+                        <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-900 px-3 py-1.5 cursor-pointer hover:bg-zinc-100 self-start">Hide details</BitBhCloseButton>
+                    </div>
+                </BitBhDisclosurePanel>
+            </BitBhDisclosure>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Polymorphic rendering (As)" Code="@_polymorphicCode">
+        <Description>Render as different HTML tags while keeping ARIA + keyboard semantics.</Description>
+        <LiveContent>
+            <BitBhPopover class="relative inline-block">
+                <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
+                    Open panel ▾
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-56 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg flex flex-col gap-1.5">
+                    <p class="text-sm text-zinc-500 m-0">The close actions below render as different elements:</p>
+                    <div class="mt-2 flex flex-col gap-2">
+                        <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-900 px-3 py-1.5 cursor-pointer hover:bg-zinc-100">Button (default)</BitBhCloseButton>
+                        <BitBhCloseButton As="a" href="#" class="py-1 text-sm text-blue-600 no-underline hover:underline">Anchor link</BitBhCloseButton>
+                        <BitBhCloseButton As="div" class="rounded-md bg-zinc-100 px-2.5 py-1.5 text-center text-sm cursor-pointer hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Div with role="button"</BitBhCloseButton>
+                    </div>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled state" Code="@_disabledCode">
+        <Description><code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> dims the button and skips the close action.</Description>
+        <LiveContent>
+            <BitBhPopover class="relative inline-block">
+                <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
+                    Panel is open ▾
+                </BitBhPopoverButton>
+                <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-56 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg flex flex-col gap-1.5">
+                    <p class="text-sm text-zinc-500 m-0">The disabled close button below won't close this panel:</p>
+                    <div class="mt-2 flex flex-col gap-2">
+                        <BitBhCloseButton Disabled="true"
+                                       class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-900 px-3 py-1.5 cursor-pointer hover:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                            Can't close (disabled)
+                        </BitBhCloseButton>
+                        <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 text-xs font-medium text-white px-3 py-1.5 cursor-pointer hover:bg-blue-700">
+                            Close (enabled)
+                        </BitBhCloseButton>
+                    </div>
+                </BitBhPopoverPanel>
+            </BitBhPopover>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool dialogOpen;
+
+    private const string _dialogCode = """
+<BitBhButton OnClick="() => dialogOpen = true"
+          class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
+    Open dialog
+</BitBhButton>
+<BitBhDialog Open="dialogOpen" OnClose="() => dialogOpen = false">
+    <BitBhDialogBackdrop class="bg-black/50" />
+    <BitBhDialogPanel class="mx-auto my-16 max-w-md rounded-xl bg-white p-6 shadow-2xl flex flex-col gap-3">
+        <BitBhDialogTitle class="text-lg font-semibold text-zinc-900">Deactivate account</BitBhDialogTitle>
+        <BitBhDialogDescription class="text-sm text-zinc-500">
+            This will permanently deactivate your account. All of your data will be permanently removed.
+        </BitBhDialogDescription>
+        <div class="mt-2 flex justify-end gap-2">
+            <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">Cancel</BitBhCloseButton>
+            <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white cursor-pointer hover:bg-red-700">Deactivate</BitBhCloseButton>
+        </div>
+    </BitBhDialogPanel>
+</BitBhDialog>
+
+@code {
+    private bool dialogOpen;
+}
+""";
+
+    private const string _popoverCode = """
+<BitBhPopover class="relative inline-block">
+    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
+        Solutions ▾
+    </BitBhPopoverButton>
+    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-56 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg flex flex-col gap-1.5">
+        <h3 class="text-sm font-semibold m-0">Navigation</h3>
+        <BitBhCloseButton As="a" href="#analytics"  class="py-1 text-sm text-blue-600 no-underline hover:underline">Analytics</BitBhCloseButton>
+        <BitBhCloseButton As="a" href="#engagement" class="py-1 text-sm text-blue-600 no-underline hover:underline">Engagement</BitBhCloseButton>
+        <BitBhCloseButton As="a" href="#security"   class="py-1 text-sm text-blue-600 no-underline hover:underline">Security</BitBhCloseButton>
+        <hr class="my-1 border-t border-zinc-200" />
+        <BitBhCloseButton class="block w-full rounded-md p-1.5 text-center text-xs text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">Dismiss ✕</BitBhCloseButton>
+    </BitBhPopoverPanel>
+</BitBhPopover>
+""";
+
+    private const string _disclosureCode = """
+<BitBhDisclosure DefaultOpen="true" class="w-full overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <BitBhDisclosureButton class="flex w-full cursor-pointer items-center justify-between border-0 bg-transparent px-5 py-3.5 font-medium hover:bg-zinc-100 data-state-open:bg-zinc-100">
+        Show details
+    </BitBhDisclosureButton>
+    <BitBhDisclosurePanel>
+        <div class="border-t border-zinc-200 px-5 py-3.5 flex flex-col gap-3 text-sm text-zinc-500">
+            <p>Here are some details you can collapse.</p>
+            <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-900 px-3 py-1.5 cursor-pointer hover:bg-zinc-100 self-start">Hide details</BitBhCloseButton>
+        </div>
+    </BitBhDisclosurePanel>
+</BitBhDisclosure>
+""";
+
+    private const string _polymorphicCode = """
+<BitBhPopover class="relative inline-block">
+    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
+        Open panel ▾
+    </BitBhPopoverButton>
+    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-56 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg flex flex-col gap-1.5">
+        <p class="text-sm text-zinc-500 m-0">The close actions below render as different elements:</p>
+        <div class="mt-2 flex flex-col gap-2">
+            <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-900 px-3 py-1.5 cursor-pointer hover:bg-zinc-100">Button (default)</BitBhCloseButton>
+            <BitBhCloseButton As="a" href="#" class="py-1 text-sm text-blue-600 no-underline hover:underline">Anchor link</BitBhCloseButton>
+            <BitBhCloseButton As="div" class="rounded-md bg-zinc-100 px-2.5 py-1.5 text-center text-sm cursor-pointer hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Div with role="button"</BitBhCloseButton>
+        </div>
+    </BitBhPopoverPanel>
+</BitBhPopover>
+""";
+
+    private const string _disabledCode = """
+<BitBhPopover class="relative inline-block">
+    <BitBhPopoverButton class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3.5 py-2 text-sm cursor-pointer hover:border-zinc-400 data-state-open:border-blue-600">
+        Panel is open ▾
+    </BitBhPopoverButton>
+    <BitBhPopoverPanel class="absolute top-[calc(100%+0.5rem)] left-0 z-30 min-w-56 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg flex flex-col gap-1.5">
+        <p class="text-sm text-zinc-500 m-0">The disabled close button below won't close this panel:</p>
+        <div class="mt-2 flex flex-col gap-2">
+            <BitBhCloseButton Disabled="true"
+                           class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-900 px-3 py-1.5 cursor-pointer hover:bg-zinc-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed">
+                Can't close (disabled)
+            </BitBhCloseButton>
+            <BitBhCloseButton class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 text-xs font-medium text-white px-3 py-1.5 cursor-pointer hover:bg-blue-700">
+                Close (enabled)
+            </BitBhCloseButton>
+        </div>
+    </BitBhPopoverPanel>
+</BitBhPopover>
+""";
+}

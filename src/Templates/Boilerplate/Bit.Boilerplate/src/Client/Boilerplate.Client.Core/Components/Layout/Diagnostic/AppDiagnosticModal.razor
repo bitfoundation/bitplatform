@@ -99,7 +99,7 @@
                                IconName="@BitIconName.DeveloperTools" />
                 }
 
-                @if (AppPlatform.IsBrowser is false)
+                @if (AppPlatform.IsBrowser is false && (AppPlatform.IsBlazorHybrid || AppEnvironment.IsDevelopment()))
                 {
                     <BitButton IconOnly
                                Title="Call GC"

@@ -1,4 +1,7 @@
-﻿namespace Bit.BbScanner;
+﻿using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
+namespace Bit.BbScanner;
 
 /// <summary>
 /// Adaptive, block local binariser used for matrix symbologies.
@@ -58,9 +61,28 @@ public sealed class BbHybridBinarizer : IBbBinarizer
     private int[] _edgeSums = [];
     private int[] _edgeCounts = [];
     private int[] _allSums = [];
+    private int[] _thresholds = [];
+    private Vector128<byte>[] _limits = [];
     private readonly int[] _rangeHistogram = new int[256];
     private int _blockColumns;
     private int _blockRows;
+
+    /// <summary>
+    /// Zeroes the block statistics of the last image - eight by eight pixel means, minimums and ranges, which together
+    /// are a small picture of it.
+    /// </summary>
+    internal void ForgetImage()
+    {
+        Array.Clear(_blockAverages);
+        Array.Clear(_blockMinimums);
+        Array.Clear(_blockRanges);
+        Array.Clear(_edgeSums);
+        Array.Clear(_edgeCounts);
+        Array.Clear(_allSums);
+        Array.Clear(_thresholds);
+        Array.Clear(_limits);
+        Array.Clear(_rangeHistogram);
+    }
 
     /// <inheritdoc />
     public bool TryGetBlackRow(in BbLuminanceView source, int y, BbBitRow row) =>
@@ -101,6 +123,7 @@ public sealed class BbHybridBinarizer : IBbBinarizer
             _edgeSums = new int[required];
             _edgeCounts = new int[required];
             _allSums = new int[required];
+            _thresholds = new int[required];
         }
 
         _blockColumns = columns;
@@ -108,6 +131,13 @@ public sealed class BbHybridBinarizer : IBbBinarizer
     }
 
     /// <summary>First pass: the mean, minimum and luminance span of every block.</summary>
+    /// <remarks>
+    /// Two blocks side by side are sixteen pixels a row, one vector: eight rows of minimum, maximum and widened sum take
+    /// a dozen vector operations where the pixel loop takes hundreds. That is a few times faster compiled, and the
+    /// difference between unusable and usable on the WebAssembly interpreter, which runs a vector operation as one
+    /// instruction rather than sixteen. A block whose origin is pulled in from the image's edge, and any machine
+    /// without vectors, takes the pixel loop; both give the same results.
+    /// </remarks>
     private void MeasureBlocks(in BbLuminanceView source, int columns, int rows)
     {
         var width = source.Width;
@@ -115,11 +145,44 @@ public sealed class BbHybridBinarizer : IBbBinarizer
         var averages = _blockAverages;
         var minimums = _blockMinimums;
         var ranges = _blockRanges;
+        var paired = Vector128.IsHardwareAccelerated ? (width >> BlockSizePower) & ~1 : 0;
+        Span<byte> lanes = stackalloc byte[16];
 
         for (var by = 0; by < rows; by++)
         {
             var yOffset = ClampBlockOrigin(by, rows, height);
-            for (var bx = 0; bx < columns; bx++)
+            var bx = 0;
+            for (; bx < paired; bx += 2)
+            {
+                var x = bx << BlockSizePower;
+                var low = Vector128<byte>.AllBitsSet;
+                var high = Vector128<byte>.Zero;
+                var leftSum = Vector128<ushort>.Zero;
+                var rightSum = Vector128<ushort>.Zero;
+                for (var yy = 0; yy < BlockSize; yy++)
+                {
+                    var pixels = Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(source.GetRow(yOffset + yy)), (nuint)x);
+                    low = Vector128.Min(low, pixels);
+                    high = Vector128.Max(high, pixels);
+                    var (left, right) = Vector128.Widen(pixels);
+                    leftSum += left;
+                    rightSum += right;
+                }
+
+                var index = (by * columns) + bx;
+                low.CopyTo(lanes);
+                var (leftMin, rightMin) = (Lowest(lanes[..8]), Lowest(lanes[8..]));
+                high.CopyTo(lanes);
+                var (leftMax, rightMax) = (Highest(lanes[..8]), Highest(lanes[8..]));
+                averages[index] = Vector128.Sum(leftSum) >> (BlockSizePower * 2);
+                minimums[index] = leftMin;
+                ranges[index] = leftMax - leftMin;
+                averages[index + 1] = Vector128.Sum(rightSum) >> (BlockSizePower * 2);
+                minimums[index + 1] = rightMin;
+                ranges[index + 1] = rightMax - rightMin;
+            }
+
+            for (; bx < columns; bx++)
             {
                 var xOffset = ClampBlockOrigin(bx, columns, width);
 
@@ -305,21 +368,25 @@ public sealed class BbHybridBinarizer : IBbBinarizer
         return total;
     }
 
+    /// <summary>
+    /// Third pass: every pixel against its block's threshold, the mean of the 5 by 5 blocks around it. As in
+    /// <see cref="MeasureBlocks"/>, two blocks are compared at once where vectors are available, the sixteen results
+    /// going into the bit row as one mask; blocks overlap only at the clamped edges, where bits are OR'd together
+    /// exactly as the pixel loop does.
+    /// </summary>
     private void ApplyThresholds(in BbLuminanceView source, BbBitMatrix matrix, int columns, int rows)
     {
         var width = source.Width;
         var height = source.Height;
         var averages = _blockAverages;
+        var thresholds = _thresholds;
 
         for (var by = 0; by < rows; by++)
         {
-            var yOffset = ClampBlockOrigin(by, rows, height);
             var top = Clamp(by, rows - 3);
             for (var bx = 0; bx < columns; bx++)
             {
-                var xOffset = ClampBlockOrigin(bx, columns, width);
                 var left = Clamp(bx, columns - 3);
-
                 var sum = 0;
                 for (var dy = -2; dy <= 2; dy++)
                 {
@@ -331,13 +398,50 @@ public sealed class BbHybridBinarizer : IBbBinarizer
                            averages[rowStart + left + 2];
                 }
 
-                var threshold = sum / 25;
+                thresholds[(by * columns) + bx] = sum / 25;
+            }
+        }
 
-                for (var yy = 0; yy < BlockSize; yy++)
+        var paired = Vector128.IsHardwareAccelerated ? (width >> BlockSizePower) & ~1 : 0;
+        if (_limits.Length < paired / 2)
+        {
+            _limits = new Vector128<byte>[paired / 2];
+        }
+
+        var limits = _limits;
+        for (var by = 0; by < rows; by++)
+        {
+            var yOffset = ClampBlockOrigin(by, rows, height);
+            var blockThresholds = thresholds.AsSpan(by * columns, columns);
+            for (var pair = 0; pair < paired / 2; pair++)
+            {
+                limits[pair] = Vector128.Create(
+                    Vector64.Create((byte)blockThresholds[pair * 2]),
+                    Vector64.Create((byte)blockThresholds[(pair * 2) + 1]));
+            }
+
+            for (var yy = 0; yy < BlockSize; yy++)
+            {
+                var y = yOffset + yy;
+                var pixels = source.GetRow(y);
+                var target = matrix.GetRowWords(y);
+                var bx = 0;
+                for (; bx < paired; bx += 2)
                 {
-                    var y = yOffset + yy;
-                    var pixels = source.GetRow(y);
-                    var target = matrix.GetRowWords(y);
+                    // Sixteen pixels from a multiple of sixteen: the mask fills the low or the high half of a word.
+                    var x = bx << BlockSizePower;
+                    var row = Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(pixels), (nuint)x);
+                    var dark = Vector128.LessThanOrEqual(row, limits[bx >> 1]).ExtractMostSignificantBits();
+                    if (dark != 0)
+                    {
+                        target[x >> 5] |= dark << (x & 31);
+                    }
+                }
+
+                for (; bx < columns; bx++)
+                {
+                    var xOffset = ClampBlockOrigin(bx, columns, width);
+                    var threshold = blockThresholds[bx];
                     for (var xx = 0; xx < BlockSize; xx++)
                     {
                         var x = xOffset + xx;
@@ -349,6 +453,34 @@ public sealed class BbHybridBinarizer : IBbBinarizer
                 }
             }
         }
+    }
+
+    private static int Lowest(ReadOnlySpan<byte> lanes)
+    {
+        var lowest = 255;
+        foreach (var lane in lanes)
+        {
+            if (lane < lowest)
+            {
+                lowest = lane;
+            }
+        }
+
+        return lowest;
+    }
+
+    private static int Highest(ReadOnlySpan<byte> lanes)
+    {
+        var highest = 0;
+        foreach (var lane in lanes)
+        {
+            if (lane > highest)
+            {
+                highest = lane;
+            }
+        }
+
+        return highest;
     }
 
     private static int ClampBlockOrigin(int blockIndex, int blockCount, int size)

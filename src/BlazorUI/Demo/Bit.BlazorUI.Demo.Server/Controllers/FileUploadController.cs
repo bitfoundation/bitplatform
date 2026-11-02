@@ -27,7 +27,10 @@ public partial class FileUploadController : AppControllerBase
 
         // the file is stored under the same {id}-{name} key the chunked endpoint uses, since that is the
         // one the remove endpoint deletes by - storing it under the bare name would make every removal a 404.
-        var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{file.FileName}");
+        var path = GetFilePath(bitFileId, file.FileName);
+
+        if (path is null)
+            return BadRequest();
 
         if (System.IO.File.Exists(path))
         {
@@ -63,7 +66,10 @@ public partial class FileUploadController : AppControllerBase
             Directory.CreateDirectory(_settings.UploadPath);
         }
 
-        var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{file.FileName}");
+        var path = GetFilePath(bitFileId, file.FileName);
+
+        if (path is null)
+            return BadRequest();
 
         using var targetStream = System.IO.File.Exists(path)
             ? System.IO.File.Open(path, FileMode.Append)
@@ -80,7 +86,10 @@ public partial class FileUploadController : AppControllerBase
     public IActionResult RemoveFile(string fileName,
                                     [FromHeader(Name = "BIT_FILE_ID")][Required] string bitFileId)
     {
-        var path = Path.Combine(_settings.UploadPath, $"{bitFileId}-{fileName}");
+        var path = GetFilePath(bitFileId, fileName);
+
+        if (path is null)
+            return BadRequest();
 
         // a delete is idempotent: a file this server never stored - the PreloadedFiles of the demo, which
         // stand in for the attachments of a record, are exactly that - is already in the state asked for,
@@ -91,5 +100,18 @@ public partial class FileUploadController : AppControllerBase
         }
 
         return Ok();
+    }
+
+    private string? GetFilePath(string bitFileId, string? fileName)
+    {
+        var name = $"{bitFileId}-{fileName}";
+
+        if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            return null;
+
+        var root = Path.GetFullPath(_settings.UploadPath);
+        var path = Path.GetFullPath(Path.Combine(root, name));
+
+        return Path.GetDirectoryName(path) == Path.TrimEndingDirectorySeparator(root) ? path : null;
     }
 }

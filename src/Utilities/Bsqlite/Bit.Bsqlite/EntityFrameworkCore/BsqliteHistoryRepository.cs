@@ -36,16 +36,11 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
     protected override bool InterpretExistsResult(object? value)
         => value is not null && Convert.ToInt64(value) != 0L;
 
-#if NET9_0_OR_GREATER
-    // The migration lock arrived with EF Core 9; EF Core 8 takes none, so on net8.0 there is nothing to
-    // replace - BsqliteDbContextFactory holds a lock of its own around the migration instead.
-
     /// <summary>
     /// The lock belongs to neither the connection nor a transaction - the browser holds it - so it
     /// lasts until EF releases it.
     /// </summary>
     public override LockReleaseBehavior LockReleaseBehavior => LockReleaseBehavior.Explicit;
-#endif
 
     /// <summary>
     /// Reuses the model-driven create script so the table and column names stay in step with EF,
@@ -64,7 +59,6 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
             : script.Insert(index + createTable.Length, " IF NOT EXISTS");
     }
 
-#if NET9_0_OR_GREATER
     /// <summary>The cross-tab lock migrations run under; see the remarks.</summary>
     internal const string MigrationLockName = "ef-migrations";
 
@@ -83,7 +77,6 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
 
         return new MigrationLock(this, held);
     }
-#endif
 
     /// <summary>
     /// SQLite has no procedural <c>IF</c>, so EF's own provider rejects these too. They are only
@@ -101,7 +94,6 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
         => throw new NotSupportedException(
             "SQLite does not support conditional migration scripts; generate a plain script instead.");
 
-#if NET9_0_OR_GREATER
     private sealed class MigrationLock(IHistoryRepository historyRepository, IAsyncDisposable? held)
         : IMigrationsDatabaseLock
     {
@@ -131,5 +123,4 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
             }
         }
     }
-#endif
 }

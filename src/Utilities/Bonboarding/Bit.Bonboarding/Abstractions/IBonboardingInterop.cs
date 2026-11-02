@@ -64,4 +64,30 @@ public interface IBonboardingInterop : IAsyncDisposable
 
     /// <summary>Lists the keys in browser storage that start with a prefix.</summary>
     ValueTask<IReadOnlyList<string>> ListStorageKeysAsync(string prefix, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Calls <paramref name="onChanged"/> with the key of every storage entry starting with <paramref name="prefix"/>
+    /// that another tab of the same site changes (with <see langword="null"/> when that tab clears the storage), so
+    /// a store can drop what it has cached. The calls stop with the scope.
+    /// </summary>
+    ValueTask WatchStorageAsync(string prefix, Func<string?, ValueTask> onChanged, CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Keeps <paramref name="beacon"/> positioned on its target, in the browser and without a call per frame, and
+    /// hidden while the target is missing, not rendered or scrolled out of sight. Attaching an id again replaces it.
+    /// </summary>
+    ValueTask AttachBeaconAsync(BonboardingBeaconActivation activation, ElementReference beacon, CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
+
+    /// <summary>Stops positioning a beacon.</summary>
+    ValueTask DetachBeaconAsync(string beaconId, CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Moves focus to a target element, or to the first control inside it, when there is one to focus. Used when the
+    /// control that had focus (a beacon that has done its job) leaves the page, so focus lands somewhere meaningful.
+    /// </summary>
+    ValueTask FocusTargetAsync(BonboardingTargetDescriptor target, CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
 }

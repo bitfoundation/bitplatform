@@ -1,0 +1,16 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <BitAiStreamingMarkdown Text="@_source"
+                            IsStreaming="@Part.IsStreaming"
+                            Citations="Message.Citations"
+                            OnCitationClick="OnCitationClick"
+                            Classes="@Classes?.Markdown"
+                            Styles="@Styles?.Markdown" />
+</div>

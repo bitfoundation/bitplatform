@@ -1,0 +1,22 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@if (Visible)
+{
+    <div @ref="RootElement"
+         @attributes="DisabledAwareHtmlAttributes"
+         id="@_Id"
+         style="@StyleBuilder.Value"
+         class="@ClassBuilder.Value"
+         dir="@Dir?.ToString().ToLower()">
+        <BitButton IconName="Down"
+                   OnClick="HandleOnClick"
+                   Disabled="Disabled"
+                   Rounded="true"
+                   Class="bit-btn-dft-pbg"
+                   Styles="@Styles?.Button"
+                   Classes="_ButtonClasses">
+            @(Label ?? Strings.ScrollToLatest)
+        </BitButton>
+    </div>
+}

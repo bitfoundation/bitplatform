@@ -1,0 +1,29 @@
+﻿@* Where a document's connection stands. A dropped connection needs no code of its own: the sync provider
+   retries after a randomized delay that doubles with each failure, and the handshake hands the replica whatever
+   it missed meanwhile. Place it inside a BcrdtCollaborationScope, which cascades the open document. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+<dl>
+    <dt>Connection status</dt>
+    <dd>@Document.ConnectionStatus</dd>
+
+    <dt>Synced</dt>
+    <dd>@(Document.IsSynced ? "yes" : "no")</dd>
+
+    @* The last completed handshake: how fresh an offline copy is. *@
+    <dt>Last synced</dt>
+    <dd>@(Document.Sync?.LastSyncedAt is { } at ? at.ToLocalTime().ToString("HH:mm:ss") : "never")</dd>
+</dl>
+
+@code {
+    [CascadingParameter] public BcrdtCollaborativeDocument Document { get; set; } = default!;
+
+    // Re-render whenever the connection changes status. No sync provider means no transport was
+    // configured, and the document is purely local.
+    protected override void OnInitialized()
+    {
+        if (Document.Sync is not null) Track(Document.Sync);
+    }
+}

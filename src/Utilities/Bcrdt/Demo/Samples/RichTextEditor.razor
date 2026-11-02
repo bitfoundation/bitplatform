@@ -1,0 +1,99 @@
+﻿@* One participant of the rich text: a plain editor, buttons that format what it last selected, and the result
+   drawn from the text's delta. Each panel of the rich-text page is this component, opened by a different user. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@implements IDisposable
+
+<BcrdtCollaborationScope DocumentId="demo-rich-text" User="_me" OnOpened="Opened" Context="document">
+    @{
+        BcrdtText text = document.Text("rich");
+        (int Start, int End)? selected = Selected(document);
+        IReadOnlyList<BcrdtDeltaOperation> delta = text.ToDelta();
+    }
+
+    @* The editor stays plain - a <textarea> cannot show formatting - and publishes its selection. *@
+    <BcrdtTextArea Text="text" Presence="document.Presence" Field="rich" Rows="4"
+                   Placeholder="Type, then select some words and format them." />
+
+    @* The selection is resolved again on the click: the range rendered with the buttons may be stale by then. *@
+    <div>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Bold)"><strong>Bold</strong></button>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Italic)"><em>Italic</em></button>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Underline)"><u>Underline</u></button>
+        <button type="button" disabled="@(selected is null)" @onclick="() => Format(text, Selected(document), Plain)">Remove formatting</button>
+    </div>
+
+    @* The same text drawn from its delta: one step per run of equally formatted characters. *@
+    <h4>Rendered</h4>
+    <p>
+        @foreach (BcrdtDeltaOperation step in delta)
+        {
+            if (step.Content is string run && !step.IsEmbed)
+            {
+                <span style="@StyleOf(step.Attributes)">@run</span>
+            }
+        }
+    </p>
+
+    <h4>Delta</h4>
+    <pre>@string.Join('\n', delta.Select(step => step.ToString()))</pre>
+</BcrdtCollaborationScope>
+
+@code {
+    private static readonly Dictionary<string, object?> Bold = new() { ["bold"] = true };
+    private static readonly Dictionary<string, object?> Italic = new() { ["italic"] = true };
+    private static readonly Dictionary<string, object?> Underline = new() { ["underline"] = true };
+
+    // A null value removes an attribute.
+    private static readonly Dictionary<string, object?> Plain = new() { ["bold"] = null, ["italic"] = null, ["underline"] = null };
+
+    private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
+
+    // The last range the editor selected, kept as presence published it: anchored to characters, so it
+    // still names the same words after anyone types elsewhere.
+    private BcrdtCollaboratorSelection? _selection;
+    private Action? _unsubscribe;
+
+    // Called for every document the scope opens, so the previous one's subscription - and a selection
+    // anchored to its characters - is let go first.
+    private void Opened(BcrdtCollaborativeDocument document)
+    {
+        _unsubscribe?.Invoke();
+        _selection = null;
+
+        // The editor withdraws its selection when it loses focus - which pressing a button does - so the
+        // component remembers the last real selection rather than reading the current one.
+        void Remember()
+        {
+            BcrdtCollaborator? self = document.Presence.Participants.FirstOrDefault(participant => participant.IsLocal);
+            if (self?.Selection is { IsCaret: false } selection && selection.Field == "rich") _selection = selection;
+        }
+
+        document.Presence.Changed += Remember;
+        _unsubscribe = () => document.Presence.Changed -= Remember;
+    }
+
+    // Null while the anchored characters have not arrived here, and empty once they have all been deleted.
+    private (int Start, int End)? Selected(BcrdtCollaborativeDocument document) =>
+        _selection?.Resolve(document.Crdt) is { } range && range.End > range.Start ? range : null;
+
+    // Format places a mark at each end of the run. The marks take up no position, so the characters, every
+    // caret and every index stay where they were - and they merge, sync and undo like any other edit.
+    private static void Format(BcrdtText text, (int Start, int End)? range, Dictionary<string, object?> attributes)
+    {
+        if (range is { } selected) text.Format(selected.Start, selected.End - selected.Start, attributes);
+    }
+
+    private static string? StyleOf(IReadOnlyDictionary<string, object?>? attributes)
+    {
+        if (attributes is null) return null;
+
+        string style = "";
+        if (attributes.GetValueOrDefault("bold") is true) style += "font-weight: bold;";
+        if (attributes.GetValueOrDefault("italic") is true) style += "font-style: italic;";
+        if (attributes.GetValueOrDefault("underline") is true) style += "text-decoration: underline;";
+        return style;
+    }
+
+    public void Dispose() => _unsubscribe?.Invoke();
+}

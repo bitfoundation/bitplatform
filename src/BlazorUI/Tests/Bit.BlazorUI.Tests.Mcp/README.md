@@ -33,7 +33,7 @@ dotnet run --project Tests/Bit.BlazorUI.Tests.Mcp
 | Fixture | What it pins |
 | --- | --- |
 | `ToolSurfaceTests` | The seven tools, their annotations, their descriptions, the absence of output schemas, and the instructions the server writes into the model's context. This is what every session pays for before it calls anything. |
-| `ComponentCatalogTests` | The catalog against the per-component answers: every component the nav lists resolves, has a table and has examples; every alias resolves; the shared parameters are documented once and pointed at rather than repeated. |
+| `ComponentCatalogTests` | The catalog against the per-component answers: every component the nav lists resolves, has a table and has examples; every alias resolves; the shared parameters are documented once and pointed at rather than repeated; methods read as C# signatures; a `section` narrows an answer to one part or one row. |
 | `ExamplesToolTests` | That the worked examples really carry code - the sample fields are read off the compiled page by reflection, and a renamed field would produce a section with a title, a paragraph and nothing to copy. |
 | `SearchTests` | The first hit for the queries where the library's name for a thing is not the name a task suggests, and that every hit names a follow-up call that exists and answers. |
 | `ReferenceToolTests` | The type lookup, the setup guide and the theming reference - three tools with three different ways of going quietly blank. |

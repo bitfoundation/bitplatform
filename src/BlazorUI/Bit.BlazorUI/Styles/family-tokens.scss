@@ -122,7 +122,8 @@ $family-roles: pri, sec, ter, inf, suc, wrn, swr, err;
 // tint per accent role - the role laid over whatever surface is below as a faint wash rather than
 // a fill (the soft surface of a tinted message, ...), with the role foreground above read on top
 // of it. It is translucent, so it tints a card or a sidebar as readily as the page, and the amount
-// is kept low enough for every role foreground to keep 4.5:1 on it under the packaged palettes. A
+// is kept low enough for every role foreground to keep 4.5:1 on it over the page (bg-pri) under the
+// packaged palettes - the selected surface of an outlined tag is laid there (role-wash). A
 // design system with opaque "container" colors of its own sets them in its preset block, or from
 // C# via BitTheme.Color.<Role>.Tint.
 @mixin family-role-tint($role) {

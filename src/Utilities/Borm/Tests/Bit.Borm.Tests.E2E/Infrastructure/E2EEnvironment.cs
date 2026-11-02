@@ -25,12 +25,18 @@ public static class E2EEnvironment
     public static string? BaseUrl { get; } = Read("BORM_E2E_BASE_URL")?.TrimEnd('/');
 
     /// <summary>
+    /// <c>BORM_E2E_BROWSER</c>: the engine to drive - <c>chromium</c> (the default), <c>firefox</c> or <c>webkit</c>.
+    /// The forms are meant to work the same in all three; Chromium is the one CI runs.
+    /// </summary>
+    public static string Browser { get; } = Read("BORM_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
+    /// <summary>
     /// <c>BORM_E2E_CHANNEL</c>: e.g. chrome / msedge, to use an installed browser. Without it the suite
     /// uses the Chromium Playwright installed and falls back to an installed Chrome, then Edge.
     /// </summary>
     public static string? Channel { get; } = Read("BORM_E2E_CHANNEL");
 
-    /// <summary><c>BORM_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
+    /// <summary><c>BORM_E2E_EXECUTABLE</c>: full path to an executable of the <see cref="Browser"/> engine.</summary>
     public static string? Executable { get; } = Read("BORM_E2E_EXECUTABLE");
 
     /// <summary><c>BORM_E2E_HEADED=1</c>: show the browser.</summary>

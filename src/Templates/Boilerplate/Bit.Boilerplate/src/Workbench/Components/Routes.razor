@@ -1,0 +1,8 @@
+@* Above the router, so every page's Blex store is restored from the browser and handed over from prerendering. *@
+<BlexProvider EnableDevTools="EnableDevTools">
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" DefaultLayout="typeof(WorkbenchLayout)" />
+        </Found>
+    </Router>
+</BlexProvider>

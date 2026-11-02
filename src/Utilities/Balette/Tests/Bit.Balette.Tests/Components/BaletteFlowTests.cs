@@ -32,6 +32,11 @@ public class BaletteFlowTests : BunitContext
         _service = Services.GetRequiredService<IBaletteService>();
     }
 
+    // A toast's close that never comes by itself: a flow waiting on it ends only when something calls it off, and a
+    // test that fails to call it off times out instead of passing because the close came first.
+    private static readonly TimeSpan NoToastClose = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan CalledOff = TimeSpan.FromSeconds(10);
+
     private bool? LastOpenSelectsAll()
         => _jsHandle.Invocations.LastOrDefault(i => i.Identifier == "open").Arguments is { Count: 2 } args ? (bool?)args[1] : null;
 
@@ -182,6 +187,139 @@ public class BaletteFlowTests : BunitContext
         cut.WaitForAssertion(() => Assert.Contains("Link copied", cut.Find("[data-balette=toast]").TextContent));
         await run;
         cut.WaitForAssertion(() => Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open")));
+    }
+
+    [TestMethod]
+    public async Task A_toast_does_not_close_the_palette_reopened_before_its_close()
+    {
+        _service.Register(BaletteCmd.Action("Copy link", _ => Task.FromResult(BaletteCommandResult.Toast("Link copied"))));
+        var cut = Render<Balette>();
+        cut.Instance.ToastCloseDelay = NoToastClose;
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+
+        var run = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("Link copied", cut.Find("[data-balette=toast]").TextContent));
+
+        // Esc and Ctrl+K inside the toast's close delay: the close it scheduled belongs to the palette that was dismissed.
+        await cut.InvokeAsync(() => _service.CloseAsync());
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        await run.WaitAsync(CalledOff);
+
+        Assert.IsTrue(_service.IsOpen);
+        Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open"));
+    }
+
+    [TestMethod]
+    public async Task Esc_while_a_toast_waits_to_close_closes_rather_than_going_back_a_page()
+    {
+        _service.Register(BaletteCmd.New("Rename…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+            "New name", _ => Task.FromResult(BaletteCommandResult.Toast("Renamed")), initialValue: "Apollo"))));
+        var cut = Render<Balette>();
+        cut.Instance.ToastCloseDelay = NoToastClose;
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("New name", cut.Find("[data-balette=prompt]").TextContent));
+
+        var run = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("Renamed", cut.Find("[data-balette=toast]").TextContent));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Escape", false, false, false, false));
+        await run.WaitAsync(CalledOff);
+
+        Assert.IsFalse(_service.IsOpen);
+        Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open"));
+    }
+
+    [TestMethod]
+    public async Task Esc_while_a_toast_waits_to_close_goes_back_a_page_in_an_inline_palette_that_keeps_its_place()
+    {
+        Services.GetRequiredService<BaletteOptions>().ResetOnClose = false;
+        _service.Register(BaletteCmd.New("Rename…").Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+            "New name", _ => Task.FromResult(BaletteCommandResult.Toast("Renamed")), initialValue: "Apollo"))));
+        var cut = Render<Balette>(p => p.Add(x => x.Inline, true));
+        cut.Instance.ToastCloseDelay = NoToastClose;
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("New name", cut.Find("[data-balette=prompt]").TextContent));
+
+        var run = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("Renamed", cut.Find("[data-balette=toast]").TextContent));
+
+        // Its close would change nothing, so Esc does what it always does there: back to the page the prompt came from.
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Escape", false, false, false, false));
+        await run.WaitAsync(CalledOff);
+
+        Assert.IsEmpty(cut.FindAll("[data-balette=prompt]"));
+        Assert.ContainsSingle(cut.FindAll("[data-balette=item]"));
+    }
+
+    [TestMethod]
+    public async Task A_toast_does_not_close_the_palette_while_the_user_types()
+    {
+        _service.Register(BaletteCmd.Action("Copy link", _ => Task.FromResult(BaletteCommandResult.Toast("Link copied"))));
+        var cut = Render<Balette>();
+        cut.Instance.ToastCloseDelay = NoToastClose;
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+
+        var run = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("Link copied", cut.Find("[data-balette=toast]").TextContent));
+
+        await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("cop"));
+        await run.WaitAsync(CalledOff);
+
+        Assert.IsTrue(_service.IsOpen);
+        Assert.AreEqual("cop", cut.Find("[data-balette=input]").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task A_toast_does_not_close_the_palette_on_a_confirmation_armed_by_a_click()
+    {
+        _service.Register(
+            BaletteCmd.Action("Copy link", _ => Task.FromResult(BaletteCommandResult.Toast("Link copied"))).Id("copy"),
+            BaletteCmd.Action("Reset counter", () => { }).Destructive("The count goes back to zero"));
+        var cut = Render<Balette>();
+        cut.Instance.ToastCloseDelay = NoToastClose;
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-balette=item]")));
+
+        var run = cut.InvokeAsync(() => _service.ExecuteAsync("copy"));
+        cut.WaitForAssertion(() => Assert.Contains("Link copied", cut.Find("[data-balette=toast]").TextContent));
+
+        // A click runs no key handler: the command itself is what calls the close off.
+        cut.FindAll("[data-balette=item]").Single(i => i.TextContent.Contains("Reset counter")).Click();
+        await run.WaitAsync(CalledOff);
+
+        Assert.IsTrue(_service.IsOpen);
+        Assert.ContainsSingle(cut.FindAll("[data-confirming=true]"));
+        Assert.Contains("The count goes back to zero", cut.Find("[data-balette=toast]").TextContent);
+    }
+
+    [TestMethod]
+    public async Task A_toast_does_not_close_the_palette_after_a_key_that_reached_the_renderer_as_its_delay_ran_out()
+    {
+        _service.Register(BaletteCmd.Action("Copy link", _ => Task.FromResult(BaletteCommandResult.Toast("Link copied"))));
+        var cut = Render<Balette>();
+        cut.Instance.ToastCloseDelay = TimeSpan.FromMilliseconds(1);
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+
+        Task run = Task.CompletedTask;
+        await cut.InvokeAsync(() =>
+        {
+            run = cut.Instance.OnKeyDown("Enter", false, false, false, false);
+
+            // The renderer is held until the delay is over, so the close waits behind the key pressed next - as on
+            // Blazor Server, where a key's event can reach the renderer before the end of the delay does.
+            Thread.Sleep(200);
+            return cut.Instance.OnKeyDown("ArrowDown", false, false, false, false);
+        });
+        await run.WaitAsync(CalledOff);
+
+        Assert.IsTrue(_service.IsOpen);
+        Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open"));
     }
 
     [TestMethod]

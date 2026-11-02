@@ -15,6 +15,12 @@
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Live event stream</h3>
+    <p>
+        Run the tour and watch the log. Each step's <code>StepShown</code> is followed by a <code>StepLeft</code> that says how
+        long it was on screen, and the first step carries <code>Metadata</code> - your own analytics dimensions, which ride
+        along on every event about it. Finish the tour, close it, skip it or press Escape, and compare the event it ends with.
+        Run it again after leaving it part way, and it starts with <code>TourResumed</code>.
+    </p>
 
     <div class="bb-demo">
         <div class="bb-demo-bar">
@@ -43,11 +49,48 @@
 </section>
 
 <section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What each event means</h3>
+
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Event kinds">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Kind</th><th>When</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var (kind, when) in EventKinds)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@kind</code></td>
+                        <td>@when</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        Each event carries its <code>Kind</code>, the <code>Session</code> and its <code>Tour</code>, the <code>Step</code> and
+        <code>StepIndex</code> when it is about one, <code>Duration</code> on <code>StepLeft</code>, the <code>Action</code> on
+        <code>ActionInvoked</code>, the <code>Reason</code> on a tour's last event, the <code>Error</code> on
+        <code>TourFailed</code>, and a <code>Timestamp</code>.
+    </p>
+    <p>Worth measuring:</p>
+    <ul class="bb-detail-list">
+        <li><strong>Completion rate per tour</strong>: <code>TourCompleted</code> over <code>TourStarted</code>, ignoring <code>TourCancelled</code>.</li>
+        <li><strong>Drop-off by step</strong>: the last <code>StepShown</code> before a <code>TourDismissed</code> or <code>TourSkipped</code> - the step not worth the interruption.</li>
+        <li><strong>Time per step</strong>, from <code>StepLeft.Duration</code>: a step left in under a second was not read.</li>
+        <li><strong><code>TargetMissing</code> counts</strong>: a step whose target keeps going missing points at something that has moved or been renamed.</li>
+        <li><strong><code>AdvanceBlocked</code> counts</strong>: a step that holds people back a lot has instructions they find hard to follow.</li>
+    </ul>
+</section>
+
+<section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Persistence</h3>
     <p>
-        Progress is written to the registered <code>IBonboardingStore</code> after every step. The default store uses
-        <code>localStorage</code> with an in-memory mirror, so reads still work while prerendering and in private
-        browsing. Swap it for a server-side store with one call.
+        Progress is written to the registered <code>IBonboardingStore</code> after every step, and again when the tour ends.
+        That record is what makes "show this once", "resume where I left off" and "replay from the help menu" work. The
+        default store uses <code>localStorage</code> with an in-memory mirror, so reads still work while prerendering and in
+        private browsing, and corrupt data is treated as "never seen". Run the tour above, then read what the store kept of it.
     </p>
 
     <div class="bb-demo">
@@ -64,8 +107,10 @@
                 <dt>Tour</dt><dd>@_record.TourId</dd>
                 <dt>Version</dt><dd>@_record.Version</dd>
                 <dt>Current step</dt><dd>@(_record.CurrentStepId ?? "-")</dd>
-                <dt>Completed</dt><dd>@_record.Completed</dd>
+                <dt>Completed</dt><dd>@_record.Completed@(_record.CompletedAt is { } completedAt ? $" (last at {completedAt.ToLocalTime():g})" : null)</dd>
                 <dt>Dismissed</dt><dd>@_record.Dismissed</dd>
+                <dt>Closed</dt><dd>@_record.IsClosed (IsCompletedAsync: @_isCompleted, IsClosedAsync: @_isClosed)</dd>
+                <dt>Snoozed until</dt><dd>@(_record.SnoozedUntil?.ToLocalTime().ToString("g") ?? "-")</dd>
                 <dt>Visited</dt><dd>@string.Join(", ", _record.VisitedStepIds)</dd>
                 <dt>Updated</dt><dd>@_record.UpdatedAt.ToLocalTime().ToString("g")</dd>
             </dl>
@@ -79,20 +124,89 @@
             <p class="bb-muted">Run the tour above, then read what the store kept of it.</p>
         }
     </div>
+
+    <p>
+        <strong>Completion is sticky</strong>: <code>Completed</code> says the user ran the tour to the end at some point, so
+        replaying a finished tour does not un-finish it, however the replay ends. How a run ends decides what happens next:
+    </p>
+
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="How each ending is stored">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Ending</th><th>Completed</th><th>Dismissed</th><th>Offered again by StartOnceAsync</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>CompleteAsync</code> (the Done button)</td><td>yes</td><td>no</td><td>no</td></tr>
+                <tr><td class="bb-table-key"><code>SkipAsync</code> (the Skip button)</td><td>no</td><td>yes</td><td>no</td></tr>
+                <tr><td class="bb-table-key"><code>DismissAsync</code> (close, Escape)</td><td>no</td><td>yes</td><td>no</td></tr>
+                <tr><td class="bb-table-key"><code>CancelAsync</code> (interrupted)</td><td>no</td><td>no</td><td><strong>yes</strong></td></tr>
+                <tr><td class="bb-table-key"><code>SnoozeAsync</code> (remind me later)</td><td>no</td><td>no</td><td><strong>after the snooze</strong></td></tr>
+                <tr><td class="bb-table-key">Failed</td><td>no</td><td>no</td><td>yes</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        A finished or dismissed tour that is started again on purpose starts from the top; anything else resumes at its saved
+        step id (or index, if the step is gone). The <a href="lifecycle">lifecycle page</a> drives each ending live.
+    </p>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Wiring it up</h3>
-    <p>An observer receives every event of every tour, and is registered once in DI.</p>
+    <p>
+        An observer receives every event of every tour, and is registered once in DI; any number can be. An observer that
+        throws is logged and the tour carries on - analytics being down is never a reason for onboarding to break. For
+        something local, such as the log on this page, subscribe to <code>IBonboardingService.EventRaised</code>; for logic
+        that belongs to one tour, use its own callbacks (<code>OnStarted</code>, <code>OnStepChanged</code>,
+        <code>OnEnded</code>), shown on the <a href="lifecycle">lifecycle page</a>.
+    </p>
 
-    <pre class="bb-code">@ObserverExample</pre>
+    <pre class="bb-code" tabindex="0">@ObserverExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Where progress lives</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>Two tabs</strong>: the default store listens to the browser's <code>storage</code> event, so what one tab
+            writes, the others pick up - a checklist ticks off in every tab, a tour list updates, and a tour completed or
+            dismissed in one tab stops in the others. Open the <a href="guidance">guidance page</a> in two tabs to see it.
+        </li>
+        <li>
+            <strong>Several people on one device</strong>: <code>StorageScope</code> says whose progress it is, so every key
+            carries the signed-in user and one person's finished tours never hide them from the next.
+        </li>
+        <li>
+            <strong>One visit only</strong>: <code>StorageLocation = Session</code> keeps progress in <code>sessionStorage</code>,
+            so <code>StartOnceAsync</code> means once per visit. <code>AddBitBonboardingInMemoryStore()</code> keeps it in memory.
+        </li>
+        <li>
+            <strong>Nowhere</strong>: <code>Persist = false</code> on a tour, as this site's playgrounds do, or globally.
+        </li>
+        <li>
+            <strong>On the server</strong>: an <code>IBonboardingStore</code> of your own follows the user across devices; one
+            that also implements <code>IBonboardingStoreEvents</code> can push changes made elsewhere.
+        </li>
+        <li>
+            <strong>After an edit</strong>: bump the tour's <code>Version</code> and a record written by the old one is
+            discarded, so <code>StartOnceAsync</code> offers the new tour again - or give it <code>MigrateRecord</code> to keep
+            the old progress, mapping renamed step ids.
+        </li>
+    </ul>
+
+    <pre class="bb-code" tabindex="0">@StorageExample</pre>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A custom store</h3>
-    <p>Progress can live wherever your users' other data does - a profile, a table, a document.</p>
+    <p>
+        Progress can live wherever your users' other data does - a profile, a table, a document. The store is resolved as a
+        scoped service, so injecting the current user is fine; a store that throws is logged rather than allowed to break the
+        tour, and a checklist's progress is a record in the same store, under <code>checklist:{id}</code>.
+    </p>
 
-    <pre class="bb-code">@StoreExample</pre>
+    <pre class="bb-code" tabindex="0">@StoreExample</pre>
 </section>
 
 @code {
@@ -102,8 +216,31 @@
 
     private BonboardingRecord? _record;
     private bool _recordChecked;
+    private bool _isCompleted;
+    private bool _isClosed;
 
     private sealed record LogEntry(DateTime Time, BonboardingEventKind Kind, string Detail);
+
+    private static readonly (string Kind, string When)[] EventKinds =
+    [
+        ("TourStarted", "A session started."),
+        ("TourResumed", "It resumed from saved progress rather than starting fresh."),
+        ("TourQueued", "A start found another tour running and waits for it; TourStarted follows when it really starts."),
+        ("StepShown", "A step is on screen."),
+        ("StepLeft", "A step that was on screen was left; Duration says for how long. Steps skipped before they were shown do not raise it."),
+        ("StepSkipped", "A step was skipped because its target was missing."),
+        ("TargetMissing", "A target could not be found, or disappeared mid-step."),
+        ("TargetResolved", "A target was found, including after a wait."),
+        ("ActionInvoked", "A custom footer action was pressed; Action says which."),
+        ("AdvanceBlocked", "CanAdvance held the user on the step."),
+        ("TourPaused", "PauseAsync was called."),
+        ("TourCompleted", "The tour ran to the end."),
+        ("TourSkipped", "The user skipped the rest."),
+        ("TourDismissed", "The user closed it."),
+        ("TourSnoozed", "The user asked to be reminded later; progress kept."),
+        ("TourCancelled", "Interrupted by the application, or replaced by another tour; progress kept. Also a queued start withdrawn before it ran."),
+        ("TourFailed", "A hook threw, or a Fail strategy fired; Error says why."),
+    ];
 
     protected override void OnInitialized() => BonboardingService.EventRaised += OnEvent;
 
@@ -113,6 +250,7 @@
     {
         var detail = onboardingEvent.Step is { } step
             ? $"{step.Id}{(onboardingEvent.Duration is { } duration ? $" after {duration.TotalMilliseconds:0}ms" : string.Empty)}"
+                + (step.Metadata is { Count: > 0 } metadata ? $" [{string.Join(", ", metadata.Select(pair => $"{pair.Key}={pair.Value}"))}]" : string.Empty)
             : onboardingEvent.Reason?.ToString() ?? onboardingEvent.Tour.Id;
 
         _log.Insert(0, new LogEntry(DateTime.Now, onboardingEvent.Kind, detail));
@@ -141,7 +279,7 @@
                 Id = "create",
                 Target = BonboardingStepTarget.Anchor("new-project"),
                 Title = "Step one",
-                Description = "Watch the log: a step-shown event fires with the step id.",
+                Description = "Watch the log: a step-shown event fires with the step id, and this step's Metadata rides along.",
                 Metadata = new Dictionary<string, object?> { ["funnel"] = "activation" },
             },
             new BonboardingStepDefinition
@@ -165,6 +303,8 @@
     private async Task RefreshRecordAsync()
     {
         _record = await BonboardingService.GetRecordAsync(TourId);
+        _isCompleted = await BonboardingService.IsCompletedAsync(TourId);
+        _isClosed = await BonboardingService.IsClosedAsync(TourId);
         _recordChecked = true;
     }
 
@@ -211,6 +351,33 @@
         }
 
         builder.Services.AddBitBonboardingObserver<TourAnalytics>();
+        """;
+
+    private const string StorageExample = """
+        builder.Services.AddBitBonboardingServices(options =>
+        {
+            options.StorageKeyPrefix = "acme:onboarding:";                 // default "bit-bonboarding:"
+            options.StorageLocation = BonboardingStorageLocation.Session;  // default Local
+            options.StorageScope = async (services, ct) =>                 // whose progress it is; null for the device
+                (await services.GetRequiredService<AuthenticationStateProvider>().GetAuthenticationStateAsync())
+                    .User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            options.Persist = false;                                        // or nowhere at all
+        });
+
+        // A version bump discards old progress - unless it is migrated:
+        new BonboardingTourDefinition
+        {
+            Id = "welcome",
+            Version = 3,
+            MigrateRecord = record => record.Version == 2
+                ? record with { CurrentStepId = record.CurrentStepId == "plans" ? "pricing" : record.CurrentStepId }
+                : null,   // null discards it after all
+        }
+
+        await BonboardingService.IsCompletedAsync("welcome");   // ran to the end at some point
+        await BonboardingService.IsClosedAsync("welcome");      // completed, skipped or dismissed
+        await BonboardingService.ResetAsync("welcome");         // forget one tour
+        await BonboardingService.ResetAllAsync();               // forget every tour and every checklist
         """;
 
     private const string StoreExample = """

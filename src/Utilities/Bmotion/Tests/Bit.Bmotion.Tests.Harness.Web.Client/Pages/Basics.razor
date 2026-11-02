@@ -79,6 +79,16 @@
         <div id="size" class="box"></div>
     </Bmotion>
 
+    @* From pixels to a share of its 400px track: 100px to 50%, which is 200px. *@
+    <div class="track" style="height: 60px">
+        <Bmotion Initial='Bm.To(width: "100px")'
+                 Animate='_play ? Bm.To(width: "50%") : null'
+                 Transition="Bm.Tween(0.6, BmEase.Linear)"
+                 OnAnimationComplete='_ => Log("units:complete")'>
+            <div id="units" class="box"></div>
+        </Bmotion>
+    </div>
+
     <Bmotion Animate="_play ? Bm.To(x: 100) : null"
              Transition="Bm.Spring(stiffness: 300, damping: 8)"
              OnAnimationComplete='_ => Log("spring:complete")'>

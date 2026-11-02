@@ -4,7 +4,7 @@
          Playwright), in whichever render mode BMOTION_E2E_HOST names - see README.md. -->
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
@@ -19,7 +19,12 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Playwright" Version="1.64.1" />
-        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="MSTest" Version="4.5.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The lazy loading harness every lazy-loadable library shares (src/Utilities/Shared/LazyLoading.md). -->
+        <Compile Include="..\..\..\Shared\Tests\E2E\*.cs" LinkBase="Shared" />
     </ItemGroup>
 
     <!-- Deliberately no ProjectReference to Bit.Bmotion or the harness: every test here drives a running host

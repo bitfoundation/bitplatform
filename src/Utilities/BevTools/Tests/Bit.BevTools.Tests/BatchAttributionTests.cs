@@ -219,6 +219,7 @@ public class BatchAttributionTests : BunitContext
 
         var navigation = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.Navigation, Session.Timeline.Snapshot());
         Assert.AreEqual("Counter", navigation.ComponentName);
+        Assert.AreEqual("Navigate to /counter", navigation.Title, "named by its route before the activity's tags arrive");
     }
 
     [TestMethod]

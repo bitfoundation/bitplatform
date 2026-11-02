@@ -1,0 +1,145 @@
+﻿@page "/e2e/aierrorview"
+@implements IAsyncDisposable
+@inject IBitAiToolRegistry ToolRegistry
+
+<PageTitle>BitAiErrorView E2E</PageTitle>
+
+<h1>BitAiErrorView</h1>
+
+<p>Retries: <span id="erv-retries">@_retries</span> <button id="erv-reset" @onclick="() => _retries = 0">Reset</button></p>
+
+@* A retryable error with a detail: the retry is offered only where a handler is there to do it. *@
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:560px">
+        <BitAiErrorView Id="erv-basic" Error="_rateLimit" />
+        <BitAiErrorView Id="erv-retry" Error="_rateLimit" OnRetry="() => _retries++" />
+        <BitAiErrorView Id="erv-plain" Error="_plain" OnRetry="() => _retries++" />
+        <BitAiErrorView Id="erv-compact" Compact Error="_rateLimit" OnRetry="() => _retries++" />
+        <BitAiErrorView Id="erv-wait" Error="_shortWait" />
+    </div>
+</E2ESection>
+
+@* A session playing error-then-recover: the first attempt ends on the rate-limit error, the retry answers. The other
+   plays the error script, which fails every attempt. The view is what a message shows under its text. *@
+<E2ESection Id="session" Title="Retry in a session">
+    <button id="ss-ask" @onclick="() => _recoverSession.SubmitAsync(Question)">Ask (recovers)</button>
+    <button id="ss-ask-failing" @onclick="() => _failingSession.SubmitAsync(Question)">Ask (always fails)</button>
+    <p>Recovering session: <span id="ss-state">@State(_recoverSession)</span></p>
+    <p>Answer: <span id="ss-answer">@LastAssistant(_recoverSession)?.GetText()</span></p>
+    <p>Messages: <span id="ss-messages">@_recoverSession.Conversation.Messages.Count</span></p>
+    <div style="width:560px">
+        @if (LastAssistant(_recoverSession)?.Error is { } recoverError)
+        {
+            <BitAiErrorView Id="erv-ss" Error="recoverError" OnRetry="() => _recoverSession.RetryAsync()" />
+        }
+    </div>
+    <p>Failing session: <span id="ss-failing-state">@State(_failingSession)</span> <span id="ss-failing-attempts">@_failingAttempts</span></p>
+    <div style="width:560px">
+        @if (LastAssistant(_failingSession)?.Error is { } failingError)
+        {
+            <BitAiErrorView Id="erv-ss-failing" Error="failingError" OnRetry="RetryFailingAsync" />
+        }
+    </div>
+</E2ESection>
+
+@* A detail long enough to scroll, and one that is not there. *@
+<E2ESection Id="detail" Title="Detail">
+    <div style="width:560px">
+        <BitAiErrorView Id="erv-long" Error="_longDetail" />
+        <div style="--bit-AiErrorView-detail-color: rgb(1, 2, 3); --bit-AiErrorView-detail-max-height: 40px;">
+            <BitAiErrorView Id="erv-vars" Error="_longDetail" />
+        </div>
+        <BitAiErrorView Id="erv-styles" Error="_rateLimit" OnRetry="() => _retries++"
+                        Styles="@(new() { Detail = "color: rgb(0, 100, 0)", RetryAfter = "color: rgb(0, 0, 150)" })"
+                        Classes="@(new() { Root = "e2e-erv-root", Text = "e2e-erv-text" })" />
+    </div>
+</E2ESection>
+
+@* Disabled retries nothing and shows nothing more, and drops the page's activation handlers from its root. *@
+<E2ESection Id="disabled" Title="Disabled">
+    <p>Root clicks: <span id="erv-root-clicks">@_rootClicks</span></p>
+    <div style="width:560px">
+        <BitAiErrorView Id="erv-dis" Disabled Error="_rateLimit" OnRetry="() => _retries++" @onclick="() => _rootClicks++" />
+        <BitAiErrorView Id="erv-enabled" Error="_plain" @onclick="() => _rootClicks++" />
+        <BitParams Parameters="_disabledParams">
+            <BitAiErrorView Id="erv-dis-params" Error="_rateLimit" OnRetry="() => _retries++" />
+            <BitAiErrorView Id="erv-dis-override" Disabled="false" Error="_rateLimit" OnRetry="() => _retries++" />
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:560px">
+        <BitAiErrorView Id="erv-ltr" Error="_rateLimit" OnRetry="() => _retries++" />
+        <BitAiErrorView Id="erv-rtl" Dir="BitDir.Rtl" Error="_rateLimit" OnRetry="() => _retries++" />
+        <div dir="rtl">
+            <BitAiErrorView Id="erv-rtl-inherited" Error="_rateLimit" OnRetry="() => _retries++" />
+        </div>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string Question = "How many visitors came yesterday?";
+
+    private static readonly BitAiError _rateLimit = new("The model is rate limited right now.")
+    {
+        Code = "rate_limit",
+        Kind = BitAiErrorKind.RateLimit,
+        IsRetryable = true,
+        RetryAfter = TimeSpan.FromSeconds(30),
+        Detail = "HTTP 429\nretry-after: 30",
+    };
+
+    // A wait short enough to be over while a test looks: the line saying it goes away.
+    private static readonly BitAiError _shortWait = new("The model is rate limited right now.")
+    {
+        Kind = BitAiErrorKind.RateLimit,
+        IsRetryable = true,
+        RetryAfter = TimeSpan.FromSeconds(1),
+    };
+
+    private static readonly BitAiError _plain = new("The request was refused.") { Kind = BitAiErrorKind.Unknown };
+
+    private static readonly BitAiError _longDetail = new("The request failed.")
+    {
+        Detail = string.Join("\n", Enumerable.Range(1, 40).Select(i => $"   at Frame{i}.Method{i}() in /src/Frame{i}.cs:line {i * 10}")),
+    };
+
+    private readonly BitAiErrorViewParams[] _disabledParams = [new() { Disabled = true }];
+
+    private BitAiRenderScheduler _sessionRenders = default!;
+    private BitAiChatSession _recoverSession = default!;
+    private BitAiChatSession _failingSession = default!;
+    private int _retries;
+    private int _rootClicks;
+    private int _failingAttempts;
+
+    protected override void OnInitialized()
+    {
+        _sessionRenders = new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged));
+        _recoverSession = new BitAiChatSession(E2EAiTransport.For(E2EAiScripts.ErrorThenRecover), tools: ToolRegistry);
+        _failingSession = new BitAiChatSession(E2EAiTransport.For(E2EAiScripts.Error), tools: ToolRegistry);
+        _recoverSession.StateChanged += _sessionRenders.Request;
+        _failingSession.StateChanged += _sessionRenders.Request;
+        _failingSession.TurnCompleted += _ => Interlocked.Increment(ref _failingAttempts);
+    }
+
+    private static BitAiMessage? LastAssistant(BitAiChatSession session) => session.Conversation.Messages.LastOrDefault(m => m.Role.IsAssistant);
+
+    private static string State(BitAiChatSession session) => session.IsGenerating ? "Generating" : "Idle";
+
+    private async Task RetryFailingAsync()
+    {
+        _retries++;
+        await _failingSession.RetryAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_recoverSession is not null) await _recoverSession.DisposeAsync();
+        if (_failingSession is not null) await _failingSession.DisposeAsync();
+        if (_sessionRenders is not null) await _sessionRenders.DisposeAsync();
+    }
+}

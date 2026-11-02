@@ -1,9 +1,15 @@
 {
     "mcpServers": {
         "bitplatform": {
-            "url": "https://bitplatform.dev/mcp?v=10.7.0"
+            "url": "https://bitplatform.dev/mcp?v=11.0.0"
         },
-        "dev-mcp": {
+        "workbench": {
+            "url": "http://localhost:6030/mcp"
+        },
+        "dev-mcp-test": {
+            "url": "https://use-your-test-api-server-url-here.com/dev-mcp"
+        },
+        "dev-mcp-production": {
             "url": "https://use-your-api-server-url-here.com/dev-mcp"
         },
         "aspire": {

@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <title>Bmotion samples (MAUI)</title>
+    <link rel="icon" type="image/svg+xml" href="_content/Bit.Bmotion.Samples.Core/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <!-- No _content/Bit.Bmotion/bit-bmotion.css: it only plays enter animations prerendered with
+         BmPrerenderMode.Animate, and a BlazorWebView never prerenders - every component starts interactive. -->
+    <link rel="stylesheet" href="_content/Bit.Bmotion.Samples.Core/app.css" />
+</head>
+
+<body>
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <!-- No tag for bit-bmotion.js: the library imports it itself the first time an animation runs. -->
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+
+</html>

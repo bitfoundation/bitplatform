@@ -22,8 +22,9 @@ public static class BcrdtUpdateDecoder
     /// </para>
     /// </remarks>
     /// <exception cref="BcrdtFormatException">
-    /// The payload is not a well-formed update. The whole payload is decoded before anything is
-    /// integrated, so a rejected update leaves the document exactly as it was.
+    /// The payload is not a well-formed update, or places a block further past what the document holds
+    /// from its author than any replica writes. The whole payload is decoded and checked before anything
+    /// is integrated, so a rejected update leaves the document exactly as it was.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// A well-formed block could not be integrated. That block and the later blocks from the same
@@ -37,6 +38,7 @@ public static class BcrdtUpdateDecoder
         var reader = new BcrdtBufferReader(update);
         Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
         BcrdtDeleteSet deleteSet = BcrdtDeleteSet.Read(ref reader);
+        BcrdtUpdateCodec.RefuseFarClocks(groups, doc.Store);
 
         Exception? integrationFailure = null;
 
@@ -52,7 +54,17 @@ public static class BcrdtUpdateDecoder
             BcrdtStructStore store = doc.Store;
             BcrdtUpdateCodec.ResolveRoots(groups, doc);
 
-            DeferredBlocks? deferred = IntegrateBlocks(transaction, store, groups, out integrationFailure);
+            DeferredBlocks? deferred;
+            bool wasIntegrating = transaction.IntegratingRemoteBlocks;
+            transaction.IntegratingRemoteBlocks = true;
+            try
+            {
+                deferred = IntegrateBlocks(transaction, store, groups, out integrationFailure);
+            }
+            finally
+            {
+                transaction.IntegratingRemoteBlocks = wasIntegrating;
+            }
             bool retryDeferred = MergeDeferred(store, deferred);
 
             BcrdtDeleteSet? unapplied = ApplyDeleteSet(transaction, deleteSet);
@@ -121,7 +133,7 @@ public static class BcrdtUpdateDecoder
                     pendingMissing.Set(client, clock);
                 }
             }
-            store.PendingUpdate = BcrdtUpdateOperations.Merge(store.PendingUpdate!, deferred.Update);
+            store.PendingUpdate = BcrdtUpdateOperations.Merge([store.PendingUpdate!, deferred.Update], long.MaxValue);
         }
 
         return retry;
@@ -214,7 +226,6 @@ public static class BcrdtUpdateDecoder
                 {
                     deferred[client] = [blocked];
                 }
-                remainingClients.Remove(client);
             }
             stack.Clear();
         }
@@ -226,7 +237,6 @@ public static class BcrdtUpdateDecoder
                 group.Blocks.Clear();
                 group.Position = 0;
             }
-            remainingClients.Remove(client);
             clockCache.Remove(client);
         }
 

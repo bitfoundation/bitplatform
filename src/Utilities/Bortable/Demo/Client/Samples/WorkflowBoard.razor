@@ -1,0 +1,73 @@
+﻿@* A board with a workflow: a column with a limit (MaxItems), a column that takes cards from one other
+   column only (CanDrop) and asks a server about every drop (ConfirmDrop), and cards that go back when
+   they are released outside the board (RevertOnSpill). *@
+
+<div class="rules-board">
+    <div class="demo-controls">
+        <label class="demo-check">
+            <input id="rules-approve" type="checkbox" @bind="_approve" /> The server approves drops into Done
+        </label>
+    </div>
+
+    <div class="demo-columns">
+        <div class="demo-col">
+            <div class="demo-col-title">To do</div>
+            <Bortable @bind-Items="_todo" TItem="Card" Group="rules" Id="rules-todo" AriaLabel="To do"
+                      ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnDragEnd"
+                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="card">@card.Title</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title">In progress (3 at most)</div>
+            <Bortable @bind-Items="_doing" TItem="Card" Group="rules" Id="rules-doing" AriaLabel="In progress"
+                      ItemLabel="c => c.Title" RevertOnSpill="true" MaxItems="3" OnEnd="OnDragEnd"
+                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="card">@card.Title</ItemTemplate>
+            </Bortable>
+        </div>
+        <div class="demo-col">
+            <div class="demo-col-title">Done (from In progress)</div>
+            <Bortable @bind-Items="_done" TItem="Card" Group="rules" Id="rules-done" AriaLabel="Done"
+                      ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnDragEnd"
+                      CanDrop='e => e.FromId is "rules-doing" or "rules-done"' ConfirmDrop="ConfirmAsync"
+                      Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+                <ItemTemplate Context="card">@card.Title</ItemTemplate>
+            </Bortable>
+        </div>
+    </div>
+
+    <p class="demo-order"><strong>To do:</strong> <span id="rules-todo-order">@string.Join(", ", _todo.Select(c => c.Title))</span></p>
+    <p class="demo-order"><strong>In progress:</strong> <span id="rules-doing-order">@string.Join(", ", _doing.Select(c => c.Title))</span></p>
+    <p class="demo-order"><strong>Done:</strong> <span id="rules-done-order">@string.Join(", ", _done.Select(c => c.Title))</span></p>
+    <p class="demo-order"><strong>Server:</strong> <span id="rules-status">@_status</span></p>
+    <p class="demo-order"><strong>Last drag (OnEnd):</strong> <span id="rules-last">@_last</span></p>
+</div>
+
+@code {
+    private sealed record Card(int Id, string Title);
+
+    private IList<Card> _todo = new List<Card> { new(1, "Write the spec"), new(2, "Draw the icons"), new(3, "Plan the launch") };
+    private IList<Card> _doing = new List<Card> { new(4, "Build the API"), new(5, "Review the PR") };
+    private IList<Card> _done = new List<Card> { new(6, "Set up CI") };
+
+    private bool _approve = true;
+    private string _status = "idle";
+    private string _last = "nothing yet";
+
+    // Stands in for a call to a server that may refuse the move.
+    private async Task<bool> ConfirmAsync(BortableEventArgs<Card> e)
+    {
+        _status = $"asking about {e.Item.Title}…";
+        StateHasChanged();
+        await Task.Delay(300);
+        _status = _approve ? $"saved {e.Item.Title}" : $"refused {e.Item.Title}";
+        StateHasChanged();
+        return _approve;
+    }
+
+    private void OnDragEnd(BortableEventArgs<Card> e)
+        => _last = e.Canceled ? $"{e.Item.Title}: cancelled, everything put back"
+                 : e.CrossedLists ? $"{e.Item.Title}: {e.FromId} -> {e.ToId}#{e.NewIndex}"
+                 : $"{e.Item.Title}: #{e.OldIndex} -> #{e.NewIndex}";
+}

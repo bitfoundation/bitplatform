@@ -172,7 +172,7 @@ public class BitParamsBuilderResetTests
 
     private static IEnumerable<(Type ParamsType, MethodInfo Update, Type ComponentType)> DiscoverUpdateMethods()
     {
-        var assemblies = new[] { typeof(BitButtonParams).Assembly, typeof(BitAppShellParams).Assembly };
+        var assemblies = new[] { typeof(BitButtonParams).Assembly, typeof(BitAppShellParams).Assembly, typeof(BitAiChat).Assembly };
 
         foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
         {

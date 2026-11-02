@@ -1,0 +1,193 @@
+﻿@page "/components/ai/toolapproval"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/toolapproval"
+            Title="AiToolApproval"
+            Description="BitAiToolApproval is the prompt a tool call of an AI model waits on when it needs a human decision: decline, always allow, or allow once - drawn in the error role for a destructive tool." />
+
+<DemoPage Name="AiToolApproval"
+          Description="BitAiToolApproval is the prompt shown when a tool call needs a human decision. It offers three answers, from the most cautious to the most permissive - decline, always allow, allow - because allowing once and allowing always are different decisions. The prompt follows the risk the tool declares: the allow button of a destructive tool is drawn in the error role and the prompt is washed with it, so the answer that runs it never looks like the safe one. The decision goes to the session that is waiting, which resumes the paused turn."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ToolApproval/BitAiToolApproval.razor"
+          GitHubDemoUrl="AI/ToolApproval/BitAiToolApprovalDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            A <BitLink Href="/components/ai/toolcallview">BitAiToolCallView</BitLink> ends in this prompt by itself while its call waits
+            for a decision; render one yourself for an approval UI of your own. Which calls wait is the <b>IBitAiToolApprovalPolicy</b>'s
+            call: the default one asks for every tool declared <b>Destructive</b> (or <b>RequiresApproval</b>) and remembers the tools a user
+            allowed always, which is why it is registered scoped: never pass <b>trySingleton</b> on Blazor Server, where a singleton would
+            carry one user's "always" over to everyone.
+            The prompt is a group named by its question and its buttons never submit a form, so a conversation inside one is safe. See the
+            <BitLink Href="/ai/scenarios/approval">Tool approval</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Hand it the <b>Call</b> waiting for a decision. Without a <b>Session</b> the decision is recorded on the call itself
+                (<b>Approval</b>, and its <b>Status</b> moves to <b>Pending</b> or <b>Rejected</b>), which is what a layout running its own tool
+                loop reads; <b>OnDecision</b> reports it either way. The question names the tool by the <b>Title</b> of its definition, else its name.
+                The decision takes the prompt away with the button it was made with, so the page hands the focus to <b>Ask again</b>.
+            </div>
+            <br />
+            <div class="example-stack">
+                @if (basicCall.Status is BitAiToolCallStatus.AwaitingApproval)
+                {
+                    <BitAiToolApproval Call="basicCall" OnDecision="HandleBasicDecision" />
+                }
+                else
+                {
+                    <div>Decision: <b>@basicDecision</b>, status of the call: <b>@basicCall.Status</b></div>
+                }
+            </div>
+            <br />
+            <BitButton @ref="askAgainButton"
+                       Variant="BitVariant.Outline"
+                       Disabled="@(basicCall.Status is BitAiToolCallStatus.AwaitingApproval)"
+                       OnClick="ResetBasic">Ask again</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Reason" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The <b>ApprovalReason</b> of the call - why the approval is asked for, in words that say what will happen - replaces the
+                generic question. The group keeps the generic question as its accessible name unless <b>AriaLabel</b> gives it another.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolApproval Call="reasonCall" />
+                <BitAiToolApproval Call="reasonCall" AriaLabel="Confirm sending the weekly summary" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Risk" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                The prompt follows the <b>Risk</b> of the tool's <b>BitAiToolDefinition</b> (see the tables below). A <b>ReadOnly</b> or
+                <b>Write</b> tool is asked about on the warning tint, with the allow button in the primary role; a <b>Destructive</b> one - irreversible
+                or visible outside the app - on the error tint, with the allow button in the error role. The decline button is the first in the
+                order the focus moves in. A call is decided once: a prompt whose call has been decided takes no second answer (as a session
+                refuses one), so <b>Ask again</b> starts over with fresh calls.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolApproval Call="readOnlyCall" OnDecision="@(d => riskDecision = $"{d} (Read the logs)")" />
+                <BitAiToolApproval Call="writeCall" OnDecision="@(d => riskDecision = $"{d} (Send email)")" />
+                <BitAiToolApproval Call="destructiveCall" OnDecision="@(d => riskDecision = $"{d} (Delete records)")" />
+            </div>
+            <br />
+            <div>Last decision: <b>@riskDecision</b></div>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="ResetRisk">Ask again</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Session" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                With the <b>Session</b> that asked, the decision goes to it (<b>BitAiChatSession.Approve</b>): the paused turn resumes - the tool
+                runs, or is reported to the model as declined. <b>Always allow</b> is remembered by the approval policy, so the next call of the same tool in this session runs without asking.
+                The prompt goes once it is answered, so the page hands the focus back to the button that asked.
+            </div>
+            <br />
+            <BitButton @ref="deleteButton" OnClick="AskToDeleteAsync" Disabled="session.IsGenerating">Delete the archived records</BitButton>
+            <br /><br />
+            <div class="example-stack">
+                @if (SessionCall is { } call)
+                {
+                    @if (call.Status is BitAiToolCallStatus.AwaitingApproval)
+                    {
+                        <BitAiToolApproval Call="call" Session="session" OnDecision="HandleSessionDecision" />
+                    }
+
+                    <div>
+                        Status of the call: <b>@call.Status</b>
+                        @if (call.Result?.GetDisplayText() is { } outcome)
+                        {
+                            <span> - @outcome</span>
+                        }
+                    </div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Disabled</b> turns the three buttons off and decides nothing, and drops the activation handlers the page put on the prompt.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolApproval Disabled Call="destructiveCall" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiToolApprovalParams</b> sets the defaults of every prompt inside it - here the allow buttons of a
+                region drawn round. A prompt keeps what it sets itself: the last one brings its own <b>Styles</b>.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitParams Parameters="approvalParams">
+                    <BitAiToolApproval Call="writeCall" />
+                    <BitAiToolApproval Call="destructiveCall" />
+                    <BitAiToolApproval Call="readOnlyCall" Styles="@(new() { Text = "font-weight: bold" })" />
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root, <b>Styles</b> and <b>Classes</b> on the question, the row of buttons and each of the
+                three buttons (BitButtons, restyled through their own <b>BitButtonClassStyles</b> and <b>--bit-Button-*</b> variables). The public
+                <b>--bit-AiToolApproval-*</b> variables (see the CSS variables table) inherit, so a container restyles every prompt under it.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiToolApproval Call="writeCall" Style="border: 1px solid #b45309" />
+
+                <BitAiToolApproval Call="writeCall" Class="custom-approval" />
+
+                <BitAiToolApproval Call="writeCall"
+                                   Styles="@(new() { Text = "font-weight: bold",
+                                                     ApproveButton = new() { Root = "border-radius: 1rem" } })" />
+
+                <BitAiToolApproval Call="destructiveCall"
+                                   Classes="@(new() { Root = "custom-approval-root",
+                                                      Actions = "custom-approval-actions" })" />
+
+                <div style="--bit-AiToolApproval-background: var(--bit-clr-inf-tint); --bit-AiToolApproval-destructive-background: var(--bit-clr-swr-tint); --bit-AiToolApproval-radius: 0; --bit-AiToolApproval-padding: 1rem 1.5rem; --bit-AiToolApproval-gap: 1rem;">
+                    <BitAiToolApproval Call="writeCall" />
+                    <br />
+                    <BitAiToolApproval Call="destructiveCall" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                In right-to-left text the question leads from the right and the buttons follow it. The question and the buttons are the
+                <b>BitAiStrings</b> of the options in force - here a subclass of them, cascaded by a <b>BitAiOptionsProvider</b>.
+            </div>
+            <br />
+            <div class="example-stack">
+                <BitAiOptionsProvider UiOptions="persianOptions">
+                    <BitAiToolApproval Dir="BitDir.Rtl" Call="rtlCall" OnDecision="d => rtlDecision = d" />
+                </BitAiOptionsProvider>
+            </div>
+            <br />
+            <div>Decision: <b>@rtlDecision</b></div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

@@ -28,15 +28,17 @@ public class BelemetryOptionsBindingTests
             "UseEnvironmentVariables": false,
             "Debug": true,
             "Consent": { "Default": "Errors", "Persist": false, "HonorGlobalPrivacyControl": false, "PendingLimit": 50 },
-            "Privacy": { "RedactQueryParameters": [ "ssn" ], "StripQueryString": true, "StripFragment": false, "ScrubPatterns": false, "CollectUserAgent": false, "BlockedAttributes": [ "user.email" ] },
+            "Privacy": { "RedactQueryParameters": [ "ssn" ], "StripQueryString": true, "StripFragment": false, "ScrubPatterns": false, "CollectUserAgent": false, "BlockedAttributes": [ "user.email" ], "RedactedAttributes": [ "ssn" ] },
+            "Errors": { "DuplicateWindow": "00:00:02", "MaxPerMinute": 10 },
+            "MaxValueLength": 1000,
             "Browser": {
               "Enabled": true, "Transport": "Relay", "TrackHashChanges": true, "TrackPageVisitTime": true,
-              "InteractionEvents": [ "click", "submit" ], "CaptureInteractionText": true, "MaxInteractionTextLength": 32,
+              "InteractionEvents": [ "click", "submit" ], "CaptureInteractionText": true, "MaxInteractionTextLength": 32, "TrackRageClicks": false,
               "WebVitals": false, "DocumentLoad": false, "ResourceTiming": true, "LongTasks": true, "Fetch": false, "Xhr": false,
               "PropagateTraceContextTo": [ "same-origin", "^https://api\\.shop\\.test/" ], "IgnoreUrls": [ "/cdn/" ], "IgnoreErrorMessages": [ "Script error" ],
               "CaptureConsole": true, "ConsoleLevels": [ "error" ],
               "SessionInactivityTimeout": "00:10:00", "SessionMaxDuration": "08:00:00", "SessionSampleRatio": 0.5,
-              "MaxQueueSize": 256, "MaxBatchSize": 25, "FlushInterval": "00:00:02", "Debug": true
+              "MaxQueueSize": 256, "MaxBatchSize": 25, "FlushInterval": "00:00:02", "MaxRelayedPerMinute": 600, "Debug": true
             },
             "Logs": { "MinimumLevel": "Warning", "IncludeScopes": false, "IncludeMessageTemplate": true, "ExcludedCategories": [ "Microsoft.AspNetCore" ] },
             "Traces": { "Sources": [ "Shop.*" ], "IgnoredActivityNames": [ "Microsoft.AspNetCore.Components.HandleEvent" ], "SamplingRatio": 0.25, "MaxEventsPerSpan": 16, "MaxLinksPerSpan": 8 },
@@ -47,7 +49,7 @@ public class BelemetryOptionsBindingTests
             "OtlpExporters": [
               {
                 "Endpoint": "https://otlp.shop.test:4317", "TracesEndpoint": "https://traces.shop.test/v1/traces", "BrowserEndpoint": "/otlp",
-                "Protocol": "Grpc", "Headers": { "x-api-key": "k" }, "Compression": "Gzip", "Timeout": "00:00:05",
+                "Protocol": "Grpc", "Headers": { "x-api-key": "k" }, "BrowserHeaders": { "x-ingest-key": "public" }, "Compression": "Gzip", "Timeout": "00:00:05",
                 "IncludeInBrowser": false, "Signals": "Traces, Logs", "MinimumLogLevel": "Information"
               }
             ],
@@ -96,6 +98,12 @@ public class BelemetryOptionsBindingTests
         Assert.IsFalse(o.Privacy.ScrubPatterns);
         Assert.IsFalse(o.Privacy.CollectUserAgent);
         CollectionAssert.AreEqual(new[] { "user.email" }, o.Privacy.BlockedAttributes);
+        CollectionAssert.Contains(o.Privacy.RedactedAttributes, "ssn");
+        CollectionAssert.Contains(o.Privacy.RedactedAttributes, "password", "Added to the defaults.");
+
+        Assert.AreEqual(TimeSpan.FromSeconds(2), o.Errors.DuplicateWindow);
+        Assert.AreEqual(10, o.Errors.MaxPerMinute);
+        Assert.AreEqual(1000, o.MaxValueLength);
 
         var b = o.Browser;
         Assert.AreEqual(BelemetryBrowserTransport.Relay, b.Transport);
@@ -105,6 +113,7 @@ public class BelemetryOptionsBindingTests
         CollectionAssert.AreEqual(new[] { "click", "click", "submit" }, b.InteractionEvents);
         Assert.IsTrue(b.CaptureInteractionText);
         Assert.AreEqual(32, b.MaxInteractionTextLength);
+        Assert.IsFalse(b.TrackRageClicks);
         Assert.IsFalse(b.WebVitals);
         Assert.IsFalse(b.DocumentLoad);
         Assert.IsTrue(b.ResourceTiming);
@@ -122,6 +131,7 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(256, b.MaxQueueSize);
         Assert.AreEqual(25, b.MaxBatchSize);
         Assert.AreEqual(TimeSpan.FromSeconds(2), b.FlushInterval);
+        Assert.AreEqual(600, b.MaxRelayedPerMinute);
         Assert.IsTrue(b.Debug);
 
         Assert.AreEqual(LogLevel.Warning, o.Logs.MinimumLevel);
@@ -163,6 +173,7 @@ public class BelemetryOptionsBindingTests
         Assert.AreEqual(BelemetryOtlpProtocol.Grpc, otlp.Protocol);
         Assert.IsTrue(otlp.IsProtocolSet);
         Assert.AreEqual("k", otlp.Headers["x-api-key"]);
+        Assert.AreEqual("public", otlp.BrowserHeaders["x-ingest-key"]);
         Assert.AreEqual(BelemetryCompression.Gzip, otlp.Compression);
         Assert.AreEqual(TimeSpan.FromSeconds(5), otlp.Timeout);
         Assert.IsTrue(otlp.IsTimeoutSet);

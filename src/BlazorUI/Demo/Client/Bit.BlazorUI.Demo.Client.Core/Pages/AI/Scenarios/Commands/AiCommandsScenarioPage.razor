@@ -1,0 +1,72 @@
+﻿@page "/ai/scenarios/commands"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/commands"
+            Title="Slash commands and mentions"
+            Keywords="Blazor slash commands, chat mentions, at mention autocomplete, BitAiSlashCommand, BitAiMentionItem, prompt shortcuts"
+            Description="Slash commands and @@-mentions in the composer of a bit BlazorUI AI chat: prompt templates, commands that run app code instead of reaching the model, and mentions resolved by identifier." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Commands and mentions"
+             Lead="Type a slash for commands, or an at sign to reference a file, a person, or a data source."
+             GitHubUrl="AI/Scenarios/Commands/AiCommandsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Start a message with / to pick a command, or type @@ anywhere to reference something.">
+            <DemoExample Title="A composer with commands and mentions" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               Commands="_commands"
+                               Mentions="_mentions"
+                               Placeholder="Type / for commands, @@ to reference something"
+                               EmptyTitle="Try a slash or an at sign"
+                               EmptyBody="Start a message with / to pick a command, or type @@ anywhere to reference a file or a person."
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                A <code>BitAiSlashCommand</code> with a <code>Template</code> inserts text into the composer, which suits
+                prompt shortcuts. One with a <code>Handler</code> runs application code instead, so <code>/clear</code> and
+                <code>/regenerate</code> never reach the model at all.
+            </p>
+            <p>
+                The handlers here are the session's own methods: <code>/regenerate</code> calls
+                <code>BitAiChatSession.RegenerateAsync()</code>, which discards the last answer and asks again, and
+                <code>/clear</code> stops any reply in flight (<code>Stop()</code>) and empties the conversation
+                (<code>Conversation.Clear()</code>).
+            </p>
+            <p>
+                Mentions are offered from a list the application supplies (<code>BitAiMentionItem</code>: an id, the label
+                inserted, a description and an icon). The composer inserts the label, so the transport receives plain text -
+                <code>@@roadmap.md</code> - in the user message. Resolving it to content is the application's job, done by
+                identifier rather than by asking the model to guess which file or person was meant; this transport only reads
+                the mentions back out of the text and names them, and summarizes when the message starts with
+                "Summarize", which is what the <code>/summarize</code> template writes.
+            </p>
+            <p>
+                Arrow keys move through the menu, Enter or Tab accepts, and Escape closes it - claiming the key, so a dialog
+                around the chat stays open.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/promptinput"><code>BitAiPromptInput</code></BitLink> - the composer and its command and mention menus.</li>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat that hands its <code>Commands</code> and <code>Mentions</code> to the composer.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

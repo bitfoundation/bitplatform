@@ -58,7 +58,6 @@ If multiple apply, prefer the most specific one.
 | `area / templates` | Relates to the bit Boilerplate project template |
 | `area / Bswup` | Relates to the bit Bswup PWA service-worker |
 | `area / Butil` | Relates to the bit Butil browser APIs |
-| `area / Besql` | Relates to the bit Besql client-side SQLite Entity Framework Core |
 | `area / pipeline` | Relates to CI/CD or GitHub Actions |
 | `dependencies` | Dependency version updates |
 | `documentation` | Docs, comments, README |

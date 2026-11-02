@@ -26,9 +26,10 @@ public class InspectorTests
     public async Task RendersARowPerRegisteredElement_WithItsLiveState()
     {
         using var ctx = new BmotionTestContext();
+        // Without Web Animations the colour tween runs on the frame loop, so it shows up as an active driver.
+        ctx.Interop.WebAnimationsSupported = false;
         ctx.Engine.RegisterElement("idle", new Dictionary<string, object?> { ["x"] = 10.0, ["opacity"] = 0.5 });
         ctx.Engine.RegisterElement("busy", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
-        // A color tween stays on the frame loop, so it shows up as an active driver.
         await ctx.Engine.AnimateToAsync("busy", new Dictionary<string, object?> { ["backgroundColor"] = "#ff0000" },
             Bm.Tween(10).ToConfig());
 
@@ -49,6 +50,24 @@ public class InspectorTests
         Assert.IsFalse(idle.ClassList.Contains("live"));
         var chips = idle.QuerySelectorAll(".bm-insp-chip").Select(c => c.TextContent.Trim()).ToArray();
         CollectionAssert.AreEquivalent(new[] { "x 10", "opacity 0.5" }, chips);
+    }
+
+    [TestMethod]
+    public async Task ABrowserPlayedAnimation_ShowsAsLive_WithWhatTheBrowserAnimates()
+    {
+        using var ctx = new BmotionTestContext();
+        ctx.Engine.RegisterElement("busy", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
+        await ctx.Engine.AnimateToAsync("busy", new Dictionary<string, object?> { ["backgroundColor"] = "#ff0000" },
+            Bm.Tween(10).ToConfig());
+
+        var cut = ctx.Render<BmotionInspector>(ps => ps.Add(p => p.RefreshMs, 50));
+
+        cut.WaitForAssertion(() => StringAssert.Contains(cut.Find(".bm-insp-count").TextContent, "1 el · 1 active"), Refresh);
+        var busy = cut.Find(".bm-insp-el");
+        Assert.IsTrue(busy.ClassList.Contains("live"));
+        var badge = busy.QuerySelector(".bm-insp-badge")!;
+        Assert.AreEqual("1 in browser", badge.TextContent);
+        Assert.AreEqual("backgroundColor", badge.GetAttribute("title"));
     }
 
     [TestMethod]

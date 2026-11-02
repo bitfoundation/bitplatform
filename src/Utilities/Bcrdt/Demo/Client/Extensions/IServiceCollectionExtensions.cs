@@ -21,9 +21,12 @@ public static class IServiceCollectionExtensions
         // Its transport is the live page's relay through the demo server (see LiveRelay), registered ahead of the
         // library so AddBitBcrdtServices picks it up. Resolving it is harmless while prerendering: a transport is
         // only created when a document is opened, and the live page opens its document only once it is interactive.
+        // Its store is the browser's IndexedDB, so a live document - and what was typed into it offline - survives a
+        // reload or a closed tab. Like the transport, it is touched only once a document is opened, and the live
+        // page opens its document only when it runs in the browser.
         services.AddScoped<LiveRelay>();
         services.AddScoped<IBcrdtTransportFactory>(sp => sp.GetRequiredService<LiveRelay>());
-        services.AddBitBcrdtServices(collaboration => collaboration.UseInMemoryStore());
+        services.AddBitBcrdtServices(collaboration => collaboration.UseIndexedDbStore("bit-bcrdt-demo"));
 
         // One workspace for the whole session. It owns each demo replica's private document store, so
         // navigating away from a page and back finds the document where it was left rather than empty.

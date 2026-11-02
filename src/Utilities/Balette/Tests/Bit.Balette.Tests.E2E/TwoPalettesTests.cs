@@ -59,7 +59,7 @@ public sealed class TwoPalettesTests : BaletteTest
         var active = page.Locator(".bb-palette-hit.bb-active .bb-palette-hit-url");
         await Assertions.Expect(active).ToHaveTextAsync("/keyboard");
         await page.Keyboard.PressAsync("Enter");
-        await page.WaitForURLAsync("**/keyboard");
+        await ExpectUrlAsync(page, "/keyboard");
         await Assertions.Expect(page.Locator("h1")).ToHaveTextAsync("Keyboard & shortcuts");
         await Assertions.Expect(SiteSearch(page)).ToHaveCountAsync(0);
 

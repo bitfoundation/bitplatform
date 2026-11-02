@@ -151,6 +151,35 @@
     </div>
 </Section>
 
+<Section Title="For reference: BenchmarkDotNet on the desktop"
+         Lead="The repository's own suite, Tests/Bit.BlazeDb.Benchmarks: .NET 10, a 10,000-row table, against native SQLite in memory with prepared statements - a favourable stand-in for sqlite-wasm, which pays JavaScript interop, worker round-trips and wasm execution on top. Compare the ratios with what this browser measured above, not the absolute numbers.">
+    <div class="bd-main-side">
+        <Panel Flush="true">
+            <div class="bb-scroll">
+                <table class="bb-table bb-compare">
+                    <thead><tr><th>Operation</th><th class="bd-num">BlazeDb</th><th class="bd-num">SQLite</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td>Point get by key</td><td class="bd-num">1.2 ns, 0 B</td><td class="bd-num">743 ns</td><td>about 600×</td></tr>
+                        <tr><td>Count by hash index</td><td class="bd-num">2.1 ns, 0 B</td><td class="bd-num">63,020 ns</td><td>a bucket size against a table scan</td></tr>
+                        <tr><td>Ordered range scan (~5,100 rows)</td><td class="bd-num">45.4 µs</td><td class="bd-num">69.2 µs</td><td>comparable: both index-driven</td></tr>
+                        <tr><td>Upsert, autocommit</td><td class="bd-num">413 ns</td><td class="bd-num">706 ns</td><td>with the WAL; 311 ns memory-only</td></tr>
+                        <tr><td>Upsert in a 1,000-op transaction</td><td class="bd-num">369 ns/op</td><td class="bd-num">620 ns/op</td><td>with WAL journaling</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </Panel>
+        <Panel Title="As the table grows" IconName="layers">
+            <p>
+                The first page of an ordered index stays flat - 283 ns at 100,000 rows against 274 ns at 10,000 - while the
+                cost of persistence grows with the data: a checkpoint of 100,000 small rows takes about 4 ms, and opening
+                that database - decoding the snapshot and rebuilding every index - about 22 ms on a desktop CPU. Expect
+                several times that in WebAssembly.
+            </p>
+            <p class="bd-foot">Reproduce with <code>dotnet run -c Release --project Tests/Bit.BlazeDb.Benchmarks</code>.</p>
+        </Panel>
+    </div>
+</Section>
+
 <Section Title="What it costs on disk"
          Lead="Throughput is only half the story. These figures come from the real encoder and the real snapshot writer, measured against an in-memory storage backend.">
     <div class="bd-main-side">

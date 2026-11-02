@@ -1,0 +1,43 @@
+﻿@* The router waits for OnNavigateAsync before it renders a page, so the database's assemblies are there before the
+   products page renders. This file renders before they are downloaded, so it may not use their types itself. The server
+   prerenders it too: it registers LazyAssemblyLoader for that (its Program.cs), and does not set the switch, as it loads
+   them with the rest of the app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    // Set only where the assemblies are marked (the project file): loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsBsqlite = AppContext.TryGetSwitch("Bit.Bsqlite.Samples.Lazy.LazyLoadsBsqlite", out var on) && on;
+
+    // Every assembly the project file marks.
+    private static readonly string[] DatabaseAssemblies =
+    [
+        "Bit.Bsqlite.wasm", "Microsoft.EntityFrameworkCore.wasm", "Microsoft.EntityFrameworkCore.Relational.wasm",
+        "Microsoft.EntityFrameworkCore.Sqlite.wasm", "Microsoft.Data.Sqlite.wasm", "SQLitePCLRaw.core.wasm",
+        "Microsoft.Extensions.Caching.Abstractions.wasm", "Microsoft.Extensions.Caching.Memory.wasm",
+        "Microsoft.Extensions.DependencyModel.wasm", "System.Data.Common.wasm", "System.Private.Xml.wasm",
+        "System.Transactions.Local.wasm", "Bit.Bsqlite.Samples.Lazy.Data.wasm",
+    ];
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The page that uses the database: fetch the assemblies before it renders. A second call loads nothing again.
+        if (LazyLoadsBsqlite && UsesTheDatabase(context.Path))
+            await LazyAssemblyLoader.LoadAssembliesAsync(DatabaseAssemblies);
+    }
+
+    // /products and the routes beneath it (routes match regardless of case), but not /products-archive. The path keeps
+    // any query and fragment.
+    private static bool UsesTheDatabase(string path)
+    {
+        var page = path.Split('?', '#')[0].Split('/')[0];
+        return page.Equals("products", StringComparison.OrdinalIgnoreCase);
+    }
+}

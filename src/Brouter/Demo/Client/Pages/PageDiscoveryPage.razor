@@ -87,4 +87,12 @@
         Discovery reflects over the given assemblies - like the built-in Router, keep routable
         components preserved when trimming.
     </p>
+    <p class="bb-card-desc">
+        A type that can't be loaded - because it, or one of its attributes, needs an assembly that
+        is missing or isn't loaded yet - is skipped, along with any routes it declares, and Brouter
+        logs a warning saying why. On WebAssembly, don't mark an assembly that a scanned
+        assembly's types need as <code>BlazorWebAssemblyLazyLoad</code>: discovery reads every type
+        at startup, and once that assembly has failed to load, the scanned assembly's code can't
+        use it even after it's loaded.
+    </p>
 </div>

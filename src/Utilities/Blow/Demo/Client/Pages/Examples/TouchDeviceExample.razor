@@ -3,24 +3,46 @@
 <PageTitle>Touch Device · Blow</PageTitle>
 
 <ExampleScaffold Title="Touch Device"
-                 Summary="All interactions are built on pointer events, so dragging nodes, panning, pinch-zooming and connecting handles work with touch as well as mouse. A touchscreen has no Shift key to hold for a box selection, so turn on 'Drag to select' and a one-finger drag on the empty pane draws the box instead of panning. Try it on a touchscreen or with device emulation.">
+                 Summary="Every gesture is built on pointer events, so dragging nodes, panning, connecting and pinch-zooming work with a finger as they do with a mouse. The toolbar covers what a touch screen lacks: no Shift key to box-select with, and handles small enough to miss. Open it on a phone or tablet, or with your browser's device emulation.">
     <Toolbar>
-        <label><input type="checkbox" @bind="_selectionOnDrag" /> Drag to select</label>
+        <label><input type="checkbox" checked="@_selectionOnDrag" @onchange="@(e => _selectionOnDrag = (bool)e.Value!)" /> Drag to select</label>
         <span class="bb-muted">@(_selectionOnDrag ? "a drag on the pane draws a selection box" : "a drag on the pane pans")</span>
+        <label><input type="checkbox" checked="@_connectOnClick" @onchange="@(e => _connectOnClick = (bool)e.Value!)" /> Tap to connect</label>
+        <label><input type="checkbox" checked="@_zoomOnPinch" @onchange="@(e => _zoomOnPinch = (bool)e.Value!)" /> Pinch to zoom</label>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" SelectionOnDrag="_selectionOnDrag">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    SelectionOnDrag="_selectionOnDrag"
+                    ConnectOnClick="_connectOnClick"
+                    ZoomOnPinch="_zoomOnPinch">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
             <BlowMiniMap />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Touch and drag a node</strong> to move it, and <strong>drag the empty background</strong> with one finger to pan.</li>
+        <li><strong>Pinch</strong> with two fingers to zoom about the point between them. Untick <strong>Pinch to zoom</strong> and a second finger no longer zooms - the first carries on with whatever it was doing - while the control bar's buttons still zoom.</li>
+        <li><strong>Drag from a handle</strong> to another node's handle to connect them; letting go near a handle is enough.</li>
+        <li>Tick <strong>Tap to connect</strong>, then <strong>tap a handle</strong> and <strong>tap another node's handle</strong>: the two are connected with no drag at all. Tapping empty space abandons it.</li>
+        <li>Tick <strong>Drag to select</strong>: a one-finger drag on the empty background now draws a selection box instead of panning, and the label beside it says which.</li>
+        <li><strong>Tap</strong> a node or an edge to select it, or the background to clear the selection.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>The canvas listens for pointer events, which a mouse, a pen and a finger all raise, and sets <code>touch-action: none</code> on itself, so a finger on it is a gesture of the flow rather than a scroll of the page.</li>
+        <li><code>ZoomOnPinch</code> (on) zooms on a two-finger pinch about the fingers' midpoint - the only way to zoom on a touch screen besides the control bar.</li>
+        <li><code>SelectionOnDrag</code> (off) turns a plain drag on the pane into a box selection; with a keyboard, Shift (<code>SelectionKey</code>) does that for a single drag.</li>
+        <li><code>ConnectOnClick</code> (off) connects with two taps as well as a drag. A connection dropped within <code>ConnectionRadius</code> (20 screen pixels) of a handle snaps to it, and every handle's hit area stays at least <code>--bit-blow-handle-hit-size</code> (12px) across on screen at any zoom.</li>
+        <li><code>BlowControls</code> and <code>BlowMiniMap</code> take taps as well; on a phone-sized screen this site hides the minimap, which would cover the nodes.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private bool _selectionOnDrag;
+    private bool _connectOnClick;
+    private bool _zoomOnPinch = true;
 
     protected override void OnInitialized()
     {

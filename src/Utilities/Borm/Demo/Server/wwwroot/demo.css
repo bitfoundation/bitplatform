@@ -21,9 +21,12 @@
    the field gap, the form's maximum width, the focus border that follows the accent - are left to
    the library. Any element carrying the class gets the theme: a page that lays fields out itself
    with <BormField> puts it on its own wrapper (see Pages/CompositionDemo.razor).
+
+   A form that also carries demo-stock-theme is left out, so it shows the library's own palette and
+   colour modes exactly as an app without a re-tint gets them (see Pages/ThemingDemo.razor).
    -------------------------------------------------------------------------------------------- */
 
-html:root .bit-borm-form {
+html:root .bit-borm-form:not(.demo-stock-theme) {
     color-scheme: light;
     /* The library names system-ui; the site's own type stack is the same family on Windows and
        macOS, and keeps a form's labels in step with the prose around it everywhere else. */
@@ -36,6 +39,8 @@ html:root .bit-borm-form {
     --bit-borm-surface-disabled: var(--bb-surface-2);
     --bit-borm-border: var(--bb-border-strong);
     --bit-borm-error: var(--bb-danger);
+    /* What the kit draws on its danger colour as on its primary one: white in light, near-black in dark. */
+    --bit-borm-error-contrast: var(--bb-primary-text);
     --bit-borm-error-surface: var(--bb-danger-soft);
     --bit-borm-warning: var(--bb-warning-text);
     --bit-borm-text: var(--bb-text);
@@ -46,7 +51,7 @@ html:root .bit-borm-form {
 
 /* The parts of a control the browser draws itself - the date picker, an open dropdown, the file
    button - follow color-scheme rather than any token. */
-html:root[bit-theme="dark"] .bit-borm-form {
+html:root[bit-theme="dark"] .bit-borm-form:not(.demo-stock-theme) {
     color-scheme: dark;
 }
 
@@ -121,6 +126,20 @@ html:root .bit-borm-input[type="search"]::-webkit-search-cancel-button {
 /* --------------------------------------------------------------------------------------------
    3. Around the forms
    -------------------------------------------------------------------------------------------- */
+
+/* A toolbar button with nothing to do looks like the kit's disabled one, but stays focusable: a page button that
+   switches itself off when pressed (Save & rebase, Forget the draft) is aria-disabled rather than disabled, which
+   dropped the focus of the user who pressed it to the page body - the library's own buttons do the same. */
+.btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: .45;
+}
+
+/* The landing page's comparison: three columns of prose and identifiers, which a phone squeezed into one word a line,
+   broken mid-word ("Visibl|eWhen") because the kit's cells may break anywhere. Its scroll region scrolls it instead. */
+.bb-compare {
+    min-width: 36rem;
+}
 
 /* What a valid submit handed the page: the kit's success note, with the model under it. */
 .demo-result strong {
@@ -319,4 +338,30 @@ html:root .bit-borm-input[type="search"]::-webkit-search-cancel-button {
     margin: .75rem 0 0;
     font-size: var(--fl-font-size-200);
     color: var(--bb-success-text);
+}
+
+/* The expressions demo's console: the box takes the whole row, in the code face. */
+.expression-probe {
+    flex: 1 1 100%;
+}
+
+.expression-probe input {
+    font-family: var(--bb-mono);
+}
+
+/* Theming: the CSS the playground's settings come to, under the controls that set them. */
+.demo-theme-controls {
+    align-items: end;
+}
+
+.demo-theme-controls input[type="range"] {
+    inline-size: 9rem;
+}
+
+/* Blazor's own ValidationSummary in a form that provides an EditContext (the Blazor inputs demo). */
+.demo-validation-summary {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    color: var(--bit-borm-error);
+    font-size: var(--fl-font-size-200);
 }

@@ -10,8 +10,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
     <p class="bb-card-desc">
         <code>Bit.Bsqlite</code> is the whole install: the ADO.NET surface, the EF Core integration, the worker
-        transport and every storage backend - OPFS, IndexedDB, Cache Storage and in-memory. It targets .NET 8, 9 and
-        10, each with the EF Core of the same major version. Browser-free unit tests add
+        transport and every storage backend - OPFS, IndexedDB, Cache Storage and in-memory. It targets .NET 10 and
+        11, each with the EF Core of the same major version. Browser-free unit tests add
         <code>Bit.Bsqlite.Testing</code> to the test project.
     </p>
     <CodeBlock Title="Terminal" Language="shell" Code="@Snippets.Start.Install" Collapsible="false" />
@@ -60,9 +60,32 @@
     </p>
     <CodeBlock Title="A page that is prerendered" Language="csharp" Code="@Snippets.Start.Prerendered" Collapsible="false" />
     <p class="bb-card-desc">
-        Interactive Server is not supported: the engine runs in the user's tab, and EF Core on the server would need a
-        native SQLite of its own.
+        Interactive Server is not supported: a user's database lives in their browser, and Bsqlite will not keep one
+        file on the server for every user. A Blazor Hybrid app - MAUI, WPF, Windows Forms - is supported with the same
+        registration: its database is a SQLite file on the device, on the <code>file-system</code> backend, which is
+        registered and selected for it automatically.
     </p>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Lazy loading on WebAssembly</h3>
+    <p class="bb-card-desc">
+        EF Core and Bsqlite are most of what a WebAssembly app downloads for its database - about 2.1 MB, compressed
+        with Brotli. An app whose database only some pages use can mark them <code>BlazorWebAssemblyLazyLoad</code>,
+        load them from the router's <code>OnNavigateAsync</code> before those pages render, and leave the registration
+        out of <code>Program.cs</code>: <code>GetBitBsqliteServices</code> makes the same registration the first time a
+        page asks in the browser, once for the app, from the one method every page passes it, and still reaches the
+        app's own services.
+    </p>
+    <CodeBlock Title="AppDatabase.cs" Language="csharp" Code="@Snippets.Start.LazyServices" Collapsible="false" />
+    <CodeBlock Title="App.razor" Language="razor" Code="@Snippets.Start.LazyRouter" Collapsible="false" />
+    <div class="bb-note bb-note-warn">
+        Keep EF Core's and Bsqlite's types out of everything that runs before the load, and keep the context and its
+        migrations out of the assembly the router reads - in a library lazy loaded with the rest, as this site's Data
+        project is - or the app fails on its first page when it is opened away from the database. AOT builds do not
+        lazy load. The assemblies to mark and every rule are in the guide's
+        <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#lazy-loading-on-webassembly" target="_blank" rel="noopener noreferrer">Lazy loading on WebAssembly</a>.
+    </div>
 </section>
 
 <section class="bb-card">

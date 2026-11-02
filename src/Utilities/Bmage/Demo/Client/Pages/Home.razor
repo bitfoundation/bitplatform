@@ -18,7 +18,7 @@
         <div class="bb-hero-copy">
             <span class="bb-hero-eyebrow">
                 <span class="bb-dot bb-dot-success"></span>
-                Open source · MIT · net8.0 / net9.0 / net10.0
+                Open source · MIT · net10.0 / net11.0
             </span>
             <h1>Images for Blazor,<br /><span class="bb-hero-accent">processed in C#.</span></h1>
             <p class="bb-hero-sub">
@@ -26,7 +26,7 @@
                 device, from strongly typed C#. No server round trips, no base64, no JavaScript image
                 library - and a complete editor component when you want a UI instead of a pipeline.
             </p>
-            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmage</pre>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmage.Blazor</pre>
             <div class="bb-hero-actions">
                 <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
                 <a href="editor" class="btn btn-secondary bb-btn-lg">Try the editor</a>
@@ -83,9 +83,9 @@
     @* ============================== Proof strip ============================== *@
 
     <section class="bb-proof">
-        <div><strong>Engine in C#</strong><span>resampler, rasteriser, colour pipeline and four codecs</span></div>
+        <div><strong>Engine in C#</strong><span>resampler, rasteriser, colour pipeline and six codecs, WebP and AVIF among them</span></div>
         <div><strong>On the device</strong><span>the original never leaves the browser</span></div>
-        <div><strong>WebP and AVIF</strong><span>from the browser's codecs, probed rather than assumed</span></div>
+        <div><strong>AVIF exports</strong><span>from the browser's codecs, probed rather than assumed</span></div>
         <div><strong>Private by default</strong><span>metadata is removed unless you keep it</span></div>
     </section>
 
@@ -189,9 +189,9 @@
                     <span class="bb-step">01</span>
                     <h3>One package, one registration</h3>
                     <p>
-                        The engine, the browser codecs, loading and export, headless processing and the
-                        editor component are all in <code>Bit.Bmage</code>. One call registers the loader,
-                        the exporter and the capability probe.
+                        The browser codecs, loading and export and the editor component are in
+                        <code>Bit.Bmage.Blazor</code>, which brings the engine, <code>Bit.Bmage</code>, along.
+                        One call registers the loader, the exporter and the capability probe.
                     </p>
                     <a href="getting-started">Getting started →</a>
                 </div>
@@ -203,8 +203,9 @@
                     <h3>Decode, process, encode</h3>
                     <p>
                         The browser decodes the upload and applies the phone's rotation, a pipeline does the
-                        pixel work, and the exporter writes WebP where it can - falling back to JPEG where
-                        it cannot, rather than guessing.
+                        pixel work, and the exporter writes WebP through the browser's encoder - or, in
+                        WebAssembly where the browser cannot write WebP, such as Safari's, the JPEG next in
+                        the list. On a server, Bmage's own WebP encoder writes it.
                     </p>
                     <a href="pipelines">Pipelines →</a>
                 </div>
@@ -298,7 +299,7 @@
             <details>
                 <summary>Which frameworks and render modes are supported?</summary>
                 <p>
-                    .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive Auto once
+                    .NET 10 and 11. Everything works on Blazor WebAssembly and on Interactive Auto once
                     interactive, and on Interactive Server and Blazor Hybrid (MAUI, WPF, Windows Forms), where
                     .NET reaches the browser over interop; prerendering, ASP.NET Core and console hosts get the
                     headless API with the managed PNG, JPEG, BMP and GIF codecs.
@@ -316,9 +317,11 @@
             <details>
                 <summary>Can it write WebP and AVIF?</summary>
                 <p>
-                    Through the browser's own codecs, wherever the browser can - which Bmage probes rather
-                    than assumes. Ask for a preference order with <code>EncodeWithFallbackAsync</code>, or
-                    get an <code>ImageCapabilityException</code> instead of a silently substituted PNG.
+                    WebP everywhere, a server included: Bmage has its own WebP encoder, lossy and lossless,
+                    for wherever the browser has none. AVIF through the browser's own codecs, wherever the
+                    browser can - which Bmage probes rather than assumes. Ask for a preference order with
+                    <code>EncodeWithFallbackAsync</code>, or get an <code>ImageCapabilityException</code>
+                    instead of a silently substituted PNG.
                 </p>
             </details>
             <details>
@@ -345,7 +348,7 @@
     <section class="bb-final-cta">
         <h2>Start processing</h2>
         <p class="bb-section-sub">One package and one service registration - and every image your users pick is yours to shape on their device.</p>
-        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmage</pre>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bmage.Blazor</pre>
         <div class="bb-hero-actions">
             <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
             <a href="avatar" class="btn btn-secondary bb-btn-lg">Browse the workflows</a>

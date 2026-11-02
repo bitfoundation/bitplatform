@@ -43,6 +43,19 @@
     <div class="small" id="seq-b"></div>
 </section>
 
+@* Time: a 1 s linear move, started paused, moved by seeks (in place while the browser plays it), played on, and
+   sought again after it has finished. *@
+<section class="row">
+    <button id="seek-start" @onclick="StartSeekableAsync">seekable</button>
+    <button id="seek-20" @onclick="() => SeekTo(0.2)">seek 0.2</button>
+    <button id="seek-50" @onclick="() => SeekTo(0.5)">seek 0.5</button>
+    <button id="seek-80" @onclick="() => SeekTo(0.8)">seek 0.8</button>
+    <button id="seek-play" @onclick="() => _seekable?.Play()">play</button>
+    <Readout @ref="_seekState" Id="seek-state" Initial="" />
+    <Readout @ref="_seekTime" Id="seek-time" Initial="" />
+    <div class="small" id="seek-target"></div>
+</section>
+
 <h2>Instance methods</h2>
 <section class="row">
     <button id="ref-animate" @onclick="() => _box.AnimateAsync(Bm.To(x: 120), Bm.Tween(0.6, BmEase.Linear))">animate</button>
@@ -110,6 +123,43 @@
             .Add("#seq-b", Bm.To(scale: 1.5), Bm.Tween(0.2), at: "burst");
         await await Motion.RunAsync(sequence);
         Log("sequence:done");
+    }
+
+    private BmAnimationControls? _seekable;
+    private Readout _seekState = default!;
+    private Readout _seekTime = default!;
+
+    private async Task StartSeekableAsync()
+    {
+        _seekable = await Motion.AnimateAsync("#seek-target", Bm.To(x: 200), Bm.Tween(1, BmEase.Linear));
+        _seekable.Pause();
+        ShowSeekable();
+        Log("seek:ready");
+        await WatchSeekableAsync();
+    }
+
+    private void SeekTo(double seconds)
+    {
+        if (_seekable is null) return;
+        bool wasOver = _seekable.State == BmPlaybackState.Finished;
+        _seekable.Seek(seconds);
+        ShowSeekable();
+        Log($"seek:{seconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+        if (wasOver) _ = WatchSeekableAsync();
+    }
+
+    // Publishes when the animation is over: the end of the first run, and of the one a later seek takes hold of.
+    private async Task WatchSeekableAsync()
+    {
+        await _seekable!;
+        ShowSeekable();
+        Log("seek:finished");
+    }
+
+    private void ShowSeekable()
+    {
+        _seekState.Set(_seekable!.State.ToString());
+        _seekTime.Set(_seekable.Time.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
     }
 
     private async Task RefAnimateThenCancelAsync()

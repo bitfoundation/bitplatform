@@ -8,6 +8,7 @@ using Bit.Bcrdt.Demo.Server.Controllers;
 using Bit.Bcrdt.Demo.Server.Services;
 using Bit.Bcrdt.Server;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.SignalR;
 using ModelContextProtocol.Protocol;
 using System.Text.Json.Serialization;
 
@@ -20,9 +21,20 @@ builder.Services.AddRazorComponents()
 // they are prerendered here.
 builder.Services.AddDemoServices();
 
-// The relay the live page's tabs talk through. It only forwards messages between the clients of a
-// document - it never decodes one, and no document lives on the server.
-builder.Services.AddBitBcrdtHub();
+// The relays the live page's tabs talk through, and a document host behind them: one more replica of
+// every live document, always present, so a document outlives every tab that had it open and a tab
+// that joins an empty room is handed the document by the server alone. Its store is in memory and
+// bounded - this server is public, and anyone can make a room - so the least recently used rooms are
+// forgotten first; an application would give it a durable store instead.
+// For the same reason the hub takes at most 4 MB from a client rather than 16 - still room for the
+// largest message a provider sends (1 MB) once the JSON protocol has base64-encoded it. It is sized for
+// LiveHub, the hub mapped below: SignalR applies the limit per hub type.
+builder.Services.AddBitBcrdtHub<LiveHub>(4 * 1024 * 1024);
+builder.Services.AddBitBcrdtDocumentHost(_ => new BcrdtDocumentHostOptions
+{
+    Store = new BcrdtInMemoryDocumentStore(maxDocuments: 500),
+    UnloadDelay = TimeSpan.FromMinutes(1),
+});
 
 // The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it. A
 // member with nothing in it is left out of the JSON, exactly as the MCP transport leaves it out, so
@@ -74,11 +86,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
@@ -96,8 +104,16 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 
-app.MapHub<BcrdtHub>("/hub/bcrdt");
-app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}");
+// The hub picks the registered host up by itself; the WebSocket endpoint is given it, so both relays
+// share one replica of each live document. Both grant access the same way - see LiveHub below.
+app.MapHub<LiveHub>("/hub/bcrdt");
+app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}", options: new BcrdtWebSocketEndpointOptions
+{
+    DocumentHost = app.Services.GetRequiredService<BcrdtDocumentHost>(),
+    AuthorizeAccess = (context, documentId) => ValueTask.FromResult(LiveHub.AccessOf(context)),
+    // Binary frames, so the largest message a provider sends arrives at its own size.
+    MaxMessageSize = BcrdtSyncProtocol.DefaultMaxMessageSize,
+});
 
 // Both are literal routes, so they are matched before any component route regardless of order;
 // declaring them first says so out loud.
@@ -115,3 +131,20 @@ app.Run();
 /// internal Program, which WebApplicationFactory cannot reach from another assembly on its own.
 /// </summary>
 public partial class Program;
+
+/// <summary>
+/// The live page's SignalR relay: <see cref="BcrdtHub"/> with the demo's access policy, which the WebSocket
+/// endpoint applies too - a link that asks for read-only access (<c>?access=read</c>) gets it. An application
+/// decides from the signed-in user (<c>Context.User</c>) instead; either way the relay enforces the grant.
+/// </summary>
+public sealed class LiveHub : BcrdtHub
+{
+    /// <summary>What a request may do with a live document, read from its address.</summary>
+    public static BcrdtDocumentAccess AccessOf(HttpContext? context) =>
+        context is not null && string.Equals(context.Request.Query["access"], "read", StringComparison.Ordinal)
+            ? BcrdtDocumentAccess.ReadOnly
+            : BcrdtDocumentAccess.ReadWrite;
+
+    protected override ValueTask<BcrdtDocumentAccess> AuthorizeAccessAsync(string documentId) =>
+        ValueTask.FromResult(AccessOf(Context.GetHttpContext()));
+}

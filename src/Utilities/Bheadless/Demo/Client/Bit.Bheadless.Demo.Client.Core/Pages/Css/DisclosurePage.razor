@@ -1,0 +1,448 @@
+﻿@page "/disclosure"
+
+<PageTitle>Disclosure — bit Bheadless</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Disclosure</h1>
+        <p>A single show/hide region toggled by a button — the simplest collapsible primitive.</p>
+        <SectionSwitcher Slug="disclosure" />
+    </header>
+
+    <DemoBlock Title="Basic Disclosure"
+               Code="@_basicCode"
+               Css="@_disclosureCss">
+        <Description>
+            Renders a button and a panel. Clicking the button toggles the panel.
+            <code>aria-expanded</code>, <code>aria-controls</code>, and <code>aria-labelledby</code>
+            are wired automatically.
+        </Description>
+        <LiveContent>
+            <BitBhDisclosure class="disclosure">
+                <BitBhDisclosureButton class="disclosure-button">
+                    Show details
+                </BitBhDisclosureButton>
+                <BitBhDisclosurePanel class="disclosure-panel">
+                    <div class="disclosure-body">
+                        Disclosure is the simpler sibling of Accordion: one trigger, one panel,
+                        zero coordination across siblings.
+                    </div>
+                </BitBhDisclosurePanel>
+            </BitBhDisclosure>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Default Open"
+               Code="@_defaultOpenCode"
+               Css="@_defaultOpenCss">
+        <Description>
+            Set <code>DefaultOpen="true"</code> to render the panel open initially (uncontrolled).
+        </Description>
+        <LiveContent>
+            <BitBhDisclosure DefaultOpen="true" class="disclosure">
+                <BitBhDisclosureButton class="disclosure-button">
+                    Already open
+                </BitBhDisclosureButton>
+                <BitBhDisclosurePanel class="disclosure-panel">
+                    <div class="disclosure-body">
+                        I'm open by default. Click the button to close me.
+                    </div>
+                </BitBhDisclosurePanel>
+            </BitBhDisclosure>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Render Context (rotating chevron + Close)"
+               Code="@_renderContextCode"
+               Css="@_chevronCss">
+        <Description>
+            <code>BitBhDisclosure</code>, <code>BitBhDisclosureButton</code>, and <code>BitBhDisclosurePanel</code>
+            all expose a <code>BitBhDisclosureRenderContext</code> via <code>Context="d"</code>. Use it
+            to drive UI from the open state and to call <code>d.Close()</code> from anywhere inside.
+        </Description>
+        <LiveContent>
+            <BitBhDisclosure class="disclosure">
+                <BitBhDisclosureButton class="disclosure-button">
+                    <Template Context="d">
+                        <span>What's inside?</span>
+                        <span class="disclosure-chevron @(d.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhDisclosureButton>
+                <BitBhDisclosurePanel class="disclosure-panel">
+                    <Template Context="d">
+                        <div class="disclosure-body">
+                            <p>You can close me from inside the panel:</p>
+                            <button class="btn" @onclick="d.Close">Close panel</button>
+                        </div>
+                    </Template>
+                </BitBhDisclosurePanel>
+            </BitBhDisclosure>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Disabled"
+               Code="@_disabledCode"
+               Css="@_disabledCss">
+        <Description>
+            Set <code>Disabled="true"</code> on the root to block interaction. The button receives
+            both the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
+        </Description>
+        <LiveContent>
+            <BitBhDisclosure Disabled="true" class="disclosure">
+                <BitBhDisclosureButton class="disclosure-button">
+                    Can't toggle me
+                </BitBhDisclosureButton>
+                <BitBhDisclosurePanel class="disclosure-panel">
+                    <div class="disclosure-body">You'll never see this content.</div>
+                </BitBhDisclosurePanel>
+            </BitBhDisclosure>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Controlled"
+               Code="@_controlledCode"
+               Css="@_controlledCss">
+        <Description>
+            Drive the open state externally with <code>Open</code> + <code>OnOpenChange</code>.
+            The button below opens or closes the disclosure programmatically.
+        </Description>
+        <LiveContent>
+            <div style="display:flex; flex-direction:column; gap:1rem; width:100%">
+                <div class="demo-row">
+                    <BitBhButton OnClick="ToggleControlled" class="btn">
+                        Toggle from outside
+                    </BitBhButton>
+                    <span class="demo-output">Open: @controlledOpen.ToString().ToLowerInvariant()</span>
+                </div>
+
+                <BitBhDisclosure Open="controlledOpen"
+                             OnOpenChange="v => controlledOpen = v"
+                             class="disclosure">
+                    <BitBhDisclosureButton class="disclosure-button">
+                        Internal trigger
+                    </BitBhDisclosureButton>
+                    <BitBhDisclosurePanel class="disclosure-panel">
+                        <div class="disclosure-body">
+                            Either trigger updates the same state — fully controlled.
+                        </div>
+                    </BitBhDisclosurePanel>
+                </BitBhDisclosure>
+            </div>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool controlledOpen;
+
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhDisclosure class="disclosure">
+    <BitBhDisclosureButton class="disclosure-button">
+        Show details
+    </BitBhDisclosureButton>
+    <BitBhDisclosurePanel class="disclosure-panel">
+        <div class="disclosure-body">
+            Disclosure is the simpler sibling of Accordion: one trigger, one panel,
+            zero coordination across siblings.
+        </div>
+    </BitBhDisclosurePanel>
+</BitBhDisclosure>
+""";
+
+    private const string _defaultOpenCode = """
+<BitBhDisclosure DefaultOpen="true" class="disclosure">
+    <BitBhDisclosureButton class="disclosure-button">
+        Already open
+    </BitBhDisclosureButton>
+    <BitBhDisclosurePanel class="disclosure-panel">
+        <div class="disclosure-body">
+            I'm open by default. Click the button to close me.
+        </div>
+    </BitBhDisclosurePanel>
+</BitBhDisclosure>
+""";
+
+    private const string _renderContextCode = """
+<BitBhDisclosure class="disclosure">
+    <BitBhDisclosureButton class="disclosure-button">
+        <Template Context="d">
+            <span>What's inside?</span>
+            <span class="disclosure-chevron @(d.IsOpen ? "open" : "")">▾</span>
+        </Template>
+    </BitBhDisclosureButton>
+    <BitBhDisclosurePanel class="disclosure-panel">
+        <Template Context="d">
+            <div class="disclosure-body">
+                <p>You can close me from inside the panel:</p>
+                <button class="btn" @onclick="d.Close">Close panel</button>
+            </div>
+        </Template>
+    </BitBhDisclosurePanel>
+</BitBhDisclosure>
+""";
+
+    private const string _disabledCode = """
+<BitBhDisclosure Disabled="true" class="disclosure">
+    <BitBhDisclosureButton class="disclosure-button">Can't toggle me</BitBhDisclosureButton>
+    <BitBhDisclosurePanel class="disclosure-panel">
+        <div class="disclosure-body">You'll never see this content.</div>
+    </BitBhDisclosurePanel>
+</BitBhDisclosure>
+""";
+
+    private const string _controlledCode = """
+<div style="display:flex; flex-direction:column; gap:1rem; width:100%">
+    <div class="demo-row">
+        <BitBhButton OnClick="ToggleControlled" class="btn">
+            Toggle from outside
+        </BitBhButton>
+        <span class="demo-output">Open: @controlledOpen.ToString().ToLowerInvariant()</span>
+    </div>
+
+    <BitBhDisclosure Open="controlledOpen"
+                 OnOpenChange="v => controlledOpen = v"
+                 class="disclosure">
+        <BitBhDisclosureButton class="disclosure-button">
+            Internal trigger
+        </BitBhDisclosureButton>
+        <BitBhDisclosurePanel class="disclosure-panel">
+            <div class="disclosure-body">
+                Either trigger updates the same state — fully controlled.
+            </div>
+        </BitBhDisclosurePanel>
+    </BitBhDisclosure>
+</div>
+
+@code {
+    private bool controlledOpen;
+
+    private void ToggleControlled() => controlledOpen = !controlledOpen;
+}
+""";
+
+    private const string _disclosureCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.disclosure {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.disclosure-button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.disclosure-button:hover                { background: #f4f4f5; }
+.disclosure-button:focus-visible        { outline: 2px solid #2563eb; outline-offset: -2px; }
+.disclosure-button[data-state="open"]   { background: #f4f4f5; }
+.disclosure-button[data-disabled]       { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.disclosure-body {
+    padding: 0.875rem 1.125rem 1rem;
+    color: #71717a;
+    border-top: 1px solid #e4e4e7;
+}
+""";
+
+    private const string _chevronCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.disclosure {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.disclosure-button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.disclosure-button:hover                { background: #f4f4f5; }
+.disclosure-button:focus-visible        { outline: 2px solid #2563eb; outline-offset: -2px; }
+.disclosure-button[data-state="open"]   { background: #f4f4f5; }
+.disclosure-button[data-disabled]       { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.disclosure-body {
+    padding: 0.875rem 1.125rem 1rem;
+    color: #71717a;
+    border-top: 1px solid #e4e4e7;
+}
+
+/* Rotating chevron driven by BitBhDisclosureRenderContext.IsOpen */
+.disclosure-chevron      { transition: transform 200ms ease; color: #71717a; }
+.disclosure-chevron.open { transform: rotate(180deg); }
+
+/* "Close panel" button rendered inside the panel */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+""";
+
+    private const string _defaultOpenCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.disclosure {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.disclosure-button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.disclosure-button:hover                { background: #f4f4f5; }
+.disclosure-button:focus-visible        { outline: 2px solid #2563eb; outline-offset: -2px; }
+.disclosure-button[data-state="open"]   { background: #f4f4f5; }
+.disclosure-button[data-disabled]       { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.disclosure-body {
+    padding: 0.875rem 1.125rem 1rem;
+    color: #71717a;
+    border-top: 1px solid #e4e4e7;
+}
+""";
+
+    private const string _disabledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.disclosure {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.disclosure-button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.disclosure-button:hover                { background: #f4f4f5; }
+.disclosure-button:focus-visible        { outline: 2px solid #2563eb; outline-offset: -2px; }
+.disclosure-button[data-state="open"]   { background: #f4f4f5; }
+.disclosure-button[data-disabled]       { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.disclosure-body {
+    padding: 0.875rem 1.125rem 1rem;
+    color: #71717a;
+    border-top: 1px solid #e4e4e7;
+}
+
+/* The root <BitBhDisclosure> element also receives data-disabled — useful for
+   dimming the entire region. */
+.disclosure[data-disabled] {
+    background: #fafafa;
+}
+""";
+
+    private const string _controlledCss = """
+/* All styles are consumer-authored — the library ships zero CSS */
+.disclosure {
+    width: 100%;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.disclosure-button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.disclosure-button:hover                { background: #f4f4f5; }
+.disclosure-button:focus-visible        { outline: 2px solid #2563eb; outline-offset: -2px; }
+.disclosure-button[data-state="open"]   { background: #f4f4f5; }
+.disclosure-button[data-disabled]       { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.disclosure-body {
+    padding: 0.875rem 1.125rem 1rem;
+    color: #71717a;
+    border-top: 1px solid #e4e4e7;
+}
+
+/* External trigger row + state readout */
+.demo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.demo-output {
+    font-size: 0.875rem;
+    color: #71717a;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid #e4e4e7;
+    border-radius: 0.5rem;
+    background: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn:hover { background: #f4f4f5; }
+""";
+}

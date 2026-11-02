@@ -33,4 +33,8 @@ public sealed class BormStepBuilder
     /// <summary>Shows the step only while the value at <paramref name="field"/> satisfies the comparison.</summary>
     public BormStepBuilder VisibleWhen(string field, BormConditionOperator op, object? value = null)
         => VisibleWhen(new BormFieldCondition(field, op, value));
+
+    /// <summary>Shows the step only while an expression holds — <c>{AccountKind} = 'business' and {Employees} &gt; 50</c>.</summary>
+    /// <exception cref="BormExpressionException">The text is not a valid expression.</exception>
+    public BormStepBuilder VisibleWhen(string expression) => VisibleWhen(new BormExpressionCondition(expression));
 }

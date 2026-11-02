@@ -15,8 +15,10 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
     <p>
-        The panel below scrolls. Steps four and five sit outside the visible area, which exercises
-        scroll-into-view and the observers that keep the popover glued to a moving target.
+        Set the options, then run a five-step tour over the targets in the panel. The panel scrolls: steps four and five
+        sit outside its visible area, which exercises scroll-into-view and the observers that keep the popover glued to
+        a moving target - scroll the panel while a step is up and the card follows. Every option here can be set
+        globally, per tour or per step; the tour below sets them on the tour.
     </p>
 
     <div class="bb-demo">
@@ -52,8 +54,18 @@
             </label>
 
             <label class="bb-field">
+                Spotlight radius
+                <input type="number" min="0" max="40" step="2" @bind="_spotlightRadius" />
+            </label>
+
+            <label class="bb-field">
                 Popover offset
                 <input type="number" min="0" max="60" step="2" @bind="_offset" />
+            </label>
+
+            <label class="bb-field">
+                Overlay opacity
+                <input type="number" min="0" max="1" step="0.05" @bind="_overlayOpacity" />
             </label>
 
             <label class="bb-field">
@@ -65,9 +77,30 @@
                     }
                 </select>
             </label>
+
+            <label class="bb-field">
+                Scroll
+                <select @bind="_scroll">
+                    @foreach (var value in Enum.GetValues<BonboardingScrollMode>())
+                    {
+                        <option value="@value">@value</option>
+                    }
+                </select>
+            </label>
+
+            <label class="bb-check">
+                <input type="checkbox" @bind="_showOverlay" />
+                Dim the page (ShowOverlay)
+            </label>
+
+            <label class="bb-check">
+                <input type="checkbox" @bind="_closeOnOverlayClick" />
+                Close on a click outside (CloseOnOverlayClick)
+            </label>
         </div>
 
-        <div class="playground">
+        @* A scroll container with nothing focusable inside: focusable itself, so the keyboard can scroll it. *@
+        <div class="playground" tabindex="0" role="region" aria-label="Placement playground: scroll to move the targets">
             <div class="playground-inner">
                 @foreach (var target in Targets)
                 {
@@ -83,7 +116,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What the options do</h3>
 
-    <div class="bb-scroll">
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Placement and spotlight options">
         <table class="bb-table">
             <thead>
                 <tr><th>Option</th><th>Effect</th></tr>
@@ -91,11 +124,29 @@
             <tbody>
                 <tr>
                     <td class="bb-table-key"><code>Placement</code></td>
-                    <td>The side and alignment to try first. <code>Auto</code> picks the side with the most free space.</td>
+                    <td>
+                        The side and alignment to try first. <code>Auto</code> (the default) picks the side with the most free
+                        space, and <code>Center</code> ignores the target and centres the card. <code>Left</code> and
+                        <code>Right</code> are physical sides; <code>InlineStart</code> and <code>InlineEnd</code> (with their
+                        <code>Top</code> and <code>Bottom</code> alignments) are logical ones that swap in a right-to-left page,
+                        and <code>Start</code> and <code>End</code> alignments mirror there too.
+                    </td>
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>PlacementFallbacks</code></td>
                     <td>An explicit order to try when the preferred placement does not fit. Left unset, the engine derives one.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Offset</code></td>
+                    <td>The gap between the spotlight and the popover, in pixels. Default <code>12</code>.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>ViewportPadding</code>, <code>ArrowSize</code></td>
+                    <td>
+                        How close the popover may come to the edge of the visible screen (default <code>16</code>) and how big its
+                        arrow is (default <code>10</code>). The arrow is clamped to stay within both the target and the popover's
+                        straight edge, and hidden when the two no longer overlap.
+                    </td>
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>SpotlightShape</code></td>
@@ -103,30 +154,95 @@
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>SpotlightPadding</code></td>
-                    <td>Breathing room around the target. It also grows the rectangle the popover is positioned against.</td>
+                    <td>
+                        Breathing room around the target (default <code>8</code>). It also grows the rectangle the popover is
+                        positioned against, so the gap you see is <code>SpotlightPadding + Offset</code>.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>SpotlightRadius</code></td>
+                    <td>The corner radius of a <code>Rounded</code> spotlight (default <code>10</code>); <code>Circle</code> and <code>Rectangle</code> ignore it.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>ShowOverlay</code>, <code>OverlayOpacity</code></td>
+                    <td>
+                        Whether the page around the target is dimmed, and how much (a fraction, default <code>0.55</code>).
+                        Turn the overlay off to highlight without dimming: the ring around the target remains.
+                        <code>ShowSpotlight = false</code> dims without any cut-out.
+                    </td>
                 </tr>
                 <tr>
                     <td class="bb-table-key"><code>Interaction</code></td>
                     <td>
-                        <code>Blocked</code> swallows every click outside the popover, <code>TargetOnly</code> makes the
-                        spotlight hole click-through, and <code>Free</code> leaves the page entirely usable.
+                        <code>Blocked</code> (the default) swallows every click outside the popover and makes the card a modal
+                        dialog; <code>TargetOnly</code> makes the spotlight hole click-through, so only the highlighted control
+                        can be used; <code>Free</code> leaves the page entirely usable. Try <code>TargetOnly</code> and click a
+                        target, then try clicking the dimmed page.
                     </td>
                 </tr>
                 <tr>
-                    <td class="bb-table-key"><code>Scroll</code></td>
-                    <td>How an off-screen target is brought into view, including doing nothing at all.</td>
+                    <td class="bb-table-key"><code>CloseOnOverlayClick</code>, <code>CloseOnEscape</code></td>
+                    <td>
+                        Whether a click on the dimmed page ends the tour (default <code>false</code>; there is nothing to click
+                        on a <code>Free</code> step) and whether Escape does (default <code>true</code> - keep it on unless the
+                        tour is genuinely mandatory).
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Scroll</code>, <code>ScrollPadding</code></td>
+                    <td>
+                        How an off-screen target is brought into view - <code>Smooth</code> (the default), <code>Instant</code>,
+                        <code>Auto</code>, or <code>None</code> to leave it where it is - and the margin kept around it (default
+                        <code>24</code>). Every scrolling ancestor is scrolled, and a target already comfortably in view is left alone.
+                    </td>
                 </tr>
             </tbody>
         </table>
     </div>
+
+    <p>
+        Very large and very small targets need nothing special: a target larger than the screen is placed against
+        whichever part of it is visible, and a target partly scrolled out of its pane - try it with the panel above - is
+        spotlit only where the pane shows it. The popover is also kept clear of an on-screen keyboard, pinch zoom and a
+        phone's notch.
+    </p>
+
+    <pre class="bb-code" tabindex="0">@OptionsExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Several elements, one spotlight</h3>
+    <p>
+        <code>AdditionalTargets</code> folds more elements into the same spotlight, and the popover is positioned against
+        their bounding union - the right shape for a group of controls that belong together.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="SpotlightGroupAsync">Spotlight the editing controls</button>
+        </div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" data-bonboarding-anchor="editor-save">Save</button>
+            <button type="button" class="btn btn-secondary" data-bonboarding-anchor="editor-undo">Undo</button>
+            <button type="button" class="btn btn-secondary" data-bonboarding-anchor="editor-redo">Redo</button>
+        </div>
+    </div>
+
+    <pre class="bb-code" tabindex="0">@GroupExample</pre>
 </section>
 
 @code {
     private BonboardingPlacement _placement = BonboardingPlacement.Auto;
     private BonboardingSpotlightShape _shape = BonboardingSpotlightShape.Rounded;
     private BonboardingInteractionMode _interaction = BonboardingInteractionMode.Blocked;
+    private BonboardingScrollMode _scroll = BonboardingScrollMode.Smooth;
     private double _spotlightPadding = 8;
+    private double _spotlightRadius = 10;
     private double _offset = 12;
+    private double _overlayOpacity = 0.55;
+    private bool _showOverlay = true;
+    private bool _closeOnOverlayClick;
 
     private sealed record TargetSpot(string Anchor, string Label, string Left, string Top);
 
@@ -149,8 +265,13 @@
             Placement = _placement,
             SpotlightShape = _shape,
             SpotlightPadding = _spotlightPadding,
+            SpotlightRadius = _spotlightRadius,
             Offset = _offset,
+            ShowOverlay = _showOverlay,
+            OverlayOpacity = Math.Clamp(_overlayOpacity, 0, 1),
             Interaction = _interaction,
+            CloseOnOverlayClick = _closeOnOverlayClick,
+            Scroll = _scroll,
             Progress = BonboardingProgressStyle.Text,
         };
 
@@ -168,4 +289,51 @@
 
         return BonboardingService.StartAsync(tour);
     }
+
+    private Task SpotlightGroupAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "placement-group",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "editing",
+                Target = BonboardingStepTarget.Anchor("editor-save"),
+                AdditionalTargets = [BonboardingStepTarget.Anchor("editor-undo"), BonboardingStepTarget.Anchor("editor-redo")],
+                Title = "Editing controls",
+                Description = "One spotlight around three buttons, with the card placed against all of them at once.",
+                Placement = BonboardingPlacement.Bottom,
+                DoneLabel = "Got it",
+            },
+        },
+    });
+
+    private const string OptionsExample = """
+        new BonboardingTourDefinition   // or a single step, or AddBitBonboardingServices(options => ...) for every tour
+        {
+            Placement = BonboardingPlacement.Bottom,
+            PlacementFallbacks = [BonboardingPlacement.Top, BonboardingPlacement.InlineEnd],
+            Offset = 12,
+            SpotlightShape = BonboardingSpotlightShape.Rounded,
+            SpotlightPadding = 8,
+            SpotlightRadius = 10,
+            ShowOverlay = true,
+            OverlayOpacity = 0.55,
+            Interaction = BonboardingInteractionMode.Blocked,
+            CloseOnOverlayClick = false,
+            CloseOnEscape = true,
+            Scroll = BonboardingScrollMode.Smooth,
+            ScrollPadding = 24,
+        }
+        """;
+
+    private const string GroupExample = """
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Anchor("editor-save"),
+            AdditionalTargets = [BonboardingStepTarget.Anchor("editor-undo"), BonboardingStepTarget.Anchor("editor-redo")],
+            Title = "Editing controls",
+        }
+        """;
 }

@@ -1,0 +1,93 @@
+﻿@page "/e2e/aiartifactpartview"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiArtifactPartView E2E</PageTitle>
+
+<h1>BitAiArtifactPartView</h1>
+
+<E2ESection Id="resolved" Title="Resolved">
+    <BitAiArtifactPartView Id="apv-resolved" Part="_notesPart" Conversation="_conversation" />
+</E2ESection>
+
+<E2ESection Id="missing" Title="Missing">
+    <BitAiArtifactPartView Id="apv-missing" Part="_missingPart" Conversation="_conversation" />
+    <BitAiArtifactPartView Id="apv-no-conversation" Part="_notesPart" />
+</E2ESection>
+
+<E2ESection Id="version" Title="The version of the turn">
+    <BitAiArtifactPartView Id="apv-first" Part="_firstTurnPart" Conversation="_conversation" />
+    <BitAiArtifactPartView Id="apv-second" Part="_secondTurnPart" Conversation="_conversation" />
+</E2ESection>
+
+<E2ESection Id="turns" Title="Turns of a session">
+    <button id="btn-turn" @onclick="SendAsync">Send</button>
+    <p>Answers: <span id="apv-answers">@_session.Conversation.Messages.Count(m => m.Role.IsAssistant && m.Status == BitAiMessageStatus.Complete)</span></p>
+    @{ var turn = 0; }
+    @foreach (var message in _session.Conversation.Messages.Where(m => m.Role.IsAssistant))
+    {
+        turn++;
+        <div class="apv-turn" id="apv-turn-@turn">
+            <p class="apv-turn-text">@message.GetText()</p>
+            @foreach (var part in message.PartsOf<BitAiArtifactPart>())
+            {
+                <BitAiArtifactPartView Id="@($"apv-turn-{turn}-part")" Part="part" Conversation="_session.Conversation" />
+            }
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="styles" Title="Classes and styles">
+    <BitAiArtifactPartView Id="apv-styled" Part="_notesPart" Conversation="_conversation"
+                           Styles="@(new() { Root = "margin: 3px", ArtifactView = new() { Panel = "border-color: rgb(1, 2, 3)", Title = "color: rgb(4, 5, 6)" } })"
+                           Classes="@(new() { Root = "apv-root-class", ArtifactView = new() { Header = "apv-header-class" } })" />
+    <BitAiArtifactPartView Id="apv-styled-missing" Part="_missingPart" Conversation="_conversation"
+                           Styles="@(new() { Placeholder = new() { Root = "background-color: rgb(7, 8, 9)" } })"
+                           Classes="@(new() { Placeholder = new() { Root = "apv-placeholder-class" } })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiArtifactPartView Id="apv-rtl" Dir="BitDir.Rtl" Part="_notesPart" Conversation="_conversation" />
+    <BitAiArtifactPartView Id="apv-rtl-missing" Dir="BitDir.Rtl" Part="_missingPart" Conversation="_conversation" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    // A conversation holding two artifacts: meeting notes in one version, and a file revised once.
+    private readonly BitAiConversation _conversation = new();
+    private readonly BitAiArtifactPart _notesPart = new("art-notes");
+    private readonly BitAiArtifactPart _missingPart = new("art-deleted");
+    private readonly BitAiArtifactPart _firstTurnPart = new("art-file") { ArtifactVersion = 1 };
+    private readonly BitAiArtifactPart _secondTurnPart = new("art-file") { ArtifactVersion = 2 };
+
+    // The artifact script of the E2E transport: a README on the first turn, its revision on the next.
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Artifact));
+    private BitAiRenderScheduler? _scheduler;
+
+    protected override void OnInitialized()
+    {
+        var notes = _conversation.GetOrAddArtifact("art-notes", BitAiArtifactKind.Document, "Meeting notes");
+        notes.SetContent("## Meeting notes\n\n- Ship the AI components.\n");
+        notes.Complete("First draft");
+
+        var file = _conversation.GetOrAddArtifact("art-file", BitAiArtifactKind.Code, "config.json");
+        file.Language = "json";
+        file.SetContent("{ \"retries\": 1 }");
+        file.Complete("First draft");
+        file.BeginRevision();
+        file.SetContent("{ \"retries\": 3 }");
+        file.Complete("More retries");
+
+        _scheduler = new(() => InvokeAsync(StateHasChanged));
+        _session.StateChanged += _scheduler.Request;
+    }
+
+    private Task SendAsync() => _session.SubmitAsync("Write the README");
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_scheduler is not null) await _scheduler.DisposeAsync();
+
+        await _session.DisposeAsync();
+    }
+}

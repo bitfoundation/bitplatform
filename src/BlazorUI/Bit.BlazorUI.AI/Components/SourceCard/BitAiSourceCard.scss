@@ -1,0 +1,84 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every source
+// card, one set on an ancestor the cards inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiSourceCard-gap               room between the number and the body     (default: spacing(1))
+//   --bit-AiSourceCard-index-color       marker number                            (default: $clr-fg-sec)
+//   --bit-AiSourceCard-title-color       title                                    (default: the text color of the card)
+//   --bit-AiSourceCard-title-font-size   size of the title                        (default: $tg-fs-sm)
+//   --bit-AiSourceCard-site-color        site line                                (default: $clr-fg-sec)
+//   --bit-AiSourceCard-site-font-size    size of the site line and the number     (default: $tg-fs-xs)
+//   --bit-AiSourceCard-favicon-size      size of the favicon                      (default: $siz-icon-sm)
+//
+// The surface, the corner, the shadow, the hover and the focus ring are the BitCard's, which the --bit-Card-*
+// variables restyle.
+
+.bit-aisrc {
+    display: flex;
+    // A grid or a flex row lays the cards out; without it a long title would stretch its column past the others.
+    min-width: 0;
+}
+
+.bit-aisrc-ctn {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: flex-start;
+    gap: var(--bit-AiSourceCard-gap, #{spacing(1)});
+}
+
+.bit-aisrc-idx {
+    flex: none;
+    padding-block-start: 0.1em;
+    font-size: var(--bit-AiSourceCard-site-font-size, #{$tg-fs-xs});
+    font-weight: $tg-fw-semibold;
+    font-variant-numeric: tabular-nums;
+    color: var(--bit-AiSourceCard-index-color, #{$clr-fg-sec});
+}
+
+.bit-aisrc-bdy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: spacing(0.25);
+}
+
+.bit-aisrc-ttl,
+.bit-aisrc-sit {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-aisrc-ttl {
+    font-size: var(--bit-AiSourceCard-title-font-size, #{$tg-fs-sm});
+    font-weight: $tg-fw-medium;
+    color: var(--bit-AiSourceCard-title-color, inherit);
+}
+
+.bit-aisrc-sit {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.5);
+    font-size: var(--bit-AiSourceCard-site-font-size, #{$tg-fs-xs});
+    color: var(--bit-AiSourceCard-site-color, #{$clr-fg-sec});
+
+    > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.bit-aisrc-fav {
+    flex: none;
+    width: var(--bit-AiSourceCard-favicon-size, #{$siz-icon-sm});
+    height: var(--bit-AiSourceCard-favicon-size, #{$siz-icon-sm});
+    border-radius: $shp-radius-xs;
+}
+
+// A disabled card keeps the disabled text color the BitCard takes on every part, so it never reads as an enabled one.
+.bit-aisrc.bit-dis .bit-aisrc-idx,
+.bit-aisrc.bit-dis .bit-aisrc-ttl,
+.bit-aisrc.bit-dis .bit-aisrc-sit {
+    color: inherit;
+}

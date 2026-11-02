@@ -102,6 +102,25 @@ public sealed class GesturesTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task Focus_FromAMouseClick_PlaysNoOverlay_KeyboardFocusDoes()
+    {
+        await ExpectEventAsync("armed:focus");
+
+        // A click focuses the button too, but the browser draws no focus ring for it - and the focus gesture is
+        // keyboard focus (motion.dev).
+        await Page.Locator("#focus").ClickAsync();
+        await Page.WaitForTimeoutAsync(300);
+        CollectionAssert.DoesNotContain(await LoggedAsync(), "focus-start", "a mouse click raised the focus gesture");
+        Assert.AreEqual(1, (await ProbeAsync("#focus")).ScaleX, 0.01, "a mouse click played the focus overlay");
+
+        // Tab away and back: keyboard focus.
+        await Page.Keyboard.PressAsync("Tab");
+        await Page.Keyboard.PressAsync("Shift+Tab");
+        await ExpectEventAsync("focus-start");
+        await WaitForStateAsync("#focus", "s => Math.abs(s.scaleX - 1.2) < 0.01");
+    }
+
+    [TestMethod]
     public async Task Pan_ReportsStartMovesAndEnd_WithTheOffset_WithoutMovingTheElement()
     {
         await ExpectEventAsync("armed:pan");

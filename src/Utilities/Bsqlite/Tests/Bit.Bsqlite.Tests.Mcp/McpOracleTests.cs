@@ -9,6 +9,7 @@ using Bit.Bsqlite.Testing;
 using Bit.Bsqlite.Storage.Opfs;
 using System.Text.RegularExpressions;
 using Bit.Bsqlite.Demo.Server.Dtos;
+using Bit.Bsqlite.Storage.FileSystem;
 using Bit.Bsqlite.Storage.InMemory;
 using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Demo.Server.Services;
@@ -32,6 +33,7 @@ public partial class McpOracleTests
         new BsqliteIndexedDbStorageProvider(),
         new BsqliteCacheStorageProvider(),
         new BsqliteInMemoryStorageProvider(),
+        new BsqliteFileSystemStorageProvider(),
     ];
 
     [TestMethod]

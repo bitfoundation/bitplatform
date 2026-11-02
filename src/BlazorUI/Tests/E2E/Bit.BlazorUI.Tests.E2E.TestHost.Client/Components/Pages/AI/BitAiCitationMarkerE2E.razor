@@ -1,0 +1,158 @@
+﻿@page "/e2e/aicitationmarker"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiCitationMarker E2E</PageTitle>
+
+<h1>BitAiCitationMarker</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <p id="cmk-sentence" style="font-size: 20px">
+        <span id="cmk-claim">Interactive Server keeps the state on the server</span><BitAiCitationMarker Id="cmk-basic" Citation="_first" />.
+    </p>
+    <p>
+        A claim without a quote<BitAiCitationMarker Id="cmk-noquote" Citation="_second" />, one with a long one<BitAiCitationMarker Id="cmk-long" Citation="_long" />,
+        one without a number<BitAiCitationMarker Id="cmk-unnumbered" Citation="_unnumbered" />, one named by the page<BitAiCitationMarker Id="cmk-aria" Citation="_first" AriaLabel="Source one, the render modes guide" />
+        and one whose preview the page wrote<BitAiCitationMarker Id="cmk-title" Citation="_first" title="A preview of the page's own" />.
+    </p>
+    <h2 id="cmk-heading" style="font-size: 40px">A heading<BitAiCitationMarker Id="cmk-in-heading" Citation="_first" /></h2>
+</E2ESection>
+
+<E2ESection Id="activate" Title="Activation">
+    <p>Activated: <span id="cmk-activated">@_activated</span> (<span id="cmk-activations">@_activations</span>)</p>
+    <p>
+        <button id="cmk-before">Before the markers</button>
+        State lives on the server<BitAiCitationMarker Id="cmk-act-1" Citation="_first" OnActivate="Activate" />
+        and goes with the circuit<BitAiCitationMarker Id="cmk-act-2" Citation="_second" OnActivate="Activate" />,
+        unless the marker is off<BitAiCitationMarker Id="cmk-act-disabled" Citation="_first" OnActivate="Activate" Disabled="true" />.
+        <button id="cmk-after">After the markers</button>
+    </p>
+</E2ESection>
+
+@* The [n] of the Markdown resolve to markers of the citations of those numbers; the one that matches none stays text.
+   Activating a marker reveals its source: the page moves the focus to the card of that source. *@
+<E2ESection Id="markdown" Title="In Markdown">
+    <p>Activated: <span id="cmk-md-activated">@_mdActivated</span></p>
+    <div id="cmk-md">
+        <BitAiStreamingMarkdown Text="@MarkdownText" Citations="_mdCitations" OnCitationClick="RevealSource" />
+    </div>
+    <div id="cmk-md-src-1" tabindex="-1" @ref="_mdSource1">
+        <BitAiSourceCard Source="_renderModes" Number="1" />
+    </div>
+    <div id="cmk-md-src-2" tabindex="-1" @ref="_mdSource2">
+        <BitAiSourceCard Source="_circuits" Number="2" />
+    </div>
+</E2ESection>
+
+@* The citations script: two sentences anchored to a citation each, which the text part of the message marks at the end
+   of the span each supports, and the source list of the message under the same numbers. *@
+<E2ESection Id="message" Title="Anchored in a message">
+    <button id="btn-message-ask" @onclick="Ask">Ask</button>
+    <p>Activated: <span id="cmk-msg-activated">@_messageActivated</span></p>
+    <div id="cmk-msg">
+        @if (_session?.Conversation.Messages.LastOrDefault(m => m.Role == BitAiRole.Assistant) is { } answer)
+        {
+            <BitAiChatMessage Message="answer" Conversation="_session.Conversation" OnCitationClick="c => _messageActivated = c.Source.Title" />
+        }
+    </div>
+</E2ESection>
+
+@* A class of the page painting the marker: the hover moves a variable, never the paint, so the class keeps winning. *@
+<style>
+    .e2e-cmk-paint { background-color: rgb(9, 9, 9); color: rgb(250, 250, 250); }
+</style>
+
+<E2ESection Id="vars" Title="Public variables">
+    <p id="cmk-vars-host"
+       style="--bit-AiCitationMarker-color: rgb(1, 2, 3);
+              --bit-AiCitationMarker-background: rgb(4, 5, 6);
+              --bit-AiCitationMarker-hover-color: rgb(7, 8, 9);
+              --bit-AiCitationMarker-hover-background: rgb(10, 11, 12);
+              --bit-AiCitationMarker-radius: 6px;">
+        Restyled by its container<BitAiCitationMarker Id="cmk-vars" Citation="_first" />.
+    </p>
+    <p>
+        Painted by a class<BitAiCitationMarker Id="cmk-class" Citation="_first" Class="e2e-cmk-paint" />,
+        styled through Styles<BitAiCitationMarker Id="cmk-styles" Citation="_first" Styles="@(new() { Root = "border-radius: 0px" })" Classes="@(new() { Root = "e2e-cmk-root" })" />.
+    </p>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <p dir="rtl" style="font-size: 20px">
+        <span id="cmk-rtl-claim">حالت تعاملی سرور وضعیت را نگه می‌دارد</span><BitAiCitationMarker Id="cmk-rtl-inherited" Citation="_first" />
+    </p>
+    <p style="font-size: 20px">
+        <BitAiCitationMarker Id="cmk-rtl" Dir="BitDir.Rtl" Citation="_first" />
+    </p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string MarkdownText = "Interactive Server keeps the state on the server [1]. The state goes with the circuit [2]. Nobody wrote this down [3].";
+
+    private static readonly BitAiCitationSource _renderModes = new("src-1", "Blazor render modes")
+    {
+        Kind = BitAiSourceKind.Web,
+        Url = "https://learn.microsoft.com/aspnet/core/blazor/components/render-modes",
+        SiteName = "Microsoft Learn",
+    };
+
+    private static readonly BitAiCitationSource _circuits = new("src-2", "SignalR circuit lifetime")
+    {
+        Kind = BitAiSourceKind.Document,
+        Url = "https://learn.microsoft.com/aspnet/core/blazor/fundamentals/signalr",
+        SiteName = "Microsoft Learn",
+    };
+
+    /// <summary>The quote of the long citation, longer than the 220 characters its preview keeps.</summary>
+    public static readonly string LongQuote = string.Join(" ", Enumerable.Repeat("render", 50));
+
+    private static readonly BitAiCitation _first = new("cit-1", _renderModes) { Number = 1, Quote = "Interactive Server renders on the server." };
+    private static readonly BitAiCitation _second = new("cit-2", _circuits) { Number = 2 };
+    private static readonly BitAiCitation _long = new("cit-3", _renderModes) { Number = 3, Quote = LongQuote };
+    private static readonly BitAiCitation _unnumbered = new("cit-4", _circuits);
+
+    private static readonly IReadOnlyList<BitAiCitation> _mdCitations = [_first, _second];
+
+    private string _activated = "-";
+    private int _activations;
+    private string _mdActivated = "-";
+    private string _messageActivated = "-";
+
+    private ElementReference _mdSource1;
+    private ElementReference _mdSource2;
+
+    private BitAiChatSession? _session;
+
+    private void Activate(BitAiCitation citation)
+    {
+        _activated = $"{citation.CitationId}:{citation.Number}";
+        _activations++;
+    }
+
+    private async Task RevealSource(BitAiCitation citation)
+    {
+        _mdActivated = $"{citation.Number} {citation.Source.Title}";
+        await (citation.Number == 1 ? _mdSource1 : _mdSource2).FocusAsync();
+    }
+
+    private async Task Ask()
+    {
+        if (_session is not null) await _session.DisposeAsync();
+
+        _session = new BitAiChatSession(E2EAiTransport.For(E2EAiScripts.Citations));
+        _session.StateChanged += OnSessionChanged;
+        _messageActivated = "-";
+        _ = _session.SubmitAsync("How does Interactive Server keep state?");
+    }
+
+    private void OnSessionChanged() => InvokeAsync(StateHasChanged);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_session is null) return;
+
+        _session.StateChanged -= OnSessionChanged;
+        await _session.DisposeAsync();
+    }
+}

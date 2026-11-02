@@ -200,6 +200,22 @@ public sealed class BcrdtItem : BcrdtAbstractStruct
             return;
         }
 
+        if (Content is BcrdtContentType && parent.NestingDepth >= BcrdtAbstractType.MaxNestingDepth)
+        {
+            // Being created by this replica: refused before this block is placed. Blocks already placed
+            // earlier in the same transaction - the outer levels of a detached tree being inserted - stay.
+            if (!transaction.IntegratingRemoteBlocks)
+            {
+                throw new InvalidOperationException(
+                    $"Collaborative types cannot be nested more than {BcrdtAbstractType.MaxNestingDepth} levels deep.");
+            }
+
+            // From a peer: dropped like content whose container is gone. Everything inside it then
+            // finds no container either and goes the same way, on every replica alike.
+            new BcrdtGarbageCollected(Id, Length).Integrate(transaction, 0);
+            return;
+        }
+
         bool neighboursMoved =
             (Left is null && (Right is null || Right.Left is not null)) ||
             (Left is not null && Left.Right != Right);
@@ -476,23 +492,9 @@ public sealed class BcrdtItem : BcrdtAbstractStruct
     /// <inheritdoc/>
     public override bool TryMergeWith(BcrdtAbstractStruct right)
     {
-        if (right is not BcrdtItem other) return false;
+        if (!CanMergeWith(right)) return false;
 
-        // Two items merge only when the result would be indistinguishable from them: same author,
-        // adjacent clocks, physically adjacent, same deleted state, same right anchor, and neither
-        // referenced by an undo stack. Anything less and a later split could not reproduce them.
-        if (Right != other ||
-            Id.Client != other.Id.Client ||
-            Id.Clock + Length != other.Id.Clock ||
-            Deleted != other.Deleted ||
-            Redone is not null || other.Redone is not null ||
-            !Nullable.Equals(other.Origin, LastId) ||
-            !Nullable.Equals(RightOrigin, other.RightOrigin) ||
-            Content.GetType() != other.Content.GetType())
-        {
-            return false;
-        }
-
+        var other = (BcrdtItem)right;
         if (!Content.TryMergeWith(other.Content)) return false;
 
         (Parent as BcrdtAbstractType)?.OnItemsMerged(other, this);
@@ -503,6 +505,23 @@ public sealed class BcrdtItem : BcrdtAbstractStruct
         Length += other.Length;
         return true;
     }
+
+    /// <inheritdoc/>
+    internal override bool CanMergeWith(BcrdtAbstractStruct right) =>
+        // Two items merge only when the result would be indistinguishable from them: same author,
+        // adjacent clocks, physically adjacent, same deleted state, same right anchor, and neither
+        // referenced by an undo stack. Anything less and a later split could not reproduce them.
+        right is BcrdtItem other &&
+        Right == other &&
+        FitsOneBlock(Length, other.Length) &&
+        Id.Client == other.Id.Client &&
+        Id.Clock + Length == other.Id.Clock &&
+        Deleted == other.Deleted &&
+        Redone is null && other.Redone is null &&
+        Nullable.Equals(other.Origin, LastId) &&
+        Nullable.Equals(RightOrigin, other.RightOrigin) &&
+        Content.GetType() == other.Content.GetType() &&
+        Content.CanMergeWith(other.Content);
 
     /// <inheritdoc/>
     public override void Write(ref BcrdtBufferWriter writer, int offset)

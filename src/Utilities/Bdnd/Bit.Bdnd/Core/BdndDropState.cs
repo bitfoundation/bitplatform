@@ -24,4 +24,12 @@ public sealed class BdndDropState<TItem>
 
     /// <summary>The item currently being dragged (if assignable to <typeparamref name="TItem"/>).</summary>
     public TItem? Item { get; init; }
+
+    /// <summary>
+    /// The edge of the target the drag is closest to while it is over the target - one of the
+    /// <see cref="BdndDropTarget{TItem}.Edges"/> the target lists - or null (no edges, or not over it). What a drop
+    /// indicator is drawn from: a line above the item for <see cref="BdndEdge.Top"/>, below it for
+    /// <see cref="BdndEdge.Bottom"/>.
+    /// </summary>
+    public BdndEdge? ClosestEdge { get; init; }
 }

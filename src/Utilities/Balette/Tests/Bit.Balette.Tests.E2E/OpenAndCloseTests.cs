@@ -92,6 +92,23 @@ public sealed class OpenAndCloseTests : BaletteTest
     }
 
     [TestMethod]
+    public async Task A_page_button_that_opened_it_gets_the_focus_back_even_where_a_click_does_not_focus_it()
+    {
+        // WebKit (Safari), and Firefox on macOS, focus the nearest focusable ancestor of a clicked button rather than the
+        // button - this site's <main tabindex="-1"> - so the palette has to know which control it was. Elsewhere the
+        // click focuses the button itself.
+        var page = await OpenAsync("/commands");
+        var button = page.GetByRole(AriaRole.Button, new() { Name = "Search \"counter\"" });
+
+        await button.ClickAsync();
+        await ExpectOpenAsync(page);
+        await page.Keyboard.PressAsync("Escape");
+
+        await ExpectClosedAsync(page);
+        await Assertions.Expect(button).ToBeFocusedAsync();
+    }
+
+    [TestMethod]
     public async Task A_click_on_the_backdrop_closes_it_and_a_click_inside_does_not()
     {
         var page = await OpenAsync("/");

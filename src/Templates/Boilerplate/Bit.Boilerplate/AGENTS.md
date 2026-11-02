@@ -5,7 +5,7 @@
 You will be working with the following key technologies:
 
 *   **C# 14.0**
-*   **ASP.NET Core 10.0**
+*   **ASP.NET Core 11.0**
 *   **Blazor**: Component-based web UI framework
 *   **.NET MAUI Blazor Hybrid**: Cross-platform app development
 *   **ASP.NET Core Identity**: Authentication and authorization
@@ -53,6 +53,7 @@ The solution is organized into the following projects. Understand their roles to
 *   **Boilerplate.Client.Web**: The Blazor WebAssembly (WASM) standalone project.
 *   **Boilerplate.Client.Maui**: The .NET MAUI Blazor Hybrid project for native mobile and desktop apps.
 *   **Boilerplate.Client.Windows**: The Windows Forms Blazor Hybrid project.
+*   **Boilerplate.Workbench**: A separate web app for designing pages before the app builds them: it runs them on sample data with the app's own components and theme, on device frames side by side, in every theme, language and data state, and makes the App Store, Google Play and Microsoft Store screenshots. It references Client.Core and is never deployed with the app. Its pages are designs, not app code: an approved one is rebuilt in the app following this file, never copied as it is.
 
 ## 3. Information Gathering & Codebase Investigation
 
@@ -81,12 +82,16 @@ Before implementing any changes, you **MUST** complete the following:
     *   `bit Bcrdt` (`https://bcrdt.bitplatform.dev/mcp`): real-time collaborative editing on a CRDT engine, with presence and offline sync.
     *   `bit Bdnd` (`https://bdnd.bitplatform.dev/mcp`): declarative drag and drop between any sources and drop targets.
     *   `bit Belemetry` (`https://belemetry.bitplatform.dev/mcp`): logs, traces, metrics and web vitals from both the browser and the .NET side, over OpenTelemetry.
+    *   `bit Bheadless` (`https://bheadless.bitplatform.dev/mcp`): accessible, unstyled UI primitives - menus, listboxes, comboboxes, dialogs, tabs and more - with the keyboard interaction, focus management and ARIA built in, for a custom design system.
     *   `bit Bink` (`https://bink.bitplatform.dev/mcp`): drawing and ink: signatures, sketches, whiteboards and annotations.
+    *   `bit BlazeDb` (`https://blazedb.bitplatform.dev/mcp`): a memory-first embedded database for Blazor, without SQL: rows live in memory as the objects you declare, every commit is logged to OPFS, IndexedDB or files, and EF Core and LINQ run on top.
     *   `bit Blex` (`https://blex.bitplatform.dev/mcp`): reactive state management with persistence, undo/redo and DevTools.
     *   `bit Blow` (`https://blow.bitplatform.dev/mcp`): node-based editors and diagrams, a counterpart to React Flow.
     *   `bit Bonboarding` (`https://bonboarding.bitplatform.dev/mcp`): onboarding, product tours, spotlights and contextual hints.
     *   `bit Borm` (`https://borm.bitplatform.dev/mcp`): schema-driven forms from a C# type, a fluent builder or JSON Schema.
     *   `bit Bortable` (`https://bortable.bitplatform.dev/mcp`): sortable lists that reorder, move and clone items by dragging.
+    *   `bit Bsqlite` (`https://bsqlite.bitplatform.dev/mcp`): SQLite in the browser, running in a worker, with EF Core on top: databases stored in OPFS, IndexedDB or Cache Storage, and live queries.
+*   Whichever package a task brings in - one of these or a third-party one - prefer one the app can load lazily, and load it lazily where it can: a package only some pages or actions use becomes a `BlazorWebAssemblyLazyLoad` item in `src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj`, and the code that needs it loads it first with `LazyAssemblyLoader`, the way `ImageEditorService` loads `Bit.Bmage`. A visit then downloads only what it uses. A package stays eager when a type the app reads at startup derives from or implements one of its types, and an AOT build loads everything up front.
 *   For the third-party libraries this project builds on, you **MUST** use the `AskGitHubRepository` tool, which answers from a library's own source code. Its description names the repository to ask for each of them.
 *   For .NET, ASP.NET Core and Azure documentation, use `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search`.
 
@@ -104,10 +109,20 @@ Before implementing any changes, you **MUST** complete the following:
 <!--#else-->
 -   **Expose the running app to remote devices**: `localhost` is unreachable from other devices, so create a dev tunnel with the `devtunnel` CLI (`devtunnel host -p 5030 --allow-anonymous`) and use the printed public `*.devtunnels.ms` URL instead of a `localhost` URL.
 <!--#endif-->
+<!--#if (aspire == true && cloudflare == true)-->
+-   **Report the running app**: Once `aspire start` reports `serverweb` healthy, check that its URLs respond, then give the user a short list with one line on what each is for: the local `serverweb` URL, the public `cloudflare-tunnel-web` URL (for phones and teammates; it might change on every restart), the Aspire dashboard login URL, and the `smtp` (Mailpit) inbox URL where the app's outgoing emails land.
+<!--#elif (aspire == true)-->
+-   **Report the running app**: Once `aspire start` reports `serverweb` healthy, check that its URLs respond, then give the user a short list with one line on what each is for: the local `serverweb` URL, the Aspire dashboard login URL, and the `smtp` (Mailpit) inbox URL where the app's outgoing emails land.
+<!--#endif-->
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
 -   **Run tests**: Run `dotnet test` in the src/Tests directory.
--   **Add new migrations**: Run `dnx dotnet-ef@10.0.13 -- migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
+<!--#if (offlineDb == true)-->
+-   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project, with `--offline` for the offline database.
+<!--#else-->
+-   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project.
+<!--#endif-->
 -   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in the src/Shared directory.
+-   **Use the bit CLI for the rest**: besides `bit setup` for a fresh clone, `bit keys` creates the project's keys and certificates, `bit pipeline` fills in the secrets of the GitHub Actions workflows, `bit migration` adds EF Core migrations and `bit run` starts the native apps; `bit --help` lists them all.
 
 ## 5. Coding Conventions & Best Practices
 
@@ -140,7 +155,7 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 -   If you have access to persistent **memory**, at the start of the collaboration you **MUST** ask for the **role** of the person writing the prompts (e.g. Developer, Product Owner, QA, Designer, etc.), store it in memory, and from then on tailor the tone, depth, terminology, and focus of every conversation to that role.
 -   **Write product decisions into `specs/`.** When a conversation settles what the product should do - even one where no code is asked for - write it into that feature's spec, and what is still undecided under its open questions (`specs/README.md` describes the files). A decision left only in a chat is lost to the next session and to every other tool. Your own proposals are not decisions, so a conversation that has settled nothing yet has nothing to write.
 -   **Never wait unbounded.** Cap every long-running command with `timeout <seconds> <command>` and report the exit code (`124` = hit the cap), and pair the wait with a stall check - a process at ~0% CPU is hung, not slow. Re-arm in ~5 minute slices, inspecting the state between them.
--   **Report platform bugs upstream.** Whenever something looks like a defect in the section 3 bit platform libraries or in the `bit-bp` template, tell the user, and tell them that if they agree you will write the report and submit it yourself. Once they approve, depending on whether you have GitHub access, either open an issue on <https://github.com/bitfoundation/bitplatform> or submit it through the feedback tool the bit platform MCP server exposes.
+-   **Report platform bugs upstream.** Whenever something looks like a defect in the section 3 bit platform libraries or in the `bit-bp` template, tell the user, and tell them that if they agree you will write the report and submit it yourself. Once they approve, depending on whether you have GitHub access, either open an issue on <https://github.com/bitfoundation/bitplatform> or submit it through the feedback tool the bit platform MCP server exposes. Whether or not they agree, write the workaround into `specs/workarounds.md`: what goes wrong, where the workaround lives, the report, and how to tell it can go.
 
 ## 7. Available Agent Skills
 
@@ -152,8 +167,14 @@ This project ships reusable [Agent Skills](https://agentskills.io), canonical in
 | `scaffold-entity` | Scaffolding a CRUD entity whose fields, rules and screens are already settled, usually as a task of an `ai-dlc` plan. A request for a new feature or section starts with `ai-dlc` | `.github/agents/scaffold-entity.agent.md` |
 | `localize-strings` | Explicitly asked to move user-facing text into `AppStrings.resx`, or the changes are about to be pushed | `.github/agents/localize-strings.agent.md` |
 | `bitify-ui` | Replacing raw HTML/CSS in a Blazor page with Bit.BlazorUI components | `.github/agents/bitify-ui.agent.md` |
+| `workbench` | Designing or reviewing a page's UI and UX on sample data before the app builds it, comparing it across devices, themes, languages and data states, answering review comments left on it in the Workbench, or making store screenshots, usually as part of an `ai-dlc` design phase | `.github/agents/workbench.agent.md` |
 | `review` | Reviewing a diff or PR against this project's conventions | `.github/agents/review.agent.md` |
 | `rebrand` | Re-skinning the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood) | `.github/agents/rebrand.agent.md` |
-| `upgrade` | Upgrading the project to a newer bit Boilerplate version | `.github/agents/upgrade.agent.md` |
+| `port` | Bringing an existing app or system's functionality into this project - from its code in any language, the running app, or only its screens and manuals. It runs the `ai-dlc` lifecycle itself | `.github/agents/port.agent.md` |
+| `run-app` | Starting the app and using it to see a change working - signing in, driving the web, Windows and Android apps, reading the console and the server's logs, stopping it. The other skills use it wherever they check the running app | `.github/agents/run-app.agent.md` |
+| `write-tests` | Writing or running the tests of a change: which kind each change needs, how this project's test server, test data and UI tests work, and reading a failure. The other skills use it wherever they test | `.github/agents/write-tests.agent.md` |
+| `troubleshoot` | A problem reported in the Test or Production environment: an error, wrong data, a failing background job, something a user saw in the deployed app. It hands the fix to `ai-dlc` | `.github/agents/troubleshoot.agent.md` |
+| `deploy` | Deploying or publishing the app, or setting up its Test or Production environment: the server, the runner, the external services and their secrets, the domain | `.github/agents/deploy.agent.md` |
+| `template-diff` | Moving the project to a newer version of its project template or to another .NET version, or adding one of the template's optional features this project was created without, or removing one it has | `.github/agents/template-diff.agent.md` |
 
 Tools that discover Agent Skills natively (GitHub Copilot in VS Code / Visual Studio / github.com / CLI, Cursor, Codex, Junie, Windsurf, Antigravity, Gemini CLI) can invoke each one as a `/<skill-name>` slash command, and Visual Studio lists the canonical files themselves in its agent picker as `@<name>`. The files under `.agents/skills/`, `.claude/skills/` and `.gemini/commands/` are thin bridges that delegate to the canonical file - never edit them for content, only the canonical file above.

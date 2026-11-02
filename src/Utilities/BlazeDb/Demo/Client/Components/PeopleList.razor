@@ -1,0 +1,37 @@
+﻿@* The rows of a people table as the pages that open one show them: the count, then the newest few. *@
+
+<div class="bd-panel-pad">
+    <p class="bd-foot bb-mono">people.Count → @People.Count</p>
+    @if (People.Count == 0)
+    {
+        <div class="bb-empty">No rows.</div>
+    }
+    else
+    {
+        <div class="bd-rows bd-rows-framed">
+            @foreach (var person in People.Scan().OrderByDescending(p => p.Id).Take(Max))
+            {
+                <div class="bd-row">
+                    <div class="bd-row-main">
+                        <div class="bd-row-title">@person.Name</div>
+                        <div class="bd-row-meta">
+                            <span class="bb-mono">#@person.Id</span>
+                            <span>@person.City</span>
+                            <span>@person.Role</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (People.Count > Max)
+        {
+            <p class="bd-foot">…and @(People.Count - Max) more.</p>
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public BlazeDbTable<int, Person> People { get; set; } = null!;
+
+    [Parameter] public int Max { get; set; } = 6;
+}

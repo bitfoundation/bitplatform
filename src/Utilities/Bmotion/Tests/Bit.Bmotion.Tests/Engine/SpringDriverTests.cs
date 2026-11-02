@@ -7,6 +7,23 @@ public class SpringDriverTests
     // ── Settling ──────────────────────────────────────────────────────────────
 
     [TestMethod]
+    [DataRow(100.0, 5_000.0)]
+    [DataRow(1_000_000.0, 10_000_000.0)]
+    public void AVeryHeavilyDampedSpring_StaysFinite_AndNeverOvershoots(double stiffness, double damping)
+    {
+        // The sub-step floor (1 ms) let explicit damping this heavy flip and amplify the velocity every step, until
+        // the values were non-finite and the spring could never come to rest.
+        var values = new List<double>();
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = stiffness, Damping = damping }, values.Add);
+        for (double ts = 0; ts < 2000; ts += 1000.0 / 60) driver.Tick(ts);
+
+        Assert.IsTrue(values.All(double.IsFinite), "a heavily damped spring produced non-finite values");
+        Assert.IsTrue(values.All(v => v is >= 0 and <= 100 + 1e-9), "an overdamped spring overshot");
+        for (int i = 1; i < values.Count; i++)
+            Assert.IsTrue(values[i] >= values[i - 1] - 1e-9, $"frame {i}: an overdamped spring went backwards");
+    }
+
+    [TestMethod]
     public void Tick_EventuallySettlesAtTarget()
     {
         double lastValue = double.NaN;
@@ -106,6 +123,37 @@ public class SpringDriverTests
 
         Assert.AreEqual(0.0, values[0], 1e-5);
         Assert.AreEqual(0.0, values[1], 1e-5);
+    }
+
+    [TestMethod]
+    [DataRow(0.75, 8.0)]
+    [DataRow(15.0, 0.0)]
+    public void Tick_NegativeDelay_PlaysTheSkippedTimeFrameForFrame(double seconds, double damping)
+    {
+        var played = new List<double>();
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 170, Damping = damping }, played.Add);
+        for (double t = 5_000 - seconds * 1000; t < 5_000; t += 1000.0 / 60) driver.Tick(t);
+        driver.Tick(5_000);
+
+        var sought = new List<double>();
+        var seeking = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 170, Damping = damping, Delay = -seconds }, sought.Add);
+        seeking.Tick(5_000);
+
+        CollectionAssert.AreEqual(played, sought);
+    }
+
+    [TestMethod]
+    [DataRow(-1e7)]
+    [DataRow(-1e300)]
+    [DataRow(double.MinValue)]
+    public void Tick_AHugeNegativeDelay_CatchesUpABoundedNumberOfFrames(double delay)
+    {
+        int applied = 0;
+        var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig { Stiffness = 100, Damping = 0, Delay = delay }, _ => applied++);
+
+        Assert.IsFalse(driver.Tick(0));
+        Assert.IsTrue(applied >= (int)(BmotionFastForward.MaxMs / BmotionFastForward.FrameMs), $"only {applied} frames were applied");
+        Assert.IsTrue(applied <= BmotionFastForward.MaxFrames + 1, $"{applied} frames were applied");
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────────

@@ -15,8 +15,18 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Waiting for an element that does not exist yet</h3>
     <p>
-        Start the tour, then reveal the panel. The second step is waiting for
-        <code>data-bonboarding-anchor="late-panel"</code> and picks it up the moment it appears.
+        Start the tour and press Next. The second step is waiting for <code>data-bonboarding-anchor="late-panel"</code>,
+        which is not on the page yet, so a small card with a spinner and a close button says so - and the page stays
+        usable, because the user is often the one who has to make the element appear. Reveal the panel (now, or after
+        two seconds) and the step picks it up the moment it renders.
+    </p>
+    <p>
+        While it waits, the session's <code>Status</code> is <code>Waiting</code> and its <code>WaitReason</code> is
+        <code>Target</code>; once the target is on screen, the step's own interaction mode and focus trap apply. An element
+        that exists but is not rendered - <code>display: none</code>, a closed <code>&lt;details&gt;</code>, no size - counts
+        as missing too, and a target that disappears while its step is on screen is waited for again (the
+        <a href="dynamic#replaced-targets">re-render sample</a> below shows it). Waiting uses a mutation observer, never a
+        polling timer, so a step that waits for ten seconds costs nothing while the page is idle.
     </p>
 
     <div class="bb-demo">
@@ -40,13 +50,53 @@
             </div>
         }
     </div>
+
+    <pre class="bb-code" tabindex="0">@WaitExample</pre>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Missing-target strategies</h3>
     <p>
-        Each button runs a two-step tour whose first step points at an element that is not on this page.
-        Only the strategy differs.
+        Each button runs a two-step tour whose first step points at an element that is not on this page. Only the
+        strategy differs, and the second step shows that the tour carried on.
+    </p>
+
+    <div class="bb-scroll" tabindex="0" role="region" aria-label="Missing-target strategies">
+        <table class="bb-table">
+            <thead>
+                <tr><th>MissingTarget</th><th>What happens</th><th>Choose it when</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key"><code>Wait</code> (default)</td>
+                    <td>
+                        Watch the DOM until the element appears, then show the step. After <code>WaitTimeout</code> (default ten
+                        seconds; three here) apply <code>WaitTimeoutBehavior</code> (default <code>Skip</code>).
+                    </td>
+                    <td>The element is on its way: a table behind a query, a panel behind an animation.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Skip</code></td>
+                    <td>Move on silently, in the direction the user was going.</td>
+                    <td>The step is nice to have - though a <code>When</code> condition says "not for this user" more clearly.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Center</code></td>
+                    <td>Show the step as a centred card, with no spotlight.</td>
+                    <td>The text stands on its own and pointing at the element is a bonus.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key"><code>Fail</code></td>
+                    <td>End the tour with <code>BonboardingTourEndReason.Failed</code> and a <code>BonboardingException</code>.</td>
+                    <td>A missing element means something is genuinely broken, and you want to know.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        Every miss is also published as a <code>TargetMissing</code> event (and a skip as <code>StepSkipped</code>), so a
+        step that is quietly skipped in production shows up in your analytics.
     </p>
 
     <div class="bb-demo">
@@ -65,14 +115,17 @@
             </div>
         }
     </div>
+
+    <pre class="bb-code" tabindex="0">@MissingExample</pre>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Let the user do it</h3>
     <p>
-        A step with an <code>BonboardingAdvanceTrigger</code> waits for a real interaction. The overlay becomes
-        click-through around the target automatically, so the user can actually press the button they are
-        being told about.
+        A step with an <code>AdvanceOn</code> trigger waits for a real interaction rather than a Next button.
+        <code>BonboardingAdvanceTrigger.TargetClick</code> listens for a click on the step's own target, and declaring a
+        trigger switches the step to <code>Interaction = TargetOnly</code>: the spotlight hole becomes click-through, so
+        the user can actually press the button they are being told about, and nothing else.
     </p>
 
     <div class="bb-demo">
@@ -84,13 +137,136 @@
             </button>
         </div>
     </div>
+
+    <pre class="bb-code" tabindex="0">@ClickExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Any event, on any element</h3>
+    <p>
+        A trigger can listen for any DOM event (<code>EventName</code>), on any element (<code>Selector</code>; the step's
+        target when unset), and can filter delegated events by where they came from (<code>MatchSelector</code>).
+        <code>DelayMs</code> lets the interface settle before the tour moves on. The first step below advances on the
+        select's <code>change</code> event; the second listens on the whole group of buttons but only moves on for
+        <strong>Large</strong> - try another size first.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartEventTourAsync">Run the event tour</button>
+        </div>
+        <div class="bb-toolbar">
+            <label class="bb-field">
+                Plan
+                <select data-bonboarding-anchor="plan-picker" @bind="_plan">
+                    <option value="free">Free</option>
+                    <option value="team">Team</option>
+                    <option value="enterprise">Enterprise</option>
+                </select>
+            </label>
+            <div class="bb-segmented" role="group" aria-label="Size" data-bonboarding-anchor="size-picker">
+                @foreach (var size in Sizes)
+                {
+                    <button type="button"
+                            data-size="@size.ToLowerInvariant()"
+                            aria-pressed="@(size == _size ? "true" : "false")"
+                            @onclick="() => _size = size">@size</button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <pre class="bb-code" tabindex="0">@EventExample</pre>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Advancing on something the application does</h3>
+    <p>
+        Some tasks are not one DOM event: a project counts as created when the server says so, not when a button is
+        pressed. The code that knows calls <code>SignalAsync</code>, and the step waiting for that signal
+        (<code>AdvanceOnSignal</code>) moves on - with no reference to the tour or the session. The button below takes
+        a second and a half to "save"; the step moves on when the save completes, not when you click.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartSignalTourAsync">Run the signal tour</button>
+        </div>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" data-bonboarding-anchor="create-project" aria-busy="@(_creating ? "true" : "false")" @onclick="CreateProjectAsync">
+                @(_creating ? "Saving…" : "Create a project")
+            </button>
+            <span class="bb-muted" role="status">
+                @_projects @(_projects == 1 ? "project" : "projects")@(_signalHeard is { } heard ? $" - SignalAsync returned {heard.ToString().ToLowerInvariant()}" : null)
+            </span>
+        </div>
+    </div>
+
+    <p>
+        A signal is not remembered: one raised while no step waits for it does nothing, so <code>SignalAsync</code> returns
+        whether a tour moved on. Use <code>When</code> to skip a step whose task the user had already done before reaching it.
+        <code>CanAdvance</code> still decides, for signals as for every other way forward.
+    </p>
+
+    <pre class="bb-code" tabindex="0">@SignalExample</pre>
+</section>
+
+<section class="bb-card" id="replaced-targets">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Targets that are replaced, move or go away</h3>
+    <p>
+        Blazor often throws a DOM node away and renders an identical one, and layouts move things with nothing resized.
+        Once a step is showing, observers keep the popover glued to its target; when the target leaves the DOM, the step's
+        anchor or selector is looked up again and the step silently re-binds to the new element. Only when nothing
+        matches is the target reported lost, and then the step's <code>MissingTarget</code> strategy applies, exactly as
+        it did when the step started.
+    </p>
+    <p>
+        Run the tour and use the buttons in the spotlight. <strong>Replace this element</strong> renders a brand-new element
+        on the other side, and the step follows it. <strong>Remove it for two seconds</strong> leaves nothing to re-bind
+        to, so the step waits - with the page usable - and comes back when the element does.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar">
+            <span class="bb-demo-label">Live</span>
+            <button type="button" class="btn btn-primary" @onclick="StartRerenderTourAsync">Run the re-render tour</button>
+        </div>
+        <div class="rerender-lane">
+            @if (!_removed)
+            {
+                <div @key="_generation" class="demo-panel rerender-card @(_generation % 2 == 1 ? "rerender-card-end" : null)" data-bonboarding-anchor="rerender-card">
+                    <p class="demo-panel-title">Element #@(_generation + 1)</p>
+                    <p>A new DOM node every time it is replaced.</p>
+                    <div class="bb-toolbar">
+                        <button type="button" class="btn btn-secondary" @onclick="() => _generation++">Replace this element</button>
+                        <button type="button" class="btn btn-secondary" @onclick="RemoveForAWhileAsync">Remove it for two seconds</button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p class="bb-muted" role="status">The element is gone; it comes back in two seconds.</p>
+            }
+        </div>
+    </div>
+
+    <p>
+        This is why anchors and selectors are preferred over a captured <code>ElementReference</code>, which names one
+        node and cannot be found again - and why a row of a virtualized list, recycled as the user scrolls, still works.
+        If your own code moves a target in a way the browser does not report - animating a CSS transform, say - call
+        <code>session.RefreshAsync()</code> for a fresh measurement.
+    </p>
 </section>
 
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Targets chosen at run time</h3>
     <p>
         <code>BonboardingStepTarget.Dynamic</code> defers the decision until the step activates, so a tour can point
-        at whichever row, tab or card is relevant right now.
+        at whichever row, tab or card is relevant right now. The resolver gets the step's context - the session's
+        <code>State</code>, the tour and the application's services - and can be async. Here the selected row is handed
+        to the tour in <code>BonboardingStartOptions.State</code>, and the resolver reads it back.
     </p>
 
     <div class="bb-demo">
@@ -109,18 +285,53 @@
         </div>
     </div>
 
-    <pre class="bb-code">@DynamicExample</pre>
+    <pre class="bb-code" tabindex="0">@DynamicExample</pre>
 </section>
 
 @code {
     private static readonly int[] Rows = [1, 2, 3, 4];
+    private static readonly string[] Sizes = ["Small", "Medium", "Large"];
 
     private bool _revealed;
     private int _clicks;
     private int _selectedRow = 2;
     private string? _failure;
+    private string _plan = "free";
+    private string _size = "Small";
+    private bool _creating;
+    private int _projects;
+    private bool? _signalHeard;
+    private int _generation;
+    private bool _removed;
 
     private void Reveal() => _revealed = !_revealed;
+
+    // The "server" answers a moment after the click; only then does the application raise the signal.
+    private async Task CreateProjectAsync()
+    {
+        if (_creating) return;
+
+        _creating = true;
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        _projects++;
+        _creating = false;
+        _signalHeard = await BonboardingService.SignalAsync("project-created");
+    }
+
+    private async Task RemoveForAWhileAsync()
+    {
+        _removed = true;
+        StateHasChanged();
+
+        await Task.Delay(2000);
+
+        _removed = false;
+        _generation++;
+        StateHasChanged();
+    }
 
     private async Task RevealSlowly()
     {
@@ -233,6 +444,91 @@
         },
     });
 
+    private Task StartEventTourAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "event-triggers",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "plan",
+                Target = BonboardingStepTarget.Anchor("plan-picker"),
+                Title = "Pick a plan",
+                Description = "This step listens for the select's change event, then waits 400 ms so you see your choice land.",
+                AdvanceOn = new BonboardingAdvanceTrigger { EventName = "change", DelayMs = 400 },
+                ShowNext = false,
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "size",
+                Target = BonboardingStepTarget.Anchor("size-picker"),
+                Title = "Now choose Large",
+                Description = "The listener sits on the whole group, and MatchSelector lets only a click on Large through. Try another size first.",
+                AdvanceOn = new BonboardingAdvanceTrigger { EventName = "click", MatchSelector = "[data-size='large']" },
+                ShowNext = false,
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "done",
+                Title = "Two kinds of trigger",
+                Description = "A change event on one element, and a filtered click delegated to its container.",
+            },
+        },
+    });
+
+    private Task StartSignalTourAsync()
+    {
+        _signalHeard = null;
+
+        return BonboardingService.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "signal",
+            Persist = false,
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "create",
+                    Target = BonboardingStepTarget.Anchor("create-project"),
+                    Title = "Create a project",
+                    Description = "Press the button. This step moves on when the application says the project exists, not when you click.",
+                    AdvanceOnSignal = "project-created",
+                    ShowNext = false,
+                    // Only AdvanceOn implies TargetOnly; a signal step that asks for a click says so itself.
+                    Interaction = BonboardingInteractionMode.TargetOnly,
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "created",
+                    Target = BonboardingStepTarget.Anchor("create-project"),
+                    Title = "It exists now",
+                    Description = "The save finished, the application raised \"project-created\", and the waiting step moved on.",
+                },
+            },
+        });
+    }
+
+    private Task StartRerenderTourAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "rerender",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "follow",
+                Target = BonboardingStepTarget.Anchor("rerender-card"),
+                Title = "Replace it, or take it away",
+                Description = "Use the buttons in the spotlight. A new element is re-bound to; a missing one is waited for.",
+                // The buttons inside the spotlight stay usable.
+                Interaction = BonboardingInteractionMode.TargetOnly,
+                Placement = BonboardingPlacement.Bottom,
+                DoneLabel = "Done",
+            },
+        },
+    });
+
     private Task StartDynamicTourAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
     {
         Id = "dynamic-target",
@@ -242,20 +538,109 @@
             new BonboardingStepDefinition
             {
                 Id = "selected",
-                // Resolved when the step activates, so it follows the current selection.
-                Target = BonboardingStepTarget.Dynamic(_ => BonboardingStepTarget.Anchor($"row-{_selectedRow}")),
+                // Resolved when the step activates, so it follows the selection the tour was started with.
+                Target = BonboardingStepTarget.Dynamic(context => BonboardingStepTarget.Anchor($"row-{context.State["selectedRow"]}")),
                 Title = $"Row {_selectedRow}",
                 Description = "The target was chosen when this step activated, not when the tour was written.",
             },
         },
-    });
+    }, new BonboardingStartOptions { State = new Dictionary<string, object?> { ["selectedRow"] = _selectedRow } });
 
-    private const string DynamicExample = """
+    private const string WaitExample = """
         new BonboardingStepDefinition
         {
-            Target = BonboardingStepTarget.Dynamic(context =>
-                BonboardingStepTarget.Anchor($"row-{context.State["selectedRow"]}")),
-            Title = "The row you picked",
+            Id = "late",
+            Target = BonboardingStepTarget.Anchor("late-panel"),
+            Title = "There it is",
+            MissingTarget = BonboardingMissingTargetBehavior.Wait,   // the default
+            WaitTimeout = TimeSpan.FromSeconds(30),                  // default ten seconds; TimeSpan.Zero waits for as long as it takes
         }
+
+        @* Replace the default waiting card with your own: *@
+        <BonboardingRoot>
+            <WaitingTemplate>Loading the next part of the page…</WaitingTemplate>
+        </BonboardingRoot>
+        """;
+
+    private const string MissingExample = """
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Css("#definitely-not-here"),
+            MissingTarget = BonboardingMissingTargetBehavior.Wait,       // or Skip, Center, Fail
+            WaitTimeout = TimeSpan.FromSeconds(3),
+            WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Skip, // what a wait that ran out does; Wait counts as Skip
+        }
+
+        // Fail ends the tour; OnEnded sees why.
+        OnEnded = args => args.Reason == BonboardingTourEndReason.Failed ? Report(args.Error) : ValueTask.CompletedTask,
+        """;
+
+    private const string ClickExample = """
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Anchor("do-it"),
+            Title = "Now click this button",
+            AdvanceOn = BonboardingAdvanceTrigger.TargetClick,   // a click on the step's own target
+            ShowNext = false,                                    // the click is the only way forward
+        }
+        """;
+
+    private const string EventExample = """
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Anchor("plan-picker"),
+            AdvanceOn = new BonboardingAdvanceTrigger { EventName = "change", DelayMs = 400 },
+            ShowNext = false,
+        },
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Anchor("size-picker"),
+            AdvanceOn = new BonboardingAdvanceTrigger
+            {
+                EventName = "click",
+                Selector = null,                         // listen on the step's target (the default)
+                MatchSelector = "[data-size='large']",   // only events that came from a matching element
+            },
+            ShowNext = false,
+        }
+        """;
+
+    private const string SignalExample = """
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Anchor("create-project"),
+            Title = "Create a project",
+            AdvanceOnSignal = "project-created",
+            ShowNext = false,
+            Interaction = BonboardingInteractionMode.TargetOnly,
+        }
+
+        // Wherever projects are created - no reference to the tour needed:
+        await _projects.CreateAsync(name);
+        var movedOn = await BonboardingService.SignalAsync("project-created");
+        """;
+
+    private const string DynamicExample = """
+        await BonboardingService.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "dynamic-target",
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    // Resolved when the step activates; returning None (or null) makes it a centred card.
+                    Target = BonboardingStepTarget.Dynamic(context =>
+                        BonboardingStepTarget.Anchor($"row-{context.State["selectedRow"]}")),
+                    Title = "The row you picked",
+                },
+            },
+        }, new BonboardingStartOptions { State = new Dictionary<string, object?> { ["selectedRow"] = selectedRow } });
+
+        // A resolver can be async, and reach anything in DI:
+        Target = BonboardingStepTarget.Dynamic(async context =>
+        {
+            var id = await context.Services.GetRequiredService<IProjects>().GetFirstIdAsync(context.CancellationToken);
+            return id is null ? BonboardingStepTarget.None : BonboardingStepTarget.Css($"[data-project='{id}']");
+        })
         """;
 }

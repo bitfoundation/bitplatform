@@ -18,7 +18,7 @@ nothing. These suites therefore assert on **what arrives at the receiver**.
 
 | Project | What it is |
 |---|---|
-| `Bit.Belemetry.Tests.Harness` | Razor class library: the harness pages (stable element ids, one `#status` element), the Belemetry configuration every host uses (`AddBelemetryHarness`) and `harness.js` (browser-side actions that also work under static SSR). net8.0 / net9.0 / net10.0. |
+| `Bit.Belemetry.Tests.Harness` | Razor class library: the harness pages (stable element ids, one `#status` element), the Belemetry configuration every host uses (`AddBelemetryHarness`) and `harness.js` (browser-side actions that also work under static SSR). net10.0 / net11.0. |
 | `Bit.Belemetry.Tests.Harness.Web` (+ `.Client`) | One Blazor Web App serving the harness in any render mode, picked with `--BelemetryHarness:Mode=`: `ssr`, `server`, `server-noprerender`, `wasm`, `wasm-noprerender`, `auto`, `auto-noprerender`. It is also the **capturing receiver** every harness host exports to. |
 | `Bit.Belemetry.Tests.Harness.Hybrid` | WinForms `BlazorWebView` host (same WebView core as MAUI), for the Relay transport. Windows only. |
 | `Bit.Belemetry.Tests.Hosting` | In-process HTTP tests (`WebApplicationFactory`) against the harness host in every mode and against the three hosting samples. All three target frameworks. |
@@ -96,7 +96,7 @@ Run a harness host by hand with one of its launch profiles (`ssr`, `server`, `se
 | Variable | Effect |
 |---|---|
 | `BELEMETRY_E2E_HOSTS` | Comma-separated subset of `ssr`, `server`, `wasm`, `auto`, `hybrid` to run; the other suites report Inconclusive. Defaults to all. |
-| `BELEMETRY_E2E_FRAMEWORK` | Target framework of the web harness host: `net10.0` (default), `net9.0`, `net8.0`. |
+| `BELEMETRY_E2E_FRAMEWORK` | Target framework of the web harness host: `net11.0` (default), `net10.0`. |
 | `BELEMETRY_E2E_CONFIGURATION` | Build configuration of the hosts; defaults to the test assembly's. |
 | `BELEMETRY_E2E_SKIP_BUILD=1` | Do not build the hosts before the run. |
 | `BELEMETRY_E2E_PUBLISHED_HOST` | Run a `dotnet publish` output of the web host instead of the build output. |

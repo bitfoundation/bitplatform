@@ -1,0 +1,156 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a message inherits down to every message under it:
+//   --bit-AiChatMessage-gap                   room between the parts of a message           (default: spacing(1))
+//   --bit-AiChatMessage-user-background       background of the bubble of a user message    (default: $clr-bg-sec)
+//   --bit-AiChatMessage-user-color            text of the bubble of a user message          (default: $clr-fg-pri)
+//   --bit-AiChatMessage-user-max-width        width the bubble stops growing at             (default: spacing(80), the full width on a phone)
+//   --bit-AiChatMessage-user-radius           corners of the bubble, less the one it speaks from (default: $shp-radius-lg)
+//   --bit-AiChatMessage-assistant-background  background of the body of an assistant message (default: transparent)
+//   --bit-AiChatMessage-assistant-color       text of the body of an assistant message      (default: $clr-fg-pri)
+//   --bit-AiChatMessage-body-gap              room between the parts of an assistant reply  (default: spacing(1.5))
+//   --bit-AiChatMessage-system-background     background of the pill of a system message    (default: $clr-bg-sec)
+//   --bit-AiChatMessage-system-color          text of the pill of a system message          (default: $clr-fg-sec)
+//   --bit-AiChatMessage-system-border-color   border of the pill of a system message        (default: $clr-brd-ter)
+
+.bit-aicms {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    gap: var(--bit-AiChatMessage-gap, #{spacing(1)});
+    font-family: $tg-font-family;
+    // Leaves room above a message that is scrolled to, so it does not land flush against the top of the transcript.
+    scroll-margin-top: spacing(3);
+}
+
+// A user message sits at the end of the line, and a system note in the middle of it.
+.bit-aicms-usr {
+    align-items: flex-end;
+}
+
+.bit-aicms-sys {
+    align-items: center;
+}
+
+// The entrance of a message that has just arrived. The duration is a motion token, so it collapses under a
+// reduced-motion preference and comes back under ForceAnimation with nothing written here for either. It fills
+// backwards only: an animation of the transform still in effect once it has run (forwards, or both) keeps the message
+// a containing block for what is fixed inside it, so a full-screen artifact panel would cover the message alone rather
+// than the page. Its last keyframe is what the message looks like anyway.
+@keyframes bit-aicms-ent {
+    from {
+        opacity: 0;
+        transform: translateY(spacing(0.75));
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.bit-aicms-ent {
+    animation-name: bit-aicms-ent;
+    animation-duration: $mot-duration-long;
+    animation-fill-mode: backwards;
+    animation-timing-function: $mot-easing-decelerate;
+}
+
+.bit-aicms-pil {
+    font-size: $tg-fs-sm;
+    padding: spacing(0.5) spacing(1.5);
+    border-radius: $shp-radius-full;
+    border: $shp-border-width $shp-border-style var(--bit-AiChatMessage-system-border-color, #{$clr-brd-ter});
+    color: var(--bit-AiChatMessage-system-color, #{$clr-fg-sec});
+    background-color: var(--bit-AiChatMessage-system-background, #{$clr-bg-sec});
+}
+
+.bit-aicms-att {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(1);
+    justify-content: flex-end;
+}
+
+// The text is shown as it was typed: its line breaks are kept, and a long word wraps rather than widening the bubble.
+// The corner the bubble speaks from - the one at the end of its last line - is drawn tighter than the others.
+.bit-aicms-bbl {
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    padding: spacing(1.5) spacing(2);
+    max-width: min(100%, var(--bit-AiChatMessage-user-max-width, #{spacing(80)}));
+    border-radius: var(--bit-AiChatMessage-user-radius, #{$shp-radius-lg});
+    border-end-end-radius: $shp-radius-sm;
+    color: var(--bit-AiChatMessage-user-color, #{$clr-fg-pri});
+    background-color: var(--bit-AiChatMessage-user-background, #{$clr-bg-sec});
+
+    @include xs {
+        max-width: min(100%, var(--bit-AiChatMessage-user-max-width, 100%));
+    }
+}
+
+.bit-aicms-bdy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--bit-AiChatMessage-body-gap, #{spacing(1.5)});
+    color: var(--bit-AiChatMessage-assistant-color, #{$clr-fg-pri});
+    background-color: var(--bit-AiChatMessage-assistant-background, transparent);
+}
+
+// The actions of a user message (copy and edit) are revealed while the message is under the pointer or holds the
+// focus, so the transcript reads without a row of buttons under every line - and always shown where there is no
+// pointer to hover with, or where a preference for more contrast asks for nothing to be faded out.
+.bit-aicms-act {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.5);
+    opacity: 0;
+    transition: opacity $mot-duration $mot-easing;
+}
+
+.bit-aicms:is(:hover, :focus-within) > .bit-aicms-act {
+    opacity: 1;
+}
+
+@media (hover: none), (prefers-contrast: more) {
+    .bit-aicms-act {
+        opacity: 1;
+    }
+}
+
+@include xs {
+    .bit-aicms-act {
+        opacity: 1;
+    }
+}
+
+.bit-aicms-edt {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: spacing(1);
+}
+
+.bit-aicms-eda {
+    display: flex;
+    gap: spacing(1);
+    justify-content: flex-end;
+}
+
+// The actions are the interactive part of a message, which a printout has no use for.
+@media print {
+    .bit-aicms-act {
+        display: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .bit-aicms-bbl,
+    .bit-aicms-pil {
+        border: $shp-border-width $shp-border-style CanvasText;
+    }
+}

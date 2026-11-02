@@ -27,13 +27,50 @@ public sealed class BlazeDbBufferWriter
 
     public void Reset() => _pos = 0;
 
+    /// <summary>Drops everything written after the first <paramref name="length"/> bytes.</summary>
+    internal void Truncate(int length)
+    {
+        if ((uint)length > (uint)_pos)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length));
+        }
+        _pos = length;
+    }
+
+    /// <summary>Overwrites four already-written bytes at <paramref name="position"/>.</summary>
+    internal void PatchFixed32(int position, uint value) =>
+        BinaryPrimitives.WriteUInt32LittleEndian(_buffer.AsSpan(position, Math.Max(0, Math.Min(4, _pos - position))), value);
+
+    /// <summary>Overwrites eight already-written bytes at <paramref name="position"/>.</summary>
+    internal void PatchFixed64(int position, ulong value) =>
+        BinaryPrimitives.WriteUInt64LittleEndian(_buffer.AsSpan(position, Math.Max(0, Math.Min(8, _pos - position))), value);
+
     private void Ensure(int count)
     {
-        if (_pos + count > _buffer.Length)
+        // Compared as a difference, so a buffer near the 2 GB limit cannot overflow the check.
+        if (count > _buffer.Length - _pos)
         {
-            var newSize = Math.Max(_buffer.Length * 2, _pos + count);
-            Array.Resize(ref _buffer, newSize);
+            Grow(count);
         }
+    }
+
+    /// <summary>
+    /// Doubles the buffer, or grows it to exactly what is needed when doubling is not enough. Sizes are
+    /// worked out in 64 bits: past 1 GB a doubling no longer fits an <see cref="int"/>, and past
+    /// <see cref="Array.MaxLength"/> nothing does, which is refused in so many words rather than left
+    /// to surface as a copy into a buffer that never grew.
+    /// </summary>
+    private void Grow(int count)
+    {
+        var required = (long)_pos + count;
+        if (count < 0 || required > Array.MaxLength)
+        {
+            throw new BlazeDbException(
+                $"A buffer cannot hold {required} bytes: the most a single .NET array can hold is {Array.MaxLength}. " +
+                "Split the data being written - a transaction, a snapshot or a stored file - into smaller parts.");
+        }
+        var doubled = Math.Min((long)_buffer.Length * 2, Array.MaxLength);
+        Array.Resize(ref _buffer, (int)Math.Max(doubled, required));
     }
 
     public void WriteByte(byte value)
@@ -139,6 +176,33 @@ public sealed class BlazeDbBufferWriter
     }
 
     public void WriteTimeSpan(TimeSpan value) => WriteFixed64((ulong)value.Ticks);
+
+    /// <summary>ZigZag varint of <see cref="DateOnly.DayNumber"/>.</summary>
+    public void WriteDateOnly(DateOnly value) => WriteVarInt(value.DayNumber);
+
+    /// <summary>ZigZag varint of <see cref="TimeOnly.Ticks"/>.</summary>
+    public void WriteTimeOnly(TimeOnly value) => WriteVarInt(value.Ticks);
+
+    /// <summary>Varint of the value's 16 IEEE 754 bits.</summary>
+    public void WriteHalf(Half value) => WriteVarUInt(BitConverter.HalfToUInt16Bits(value));
+
+    /// <summary>Length-delimited 16 bytes, little-endian two's complement.</summary>
+    public void WriteInt128(Int128 value)
+    {
+        WriteVarUInt(16);
+        Ensure(16);
+        BinaryPrimitives.WriteInt128LittleEndian(_buffer.AsSpan(_pos), value);
+        _pos += 16;
+    }
+
+    /// <summary>Length-delimited 16 bytes, little-endian.</summary>
+    public void WriteUInt128(UInt128 value)
+    {
+        WriteVarUInt(16);
+        Ensure(16);
+        BinaryPrimitives.WriteUInt128LittleEndian(_buffer.AsSpan(_pos), value);
+        _pos += 16;
+    }
 
     // Shifted as an unsigned 64-bit value: field numbers run to 2^29 - 1, and shifting those in an
     // int would overflow into the sign bit and encode a different field.

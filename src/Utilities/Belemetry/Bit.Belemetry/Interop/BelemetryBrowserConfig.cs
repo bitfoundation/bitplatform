@@ -23,6 +23,7 @@ internal sealed class BelemetryBrowserConfig
     public required SamplingConfig Sampling { get; set; }
     public required BatchConfig Batch { get; set; }
     public required PersistenceConfig Persistence { get; set; }
+    public int MaxValueLength { get; set; }
     public bool Debug { get; set; }
 
     internal sealed class ServiceConfig
@@ -68,6 +69,7 @@ internal sealed class BelemetryBrowserConfig
         public List<string> Events { get; set; } = [];
         public bool CaptureText { get; set; }
         public int MaxTextLength { get; set; }
+        public bool RageClicks { get; set; }
     }
 
     internal sealed class PerformanceConfig
@@ -89,6 +91,8 @@ internal sealed class BelemetryBrowserConfig
     internal sealed class ErrorsConfig
     {
         public List<string> IgnoreMessages { get; set; } = [];
+        public int DuplicateWindowMs { get; set; }
+        public int MaxPerMinute { get; set; }
     }
 
     internal sealed class LogsConfig
@@ -105,6 +109,7 @@ internal sealed class BelemetryBrowserConfig
         public bool ScrubPatterns { get; set; }
         public bool CollectUserAgent { get; set; }
         public List<string> BlockedAttributes { get; set; } = [];
+        public List<string> RedactedAttributes { get; set; } = [];
     }
 
     internal sealed class SessionConfig

@@ -1,0 +1,107 @@
+﻿@page "/native"
+
+<PageTitle>Native drops · Bdnd samples</PageTitle>
+
+<h1>Native drops</h1>
+
+<p>
+    A drop target that lists a <code>BdndNativeTypes</code> value takes drags that start outside the page. The first
+    takes up to @MaxFiles text files from the file explorer and reads the start of each one: the contents stream from
+    the page to .NET - in the browser on WebAssembly, over the circuit on Server, over the web view's bridge in the
+    MAUI app. The second takes selected text and links, from this page or from another window. Where the platform
+    cannot drag anything in - the web views of phones, for instance - the targets simply never light up.
+</p>
+
+<BdndProvider>
+    <div class="row">
+        <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" AcceptFileTypes="TextFiles" MaxFiles="MaxFiles"
+                        Label="the file tray" class="bin native" OnNativeDrop="ReadFiles" Context="files">
+            @(files.IsOver ? "Release the files" : $"Drop up to {MaxFiles} text files here")
+        </BdndDropTarget>
+
+        <BdndDropTarget TItem="object" AcceptTypes="TextTypes" Label="the text tray" class="bin native"
+                        OnNativeDrop="ReadText" Context="text">
+            @(text.IsOver ? "Release the text" : "Drop text or a link here")
+        </BdndDropTarget>
+    </div>
+</BdndProvider>
+
+<p class="muted">
+    Try selecting <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bdnd">this link</a>
+    or a few words of this paragraph and dragging them onto the second tray.
+</p>
+
+@if (_results.Count > 0)
+{
+    <h2>Last drop</h2>
+    @* What a visitor drops is untrusted: Blazor renders it as text, never as markup. *@
+    <ul id="native-results">
+        @foreach (var line in _results)
+        {
+            <li>@line</li>
+        }
+    </ul>
+}
+
+@code {
+    private const int MaxFiles = 5;
+    private const int Shown = 120;
+    // Many text files report another MIME type than text/plain (text/csv, application/json), or none at all (.md and
+    // .log on Windows), so their extensions are listed too. With an extension listed, a drag is no longer refused
+    // while it hovers: the drop leaves the other files out.
+    private static readonly string[] TextFiles = ["text/*", ".txt", ".md", ".log", ".csv", ".json"];
+    private static readonly string[] TextTypes = [BdndNativeTypes.Text, BdndNativeTypes.Url];
+
+    private List<string> _results = [];
+    private int _drops;
+
+    // Only the first characters of each file are read, so a file of any size is opened: the read stops long before
+    // its end. A folder, or a file gone from the page, is reported as such.
+    private async Task ReadFiles(BdndNativeDropEventArgs e)
+    {
+        var drop = ++_drops;
+        var results = new List<string>();
+        foreach (var file in e.Files)
+        {
+            if (file.CanRead is false)
+            {
+                results.Add($"{file.Name}: could not be read ({(file.IsDirectory ? "a folder has no contents" : "its drop is no longer kept")})");
+                continue;
+            }
+
+            try
+            {
+                await using var stream = await file.OpenReadStreamAsync(maxAllowedSize: file.Size);
+                // leaveOpen: the await using above releases the stream, awaiting the release of its JS reference
+                using var reader = new StreamReader(stream, leaveOpen: true);
+                // one character more than shown tells a longer file (the stream reads asynchronously only)
+                var buffer = new char[Shown + 1];
+                var read = await reader.ReadBlockAsync(buffer, 0, buffer.Length);
+                // an emoji is two UTF-16 chars: cut before it rather than between them
+                var length = read > Shown && char.IsHighSurrogate(buffer[Shown - 1]) ? Shown - 1 : Math.Min(read, Shown);
+                var text = new string(buffer, 0, length).ReplaceLineEndings(" ");
+                results.Add($"{file.Name} ({file.Size:N0} bytes): {text}{(read > Shown ? "…" : "")}");
+            }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or TimeoutException or JSException or OperationCanceledException)
+            {
+                results.Add($"{file.Name}: could not be read ({ex.Message})");
+            }
+        }
+
+        if (e.TotalFileCount > e.Files.Count)
+        {
+            results.Add($"{e.TotalFileCount - e.Files.Count} more file(s) left out: not text, or past the limit of {MaxFiles}.");
+        }
+
+        // a later drop that finished first keeps its results
+        if (drop == _drops) _results = results;
+    }
+
+    private void ReadText(BdndNativeDropEventArgs e)
+    {
+        ++_drops;
+        _results = e.Urls.Count > 0
+            ? [.. e.Urls.Select(url => $"Link: {url}")]
+            : [$"Text: {e.Text ?? "(empty)"}"];
+    }
+}

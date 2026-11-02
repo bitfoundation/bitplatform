@@ -1,4 +1,5 @@
-﻿using Bit.Cli.Infrastructure;
+﻿using System.IO.Compression;
+using Bit.Cli.Infrastructure;
 using Bit.Cli.Telemetry;
 using Bit.Cli.Templates;
 using Bit.Cli.Tests.Infrastructure;
@@ -68,7 +69,7 @@ public class TemplateTests
     }
 
     [TestMethod]
-    public void OnlyNonDefaultValues_Should_ReachTheCommandLines()
+    public void OnlyNonDefaultValues_Should_ReachTheCommandLineTokens()
     {
         var selection = new TemplateSelection(TemplateManifest.Embedded);
         selection.Set("database", "Sqlite");
@@ -76,8 +77,20 @@ public class TemplateTests
         selection.Set("redis", "true");
         selection.Set("aspire", "false");
 
-        CollectionAssert.AreEqual(new[] { "--module", "Admin", "--aspire", "false", "--redis", "true" }, selection.ToTemplateArguments().ToArray());
         CollectionAssert.AreEqual(new[] { "--module", "Admin", "--aspire", "false", "--redis" }, selection.ToCommandLineTokens().ToArray());
+    }
+
+    [TestMethod]
+    public void EveryValueTheUserSets_Should_ReachDotnetNew()
+    {
+        var selection = new TemplateSelection(TemplateManifest.Embedded);
+        selection.Set("database", "Sqlite");
+        selection.Set("module", "Admin");
+        selection.Set("redis", "true");
+        selection.Set("aspire", "false");
+
+        CollectionAssert.AreEqual(new[] { "--database", "Sqlite", "--module", "Admin", "--aspire", "false", "--redis", "true" }, selection.ToTemplateArguments().ToArray(),
+            "With --template-version, the version bit creates the project with can have other defaults.");
     }
 
     [TestMethod]
@@ -105,6 +118,108 @@ public class TemplateTests
     }
 
     [TestMethod]
+    public async Task ANativeApp_Should_NeedANameThatGivesItAnAppId()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "فروشگاه", "--platforms", "android", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.Output, "com.companyname.");
+
+        Assert.AreEqual(0, await host.RunAsync("new", "فروشگاه", "--dry-run", "--yes"), host.Output);
+    }
+
+    [TestMethod]
+    public async Task ANameThatIsATypeOfTheTemplate_Should_BeRefused()
+    {
+        using var host = new TestHost();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "App", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "'App' is also the name of a type");
+        StringAssert.Contains(host.FlatOutput, "bit new MyApp");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso.Program", "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "bit new Contoso.MyProgram");
+    }
+
+    [TestMethod]
+    [DataRow("AdminPanel")]
+    [DataRow("Contoso.Shop")]
+    [DataRow("SalesModule")]
+    [DataRow("TodoSample")]
+    [DataRow("WorkbenchDemo")]
+    [DataRow("MyCompany.TestProject")]
+    public void TheDemosNames_Should_NotClashWithTheTemplatesTypes(string name)
+    {
+        Assert.IsNull(ProjectName.Validate(name, TypeNames.Template, NamespaceNames.Template));
+    }
+
+    [TestMethod]
+    [DataRow("Client")]
+    [DataRow("Server")]
+    [DataRow("Shared")]
+    [DataRow("Core")]
+    [DataRow("Workbench")]
+    [DataRow("Components.Shop")]
+    public async Task ANameThatStartsWithANamespaceOfTheTemplate_Should_BeRefused(string name)
+    {
+        using var host = new TestHost();
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", name, "--dry-run", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, $"'{name.Split('.')[0]}' is also the name of a namespace inside the project");
+        StringAssert.Contains(host.FlatOutput, $"bit new My{name}");
+    }
+
+    [TestMethod]
+    [DataRow("Contoso.Client")]
+    [DataRow("Contoso.Server.Shop")]
+    public void ANamespaceOfTheTemplateAfterTheFirstPart_Should_Pass(string name)
+    {
+        Assert.IsNull(ProjectName.Validate(name, TypeNames.Template, NamespaceNames.Template));
+    }
+
+    [TestMethod]
+    public void AFirstPartThatComesTwice_Should_BeRefused()
+    {
+        StringAssert.Contains(ProjectName.Validate("Contoso.Contoso"), "comes twice");
+        StringAssert.Contains(ProjectName.Validate("Contoso.Shop.Contoso"), "comes twice");
+        Assert.AreEqual("MyContoso.Contoso", ProjectName.Suggest("contoso.contoso"));
+    }
+
+    [TestMethod]
+    public void TheTemplatesNamespaces_Should_ComeFromItsFolders()
+    {
+        CollectionAssert.IsSubsetOf(new[] { "Client", "Server", "Shared", "Core", "Web", "Api", "Components", "Workbench" }, NamespaceNames.Template.ToArray());
+        Assert.IsFalse(NamespaceNames.Template.Contains("Boilerplate"));
+        Assert.IsFalse(NamespaceNames.Template.Contains("src"));
+    }
+
+    [TestMethod]
+    public void TheTemplatesTypes_Should_ComeFromItsFileNames()
+    {
+        CollectionAssert.IsSubsetOf(new[] { "App", "Program", "AppDbContext" }, TypeNames.Template.ToArray());
+        Assert.IsFalse(TypeNames.Template.Contains("Boilerplate"));
+        Assert.AreEqual("App", TypeNames.Of("App.razor.cs"));
+        Assert.AreEqual("App", TypeNames.Of("App.xaml.cs"));
+        Assert.IsNull(TypeNames.Of("App.razor.scss"));
+    }
+
+    [TestMethod]
+    public void ATemplatePackage_Should_GiveItsOwnTypes()
+    {
+        using var host = new TestHost();
+        var folder = Path.Combine(host.WorkingDirectory, "template");
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(folder, "src", "Shop")).FullName, "Shop.razor"), "");
+        var package = Path.Combine(host.WorkingDirectory, "template.nupkg");
+        ZipFile.CreateFromDirectory(folder, package);
+
+        Assert.IsTrue(TypeNames.FromPackage(folder).Contains("Shop"));
+        Assert.IsTrue(TypeNames.FromPackage(package).Contains("Shop"));
+        Assert.IsTrue(NamespaceNames.FromPackage(folder).Contains("Shop"));
+        Assert.IsTrue(NamespaceNames.FromPackage(package).Contains("Shop"));
+    }
+
+    [TestMethod]
     [DataRow("my-app", "MyApp")]
     [DataRow("contoso shop", "ContosoShop")]
     [DataRow("contoso.shop", "Contoso.Shop")]
@@ -128,6 +243,21 @@ public class TemplateTests
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Android], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
         CollectionAssert.AreEqual(new[] { "wasm-tools", "maui" }, Platforms.Workloads([Platform.Ios], HostOs.MacOS).ToArray());
+
+        Assert.IsEmpty(Platforms.NativeWorkloads([Platform.Web], HostOs.Windows));
+        CollectionAssert.AreEqual(new[] { "maui-android" }, Platforms.NativeWorkloads([Platform.Web, Platform.Android], HostOs.Linux).ToArray());
+        CollectionAssert.AreEqual(new[] { "maui" }, Platforms.NativeWorkloads([Platform.Web, Platform.Windows], HostOs.Windows).ToArray());
+    }
+
+    [TestMethod]
+    public void BuildSupport_Should_NameWhatThePlatformsBuild()
+    {
+        Assert.AreEqual("WebAssembly build support", Platforms.BuildSupport([Platform.Web]));
+        Assert.AreEqual("WebAssembly and Android build support", Platforms.BuildSupport([Platform.Android, Platform.Web]));
+        Assert.AreEqual("WebAssembly, Android, iOS and Windows build support", Platforms.BuildSupport([Platform.Windows, Platform.Web, Platform.Ios, Platform.Android]));
+
+        Assert.AreEqual("Android build support", Platforms.NativeBuildSupport([Platform.Android, Platform.Web]));
+        Assert.AreEqual("Android, iOS and Windows build support", Platforms.NativeBuildSupport([Platform.Windows, Platform.Web, Platform.Ios, Platform.Android]));
     }
 
     [TestMethod]
@@ -141,15 +271,6 @@ public class TemplateTests
         Assert.IsNull(TemplateRequirements.ParseNodeMajor("{ \"devDependencies\": {} }"));
         Assert.AreEqual(new Version(13, 6, 0), TemplateRequirements.ParseAspire("<Project Sdk=\"Aspire.AppHost.Sdk/13.6.0\">"));
         Assert.IsNull(TemplateRequirements.ParseAspire("<Project Sdk=\"Microsoft.NET.Sdk\">"));
-    }
-
-    [TestMethod]
-    public void TheBuild_Should_CoverTheWholeSolutionOnceANativeAppIsPicked()
-    {
-        Assert.AreEqual("Contoso.Web.slnf", Platforms.BuildPath("Contoso", [Platform.Web]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Android]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Web, Platform.Windows]));
-        Assert.AreEqual("Contoso.slnx", Platforms.BuildPath("Contoso", [Platform.Ios]));
     }
 
     [TestMethod]

@@ -1,0 +1,10 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// The streaming Markdown has no public CSS variables of its own: everything it shows is drawn by the BitAiMarkdownView
+// inside it, which the --bit-AiMarkdownView-* variables restyle.
+
+// Lets the text shrink inside a flex or grid parent - a message bubble - so a long line of code scrolls inside its own
+// block instead of widening the whole message.
+.bit-aismd {
+    min-width: 0;
+}

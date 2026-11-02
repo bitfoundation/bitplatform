@@ -26,23 +26,27 @@ public static class AppCertificateService
         if (allAppCerts is not null)
             return allAppCerts;
 
-        var certs = new List<X509Certificate2> { LoadCertificate(ActiveCertificateName) };
+        // Next to the app's binaries, unless AppCertificateDirectory names another folder, the way a Docker Compose
+        // deployment mounts them from outside the image.
+        var directory = configuration["AppCertificateDirectory"] is { Length: > 0 } configured ? configured : AppContext.BaseDirectory;
+
+        var certs = new List<X509Certificate2> { LoadCertificate(directory, ActiveCertificateName) };
 
         // Ordered so that a rotation looks the same on every instance; the active one is prepended above either way.
-        foreach (var retiredCertPath in Directory.GetFiles(AppContext.BaseDirectory, $"{ActiveCertificateName}.*.crt").Order(StringComparer.Ordinal))
+        foreach (var retiredCertPath in Directory.GetFiles(directory, $"{ActiveCertificateName}.*.crt").Order(StringComparer.Ordinal))
         {
             var name = Path.GetFileNameWithoutExtension(retiredCertPath);
 
             if (name is ActiveCertificateName)
                 continue; // Already loaded above.
 
-            certs.Add(LoadCertificate(name));
+            certs.Add(LoadCertificate(directory, name));
         }
 
         // Retired certificates are checked too: a retired default would still be trusted for validation, so its
         // public private key could still be used to mint tokens this server accepts.
         if (AppEnvironment.IsDevelopment() is false && certs.Any(cert => cert.Subject.Contains("OU=Development", StringComparison.Ordinal)))
-            throw new InvalidOperationException("You are using a development certificate in non-development environment. Generate and use your own certificate using `openssl genrsa` and `openssl req` commands described in AppCertificate.md file.");
+            throw new InvalidOperationException("You are using a development certificate in non-development environment. Create your own certificate with `bit keys certificate --production`, as described in AppCertificate.md file.");
 
         return allAppCerts = [.. certs];
     }
@@ -57,15 +61,15 @@ public static class AppCertificateService
         return GetAllAppCertificates(configuration)[0];
     }
 
-    private static X509Certificate2 LoadCertificate(string name)
+    private static X509Certificate2 LoadCertificate(string directory, string name)
     {
-        var certPemFilePath = Path.Combine(AppContext.BaseDirectory, $"{name}.crt");
-        var keyPemFilePath = Path.Combine(AppContext.BaseDirectory, $"{name}.key");
+        var certPemFilePath = Path.Combine(directory, $"{name}.crt");
+        var keyPemFilePath = Path.Combine(directory, $"{name}.key");
 
         return X509Certificate2.CreateFromPemFile(certPemFilePath, keyPemFilePath);
 
         // Load pfx file sample:
-        // var pfxFilePath = Path.Combine(AppContext.BaseDirectory, $"{name}.pfx");
+        // var pfxFilePath = Path.Combine(directory, $"{name}.pfx");
         // return X509CertificateLoader.LoadPkcs12FromFile(pfxFilePath, configuration["Identity:CertificatePassword"]);
     }
 

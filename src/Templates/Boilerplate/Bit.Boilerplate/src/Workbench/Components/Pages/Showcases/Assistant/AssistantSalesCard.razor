@@ -1,0 +1,15 @@
+@inherits WorkbenchComponentBase
+
+<div class="card">
+    <div class="card-head">
+        <span class="card-title">@Localizer[nameof(WorkbenchStrings.AssistantSalesCardTitle)]</span>
+        <span class="card-value">@PosFormat.Money(Total, 0)</span>
+        <span class="card-change @(Change < 0 ? "down" : null)">
+            <BitIcon IconName="@(Change < 0 ? BitIconName.SortDown : BitIconName.SortUp)" Size="BitSize.Small" Color="@(Change < 0 ? BitColor.Error : BitColor.Success)" />
+            @PosFormat.SignedPercent(Change)
+        </span>
+    </div>
+    <div class="chart">
+        <BitChart Type="BitChartType.Bar" Data="data" Options="options" Description="@Localizer[nameof(WorkbenchStrings.AssistantSalesCardTitle)]" Style="height:100%" />
+    </div>
+</div>

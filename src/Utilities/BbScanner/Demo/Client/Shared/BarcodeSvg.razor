@@ -18,11 +18,11 @@
         <svg class="sample-svg"
              viewBox="@_viewBox"
              style="max-inline-size:@(Size)px;aspect-ratio:@_aspectRatio;"
-             shape-rendering="crispEdges"
+             shape-rendering="@(_hexagonal ? "geometricPrecision" : "crispEdges")"
              role="img"
              aria-label="@($"{Caption} barcode encoding {Value}")">
             <rect width="100%" height="100%" fill="#ffffff" />
-            <path d="@_path" fill="#000000" />
+            <path d="@_path" fill="#000000" fill-rule="evenodd" />
         </svg>
     </div>
     @if (ShowCaption)
@@ -38,6 +38,11 @@
     private string _path = string.Empty;
     private string _viewBox = "0 0 1 1";
     private string _aspectRatio = "1 / 1";
+    private bool _hexagonal;
+
+    /// <summary>The symbology, which says how a module grid is drawn: MaxiCode's are hexagons round a bullseye.</summary>
+    [Parameter]
+    public BbBarcodeFormat Format { get; set; }
 
     /// <summary>A two dimensional module grid to render.</summary>
     [Parameter]
@@ -73,7 +78,12 @@
 
     protected override void OnParametersSet()
     {
-        if (Matrix is not null)
+        _hexagonal = Format == BbBarcodeFormat.MaxiCode && Matrix is not null;
+        if (_hexagonal)
+        {
+            BuildMaxiCodePath(Matrix!);
+        }
+        else if (Matrix is not null)
         {
             BuildMatrixPath(Matrix);
         }
@@ -113,6 +123,48 @@
                     .Append('h').Append(run).Append("v1h-").Append(run).Append('z');
                 x += run;
             }
+        }
+
+        _path = path.ToString();
+    }
+
+    /// <summary>
+    /// MaxiCode: 33 rows of 30 hexagons standing on a corner, every odd row half a module to the right and each row
+    /// 0.866 of a module below the last, and the bullseye's three rings round the place of the module at row 16,
+    /// column 14 - each ring a pair of circles, filled even-odd.
+    /// </summary>
+    private void BuildMaxiCodePath(BbBitMatrix matrix)
+    {
+        const double Pitch = 0.8660254;
+        const double Radius = 0.5773503 * 0.9;
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        var width = 30.5 + (2 * QuietZone);
+        var height = (32 * Pitch) + (2 * 0.5773503) + (2 * QuietZone);
+        _viewBox = string.Create(inv, $"0 0 {width:0.###} {height:0.###}");
+        _aspectRatio = string.Create(inv, $"{width:0.###} / {height:0.###}");
+
+        var path = new StringBuilder(matrix.Width * matrix.Height * 8);
+        var half = Radius * Pitch;
+        for (var row = 0; row < matrix.Height; row++)
+        {
+            for (var column = 0; column < matrix.Width; column++)
+            {
+                if (!matrix[column, row])
+                {
+                    continue;
+                }
+
+                var x = QuietZone + column + 0.5 + ((row & 1) == 1 ? 0.5 : 0);
+                var y = QuietZone + 0.5773503 + (row * Pitch);
+                path.Append(string.Create(inv,
+                    $"M{x:0.###} {y - Radius:0.###}L{x + half:0.###} {y - (Radius / 2):0.###}L{x + half:0.###} {y + (Radius / 2):0.###}L{x:0.###} {y + Radius:0.###}L{x - half:0.###} {y + (Radius / 2):0.###}L{x - half:0.###} {y - (Radius / 2):0.###}Z"));
+            }
+        }
+
+        var (cx, cy) = (QuietZone + 14.5, QuietZone + 0.5773503 + (16 * Pitch));
+        foreach (var r in new[] { 0.5774, 1.3359, 2.1058, 2.8644, 3.6229, 4.3814 })
+        {
+            path.Append(string.Create(inv, $"M{cx + r:0.####} {cy:0.####}A{r} {r} 0 1 0 {cx - r:0.####} {cy:0.####}A{r} {r} 0 1 0 {cx + r:0.####} {cy:0.####}Z"));
         }
 
         _path = path.ToString();

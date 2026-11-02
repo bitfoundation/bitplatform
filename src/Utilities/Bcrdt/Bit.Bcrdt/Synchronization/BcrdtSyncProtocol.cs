@@ -146,6 +146,45 @@ public static class BcrdtSyncProtocol
         return digest == 0 ? 1 : digest;
     }
 
+    /// <summary>
+    /// The largest message a provider or document host sends unless told otherwise: 1 MB. A larger
+    /// delta goes out as several messages.
+    /// </summary>
+    /// <remarks>
+    /// Well under the relays' receive limits (16 MB) even once SignalR's JSON protocol has inflated a
+    /// binary payload by a third, so a document of any size crosses them; and small enough that one
+    /// large message does not hold up everything behind it on a slow link.
+    /// </remarks>
+    public const int DefaultMaxMessageSize = 1024 * 1024;
+
+    /// <summary>
+    /// Encodes a delta as <see cref="BcrdtSyncMessageKind.SyncStep2"/> or <see cref="BcrdtSyncMessageKind.Update"/>
+    /// messages of at most <paramref name="maxMessageSize"/> bytes each, where the delta can be divided.
+    /// </summary>
+    /// <remarks>
+    /// Each message carries an ordinary update (<see cref="BcrdtUpdateOperations.Split"/>), so a receiver
+    /// needs nothing special to put them back together: it applies them as they come, and the last one
+    /// completes the picture. A receiver that predates this sees exactly what it always has.
+    /// </remarks>
+    /// <param name="kind"><see cref="BcrdtSyncMessageKind.SyncStep2"/> or <see cref="BcrdtSyncMessageKind.Update"/>.</param>
+    /// <param name="update">The delta.</param>
+    /// <param name="maxMessageSize">The most one message may take, or zero for no limit.</param>
+    public static IReadOnlyList<byte[]> EncodeDelta(BcrdtSyncMessageKind kind, ReadOnlyMemory<byte> update, int maxMessageSize)
+    {
+        if (kind is not (BcrdtSyncMessageKind.SyncStep2 or BcrdtSyncMessageKind.Update))
+        {
+            throw new ArgumentOutOfRangeException(nameof(kind), kind, "Only a SyncStep2 or an Update carries a delta.");
+        }
+        ArgumentOutOfRangeException.ThrowIfNegative(maxMessageSize);
+
+        if (maxMessageSize == 0 || update.Length + 2 <= maxMessageSize) return [Encode(kind, update.Span)];
+
+        IReadOnlyList<byte[]> parts = BcrdtUpdateOperations.Split(update, Math.Max(64, maxMessageSize - 2));
+        var messages = new byte[parts.Count][];
+        for (int i = 0; i < parts.Count; i++) messages[i] = Encode(kind, parts[i]);
+        return messages;
+    }
+
     /// <summary>Encodes the delta a peer was missing.</summary>
     public static byte[] EncodeSyncStep2(ReadOnlySpan<byte> update) => Encode(BcrdtSyncMessageKind.SyncStep2, update);
 
@@ -160,14 +199,24 @@ public static class BcrdtSyncProtocol
     public static byte[] EncodeAwarenessQuery() => Encode(BcrdtSyncMessageKind.AwarenessQuery, default);
 
     /// <summary>Encodes an authentication or authorization result.</summary>
-    public static byte[] EncodeAuth(bool permitted, string? reason)
+    public static byte[] EncodeAuth(bool permitted, string? reason) =>
+        EncodeAuth(permitted ? BcrdtDocumentAccess.ReadWrite : BcrdtDocumentAccess.None, reason);
+
+    /// <summary>Encodes the access a connection has been granted, or its refusal.</summary>
+    /// <param name="access">
+    /// The grant. <see cref="BcrdtDocumentAccess.None"/> is a refusal, which a provider treats as final.
+    /// </param>
+    /// <param name="reason">Why, for a refusal; shown to the user, so keep it free of anything sensitive.</param>
+    public static byte[] EncodeAuth(BcrdtDocumentAccess access, string? reason)
     {
+        if (!Enum.IsDefined(access)) throw new ArgumentOutOfRangeException(nameof(access), access, null);
+
         var writer = new BcrdtBufferWriter(32);
         try
         {
             writer.WriteByte(Version);
             writer.WriteByte((byte)BcrdtSyncMessageKind.Auth);
-            writer.WriteByte(permitted ? (byte)1 : (byte)0);
+            writer.WriteByte((byte)access);
             writer.WriteString(reason ?? string.Empty);
             return writer.ToArray();
         }
@@ -186,24 +235,71 @@ public static class BcrdtSyncProtocol
     /// <summary>Reads an authentication result from a decoded message payload.</summary>
     public static (bool Permitted, string Reason) DecodeAuth(ReadOnlyMemory<byte> payload)
     {
-        var reader = new BcrdtBufferReader(payload);
-        bool permitted = reader.ReadByte() != 0;
-        return (permitted, reader.ReadString());
+        (BcrdtDocumentAccess access, string reason) = DecodeAuthAccess(payload);
+        return (access != BcrdtDocumentAccess.None, reason);
     }
+
+    /// <summary>Reads the access an <see cref="BcrdtSyncMessageKind.Auth"/> message grants.</summary>
+    /// <remarks>
+    /// A grant this build does not recognise is read as <see cref="BcrdtDocumentAccess.ReadOnly"/>: it is
+    /// not a refusal - only zero is - and assuming the narrower grant means a newer server's
+    /// restriction is never mistaken for permission to write.
+    /// </remarks>
+    /// <exception cref="BcrdtFormatException">The payload is malformed.</exception>
+    public static (BcrdtDocumentAccess Access, string Reason) DecodeAuthAccess(ReadOnlyMemory<byte> payload)
+    {
+        var reader = new BcrdtBufferReader(payload);
+        byte grant = reader.ReadByte();
+        string reason = reader.ReadString();
+
+        BcrdtDocumentAccess access = grant switch
+        {
+            (byte)BcrdtDocumentAccess.None => BcrdtDocumentAccess.None,
+            (byte)BcrdtDocumentAccess.ReadWrite => BcrdtDocumentAccess.ReadWrite,
+            _ => BcrdtDocumentAccess.ReadOnly,
+        };
+        return (access, reason);
+    }
+
+    /// <summary>
+    /// Whether a message carries document content: an <see cref="BcrdtSyncMessageKind.Update"/> or a
+    /// <see cref="BcrdtSyncMessageKind.SyncStep2"/>.
+    /// </summary>
+    /// <remarks>
+    /// What a relay withholds from a read-only connection. Every other kind - announcing a state vector,
+    /// presence, liveness - only reads, so a reader may still send it. Only the kind byte is inspected.
+    /// </remarks>
+    /// <param name="message">The encoded message, as a client sent it.</param>
+    public static bool IsWrite(ReadOnlySpan<byte> message) =>
+        message.Length >= 2 &&
+        message[1] is (byte)BcrdtSyncMessageKind.Update or (byte)BcrdtSyncMessageKind.SyncStep2;
 
     /// <summary>
     /// Whether a relay may pass a message it received from one client on to the others.
     /// </summary>
     /// <remarks>
-    /// Everything may be relayed except <see cref="BcrdtSyncMessageKind.Auth"/>. That message is the
+    /// <para>
+    /// Everything may be relayed except <see cref="BcrdtSyncMessageKind.Auth"/>,
+    /// <see cref="BcrdtSyncMessageKind.Ping"/> and <see cref="BcrdtSyncMessageKind.Pong"/>. The first is the
     /// server's verdict on a connection, and a provider treats a refusal as final: it stops and never
     /// reconnects. A relay that forwarded one from a client would let any member of a room forge a
-    /// refusal and permanently disconnect everybody else. Only the kind byte is inspected, so this
-    /// costs nothing on the hot path and holds whatever the rest of the message contains.
+    /// refusal and permanently disconnect everybody else.
+    /// </para>
+    /// <para>
+    /// The other two are a liveness probe between two directly connected peers. Relayed, one ping is
+    /// answered by every member of the room to every member of the room, which turns a few bytes from
+    /// one client into traffic that grows with the square of the room. Nothing in this library sends a
+    /// ping; a relay's own transport has keep-alives of its own.
+    /// </para>
+    /// <para>
+    /// Only the kind byte is inspected, so this costs nothing on the hot path and holds whatever the
+    /// rest of the message contains.
+    /// </para>
     /// </remarks>
     /// <param name="message">The encoded message, as a client sent it.</param>
     public static bool IsRelayable(ReadOnlySpan<byte> message) =>
-        message.Length < 2 || message[1] != (byte)BcrdtSyncMessageKind.Auth;
+        message.Length < 2 ||
+        message[1] is not ((byte)BcrdtSyncMessageKind.Auth or (byte)BcrdtSyncMessageKind.Ping or (byte)BcrdtSyncMessageKind.Pong);
 
     private static byte[] Encode(BcrdtSyncMessageKind kind, ReadOnlySpan<byte> payload)
     {

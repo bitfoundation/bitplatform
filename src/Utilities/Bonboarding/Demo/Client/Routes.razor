@@ -28,6 +28,10 @@
    the site is in, which is what the theming page demonstrates. *@
 <BonboardingRoot />
 
+@* Which renderer runs the page (Static while prerendering, then Server or WebAssembly, as InteractiveAuto
+   decides): the E2E suite reads it to prove the tours on both. *@
+<div hidden data-demo-renderer="@RendererInfo.Name"></div>
+
 @code {
     private bool _navigated;
 

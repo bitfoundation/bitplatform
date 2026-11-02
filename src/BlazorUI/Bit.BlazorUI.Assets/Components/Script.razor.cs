@@ -29,14 +29,9 @@ public partial class Script
 
 
     // Whether this component renders again after prerendering, which is when what this render computed is
-    // carried over. Where the framework does not say (net8.0), every component carries its value over: one
-    // entry per page, read by a circuit or a WebAssembly client and otherwise left where the page's state goes.
+    // carried over.
     private bool Interactive =>
-#if NET9_0_OR_GREATER
         AssignedRenderMode is not null;
-#else
-        true;
-#endif
 
 
     protected override void OnInitialized()

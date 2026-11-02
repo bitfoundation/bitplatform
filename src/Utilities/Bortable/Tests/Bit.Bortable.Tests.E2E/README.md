@@ -18,9 +18,12 @@ well and leaves out everything that only exists in a real browser:
   never run.
 
 This suite boots the demo (`Bit.Bortable.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and
-drives it in Chromium with Playwright, with real mouse drags. It asserts **effects**: the order readouts the demo binds
+drives it with Playwright, with real mouse drags - in Chromium by default, and in Firefox or WebKit on request
+(`BORTABLE_E2E_BROWSER`, below). It asserts **effects**: the order readouts the demo binds
 to each list (what .NET holds), the items of each list in DOM order (what the browser shows), the placeholder and the
-classes the drag states put on the items mid-drag, and the lines of the event log.
+classes the drag states put on the items mid-drag, and the lines of the event log. One suite drives the published
+lazy loading sample (`Samples/Lazy`) instead, an app that downloads `Bit.Bortable.wasm` only when a page with a list
+opens.
 
 ## What it proves
 
@@ -32,10 +35,15 @@ classes the drag states put on the items mid-drag, and the lines of the event lo
 | `DisableSortTests` | A list with `Sort="false"` does not reorder while one of its items is dragged over it, yet the item can still be dragged out; a list with `Put="false"` shows no placeholder for an item from the other list and refuses it. |
 | `HandleAndFilterTests` | With a `Handle`, dragging a row by its body starts no drag at all, dragging it by its handle sorts the list, and the row is undraggable again afterwards; an item excluded by the `Filter` cannot be dragged, while the other items sort past it in both directions. |
 | `NestedTests` | An item dropped into the empty list of another item becomes its child; an item moves between branches to a given place among the children, and a whole branch moves with its children (the list it holds follows it); an item dragged into a list inside itself is refused while the drag runs (no placeholder anywhere) and the tree is unchanged. |
-| `EventsTests` | A drag within a list logs `start` when it begins and `update` and `end`, with the old and new index, when it is dropped; a drag across lists logs `start`, then `remove`, `add` and `end` with the source and destination; a drag taken back home logs only `start` and `end`. |
+| `EventsTests` | A drag within a list logs `OnStart` when it begins and `OnUpdate`, `OnSort` and `OnEnd`, with the old and new index, when it is dropped; a drag across lists logs `OnStart`, then `OnRemove`, `OnAdd`, `OnSort` on both lists and `OnEnd` with the source and destination; a drag taken back home logs only `OnStart` and `OnEnd`; `OnChange` is logged on request, ending at the position the item is dropped in, and the log clears; a keyboard drag cancelled with Escape logs `OnStart` and an `OnEnd` that says `keyboard` and `canceled`. |
 | `PluginTests` | MultiDrag: a click toggles an item's selection; dragging a selected item moves the whole selection as a block, in its original order, within a list and into another list, and spends the selection; dragging an unselected item drops the selection and moves only that item. Swap: the item under the pointer is highlighted (and only that one, following the pointer) while nothing moves, the drop trades the two items' places within a list and across lists, and a drag released with no target highlighted changes nothing. |
-| `BrowserLayerTests` | `bit-bortable.js` called directly, on lists built for the test: a list with a single item sorts along a flex row, down a flex column, and along the row an inline or floated item makes; only a drag of the lists' own is allowed to drop on a list, while dragged text keeps its default; a drag started inside an item that is not draggable itself (an element of the app's own, behind a handle) reaches the app's listeners unmarked. |
-| `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, becomes interactive, loads `bit-bortable.js` and applies `bit-bortable.css` when it has lists, shows its own source (every file of it) in the "View code" panel and closes it again, without a console error, an unhandled exception, a failed request or the error banner; an unknown address answers 404 with the not-found page; navigating through every demo in the app leaves lists behind that still sort, the drag handle included. |
+| `BrowserLayerTests` | `bit-bortable.js` called directly, on lists built for the test: a list with a single item sorts along a flex row, down a flex column, and along the row an inline or floated item makes; right-to-left rows and reversed flex directions are measured in their own order; only a drag of the lists' own, in progress, is allowed to drop - and only on a list that takes it - while dragged text keeps its default; a drag started inside an item that is not draggable itself reaches the app's listeners unmarked; an invalid handle selector starts no drag and throws nothing. |
+| `KeyboardTests` | With the real keyboard: a list is one tab stop and the arrows move the focus; Space picks an item up, the arrows move it live, Space drops it, with the focus following the item and every step read out by the live region; keys pressed faster than the steps come back (and while the last one still slides) each move the item one place; Escape puts it back; an arrow past the list carries the item into the list beside it, and a cancel brings it home; keys pressed on a control inside an item are left to it. |
+| `PointerTests` | Drags without the browser's drag and drop: real touch events (CDP) - a long press picks an item up and a finger drags it, within a list and into another, while a swipe drags nothing; a handle with no touch delay drags at once, the row outside it does not; a pen (CDP pen events) drags without the long press; the mouse with `ForceFallback` drags a preview and starts no native drag; Escape puts a pointer drag back. |
+| `RulesTests` | The rules page: a column `CanDrop` refuses is marked refused and a release there puts the card back (`RevertOnSpill`); a full column (`MaxItems`) does not take the drag; a drop the server refuses (`ConfirmDrop`) slides back and an approved one stays. The accessibility page's buttons move items without dragging and are announced. |
+| `LargeListTests` | Three hundred rows in a scrolling panel: a pointer drag held at the panel's edge scrolls it and carries the row along; a drag of 60 pointer moves sends one position per row crossed to .NET, with and without `IsolateItems` (the counts and round-trip times go to the test output). |
+| `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, becomes interactive, loads `bit-bortable.js` and applies `bit-bortable.css` when it has lists, shows the code of each of its samples (every file of it, coloured, and nothing of the page around it) in the "View code" panel under that sample and closes it again, without a console error, an unhandled exception, a failed request or the error banner; an unknown address answers 404 with the not-found page; navigating through every demo in the app leaves lists behind that still sort, the drag handle included. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, with the `Bit.Bortable.Unregistered` switch and the router's own in its boot configuration - in a browser: its home page never downloads `Bit.Bortable.wasm`; navigating to the board downloads it before the lists render, and a deep link to the board is prerendered by the server (which resolves the router's `LazyAssemblyLoader`) and then downloads it; either way the two lists, which find no registration, hand an item to each other through the coordinator they created themselves, without a console error, an unhandled exception or a failed request. Published with AOT (`BORTABLE_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Bortable with the app and nothing on demand. |
 
 Every page is prerendered, so its lists are on screen before anything listens to them. Each test waits until the
 page runs in the browser (`data-interactive="true"` on the layout) and the lists have imported `bit-bortable.js`,
@@ -48,10 +56,11 @@ drag, and fires `dragstart`, only once the pointer has moved more than 4 pixels 
 target in steps, release. Two things make the outcome deterministic:
 
 - **Settling.** A hand's browser repeats `dragover` every 50 ms while the pointer rests, but under Playwright Chromium
-  fires it only when the pointer moves, and a list skips a `dragover` that arrives while it is still handling the
-  previous one in .NET or that lands on an item still sliding into place. So after every move the pointer is nudged a
-  pixel off and back, each time once the page has gone quiet (the 150 ms slides included), until a nudge changes
-  nothing: every list has then acted on where the pointer is. No test sleeps for a fixed time.
+  fires it only when the pointer moves, and the hit test ignores an item still sliding into place. The browser layer
+  keeps the latest position while a call to .NET is in flight and sends it once the call returns, but a position
+  measured mid-slide is not acted on. So after every move the pointer is nudged a pixel off and back, each time once
+  the page has gone quiet (the 150 ms slides included), until a nudge changes nothing: every list has then acted on
+  where the pointer is. No test sleeps for a fixed time, except to hold a long press.
 - **Aiming at slots.** The demo's items are all the same size, so wherever the pointer comes to rest, the dragged item
   (or its placeholder in another list) ends up in the slot under it: a drag that ends on B3 lands where B3 was, and
   pushes B3 down. The nested tree is the exception, as its items are not the same size and every list in it lies
@@ -62,8 +71,10 @@ target in steps, release. Two things make the outcome deterministic:
 From `src/Utilities/Bortable` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish
+# them first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.Bortable.Demo.Server.csproj
+dotnet publish Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -76,6 +87,8 @@ dotnet test --filter "FullyQualifiedName~.SharedListTests."
 dotnet test --filter "FullyQualifiedName~Dragging_from_A_into_B"
 # Everything but the page sweep
 dotnet test --filter "FullyQualifiedName!~Every_demo_page"
+# In Firefox, or WebKit (after 'playwright.ps1 install firefox webkit')
+BORTABLE_E2E_BROWSER=firefox dotnet test
 ```
 
 The built test assembly is also an executable test host, which takes the same options:
@@ -87,6 +100,7 @@ The workflow `.github/workflows/bit.ci.Bortable.e2e.yml` does the same in Releas
 
 ```bash
 dotnet build src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bortable-e2e.trx
@@ -103,6 +117,21 @@ it between all tests and stops it when the run ends. To drive a demo that is alr
 from the IDE, or a published copy (`dotnet publish` output, started with `dotnet Bit.Bortable.Demo.Server.dll --urls
 http://127.0.0.1:5563`) - point `BORTABLE_E2E_BASE_URL` at it; nothing is then built or booted for the run.
 
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares); `BORTABLE_E2E_LAZY_BASE_URL` points those tests at a copy that is
+already running. The workflow's `lazy-loading-aot` job publishes it AOT-compiled instead and runs them with
+`BORTABLE_E2E_LAZY_AOT=1` (it needs the wasm-tools workload):
+
+```bash
+dotnet publish Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+BORTABLE_E2E_LAZY_AOT=1 dotnet test --project Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release --filter "FullyQualifiedName~LazyLoadingTests"
+```
+
+Publishing the trimmed sample again over an AOT publish reuses part of it: delete the sample's `bin/Release` and
+`obj/Release` folders first. A sample that has not been published makes them inconclusive - or failed, on a build
+server - and leaves the other suites alone.
+
 Each test gets a browser context of its own, 1280 x 1400 so that every demo page fits without scrolling (a drag
 cannot be aimed below the fold), in which every request that leaves the demo's origin (its web font) is answered with
 an empty response, so a machine without internet access runs the suite just the same. The tests run one at a time:
@@ -118,5 +147,8 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 |---|---|
 | `BORTABLE_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
 | `BORTABLE_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE, or a published copy) instead of booting one. |
-| `BORTABLE_E2E_CHANNEL` / `BORTABLE_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific Chromium binary. Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
+| `BORTABLE_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BORTABLE_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Bortable comes with the app and nothing is downloaded on demand. |
+| `BORTABLE_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, each the one Playwright installed (`playwright.ps1 install firefox webkit`). The touch and pen tests send their input through the Chrome DevTools Protocol, so they report **Inconclusive** outside Chromium. |
+| `BORTABLE_E2E_CHANNEL` / `BORTABLE_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific browser binary (of the `BORTABLE_E2E_BROWSER` engine). Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
 | `BORTABLE_E2E_HEADED=1` | Show the browser. |

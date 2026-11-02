@@ -115,7 +115,54 @@ public class ThemeTests
         Assert.Contains(".bit-blow-handle-connectingfrom", Css, StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void HandleStatesAreTellableApartWithoutColour()
+    {
+        // Green against red is the pair a colour-blind user is most likely to confuse, so the states also differ
+        // in shape and contrast: a ring on a handle that would accept, a dimmed handle that would not.
+        StringAssert.Matches(Css, new Regex(@"\.bit-blow-handle-valid \{[^}]*box-shadow:"));
+        StringAssert.Matches(Css, new Regex(@"\.bit-blow-handle-invalid:hover \{[^}]*opacity:"));
+    }
+
+    [TestMethod]
+    public void AnimatedEdgesStopUnderReducedMotion()
+    {
+        var media = Regex.Match(Css, @"@media \(prefers-reduced-motion: reduce\) \{(?<body>[^@]*?)\n\}");
+        Assert.IsTrue(media.Success, "no prefers-reduced-motion rule");
+        StringAssert.Contains(media.Groups["body"].Value, ".bit-blow-edge.animated");
+        StringAssert.Contains(media.Groups["body"].Value, "animation: none");
+
+        // The app can force it, and can opt back out of what the operating system asked for.
+        StringAssert.Contains(Css, ".bit-blow.bit-blow-reduce-motion .bit-blow-edge.animated");
+        StringAssert.Contains(media.Groups["body"].Value, ":not(.bit-blow-allow-motion)");
+    }
+
+    [TestMethod]
+    [DataRow(".bit-blow-edge-path {")]
+    [DataRow(".bit-blow-node.selected {")]
+    [DataRow(".bit-blow-handle {")]
+    [DataRow(".bit-blow-selection {")]
+    public void ForcedColoursMapTheSvgAndShadowDrawnPartsOntoTheSystemPalette(string selector)
+    {
+        // Forced colours replace the colours of HTML but not SVG strokes or box shadows, which is exactly how
+        // edges, handles and selection are drawn.
+        var start = Css.IndexOf("@media (forced-colors: active)", StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, start, "no forced-colors rule");
+        StringAssert.Contains(Css[start..], selector);
+    }
+
+    [TestMethod]
+    public void HandlesKeepAMinimumHitSizeOnScreen()
+    {
+        StringAssert.Contains(Css, "--bit-blow-handle-hit-size:");
+        StringAssert.Matches(Rule(@"\.bit-blow-handle::before \{"),
+            new Regex(@"width: max\(100%, calc\(var\(--bit-blow-handle-hit-size\) / var\(--bit-blow-zoom, 1\)\)\)"));
+    }
+
     // ---- helpers ----
+
+    /// <summary>The body of the first rule whose selector matches.</summary>
+    private static string Rule(string selectorPattern) => Block(selectorPattern);
 
     private static string DarkBlock() => Block(@"\.bit-blow-dark \{");
 

@@ -147,12 +147,37 @@ public class McpFlowLabTests
 
         var report = await InspectAsync(flow.ToJsonString());
 
-        Assert.IsEmpty(report.Problems!, "None of these is a BlowErrorCode, which is why the tool has to say them.");
+        // The canvas reports the parent cycles itself; the rest are not BlowErrorCodes, which is why the tool says them.
+        CollectionAssert.AreEquivalent(new[] { "parent-cycle", "parent-cycle" }, report.Problems!.Select(p => p.Code).ToArray());
         Assert.IsTrue(report.Notes.Any(note => note.Contains("parent cycle", StringComparison.Ordinal) && note.Contains("'p'", StringComparison.Ordinal)));
         Assert.IsTrue(report.Notes.Any(note => note.Contains("own parent", StringComparison.Ordinal) && note.Contains("'self'", StringComparison.Ordinal)));
         Assert.IsTrue(report.Notes.Any(note => note.Contains("'into-input'", StringComparison.Ordinal) && note.Contains("no target handle", StringComparison.Ordinal)));
         Assert.IsTrue(report.Notes.Any(note => note.Contains("'task'", StringComparison.Ordinal) && note.Contains("NodeTemplate", StringComparison.Ordinal)));
         Assert.IsTrue(report.Notes.Any(note => note.Contains("start -> task", StringComparison.Ordinal) && note.Contains("PreventDuplicateEdges", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task A_parent_chain_as_long_as_the_tool_takes_is_measured_with_its_cycles()
+    {
+        var nodes = new JsonArray();
+
+        for (var i = 0; i < 9_990; i++) nodes.Add(Node($"n{i}", parent: i == 0 ? null : $"n{i - 1}"));
+
+        nodes.Add(Node("p", parent: "q"));
+        nodes.Add(Node("q", parent: "p"));
+        nodes.Add(Node("r", parent: "p"));
+
+        var report = await InspectAsync(new JsonObject { ["nodes"] = nodes }.ToJsonString());
+
+        Assert.IsTrue(report.Valid, report.Error);
+        Assert.AreEqual(9_989, report.MaxDepth);
+        Assert.AreEqual(9_988, report.SubFlows!.Single(subFlow => subFlow.ParentId == "n9988").Depth);
+
+        var looped = report.SubFlows!.Single(subFlow => subFlow.ParentId == "p");
+
+        Assert.AreEqual(1, looped.Depth);
+        CollectionAssert.AreEqual(new[] { "q", "r" }, looped.Children);
+        Assert.IsTrue(report.Notes.Any(note => note.Contains("parent cycle", StringComparison.Ordinal) && note.Contains("'p', 'q', 'r'", StringComparison.Ordinal)));
     }
 
     [TestMethod]

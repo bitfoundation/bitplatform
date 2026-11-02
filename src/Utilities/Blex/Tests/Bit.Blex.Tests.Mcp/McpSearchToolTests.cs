@@ -22,6 +22,64 @@ public class McpSearchToolTests
     }
 
     [TestMethod]
+    [DataRow("a counter whose value survives a page reload", "Persistence")]
+    [DataRow("state that survives a reload", "Persistence")]
+    [DataRow("testing", "Testing")]
+    [DataRow("status", "BlexQuery.Status")]
+    // A plural of four letters is still a plural: "keys" is "key".
+    [DataRow("query keys", "BlexQuery.Key")]
+    public async Task A_question_in_plain_words_puts_its_answer_first(string query, string expected)
+    {
+        // An agent that trusts the first hit goes wherever it points, so a word every paged query shares
+        // ("page", "value") must not hand that place to them - however few hits were asked for.
+        foreach (var limit in new[] { 1, 3, 6 })
+        {
+            var result = await SearchAsync(query, limit);
+
+            Assert.AreEqual(expected, result.Hits.FirstOrDefault()?.Title,
+                $"'{query}' (limit {limit}) ranked first: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        }
+    }
+
+    [TestMethod]
+    [DataRow("can't undo", "undo")]
+    [DataRow("why doesn't my effect cancel", "cancel")]
+    public async Task The_words_a_question_is_asked_in_do_not_answer_it(string query, string expected)
+    {
+        // "why" names the section called "Why Blex", and split at its apostrophe "can't" is "can" and "t" - the
+        // "T" of every generic member. Neither says what the question is about.
+        var result = await SearchAsync(query, 5);
+        var titles = string.Join(" | ", result.Hits.Select(hit => hit.Title));
+
+        Assert.Contains(expected, result.Hits.FirstOrDefault()?.Title.ToLowerInvariant() ?? string.Empty, $"'{query}' ranked first: {titles}");
+        Assert.IsFalse(result.Hits.Any(hit => hit.Title == "Why Blex" || hit.Title.Contains("<T>", StringComparison.Ordinal)), $"'{query}': {titles}");
+    }
+
+    [TestMethod]
+    [DataRow("code")]
+    [DataRow("status")]
+    [DataRow("string")]
+    public async Task A_member_every_type_has_is_not_an_answer(string query)
+    {
+        // Split into words, GetHashCode is "code": left in, it answers anything done from code. And a record's
+        // Deconstruct names every property it has, so it answers a question about any one of them first.
+        var result = await SearchAsync(query, 50);
+
+        Assert.IsFalse(result.Hits.Any(IsObjectPlumbing), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+    }
+
+    /// <summary>
+    /// What the compiler writes for a record, and an override of what every object has that its type does not document
+    /// - which is a hit with nothing in its snippet. A documented ToString says what the type's text is, and stays.
+    /// </summary>
+    private static bool IsObjectPlumbing(BlexSearchHitDto hit)
+    {
+        var member = hit.Title[(hit.Title.LastIndexOf('.') + 1)..];
+
+        return member is "Deconstruct" or "PrintMembers" || (member is "Equals" or "GetHashCode" or "ToString" && hit.Snippet.Length == 0);
+    }
+
+    [TestMethod]
     public async Task A_query_in_another_librarys_words_still_lands()
     {
         // A Fluxor or Redux user asks for reducers; Blex calls them actions.

@@ -1,0 +1,53 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    width: 100%;
+}
+
+::deep {
+    .session-persona,
+    .other-session-persona {
+        min-width: 0;
+    }
+
+    .session-persona {
+        @include lt-sm {
+            max-width: calc(100% - 30px);
+        }
+    }
+
+    .other-session-persona {
+        @include lt-sm {
+            max-width: calc(100% - 60px);
+        }
+    }
+
+    .session-address {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .session-ip {
+        direction: ltr;
+        overflow: hidden;
+        line-height: 1.25;
+        white-space: nowrap;
+        font-family: monospace;
+        text-overflow: ellipsis;
+        font-size: 0.75rem;
+        color: $bit-color-foreground-secondary;
+    }
+
+    .sessions-list {
+        padding: 2px;
+        height: 20rem;
+    }
+
+    .oauth-session-banner {
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+}

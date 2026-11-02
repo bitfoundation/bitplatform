@@ -322,15 +322,13 @@ internal sealed class BitMessageBoxPrompt : ComponentBase, IDisposable
     // and a key pressed to compose a character with an IME is not an answer at all. On every target that last one is the
     // field's to see to: Immediate turns its composition guard on, which stops the Enter that commits a candidate (flagged
     // by isComposing, by the legacy 229 key code, or arriving between compositionstart and compositionend) before Blazor
-    // sees it - so no keydown of a composition reaches this handler on .NET 8, whose event does not carry the state.
+    // sees it.
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key != "Enter" || MessageBox is null) return;
 
-#if NET9_0_OR_GREATER
         // A second line of defence where the event carries the composition state.
         if (e.IsComposing) return;
-#endif
 
         if (State.Parameters.Multiline is true && (e.CtrlKey || e.MetaKey) is false) return;
 

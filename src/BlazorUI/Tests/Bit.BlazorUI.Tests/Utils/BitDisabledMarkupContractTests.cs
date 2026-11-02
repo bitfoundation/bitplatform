@@ -50,9 +50,9 @@ public class BitDisabledMarkupContractTests : BunitTestContext
     public static IEnumerable<object[]> Components =>
         BitDisabledActivationContractTests.Components.Concat(BitDisabledActivationContractTests.ContentHosts);
 
-    // The carousels, the theme and the accent color switchers read services of the library's own.
+    // The services and the setup the components of the activation contract's lists read.
     [TestInitialize]
-    public void AddServices() => Context.Services.AddBitBlazorUIExtrasServices();
+    public void AddServices() => BitDisabledActivationContractTests.AddServices(Context);
 
     [TestMethod]
     public void EveryNativeControlWrittenDisabledShouldAlsoBeAriaDisabled()
@@ -207,6 +207,10 @@ public class BitDisabledMarkupContractTests : BunitTestContext
                 builder.OpenComponent(0, type);
                 builder.AddAttribute(1, nameof(BitComponentBase.Disabled), disabled);
                 builder.AddAttribute(2, ROOT, "");
+                foreach (var (name, value) in BitDisabledActivationContractTests.GetRequiredParameters(type))
+                {
+                    builder.AddAttribute(3, name, value);
+                }
                 builder.CloseComponent();
             });
         });
@@ -391,7 +395,7 @@ public class BitDisabledMarkupContractTests : BunitTestContext
 
     private sealed record ComponentTag(string File, string FullPath, string Markup, int Index, int Line, string Name, string Tag);
 
-    private static readonly string[] PackageFolders = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy"];
+    private static readonly string[] PackageFolders = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI"];
 
     private static IEnumerable<string> EnumeratePackageFiles(string searchPattern)
     {

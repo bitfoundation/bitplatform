@@ -43,7 +43,7 @@ public partial class BitMenuButtonStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-divider-color, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})))));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus}))");
-        StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));");
 
         // And an explicit Background, over the callout's own background.
         StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-cal-bg, var(--bit-MenuButton-callout-background, #{$clr-bg-pri}));");
@@ -105,7 +105,7 @@ public partial class BitMenuButtonStylesheetTests
         // A menu button can sit in the header or the menu of another one, which must not inherit the outer one's
         // Color or Size: every element those classes land on starts what they publish out unset, and the classes -
         // declared further down at the same weight - still win on the element that carries them.
-        foreach (var property in new[] { "--bit-mnb-clr", "--bit-mnb-clr-txt", "--bit-mnb-clr-hover", "--bit-mnb-clr-active", "--bit-mnb-clr-dark",
+        foreach (var property in new[] { "--bit-mnb-clr", "--bit-mnb-clr-fg", "--bit-mnb-clr-txt", "--bit-mnb-clr-hover", "--bit-mnb-clr-active", "--bit-mnb-clr-dark",
                                          "--bit-mnb-clr-dark-hover", "--bit-mnb-clr-dark-active", "--bit-mnb-clr-focus", "--bit-mnb-clr-dis",
                                          "--bit-mnb-clr-dis-text", "--bit-mnb-font-size", "--bit-mnb-min-height", "--bit-mnb-icon-size",
                                          "--bit-mnb-item-height", "--bit-mnb-pad-y", "--bit-mnb-padding", "--bit-mnb-item-padding" })
@@ -127,6 +127,26 @@ public partial class BitMenuButtonStylesheetTests
         var callout = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-cal {");
         StringAssert.Contains(callout, "@include bit-mnb-unset-published;");
         StringAssert.Contains(callout, "--bit-mnb-cal-bg: initial;");
+    }
+
+    [TestMethod,
+        DataRow(".bit-mnb-otl", "outline"),
+        DataRow(".bit-mnb-txt", "text")]
+    public void BitMenuButtonShouldDrawTheLabelOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The label of an Outline or Text menu button sits on the page rather than on the role's fill, so it is drawn in
+        // the role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on
+        // white. So is the glyph of a checked item, which sits on the callout.
+        var block = SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{");
+        StringAssert.Contains(block, $"color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-{variant}-color, var(--bit-MenuButton-color, #{{$clr-pri}})));");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-ick {"), "color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));");
+
+        // Only the label: the divider keeps the role's main.
+        StringAssert.Contains(block, $"--bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-{variant}-divider-color, ");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-mnb-#{$role} {"), "--bit-mnb-clr-fg: #{role-text($role, $tokens)};");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "MenuButton", "BitMenuButton.scss");

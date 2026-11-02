@@ -165,12 +165,13 @@ public static class BbPdf417BitStreamParser
                     break;
 
                 case ShiftToByte:
-                    if (index >= length)
+                    // One byte: a codeword past 255 is not one, and masking it to one would be a misread.
+                    if (index >= length || codewords[index] > 0xFF)
                     {
                         return null;
                     }
 
-                    output.Append((byte)(codewords[index++] & 0xFF));
+                    output.Append((byte)codewords[index++]);
                     break;
 
                 case EciCharset:
@@ -284,12 +285,12 @@ public static class BbPdf417BitStreamParser
             {
                 if (codeword == ShiftToByte)
                 {
-                    if (index + 1 >= length)
+                    if (index + 1 >= length || codewords[index + 1] > 0xFF)
                     {
                         return -1;
                     }
 
-                    output.Append((byte)(codewords[index + 1] & 0xFF));
+                    output.Append((byte)codewords[index + 1]);
                     index += 2;
                     continue;
                 }
@@ -465,7 +466,13 @@ public static class BbPdf417BitStreamParser
                 continue;
             }
 
-            // Five codewords carry six bytes as one base 900 number.
+            // Five codewords carry six bytes as one base 900 number - except, under latch 901, the last five, which
+            // are five bytes of one codeword each: 901 is the latch for a byte count that is not a multiple of six, and
+            // a count six short of one ends in five single bytes. Only a group with more data after it is packed.
+            if (!sixes && (index >= length || codewords[index] >= TextCompaction))
+            {
+                break;
+            }
             long value = 0;
             foreach (var item in group)
             {
@@ -491,7 +498,13 @@ public static class BbPdf417BitStreamParser
 
             foreach (var item in group)
             {
-                output.Append((byte)(item & 0xFF));
+                // One byte a codeword: a value past 255 is not a byte, and masking it to one would be a misread.
+                if (item > 0xFF)
+                {
+                    return -1;
+                }
+
+                output.Append((byte)item);
             }
         }
 

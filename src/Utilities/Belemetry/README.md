@@ -53,6 +53,7 @@ semantic-convention and Azure-mapping references.
 - [Using the script without .NET](#using-the-script-without-net)
 - [How it works](#how-it-works)
 - [Troubleshooting](#troubleshooting)
+- [Upgrade notes](#upgrade-notes)
 
 ---
 
@@ -174,6 +175,13 @@ In the browser, metrics need `System.Diagnostics.Metrics`, which the WebAssembly
 `MetricsSupport` to `true` unless the project sets it. A project that sets it to `false` gets no metrics, and Belemetry
 logs a warning at startup.
 
+`HttpClient` spans are a switch of their own, which the WebAssembly SDK also turns off (`HttpActivityPropagationSupport`)
+and the package leaves alone. Off, `HttpClient`'s requests go out through the browser's `fetch`, and the browser script
+records them as its own client spans (`Dependencies`, with `traceparent` only where `Browser.PropagateTraceContextTo`
+allows). Set `<HttpActivityPropagationSupport>true</HttpActivityPropagationSupport>` to have .NET trace them as
+`System.Net.Http` spans inside the current activity's trace instead - but then `HttpClient` sends `traceparent` to every
+origin it calls, and a cross-origin API that does not allow the header in CORS fails.
+
 ### Standalone Blazor WebAssembly
 
 ```csharp
@@ -262,7 +270,8 @@ options.AddOtlpExporter(o =>
 {
     o.Endpoint = new Uri("http://localhost:4318");              // /v1/traces, /v1/logs, /v1/metrics are appended
     o.Protocol = BelemetryOtlpProtocol.HttpProtobuf;            // or HttpJson, or Grpc (see below)
-    o.Headers["x-honeycomb-team"] = "...";                       // vendor API keys
+    o.Headers["x-honeycomb-team"] = "...";                       // vendor API keys (a server keeps these out of the page)
+    o.BrowserHeaders["x-ingest-key"] = "...";                    // what the browser script may send - public by definition
     o.Compression = BelemetryCompression.Gzip;
     o.BrowserEndpoint = new Uri("https://otel.example.com");    // public, CORS-enabled route for the browser (may be relative: "/otlp")
     o.Signals = BelemetrySignals.All;                           // honored by the browser too (it sends traces and logs)
@@ -302,8 +311,16 @@ receivers:
 ```
 
 For the **.NET Aspire dashboard**, set `DASHBOARD__OTLP__CORS__ALLOWEDORIGINS` to your app's origin and use its OTLP
-HTTP endpoint (protobuf). Headers set on an exporter are visible to anyone who opens the page - for vendors that need
-an API key, use a collector in between, or the [Relay transport](#transport-direct-and-relay).
+HTTP endpoint (protobuf).
+
+**Headers and the page.** Whatever the browser script exports with is readable by anyone who opens the page. A server
+(Blazor Server, static SSR, the server half of Auto) therefore never hands an exporter's `Headers` to the script -
+they are server configuration, often a real API key, or the Aspire dashboard's key from `OTEL_EXPORTER_OTLP_HEADERS` -
+and the page sends only `BrowserHeaders`, for a key that is meant to be public. Belemetry warns at startup about an
+exporter whose page now exports without the headers it has. In WebAssembly and Hybrid the configuration already lives
+on the device, so the script sends `Headers` too (with `BrowserHeaders` on top): never put a credential in a client's
+exporter. For vendors that need a secret key, use a collector in between, or the
+[Relay transport](#transport-direct-and-relay).
 
 ### Azure Monitor (Application Insights)
 
@@ -323,7 +340,8 @@ options.AddAzureMonitorExporter("InstrumentationKey=...;IngestionEndpoint=https:
 Belemetry takes no dependency on Azure.Identity - the token provider is a plain delegate. An exporter with a token
 provider is never handed to the browser script.
 
-> Live Metrics follows the Application Insights QuickPulse protocol; treat it as a preview feature.
+> Live Metrics follows the Application Insights QuickPulse protocol; treat it as a preview feature. In a Hybrid app it
+> streams only while the user grants `Metrics`, and it follows the service's endpoint redirects over HTTPS only.
 
 ### Console, in-memory and custom exporters
 
@@ -393,9 +411,14 @@ How it behaves:
 - **Nothing undecided leaves the device.** Records of not-yet-granted features are held in memory (up to
   `Consent.PendingLimit`) and sent if the user grants them, dropped if not.
 - **Revoking is immediate.** Queued records of a revoked feature are discarded, and its device storage is cleared:
-  `Persistence` clears the offline queue, `Sessions` the stored session, `UserTracking` the pseudo id and user id.
+  revoking any feature clears the offline queue (a stored request can hold that feature's records), `Sessions` the
+  stored session, `UserTracking` the pseudo id and user id, which also leave the records still queued. What already
+  left the queue and holds a revoked feature's records (or the user ids) is dropped too: not sent if it has not been
+  yet, not retried, not stored - and the other records of its batch go with it. A revoke of `Persistence` or
+  `Sessions`, which no record belongs to, drops nothing in flight.
 - **The choice is remembered** (`Consent.Persist`, default on) in `localStorage` (and in a file in Hybrid apps) -
-  recording the choice itself is strictly necessary.
+  recording the choice itself is strictly necessary. Other open tabs of the app adopt it as it is made, so a banner
+  answered in one tab closes in the rest, and a revoke there stops them sending too.
 - **Global Privacy Control** is honored (`Consent.HonorGlobalPrivacyControl`, default on): a browser sending GPC never
   gets the `Analytics` features.
 - **No cookies.** Belemetry sets none.
@@ -432,6 +455,11 @@ await Belemetry.FlushAsync();
 
 On WebAssembly and Hybrid these go through the .NET pipeline; on Blazor Server they are routed through the user's
 browser, so their consent applies.
+
+The user ids are consent's to add: without `UserTracking`, a `user.id` or `enduser.pseudo.id` passed as an attribute,
+a log scope, a structured log value or a metric tag is dropped (from span events and links too), and a log message that
+would render one is exported with its template as the body (`Paid by {user.id}`) - also when `UserTracking` is revoked
+after the message was logged and before it was exported.
 
 ---
 
@@ -493,7 +521,7 @@ public sealed class TailSampler : IBelemetryProcessor
 
 Instruments of the meters in `Metrics.Meters` (default `System.Net.Http`, `Microsoft.AspNetCore.Components*`,
 `System.Runtime`) are aggregated - counters and up-down counters as sums, histograms with explicit buckets (instrument
-advice is honored on .NET 9+), gauges as last values - and exported every `Metrics.ExportInterval` (60 s), with
+advice is honored), gauges as last values - and exported every `Metrics.ExportInterval` (60 s), with
 `Metrics.Temporality` (cumulative by default; Azure Monitor always gets deltas) and a `Metrics.CardinalityLimit` per
 instrument (2000; overflow goes to an `otel.metric.overflow` point).
 
@@ -501,6 +529,22 @@ instrument (2000; overflow goes to an `otel.metric.overflow` point).
 options.Metrics.Meters.Add("MyApp");
 options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];   // empty (the default) means BelemetryMetricsOptions.DefaultHistogramBoundaries
 ```
+
+**Belemetry's own health.** Add the `Bit.Belemetry` meter to watch for data loss on a dashboard instead of finding
+out from a gap:
+
+```csharp
+options.Metrics.Meters.Add("Bit.Belemetry");
+```
+
+| Instrument | Attributes | Counts |
+| --- | --- | --- |
+| `belemetry.records.dropped` | `belemetry.reason`, `belemetry.signal` (`traces`/`logs`) | records dropped before export: `queue_full`, `pending_full` (the hold before a consent decision), `not_consented`, `consent_revoked`, `error_limit`, `relay_limit`, `filtered` (a processor returned false) |
+| `belemetry.records.exported` | `belemetry.exporter`, `belemetry.outcome` | records handed to an exporter: `delivered`, `rejected` (refused for good - the items a partial success refused included), `stored` (kept for a retry; `delivered` again when the retry succeeds), `failed` (lost), `withdrawn` (consent for a feature of its records was revoked after it left the queue: neither sent again nor stored) |
+
+In the browser, `BitBelemetry.getStats()` gives the script's counterpart: `{ dropped: { <reason>: n }, requests:
+{ delivered, rejected, kept, dropped, withdrawn }, queued, pending }` since the page loaded (with `sampled_out` among the
+reasons).
 
 Metrics depend on the `System.Diagnostics.Metrics` feature switch (`MetricsSupport`). The WebAssembly SDK turns it off
 by default; the Bit.Belemetry package turns it back on unless the project sets it. With the switch off, no metrics are
@@ -560,17 +604,36 @@ services.AddHangfire(configuration => configuration
 | `TrackPageVisitTime` | `false` | how long each page was visited, as a `browser.page_visit_time` event (Application Insights: `PageVisitTime`) |
 | `InteractionEvents` | `click` | DOM events recorded as interactions |
 | `CaptureInteractionText` | `false` | record the clicked element's text (may contain personal data) |
+| `TrackRageClicks` | `true` | three clicks on one element within a second also emit one `browser.rage_click` event per burst - the frustration signal of a user who expected something to happen |
 | `WebVitals` / `DocumentLoad` | `true` | LCP, INP, CLS, FCP, TTFB / the load span with navigation timing |
 | `ResourceTiming` / `LongTasks` | `false` | spans per fetched resource / main-thread tasks over 50 ms |
 | `Fetch` / `Xhr` | `true` | dependency spans |
 | `PropagateTraceContextTo` | `same-origin` | where `traceparent` is added (`same-origin`, `*`, or regexes) |
 | `IgnoreUrls` | Blazor framework routes | regexes never recorded as dependencies |
-| `IgnoreErrorMessages` | `ResizeObserver loop` | regexes of errors never recorded |
+| `IgnoreErrorMessages` | `ResizeObserver loop`, `^Script error\.?$` | regexes of errors never recorded (the second is a cross-origin script's error without CORS: no message, no stack, nothing to act on) |
 | `CaptureConsole` / `ConsoleLevels` | `false` / `error`, `warn` | console capture |
 | `SessionInactivityTimeout` / `SessionMaxDuration` | 30 min / 24 h | session rotation |
 | `SessionSampleRatio` | `1.0` | fraction of sessions recorded |
 | `FlushInterval`, `MaxBatchSize`, `MaxQueueSize` | 5 s, 100, 1024 | batching |
+| `MaxRelayedPerMinute` | 3000 | records one circuit may relay per minute on Blazor Server (see [Transport](#transport-direct-and-relay)) |
 | `Debug` | `false` | the script's own diagnostics in `console.debug` |
+
+### Error floods and runaway values
+
+An error thrown in a loop - a timer, a render loop, a retry - would fill the queue, evict every other record, and cost
+the backend one record per occurrence from every client. So both the script and the .NET pipeline of a WebAssembly or
+Hybrid app apply `options.Errors`:
+
+- `DuplicateWindow` (5 s): an error identical to one just recorded - same scope (logger category), type, message and
+  first stack frame - is suppressed for this long, so a loop is recorded once per window.
+- `MaxPerMinute` (100): at most this many error records per minute, with a burst of as many; the excess is dropped.
+
+The server pipeline serves every user at once and is not capped. Zero switches either rule off.
+
+`options.MaxValueLength` (32768 characters) cuts longer attribute values, log bodies and span status messages - after
+privacy scrubbing, so a cut never hides an e-mail address from it. It is the OpenTelemetry attribute value length
+limit, applied to bodies too, so one serialized object or huge stack trace cannot make a request too large to deliver.
+Zero keeps strings whole.
 
 Name interactions with `data-bit-belemetry-name`, and keep a region out entirely with `data-bit-belemetry-ignore`:
 
@@ -579,22 +642,39 @@ Name interactions with `data-bit-belemetry-name`, and keep a region out entirely
 <section data-bit-belemetry-ignore>...</section>
 ```
 
-Input values are never read.
+Input values are never read. An ignored region stays out everywhere: clicks in it are skipped, those in a shadow root
+under it too, and with `CaptureInteractionText` its text is left out of the text of a clicked element around it.
 
 ---
 
 ## Privacy
 
-Applied on both sides before anything is queued (`options.Privacy.*`):
+Applied on both sides before anything is queued, and by .NET to every metric point it collects (`options.Privacy.*`):
 
 - `RedactQueryParameters`: values of sensitive query parameters (`token`, `code`, `password`, `secret`, `key`,
-  `access_token`, `email`, ...) become `REDACTED` in every URL.
-- `StripQueryString` (off) and `StripFragment` (on - fragments may carry OAuth tokens).
-- `ScrubPatterns` (on): e-mail addresses, JWTs, bearer tokens, card numbers (Luhn-checked) and IPv4 addresses are
-  replaced in messages, stack traces and URLs.
+  `access_token`, `email`, ..., and the signatures and credentials of pre-signed storage URLs - `X-Amz-Signature`,
+  `X-Amz-Credential`, `X-Amz-Security-Token`, `X-Goog-Signature`, Azure SAS `sig`) become `REDACTED` in every URL.
+- `RedactedAttributes`: attribute names whose values become `REDACTED`, whatever they look like. A name matches a key
+  whole or its last dot-separated segment, case-insensitively, so the default `password` covers a structured log value
+  `{Password}` and `user.password`, and `authorization` covers `http.request.header.authorization` - while
+  `password_policy` is left alone; a trailing `*` matches a prefix (`http.request.header.*`). Defaults: `password`, `passwd`, `pwd`, `secret`,
+  `client_secret`, `token`, `access_token`, `refresh_token`, `id_token`, `apikey`, `api_key`, `x-api-key`,
+  `authorization`, `proxy-authorization`, `cookie`, `set-cookie`. A log message that renders such a value (or a
+  blocked one) is exported with its template as the body (`Sign-in for {User} with {Password}`), so the value does not
+  reach the backend in the message either.
+- `StripQueryString` (off; it also drops `url.query`) and `StripFragment` (on - fragments may carry OAuth tokens).
+  `url.query` gets the same parameter redaction as a URL.
+- `ScrubPatterns` (on): bearer tokens, JWTs, e-mail addresses, card numbers (Luhn-checked) and IPv4 addresses are
+  replaced in log bodies, span status messages and **every string attribute** - structured log values
+  (`logger.LogInformation("User {Email}", email)`) and event attributes included - on both sides. Kept verbatim: the
+  ids (`session.id`, `enduser.pseudo.id`, `user.id`), `server.address` and `user_agent.original` (whose four-part
+  versions read as addresses). A key named like a version (`AppVersion`, `app.version`, `build_version`) keeps its
+  four-part values too; the other patterns still apply to it.
 - `CollectUserAgent` (on): the user agent string in the browser resource.
-- `BlockedAttributes`: attribute keys (exact, case-sensitive) removed from every record and span event, by the
-  script and by .NET. The ids added afterwards (`session.id`, `enduser.pseudo.id`, `user.id`) are governed by consent.
+- `BlockedAttributes`: attribute keys (exact, case-sensitive) removed from every record, span event, span link and
+  metric point, by the script and by .NET. The ids (`session.id`, `enduser.pseudo.id`, `user.id`) are governed by
+  consent and untouched by every other privacy rule, but a blocked one is never added, and is removed from relayed
+  browser records.
 - Azure Monitor's `MaskIp` (on) stops IP-based geolocation; Belemetry never adds the client IP itself.
 
 IP scrubbing leaves the **host** of a URL and `server.address` alone, even when they are IP literals: they name the
@@ -621,21 +701,56 @@ public sealed class TenantProcessor(ITenantAccessor tenants) : IBelemetryProcess
 options.AddProcessor(new TenantProcessor(...));
 ```
 
-Processors run on every .NET-side record, including those relayed from the browser.
+Processors run on every .NET-side record, including those relayed from the browser, after the privacy rules. One that
+throws is skipped for that record (the record is kept), and reported once, as a warning in the `Bit.Belemetry`
+category. With the Direct transport the browser's records never reach .NET; process them in the page instead (below).
+
+### In the browser
+
+```js
+// Runs on every browser record as it is exported (or relayed), after consent and privacy. Change it in place;
+// return false to drop it. A processor added right after the script started still sees the initial page view.
+const remove = BitBelemetry.addProcessor(record => {
+    if (record.eventName === 'browser.user_interaction' && record.attributes['target.name'] === 'noise') return false;
+    record.attributes['app.release.channel'] = 'beta';
+});
+
+// Attributes on every record from now on (merged; null removes a key, setAttributes(null) removes them all). They
+// go through privacy like any attribute, a record's own attributes win, and the consent-governed ids (session.id,
+// enduser.pseudo.id, user.id) cannot be set this way - use setUser.
+BitBelemetry.setAttributes({ 'app.tenant': 'contoso', 'feature.checkout_v2': true });
+```
+
+The record is the browser record model: a span has `traceId`, `spanId`, `name`, `kind`, `startTime`, `endTime`,
+`status` and `events`; a log record has `time`, `severityNumber`, `body` and `eventName`; both have `attributes`,
+`scope` and `feature`. Processors must be fast and synchronous: while the page unloads nothing else runs.
 
 ---
 
 ## Offline persistence
 
 With `Persistence` consent and `options.Persistence.Enabled` (default), requests that fail with a network error or a
-retryable status (408, 429, 439, 500, 502, 503 or 504; other statuses are dropped) are kept - in `localStorage` in the
+retryable status are kept - for OTLP 429, 502, 503 and 504, the only ones the OTLP specification allows retrying; for
+Azure Monitor also 408, 439 and 500, which its ingestion endpoint asks to retry; any other status is the backend's final
+word and the request is dropped, with a warning - in `localStorage` in the
 browser (`BrowserMaxBytes`, 1 MB), in files in Hybrid and on servers (`Directory`, `MaxBytes` 20 MB) - and retried
 every `RetryInterval` (1 min, on both sides), when the page starts and when the browser comes back online, for up to
-`MaxAge` (48 h).
+`MaxAge` (48 h). A retry pass sends the stored requests oldest first, one attempt each. A request that fails holds
+back the rest of its URL's backlog until the next pass - that backend is still unreachable, and hammering it would only
+waste the network - but not the requests to other backends. The browser takes each stored request out of
+`localStorage` only while sending it, so the backlog survives the page going away mid-pass (and a request being sent
+without `keepalive` goes back to storage when the page is hidden).
+
+When the page is hidden or unloads, the script sends what is queued with `fetch(..., { keepalive: true })`, which
+outlives the page - but a browser caps the bodies of all of a page's keepalive requests in flight at 64 KiB together.
+The script tracks that budget: a request that does not fit is stored (with `Persistence` consent) and sent on the next
+visit, or sent as a plain request without it (which completes if the page was only hidden). Delivery during unload is
+best effort; nothing can guarantee it.
 
 Stored requests never contain headers, so API keys are not written to disk or `localStorage`. The exporter's current
 headers are added when a stored request is sent, so a rotated key applies to the backlog too. (In WebAssembly, a .NET
-request stored by the browser is resent with the headers of the browser exporter posting to the same URL.)
+request stored by the browser is resent with the headers of the browser exporter posting to the same URL.) A request
+stored for an endpoint the exporter no longer posts to is dropped, so the current key never goes to an old address.
 
 ---
 
@@ -651,8 +766,7 @@ options.Server.Features = BelemetryFeatures.Errors | BelemetryFeatures.Logs | Be
 options.Server.IgnoredRequestPaths.AddRange(["/health", "/alive", "/_framework", "/_content", "/_blazor"]);   // no request spans for probes and Blazor's own traffic
 ```
 
-`IgnoredRequestPaths` matches `url.path` on .NET 10 and only `http.route` on .NET 8 and 9, where a request that
-matched no endpoint (a static file) cannot be matched at all; and since the span is dropped when it ends, a child it
+`IgnoredRequestPaths` matches `url.path`; and since the span is dropped when it ends, a child it
 had - the database check behind `/health` - is still exported, with a parent that never arrives.
 
 The server pipeline serves every user at once, so it is governed by `Server.Features` (operator telemetry), not by
@@ -667,11 +781,11 @@ and `/proc` alone (no metadata-service call): `host.name`, `process.pid`, `proce
 name (`WEBSITE_INSTANCE_ID`, `CONTAINER_APP_REPLICA_NAME`) or the machine name, so Application Insights keeps counting
 the same instance across restarts - a device or a browser tab keeps a random id, which identifies nobody.
 
-ASP.NET Core's request activity (`Microsoft.AspNetCore.Hosting.HttpRequestIn`) carries no HTTP tags of its own on
-.NET 8 and 9. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the tags ASP.NET Core
+ASP.NET Core's request activity (`Microsoft.AspNetCore.Hosting.HttpRequestIn`) carries no HTTP tags of its own by
+default. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the tags ASP.NET Core
 puts on its `http.server.request.duration` measurement: `http.request.method`, `url.scheme`, `http.route`,
 `http.response.status_code`, `network.protocol.version` and `error.type`. The span is named `{method} {route}` (or
-`{method}` without a route, unless the app renamed the activity), and a 5xx marks it as an error. On .NET 10 Belemetry
+`{method}` without a route, unless the app renamed the activity), and a 5xx marks it as an error. Belemetry
 also turns off ASP.NET Core's `Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData` switch (unless the app
 set it either way), which adds `url.path`, `server.address` and `server.port`.
 
@@ -687,6 +801,15 @@ set it either way), which adds `url.path`, `server.address` and `server.port`.
   them. No CORS, no credentials in the page. Needs `<BelemetryInitializer />`; on Blazor Server, records travel over
   the circuit (interactive pages only).
 
+On Blazor Server the page at the other end of a circuit can be anything that speaks the interop protocol, and the
+queue it relays into is shared by every user, so the server treats relayed batches as untrusted input: it accepts them
+only with the Relay transport, limits each circuit to a burst of `Browser.MaxQueueSize + Consent.PendingLimit`
+records and `Browser.MaxRelayedPerMinute` (3000) per minute after it (the excess is dropped, with one warning per
+circuit), drops features the configuration switched off, and decides the service identity itself - `service.name`,
+`service.namespace`, `service.version` and `deployment.environment.name` come from the server, the rest of the
+resource from the page, and none of the server's own host or process attributes are added (as with the Direct
+transport).
+
 ---
 
 ## Environment variables
@@ -697,6 +820,7 @@ always wins, as in the OpenTelemetry SDKs (headers merge per key):
 
 | Variable | Effect |
 | --- | --- |
+| `OTEL_SDK_DISABLED` | `true` (any case) turns Belemetry off entirely - an operator's kill switch, so unlike the others it wins over code |
 | `OTEL_SERVICE_NAME` | `service.name` |
 | `OTEL_RESOURCE_ATTRIBUTES` | extra resource attributes (`k=v,k2=v2`) |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | adds an OTLP exporter when none is configured, and fills unset endpoints |
@@ -720,12 +844,13 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 
 | Record | Shape |
 | --- | --- |
-| Page view | log record, event `browser.page_view`: `url.full`, `url.path`, `page.title`, `page.referrer`, `browser.navigation.type` |
+| Page view | log record, event `browser.page_view`: `url.full`, `url.path`, `page.title`, `page.referrer`, `browser.navigation.type` (`initial`, `push`, `replace`, `pop`, `hash`, `manual`, or `restore` - the page came back from the back/forward cache, which fires no history event) |
 | Page visit time | log record, event `browser.page_visit_time` (with `Browser.TrackPageVisitTime`): `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms) |
 | Interaction | log record, event `browser.user_interaction`: `event.type`, `target.element`, `target.id`, `target.name`, `target.xpath` |
-| Web vital | log record, event `browser.web_vital`: `web_vital.name`, `web_vital.value`, `web_vital.delta`, `web_vital.rating`, `web_vital.id` |
+| Rage click | log record, event `browser.rage_click` (with `Browser.TrackRageClicks`): the target attributes, `event.type = rage_click`, `interaction.click_count` |
+| Web vital | log record, event `browser.web_vital`: `web_vital.name`, `web_vital.value`, `web_vital.delta`, `web_vital.rating`, `web_vital.id`, `web_vital.navigation_type`. A back/forward-cache restore starts a new generation under new ids, as Google's web-vitals library does: FCP and LCP measured from the restore to the next painted frame, CLS and INP from zero, navigation type `back-forward-cache` |
 | Document load | internal span `documentLoad` with navigation-timing events |
-| fetch/XHR | client span: `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `error.type` |
+| fetch/XHR | client span: `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `error.type`. An unknown method is `_OTHER` (span name `HTTP`) with `http.request.method_original`; a request the app aborted keeps `error.type = AbortError` but no error status; `TimeoutError` and `NetworkError` (XHR) are errors |
 | JS error / exception | log record, severity ERROR, event `exception`: `exception.type`, `exception.message`, `exception.stacktrace` |
 | `ILogger` | log record with the category as scope, `log.event.id`, `log.event.name`, the structured values |
 | EF Core command | client span named after the database: `db.system.name`, `db.namespace`, `server.address`, `server.port`, `efcore.command.source`, `db.query.text` (opt-in), `error.type` |
@@ -782,9 +907,11 @@ console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseu
 - **Encoders:** OTLP protobuf (a minimal hand-written writer, conformance-tested against the official `.proto`
   files), OTLP JSON, and Application Insights envelopes - all without reflection, so the package is trimmable and
   AOT-compatible.
-- **Delivery:** retries with backoff that honor `Retry-After`, Azure partial-success (206) handling, offline
-  persistence, and an unload drain in which WebAssembly hands its serialized batches to the browser to send with
-  `keepalive`.
+- **Delivery:** retries with backoff that honor `Retry-After` (on the statuses each backend's protocol calls
+  transient), Azure partial-success (206) handling, OTLP `partial_success` responses reported as warnings (the
+  specification forbids retrying them), offline persistence, and an unload drain in which WebAssembly hands its
+  serialized batches to the browser to send with `keepalive`. .NET exports carry `User-Agent: Bit.Belemetry/<version>`
+  (a page cannot set it).
 - **No self-instrumentation:** the exporter's own HTTP calls are suppressed from tracing, and the script ignores
   exporter URLs and requests already traced by .NET.
 
@@ -793,8 +920,10 @@ console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseu
 ## Troubleshooting
 
 - **Nothing arrives:** check consent first (`IBelemetryConsent.Granted`, or `BitBelemetry.getContext()` in the
-  browser console) - by default nothing is sent until the user consents. Then set `options.Browser.Debug = true` and
-  `options.Debug = true`, and add `options.AddConsoleExporter()`.
+  browser console) - by default nothing is sent until the user consents. `BitBelemetry.getStats()` says what the
+  script dropped and why (`not_consented`, `sampled_out`, `queue_full`, ...) and what became of its requests
+  (`rejected` means the backend refused them - a key or an endpoint; on .NET those are logged as warnings). Then set
+  `options.Browser.Debug = true` and `options.Debug = true`, and add `options.AddConsoleExporter()`.
 - **CORS errors in the browser console:** the receiver does not allow the page origin - configure CORS on the
   collector, use `BrowserEndpoint`, or switch to the Relay transport.
 - **No .NET telemetry on the server:** that is the default; see [the server pipeline](#the-server-pipeline).
@@ -809,3 +938,57 @@ console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseu
   the package (see [Metrics](#metrics)).
 - **Duplicate HTTP spans in WebAssembly:** they should not happen - the script skips requests that already carry a
   `traceparent` from .NET's `HttpClient`. If a custom handler strips it, add the URL to `Browser.IgnoreUrls`.
+- **No `System.Net.Http` spans in WebAssembly:** the WebAssembly SDK turns `HttpClient`'s tracing off
+  (`HttpActivityPropagationSupport`), and its requests show up as the browser script's fetch spans instead. Turning it
+  on has a cost: `HttpClient` then sends `traceparent` to every origin, which a cross-origin API must allow in CORS.
+
+---
+
+## Upgrade notes
+
+Behavior that changed with the hardening release, and how to get the previous behavior where that is still possible.
+The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvement-Plan.md).
+
+**Security and privacy**
+
+- **A server no longer publishes exporter `Headers` in the page.** On Blazor Server, static SSR and the server half of
+  Auto, an OTLP exporter's `Headers` (and `OTEL_EXPORTER_OTLP_HEADERS`) stay on the server; the browser script exports
+  without them, and a startup warning names the exporter. Move a key that is meant to be public to `BrowserHeaders`,
+  or switch to the Relay transport. WebAssembly and Hybrid are unchanged.
+- **Every string attribute is scrubbed on the .NET side too**, as the browser script always did: structured log
+  values and event attributes lose e-mail addresses, tokens, card numbers and IPv4 addresses. `client.address` becomes
+  `[ip]`. Turn pattern scrubbing off with `Privacy.ScrubPatterns = false`.
+- **Credential-like attribute names are `REDACTED`** (`Privacy.RedactedAttributes`: password, secret, token, API key,
+  authorization, cookie names). Remove a name from the list in code (`options.Privacy.RedactedAttributes.Remove("token")`)
+  to keep its values.
+- **Pre-signed storage URLs lose their signatures** (`X-Amz-Signature`, `X-Goog-Signature`, ...; `RedactQueryParameters`).
+- **A server lists no exporter URLs in the page's `ignoreUrls`.** A WebAssembly client's .NET exports carry a fetch
+  option the script recognizes, so they are not traced even by a script the server started (Auto).
+- **On Blazor Server, relayed batches are untrusted input**: accepted only with the Relay transport, rate-limited per
+  circuit, and stamped with the server's service identity but not its host, process or cloud attributes.
+
+**Delivery**
+
+- **OTLP retries 429, 502, 503 and 504 only**, as the OTLP specification requires; 408, 439 and 500 from an OTLP
+  backend are final (dropped, not persisted, with a warning). Azure Monitor keeps its own list.
+- **Rejected requests and OTLP partial successes are warnings** in the `Bit.Belemetry` category (they were Debug).
+- **During unload, a request that cannot get `keepalive`** (over the 64 KiB or 9-request budget) is stored for the
+  next visit instead of being sent and refused.
+- **Stored requests are resent oldest first, one attempt each**; a failure holds back only the backlog of its URL.
+- **.NET exports send `User-Agent: Bit.Belemetry/<version>`** unless an exporter header sets one.
+
+**Collected data**
+
+- **Errors are deduplicated and capped** on client hosts: an identical error within `Errors.DuplicateWindow` (5 s) is
+  suppressed, and at most `Errors.MaxPerMinute` (100) are recorded per minute. `TimeSpan.Zero` / `0` switch them off.
+- **`Script error.` is ignored by default** (`Browser.IgnoreErrorMessages`).
+- **Strings longer than `MaxValueLength` (32768) are cut.** `0` keeps them whole.
+- **An aborted fetch/XHR is not an error span** (it keeps `error.type = AbortError`); unknown HTTP methods are
+  `_OTHER`.
+- **New records:** `browser.rage_click` events (`Browser.TrackRageClicks`), page views of type `restore` and a new
+  web-vitals generation after a back/forward-cache restore.
+- **`OTEL_SDK_DISABLED=true` turns Belemetry off**, overriding code.
+
+**New APIs:** `BelemetryOtlpExporterOptions.BrowserHeaders`, `BelemetryOptions.Errors`, `BelemetryOptions.MaxValueLength`,
+`BelemetryPrivacyOptions.RedactedAttributes`, `BelemetryBrowserOptions.TrackRageClicks`, the `Bit.Belemetry` meter, and
+in the script `addProcessor`, `setAttributes` and `getStats`.

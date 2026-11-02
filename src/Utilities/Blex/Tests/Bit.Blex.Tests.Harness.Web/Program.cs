@@ -15,14 +15,8 @@ builder.Services.AddBlexHarness();
 
 var app = builder.Build();
 
-#if NET9_0_OR_GREATER
 app.UseAntiforgery();
 app.MapStaticAssets();
-#else
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAntiforgery();
-#endif
 
 // The harness pages live in the harness library, so its assembly is what gives every route an endpoint.
 app.MapRazorComponents<App>()

@@ -256,9 +256,11 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
         {
             await host.InvokeVoidAsync("releaseLock", id).ConfigureAwait(false);
         }
-        catch (JSException)
+        catch (Exception exception) when (exception is JSException or ObjectDisposedException)
         {
-            // The host is already gone, and its locks with it.
+            // The host is already gone - or going, its reference disposed under a release that was
+            // already under way - and its locks with it. Thrown from a lock's dispose, this would
+            // replace whatever failure is unwinding past it with one that explains nothing.
         }
     }
 
@@ -272,22 +274,26 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
 
         _disposed = true;
 
-        if (_host is not null)
+        if (_host is { } host)
         {
+            // Cleared first: terminating fails every request still in flight, and the work unwinding
+            // from those failures - releasing a lock it held, say - runs while this method waits. It
+            // has to find the transport disposed, not a host reference about to be.
+            _host = null;
+
             // Terminate rather than close: dispose means the worker is finished, not that EF opened
             // and closed a connection around a query. A close would leave a live worker with no
             // owner, which is a leak in a browser that charges for every one.
             try
             {
-                await _host.InvokeVoidAsync("dispose").ConfigureAwait(false);
+                await host.InvokeVoidAsync("dispose").ConfigureAwait(false);
             }
             catch (JSException)
             {
                 // The worker may already be gone; the JS references still need releasing.
             }
 
-            await _host.DisposeAsync().ConfigureAwait(false);
-            _host = null;
+            await host.DisposeAsync().ConfigureAwait(false);
         }
 
         if (_module is not null)

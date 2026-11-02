@@ -1,10 +1,5 @@
 name: Boilerplate CI
 
-#if (IsInsideProjectTemplate == true)
-# [mirror] .azure-devops/workflows/ci.yml
-# Only one of the two pipeline directories ships to a generated project, so this note is template-only.
-#endif
-
 # https://bitplatform.dev/templates/dev-ops
 
 on:
@@ -22,7 +17,7 @@ jobs:
 
   build:
     name: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -39,18 +34,14 @@ jobs:
     - name: Verify formatting
       run: dotnet format whitespace --folder . --verify-no-changes
 
-    - name: Install the bit CLI
-      shell: pwsh
-      run: |
-        dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$env:RUNNER_TEMP/bit-cli"
-        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
-
     - name: Set up and build with bit setup
-      run: bit setup --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+      uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
+      with:
+        arguments: --platforms android --no-browsers -p:EnforceCodeStyleInBuild=true
 
   test:
     name: test
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -64,14 +55,8 @@ jobs:
       with:
         global-json-file: global.json
 
-    - name: Install the bit CLI
-      shell: pwsh
-      run: |
-        dotnet tool install Bit.Cli --version 10.7.0-pre-04 --tool-path "$env:RUNNER_TEMP/bit-cli"
-        Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
-
     - name: Prepare this machine and build with bit setup
-      run: bit setup --yes
+      uses: bitfoundation/bitplatform/.github/actions/boilerplate/bit-setup@v-11.0.0-pre-16
 
     - name: Test
       id: test
@@ -84,3 +69,18 @@ jobs:
         name: tests-artifact
         path: ./src/Tests/TestResults
         retention-days: 14
+#if (advancedTests == true)
+
+    - name: Test the Workbench
+      id: test-workbench
+      if: ${{ !cancelled() }}
+      run: cd src/WorkbenchTests && dotnet test
+
+    - name: Upload Workbench Tests Artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ failure() && steps.test-workbench.conclusion == 'failure' }}
+      with:
+        name: workbench-tests-artifact
+        path: ./src/WorkbenchTests/TestResults
+        retention-days: 14
+#endif

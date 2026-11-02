@@ -271,9 +271,9 @@ public class McpToolTests
         Assert.Contains("scoped", guide);
         Assert.Contains("singleton", guide);
         Assert.Contains("RendererInfo.IsInteractive", guide);
-        Assert.Contains(": CircuitHandler", guide);
-        Assert.Contains("Presence.Suspend()", guide);
-        Assert.Contains("Presence.Resume()", guide);
+        Assert.Contains("CircuitHandler", guide);
+        Assert.Contains("builder.Services.AddBitBcrdtCircuitPresence();", guide);
+        Assert.Contains("BcrdtPresenceService.Suspend", guide);
         Assert.Contains("BcrdtInMemoryNetwork.Shared", guide);
     }
 

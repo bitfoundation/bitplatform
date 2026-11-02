@@ -12,7 +12,7 @@
             (under <code>analyzers/dotnet/cs</code>), so it adds nothing to your app's output - but NuGet
             does not flow analyzers to projects that only get a package transitively, so reference
             <code>Bit.Blex</code> directly from every project that declares stores. Every runtime package
-            targets <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code>.
+            targets <code>net10.0</code> and <code>net11.0</code>.
         </p>
 
         <CodeBlock Code="@Install" Language="bash" Title="Add the packages" />
@@ -66,7 +66,7 @@
                 <tbody>
                     <tr>
                         <td>Blazor Server<br /><span class="bb-muted">InteractiveServer</span></td>
-                        <td>The server's <code>Program.cs</code>. Every circuit is a scope, so each user gets their own manager and stores. Browser storage is unreachable while prerendering; <code>&lt;BlexProvider&gt;</code> hydrates on the first interactive render instead. Set <code>EnableDevTools="false"</code> unless you want the state tree streamed over the circuit.</td>
+                        <td>The server's <code>Program.cs</code>. Every circuit is a scope, so each user gets their own manager and stores. Browser storage is unreachable while prerendering; <code>&lt;BlexProvider&gt;</code> hydrates on the first interactive render instead. Leave <code>EnableDevTools</code> at its default (<code>false</code>) unless you want the state tree streamed over the circuit.</td>
                     </tr>
                     <tr>
                         <td>Blazor Web App<br /><span class="bb-muted">InteractiveWebAssembly, prerendered</span></td>
@@ -86,7 +86,7 @@
                     </tr>
                     <tr>
                         <td>.NET MAUI Blazor Hybrid</td>
-                        <td><code>MauiProgram.cs</code>, scoped as in Blazor: the <code>BlazorWebView</code> creates the scope. No browser extension exists in a WebView, so set <code>EnableDevTools="false"</code>. Persist to the WebView's <code>localStorage</code> or to OS-native <code>Preferences</code>. See <a href="maui">.NET MAUI</a>.</td>
+                        <td><code>MauiProgram.cs</code>, scoped as in Blazor: the <code>BlazorWebView</code> creates the scope. No browser extension exists in a WebView, so leave <code>EnableDevTools</code> at its default (<code>false</code>). Persist to the WebView's <code>localStorage</code> or to OS-native <code>Preferences</code>. See <a href="maui">.NET MAUI</a>.</td>
                     </tr>
                     <tr>
                         <td>.NET MAUI<br /><span class="bb-muted">native XAML</span></td>
@@ -164,7 +164,7 @@
     <div class="bb-card">
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Requirements</h2>
         <ul class="bb-detail-list">
-            <li><strong>.NET 8, 9 or 10</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Maui</code> and <code>Bit.Blex.Testing</code> - each ships <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code> builds.</li>
+            <li><strong>.NET 10 or 11</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Maui</code> and <code>Bit.Blex.Testing</code> - each ships <code>net10.0</code> and <code>net11.0</code> builds.</li>
             <li><strong>netstandard2.0</strong> for the generator, as Roslyn analyzers require.</li>
             <li>Nullable reference types are supported and expected; generated code is annotated.</li>
         </ul>
@@ -201,7 +201,7 @@
 
     private static readonly IReadOnlyList<ApiTable.Row> ProviderRows =
     [
-        new("EnableDevTools", "<code>bool</code>, default <code>true</code>. Connects the Redux DevTools bridge on first render. Set to <code>false</code> in production."),
+        new("EnableDevTools", "<code>bool</code>, default <code>false</code>. Connects the Redux DevTools bridge on first render. Turn it on in development only."),
         new("PersistComponentState", "<code>bool</code>, default <code>true</code>. Hands prerendered store state to the interactive render through Blazor's <code>PersistentComponentState</code>, avoiding the prerender \"double render\" flicker. No effect when the framework service is unavailable."),
         new("ChildContent", "The application content rendered inside the provider."),
     ];
@@ -218,7 +218,7 @@
 
     private const string CsprojSample = """
         <ItemGroup>
-          <PackageReference Include="Bit.Blex" Version="10.7.0-pre-04" />
+          <PackageReference Include="Bit.Blex" Version="11.0.0-pre-16" />
         </ItemGroup>
         """;
 

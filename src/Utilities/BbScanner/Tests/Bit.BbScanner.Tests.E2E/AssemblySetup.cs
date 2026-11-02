@@ -1,4 +1,5 @@
 ﻿using Bit.BbScanner.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 
 // The tests run one at a time. Every one of them launches a browser that plays a video into a fake camera and
@@ -26,6 +27,14 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-        await PlaywrightSession.StopAsync();
+        try
+        {
+            await PlaywrightSession.StopAsync();
+            await ServerSampleHost.StopAsync();
+        }
+        finally
+        {
+            await LazyLoadingSample.StopAsync();
+        }
     }
 }

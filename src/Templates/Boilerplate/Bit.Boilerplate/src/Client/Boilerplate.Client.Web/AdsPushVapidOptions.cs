@@ -6,7 +6,7 @@ namespace Boilerplate.Client.Web;
 public class AdsPushVapidOptions
 {
     /// <summary>
-    /// Web push's vapid. More info at https://d3v.one/vapid-key-generator/
+    /// Web push's VAPID key pair. Create one with `bit keys vapid`.
     /// </summary>
     [Required]
     public string PublicKey { get; set; } = default!;

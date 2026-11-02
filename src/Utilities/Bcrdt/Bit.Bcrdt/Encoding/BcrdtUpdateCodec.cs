@@ -33,6 +33,8 @@ internal static class BcrdtUpdateCodec
     private const byte ParentIsRootName = 1;
     private const byte ParentIsItemId = 0;
 
+    internal const long MaxClockGap = 4L * int.MaxValue;
+
     /// <summary>Writes the block groups a peer is missing, given what it already has.</summary>
     public static void WriteClientBlocks(ref BcrdtBufferWriter writer, BcrdtStructStore store, BcrdtStateVector remoteState)
     {
@@ -151,6 +153,29 @@ internal static class BcrdtUpdateCodec
                 if (block is BcrdtItem { Parent: string rootName } item) item.Parent = doc.GetOrCreateUntypedRoot(rootName);
             }
         }
+    }
+
+    public static void RefuseFarClocks(Dictionary<ulong, BcrdtClientBlocks> groups, BcrdtStructStore store)
+    {
+        foreach ((ulong client, BcrdtClientBlocks group) in groups) RefuseFarClocks(group, store.GetState(client));
+    }
+
+    /// <summary>Refuses a block further past the content before it than any replica writes.</summary>
+    /// <param name="group">One author's blocks.</param>
+    /// <param name="reach">How far that author's content already reaches.</param>
+    /// <returns>How far it reaches with the group's blocks.</returns>
+    public static long RefuseFarClocks(BcrdtClientBlocks group, long reach)
+    {
+        foreach (BcrdtAbstractStruct block in group.Blocks)
+        {
+            if (block is BcrdtSkip) continue;
+            if (block.Id.Clock - reach > MaxClockGap)
+            {
+                throw new BcrdtFormatException($"Block at {block.Id} is {block.Id.Clock - reach} clocks past the content before it.");
+            }
+            reach = Math.Max(reach, block.Id.Clock + block.Length);
+        }
+        return reach;
     }
 
     private static BcrdtAbstractStruct ReadBlock(ref BcrdtBufferReader reader, ulong client, long clock)

@@ -1,0 +1,198 @@
+﻿@namespace Bit.Borm
+@using System.Collections
+@using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
+
+@* The answers as the user would read them back — "check your answers" before a submit, a record shown
+   for confirmation, a printable summary. A description list per step: what each question was, and what
+   was answered, in words rather than stored values. *@
+<div class="bit-borm-review">
+    @if (State.Definition.HasSteps)
+    {
+        @for (var i = 0; i < State.Definition.Steps.Count; i++)
+        {
+            var index = i;
+            var step = State.Definition.Steps[i];
+            if (!State.IsStepVisible(step) || ReferenceEquals(step, ExcludeStep)) { continue; }
+            var headingId = BormFieldContext.FormElementId(State, "review_" + index);
+            <section class="bit-borm-review__section" aria-labelledby="@headingId">
+                <div class="bit-borm-review__header">
+                    <div class="bit-borm-review__heading" id="@headingId" role="heading" aria-level="@HeadingLevel">@State.StepTitleOf(step)</div>
+                    @if (AllowEdit && !State.ReadOnly && State.IsStepReachable(index))
+                    {
+                        <button type="button" class="bit-borm-btn bit-borm-btn--ghost bit-borm-btn--sm"
+                                aria-label="@State.Text(BormMessageKeys.ReviewChangeStep, State.StepTitleOf(step))"
+                                @onclick="() => Edit(index)">@State.Text(BormMessageKeys.ReviewChange)</button>
+                    }
+                </div>
+                @Entries(StepItems(step))
+            </section>
+        }
+    }
+    else
+    {
+        @Entries(State.Definition.OrderedFields().Select(f => (f, f.Name)))
+    }
+</div>
+
+@code {
+    /// <summary>The form whose answers are shown.</summary>
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+
+    /// <summary>A step to leave out — the one the review itself sits on.</summary>
+    [Parameter] public BormStep? ExcludeStep { get; set; }
+
+    /// <summary>Offer a "Change" button per step, taking the user back to it (default true).</summary>
+    [Parameter] public bool AllowEdit { get; set; } = true;
+
+    /// <summary>The heading level of each step's title, 1-6 (default 3).</summary>
+    [Parameter] public int HeadingLevel { get; set; } = 3;
+
+    /// <summary>
+    /// Runs when the user asks to change a step, with its index. Inside a <see cref="BormView"/> the
+    /// view moves to it (and focus with it) by itself; set this to do something else.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnEdit { get; set; }
+
+    private async Task Edit(int index)
+    {
+        if (OnEdit.HasDelegate) await OnEdit.InvokeAsync(index);
+        else if (State.StepNavigator is { } navigate) navigate(index);
+        else State.GoToStep(index);
+    }
+
+    private IEnumerable<(BormFieldDefinition Field, string Path)> StepItems(BormStep step)
+        => step.Fields
+            .Select(name => (Field: State.FindField(name), Path: name))
+            .Where(x => x.Field is not null)
+            .Select(x => (x.Field!, x.Path));
+
+    private RenderFragment Entries(IEnumerable<(BormFieldDefinition Field, string Path)> items) => __builder =>
+    {
+        <dl class="bit-borm-review__list">
+            @foreach (var (field, path) in items)
+            {
+                if (field.IsPresentational || field.Type == BormFieldType.Hidden || !State.IsVisible(field, path)) { continue; }
+                <div class="bit-borm-review__entry">
+                    <dt class="bit-borm-review__label">@(State.LabelOf(field, path) ?? field.Name)</dt>
+                    <dd class="bit-borm-review__value">@Value(field, path)</dd>
+                </div>
+            }
+        </dl>
+    };
+
+    private RenderFragment Value(BormFieldDefinition field, string path) => __builder =>
+    {
+        if (field.Type == BormFieldType.Object)
+        {
+            @Entries(field.Children.OrderBy(c => c.Order).Select(c => (c, BormPath.Combine(path, c.Name))))
+            return;
+        }
+
+        if (field.Type == BormFieldType.Array && field.ItemTemplate is { } template)
+        {
+            var rows = State.ArrayCount(path);
+            if (rows == 0)
+            {
+                <span class="bit-borm-review__empty">@State.Text(BormMessageKeys.ReviewEmpty)</span>
+                return;
+            }
+            <ol class="bit-borm-review__rows">
+                @for (var row = 0; row < rows; row++)
+                {
+                    var rowPath = BormPath.Combine(path, row);
+                    <li>
+                        @if (template.Type == BormFieldType.Object)
+                        {
+                            @Entries(template.Children.OrderBy(c => c.Order).Select(c => (c, BormPath.Combine(rowPath, c.Name))))
+                        }
+                        else
+                        {
+                            @Text(template, rowPath)
+                        }
+                    </li>
+                }
+            </ol>
+            return;
+        }
+
+        @Text(field, path)
+    };
+
+    private RenderFragment Text(BormFieldDefinition field, string path) => __builder =>
+    {
+        // Formatted text reads back formatted, and a signature as itself - both still nothing when unanswered,
+        // and a sensitive one still not shown.
+        if (field.Type == BormFieldType.Markdown && !field.IsSensitive && State.GetValue(path) is string { Length: > 0 } markdown)
+        {
+            <div class="bit-borm-markdown__preview">@((MarkupString)BormMarkdown.ToHtml(markdown))</div>
+        }
+        else if (field.Type == BormFieldType.Signature && !field.IsSensitive && State.GetValue(path) is string { Length: > 0 } signature
+                 && BormSignature.IsImage(signature))
+        {
+            <img class="bit-borm-signature__image" src="@signature" alt="@State.Text(BormMessageKeys.SignatureImage, State.LabelOf(field, path) ?? field.Name)" />
+        }
+        else if (Format(field, path) is { Length: > 0 } text)
+        {
+            @text
+        }
+        else
+        {
+            <span class="bit-borm-review__empty">@State.Text(BormMessageKeys.ReviewEmpty)</span>
+        }
+    };
+
+    /// <summary>
+    /// An answer in words: an option's label rather than its stored value, Yes or No, a date the way the
+    /// reader's culture writes one, a file by its name — and a sensitive value not at all.
+    /// </summary>
+    private string? Format(BormFieldDefinition field, string path)
+    {
+        var value = State.GetValue(path);
+        if (value is null || value is string { Length: 0 } || (value is ICollection { Count: 0 })) return null;
+        if (field.IsSensitive) return State.Text(BormMessageKeys.ReviewHidden);
+
+        var culture = CultureInfo.CurrentCulture;
+        string Affixed(string text) => string.Join(" ", new[] { field.Prefix, text, field.Suffix }.Where(s => !string.IsNullOrEmpty(s)));
+
+        if (field.IsChoice || field.Type == BormFieldType.Tags)
+        {
+            var options = State.OptionsFor(field, path);
+            string Label(object? item)
+            {
+                var stored = BormValueConverter.ToInvariantString(item);
+                foreach (var option in options)
+                    if (string.Equals(option.Value, stored, StringComparison.OrdinalIgnoreCase)) return option.Label;
+                return State.ChosenOption(path, stored)?.Label ?? stored;
+            }
+            if (value is Enum flags && flags.GetType().IsDefined(typeof(FlagsAttribute), false))
+                return string.Join(", ", flags.ToString().Split(", ").Select(Label));
+            if (value is IEnumerable items and not string)
+                return string.Join(", ", items.Cast<object?>().Select(Label));
+            return Label(value);
+        }
+
+        // Files sent as they were chosen are what the user picked, not the ids the uploader returned for them.
+        if (field.Uploader is not null && State.UploadsFor(path).Where(u => u.Status == BormUploadStatus.Done).Select(u => u.Name).ToList() is { Count: > 0 } sent)
+            return string.Join(", ", sent);
+
+        return value switch
+        {
+            bool b => State.Text(b ? BormMessageKeys.Yes : BormMessageKeys.No),
+            IBrowserFile file => file.Name,
+            IEnumerable files and not string when files.Cast<object?>().All(f => f is IBrowserFile)
+                => string.Join(", ", files.Cast<IBrowserFile>().Select(f => f.Name)),
+            DateOnly date when field.Type == BormFieldType.Month => date.ToString("Y", culture),
+            DateTime date when field.Type == BormFieldType.Month => date.ToString("Y", culture),
+            _ when field.Type == BormFieldType.Week => BormValueConverter.ToInputString(value, BormFieldType.Week),
+            DateOnly date => date.ToString("d", culture),
+            TimeOnly time => time.ToString("t", culture),
+            DateTime date => date.ToString(field.Type == BormFieldType.Date ? "d" : field.Type == BormFieldType.Time ? "t" : "g", culture),
+            DateTimeOffset date => date.ToString(field.Type == BormFieldType.Date ? "d" : "g", culture),
+            string text when field.ParsedMask is { } mask && mask.TryFormat(text, out var shaped) => Affixed(shaped),
+            IFormattable number when BormNumber.IsNumber(value) => Affixed(number.ToString(null, culture)),
+            IEnumerable list and not string => string.Join(", ", list.Cast<object?>().Select(BormValueConverter.ToInvariantString)),
+            _ => Affixed(Convert.ToString(value, culture) ?? string.Empty)
+        };
+    }
+}

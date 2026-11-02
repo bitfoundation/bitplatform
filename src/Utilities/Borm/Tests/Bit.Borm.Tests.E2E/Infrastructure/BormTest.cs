@@ -188,6 +188,15 @@ public abstract class BormTest
         return id.ToString();
     }
 
+    /// <summary>
+    /// Puts the focus on the page's heading, as Blazor's <c>FocusOnNavigate</c> does after an in-app
+    /// navigation: given <c>tabindex="-1"</c> so it can take it. A page opened directly is not navigated to
+    /// (the demo leaves the focus alone on arrival), and an <c>h1</c> without a tabindex cannot be focused —
+    /// focusing it silently leaves the focus wherever it was.
+    /// </summary>
+    protected static Task FocusHeadingAsync(IPage page)
+        => page.Locator("h1").EvaluateAsync("h => { if (!h.hasAttribute('tabindex')) h.tabIndex = -1; h.focus(); }");
+
     /// <summary>The control bound to <paramref name="path"/> (for a radio, tag or multi-select field, its group).</summary>
     protected static ILocator Control(IPage page, string path, string prefix = "borm_") => page.Locator("#" + ElementId(path, prefix));
 
@@ -237,6 +246,17 @@ public abstract class BormTest
           return e.id ? '#' + e.id : `${e.tagName.toLowerCase()}.${[...e.classList].join('.')}`;
         }
         """);
+
+    /// <summary>
+    /// Stops the test as inconclusive when the browser has no <c>&lt;input type="<paramref name="type"/>"&gt;</c>. The
+    /// WebKit Playwright builds for Windows have no date or time pickers at all, which no browser people use lacks, and
+    /// blazor.web.js throws on every event such an input raises there.
+    /// </summary>
+    protected static async Task AssumeInputTypeAsync(IPage page, string type)
+    {
+        if (await page.EvaluateAsync<bool>("t => { const i = document.createElement('input'); i.type = t; return i.type === t; }", type) is false)
+            Assert.Inconclusive($"this browser has no <input type=\"{type}\">");
+    }
 
     /// <summary>A computed style of the element <paramref name="locator"/> picks, by its CSS name (custom properties included).</summary>
     protected static Task<string> ComputedAsync(ILocator locator, string property) =>

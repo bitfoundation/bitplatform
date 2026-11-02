@@ -46,6 +46,11 @@ internal static class BlazeDbTypeMap
             "System.Guid" => BlazeDbScalarKind.Guid,
             "System.DateTimeOffset" => BlazeDbScalarKind.DateTimeOffset,
             "System.TimeSpan" => BlazeDbScalarKind.TimeSpan,
+            "System.DateOnly" => BlazeDbScalarKind.DateOnly,
+            "System.TimeOnly" => BlazeDbScalarKind.TimeOnly,
+            "System.Half" => BlazeDbScalarKind.Half,
+            "System.Int128" => BlazeDbScalarKind.Int128,
+            "System.UInt128" => BlazeDbScalarKind.UInt128,
             _ => null,
         };
     }
@@ -68,6 +73,8 @@ internal static class BlazeDbTypeMap
             case BlazeDbScalarKind.ByteArray:
             case BlazeDbScalarKind.Guid:
             case BlazeDbScalarKind.DateTimeOffset:
+            case BlazeDbScalarKind.Int128:
+            case BlazeDbScalarKind.UInt128:
                 return "global::Bit.BlazeDb.Serialization.BlazeDbWireType.LengthDelimited";
             default:
                 return "global::Bit.BlazeDb.Serialization.BlazeDbWireType.VarInt";
@@ -99,6 +106,11 @@ internal static class BlazeDbTypeMap
             case BlazeDbScalarKind.DateTimeOffset: return $"{writer}.WriteDateTimeOffset({value})";
             case BlazeDbScalarKind.TimeSpan: return $"{writer}.WriteTimeSpan({value})";
             case BlazeDbScalarKind.Enum: return $"{writer}.WriteVarInt((long){value})";
+            case BlazeDbScalarKind.DateOnly: return $"{writer}.WriteDateOnly({value})";
+            case BlazeDbScalarKind.TimeOnly: return $"{writer}.WriteTimeOnly({value})";
+            case BlazeDbScalarKind.Half: return $"{writer}.WriteHalf({value})";
+            case BlazeDbScalarKind.Int128: return $"{writer}.WriteInt128({value})";
+            case BlazeDbScalarKind.UInt128: return $"{writer}.WriteUInt128({value})";
             default: return "";
         }
     }
@@ -128,6 +140,11 @@ internal static class BlazeDbTypeMap
             case BlazeDbScalarKind.DateTimeOffset: return $"{reader}.ReadDateTimeOffset()";
             case BlazeDbScalarKind.TimeSpan: return $"{reader}.ReadTimeSpan()";
             case BlazeDbScalarKind.Enum: return $"({scalarTypeDisplay}){reader}.ReadVarInt()";
+            case BlazeDbScalarKind.DateOnly: return $"{reader}.ReadDateOnly()";
+            case BlazeDbScalarKind.TimeOnly: return $"{reader}.ReadTimeOnly()";
+            case BlazeDbScalarKind.Half: return $"{reader}.ReadHalf()";
+            case BlazeDbScalarKind.Int128: return $"{reader}.ReadInt128()";
+            case BlazeDbScalarKind.UInt128: return $"{reader}.ReadUInt128()";
             default: return "";
         }
     }

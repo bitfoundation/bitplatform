@@ -1,0 +1,94 @@
+﻿@page "/programmatic"
+@inject BmotionAnimateService Motion
+@inject BmotionCapabilities Capabilities
+@implements IDisposable
+
+<PageTitle>Programmatic · Bmotion samples</PageTitle>
+
+<h1>Programmatic</h1>
+
+<p>
+    Not every animation is a state to describe. <code>BmotionAnimateService</code> animates elements by CSS selector or
+    <code>ElementReference</code>, with no <code>&lt;Bmotion&gt;</code> around them, and hands back controls to hold on to:
+    awaitable, and able to pause, speed up, finish and seek what is playing.
+</p>
+
+<section>
+    <h2>By selector, with controls</h2>
+    <p>
+        One call animates every element <code>.prog-dot</code> matches, a stagger apart. Interfere with it while it
+        plays; the slider seeks it, holding it wherever it is put until Play.
+    </p>
+
+    <div class="stage dots">
+        @for (var i = 0; i < 8; i++)
+        {
+            <span class="prog-dot"></span>
+        }
+    </div>
+
+    <div class="toolbar">
+        <button type="button" id="run" @onclick="RunAsync">Run</button>
+        <button type="button" disabled="@(_controls is null)" @onclick="() => _controls?.Pause()">Pause</button>
+        <button type="button" disabled="@(_controls is null)" @onclick="PlayAsync">Play</button>
+        <button type="button" disabled="@(_controls is null)" @onclick="() => _controls?.SetSpeed(3)">3× speed</button>
+        <button type="button" disabled="@(_controls is null)" @onclick="() => _controls?.Complete()">Complete</button>
+        <span class="muted" id="run-state">@RunState</span>
+    </div>
+
+    <div class="toolbar">
+        <label for="scrub">Seek</label>
+        <input id="scrub" type="range" min="0" max="1000" value="@_scrub" disabled="@(_controls is null)" @oninput="SeekAsync" />
+        <span class="muted">@_seekLabel</span>
+    </div>
+</section>
+
+<section>
+    <h2>A sequence</h2>
+    <p>
+        A <code>BmSequence</code> is a timeline: each step names its own target, and <code>at</code> places it -
+        <code>"-0.2"</code> overlaps the step before, and a label lets several later steps start together. The whole
+        timeline has one playhead, so Pause holds the gaps between steps as well as the steps. @SequenceNote
+    </p>
+
+    <div class="stage seq-stage">
+        <div id="seq-box" class="seq-box"></div>
+        <div class="seq-dots">
+            @for (var i = 0; i < 5; i++)
+            {
+                <span class="seq-dot"></span>
+            }
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <button type="button" id="play-sequence" @onclick="PlaySequenceAsync">Play</button>
+        <button type="button" disabled="@(_sequence is null)" @onclick="() => _sequence?.Pause()">Pause</button>
+        <button type="button" disabled="@(_sequence is null)" @onclick="() => _sequence?.Play()">Resume</button>
+    </div>
+</section>
+
+<section>
+    <h2>What needs the per-frame loop</h2>
+    <p>
+        Two things the browser cannot play on the engine's behalf: a number that lives in C#, animated by
+        <code>AnimateAsync(from, to, onUpdate)</code>, and an SVG path whose <code>d</code> morphs into another. Both are
+        stepped in C# once a frame, so where there is no frame loop they land on their target at once. @LoopNote
+    </p>
+
+    <div class="loop-row">
+        <div class="stage stack">
+            <ValueText class="counter" id="counter" Value="_count" Format="N0" />
+            <button type="button" id="count" @onclick="CountAsync">Count @(_counted ? "down" : "up")</button>
+        </div>
+
+        <div class="stage stack">
+            <svg viewBox="0 0 200 200" width="140" height="140" aria-hidden="true">
+                <Bmotion Animate="@(_morphed ? BlobB : BlobA)" Transition="Bm.Spring(bounce: 0.35, duration: 0.8)">
+                    <path class="blob" d="@BlobAPath" />
+                </Bmotion>
+            </svg>
+            <button type="button" id="morph" @onclick="() => _morphed = !_morphed">Morph</button>
+        </div>
+    </div>
+</section>

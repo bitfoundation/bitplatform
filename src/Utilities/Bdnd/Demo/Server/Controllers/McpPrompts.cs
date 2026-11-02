@@ -38,7 +38,12 @@ public static class McpPrompts
                client the package and the pages that drag belong in the .Client project.
             3. DO register the service: `builder.Services.AddBitBdndServices();` in every Program.cs that renders the
                components - in a Blazor Web App BOTH the server's and the client's, because the pages are prerendered on
-               the server. Missing it fails with "Cannot provide a value for property 'Interop'".
+               the server. Without it the draggables and drop targets fail with "Bit.Bdnd's services are not
+               registered" everywhere but on WebAssembly, and there a component of the app's own that injects
+               `BdndInterop` (a sortable card measuring itself) fails with "There is no registered service of type
+               'Bit.Bdnd.BdndInterop'". Only a WebAssembly client that lazy loads Bit.Bdnd leaves the registration out of
+               its Program.cs, and takes the interop from `Services.GetBdndInterop()` instead - see
+               `GetBdndGuideSection(heading: "Lazy loading on WebAssembly")`.
             4. Do NOT link a stylesheet or add a script tag: Bit.Bdnd ships no stylesheet, and the components import their
                script module themselves. Inventing a `bit-bdnd.css` link is a common mistake.
             5. Add `@using Bit.Bdnd` to `_Imports.razor`.
@@ -101,9 +106,11 @@ public static class McpPrompts
             Work in this order:
 
             1. Check the setup against `GetBdndSetupGuide` for this render mode first - the four failures it prevents:
-               `AddBitBdndServices()` missing from a Program.cs (in a Blazor Web App it must be in both - "Cannot provide a
-               value for property 'Interop'"), a component outside a `BdndProvider` (it throws), a statically rendered page
-               (nothing drags), and source and target in different providers (the target never reacts).
+               `AddBitBdndServices()` missing from a Program.cs (in a Blazor Web App it must be in both - "Bit.Bdnd's
+               services are not registered", or on WebAssembly, from a component of the app's own that injects
+               `BdndInterop`, "There is no registered service of type 'Bit.Bdnd.BdndInterop'"),
+               a component outside a `BdndProvider` (it throws), a statically rendered page (nothing drags), and source
+               and target in different providers (the target never reacts).
             2. Compare the draggable's `Type` with the target's `Accept`/`AcceptTypes` character by character - they are
                compared as strings, case included. A `CanDropPredicate` answering false keeps `IsOver` true but
                `CanDrop` false, and `OnDrop` does not run.

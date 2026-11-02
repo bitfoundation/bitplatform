@@ -51,12 +51,12 @@ public class McpDragLabTests
         Assert.AreEqual(2, update.NewIndex);
         Assert.IsFalse(update.CrossedLists);
 
-        // dropIndex reports a gap counted before the item leaves its place: landing at 2 is the gap
+        // The drop position is a gap counted before the item leaves its place: landing at 2 is the gap
         // after the third item, 3.
         var dragover = Step(report, "dragover");
 
         Assert.IsTrue(dragover.Accepted);
-        CollectionAssert.Contains(dragover.Browser!, "dropIndex('a') -> 3");
+        CollectionAssert.Contains(dragover.Browser!, "Over('a', 3) -> changed");
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class McpDragLabTests
         var report = await InspectAsync(Scenario([List("a", ["A", "B", "C", "D"])], Drag("D", index: 0)));
 
         CollectionAssert.AreEqual(new[] { "D", "A", "B", "C" }, List(report, "a").After);
-        CollectionAssert.Contains(Step(report, "dragover").Browser!, "dropIndex('a') -> 0");
+        CollectionAssert.Contains(Step(report, "dragover").Browser!, "Over('a', 0) -> changed");
     }
 
     [TestMethod]
@@ -258,7 +258,7 @@ public class McpDragLabTests
         var dragover = Step(report, "dragover");
 
         Assert.IsTrue(dragover.Accepted);
-        CollectionAssert.Contains(dragover.Browser!, "itemIndexAt('s') -> 2");
+        CollectionAssert.Contains(dragover.Browser!, "Over('s', 2) -> changed");
         Assert.AreEqual("bit-bortable-swap-highlight", dragover.Rendered!.Single().Items.Single(item => item.Item == "C").Classes);
 
         CollectionAssert.AreEqual(new[] { "C", "B", "A" }, List(report, "s").After);

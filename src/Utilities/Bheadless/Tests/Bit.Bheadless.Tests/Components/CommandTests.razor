@@ -1,0 +1,162 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private readonly List<string> _ran = new();
+
+    private RenderFragment Palette(bool shouldFilter = true) =>
+        @<BitBhCommand Label="Command menu" ShouldFilter="shouldFilter">
+            <BitBhCommandInput placeholder="Type a command…" />
+            <BitBhCommandList>
+                <BitBhCommandEmpty>No results.</BitBhCommandEmpty>
+                <BitBhCommandGroup Heading="Suggestions">
+                    <BitBhCommandItem OnSelect="@(() => _ran.Add("calendar"))">Calendar</BitBhCommandItem>
+                    <BitBhCommandItem Keywords="@(["emoji", "smiley"])" OnSelect="@(() => _ran.Add("emoji"))">Search emoji</BitBhCommandItem>
+                    <BitBhCommandItem Disabled="true">Calculator</BitBhCommandItem>
+                </BitBhCommandGroup>
+                <BitBhCommandSeparator />
+                <BitBhCommandGroup Heading="Settings">
+                    <BitBhCommandItem OnSelect="@(() => _ran.Add("profile"))">Profile</BitBhCommandItem>
+                    <BitBhCommandItem OnSelect="@(() => _ran.Add("billing"))">Billing</BitBhCommandItem>
+                </BitBhCommandGroup>
+            </BitBhCommandList>
+        </BitBhCommand>;
+
+    private static string[] Options(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray();
+
+    [TestMethod]
+    public void Input_controls_the_list_and_highlights_the_first_item()
+    {
+        var cut = Render(Palette());
+        var input = cut.Find("input");
+        Assert.AreEqual("combobox", input.GetAttribute("role"));
+        Assert.AreEqual(cut.Find("[role=listbox]").Id, input.GetAttribute("aria-controls"));
+        Assert.AreEqual("Command menu", input.AccessibleName());
+        Assert.AreEqual("Command menu", cut.Find("[role=listbox]").AccessibleName());
+        Assert.AreEqual("Calendar", Text(ActiveOf(input)));
+        Assert.AreEqual("Suggestions", cut.FindAll("[role=group]")[0].AccessibleName());
+        Assert.DoesNotContain("No results.", cut.Markup);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Arrow_keys_skip_disabled_items_and_cross_groups()
+    {
+        var cut = Render(Palette());
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("Search emoji", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("Profile", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("ArrowUp", alt: true);
+        Assert.AreEqual("Calendar", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("End", ctrl: true);
+        Assert.AreEqual("Billing", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("p", ctrl: true);
+        Assert.AreEqual("Profile", Text(ActiveOf(cut.Find("input"))));
+    }
+
+    [TestMethod]
+    public void Typing_filters_by_text_and_keywords_and_hides_empty_groups()
+    {
+        var cut = Render(Palette());
+        cut.Find("input").Input("smiley");
+        Assert.AreSequenceEqual(new[] { "Search emoji" }, Options(cut));
+        Assert.AreEqual("Search emoji", Text(ActiveOf(cut.Find("input"))));
+        // The empty "Settings" group and the separator disappear while searching.
+        Assert.IsTrue(cut.FindAll("[data-bit-bh-command-group]")[1].HasAttribute("hidden"));
+        Assert.IsEmpty(cut.FindAll("[data-bit-bh-command-separator]"));
+
+        cut.Find("input").Input("zzz");
+        Assert.IsEmpty(Options(cut));
+        Assert.Contains("No results.", cut.Markup);
+        Assert.IsNull(cut.Find("input").GetAttribute("aria-activedescendant"));
+    }
+
+    [TestMethod]
+    public void Enter_runs_the_active_command()
+    {
+        var cut = Render(Palette());
+        cut.Find("input").Input("bill");
+        cut.Find("input").Press("Enter");
+        Assert.AreSequenceEqual(new[] { "billing" }, _ran);
+    }
+
+    [TestMethod]
+    public async Task Result_counts_are_announced()
+    {
+        var cut = Render(Palette());
+        cut.Find("input").Input("profile");
+        await Announcer.WaitForAsync("1 result");
+        cut.Find("input").Input("");
+        await Announcer.WaitForAsync("5 results");
+    }
+
+    [TestMethod]
+    public void Filtering_can_be_turned_off_for_server_side_search()
+    {
+        var cut = Render(Palette(shouldFilter: false));
+        cut.Find("input").Input("zzz");
+        Assert.AreEqual(5, Options(cut).Length);
+    }
+
+    [TestMethod]
+    public void Pages_nest_and_Backspace_goes_back()
+    {
+        var cut = Render(
+            @<BitBhCommand Label="Palette" Context="cmd">
+                <BitBhCommandInput />
+                <BitBhCommandList>
+                    <BitBhCommandPage>
+                        <Template Context="c">
+                            <BitBhCommandItem OnSelect="@(() => c.PushPageAsync("theme"))">Change theme…</BitBhCommandItem>
+                        </Template>
+                    </BitBhCommandPage>
+                    <BitBhCommandPage Name="theme">
+                        <BitBhCommandItem>Dark</BitBhCommandItem>
+                        <BitBhCommandItem>Light</BitBhCommandItem>
+                    </BitBhCommandPage>
+                </BitBhCommandList>
+            </BitBhCommand>);
+
+        Assert.AreSequenceEqual(new[] { "Change theme…" }, Options(cut));
+        cut.Find("input").Press("Enter");
+        Assert.AreSequenceEqual(new[] { "Dark", "Light" }, Options(cut));
+        Assert.AreEqual("Dark", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("Backspace");
+        Assert.AreSequenceEqual(new[] { "Change theme…" }, Options(cut));
+    }
+
+    [TestMethod]
+    public void Palette_stays_open_when_an_item_opens_a_page_and_forwards_search()
+    {
+        var searches = new List<string>();
+        var cut = Render(
+            @<Stateful T="bool" Initial="true" Context="s">
+                <BitBhCommandDialog Open="s.Value" OpenChanged="s.Set" Shortcut="@null" SearchChanged="q => searches.Add(q)">
+                    <BitBhCommandInput />
+                    <BitBhCommandList>
+                        <BitBhCommandPage>
+                            <Template Context="c">
+                                <BitBhCommandItem OnSelect="@(() => c.PushPageAsync("theme"))">Theme…</BitBhCommandItem>
+                                <BitBhCommandItem>Settings</BitBhCommandItem>
+                            </Template>
+                        </BitBhCommandPage>
+                        <BitBhCommandPage Name="theme">
+                            <BitBhCommandItem>Dark</BitBhCommandItem>
+                        </BitBhCommandPage>
+                    </BitBhCommandList>
+                </BitBhCommandDialog>
+            </Stateful>);
+
+        cut.Find("input").Input("th");
+        Assert.AreSequenceEqual(new[] { "th" }, searches);
+        cut.Find("input").Press("Enter");
+        Assert.IsTrue(cut.FindComponent<Stateful<bool>>().Instance.Value);
+        Assert.AreSequenceEqual(new[] { "Dark" }, Options(cut));
+
+        // A final choice closes it.
+        cut.Find("input").Press("Enter");
+        Assert.IsFalse(cut.FindComponent<Stateful<bool>>().Instance.Value);
+    }
+}

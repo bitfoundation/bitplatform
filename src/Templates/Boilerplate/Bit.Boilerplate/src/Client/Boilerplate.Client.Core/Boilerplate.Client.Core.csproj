@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,13 +20,14 @@
         <Using Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Boilerplate.Client.Core.Infrastructure.Data" />
         <PackageReference Condition=" '$(brouter)' == 'true' OR '$(brouter)' == '' " Include="Bit.Brouter" />
         <PackageReference Condition=" '$(appInsights)' == 'true' OR '$(appInsights)' == '' " Include="BlazorApplicationInsights" />
-        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Besql" />
+        <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Bit.Bsqlite" />
+        <PackageReference Condition=" '$(module)' == 'Admin' OR '$(module)' == '' " Include="Bit.Bortable" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="CommunityToolkit.Datasync.Client" />
         <PackageReference Condition=" '$(signalR)' == 'true' OR '$(signalR)' == ''" Include="Microsoft.AspNetCore.SignalR.Client" />
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.BlazorUI.Extras" />
-        <PackageReference Include="Bit.Bmage" />
+        <PackageReference Include="Bit.Bmage.Blazor" />
         <PackageReference Include="Bit.BevTools" />
         <PackageReference Include="Bit.BevTools.Loader" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />

@@ -1,0 +1,67 @@
+﻿@* The results a page has read, newest first. *@
+
+@if (Results.Count == 0)
+{
+    <p class="muted">Nothing read yet.</p>
+}
+else
+{
+    <table class="results">
+        <thead>
+            <tr>
+                <th>Format</th>
+                <th>Value</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var result in Results)
+            {
+                <tr>
+                    <td><span class="badge">@result.Format</span></td>
+                    <td class="value">@result.Text</td>
+                    <td>@Describe(result.Metadata)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    /// <summary>How many results a page keeps; the oldest are dropped as new ones arrive.</summary>
+    public const int Capacity = 20;
+
+    /// <summary>The results to list, newest first.</summary>
+    [Parameter]
+    public IReadOnlyList<BbBarcodeResult> Results { get; set; } = [];
+
+    /// <summary>
+    /// Puts <paramref name="latest"/> at the top of <paramref name="results"/>, in order, and drops what falls past
+    /// <see cref="Capacity"/>, so a page scanned all afternoon redraws a short table and holds little memory - on a
+    /// circuit, the server's.
+    /// </summary>
+    public static void Prepend(List<BbBarcodeResult> results, IEnumerable<BbBarcodeResult> latest)
+    {
+        results.InsertRange(0, latest);
+        if (results.Count > Capacity)
+        {
+            results.RemoveRange(Capacity, results.Count - Capacity);
+        }
+    }
+
+    private static string Describe(BbBarcodeResultMetadata? metadata)
+    {
+        if (metadata is null)
+        {
+            return string.Empty;
+        }
+
+        List<string> parts = [];
+        if (metadata.SymbolVersion is not null) parts.Add($"version {metadata.SymbolVersion}");
+        if (metadata.ErrorCorrectionLevel is not null) parts.Add($"EC {metadata.ErrorCorrectionLevel}");
+        if (metadata.ErrorsCorrected is > 0) parts.Add($"{metadata.ErrorsCorrected} corrected");
+        if (metadata.IsGs1 is true) parts.Add("GS1");
+        if (metadata.Extension is not null) parts.Add($"add-on {metadata.Extension}");
+        return string.Join(", ", parts);
+    }
+}

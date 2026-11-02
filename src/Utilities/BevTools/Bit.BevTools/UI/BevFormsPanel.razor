@@ -1,0 +1,103 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-scroll" style="flex:1">
+    @if (!BevFormTracker.IsAvailable)
+    {
+        <div class="bev-empty">This framework version does not expose what BevTools reads forms through (EditForm and EditContext internals).</div>
+    }
+    else if (_forms.Length == 0)
+    {
+        <div class="bev-empty">
+            No form on the page. Forms appear here as their <code>EditForm</code> (or an input bound to an
+            <code>EditContext</code>) renders: fields, what changed, each validation and its outcome, what validates the form
+            and what shows its messages. Field values are never read.
+        </div>
+    }
+    @if (Session.Forms.Truncated)
+    {
+        <div class="bev-muted" style="padding:4px 8px">More than 200 forms were alive at once: the newest are not listed.</div>
+    }
+    @foreach (var form in _forms)
+    {
+        <div class="bev-section">
+            <div class="bev-section-title">
+                @if (form.OwnerInstanceId is { } owner)
+                {
+                    <button type="button" class="bev-link bev-mono" @onclick="() => Host.SelectComponent(owner)">@form.OwnerName</button>
+                }
+                <span class="bev-mono">@form.ModelType</span>
+                @if (form.Modified)
+                {
+                    <span class="bev-chip">modified</span>
+                }
+                @if (form.LastValidationPassed is { } passed)
+                {
+                    <span class="bev-chip @(passed ? "bev-ok" : "bev-warn")">@(passed ? "valid" : form.MessageCount + " message" + (form.MessageCount == 1 ? "" : "s"))</span>
+                    <span class="bev-muted" style="font-weight:normal">validated @form.Validations× · last @BevFmt.Ago(form.LastValidatedAt)</span>
+                }
+                else
+                {
+                    <span class="bev-muted" style="font-weight:normal">not validated yet</span>
+                }
+            </div>
+            <div class="bev-section-body">
+                <dl class="bev-kv">
+                    <dt>Validated by</dt>
+                    <dd>
+                        @if (form.Validators.Count == 0)
+                        {
+                            <span class="@(form.ValidationAttributes.Count > 0 ? "bev-chip bev-warn" : "bev-muted")">nothing</span>
+                            @if (form.ValidationAttributes.Count > 0)
+                            {
+                                <span class="bev-muted"> - the model has validation attributes, and they are never checked: add <code>&lt;DataAnnotationsValidator /&gt;</code></span>
+                            }
+                        }
+                        else
+                        {
+                            @string.Join(", ", form.Validators)
+                        }
+                    </dd>
+                    <dt>Messages shown by</dt>
+                    <dd>@(form.MessageDisplays.Count == 0 ? "no ValidationSummary or ValidationMessage" : string.Join(", ", form.MessageDisplays.GroupBy(d => d).Select(g => g.Count() > 1 ? g.Key + " ×" + g.Count() : g.Key)))</dd>
+                    @if (form.ValidationAttributes.Count > 0)
+                    {
+                        <dt>Rules on the model</dt>
+                        <dd class="bev-mono">@string.Join("; ", form.ValidationAttributes)</dd>
+                    }
+                </dl>
+                @if (form.Fields.Count > 0)
+                {
+                    <table>
+                        <thead><tr><th>Field</th><th>Modified</th><th class="bev-num">Changes</th><th>Validation messages</th></tr></thead>
+                        <tbody>
+                            @foreach (var field in form.Fields)
+                            {
+                                <tr class="@(field.Messages.Count > 0 ? "bev-sev-warning" : "")">
+                                    <td class="bev-mono">@field.Name</td>
+                                    <td>@(field.Modified ? "yes" : "")</td>
+                                    <td class="bev-num">@(field.Changes > 0 ? field.Changes : "")</td>
+                                    <td>@string.Join(" · ", field.Messages)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="bev-muted">No field has been touched or validated yet.</div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private BevFormInfo[] _forms = [];
+
+    protected override void OnParametersSet()
+    {
+        Session.Forms.Discover();
+        _forms = Session.Forms.Forms();
+    }
+}

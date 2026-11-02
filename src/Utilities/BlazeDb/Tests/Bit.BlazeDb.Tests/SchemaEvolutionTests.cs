@@ -54,7 +54,7 @@ public class SchemaEvolutionTests
             await db.CheckpointAsync();
             db.GetTable(PersonTable.Descriptor).Insert(new Person(3, "Alan", 41));
         }
-        Assert.DoesNotContain("wal-1.blz", storage.FileNames); // The checkpoint really did replace the log.
+        Assert.IsNull(storage.FindFile("wal", 1)); // The checkpoint really did replace the log.
 
         // Session 3: the table is back, and so are exactly the rows it had.
         await using (var db = await OpenAsync(storage, PersonTable.Descriptor, TodoItem.Table))

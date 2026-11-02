@@ -1,0 +1,45 @@
+﻿@* One node of the tree: its row - a drop target with top and bottom edges, so a node dropped on it goes before or
+   after it - and below it the list of its children - a drop target of its own, so a node dropped there becomes its
+   last child. A node can never go into its own subtree: the targets inside the dragged node are the item's own (the
+   keyboard skips them), and CanDropPredicate refuses them for the pointer. *@
+
+<li class="tree-node">
+    <BdndDropTarget TItem="Tree.Node" Accept="@Tree.NodeType" Edges="BdndEdges.Vertical" Label="@Node.Name"
+                    CanDropPredicate="@((dragged, _) => dragged is not null && Tree.Contains(dragged, Node) is false)"
+                    OnDrop="@(e => OnMove.InvokeAsync(new Tree.NodeMove(e.Item!, Parent, Index + (e.ClosestEdge == BdndEdge.Bottom ? 1 : 0))))"
+                    class="tree-row" Context="row">
+        <BdndDraggable TItem="Tree.Node" Type="@Tree.NodeType" Item="Node" Label="@Node.Name" class="tree-label" Context="drag">
+            <span class="tree-label__icon" aria-hidden="true">@(Node.Children.Count > 0 ? "▾" : "•")</span>
+            @Node.Name
+        </BdndDraggable>
+    </BdndDropTarget>
+
+    <BdndDropTarget TItem="Tree.Node" Accept="@Tree.NodeType" Tag="ul" Label="@($"the end of {Node.Name}")" class="tree-children"
+                    CanDropPredicate="@((dragged, _) => dragged is not null && Tree.Contains(dragged, Node) is false)"
+                    OnDrop="@(e => NestAsync(e))" Context="children">
+        @for (var i = 0; i < Node.Children.Count; i++)
+        {
+            <TreeNodeView Node="Node.Children[i]" Parent="Node" Index="i" OnMove="OnMove" @key="Node.Children[i]" />
+        }
+        @if (children.IsOverShallow && children.CanDrop)
+        {
+            <li class="tree-nest-hint" aria-hidden="true">into @Node.Name</li>
+        }
+    </BdndDropTarget>
+</li>
+
+@code {
+    [Parameter, EditorRequired] public Tree.Node Node { get; set; } = default!;
+
+    /// <summary>The node this one is a child of (the tree's invisible root for a top-level node).</summary>
+    [Parameter, EditorRequired] public Tree.Node Parent { get; set; } = default!;
+
+    [Parameter] public int Index { get; set; }
+
+    [Parameter] public EventCallback<Tree.NodeMove> OnMove { get; set; }
+
+    // Dropped on the children list itself - not on a child row inside it (drops reach the innermost target first,
+    // and a row that took the drop is reported through DidDrop): the node becomes the last child.
+    private Task NestAsync(BdndDropEventArgs<Tree.Node> e) =>
+        e.Monitor.DidDrop() ? Task.CompletedTask : OnMove.InvokeAsync(new Tree.NodeMove(e.Item!, Node, Node.Children.Count));
+}

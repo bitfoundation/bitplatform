@@ -9,11 +9,11 @@
 public class ApiCatalogTests
 {
     [TestMethod]
-    public void Types_ComeFromTheOnePackage_EditorIncluded()
+    public void Types_ComeFromTheTwoPackages_EditorIncluded()
     {
         var packages = BmageApiCatalog.Types.Select(type => type.Package).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Bit.Bmage" }, packages);
+        CollectionAssert.AreEqual(new[] { "Bit.Bmage", "Bit.Bmage.Blazor" }, packages);
 
         foreach (var (name, package, ns) in new[]
         {
@@ -21,11 +21,13 @@ public class ApiCatalogTests
             ("ImageBuffer", "Bit.Bmage", "Bit.Bmage"),
             ("ImageExportOptions", "Bit.Bmage", "Bit.Bmage.Codecs"),
             ("RedactionAnnotation", "Bit.Bmage", "Bit.Bmage.Annotations"),
-            ("ImageLoader", "Bit.Bmage", "Bit.Bmage.Input"),
-            ("ImageExporter", "Bit.Bmage", "Bit.Bmage.Output"),
+            ("ImageSource", "Bit.Bmage.Blazor", "Bit.Bmage.Input"),
+            ("ImageLoader", "Bit.Bmage.Blazor", "Bit.Bmage.Input"),
+            ("ImageExporter", "Bit.Bmage.Blazor", "Bit.Bmage.Output"),
             ("BitBmage", "Bit.Bmage", "Bit.Bmage"),
-            ("BmageEditor", "Bit.Bmage", "Bit.Bmage.Editor.Components"),
-            ("BmageEditorStrings", "Bit.Bmage", "Bit.Bmage.Editor.Localization"),
+            ("BitBmageBlazor", "Bit.Bmage.Blazor", "Bit.Bmage"),
+            ("BmageEditor", "Bit.Bmage.Blazor", "Bit.Bmage.Editor.Components"),
+            ("BmageEditorStrings", "Bit.Bmage.Blazor", "Bit.Bmage.Editor.Localization"),
         })
         {
             var type = BmageApiCatalog.Types.SingleOrDefault(entry => entry.Name == name);
@@ -34,6 +36,16 @@ public class ApiCatalogTests
             Assert.AreEqual(package, type.Package, name);
             Assert.AreEqual(ns, type.Namespace, name);
         }
+    }
+
+    [TestMethod]
+    public void ImageSource_FromBrowserFile_IsOneOfItsMembers_AndDocumented()
+    {
+        // The one way to load an IBrowserFile: it must be found where the README and the XML docs say it is.
+        var details = BmageApiCatalog.GetMemberDetails("ImageSource.FromBrowserFile");
+
+        Assert.IsNotNull(details, "ImageSource.FromBrowserFile is missing from the catalog.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(details.Members.Single().Summary), "ImageSource.FromBrowserFile has no summary.");
     }
 
     [TestMethod]
@@ -108,7 +120,7 @@ public class ApiCatalogTests
         StringAssert.Contains(rotate.Signature, "Rgba32 background = default");
 
         // Extension methods say so.
-        var registration = BmageApiCatalog.GetTypeDetails("BitBmage")!.Members.First(member => member.Name == "AddBitBmageServices");
+        var registration = BmageApiCatalog.GetTypeDetails("BitBmageBlazor")!.Members.First(member => member.Name == "AddBitBmageServices");
         StringAssert.StartsWith(registration.Signature, "(this IServiceCollection services");
     }
 

@@ -185,15 +185,13 @@
     z-index: 1;
 }
 
-/* Product names and cart lines are prose, not identifiers. */
-.demo-products td:first-child,
-.demo-cart td:first-child {
+/* Product names are prose, not identifiers. */
+.demo-products td:first-child {
     font-family: inherit;
     font-size: inherit;
 }
 
-.demo-products td,
-.demo-cart td {
+.demo-products td {
     vertical-align: middle;
 }
 
@@ -211,8 +209,31 @@
     font-weight: var(--fl-weight-semibold);
 }
 
+/* The cart is the narrow pane beside the form, too narrow for a table of name, quantity, total and a remove button:
+   each line wraps instead - the name on a line of its own, the figures and the button after it. */
 .demo-cart {
-    margin-bottom: .75rem;
+    display: grid;
+    gap: .5rem;
+    margin: 0 0 .75rem;
+    padding: 0;
+    list-style: none;
+}
+
+.demo-cart li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem .5rem;
+    padding-bottom: .5rem;
+    border-bottom: 1px solid var(--bb-border);
+}
+
+.demo-cart-name {
+    flex: 1 1 100%;
+}
+
+.demo-cart .bb-icon-btn {
+    margin-left: auto;
 }
 
 /* ---------- Controls ---------- */
@@ -247,6 +268,11 @@
 
 .demo-search {
     flex: 1 1 18rem;
+    min-width: 0;
+}
+
+.demo-coupon {
+    flex: 1 1 8rem;
     min-width: 0;
 }
 

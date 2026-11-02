@@ -1,0 +1,51 @@
+﻿@page "/e2e/aidatatable"
+@using System.Text.Json
+
+<PageTitle>BitAiDataTable E2E</PageTitle>
+
+<h1>BitAiDataTable</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitAiDataTable Id="dtb-basic" Rows="_people" />
+</E2ESection>
+
+<E2ESection Id="shapes" Title="Not an array of objects">
+    <BitAiDataTable Id="dtb-object" Rows="_object" />
+    <BitAiDataTable Id="dtb-scalar-item" Rows="_scalarItem" />
+    <BitAiDataTable Id="dtb-empty" Rows="_emptyArray" />
+</E2ESection>
+
+<E2ESection Id="grow" Title="Rows added">
+    <button id="btn-dtb-add" @onclick="AddRow">Add a row</button>
+    <span id="dtb-grow-count">@_growRows.Count</span>
+    <BitAiDataTable Id="dtb-grow" Rows="RowsOf(_growRows)" />
+</E2ESection>
+
+<E2ESection Id="scroll" Title="A wide table">
+    <div id="dtb-scroll-box" style="width: 240px">
+        <BitAiDataTable Id="dtb-wide" Rows="_wide" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiDataTable Id="dtb-rtl" Dir="BitDir.Rtl" Rows="_people" />
+    <div dir="rtl">
+        <BitAiDataTable Id="dtb-rtl-inherited" Rows="_people" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <BitAiDataTable Id="dtb-vars" Rows="_people"
+                    Style="--bit-AiDataTable-font-size: 17px; --bit-AiDataTable-color: rgb(1, 2, 3); --bit-AiDataTable-background: rgb(4, 5, 6); --bit-AiDataTable-border-color: rgb(7, 8, 9); --bit-AiDataTable-divider-color: rgb(10, 11, 12); --bit-AiDataTable-radius: 9px; --bit-AiDataTable-cell-padding: 3px 5px; --bit-AiDataTable-header-background: rgb(13, 14, 15); --bit-AiDataTable-header-color: rgb(16, 17, 18); --bit-AiDataTable-header-font-weight: 300" />
+    <div style="--bit-AiDataTable-header-background: rgb(20, 21, 22)">
+        <BitAiDataTable Id="dtb-vars-ancestor" Rows="_people" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="styles" Title="Classes and styles">
+    <BitAiDataTable Id="dtb-styled" Rows="_people"
+                    Styles="@(new() { HeaderCell = "color: rgb(30, 31, 32)", Cell = "color: rgb(33, 34, 35)" })"
+                    Classes="@(new() { Row = "dtb-row-class", HeaderRow = "dtb-header-class" })" />
+</E2ESection>
+
+<E2EStatus />

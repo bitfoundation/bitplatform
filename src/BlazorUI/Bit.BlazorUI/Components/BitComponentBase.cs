@@ -699,6 +699,28 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// Whether the component is rendered statically - prerendered, or on a page rendered by static SSR - rather than
+    /// interactively, as its renderer says (<see cref="ComponentBase.RendererInfo"/>), which is the same for the whole
+    /// life of the component.
+    /// </summary>
+    /// <remarks>
+    /// A renderer that does not say - the base renderer throws for it, and so does bUnit's until it is given one, each
+    /// with an exception of its own - is answered by the JS runtime instead, which cannot be called during a static
+    /// render (<see cref="IJSRuntimeExtensions.IsRuntimeInvalid(IJSRuntime)"/>), rather than failing the component.
+    /// </remarks>
+    internal bool IsStaticRender(IJSRuntime js)
+    {
+        try
+        {
+            return RendererInfo.IsInteractive is false;
+        }
+        catch (Exception)
+        {
+            return js.IsRuntimeInvalid();
+        }
+    }
+
+    /// <summary>
     /// The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
     /// assistive technology dispatches. The ones that only follow the pointer or the focus around (a hover, a focus)
     /// are not among them.

@@ -73,6 +73,10 @@ internal sealed class BitPdfPostScriptFunction : BitPdfFunction
     {
         for (int i = 0; i < program.Count; i++)
         {
+            if (stack.Count > MaxStack)
+            {
+                return;
+            }
             object token = program[i];
             if (token is double d)
             {

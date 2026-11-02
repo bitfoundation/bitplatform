@@ -61,6 +61,10 @@ public class BitTeardownBrowserTests : PerformanceTestBase
     [DataRow("virtualize")]
     [DataRow("file-upload")]
     [DataRow("otp-input")]
+    [DataRow("ai-prompt-input")]
+    [DataRow("ai-message-list")]
+    [DataRow("ai-chat")]
+    [DataRow("ai-artifact-view")]
     public async Task Component_GoesAwayWithItsPartsWithoutRaisingAnything(string part)
     {
         await OpenPage(part);
@@ -281,6 +285,47 @@ public class BitTeardownBrowserTests : PerformanceTestBase
 
 
 
+    [TestMethod]
+    public async Task AiPromptInput_ThatStays_StillSubmitsOnEnter()
+    {
+        await OpenPage("ai-prompt-input");
+
+        await Page.Locator("#ai-prompt-input textarea").FocusAsync();
+        await Page.Keyboard.PressAsync("End");
+        await Page.Keyboard.TypeAsync(" two", new() { Delay = 50 });
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(Page.Locator("#log")).ToContainTextAsync("OnSubmit:one two");
+
+        await AssertNoErrors();
+    }
+
+    [TestMethod]
+    public async Task AiMessageList_ThatStays_StillReportsLeavingTheNewestMessage()
+    {
+        await OpenPage("ai-message-list");
+
+        await Page.Locator("#ai-message-list").EvaluateAsync("el => el.scrollTop = 0");
+
+        await Expect(Page.Locator("#log")).ToContainTextAsync("OnPinnedChange:False");
+
+        await AssertNoErrors();
+    }
+
+    [TestMethod]
+    public async Task AiChat_ThatStays_StillAnswers()
+    {
+        await OpenPage("ai-chat");
+
+        await Page.Locator("#ai-chat textarea").FocusAsync();
+        await Page.Keyboard.TypeAsync("hello", new() { Delay = 50 });
+        await Page.Keyboard.PressAsync("Enter");
+
+        await Expect(Page.Locator("#ai-chat [role=log]")).ToContainTextAsync("You said: hello");
+
+        await AssertNoErrors();
+    }
+
     private async Task OpenPage(string part)
     {
         await _http.DeleteAsync($"{BaseUrl}/api/server-errors");
@@ -357,6 +402,31 @@ public class BitTeardownBrowserTests : PerformanceTestBase
 
             case "data-grid":
                 await SortGrid();
+                break;
+
+            case "ai-prompt-input":
+                await Page.Locator("#ai-prompt-input textarea").FocusAsync();
+                await Page.Keyboard.PressAsync("End");
+                await Page.Keyboard.TypeAsync("x");
+                await Expect(Page.Locator("#log")).ToContainTextAsync("Value:");
+                break;
+
+            case "ai-message-list":
+                await Page.Locator("#ai-message-list").EvaluateAsync("el => el.scrollTop = 0");
+                await Expect(Page.Locator("#log")).ToContainTextAsync("OnPinnedChange:False");
+                break;
+
+            case "ai-chat":
+                // A turn the echo transport keeps in flight until it is stopped - by the unmount, here.
+                await Page.Locator("#ai-chat textarea").FocusAsync();
+                await Page.Keyboard.TypeAsync("hang", new() { Delay = 50 });
+                await Page.Keyboard.PressAsync("Enter");
+                await Expect(Page.Locator("#ai-chat [role=log]")).ToContainTextAsync("You said: hang");
+                break;
+
+            case "ai-artifact-view":
+                await Page.Locator("#ai-artifact-view button:has(.bit-icon-ai--FullScreen)").ClickAsync();
+                await Expect(Page.Locator("#ai-artifact-view .bit-aiatv")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex(@"\bbit-aiatv-exp\b"));
                 break;
         }
     }

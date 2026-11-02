@@ -29,6 +29,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private TValue _pageStep = default!;
     private bool _hasPageStep;
     private string? _registeredPreventKeys;
+    private bool? _registeredSelectOnFocus;
+    private bool _plainTextSwappedInBrowser;
     private string _inputMode;
     private readonly string _labelId;
     private readonly string _inputId;
@@ -898,6 +900,34 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _isSelfValueChangePending = false;
 
         await RegisterPreventKeys();
+
+        await RegisterSelectOnFocus();
+    }
+
+    /// <summary>
+    /// Selects the text of the input as it takes the focus, unless <see cref="NoSelectOnFocus"/> is set. The selection
+    /// is made by the browser at the focus event itself: one sent from here in answer to the focus would arrive a round
+    /// trip later, when the first keys typed are already in the input (selected, and replaced by the next key) or the
+    /// user has moved on - and select() focuses the input again in Chromium and WebKit. A <see cref="NumberFormat"/>'s
+    /// plain number is swapped in by the same listener, for the same reason (see <see cref="GetInputValueAsString"/>).
+    /// The listener is registered once per input, and again only when NoSelectOnFocus or HideInput (which swaps the
+    /// input) changes.
+    /// </summary>
+    private async Task RegisterSelectOnFocus()
+    {
+        if (IsDisposed) return;
+
+        var active = NoSelectOnFocus is false && HideInput is false;
+
+        // A field that never selects on focus never asks for the listener at all.
+        if (_registeredSelectOnFocus == active || (_registeredSelectOnFocus is null && active is false)) return;
+
+        try
+        {
+            await _js.BitUtilsRegisterSelectOnFocus(InputElement, active);
+            _registeredSelectOnFocus = active;
+        }
+        catch { } // JS is unavailable (e.g. a disconnected circuit); the field only goes without the select-all.
     }
 
     /// <summary>
@@ -1217,6 +1247,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     /// <summary>
+    /// The text the value attribute of the input carries, which is what it shows (<see cref="GetDisplayValueAsString"/>)
+    /// but for the time a <see cref="NumberFormat"/>'s plain number was swapped in by the browser as the focus came in
+    /// (<see cref="GetPlainText"/>, data-bit-focus-value): until something is typed or the value changes, the attribute
+    /// keeps the formatted text it carried before the focus. Blazor writes an attribute into the element only when it
+    /// differs from the one rendered before, so the render the focus causes - a round trip later, when the first keys
+    /// typed are already in the input - writes nothing over them; swapped in by that render, the plain number would
+    /// replace what was typed. The browser puts the formatted text back as the focus leaves untouched.
+    /// </summary>
+    private string? GetInputValueAsString() => _plainTextSwappedInBrowser ? CurrentValueAsString : GetDisplayValueAsString();
+
+    /// <summary>
     /// The text of the committed value, which is what the input shows whenever nothing typed is
     /// waiting on its commit (see <see cref="GetDisplayValueAsString"/>).
     /// </summary>
@@ -1233,17 +1274,26 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // A NumberFormat is a presentation concern: "$1,234" or "001363" is how the value should read,
         // not what the user should have to edit around. While the field is focused the plain number is
-        // shown instead, and the formatted rendering comes back on the way out. This is skipped when
-        // NoSelectOnFocus is set: without the select-all, swapping the text on focus would move the
-        // caret the user just placed, and keeping the text stable then matters more.
-        if (_hasFocus is false || NumberFormat is null || NoSelectOnFocus) return current;
+        // shown instead, and the formatted rendering comes back on the way out.
+        if (_hasFocus is false) return current;
 
-        // Only the formatted rendering is swapped out. A string the user typed that failed to parse is
-        // still sitting in the input (CurrentValueAsString returns it verbatim) and must stay there for
-        // them to correct.
-        if (string.Equals(current, FormatValueAsString(CurrentValue), StringComparison.Ordinal) is false) return current;
+        return GetPlainText() ?? current;
+    }
 
-        return CurrentValue is null ? null : BindConverter.FormatValue(CurrentValue, ValueCulture)?.ToString();
+    /// <summary>
+    /// The plain number a field with a <see cref="NumberFormat"/> shows in place of its formatted text while it is
+    /// focused, or null where nothing is swapped: without a NumberFormat, with <see cref="NoSelectOnFocus"/> (without
+    /// the select-all, swapping the text on focus would move the caret the user just placed, and keeping the text
+    /// stable then matters more), on an empty field, and on a string the user typed that failed to parse, which is
+    /// still sitting in the input (CurrentValueAsString returns it verbatim) and must stay there for them to correct.
+    /// </summary>
+    private string? GetPlainText()
+    {
+        if (NumberFormat is null || NoSelectOnFocus || CurrentValue is null) return null;
+
+        if (string.Equals(CurrentValueAsString, FormatValueAsString(CurrentValue), StringComparison.Ordinal) is false) return null;
+
+        return BindConverter.FormatValue(CurrentValue, ValueCulture)?.ToString();
     }
 
     /// <summary>
@@ -1427,6 +1477,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private async Task HandleOnStringValueSet(string? value)
     {
         var args = new ChangeEventArgs() { Value = value };
+
+        // The text typed is what the value attribute stands for from here (Blazor took it in as the attribute's
+        // value as the event came in), so the plain number the browser swapped in is no longer one to keep the
+        // formatted text in place of (see GetInputValueAsString).
+        _plainTextSwappedInBrowser = false;
 
         if (Immediate)
         {
@@ -1810,8 +1865,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _announceValue = false;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
-        // The text selection is handled in HandleOnFocus; the focus event always accompanies
-        // focusin, so selecting here too would just issue a duplicate JS call.
+        // The text is selected by the browser as the focus comes in (see RegisterSelectOnFocus), and what
+        // that means for a NumberFormat is decided in HandleOnFocus, which always accompanies this.
         await OnFocusIn.InvokeAsync(e);
     }
 
@@ -1822,6 +1877,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _hasFocus = false;
 
         _uncommittedImmediateText = null;
+
+        // The browser put the formatted text back itself, if it was still untouched (see GetInputValueAsString).
+        _plainTextSwappedInBrowser = false;
 
         // The text kept visible only to keep the caret usable while typing (Immediate mode) has served
         // its purpose; leaving the field is the commit point where the canonical value must show.
@@ -1843,10 +1901,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         ClassBuilder.Reset();
         StyleBuilder.Reset();
 
-        if (NoSelectOnFocus is false)
-        {
-            await _js.BitUtilsSelectText(InputElement);
-        }
+        // The text was selected by the browser as the focus came in, and a NumberFormat's plain number swapped in
+        // there too (see RegisterSelectOnFocus), which the render this focus causes must not do again; without the
+        // listener (it is registered after the first render) that render is still what swaps it.
+        _plainTextSwappedInBrowser = _registeredSelectOnFocus is true && GetPlainText() is not null;
 
         await OnFocus.InvokeAsync(e);
     }
@@ -2627,6 +2685,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
+        // A value changed while the plain number the browser swapped in is on screen (a step, a parent's new
+        // value) is rendered as the plain number it is shown as while focused (see GetInputValueAsString).
+        _plainTextSwappedInBrowser = false;
+
         if (_keepDisplayValueOnNextChange)
         {
             // This change is the one produced by the user input we intentionally preserved

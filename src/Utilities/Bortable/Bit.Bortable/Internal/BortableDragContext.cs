@@ -6,6 +6,12 @@
 /// </summary>
 internal sealed class BortableDragContext
 {
+    /// <summary>
+    /// Names this drag to the browser layer, which sends it back with every call about the drag: a call that arrives
+    /// late, about a drag that has since ended, is never taken for one about the drag in progress.
+    /// </summary>
+    public int Id { get; init; }
+
     /// <summary>The data item currently being dragged (the clone once a clone has been dropped).</summary>
     public required object Item { get; set; }
 
@@ -23,6 +29,9 @@ internal sealed class BortableDragContext
 
     /// <summary>The effective pull mode resolved from the source list.</summary>
     public BortablePull PullMode { get; init; }
+
+    /// <summary>How the drag is made.</summary>
+    public BortableInput Input { get; init; }
 
     /// <summary>The zone currently showing the drop placeholder (a target preview), if any.</summary>
     public IBortableZone? PlaceholderZone { get; set; }
@@ -78,6 +87,33 @@ internal sealed class BortableDragContext
         return false;
     }
 
+    /// <summary>Puts <paramref name="zone"/> back to the items it held before this drag first changed it.</summary>
+    public void Restore(IBortableZone zone)
+    {
+        if (_before.TryGetValue(zone, out var before)) zone.SetItems(before);
+    }
+
     /// <summary>Guards against finalizing the same drag twice (drop + dragend).</summary>
     public bool Finished { get; set; }
+
+    /// <summary>
+    /// What the app's code threw while this drag was decided - <c>CanDrop</c> inside the gate, <c>ConfirmDrop</c> - or,
+    /// for a move made by code, while it was reported. It was taken as a refusal there, so the drag stays whole and is
+    /// still reported; the call that met it passes it on once it is done (see <see cref="TakeFailure"/>). The first
+    /// one is kept. Should reporting the drag throw as well, neither is lost: the reporting exception is wrapped with
+    /// this one in an <see cref="AggregateException"/> - the reporting exception first - which is thrown in place of
+    /// either.
+    /// </summary>
+    public Exception? Failure { get; private set; }
+
+    /// <summary>Keeps <paramref name="exception"/> as the <see cref="Failure"/> to pass on, unless there is one already.</summary>
+    public void Fail(Exception exception) => Failure ??= exception;
+
+    /// <summary>The <see cref="Failure"/> to pass on, which the drag no longer holds: it is passed on once.</summary>
+    public Exception? TakeFailure()
+    {
+        var failure = Failure;
+        Failure = null;
+        return failure;
+    }
 }

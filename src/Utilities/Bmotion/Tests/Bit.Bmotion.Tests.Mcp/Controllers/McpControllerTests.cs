@@ -30,9 +30,13 @@ public class McpControllerTests
         StringAssert.Contains(overview, "## How to work");
         StringAssert.Contains(overview, "## Rules of thumb when writing Bmotion code");
 
-        // The rule that decides whether an animation works at all in production.
+        // The rule that decides whether an animation works at all in production: the browser plays it,
+        // as a timeline or a recording, unless only the frame loop can.
         StringAssert.Contains(overview, "Blazor Server");
         StringAssert.Contains(overview, "compositor");
+        StringAssert.Contains(overview, "*timeline*");
+        StringAssert.Contains(overview, "*records*");
+        StringAssert.Contains(overview, "Only the C# frame loop can play");
 
         // A section the guide no longer has must be reported, not left as a silent gap.
         Assert.IsFalse(overview.Contains("was not found in this build", StringComparison.Ordinal),
@@ -212,6 +216,43 @@ public class McpControllerTests
     }
 
     /// <summary>
+    /// Naming every unmeasured spec is an answer per spec, so a long enough list would make a response as long. Past
+    /// <see cref="McpController.MaxListedTransitions"/> the rest of the list is one answer that does not echo it.
+    /// </summary>
+    [TestMethod]
+    public async Task SimulateBmotionTransition_AListPastTheListedCap_EndsInOneAnswerForTheRest()
+    {
+        // Every spec distinct, so an entry answered for the wrong spec, or out of order, shows.
+        var specs = Enumerable.Range(0, 100_000).Select(i => $"tween(0.1{i:D6})").ToArray();
+
+        var results = await _controller.SimulateBmotionTransition(string.Join(";", specs));
+
+        Assert.AreEqual(McpController.MaxListedTransitions + 1, results.Length);
+        Assert.AreEqual(McpController.MaxSimulatedTransitions, results.Count(result => result.Error is null));
+        CollectionAssert.AreEqual(specs[McpController.MaxSimulatedTransitions..McpController.MaxListedTransitions],
+                                  results[McpController.MaxSimulatedTransitions..^1].Select(result => result.Transition).ToArray());
+
+        var rest = results[^1];
+        Assert.AreEqual(string.Empty, rest.Transition, "the rest of the list is not echoed back");
+        StringAssert.Contains(rest.Error, $"at most {McpController.MaxListedTransitions}");
+        Assert.AreEqual(rest.Error, rest.Reading);
+    }
+
+    [TestMethod]
+    public async Task SimulateBmotionTransition_ExactlyTheListedCap_IsAllNamed()
+    {
+        var atCap = string.Join(";\n", Enumerable.Repeat("tween(0.1)", McpController.MaxListedTransitions)) + ";";
+
+        var results = await _controller.SimulateBmotionTransition(atCap);
+
+        // The empty entries the separators leave are not specs, so the list is exactly at the cap: every spec is
+        // answered for by name, and nothing is left over to report as unread.
+        Assert.AreEqual(McpController.MaxListedTransitions, results.Length);
+        Assert.IsTrue(results.Skip(McpController.MaxSimulatedTransitions).All(result => result.Transition == "tween(0.1)"));
+        Assert.IsFalse(results.Any(result => result.Error?.StartsWith("Not read") ?? false));
+    }
+
+    /// <summary>
     /// Simulating dozens at once would spend more of a client's context than any comparison is read
     /// with, and the interesting comparisons are between two and four candidates. What is over the
     /// cap is still answered: fewer results than transitions asked about is a silent cut, and the
@@ -302,6 +343,65 @@ public class McpControllerTests
             CollectionAssert.AreEqual(new[] { "x", "opacity" }, result.Properties, $"'{written}' was read as something else.");
             Assert.IsTrue(result.WorksOnBlazorServer);
         }
+    }
+
+    /// <summary>
+    /// The refusal is an answer, not an exception: an MCP client is told only that a throwing tool failed, so the
+    /// limit - and how to stay under it - has to arrive as data to reach the agent at all.
+    /// </summary>
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(10_000)]
+    public async Task AnalyzeBmotionAnimation_MoreThanTheCapOfProperties_IsRefusedAsAnAnswer(int over)
+    {
+        var many = string.Join(", ", Enumerable.Range(0, McpController.MaxAnalyzedProperties + over).Select(i => $"unknown{i}"));
+
+        var result = await _controller.AnalyzeBmotionAnimation(many, "tween(0.4)");
+
+        Assert.AreEqual("Not analysed", result.Path);
+        Assert.IsFalse(result.WorksOnBlazorServer);
+        Assert.AreEqual(0, result.Properties.Length, "a refused list is not echoed back");
+        StringAssert.Contains(result.Error, $"at most {McpController.MaxAnalyzedProperties}");
+    }
+
+    [TestMethod]
+    [DataRow(", ")]
+    [DataRow(" ,, ;; ")]
+    public async Task AnalyzeBmotionAnimation_ExactlyTheCapOfProperties_IsAnswered(string separator)
+    {
+        // Empty entries and a trailing separator are not names, so they do not count toward the limit.
+        var atCap = string.Join(separator, Enumerable.Range(0, McpController.MaxAnalyzedProperties).Select(i => $"unknown{i}")) + separator;
+
+        var result = await _controller.AnalyzeBmotionAnimation(atCap, "tween(0.4)");
+
+        Assert.AreEqual(McpController.MaxAnalyzedProperties, result.Properties.Length);
+        Assert.IsFalse(result.Error?.Contains("at most") ?? false, result.Error);
+    }
+
+    /// <summary>
+    /// The filters partition the measured catalog the way the verdict does: what the browser plays -
+    /// as a timeline or as a recording, nothing else - and what only the frame loop plays.
+    /// </summary>
+    [TestMethod]
+    public async Task GetBmotionAnimatableProperties_TheFiltersPartitionTheMeasuredVerdict()
+    {
+        var all = await _controller.GetBmotionAnimatableProperties();
+        var browser = await _controller.GetBmotionAnimatableProperties("browser");
+        var timeline = await _controller.GetBmotionAnimatableProperties("timeline");
+        var recorded = await _controller.GetBmotionAnimatableProperties("recorded");
+        var frameLoop = await _controller.GetBmotionAnimatableProperties("frame-loop");
+        var compositor = await _controller.GetBmotionAnimatableProperties("compositor");
+
+        Assert.AreEqual(all.Length, browser.Length + frameLoop.Length);
+        Assert.AreEqual(browser.Length, timeline.Length + recorded.Length);
+        CollectionAssert.AreEqual(new[] { "d" }, frameLoop.Select(property => property.Name).ToArray());
+
+        // Width is the property everyone remembers as Server-hostile; it is a browser timeline now.
+        Assert.IsTrue(timeline.Any(property => property.Name == "width"));
+
+        // The compositor is the cheap end of what the browser plays, not a list of what survives Server.
+        Assert.IsTrue(compositor.All(property => property.PlayedByBrowser));
+        Assert.IsFalse(compositor.Any(property => property.Name == "width"));
     }
 
     [TestMethod]

@@ -45,6 +45,29 @@ public class PerformanceBudgetTests
     }
 
     [TestMethod]
+    public void A_keystroke_costs_the_same_whether_the_text_is_short_or_long()
+    {
+        // Each keystroke is merged into the block typed before it and then encoded as an update of one
+        // character. Encoding that by copying the whole block made typing cost time and allocation in
+        // the square of the block's length - forty seconds of garbage for a long essay.
+        static long PerKeystroke(int typedBefore)
+        {
+            using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+            BcrdtText text = doc.GetText("body");
+            doc.Updated += _ => { };
+            for (int i = 0; i < typedBefore; i++) text.Insert(i, "x");
+
+            int position = typedBefore;
+            return Measure(() => text.Insert(position++, "x"), 500);
+        }
+
+        long shortText = PerKeystroke(1_000);
+        long longText = PerKeystroke(40_000);
+
+        Assert.IsLessThan(shortText * 3 + 1024, longText, $"a keystroke allocated {shortText:N0} bytes after 1 000 characters and {longText:N0} after 40 000");
+    }
+
+    [TestMethod]
     public void Answering_an_up_to_date_peer_does_not_scale_with_the_documents_content()
     {
         // Same number of deletions, forty times the content. A sync response always carries the

@@ -37,7 +37,7 @@ public sealed partial class ChatTranslationClient(IChatClient chatClient, ChatOp
         var client = new ChatClient(
             model: settings.OpenAI.Model ?? throw new InvalidOperationException("OpenAI:Model isn't set in " + ResxTranslatorSettings.FileName + "."),
             credential: new ApiKeyCredential(settings.OpenAI.ApiKey!),
-            options: new OpenAIClientOptions { Endpoint = settings.OpenAI.Endpoint, Transport = new HttpClientPipelineTransport(httpClient) });
+            options: new OpenAIClientOptions { Endpoint = settings.OpenAI.Endpoint, Transport = new HttpClientPipelineTransport(httpClient), NetworkTimeout = httpClient.Timeout });
 
         return new ChatTranslationClient(client.AsIChatClient(), settings.ChatOptions);
     }

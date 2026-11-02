@@ -3,24 +3,51 @@
 <PageTitle>Floating Edges · Blow</PageTitle>
 
 <ExampleScaffold Title="Floating Edges"
-                 Summary="Edges attach to the point on each node's border that faces the other node, recomputed live as you drag. The custom EdgeTemplate uses BlowGraphUtils.GetFloatingEdgeParams.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
-        <NodeTemplate Context="node">
-            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top" Class="floating-handle" />
-            <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Bottom" Class="floating-handle" />
-            <div class="floating-node">@node.Label</div>
-        </NodeTemplate>
-        <EdgeTemplate Context="ctx">
-            @{
-                var path = FloatingPath(ctx.Edge);
-            }
-            <BlowBaseEdge Path="@path" StrokeWidth="2" />
-        </EdgeTemplate>
-        <ChildContent>
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
-        </ChildContent>
-    </BlowCanvas>
+                 Summary="Floating edges ignore the handles and attach to the point on each node's border that faces the other node, worked out again on every render. An EdgeTemplate asks BlowGraphUtils.GetFloatingEdgeParams for the two points and sides, and BlowEdgePath.Compute turns them into a path of any type.">
+    <Toolbar>
+        <label>
+            Path
+            <select @bind="_type">
+                @* Routed is left out: Compute knows nothing of the nodes in the way, so it draws a routed edge as a smooth step. *@
+                <option value="@BlowEdgeType.Bezier">Bezier</option>
+                <option value="@BlowEdgeType.SimpleBezier">SimpleBezier</option>
+                <option value="@BlowEdgeType.Straight">Straight</option>
+                <option value="@BlowEdgeType.Step">Step</option>
+                <option value="@BlowEdgeType.SmoothStep">SmoothStep</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        @* Not reconnectable: the end dots of a selected edge sit on its handles, which a floating edge never touches. *@
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    ConnectionMode="BlowConnectionMode.Loose" EdgesReconnectable="false">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top" Class="floating-handle" />
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Bottom" Class="floating-handle" />
+                <div class="floating-node">@node.Label</div>
+            </NodeTemplate>
+            <EdgeTemplate Context="ctx">
+                <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="2" MarkerEnd="@ctx.MarkerEndUrl" />
+            </EdgeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> any outer node round <strong>N5</strong>: its edge slides along both borders, always joining the two points that face each other.</li>
+        <li><strong>Drag</strong> N5 itself past the others: all four edges move to the sides that now face it.</li>
+        <li>Switch <strong>Path</strong> between Bezier, SimpleBezier, Straight, Step and SmoothStep: the same two points, joined by each algorithm.</li>
+        <li><strong>Hover</strong> a node to show its two connection dots, then <strong>drag</strong> from one to another node: every dot that would take the connection lights up, and the new edge floats like the rest.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>BlowGraphUtils.GetFloatingEdgeParams(source, target)</code> returns where the line between the two nodes' centres crosses each node's bounding box, and which side of the node that is (<code>Source</code>, <code>SourcePos</code>, <code>Target</code>, <code>TargetPos</code>).</li>
+        <li><code>BlowEdgePath.Compute(type, sx, sy, sourcePos, tx, ty, targetPos, options)</code> runs any built-in path algorithm between two points and returns a <code>BlowPathResult</code> - the SVG <code>Path</code> and the label point. The edge's own <code>PathOptions</code> go in as the last argument, so tuning an edge still works.</li>
+        <li>The <code>EdgeTemplate</code> hands that path to <code>BlowBaseEdge</code> instead of the handle-to-handle <code>ctx.Path</code>, and passes <code>ctx.MarkerEndUrl</code> on so the edges keep their arrowheads.</li>
+        <li>The geometry meets each node's bounding box, so the nodes are rounded squares rather than circles, whose borders the edges would stop short of on the diagonals.</li>
+        <li><code>ConnectionMode.Loose</code> lets a connection start or end on either dot, since the handle it uses does not decide where the edge attaches. <code>EdgesReconnectable</code> is off for the same reason.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -36,12 +63,19 @@
         width:100%; height:100%; box-sizing:border-box; border-radius:12px;
         background:var(--bit-blow-node-bg); color:var(--bit-blow-node-color); border:2px solid #6366f1; font-weight:600; font-size:12px;
     }
-    .floating-handle { opacity:0; }
+
+    /* The edges do not use the handles, so they stay out of sight until there is something to connect: on the
+       node under the pointer, and on every handle a connection being drawn could start from or land on. */
+    .floating-handle { opacity:0; transition:opacity .15s; }
+    .floating-shell:hover .floating-handle,
+    .floating-handle.bit-blow-handle-valid,
+    .floating-handle.bit-blow-handle-connectingfrom { opacity:1; }
 </style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private BlowEdgeType _type = BlowEdgeType.Bezier;
 
     protected override void OnInitialized()
     {
@@ -75,6 +109,6 @@
         if (s is null || t is null) return string.Empty;
 
         var (src, srcPos, tgt, tgtPos) = BlowGraphUtils.GetFloatingEdgeParams(s, t);
-        return BlowEdgePath.Compute(BlowEdgeType.Bezier, src.X, src.Y, srcPos, tgt.X, tgt.Y, tgtPos).Path;
+        return BlowEdgePath.Compute(_type, src.X, src.Y, srcPos, tgt.X, tgt.Y, tgtPos, edge.PathOptions).Path;
     }
 }

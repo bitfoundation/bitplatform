@@ -6,8 +6,11 @@
    - BitTooltip: the tooltips' script, kept through its interop identifiers;
    - BitIcon with BitIconName.Add: the one glyph of Bit.BlazorUI.Icons the icon trimming keeps for the code;
    - BitErrorBoundary: one component of the Extras, none of whose vendor folders (flags, leaflet, openlayers) it loads.
+   - BitAiCopyButton: one component of the AI package, drawn with a BitButton (kept anyway) and a glyph of the package's
+     own font, with a script of its own kept through its interop identifier (AiCopyButton.copy).
    - scripts/fixture.js: a script of the app's own calling window.BitBlazorUI.PageVisibility, which keeps that script.
-   Nothing of Bit.BlazorUI.Legacy is used, though the package is referenced. Interactive on the server, so the trimmed
+   Nothing of Bit.BlazorUI.Legacy is used, though the package is referenced, and no service of the Extras or the AI
+   package is registered: neither component needs one. Interactive on the server, so the trimmed
    bundles can be run in a browser as well as read. *@
 
 <!DOCTYPE html>
@@ -18,6 +21,7 @@
     @* In the order the getting-started page gives: the icons' stylesheet last, so its .bit-icon rule is the one in effect. *@
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
 </head>
 <body>
@@ -30,6 +34,7 @@
     {
         <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
         <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
+        <script src="_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js"></script>
     }
     <script src="scripts/fixture.js"></script>
 </body>

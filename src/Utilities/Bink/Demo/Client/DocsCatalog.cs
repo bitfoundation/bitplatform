@@ -39,7 +39,7 @@ public static class SiteInfo
         "layers, annotations, undo, collaboration and SVG/PNG export, with the engine written in C#. Every page " +
         "of this site is a working canvas.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["signature", "pressure", "layers", "export", "collaboration"];
@@ -91,7 +91,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package and put a canvas on a page - no services to register and no stylesheet to link.",
-                "install setup nuget package quick start BinkCanvas _Imports render mode InteractiveWebAssembly stylesheet initializer brush tool undo keyboard save export headless Unavailable AttachFailed CSP lazy loading eyedropper",
+                "install setup nuget package quick start BinkCanvas _Imports render mode InteractiveWebAssembly stylesheet initializer brush tool undo keyboard save export headless Unavailable AttachFailed CSP lazy loading lazyassemblyloader blazorwebassemblylazyload aot eyedropper",
                 typeof(GettingStarted)),
         ]),
         new("Use cases",

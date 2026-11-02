@@ -1,0 +1,55 @@
+name: Sign with Artifact Signing
+description: Lets the vpk pack steps after it sign the Windows app's files with Azure Artifact Signing. It logs in to Azure with the job's OpenID Connect token, so the job needs the id-token write permission and the app registration a federated credential for the job's environment.
+
+inputs:
+  endpoint:
+    description: The Artifact Signing account's URI, e.g. https://weu.codesigning.azure.net.
+    required: true
+  account:
+    description: The Artifact Signing account's name.
+    required: true
+  certificate-profile:
+    description: The name of the account's certificate profile to sign with.
+    required: true
+  client-id:
+    description: The client id of the app registration that has the Artifact Signing Certificate Profile Signer role on the profile.
+    required: true
+  tenant-id:
+    description: The app registration's tenant id.
+    required: true
+  subscription-id:
+    description: The id of the Azure subscription the account is in.
+    required: true
+  exclude:
+    description: A regular expression of the files vpk leaves unsigned, e.g. \.dll$ to sign only the executables, since each signed file counts against the account's monthly quota.
+    default: ''
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Log in to Azure for code signing
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+      with:
+        client-id: ${{ inputs.client-id }}
+        tenant-id: ${{ inputs.tenant-id }}
+        subscription-id: ${{ inputs.subscription-id }}
+
+    # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+    # VS Code and others before the Azure CLI. On a runner they only cost time or could sign in as someone else, so only
+    # the az login above is left.
+    - name: Point vpk at the Artifact Signing account
+      shell: pwsh
+      env:
+        CODE_SIGNING_ENDPOINT: ${{ inputs.endpoint }}
+        CODE_SIGNING_ACCOUNT: ${{ inputs.account }}
+        CODE_SIGNING_CERTIFICATE_PROFILE: ${{ inputs.certificate-profile }}
+        CODE_SIGNING_EXCLUDE: ${{ inputs.exclude }}
+      run: |
+        $file = Join-Path $env:RUNNER_TEMP 'code-signing.json'
+        @{ Endpoint = $env:CODE_SIGNING_ENDPOINT; CodeSigningAccountName = $env:CODE_SIGNING_ACCOUNT; CertificateProfileName = $env:CODE_SIGNING_CERTIFICATE_PROFILE; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content $file
+        Add-Content $env:GITHUB_ENV "VPK_AZURE_TRUSTED_SIGN_FILE=$file"
+        if ($env:CODE_SIGNING_EXCLUDE) {
+          Add-Content $env:GITHUB_ENV "VPK_SIGN_EXCLUDE=$env:CODE_SIGNING_EXCLUDE"
+        }

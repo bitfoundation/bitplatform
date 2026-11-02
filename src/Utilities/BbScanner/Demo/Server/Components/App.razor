@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.BbScanner" />
     <meta property="og:title" content="BbScanner - barcode scanning for Blazor, decoded in C#" />
     <meta property="og:description" content="QR Code, Data Matrix, Code 128, Code 39, EAN, UPC and ITF from the camera or from still images - no barcode SDK, no JavaScript scanner library." />
+    <meta property="og:image" content="https://bbscanner.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -32,7 +33,9 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 
@@ -42,9 +45,10 @@
    it read before the merge - the URL says /getting-started and the page is the landing page. Once the
    app is interactive its router handles every link itself and this attribute is not consulted. *@
 <body data-enhance-nav="false">
-    @* InteractiveWebAssembly rather than Auto or Server: BbScanner reads camera frames through
-       [JSImport] memory views, which exist only on WebAssembly - under Server rendering it reports
-       NotSupported. The pages are still prerendered, so the first response carries them. *@
+    @* InteractiveWebAssembly rather than Auto or Server, though BbScanner works under each: these are
+       docs pages that need nothing from a server once loaded, and on WebAssembly every camera frame is
+       decoded in the browser, the scanner's fastest path. The Samples show Server, Auto and Hybrid.
+       The pages are still prerendered, so the first response carries them. *@
     <Routes @rendermode="InteractiveWebAssembly" />
     <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.

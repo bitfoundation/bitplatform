@@ -60,6 +60,27 @@ public sealed class BmScrollTimeline
     /// </summary>
     public string? Range { get; private init; }
 
+    /// <summary>
+    /// The spring the animation follows the scroll through (see <see cref="Smoothed"/>), or <c>null</c> when it
+    /// tracks the scroll exactly.
+    /// </summary>
+    public BmSpring? Smoothing { get; private init; }
+
+    /// <summary>
+    /// This timeline, with the animation following the scroll through a spring instead of exactly - motion.dev's
+    /// <c>useSpring(scrollYProgress)</c>: a flick of the wheel glides instead of jumping.
+    /// <code>
+    /// &lt;Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])"&gt;
+    /// </code>
+    /// The spring's stiffness, damping and mass (or bounce and duration) shape the glide; by default it is
+    /// motion.dev's recipe, stiffness 100 and damping 30. A native scroll timeline can't be smoothed, so a smoothed
+    /// one always plays through the bridge's scrub - a passive scroll listener and a spring stepped once a frame in
+    /// the browser, on WebAssembly and Blazor Server alike, still with no .NET interop per frame. Like the scrub
+    /// fallback it covers the full journey and ignores <see cref="Range"/>.
+    /// </summary>
+    public BmScrollTimeline Smoothed(BmSpring? spring = null)
+        => new() { IsView = IsView, Selector = Selector, Axis = Axis, Range = Range, Smoothing = spring ?? new BmSpring { Stiffness = 100, Damping = 30 } };
+
     /// <summary>Progress across the whole document scroll - the reading-progress-bar timeline.</summary>
     public static BmScrollTimeline Page(BmScrollAxis axis = BmScrollAxis.Y)
         => new() { Axis = axis };
@@ -101,7 +122,25 @@ public sealed class BmScrollTimeline
         // constructors without a second translation table.
         ["axis"] = Axis == BmScrollAxis.X ? "inline" : "block",
         ["range"] = Range,
+        ["smooth"] = SmoothingJsObject(),
     };
+
+    // The smoothing spring as plain physics: a bounce/duration spring is resolved to its stiffness and damping here.
+    private Dictionary<string, object?>? SmoothingJsObject()
+    {
+        if (Smoothing is null) return null;
+        var c = Smoothing.ToConfig();
+        double mass = c.Mass > 0 && double.IsFinite(c.Mass) ? c.Mass : 1;
+        var (stiffness, damping) = c.VisualDuration is { } duration
+            ? BmotionTransitionConfig.SpringFromBounce(duration, c.Bounce ?? 0.25, mass)
+            : (c.Stiffness, c.Damping);
+        return new()
+        {
+            ["stiffness"] = double.IsFinite(stiffness) && stiffness > 0 ? stiffness : 100,
+            ["damping"] = double.IsFinite(damping) && damping >= 0 ? damping : 30,
+            ["mass"] = mass,
+        };
+    }
 
     /// <summary>
     /// Structural comparison, so a spec recreated inline on every render
@@ -114,6 +153,7 @@ public sealed class BmScrollTimeline
         return a.IsView == b.IsView
             && a.Axis == b.Axis
             && string.Equals(a.Selector, b.Selector, StringComparison.Ordinal)
-            && string.Equals(a.Range, b.Range, StringComparison.Ordinal);
+            && string.Equals(a.Range, b.Range, StringComparison.Ordinal)
+            && (a.Smoothing is null ? b.Smoothing is null : b.Smoothing is not null && a.Smoothing.ValueEquals(b.Smoothing));
     }
 }

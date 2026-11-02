@@ -13,8 +13,10 @@
 <div class="bb-card bb-page-wide">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Decoder benchmark</h3>
     <p class="bb-card-desc">
-        Decodes generated symbols in a loop with no camera involved, so the result isolates the
-        managed pipeline from capture and compositing.
+        Decodes one generated sample of every symbology, centred in a gray frame of the chosen size, in a
+        loop with no camera involved, so the result isolates the managed pipeline from capture and
+        compositing. The decoder runs with the live camera defaults and the chosen formats; a sample whose
+        symbology is not enabled shows what that frame costs when nothing in it is looked for.
     </p>
 
     <div class="bb-demo">
@@ -89,6 +91,10 @@
                                     {
                                         <span class="bb-badge bb-badge-success">yes</span>
                                     }
+                                    else if (!row.Enabled)
+                                    {
+                                        <span class="bb-soft">format off</span>
+                                    }
                                     else if (row.ExpectedFound)
                                     {
                                         <span class="bb-badge bb-badge-danger">not found</span>
@@ -106,8 +112,13 @@
         }
         else
         {
-            <div class="bb-empty">Run the benchmark to time six symbologies and an empty frame on this device.</div>
+            <div class="bb-empty">Run the benchmark to time every symbology and an empty frame on this device.</div>
         }
+        <p class="bb-card-desc">
+            <em>Median</em>, <em>Best</em> and <em>Worst</em> are the time one frame took over the iterations,
+            after a warm-up pass; <em>Throughput</em> is the frames a second the median allows. The empty frame
+            is the cost of every frame the camera sends while nothing is in view - usually most of them.
+        </p>
     </div>
 </div>
 
@@ -115,7 +126,13 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Live camera cost</h3>
     <p class="bb-card-desc">
         The same pipeline on real camera frames, with duplicate suppression off so every decoded
-        frame counts. Turn the knobs and watch the stage split move.
+        frame counts. Turn the knobs and watch the stage split move. The panel under the scanner is fed by
+        <code>OnDiagnostics</code>, raised at most twice a second with a <code>BbScanDiagnostics</code>:
+        <em>Frame</em> is the time the last frame took, <em>Headroom</em> the frames a second that time would
+        allow, <em>Decoded size</em> the image the decoders actually saw after the region and any
+        downsampling, and <em>Scan lines</em> how many lines were tried for linear symbols. The bar splits the
+        frame between grayscale conversion, binarisation, matrix detection and linear scanning; the count
+        below it is <code>FramesDecoded</code> and <code>FramesWithSymbol</code>.
     </p>
 
     <div class="bb-demo">
@@ -154,12 +171,14 @@
                             <span class="scan-field-head"><span>Frame rate</span><output>@_frameRate fps</output></span>
                             <input type="range" min="1" max="30" step="1" value="@_frameRate"
                                    @onchange="e => _frameRate = ToInt(e, 15)" />
+                            <small>Does not change the cost of a frame, only how many frames a second pay it.</small>
                         </label>
 
                         <label class="bb-field">
                             <span class="scan-field-head"><span>Region</span><output>@((_regionFraction * 100).ToString("0"))%</output></span>
                             <input type="range" min="20" max="100" step="10" value="@(_regionFraction * 100)"
                                    @onchange="OnRegionChanged" />
+                            <small>A centred square; the cost falls with the area searched.</small>
                         </label>
 
                         <label class="bb-field">
@@ -170,7 +189,12 @@
                                 <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
                                 <option value="@BbBarcodeFormat.QrCode">QR only</option>
                             </select>
+                            <small>Only the readers of the chosen formats are created at all.</small>
                         </label>
+                        <p class="bb-card-desc">
+                            The <code>BbScannerOptions</code> knobs - scan lines, downsampling, try harder, inverted
+                            symbols - are in the <a href="scan">playground</a>, beside the same diagnostics.
+                        </p>
                     </section>
                 </div>
             </div>
@@ -221,13 +245,33 @@
                     <td>Quadratic, applied inside the grayscale pass.</td>
                     <td>When frames arrive larger than you asked for and you cannot change the source.</td>
                 </tr>
+                <tr>
+                    <td class="bb-table-key">TryVerticalLines</td>
+                    <td>About as much as the row pass, on frames that find nothing.</td>
+                    <td>Turn off when linear symbols are always presented level.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">TryReversedRows</td>
+                    <td>Cheap.</td>
+                    <td>Leave on: it is what reads a symbol held upside down.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">MaxSymbolsPerFrame</td>
+                    <td>One more matrix pass than reading a single symbol: the pass that finds nothing else.</td>
+                    <td>Only when several codes are wanted at once.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">TargetFrameRate</td>
+                    <td>Linear in battery and main thread time; no effect on a single frame.</td>
+                    <td>Lower on slow devices; above about twenty rarely helps.</td>
+                </tr>
             </tbody>
         </table>
     </div>
 </div>
 
 @code {
-    private sealed record BenchmarkRow(string Name, double Median, double Best, double Worst, bool Found, bool ExpectedFound);
+    private sealed record BenchmarkRow(string Name, double Median, double Best, double Worst, bool Found, bool ExpectedFound, bool Enabled);
 
     private readonly List<BenchmarkRow> _benchmarks = [];
 
@@ -261,21 +305,24 @@
 
         var height = _benchSize * 3 / 4;
 
-        foreach (var sample in SampleCatalog.All.Take(6))
+        // One sample of each symbology, in catalog order.
+        foreach (var sample in SampleCatalog.All.DistinctBy(s => s.Format))
         {
-            _benchmarks.Add(Measure(sample.Caption, BuildFrame(sample, _benchSize, height), _benchSize, height, true));
+            var enabled = (sample.Format & _benchFormats) != 0;
+            _benchmarks.Add(Measure(sample.Caption, BuildFrame(sample, _benchSize, height), _benchSize, height, enabled, enabled));
+            StateHasChanged();
             await Task.Yield();
         }
 
         var empty = new byte[_benchSize * height];
         Array.Fill(empty, (byte)235);
-        _benchmarks.Add(Measure("Empty frame", empty, _benchSize, height, false));
+        _benchmarks.Add(Measure("Empty frame", empty, _benchSize, height, false, true));
 
         _running = false;
         StateHasChanged();
     }
 
-    private BenchmarkRow Measure(string name, byte[] gray, int width, int height, bool expectFound)
+    private BenchmarkRow Measure(string name, byte[] gray, int width, int height, bool expectFound, bool enabled)
     {
         using var decoder = new BbBarcodeDecoder(new BbScannerOptions
         {
@@ -301,7 +348,8 @@
             timings[0],
             timings[^1],
             found,
-            expectFound);
+            expectFound,
+            enabled);
     }
 
     /// <summary>
@@ -314,7 +362,7 @@
     private static byte[] BuildFrame(BarcodeSample sample, int width, int height)
     {
         using var symbol = sample.Matrix is not null
-            ? Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix, scale: MatrixScale(sample, width, height))
+            ? SampleCatalog.RenderMatrix(sample, scale: MatrixScale(sample, width, height))
             : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: LinearScale(sample, width), height: 80);
 
         var frame = new byte[width * height];

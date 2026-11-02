@@ -19,7 +19,7 @@ the hybrid app from `BlexBrowserStorage.DisposeAsync`.
 
 | Project | What it is |
 |---|---|
-| `Bit.Blex.Tests.Harness` | Razor class library: four stores and a page per feature, wrapped in `<BlexProvider>`; every element the tests touch carries an `id`. net8.0 / net9.0 / net10.0. |
+| `Bit.Blex.Tests.Harness` | Razor class library: four stores and a page per feature, wrapped in `<BlexProvider>`; every element the tests touch carries an `id`. net10.0 / net11.0. |
 | `Bit.Blex.Tests.Harness.Web` (+ `.Client`) | One Blazor Web App serving the harness in any render mode, picked with `--BlexHarness:Mode=`: `ssr`, `server`, `server-noprerender`, `wasm`, `wasm-noprerender`, `auto`, `auto-noprerender`. |
 | `Bit.Blex.Tests.Harness.Hybrid` | WinForms `BlazorWebView` host (the WebView core MAUI Blazor Hybrid uses). Windows only. |
 | `Bit.Blex.Tests.E2E` | Playwright suites: every web render mode in Chromium, and the hybrid host through WebView2's DevTools port. |
@@ -65,7 +65,7 @@ Run a harness host by hand with one of its launch profiles (`ssr`, `server`, `wa
 
 | Variable | Effect |
 |---|---|
-| `BLEX_E2E_FRAMEWORK` | Target framework of the web harness host: `net10.0` (default), `net9.0`, `net8.0`. |
+| `BLEX_E2E_FRAMEWORK` | Target framework of the web harness host: `net11.0` (default), `net10.0`. |
 | `BLEX_E2E_CONFIGURATION` | Build configuration of the hosts; defaults to the test assembly's. |
 | `BLEX_E2E_SKIP_BUILD=1` | Do not build the hosts before the run. |
 | `BLEX_E2E_PUBLISHED_HOST` | Run a `dotnet publish` output of the web host instead of the build output. |

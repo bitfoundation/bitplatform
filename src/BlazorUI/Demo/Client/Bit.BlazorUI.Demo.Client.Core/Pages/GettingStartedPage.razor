@@ -19,7 +19,7 @@
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
                 Text="MIT licensed" />
         <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground"
-                Text=".NET 8, 9 and 10" />
+                Text=".NET 10 and 11" />
     </Badges>
 
     <Actions>
@@ -58,9 +58,9 @@
                 <div class="req-grid">
                     <div class="req">
                         <BitIcon IconName="@BitIconName.Installation" Color="BitColor.Primary" Class="req-icon" />
-                        <span class="req-title">The .NET 8, 9 or 10 SDK</span>
+                        <span class="req-title">The .NET 10 or 11 SDK</span>
                         <span class="req-text">
-                            One package multi-targets all three, so moving the app to a newer framework
+                            One package multi-targets both, so moving the app to a newer framework
                             never means changing the reference.
                         </span>
                     </div>
@@ -126,7 +126,7 @@
                 <BitText Element="h3" Typography="BitTypography.Subtitle1">Optional packages</BitText>
 
                 <BitText Element="p">
-                    Four more packages exist so that an app only ships the parts it asked for. Every
+                    Five more packages exist so that an app only ships the parts it asked for. Every
                     component page says which package that component comes from.
                 </BitText>
 
@@ -147,6 +147,17 @@
                                 <code>BitChart</code>, <code>BitMap</code>, <code>BitPdfViewer</code>, the
                                 markdown and rich-text editors - or one of the Fluent&nbsp;2, Material and
                                 Cupertino design-system presets.
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI/" Target="_blank">Bit.BlazorUI.AI</BitLink>
+                            </th>
+                            <td>
+                                You are building an AI app - a chat, an assistant, an agent: <code>BitAiChat</code>,
+                                <code>BitAiPromptInput</code>, streaming Markdown, tool calls and approvals, agent
+                                runs, citations, artifacts and generative UI, over one transport you implement for
+                                your model provider.
                             </td>
                         </tr>
                         <tr>
@@ -186,11 +197,12 @@
                 <BitAccordion Title="Install the optional packages">
                     <BitText Element="p">Add whichever of them you need:</BitText>
                     <CodeBox>dotnet add package Bit.BlazorUI.Extras
+dotnet add package Bit.BlazorUI.AI
 dotnet add package Bit.BlazorUI.Icons
 dotnet add package Bit.BlazorUI.Assets
 dotnet add package Bit.BlazorUI.Legacy</CodeBox>
                     <BitText Element="p">
-                        Each brings its own stylesheet - and Extras and Legacy their own script - which
+                        Each brings its own stylesheet - and Extras, AI and Legacy their own script - which
                         <BitLink Href="/getting-started#styles-and-scripts">step 4</BitLink> links.
                     </BitText>
                 </BitAccordion>
@@ -245,11 +257,20 @@ dotnet add package Bit.BlazorUI.Legacy</CodeBox>
                     packages replaces the line above rather than joining it:
                 </BitText>
                 <CodeBox Language="csharp">builder.Services.AddBitBlazorUIExtrasServices(); // Bit.BlazorUI.Extras
+builder.Services.AddBitBlazorUIAIServices(ai => ai.UseTransport&lt;MyTransport>()); // Bit.BlazorUI.AI
 builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox>
+
+                <BitText Element="p">
+                    <code>Bit.BlazorUI.AI</code> needs one class of yours: the <code>IBitAiTransport</code> its chat
+                    streams answers from, around your model provider. The
+                    <BitLink Href="/ai/scenarios/basic">Basic chat</BitLink> scenario shows one, and everything else the
+                    <code>ai =&gt; ...</code> callback can configure - tools, models, a conversation store, session and
+                    presentation defaults, custom renderers.
+                </BitText>
 
                 <BitAccordion Title="One optimization, and the one place it is unsafe">
                     <BitText Element="p">
-                        All three registrations take a <code>trySingleton</code> flag that registers the
+                        All four registrations take a <code>trySingleton</code> flag that registers the
                         eligible services once for the process instead of once per scope:
                     </BitText>
                     <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices(trySingleton: true);</CodeBox>
@@ -276,7 +297,7 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
                     </thead>
                     <tbody>
                         <tr>
-                            <th scope="row">Blazor Web App (.NET 8+)</th>
+                            <th scope="row">Blazor Web App (.NET 10+)</th>
                             <td><code>Components/App.razor</code></td>
                         </tr>
                         <tr>
@@ -322,6 +343,7 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
                     <CodeBox Language="html">&lt;!-- in head -->
 &lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" />
 &lt;link href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" rel="stylesheet" />
+&lt;link href="_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css" rel="stylesheet" />
 &lt;link href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" rel="stylesheet" />
 &lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" />
 &lt;link href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" rel="stylesheet" />
@@ -329,6 +351,7 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
 &lt;!-- at the end of body -->
 &lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script>
 &lt;script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js">&lt;/script>
+&lt;script src="_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js">&lt;/script>
 &lt;script src="_content/Bit.BlazorUI.Legacy/scripts/bit.blazorui.legacy.js">&lt;/script></CodeBox>
 
                     <BitText Element="p">
@@ -416,7 +439,7 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
                     database, localization, and the Android, iOS, macOS and Windows heads of one codebase.
                     The bit CLI creates it and installs whatever this machine is missing to run it:
                 </BitText>
-                <CodeBox>dotnet tool install --global Bit.Cli --version 10.7.0-pre-04
+                <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-16
 bit new MyBitProject</CodeBox>
 
                 <BitText Element="p">
@@ -429,8 +452,7 @@ bit new MyBitProject</CodeBox>
                         Description="Worth doing before your first deployment rather than after it. Without it, the browser of someone already using your app keeps serving them the previous version of the library's css and js.">
 
                 <BitText Element="p">
-                    On .NET 9 or later, the built-in <code>@@Assets[""]</code> feature fingerprints the
-                    resource files for you.
+                    The built-in <code>@@Assets[""]</code> feature fingerprints the resource files for you.
                 </BitText>
 
                 <BitText Element="p">
@@ -539,8 +561,7 @@ bit new MyBitProject</CodeBox>
                             <BitLink Href="/getting-started#styles-and-scripts">step 4</BitLink> is missing
                             or is not being served. Look for <code>bit.blazorui.css</code> in the browser's
                             network tab: a 404 there means the path is wrong, or that the app is not
-                            serving static web assets at all - <code>app.MapStaticAssets()</code> on .NET 9
-                            and later, <code>app.UseStaticFiles()</code> before that.
+                            serving static web assets at all - <code>app.MapStaticAssets()</code>.
                         </p>
                     </div>
                     <div class="trouble">

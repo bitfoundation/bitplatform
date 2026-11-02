@@ -1,0 +1,173 @@
+﻿@page "/e2e/aichat"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiChat E2E</PageTitle>
+
+<h1>BitAiChat</h1>
+
+@* No Session: the chat makes its own from the registered transport, which echoes (or plays the script the first word
+   of a message names). *@
+<E2ESection Id="basic" Title="Basic">
+    <div id="cht-basic-box" style="height:420px">
+        <BitAiChat Id="cht-basic" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="empty" Title="Empty state">
+    <div style="height:420px">
+        <BitAiChat Id="cht-empty"
+                   EmptyTitle="Hi, I am the docs assistant"
+                   EmptyBody="Ask about any component, or start from one of these."
+                   Suggestions="_suggestions" />
+    </div>
+</E2ESection>
+
+@* An echo paced at 60ms an event, so the reply is seen arriving. *@
+<E2ESection Id="streaming" Title="Streaming">
+    <div style="height:420px">
+        <BitAiChat Id="cht-stream" Session="_streamSession" />
+    </div>
+</E2ESection>
+
+@* Thirty paragraphs, paced, so a turn is stopped while it is still streaming. *@
+<E2ESection Id="stop" Title="Stop">
+    <div style="height:360px">
+        <BitAiChat Id="cht-stop" Session="_stopSession" />
+    </div>
+</E2ESection>
+
+@* A history taller than the box, and a long paced reply to stream into it. *@
+<E2ESection Id="autoscroll" Title="Auto-scroll">
+    <div style="height:360px">
+        <BitAiChat Id="cht-scroll" Session="_scrollSession" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="submit" Title="OnSubmit">
+    <div style="height:300px">
+        <BitAiChat Id="cht-onsubmit" OnSubmit="HandleOnSubmit" />
+    </div>
+    <span id="cht-onsubmit-log">@_submitted</span>
+</E2ESection>
+
+<E2ESection Id="focus" Title="FocusComposerAsync">
+    <button id="cht-focus-btn" @onclick="FocusComposer">Focus the composer</button>
+    <div style="height:300px">
+        <BitAiChat @ref="_focusChat" Id="cht-focus" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <div style="height:400px">
+        <BitAiChat Id="cht-tpl" Session="_templatesSession">
+            <HeaderTemplate>
+                <div id="cht-tpl-header" style="padding:8px">Support assistant</div>
+            </HeaderTemplate>
+            <ListHeaderTemplate>
+                <div id="cht-tpl-list-header">Chats are not saved.</div>
+            </ListHeaderTemplate>
+            <ListFooterTemplate>
+                <div id="cht-tpl-list-footer">Replies are scripted.</div>
+            </ListFooterTemplate>
+            <FooterTemplate>
+                <div id="cht-tpl-footer">The assistant can make mistakes.</div>
+            </FooterTemplate>
+        </BitAiChat>
+    </div>
+    <div style="height:300px">
+        <BitAiChat Id="cht-tpl-empty">
+            <EmptyTemplate>
+                <div id="cht-tpl-empty-content">What can we help you with?</div>
+            </EmptyTemplate>
+        </BitAiChat>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="height:360px">
+        <BitAiChat Id="cht-disabled" Disabled Suggestions="_suggestions" OnSubmit="HandleOnDisabledSubmit" />
+    </div>
+    <span id="cht-disabled-log">@_disabledSubmits</span>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <div id="cht-vars" style="height:360px;--bit-AiChat-background:rgb(250, 240, 230);--bit-AiChat-max-width:400px;--bit-AiChat-footer-padding:10px 20px 30px">
+        <BitAiChat Id="cht-var" />
+    </div>
+    <div style="height:300px">
+        <BitAiChat Id="cht-classes"
+                   Class="e2e-cht-root"
+                   Styles="@(new() { Footer = "outline: 2px solid rgb(1, 2, 3)", FooterColumn = "max-width: 300px" })"
+                   Classes="@(new() { Footer = "e2e-cht-footer", MessageList = new() { Root = "e2e-cht-list" }, EmptyState = new() { Root = "e2e-cht-empty" } })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="height:320px">
+        <BitAiChat Id="cht-rtl" Dir="BitDir.Rtl" Session="_rtlSession" />
+    </div>
+    <div dir="rtl" style="height:320px">
+        <BitAiChat Id="cht-rtl-inherited" Session="_rtlInheritedSession" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] _suggestions = ["What is Blazor?", "markdown please"];
+
+    private readonly BitAiChatSession _streamSession = new(E2EAiTransport.For(E2EAiScripts.Echo, 60));
+    private readonly BitAiChatSession _stopSession = new(E2EAiTransport.For(E2EAiScripts.Long, 40));
+    private readonly BitAiChatSession _scrollSession = new(E2EAiTransport.For(E2EAiScripts.Long, 25), History("scr", 24));
+    private readonly BitAiChatSession _templatesSession = new(E2EAiTransport.For(E2EAiScripts.Echo), History("tpl", 24));
+    private readonly BitAiChatSession _rtlSession = new(E2EAiTransport.For(E2EAiScripts.Echo), History("rtl", 2));
+    private readonly BitAiChatSession _rtlInheritedSession = new(E2EAiTransport.For(E2EAiScripts.Echo), History("rti", 2));
+
+    private BitAiChat? _focusChat;
+    private string _submitted = "None";
+    private int _disabledSubmits;
+
+    // A conversation of the given number of messages, a user question then an answer of a few lines, with ids made of
+    // the prefix and the number.
+    private static BitAiConversation History(string prefix, int count)
+    {
+        var conversation = new BitAiConversation($"{prefix}-conversation");
+
+        for (var i = 1; i <= count; i++)
+        {
+            var user = i % 2 == 1;
+            var message = new BitAiMessage(user ? BitAiRole.User : BitAiRole.Assistant, $"{prefix}-{i}");
+            message.AddPart(new BitAiTextPart(user
+                ? $"Question {i}: how does this part work?"
+                : $"Answer {i}: it renders on the server or in the browser, and the transcript keeps every reply in a column as wide as reading is comfortable."));
+            conversation.AddMessage(message);
+        }
+
+        return conversation;
+    }
+
+    private void HandleOnSubmit(BitAiPromptSubmission submission)
+    {
+        _submitted = $"Submitted: {submission.Text}";
+    }
+
+    private void HandleOnDisabledSubmit(BitAiPromptSubmission submission)
+    {
+        _disabledSubmits++;
+    }
+
+    private async Task FocusComposer()
+    {
+        if (_focusChat is not null) await _focusChat.FocusComposerAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _streamSession.DisposeAsync();
+        await _stopSession.DisposeAsync();
+        await _scrollSession.DisposeAsync();
+        await _templatesSession.DisposeAsync();
+        await _rtlSession.DisposeAsync();
+        await _rtlInheritedSession.DisposeAsync();
+    }
+}

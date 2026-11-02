@@ -25,6 +25,37 @@ public sealed class ScrollTests : BmotionPageTest
     }
 
     [TestMethod]
+    public async Task SmoothedTimeline_GlidesAfterAJumpInTheScroll_AndArrivesWhereItIs()
+    {
+        await WaitForStateAsync("#smooth-progress", "s => s.scaleX < 0.02");
+
+        // Half the page in one jump, then every frame for a while: the exact bar is there at once, the smoothed one
+        // gets there over several frames - always heading for it, never past it (the recipe's spring is overdamped).
+        var frames = await Page.EvaluateAsync<double[][]>("""
+            async () => {
+                const scaleX = id => new DOMMatrixReadOnly(getComputedStyle(document.getElementById(id)).transform).a;
+                const d = document.documentElement;
+                window.scrollTo(0, (d.scrollHeight - innerHeight) / 2);
+                const frames = [];
+                for (let i = 0; i < 90; i++) {
+                    await new Promise(r => requestAnimationFrame(r));
+                    frames.push([scaleX('page-progress'), scaleX('smooth-progress')]);
+                }
+                return frames;
+            }
+            """);
+
+        var exact = frames.Select(f => f[0]).ToArray();
+        var smooth = frames.Select(f => f[1]).ToArray();
+        Assert.AreEqual(0.5, exact[2], 0.05, "the exact bar follows the scroll at once");
+        Assert.IsTrue(smooth[1] < 0.4, $"the smoothed bar jumped: {smooth[1]:0.###}");
+        for (int i = 1; i < smooth.Length; i++)
+            Assert.IsTrue(smooth[i] >= smooth[i - 1] - 1e-6, $"it went back at frame {i}: {smooth[i - 1]:0.###} -> {smooth[i]:0.###}");
+        Assert.IsTrue(smooth.Max() <= exact[^1] + 0.005, "and never past the scroll");
+        await WaitForStateAsync("#smooth-progress", $"s => Math.abs(s.scaleX - {exact[^1].ToString(System.Globalization.CultureInfo.InvariantCulture)}) < 0.002");
+    }
+
+    [TestMethod]
     public async Task ContainerTimeline_FollowsThatContainersScroll()
     {
         await WaitForStateAsync("#container-driven", "s => Math.abs(s.opacity - 0.2) < 0.03");

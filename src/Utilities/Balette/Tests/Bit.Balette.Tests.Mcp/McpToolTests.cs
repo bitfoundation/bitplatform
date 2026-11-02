@@ -68,15 +68,16 @@ public class McpToolTests
     {
         var index = await McpCall.TextAsync("GetBaletteApi");
 
-        foreach (var type in new[] { "Balette", "BaletteTrigger", "BaletteGroup", "BaletteItem", "BaletteCommands", "BaletteCommand", "BaletteCmd", "BaletteCommandResult", "BaletteCommandMode", "IBaletteService", "BaletteOptions", "IBaletteSource", "BaletteFuzzyMatcher", "BaletteSubstringMatcher", "BaletteMatcherExtensions", "BaletteRanker", "BaletteKeyboardShortcut" })
+        foreach (var type in new[] { "Balette", "BaletteTrigger", "BaletteGroup", "BaletteItem", "BaletteCommands", "BaletteCommand", "BaletteCmd", "BaletteCommandResult", "BaletteCommandMode", "IBaletteService", "BaletteOptions", "IBaletteSource", "BaletteFuzzyMatcher", "BaletteSubstringMatcher", "BaletteMatcherExtensions", "BaletteRanker", "BaletteKeyboardShortcut", "BaletteQuery", "BaletteSourcePage" })
         {
             Assert.Contains($"**{type}**", index);
         }
 
         // Internal machinery stays out of the reference, and so does the class Razor makes of _Imports.razor.
-        Assert.DoesNotContain("BaletteQuery", index);
-        Assert.DoesNotContain("BaletteCommandIdGenerator", index);
-        Assert.DoesNotContain("_Imports", index);
+        foreach (var type in new[] { "BaletteCommandIdGenerator", "BaletteTextFold", "BaletteTypoTolerantMatcher", "BaletteUrl", "BaletteLog", "_Imports" })
+        {
+            Assert.DoesNotContain(type, index);
+        }
     }
 
     [TestMethod]
@@ -320,6 +321,12 @@ public class McpToolTests
         Assert.DoesNotContain("Demo/Client/Layout/", index);
         Assert.DoesNotContain("DocsCatalog.cs", index);
         Assert.IsFalse(BaletteSourceCatalog.SourceFiles.Any(file => file.Path.StartsWith("Demo/Client/Layout/", StringComparison.OrdinalIgnoreCase)));
+
+        // Every page renders its samples through <CodeBlock>, so an agent reading one can look the viewer up - and is
+        // told it is the demo's - while the lexer behind it is not palette code either.
+        Assert.Contains("Demo/Client/Shared/CodeBlock.razor", index);
+        StringAssert.StartsWith(BaletteSourceCatalog.SourceFiles.Single(file => file.Path == "Demo/Client/Shared/CodeBlock.razor").Description, "The demo's code viewer, not part of the library");
+        Assert.IsFalse(BaletteSourceCatalog.SourceFiles.Any(file => file.Path.Contains("SyntaxHighlighter", StringComparison.OrdinalIgnoreCase)));
 
         // The palette host is, though: it is where this app renders its one <Balette />.
         Assert.Contains(BaletteSourceCatalog.PaletteHostPath, index);

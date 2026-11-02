@@ -1,0 +1,9 @@
+description = "Bring a change of the project template into this project - a newer template version, another .NET version, or an optional feature switched on or off: diff the two projects the template creates, carry every change that still applies into this codebase, add the migrations it needs, update bit.json, and prove it builds, passes its tests and runs."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/template-diff.agent.md}
+
+What to bring in, and notes: {{args}}
+"""

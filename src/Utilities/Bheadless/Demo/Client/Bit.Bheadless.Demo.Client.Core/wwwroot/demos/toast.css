@@ -1,0 +1,218 @@
+﻿/* toast demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- Viewport ----
+   BitBhToastViewport renders <div role="region" aria-label="Notifications (F8)">
+   around an <ol>; your class lands on the <ol>. */
+.toast-viewport {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: min(22rem, calc(100vw - 2rem));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    outline: none;
+}
+
+/* F8 moves focus to the list. */
+.toast-viewport:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 4px;
+    border-radius: 0.75rem;
+}
+
+/* ---- Toast (<li>) ---- */
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 0.75rem 0.85rem 1rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.06);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.toast:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+/* Enter / exit — BitBhToast emits data-state="open|closed" and the runtime waits
+   for the exit animation before removing the toast. */
+.toast[data-state="open"]   { animation: toast-in 240ms cubic-bezier(0.16, 1, 0.3, 1); }
+.toast[data-state="closed"] { animation: toast-out 180ms ease-in forwards; }
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(0.75rem) scale(0.97); }
+}
+
+@keyframes toast-out {
+    to { opacity: 0; transform: translateX(calc(100% + 1rem)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast[data-state] { animation: none; }
+}
+
+/* Variant from BitBhToastOptions.Data (rendered as data-variant by the template). */
+.toast[data-variant="error"] {
+    background: var(--color-danger-subtle);
+    border-color: var(--color-danger-border);
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.05rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.toast[data-variant="success"] .toast-icon { background: #16a34a; }
+.toast[data-variant="error"] .toast-icon   { background: var(--color-danger); }
+
+.toast-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.toast-title       { font-weight: 600; }
+.toast-description { color: var(--color-text-tertiary); }
+.toast[data-variant="error"] .toast-title { color: light-dark(#991b1b, #fca5a5); }
+
+.toast-action {
+    flex-shrink: 0;
+    align-self: center;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.4rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.toast-action:hover         { background: var(--color-fill); }
+.toast-action:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.toast-close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.35rem;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.toast-close:hover         { background: var(--color-fill); color: var(--color-text); }
+.toast-close:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+/* ---- Stacked viewport (second toaster with Limit = 3) ----
+   Toasts overlap in one grid cell; older ones peek out behind the newest and
+   the stack fans out on hover or keyboard focus. */
+.toast-stack {
+    position: fixed;
+    left: 1rem;
+    bottom: 1rem;
+    z-index: 100;
+    display: grid;
+    width: min(20rem, calc(100vw - 2rem));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    outline: none;
+}
+
+.toast-stack > .toast {
+    grid-area: 1 / 1;
+    align-self: end;
+    transform-origin: bottom center;
+    transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.toast-stack > .toast:nth-last-child(2) { transform: translateY(-0.7rem) scale(0.95); opacity: 0.85; }
+.toast-stack > .toast:nth-last-child(3) { transform: translateY(-1.4rem) scale(0.9); opacity: 0.7; }
+
+.toast-stack:hover,
+.toast-stack:focus-within {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toast-stack:hover > .toast,
+.toast-stack:focus-within > .toast {
+    transform: none;
+    opacity: 1;
+}
+
+.toast-stack:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 4px;
+    border-radius: 0.75rem;
+}
+
+/* ---- Demo controls ---- */
+.toast-demo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.toast-inbox {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+    max-width: 24rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.toast-inbox-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    font-size: 0.875rem;
+}
+
+.toast-inbox-empty {
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    font-style: italic;
+}

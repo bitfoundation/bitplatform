@@ -61,8 +61,27 @@ internal static class SessionResolver
 
     public static int LiveSessionCount => Volatile.Read(ref _cache).Length;
 
+    private static readonly AsyncLocal<bool> OwnWork = new();
+
+    /// <summary>
+    /// Marks the current async flow as BevTools' own work until disposed: application code BevTools calls into - an
+    /// <c>AuthenticationStateProvider</c> asked for the current state - can make requests, log and raise activities, and
+    /// none of that is application activity. Nothing resolves a session meanwhile, so none of it is recorded.
+    /// </summary>
+    public static IDisposable BeginBevToolsWork()
+    {
+        var previous = OwnWork.Value;
+        OwnWork.Value = true;
+        return new OwnWorkScope(previous);
+    }
+
     public static BevToolsSession? Resolve()
     {
+        if (OwnWork.Value)
+        {
+            return null;
+        }
+
         var ambient = Ambient.Value;
         if (ambient is { IsDisposed: false })
         {
@@ -135,5 +154,10 @@ internal static class SessionResolver
     private sealed class AmbientScope(BevToolsSession? previous) : IDisposable
     {
         public void Dispose() => Ambient.Value = previous;
+    }
+
+    private sealed class OwnWorkScope(bool previous) : IDisposable
+    {
+        public void Dispose() => OwnWork.Value = previous;
     }
 }

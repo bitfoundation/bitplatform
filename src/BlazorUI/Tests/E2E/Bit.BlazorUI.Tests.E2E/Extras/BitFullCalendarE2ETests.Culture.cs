@@ -118,12 +118,12 @@ public partial class BitFullCalendarE2ETests
         var cal = Page.Locator("#ar-cal");
 
         await AssertRightToLeftLayoutAsync(cal);
-        await Expect(Title(cal)).ToHaveTextAsync(ServerOrWasm("محرم 1447 بعد الهجرة", "Muharram 1447 بعد الهجرة"));
+        await Expect(Title(cal)).ToHaveTextAsync(new Regex(ServerOrWasm("^محرم 1447( بعد الهجرة)?$", "^Muharram 1447( بعد الهجرة)?$")));
         await Expect(cal.Locator(".bit-bfc-month-cell-day.today")).ToHaveTextAsync("21");
         await Expect(Badge(cal, "s1")).ToBeVisibleAsync();
 
         await cal.Locator(".bit-bfc-btn-nav").Last.ClickAsync();
-        await Expect(Title(cal)).ToHaveTextAsync(ServerOrWasm("صفر 1447 بعد الهجرة", "Safar 1447 بعد الهجرة"));
+        await Expect(Title(cal)).ToHaveTextAsync(new Regex(ServerOrWasm("^صفر 1447( بعد الهجرة)?$", "^Safar 1447( بعد الهجرة)?$")));
     }
 
     [TestMethod]

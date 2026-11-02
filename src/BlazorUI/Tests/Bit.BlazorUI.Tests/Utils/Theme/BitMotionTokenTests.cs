@@ -98,7 +98,7 @@ public sealed class BitMotionTokenTests
     {
         // The -reduced tokens are set only while the reduction is in force; a preset or a component declaring one would
         // reduce, or un-reduce, motion regardless of the preference.
-        var declared = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }
+        var declared = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI" }
             .SelectMany(project => Directory.EnumerateFiles(SourceFiles.GetDirectory(project), "*.scss", SearchOption.AllDirectories))
             .Where(file => file.Contains($"{Path.DirectorySeparatorChar}node_modules{Path.DirectorySeparatorChar}", StringComparison.Ordinal) is false)
             .Where(file => Path.GetFileName(file) != "motion.fluent.scss")
@@ -119,6 +119,6 @@ public sealed class BitMotionTokenTests
         => Regex.Replace(SourceFiles.Read("Bit.BlazorUI", "wwwroot", "styles", "bit.blazorui.css"), @"\s*([{};,])\s*", "$1").Replace("\"", string.Empty);
 
     private static IEnumerable<string> EnumerateComponentStylesheets()
-        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }
+        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI" }
             .SelectMany(project => Directory.EnumerateFiles(SourceFiles.GetDirectory(project, "Components"), "*.scss", SearchOption.AllDirectories));
 }

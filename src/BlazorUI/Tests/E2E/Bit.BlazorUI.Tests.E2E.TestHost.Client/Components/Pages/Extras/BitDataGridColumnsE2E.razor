@@ -22,6 +22,10 @@
         <BitDataGridColumn Property="p => p.Id" Width="80px" />
         <BitDataGridColumn Property="p => p.Name" Width="160px" />
     </BitDataGrid>
+    @* A sortable column whose title is far wider than its values, so its header alone sets the width a fit gives it. *@
+    <BitDataGrid TItem="Product" Id="grid-fit-header" Items="@_products" Resizable="true">
+        <BitDataGridColumn Property="p => p.Stock" Title="Units in stock" Width="200px" MinWidth="20" />
+    </BitDataGrid>
 </E2ESection>
 
 <E2ESection Id="reorder" Title="Reordering">

@@ -30,7 +30,7 @@ public class BitClassStylesBuilderResetTests : BunitTestContext
     [TestMethod]
     public void EveryClassesAndStylesParameterShouldResetItsBuilder()
     {
-        var assemblies = new[] { typeof(BitButton).Assembly, typeof(BitAppShell).Assembly, typeof(Bit.BlazorUI.Legacy.BitRichTextEditorLegacy).Assembly };
+        var assemblies = new[] { typeof(BitButton).Assembly, typeof(BitAppShell).Assembly, typeof(Bit.BlazorUI.Legacy.BitRichTextEditorLegacy).Assembly, typeof(BitAiChat).Assembly };
         var failures = new List<string>();
         var tested = 0;
 

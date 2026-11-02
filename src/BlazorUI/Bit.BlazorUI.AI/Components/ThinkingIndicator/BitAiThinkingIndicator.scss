@@ -1,0 +1,16 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every thinking
+// indicator, one set on an ancestor the indicators inside it, and one set on the Style of an instance that one alone:
+//   --bit-AiThinkingIndicator-color       color of the label                                   (default: $clr-fg-sec)
+//   --bit-AiThinkingIndicator-font-size   size of the label, which the dots are drawn at too   (default: $tg-fs-sm)
+//
+// The dots are a BitBouncingDotsLoading drawn inline, at the size of the text: their color, size and pace are its own
+// --bit-Loading-* variables.
+
+.bit-aithi {
+    display: inline-flex;
+    align-items: center;
+    color: var(--bit-AiThinkingIndicator-color, #{$clr-fg-sec});
+    font-size: var(--bit-AiThinkingIndicator-font-size, #{$tg-fs-sm});
+}

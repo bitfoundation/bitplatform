@@ -1,6 +1,7 @@
 ﻿using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -33,6 +34,27 @@ public sealed class UseBitBsqliteTests
 
         Assert.IsInstanceOfType<BsqliteDatabaseCreator>(ctx.GetService<IRelationalDatabaseCreator>());
         Assert.IsInstanceOfType<BsqliteHistoryRepository>(ctx.GetService<IHistoryRepository>());
+    }
+
+    /// <summary>
+    /// EF warns that it could not create the <c>ef_*</c> functions on a connection that is not a
+    /// <c>SqliteConnection</c>. On a Bsqlite connection the transport has created them, so the
+    /// warning - logged for every context - is silenced; on any other connection it stays.
+    /// </summary>
+    [TestMethod]
+    public void TheEfFunctionsWarning_IsSilenced_OnABsqliteConnectionOnly()
+    {
+        using var ours = ContextFactory.Create(new BsqliteInProcessTransport());
+        using var other = new ProductContext(new DbContextOptionsBuilder<ProductContext>()
+            .UseBitBsqlite(new Microsoft.Data.Sqlite.SqliteConnection("Data Source=:memory:"))
+            .Options);
+
+        Assert.AreEqual(WarningBehavior.Ignore, WarningFor(ours));
+        Assert.AreNotEqual(WarningBehavior.Ignore, WarningFor(other));
+
+        static WarningBehavior? WarningFor(DbContext context)
+            => context.GetService<IDbContextOptions>().FindExtension<CoreOptionsExtension>()?
+                .WarningsConfiguration.GetBehavior(SqliteEventId.UnexpectedConnectionTypeWarning);
     }
 
     [TestMethod]

@@ -7,9 +7,10 @@ namespace Bit.Bonboarding.Demo.Server.Services;
 /// Assembles the wiring for one Blazor render mode: the checklist, plus the real files of this demo
 /// where the demo is that render mode.
 /// <para>
-/// Four things have to be in place before the first tour shows, and each one fails quietly when it
-/// is missing: the services in every DI container that renders a tour (a missing one surfaces during
-/// prerendering, not at compile time), the stylesheet (a tour without it renders unstyled at the
+/// Four things have to be in place before the first tour shows, and none of them is caught at compile
+/// time: the services in every DI container that renders a tour (a missing one fails only once something
+/// in that container needs them - for a Blazor Web App's client project, after the page turns interactive
+/// on WebAssembly rather than while it prerenders), the stylesheet (a tour without it renders unstyled at the
 /// bottom of the page), one <c>BonboardingRoot</c> host (without it a started tour renders nothing at
 /// all) and the namespace import. Handing over a known-good project instead of prose removes the
 /// guesswork about which project each of them belongs in.
@@ -235,11 +236,18 @@ public static partial class BonboardingSetupGuide
 
         1. `dotnet add package Bit.Bonboarding`.
         2. Call `AddBitBonboardingServices(...)` in EVERY DI container that renders a tour - a Blazor Web App with an
-           interactive client has two of them, and a missing registration surfaces as a failure to resolve
-           `IBonboardingService` during prerendering. Give both the same options.
+           interactive client has two of them. Where it is missing, the first Bonboarding component to render in that
+           container fails with an error that names `AddBitBonboardingServices`, and a component injecting
+           `IBonboardingService` with Blazor's own "no registered service" error. Prerendering runs on the server, so a
+           registration missing in the server project fails the page while it prerenders, and one missing in the client
+           project only once the page turns interactive on WebAssembly. Prerendering uses the server project's options
+           and an interactive WebAssembly component the client project's, so give both the same options. (Only a WebAssembly app that lazy loads Bit.Bonboarding leaves the
+           registration out, and turns the `Bit.Bonboarding.LazyLoad` runtime switch on instead - see
+           `GetBonboardingGuideSection(heading: "Lazy loading on WebAssembly")`.)
         3. Reference `_content/Bit.Bonboarding/bit-bonboarding.css` from the host page, before your own stylesheet so
            your overrides of its `--bit-bonboarding-*` variables win.
-        4. Render exactly one `<BonboardingRoot />`, normally in the main layout. It hosts every tour the app starts;
+        4. Render exactly one `<BonboardingRoot />`, normally in the main layout - in an app that lazy loads
+           Bit.Bonboarding, in a layout only the pages it is loaded for use. It hosts every tour the app starts;
            without it a started tour is running but nothing is drawn.
         5. Add `@using Bit.Bonboarding` to `_Imports.razor` of every project that declares tours.
         6. Start tours from `OnAfterRenderAsync(firstRender: true)`, a user action, or `<BonboardingTour AutoStart=...>` -

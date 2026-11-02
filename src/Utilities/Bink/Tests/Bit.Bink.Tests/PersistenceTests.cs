@@ -229,6 +229,90 @@ public sealed class PersistenceTests
     }
 
     [TestMethod]
+    public async Task A_save_due_while_another_ends_follows_it()
+    {
+        var clock = new ManualTimeProvider();
+        var store = new BinkMemoryDocumentStore();
+        var document = new BinkDocument();
+        await using var autosave = new BinkAutosave(document, store, "board", new BinkAutosaveOptions { TimeProvider = clock });
+
+        // The first save's handler changes the drawing and lets the delay pass, so the next save comes due while that
+        // one is still ending. Nothing moves the clock after it: the follow-up must not wait for the timer.
+        var second = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        int saves = 0;
+        autosave.Saved += (_, _) =>
+        {
+            switch (Interlocked.Increment(ref saves))
+            {
+                case 1:
+                    document.AddElement(Stroke(1));
+                    clock.Advance(TimeSpan.FromSeconds(3));
+                    break;
+                case 2:
+                    second.TrySetResult();
+                    break;
+            }
+        };
+        document.AddElement(Stroke(0));
+        clock.Advance(TimeSpan.FromSeconds(3));
+
+        await second.Task.WaitAsync(Wait);
+        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board"))!.ElementCount);
+    }
+
+    [TestMethod]
+    public async Task A_save_whose_handler_throws_still_counts_as_saved()
+    {
+        var clock = new ManualTimeProvider();
+        var store = new BinkMemoryDocumentStore();
+        var document = new BinkDocument();
+        await using var autosave = new BinkAutosave(document, store, "board", new BinkAutosaveOptions { TimeProvider = clock });
+        int failures = 0;
+        autosave.SaveFailed += (_, _) => Interlocked.Increment(ref failures);
+        bool throwing = true;
+        autosave.Saved += (_, _) =>
+        {
+            if (throwing) throw new InvalidOperationException("The handler failed.");
+        };
+
+        // The exception is the caller's to hear, not a failed save to report and try again.
+        document.AddElement(Stroke(0));
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => autosave.SaveNowAsync());
+        Assert.IsNull(autosave.LastError);
+        Assert.AreEqual(0, failures);
+        Assert.IsFalse(autosave.HasUnsavedChanges);
+
+        throwing = false;
+        document.AddElement(Stroke(1));
+        await autosave.SaveNowAsync();
+        Assert.AreEqual(2, (await BinkAutosave.RestoreAsync(store, "board"))!.ElementCount);
+    }
+
+    [TestMethod]
+    public async Task A_failure_handler_that_throws_does_not_fail_the_saves_after_it()
+    {
+        var clock = new ManualTimeProvider();
+        var store = new FlakyStore { Failing = true };
+        var document = new BinkDocument();
+        await using var autosave = new BinkAutosave(document, store, "board", new BinkAutosaveOptions { TimeProvider = clock });
+        var failed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        autosave.SaveFailed += (_, _) =>
+        {
+            failed.TrySetResult();
+            throw new InvalidOperationException("The handler failed.");
+        };
+        document.AddElement(Stroke(0));
+        clock.Advance(TimeSpan.FromSeconds(3));
+        await failed.Task.WaitAsync(Wait);
+
+        // Nobody awaited that timer save; the saves after it do not hear its handler's exception either.
+        store.Failing = false;
+        await autosave.SaveNowAsync().WaitAsync(Wait);
+        Assert.IsNull(autosave.LastError);
+        Assert.IsNotNull(await store.LoadAsync("board"));
+    }
+
+    [TestMethod]
     public async Task Discarding_removes_the_copy_and_disposing_saves_what_waits()
     {
         var clock = new ManualTimeProvider();

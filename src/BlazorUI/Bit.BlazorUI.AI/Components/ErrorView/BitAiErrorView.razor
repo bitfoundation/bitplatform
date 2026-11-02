@@ -1,0 +1,81 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    var detail = Error.Detail;
+    var hasDetail = detail is { Length: > 0 };
+    var showsRetry = Error.IsRetryable && OnRetry.HasDelegate;
+
+    @* The actions row is only handed to the message when there is something in it (see the Actions below): a row of
+       its own is laid out even while it is empty, and would open a gap under the text for nothing. *@
+    RenderFragment actions =
+        @<div style="@Styles?.Actions" class="bit-aierv-act @Classes?.Actions">
+            @if (showsRetry)
+            {
+                <BitButton ButtonType="BitButtonType.Button"
+                           Variant="BitVariant.Outline"
+                           IconName="Refresh"
+                           Class="bit-btn-dft-ter"
+                           Disabled="Disabled"
+                           OnClick="HandleOnRetry"
+                           Styles="@Styles?.RetryButton"
+                           Classes="@_RetryButtonClasses">
+                    @Strings.Retry
+                </BitButton>
+            }
+
+            @if (hasDetail)
+            {
+                @* A disclosure says whether what it discloses is shown, and points at it while it is. *@
+                <BitButton ButtonType="BitButtonType.Button"
+                           Variant="BitVariant.Text"
+                           Class="bit-btn-dft-ter"
+                           Disabled="Disabled"
+                           OnClick="ToggleDetail"
+                           aria-expanded="@(_showDetail ? "true" : "false")"
+                           aria-controls="@(_showDetail ? _DetailId : null)"
+                           Styles="@Styles?.DetailButton"
+                           Classes="@Classes?.DetailButton">
+                    @(_showDetail ? Strings.HideDetails : Strings.ShowDetails)
+                </BitButton>
+
+                @* The detail follows the button that discloses it, on a line of its own: next in the order the focus moves
+                   in, and outside the alert the message is, so showing it announces nothing. It scrolls once it is long,
+                   and a scrolling block holds nothing that can take the focus - so it takes the focus itself then
+                   (data-bit-ai-scroll, see BitAiScrollStops.ts), which is what keeps it readable with a keyboard. *@
+                @if (_showDetail)
+                {
+                    <div id="@_DetailId" data-bit-ai-scroll style="@Styles?.Detail" class="bit-aierv-dtl @Classes?.Detail">@detail</div>
+                }
+            }
+        </div>;
+}
+
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @* The message is an Error one, which is what announces it as an alert. A compact view sits inside another card
+       that already says what failed, so it is titled by the message itself rather than by a generic heading. *@
+    <BitMessage Color="BitColor.Error"
+                Variant="BitVariant.Outline"
+                Tinted="true"
+                Multiline="true"
+                Disabled="Disabled"
+                Title="@(Compact ? Error.Message : Strings.SomethingWentWrong)"
+                Actions="@(showsRetry || hasDetail ? actions : null)"
+                Styles="@Styles?.Message"
+                Classes="@Classes?.Message">
+        @if (Compact is false)
+        {
+            <div style="@Styles?.Text" class="bit-aierv-txt @Classes?.Text">@Error.Message</div>
+        }
+
+        @* The wait is shown until it is over (see SyncWait). *@
+        @if (Error.RetryAfter is { } wait && _waitOver is false)
+        {
+            <div style="@Styles?.RetryAfter" class="bit-aierv-rta @Classes?.RetryAfter">@Strings.RetryIn(wait)</div>
+        }
+    </BitMessage>
+</div>

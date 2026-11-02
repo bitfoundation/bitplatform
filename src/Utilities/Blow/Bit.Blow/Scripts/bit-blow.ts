@@ -56,6 +56,7 @@ interface BlowInputPolicy {
     selectAllKey?: boolean;
     clipboardKeys?: boolean;
     historyKeys?: boolean;
+    deleteKeys?: string | null;
 }
 
 // What observeResize and installInteractionGuards hand back; .NET disposes it as a JS object reference.
@@ -88,12 +89,34 @@ function screenScale(viewportEl: HTMLElement, fallback: number): number {
     return fallback > 0 ? fallback : 1;
 }
 
-// Measures every node and its handles inside the (transformed) viewport element.
-// Sizes/offsets are divided by the on-screen scale so they are expressed in flow units.
-export function measureNodes(viewportEl: HTMLElement | null, zoom: number): BlowMeasuredNode[] {
+// What each flow last reported of each of its nodes, by id: a pass with changedOnly reports only what differs.
+const lastReported = new WeakMap<HTMLElement, Map<string, BlowMeasuredNode>>();
+
+// Whether a node measures differently from what was reported of it, beyond rounding.
+function measuresDifferently(a: BlowMeasuredNode, b: BlowMeasuredNode): boolean {
+    const near = (x: number, y: number) => Math.abs(x - y) <= 0.01;
+    if (!near(a.width, b.width) || !near(a.height, b.height) || a.handles.length !== b.handles.length) return true;
+    for (let i = 0; i < a.handles.length; i++) {
+        const p = a.handles[i], q = b.handles[i];
+        if (p.handleId !== q.handleId || p.type !== q.type || p.position !== q.position
+            || p.connectableEnd !== q.connectableEnd || !near(p.offsetX, q.offsetX) || !near(p.offsetY, q.offsetY)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Measures the nodes and their handles inside the (transformed) viewport element. Sizes/offsets are divided by the
+// on-screen scale so they are expressed in flow units. With changedOnly, reports only the nodes whose size or handles
+// changed since this viewport's last report, those it has not reported before, and those named in include: taking
+// the measurements is cheap, but bringing 900 of them across to .NET is not.
+export function measureNodes(viewportEl: HTMLElement | null, zoom: number, changedOnly = false, include: string[] = []): BlowMeasuredNode[] {
     const result: BlowMeasuredNode[] = [];
     if (!viewportEl) return result;
     const z = screenScale(viewportEl, zoom);
+    const before = changedOnly ? lastReported.get(viewportEl) : undefined;
+    const named = include.length > 0 ? new Set(include) : null;
+    const reported = new Map<string, BlowMeasuredNode>();
 
     viewportEl.querySelectorAll<HTMLElement>(`.${NODE_CLASS}`).forEach(nodeEl => {
         // Only this flow's own nodes: a flow nested inside a node has nodes of its own.
@@ -120,14 +143,25 @@ export function measureNodes(viewportEl: HTMLElement | null, zoom: number): Blow
             });
         });
 
-        result.push({
+        const measured: BlowMeasuredNode = {
             id,
             width: rect.width / z,
             height: rect.height / z,
             handles
-        });
+        };
+
+        // Remembered as last reported, so a change creeping in below the rounding still adds up to one that is not.
+        const previous = id === null ? undefined : before?.get(id);
+        if (!previous || (named !== null && named.has(id!)) || measuresDifferently(previous, measured)) {
+            result.push(measured);
+            if (id !== null) reported.set(id, measured);
+        } else {
+            reported.set(id!, previous);
+        }
     });
 
+    // Only the nodes on the page now: one culled away is reported afresh when it comes back.
+    lastReported.set(viewportEl, reported);
     return result;
 }
 
@@ -282,11 +316,12 @@ function isEditable(el: Element | null): boolean {
 //     its zoom activation key is not held, is left to scroll the page; so is a wheel over a
 //     panel, the controls or a non-zoomable minimap, which keep the behaviour of ordinary page
 //     content.
-//   panKey, keyboardA11y, selectAllKey, clipboardKeys, historyKeys - which keys the flow uses
+//   panKey, keyboardA11y, selectAllKey, clipboardKeys, historyKeys, deleteKeys - which keys the flow uses
 //     while it (or a node or edge in it) has focus, so they do not also reach the browser: Space/
 //     Enter activate a focused node or edge, the arrow keys move the selection, the pan key held
 //     over the pane pans, and Ctrl/Cmd+A, C, X, V, D, Z and Y select, copy, paste, duplicate, undo
-//     and redo - which would otherwise also select the page's text or open the bookmark dialog.
+//     and redo - which would otherwise also select the page's text or open the bookmark dialog - and the delete keys,
+//     Backspace among them, which some browsers (WebKit) take for going back a page.
 //
 // Returns a handle whose dispose() removes the listeners.
 export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass: string | null, noPanClass: string | null,
@@ -330,6 +365,7 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
     const selectAllKey = !!(policy && policy.selectAllKey);
     const clipboardKeys = !!(policy && policy.clipboardKeys);
     const historyKeys = !!(policy && policy.historyKeys);
+    const deleteKeys = policy && policy.deleteKeys ? policy.deleteKeys.split('\n') : [];
     const overlaySelector = '.bit-blow-panel, .bit-blow-controls, .bit-blow-minimap';
 
     // The Ctrl/Cmd shortcuts the flow has been told to handle itself.
@@ -374,6 +410,16 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         const t = e.target;
         if (!(t instanceof Element) || isEditable(t)) return;
 
+        // A minimap that can be steered keeps the keys it acts on from scrolling the page - only those, and never with
+        // a modifier held: Ctrl with plus zooms the page and Alt with an arrow goes back, as everywhere else.
+        if (t.matches('.bit-blow-minimap[tabindex]') && t.closest(`.${ROOT_CLASS}`) === pane) {
+            if (e.ctrlKey || e.metaKey || e.altKey || !e.key) return;
+            const pans = t.classList.contains('pannable') && e.key.startsWith('Arrow');
+            const zooms = t.classList.contains('zoomable') && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '_');
+            if (pans || zooms || e.key === 'Home') e.preventDefault();
+            return;
+        }
+
         // The pane itself, or one of this flow's own nodes or edges - not a button or an input
         // inside a node, which keep their own keys, and not the elements of a nested flow.
         const onElement = t !== pane
@@ -385,18 +431,31 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         else if (panKey && e.key === panKey) e.preventDefault();
         else if (keyboardA11y && e.key && e.key.startsWith('Arrow')) e.preventDefault();
         else if (isFlowShortcut(e)) e.preventDefault();
+        else if (!e.ctrlKey && !e.metaKey && !e.altKey && deleteKeys.includes(e.key)) e.preventDefault();
+    };
+
+    // The browser's own drag and drop, started on a selection of text inside the flow (or an image, or a link): WebKit
+    // then takes the pointer without the pointercancel the Pointer Events spec asks for, the release never reaches the
+    // pane, and the node being dragged follows the cursor with no button held. Only something marked draggable by the
+    // app keeps it.
+    const onDragStart = (e: DragEvent) => {
+        if (inNestedFlow(e.target)) return;
+        if (e.target instanceof Element && e.target.closest('[draggable="true"]')) return;
+        e.preventDefault();
     };
 
     if (pointerSelector) pane.addEventListener('pointerdown', onPointerDown);
     // Not passive: preventDefault() has to be able to stop the page from scrolling.
     pane.addEventListener('wheel', onWheel, { passive: false });
     pane.addEventListener('keydown', onKeyDown);
+    pane.addEventListener('dragstart', onDragStart);
 
     return {
         dispose: () => {
             pane.removeEventListener('pointerdown', onPointerDown);
             pane.removeEventListener('wheel', onWheel);
             pane.removeEventListener('keydown', onKeyDown);
+            pane.removeEventListener('dragstart', onDragStart);
         }
     };
 }
@@ -410,6 +469,57 @@ export function releasePointerCapture(el: Element | null, pointerId: number): vo
     try {
         if (el?.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId);
     } catch { /* the pointer is already gone */ }
+}
+
+// True when the operating system asks applications to reduce motion. Read once when a canvas starts: the
+// viewport transitions are C#'s, so C# has to be told; the edge animation follows the media query in CSS.
+export function prefersReducedMotion(): boolean {
+    return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// Moves keyboard focus to one of this flow's own nodes or edges - found among the direct children of its layers, so a
+// flow nested inside a node, whose ids may well be the same, is never the one reached. False when the element is not
+// in the page (culled, hidden) or would not take focus.
+export function focusElement(pane: HTMLElement, kind: string, id: string): boolean {
+    const viewport = pane.querySelector(':scope > .bit-blow-viewport');
+    const layer = kind === 'edge' ? viewport?.querySelector(':scope > svg.bit-blow-edges') : viewport;
+    if (!layer) return false;
+
+    const className = kind === 'edge' ? 'bit-blow-edge' : 'bit-blow-node';
+    for (const child of Array.from(layer.children)) {
+        if (child.classList.contains(className) && child.getAttribute('data-id') === id) {
+            (child as HTMLElement | SVGElement).focus({ preventScroll: true });
+            return document.activeElement === child;
+        }
+    }
+    return false;
+}
+
+// True when this flow's node `id` holds focus that a pointer gave it rather than the keyboard (it is not
+// :focus-visible), or no longer holds focus at all. Only keyboard focus brings a node into view, as in React Flow: a
+// press in a nodrag control, or on a control WebKit will not focus and so hands the focus to the node, must not move
+// the view under the pointer.
+export function isPointerFocus(pane: HTMLElement, id: string): boolean {
+    const el = document.activeElement;
+    if (!el || !el.classList.contains(NODE_CLASS) || el.getAttribute('data-id') !== id
+        || el.closest(`.${ROOT_CLASS}`) !== pane) {
+        return true;
+    }
+    try {
+        return !el.matches(':focus-visible');
+    } catch {
+        // A browser without :focus-visible: every focus counts as the keyboard's, as it always did.
+        return false;
+    }
+}
+
+// Gives focus back to the pane when it fell to the page, as it does when the node or edge holding it is deleted: the
+// flow's keys are heard on the pane, so without this the key after a Delete would go nowhere.
+export function keepFocus(pane: HTMLElement | null): void {
+    if (!pane || !pane.isConnected) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== document.documentElement) return;
+    pane.focus({ preventScroll: true });
 }
 
 // True when focus sits in something the user is typing into, so the flow can ignore

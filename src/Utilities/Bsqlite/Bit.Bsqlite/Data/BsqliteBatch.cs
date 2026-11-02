@@ -132,7 +132,9 @@ public sealed class BsqliteBatch : DbBatch
             requests[i] = BatchCommands[i].ToRequest(resultKind, rowLimit);
         }
 
-        var results = await _connection.ExecuteBatchAsync(requests, cancellationToken).ConfigureAwait(false);
+        var results = await _connection
+            .ExecuteBatchAsync(requests, DbTransaction, explicitEnlistment: false, Timeout, cancellationToken)
+            .ConfigureAwait(false);
         if (results.Count != requests.Length)
         {
             throw new InvalidOperationException(

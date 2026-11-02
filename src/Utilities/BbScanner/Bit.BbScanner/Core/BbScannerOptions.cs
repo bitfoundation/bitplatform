@@ -13,10 +13,11 @@
 public sealed class BbScannerOptions
 {
     /// <summary>
-    /// The symbologies to look for. Narrowing this is the single most effective way to make
-    /// scanning faster and to avoid misreads between similar linear symbologies.
+    /// The symbologies to look for; <see cref="BbBarcodeFormat.Common"/> unless set. Narrowing this
+    /// is the single most effective way to make scanning faster and to avoid misreads between
+    /// similar linear symbologies.
     /// </summary>
-    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.All;
+    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.Common;
 
     /// <summary>
     /// The part of the frame to search, in normalized coordinates. Restricting the region
@@ -84,8 +85,24 @@ public sealed class BbScannerOptions
     public bool Code39ExtendedMode { get; set; }
 
     /// <summary>
+    /// Keep a Codabar symbol's start and stop characters, the letters <c>A</c> to <c>D</c>, in
+    /// the decoded text. Off by default, which reports only the data between them.
+    /// </summary>
+    public bool CodabarStartStop { get; set; }
+
+    /// <summary>
+    /// Report an EAN-13, UPC-A, UPC-E or EAN-8 only once its two or five digit add-on has been
+    /// read too, for magazines and books whose issue number or price is printed there. Off by
+    /// default: an add-on is read whenever it is there, into
+    /// <see cref="BbBarcodeResultMetadata.Extension"/>, but its absence does not hold the main
+    /// symbol back.
+    /// </summary>
+    public bool RequireEanExtension { get; set; }
+
+    /// <summary>
     /// How long the same value from the same symbology is suppressed after being reported.
-    /// Set to <see cref="TimeSpan.Zero"/> to report every successful frame.
+    /// Set to <see cref="TimeSpan.Zero"/> to report every successful frame, or to
+    /// <see cref="Timeout.InfiniteTimeSpan"/> to report each value once until the filter is reset.
     /// </summary>
     public TimeSpan DuplicateSuppressionWindow { get; set; } = TimeSpan.FromSeconds(2);
 
@@ -103,6 +120,8 @@ public sealed class BbScannerOptions
         ItfLengths = ItfLengths,
         Code39CheckDigit = Code39CheckDigit,
         Code39ExtendedMode = Code39ExtendedMode,
+        CodabarStartStop = CodabarStartStop,
+        RequireEanExtension = RequireEanExtension,
         DuplicateSuppressionWindow = DuplicateSuppressionWindow,
     };
 
@@ -121,7 +140,10 @@ public sealed class BbScannerOptions
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(MaxScanLines, nameof(MaxScanLines));
         ArgumentOutOfRangeException.ThrowIfLessThan(DownsampleFactor, 1, nameof(DownsampleFactor));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(DownsampleFactor, 8, nameof(DownsampleFactor));
-        ArgumentOutOfRangeException.ThrowIfNegative(DuplicateSuppressionWindow.Ticks, nameof(DuplicateSuppressionWindow));
+        if (DuplicateSuppressionWindow != Timeout.InfiniteTimeSpan)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(DuplicateSuppressionWindow.Ticks, nameof(DuplicateSuppressionWindow));
+        }
         ArgumentNullException.ThrowIfNull(ItfLengths, nameof(ItfLengths));
         foreach (var length in ItfLengths)
         {

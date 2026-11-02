@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.Brouter;
@@ -274,6 +275,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private Assembly? _lastAppAssembly;
     private Assembly[]? _lastAdditionalAssemblies;
     private bool _discoveryComputed;
+
+    // Why LogSkippedTypes last warned about each assembly, so a rescan that fails the same way isn't reported again.
+    private Dictionary<Assembly, string>? _reportedSkippedTypes;
 
     // Assemblies handed back by the OnNavigateAsync hook at runtime (lazy loading). Merged into
     // every discovery scan alongside AppAssembly/AdditionalAssemblies; grows monotonically.
@@ -751,7 +755,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         var location = CurrentLocation;
         var leaf = chain[^1];
-        var ctx = new BrouterNavigationContext(location, location, CancellationToken.None)
+        var ctx = new BrouterNavigationContext(location, location, CancellationToken.None, _navManager)
         {
             NavigationType = BrouterNavigationType.Replace,
             Route = leaf,
@@ -1242,11 +1246,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
 
         _navManager.LocationChanged += NavManagerLocationChanged;
-#if NET10_0_OR_GREATER
         // .NET 10 not-found contract: app code (or the framework) calls NavigationManager.NotFound()
         // to signal a missing resource; routers subscribe to OnNotFound and render their fallback.
         _navManager.OnNotFound += NavManagerOnNotFound;
-#endif
 
         // Establish the initial location synchronously so any code that reads
         // BrouterService.Location before the first navigation pipeline runs sees
@@ -1305,7 +1307,27 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         _discoveredRoutes = (AppAssembly is null && (scanSet is null || scanSet.Length == 0))
             ? []
-            : BrouteScanner.Discover(AppAssembly, scanSet);
+            : BrouteScanner.Discover(AppAssembly, scanSet, LogSkippedTypes);
+    }
+
+    private void LogSkippedTypes(Assembly assembly, IReadOnlyList<Exception> failures)
+    {
+        // Every scan reads every assembly again and the same types usually fail the same way, so an assembly is
+        // reported once per distinct set of reasons.
+        var reasons = string.Join(" ", failures.Select(f => f.Message).Distinct());
+        _reportedSkippedTypes ??= [];
+        if (_reportedSkippedTypes.TryGetValue(assembly, out var reported) && reported == reasons) return;
+        _reportedSkippedTypes[assembly] = reasons;
+
+        // The failures go out as the log entry's exception too, so their inner exceptions (a version mismatch's
+        // detail, for example) reach whoever reads the log.
+        _services.GetService<ILogger<Brouter>>()?.LogWarning(
+            new AggregateException(failures),
+            "Brouter couldn't load some types of {Assembly} while discovering routes and skipped them. " +
+            "If any of them is a routable component, the routes it declares are missing. " +
+            "On WebAssembly, if they need an assembly marked BlazorWebAssemblyLazyLoad, load that assembly eagerly instead: " +
+            "once it fails to load, the scanned assembly's code can't use it even after it's loaded. {Reasons}",
+            assembly.GetName().Name, reasons);
     }
 
     /// <summary>
@@ -1680,8 +1702,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _approvedTargetUri = null;
         var approvedType = _approvedNavigationType;
         _approvedNavigationType = null;
-        var decisionAlreadyMade =
-            approved is not null && string.Equals(approved, to.FullUri, StringComparison.Ordinal);
+        var decisionAlreadyMade = approved is not null && IsSameUri(approved, to.FullUri);
 
         // When the changing phase already ran, re-use the type it resolved and stashed alongside the
         // approval. Otherwise (initial load races, forceLoad, a nav that outran interception) resolve it
@@ -1704,7 +1725,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
     }
 
-#if NET10_0_OR_GREATER
     // True while Brouter itself is calling NavigationManager.NotFound() to propagate a router-level
     // "no route matched" to the framework (so static SSR responds with HTTP 404 instead of a 200
     // carrying fallback HTML). Our own OnNotFound event handler must no-op for that call: the
@@ -1791,7 +1811,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 // no navigation here - the URL stays put - so the context describes a same-location
                 // "navigation".
                 NotifyChainDepartures(
-                    new BrouterNavigationContext(location, location, CancellationToken.None),
+                    new BrouterNavigationContext(location, location, CancellationToken.None, _navManager),
                     _committedChain);
                 // A departure callback's synchronous prefix can start a new navigation (same
                 // re-entrancy FlushPendingLifecycle guards against) - that navigation owns the
@@ -1826,7 +1846,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             await SafeInvokeOnError(location, location, ex);
         }
     }
-#endif
 
     /// <summary>
     /// Preventive navigation decision. Registered via <c>NavigationManager.RegisterLocationChangingHandler</c>
@@ -1875,7 +1894,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // do NOT touch _navCts / _navVersion in this phase - that machinery belongs to the commit
         // phase, and mixing the two would leak or double-cancel token sources.
         var token = context.CancellationToken;
-        var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType };
+        var ctx = new BrouterNavigationContext(from, to, token, _navManager) { NavigationType = navType };
         var service = _brouterService;
 
         // See _processingLocationChanging: marks the decision phase as in flight for the whole of
@@ -2032,12 +2051,29 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// </summary>
     internal void SetPendingNavigationType(BrouterNavigationType type) => _pendingNavigationType = type;
 
+    /// <summary>
+    /// Whether two absolute URIs denote the same URL. The changing phase builds its target from
+    /// <c>Uri.ToString()</c>, which unescapes (<c>/caf%C3%A9</c> becomes <c>/café</c>), while the
+    /// committed <c>NavigationManager.Uri</c> keeps the escaping, so the two can't be compared as
+    /// strings.
+    /// </summary>
+    private static bool IsSameUri(string x, string y)
+    {
+        if (Uri.TryCreate(x, UriKind.Absolute, out var xUri) is false ||
+            Uri.TryCreate(y, UriKind.Absolute, out var yUri) is false)
+        {
+            return string.Equals(x, y, StringComparison.Ordinal);
+        }
+
+        return string.Equals(BrouterLocation.ToCanonicalUri(xUri), BrouterLocation.ToCanonicalUri(yUri), StringComparison.Ordinal);
+    }
+
     private async ValueTask SafeInvokeOnError(BrouterLocation from, BrouterLocation to, Exception ex)
     {
         try
         {
             await _brouterService.InvokeOnError(
-                new BrouterNavigationContext(from, to, CancellationToken.None), ex);
+                new BrouterNavigationContext(from, to, CancellationToken.None, _navManager), ex);
         }
         catch { /* OnError must never crash the navigation handler */ }
     }
@@ -2242,7 +2278,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType, IsReload = isReload };
+        var ctx = new BrouterNavigationContext(from, to, token, _navManager) { NavigationType = navType, IsReload = isReload };
         var service = _brouterService;
 
         // Awaited-navigation bookkeeping: capture the awaiter this pipeline is responsible for (the
@@ -2391,7 +2427,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         }
                     }
                 }
-#if NET10_0_OR_GREATER
                 // During static SSR/prerender an unmatched URL must produce an HTTP 404 response, not
                 // a 200 whose body happens to contain fallback HTML (an SEO/correctness bug).
                 // NavigationManager.NotFound() is the framework's channel for that status code (and it
@@ -2409,7 +2444,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                         _raisingFrameworkNotFound = false;
                     }
                 }
-#endif
                 StateHasChanged();
                 return;
             }
@@ -2971,7 +3005,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         for (var node = match.Value.Route; node is not null; node = node.Parent) chain.Add(node);
         chain.Reverse();
 
-        var ctx = new BrouterNavigationContext(CurrentLocation, to, CancellationToken.None)
+        var ctx = new BrouterNavigationContext(CurrentLocation, to, CancellationToken.None, _navManager)
         {
             NavigationType = BrouterNavigationType.Push,
             IsPreload = true,
@@ -3449,7 +3483,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(to, to, token)
+        var ctx = new BrouterNavigationContext(to, to, token, _navManager)
         {
             // The history entry is untouched; Replace is the closest classification and
             // IsRevalidation is the authoritative signal for loader logic.
@@ -3843,9 +3877,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         _pendingLifecycleFlush.Clear();
 
         _navManager.LocationChanged -= NavManagerLocationChanged;
-#if NET10_0_OR_GREATER
         _navManager.OnNotFound -= NavManagerOnNotFound;
-#endif
         // Unhook the preventive changing handler so a disposed Brouter can't keep vetoing navigations.
         _locationChangingRegistration?.Dispose();
         _locationChangingRegistration = null;

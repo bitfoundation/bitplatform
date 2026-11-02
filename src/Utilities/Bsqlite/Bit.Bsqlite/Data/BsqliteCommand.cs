@@ -20,9 +20,11 @@ public sealed class BsqliteCommand : DbCommand
     public override string CommandText { get; set; } = string.Empty;
 
     /// <summary>
-    /// Accepted for ADO.NET compatibility but not enforced: the engine runs on a worker that
-    /// cannot be interrupted from the main thread. A <see cref="CancellationToken"/> stops the
-    /// caller waiting; the statement runs to completion in the worker.
+    /// How long, in seconds, the command waits for a transaction another context holds before it
+    /// fails with <see cref="BsqliteConcurrencyException"/>; 0 waits as long as it takes. Not enforced
+    /// on the statement itself: the engine runs on a worker that cannot be interrupted from the main
+    /// thread. A <see cref="CancellationToken"/> stops the caller waiting; the statement runs to
+    /// completion in the worker.
     /// </summary>
     public override int CommandTimeout { get; set; } = 30;
 
@@ -56,6 +58,14 @@ public sealed class BsqliteCommand : DbCommand
     protected override DbParameterCollection DbParameterCollection => Parameters;
 
     protected override DbTransaction? DbTransaction { get; set; }
+
+    /// <summary>
+    /// Whether <see cref="DbCommand.Transaction"/> is the whole story: set for EF Core's commands,
+    /// which name their context's transaction whenever it has one. Such a command without a
+    /// transaction comes from a context outside the open one, and waits for it rather than joining
+    /// it. Left unset, a command joins its connection's open transaction, as ADO.NET code expects.
+    /// </summary>
+    internal bool EnlistsExplicitly { get; set; }
 
     /// <summary>
     /// The rowid of the most recent successful <c>INSERT</c> on the connection after this command
@@ -149,7 +159,7 @@ public sealed class BsqliteCommand : DbCommand
         }
 
         var results = await _connection
-            .ExecuteBatchAsync([ToRequest(resultKind, rowLimit)], cancellationToken)
+            .ExecuteBatchAsync([ToRequest(resultKind, rowLimit)], DbTransaction, EnlistsExplicitly, CommandTimeout, cancellationToken)
             .ConfigureAwait(false);
 
         if (results.Count == 0)

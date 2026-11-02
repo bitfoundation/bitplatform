@@ -549,6 +549,35 @@ public class BlexQueryClientTests
     }
 
     [TestMethod]
+    public void A_removal_drops_the_unclaimed_handoffs_it_covers()
+    {
+        var (prerender, _, _) = Client();
+        prerender.SetQueryData<string>(["user", 1], "previous user");
+        prerender.SetQueryData<string>(["user", 1, "orders"], "previous user");
+        prerender.SetQueryData<string>(["user", 10], "kept");
+        prerender.SetQueryData<string>(["team"], "previous user");
+        prerender.SetQueryData<string>(["team", 2], "kept");
+
+        var (interactive, _, errors) = Client();
+        interactive.Hydrate(prerender.Dehydrate());
+        interactive.Remove(["user", 1]);
+        interactive.Remove(["team"], exact: true);
+
+        using var user = interactive.Query(["user", 1], new FakeServer<string>().Fetch());
+        using var orders = interactive.Query(["user", 1, "orders"], new FakeServer<string>().Fetch());
+        using var neighbour = interactive.Query(["user", 10], new FakeServer<string>().Fetch());
+        using var team = interactive.Query(["team"], new FakeServer<string>().Fetch());
+        using var member = interactive.Query(["team", 2], new FakeServer<string>().Fetch());
+
+        Assert.IsTrue(user.IsPending, "the removed key's handoff is gone");
+        Assert.IsTrue(orders.IsPending, "and so is the handoff of a key it covers");
+        Assert.AreEqual("kept", neighbour.Data, "a key that only shares leading text is not covered");
+        Assert.IsTrue(team.IsPending, "an exact removal drops its own key's handoff");
+        Assert.AreEqual("kept", member.Data, "but not those of the keys under it");
+        Assert.IsEmpty(errors);
+    }
+
+    [TestMethod]
     public async Task A_failed_query_keeps_its_error_while_it_is_fetched_again()
     {
         var (client, _, _) = Client();

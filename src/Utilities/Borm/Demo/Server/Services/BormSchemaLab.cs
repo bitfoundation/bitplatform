@@ -464,6 +464,7 @@ public static partial class BormSchemaLab
             var remote = new List<string>();
 
             var known = Extensions.ToHashSet(StringComparer.Ordinal);
+            var targets = new PointerNode(root);
             var visited = 0;
 
             Visit(root, string.Empty);
@@ -518,7 +519,7 @@ public static partial class BormSchemaLab
                     {
                         if (reference.StartsWith('#'))
                         {
-                            if (Resolve(root, reference) is false) dangling.Add($"'{reference}' at {Where(pointer)}");
+                            if (Resolve(targets, reference) is false) dangling.Add($"'{reference}' at {Where(pointer)}");
                         }
                         else
                         {
@@ -607,7 +608,7 @@ public static partial class BormSchemaLab
     }
 
     /// <summary>Whether a local reference (<c>#</c>, <c>#/$defs/Address</c>) names something in the document.</summary>
-    private static bool Resolve(JsonElement root, string reference)
+    private static bool Resolve(PointerNode root, string reference)
     {
         var pointer = Uri.UnescapeDataString(reference[1..]);
         if (pointer.Length == 0) return true;
@@ -621,22 +622,41 @@ public static partial class BormSchemaLab
         {
             var name = token.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
 
-            if (current.ValueKind == JsonValueKind.Object && current.TryGetProperty(name, out var next))
-            {
-                current = next;
-                continue;
-            }
+            if (current.Child(name) is not { } next) return false;
 
-            if (current.ValueKind == JsonValueKind.Array && int.TryParse(name, NumberStyles.None, CultureInfo.InvariantCulture, out var index) && index < current.GetArrayLength())
-            {
-                current = current[index];
-                continue;
-            }
-
-            return false;
+            current = next;
         }
 
         return true;
+    }
+
+    private sealed class PointerNode(JsonElement element)
+    {
+        private Dictionary<string, PointerNode>? _members;
+        private PointerNode[]? _items;
+
+        public PointerNode? Child(string name)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                if (_members is null)
+                {
+                    _members = new(StringComparer.Ordinal);
+                    foreach (var member in element.EnumerateObject()) _members[member.Name] = new(member.Value);
+                }
+
+                return _members.GetValueOrDefault(name);
+            }
+
+            if (element.ValueKind == JsonValueKind.Array && int.TryParse(name, NumberStyles.None, CultureInfo.InvariantCulture, out var index) && index < element.GetArrayLength())
+            {
+                _items ??= [.. element.EnumerateArray().Select(item => new PointerNode(item))];
+
+                return _items[index];
+            }
+
+            return null;
+        }
     }
 
     private static string Escape(string name) => name.Replace("~", "~0", StringComparison.Ordinal).Replace("/", "~1", StringComparison.Ordinal);

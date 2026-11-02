@@ -3,8 +3,9 @@
 
    The site's chrome, tokens and shared surfaces live in app.css (the site kit every Utilities demo
    shares); this file only draws what is Bcrdt's own - the replica panels, the editors and forms
-   inside them, and the read-outs of what each replica holds - and it is written against the kit's
-   --bb-* names, so it follows the light/dark theme with no rules of its own for either.
+   inside them, the read-outs of what each replica holds and the code under each sample - and it is
+   written against the kit's --bb-* names, so it follows the light/dark theme with no rules of its
+   own for either.
 
    Every replica carries its presence colour as --replica-color (set inline from the colour its
    collaborators see next to its name), so a panel, a projection and a row of the update log can be
@@ -184,6 +185,26 @@
     width: 100%;
 }
 
+/* The form's labels: a group of checkboxes is a fieldset, drawn as flat as the label fields around it. */
+fieldset.field {
+    min-width: 0;
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 0;
+}
+
+fieldset.field > legend {
+    margin-bottom: .25rem;
+    padding: 0;
+}
+
+.label-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem 1rem;
+    font-weight: var(--fl-weight-regular);
+}
+
 .list-add {
     display: flex;
     gap: .5rem;
@@ -353,6 +374,105 @@ h4.sub {
     margin-inline-end: .5rem;
 }
 
+/* ---------- Rich text ---------- */
+
+/* What the formatting buttons will act on, quietly, under them. */
+.rich-selection {
+    margin: .5rem 0 0;
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+    overflow-wrap: anywhere;
+}
+
+/* The text drawn from ToDelta(): a reading surface, so it keeps the text's own line breaks. */
+.rich-preview {
+    min-height: 2.5rem;
+    padding: .625rem .75rem;
+    background: var(--bb-surface-sunken);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    font-size: var(--fl-font-size-300);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.rich-bold {
+    font-weight: 700;
+}
+
+.rich-italic {
+    font-style: italic;
+}
+
+.rich-underline {
+    text-decoration: underline;
+}
+
+pre.rich-delta {
+    max-height: 200px;
+    margin-bottom: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: .75rem;
+    line-height: 1.55;
+}
+
+/* ---------- Version history ---------- */
+
+.history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* One row per version: who and when, its size, then the two actions. */
+.history-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem .5rem;
+    padding: .375rem .5rem;
+    border-bottom: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+}
+
+.history-item:last-child {
+    border-bottom: 0;
+}
+
+.history-item-active {
+    background: var(--bb-surface-sunken);
+}
+
+.history-name {
+    flex: 1 1 10rem;
+    min-width: 0;
+    font-size: var(--fl-font-size-200);
+    color: var(--bb-text);
+}
+
+.history-size {
+    font-size: var(--fl-font-size-100);
+    color: var(--bb-text-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+.history-item .btn {
+    min-height: 1.75rem;
+    padding: .125rem .625rem;
+    font-size: var(--fl-font-size-100);
+}
+
+pre.history-preview {
+    max-height: 200px;
+    margin-bottom: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 /* ---------- The live page ---------- */
 
 .live-bar {
@@ -371,10 +491,20 @@ h4.sub {
     min-width: 0;
 }
 
-.live-link {
+.live-link,
+.live-link-readonly {
     font-family: var(--bb-mono);
     font-size: var(--fl-font-size-200);
     overflow-wrap: anywhere;
+}
+
+.live-link-readonly {
+    margin-bottom: 0;
+}
+
+/* The read-only link's label sits under the first link, not against it. */
+.live-share > .live-link + .bb-overline {
+    margin-top: .5rem;
 }
 
 .live-relays {
@@ -404,4 +534,62 @@ h4.sub {
     font-size: var(--fl-font-size-100);
     color: var(--bb-text-soft);
     text-align: center;
+}
+
+/* ---------- The code under a sample: CodeSnippet and SyntaxHighlighter ---------- */
+
+/* The highlighter tells more kinds apart than the kit's four code colors. Each extra color is picked
+   to hold its contrast on the code surface in both themes. */
+:root {
+    --demo-code-type: #8250DF;
+    --demo-code-number: #CF222E;
+    --demo-code-razor: #A21CAF;
+}
+
+:root[bit-theme="dark"] {
+    --demo-code-type: #D2A8FF;
+    --demo-code-number: #FF7B72;
+    --demo-code-razor: #F0ABFC;
+}
+
+.bb-code .tok-com { color: var(--bb-code-comment); font-style: italic; }
+.bb-code .tok-tag,
+.bb-code .tok-key { color: var(--bb-code-keyword); }
+.bb-code .tok-attr { color: var(--bb-code-param); }
+.bb-code .tok-str { color: var(--bb-code-string); }
+.bb-code .tok-type { color: var(--demo-code-type); }
+.bb-code .tok-num { color: var(--demo-code-number); }
+.bb-code .tok-raz { color: var(--demo-code-razor); font-weight: var(--fl-weight-semibold); }
+
+/* The lines that use a Bcrdt component (<BcrdtCollaborationScope>, <BcrdtTextArea />,
+   <BcrdtPresenceView />), so they stand out from the markup around them: tinted edge to edge of the
+   block, with the brand's rule down the start. The block's padding is 1rem at the start and 3rem at
+   the end (room for the copy button), which is what the margins reach back out over. */
+.bb-code .hl-line {
+    display: inline-block;
+    min-width: calc(100% + 4rem);
+    margin-inline: -1rem -3rem;
+    padding-inline: 1rem 3rem;
+    background: var(--bb-primary-soft);
+    box-shadow: inset 3px 0 0 var(--bb-primary);
+}
+
+/* The disclosure sits under the sample it belongs to, inside the same card. */
+.demo-snippet {
+    margin-top: 1.25rem;
+}
+
+.demo-snippet-caret {
+    font-size: .75em;
+    color: var(--bb-text-soft);
+}
+
+.demo-snippet-lang {
+    margin-inline-start: .25rem;
+    padding-inline-start: .5rem;
+    border-inline-start: 1px solid var(--bb-border-strong);
+    font-family: var(--bb-mono);
+    font-size: var(--fl-font-size-100);
+    font-weight: var(--fl-weight-regular);
+    color: var(--bb-text-soft);
 }

@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+    <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net11.0 matches
          global.json's pinned SDK. The scenarios it measures (route instantiation vs a route-table
          baseline) are framework-version-agnostic, so multi-targeting would only slow the build. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
@@ -18,7 +18,7 @@
     <!-- bUnit gives us a real Blazor renderer plus the fakes Brouter needs (NavigationManager,
          INavigationInterception, IJSRuntime) with a single line of setup - the same host the unit
          tests use - so the numbers reflect the actual component-instantiation cost. -->
-    <PackageReference Include="bunit" Version="2.12.5" />
+    <PackageReference Include="bunit" Version="2.13.3" />
   </ItemGroup>
 
   <ItemGroup>

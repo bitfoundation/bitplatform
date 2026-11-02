@@ -3,46 +3,57 @@
 namespace Bit.Bmotion.Tests.Engine;
 
 /// <summary>
-/// Momentum without a frame loop (Blazor Server, where every animation collapses to an instant
-/// change): an inertia can't coast there, but it still has a resting place - the one
-/// <see cref="BmotionInertiaDriver.ProjectRest"/> computes, snapped by <c>ModifyTarget</c> and
-/// clamped to the drag bounds - and the element lands on it at once instead of staying wherever
-/// it was released.
+/// Momentum without a frame loop (Blazor Server): the release coasts in the browser - the inertia is recorded on
+/// the server and played as a Web Animation - and comes to rest where <see cref="BmotionInertiaDriver.ProjectRest"/>
+/// says, snapped by <c>ModifyTarget</c> and clamped to the drag bounds, rather than staying where it was released.
+/// Where even that is impossible (a browser without Web Animations) the element still lands on that resting place
+/// at once.
 /// </summary>
 [TestClass]
 public class ForceInstantInertiaTests
 {
-    private static (BmotionAnimationEngine Engine, FakeBmotionInterop Interop) NewServerEngine()
+    private static (BmotionAnimationEngine Engine, FakeBmotionInterop Interop) NewServerEngine(bool webAnimations = true)
     {
-        var interop = new FakeBmotionInterop { IsInProcess = false };
+        var interop = new FakeBmotionInterop { IsInProcess = false, WebAnimationsSupported = webAnimations };
         return (new BmotionAnimationEngine(interop), interop);
     }
 
     // Releases a drag at x = 30 with a horizontal flick of 2 px/frame. The engine scales that by 50
     // into the inertia velocity, so the decay projects 30 + 0.8 (default power) * 100 = 110.
-    private static async Task<double> ReleaseAt30(
+    private static async Task ReleaseAt30(
         BmotionAnimationEngine engine, BmInertia momentum, BmDragConstraints? constraints = null)
     {
         engine.RegisterElement("el");
         engine.SetDragPosition("el", 30, 0);
         await engine.EndDragAsync("el", velX: 2, velY: 0, momentum: true, constraints, axis: "x", momentum.ToConfig());
-        return engine.GetDiagnostics().Single(d => d.Id == "el").Transforms["x"];
     }
 
-    private static string LastTransform(FakeBmotionInterop interop)
-        => interop.ArgsOf("applyStyles").Select(a => (Dictionary<string, string>)a[1]!).Last(s => s.ContainsKey("transform"))["transform"];
+    private static double X(BmotionAnimationEngine engine) => engine.GetDiagnostics().Single(d => d.Id == "el").Transforms["x"];
+
+    private static string[] CoastTransforms(FakeBmotionInterop interop)
+        => ((Dictionary<string, object>[])interop.ArgsOf("playWaapiAnimation").Single()[2]!)
+            .Select(k => (string)k["transform"]).ToArray();
+
+    private static double TranslateX(string transform)
+        => double.Parse(transform[(transform.IndexOf('(') + 1)..transform.IndexOf("px", StringComparison.Ordinal)],
+            System.Globalization.CultureInfo.InvariantCulture);
 
     [TestMethod]
-    public async Task Release_LandsOnTheProjectedRest()
+    public async Task Release_CoastsInTheBrowser_ToTheProjectedRest()
     {
         var (engine, interop) = NewServerEngine();
         await using var _ = engine;
 
-        double x = await ReleaseAt30(engine, Bm.Inertia());
+        await ReleaseAt30(engine, Bm.Inertia());
 
-        Assert.AreEqual(110, x, 1e-9, "the decay's resting place, not the release point");
-        StringAssert.Contains(LastTransform(interop), "110px", "and it is written to the element");
-        Assert.IsFalse(engine.GetDiagnostics().Single(d => d.Id == "el").HasActiveAnimations);
+        var frames = CoastTransforms(interop);
+        Assert.IsTrue(frames.Length > 2, "a coast, not a jump");
+        var xs = frames.Select(TranslateX).ToArray();
+        for (int i = 1; i < xs.Length; i++) Assert.IsTrue(xs[i] >= xs[i - 1] - 1e-9, "decelerating forwards, never back");
+        Assert.AreEqual(110, xs[^1], 1e-6, "the decay's resting place, not the release point");
+
+        interop.FinishWaapi();
+        Assert.AreEqual(110, X(engine), 1e-6);
     }
 
     [TestMethod]
@@ -51,22 +62,34 @@ public class ForceInstantInertiaTests
         var (engine, interop) = NewServerEngine();
         await using var _ = engine;
 
-        double x = await ReleaseAt30(engine, Bm.Inertia(modifyTarget: Bm.SnapTo(100)));
+        await ReleaseAt30(engine, Bm.Inertia(modifyTarget: Bm.SnapTo(100)));
 
-        Assert.AreEqual(100, x, 1e-9, "110 snaps to the 100px grid");
-        StringAssert.Contains(LastTransform(interop), "100px");
+        Assert.AreEqual(100, TranslateX(CoastTransforms(interop)[^1]), 1e-6, "110 snaps to the 100px grid");
     }
 
     [TestMethod]
     public async Task Release_ClampsTheSnappedRestToTheBounds()
     {
-        var (engine, _) = NewServerEngine();
-        await using var __ = engine;
+        var (engine, interop) = NewServerEngine();
+        await using var _ = engine;
 
-        double x = await ReleaseAt30(engine, Bm.Inertia(modifyTarget: Bm.SnapTo(100)),
-            new BmDragConstraints { Left = 0, Right = 60 });
+        await ReleaseAt30(engine, Bm.Inertia(modifyTarget: Bm.SnapTo(100)), new BmDragConstraints { Left = 0, Right = 60 });
 
-        Assert.AreEqual(60, x, 1e-9, "the snapped 100 is clamped to the right bound");
+        Assert.AreEqual(60, TranslateX(CoastTransforms(interop)[^1]), 1e-6, "the snapped 100 is clamped to the right bound");
+    }
+
+    [TestMethod]
+    public async Task WithoutWebAnimations_TheReleaseLandsOnTheProjectedRestAtOnce()
+    {
+        var (engine, interop) = NewServerEngine(webAnimations: false);
+        await using var _ = engine;
+
+        await ReleaseAt30(engine, Bm.Inertia(modifyTarget: Bm.SnapTo(100)));
+
+        Assert.AreEqual(100, X(engine), 1e-9);
+        var written = interop.ArgsOf("applyStyles").Select(a => (Dictionary<string, string>)a[1]!).Last(s => s.ContainsKey("transform"));
+        StringAssert.Contains(written["transform"], "100px");
+        Assert.IsFalse(engine.GetDiagnostics().Single(d => d.Id == "el").HasActiveAnimations);
     }
 
     [TestMethod]

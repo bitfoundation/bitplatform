@@ -199,15 +199,15 @@ public class EncryptionTests
         var db = await BlazeDbDatabase.OpenAsync(options());
         db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "one", 1));
         await db.FlushAsync();
-        var whole = (await inner.ReadAsync("wal-1.blz"))!;
+        var whole = (await inner.ReadAsync(inner.Wal()))!;
 
         db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "two", 2));
         await db.FlushAsync();
-        var torn = (await inner.ReadAsync("wal-1.blz"))!;
+        var torn = (await inner.ReadAsync(inner.Wal()))!;
         await db.DisposeAsync();
 
         // Crash midway through the frame the second flush was writing.
-        await inner.WriteAtomicAsync("wal-1.blz", torn[..(whole.Length + 9)]);
+        await inner.WriteAtomicAsync(inner.Wal(), torn[..(whole.Length + 9)]);
 
         var reopened = await BlazeDbDatabase.OpenAsync(options());
         Assert.AreEqual(1, reopened.GetTable(PersonTable.Descriptor).Count);
@@ -220,6 +220,100 @@ public class EncryptionTests
         await using var owned = third;
         Assert.AreEqual(2, third.GetTable(PersonTable.Descriptor).Count);
         Assert.AreEqual("three", third.GetTable(PersonTable.Descriptor).Get(3)!.Name);
+    }
+
+    [TestMethod]
+    public async Task A_Frame_Dropped_From_An_Encrypted_Wal_Is_Reported_As_Corruption()
+    {
+        var inner = new BlazeDbInMemoryStorage();
+        var options = () => new BlazeDbDatabaseOptions
+        {
+            Storage = Wrap(inner),
+            FlushInterval = TimeSpan.FromHours(1),
+        }.AddTable(PersonTable.Descriptor);
+
+        var db = await BlazeDbDatabase.OpenAsync(options());
+        var ends = new List<int>();
+        for (var id = 1; id <= 3; id++)
+        {
+            db.GetTable(PersonTable.Descriptor).Insert(new Person(id, "p" + id, id));
+            await db.FlushAsync();
+            ends.Add((await inner.ReadAsync(inner.Wal()))!.Length);
+        }
+        await db.DisposeAsync();
+
+        // Every frame left is authentic, so only the sequence of the commits inside them gives the gap away.
+        var wal = (await inner.ReadAsync(inner.Wal()))!;
+        var dropped = wal[..ends[0]].Concat(wal[ends[1]..]).ToArray();
+        await inner.WriteAtomicAsync(inner.Wal(), dropped);
+
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await BlazeDbDatabase.OpenAsync(options()));
+
+        // Nothing was cut away: the third commit is still there for whoever recovers the file.
+        CollectionAssert.AreEqual(dropped, await inner.ReadAsync(inner.Wal()));
+    }
+
+    [TestMethod]
+    public async Task Frames_Another_Database_Sealed_With_The_Same_Key_Do_Not_Open_As_This_Ones()
+    {
+        // Someone with access to the files keeps an earlier database's log, deletes the manifest so the
+        // next open starts a new database, and splices the old frames - LSNs from 1 and sealed with the
+        // same key - into the new log. The new database's files are named with an id of its own, and
+        // the name is what every frame is sealed against, so the old frames do not authenticate.
+        var inner = new BlazeDbInMemoryStorage();
+        var options = () => new BlazeDbDatabaseOptions
+        {
+            Storage = Wrap(inner),
+            FlushInterval = TimeSpan.FromHours(1),
+        }.AddTable(PersonTable.Descriptor);
+
+        await using (var earlier = await BlazeDbDatabase.OpenAsync(options()))
+        {
+            earlier.GetTable(PersonTable.Descriptor).Insert(new Person(1, "planted", 1));
+            await earlier.FlushAsync();
+        }
+        var oldLog = (await inner.ReadAsync(inner.Wal()))!;
+        await inner.DeleteAsync("manifest.blz");
+        await inner.DeleteAsync(inner.Wal());
+
+        await using (var current = await BlazeDbDatabase.OpenAsync(options()))
+        {
+            current.GetTable(PersonTable.Descriptor).Insert(new Person(2, "genuine", 2));
+            await current.FlushAsync();
+        }
+        var log = inner.Wal();
+        await inner.WriteAtomicAsync(log, oldLog.Concat((await inner.ReadAsync(log))!).ToArray());
+
+        await Assert.ThrowsExactlyAsync<BlazeDbCorruptDatabaseException>(async () => await BlazeDbDatabase.OpenAsync(options()));
+    }
+
+    [TestMethod]
+    public async Task A_Frame_Copied_Again_Into_An_Encrypted_Wal_Is_Not_Replayed_Twice()
+    {
+        var inner = new BlazeDbInMemoryStorage();
+        var options = () => new BlazeDbDatabaseOptions
+        {
+            Storage = Wrap(inner),
+            FlushInterval = TimeSpan.FromHours(1),
+        }.AddTable(PersonTable.Descriptor);
+
+        var db = await BlazeDbDatabase.OpenAsync(options());
+        var people = db.GetTable(PersonTable.Descriptor);
+        people.Insert(new Person(1, "one", 1));
+        await db.FlushAsync();
+        var first = (await inner.ReadAsync(inner.Wal()))!.Length;
+        people.Update(new Person(1, "uno", 1));
+        people.Insert(new Person(2, "two", 2));
+        await db.FlushAsync();
+        await db.DisposeAsync();
+
+        var wal = (await inner.ReadAsync(inner.Wal()))!;
+        await inner.WriteAtomicAsync(inner.Wal(), wal.Concat(wal[..first]).ToArray());
+
+        var reopened = await BlazeDbDatabase.OpenAsync(options());
+        await using var owned = reopened;
+        Assert.AreEqual(2, reopened.GetTable(PersonTable.Descriptor).Count);
+        Assert.AreEqual("uno", reopened.GetTable(PersonTable.Descriptor).Get(1)!.Name);
     }
 
     [TestMethod]
@@ -241,7 +335,7 @@ public class EncryptionTests
         }
 
         // Nothing readable is left behind on the underlying storage.
-        var walBytes = await inner.ReadAsync("wal-1.blz");
+        var walBytes = await inner.ReadAsync(inner.Wal());
         Assert.IsNotNull(walBytes);
         Assert.DoesNotContain("encrypted at rest", Encoding.UTF8.GetString(walBytes!));
 

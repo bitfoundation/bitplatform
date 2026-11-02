@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>BevTools samples (Auto)</title>
+    <link rel="stylesheet" href="_content/Bit.BevTools.Samples.Core/app.css" />
+    <link rel="icon" type="image/svg+xml" href="_content/Bit.BevTools.Samples.Core/favicon.svg" />
+    <HeadOutlet @rendermode="InteractiveAuto" />
+</head>
+
+<body>
+    @* The first visit runs on a circuit; once the WebAssembly runtime is cached, the next visit runs in the browser.
+       The panel header names the runtime it is attached to. *@
+    <Routes @rendermode="InteractiveAuto" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

@@ -16,10 +16,12 @@ internal sealed class BelemetryConsoleExporter(BelemetryConsoleExporterOptions o
         {
             foreach (var span in batch.Spans)
             {
-                text.Append("[belemetry] span ").Append(service).Append(' ').Append(span.Kind).Append(' ').Append(span.Name)
+                text.Append("[belemetry] span ");
+                AppendEscaped(text, service).Append(' ').Append(span.Kind).Append(' ');
+                AppendEscaped(text, span.Name)
                     .Append(" (").Append(span.Duration.TotalMilliseconds.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)).Append(" ms)")
                     .Append(" trace=").Append(span.TraceId).Append(" span=").Append(span.SpanId);
-                if (span.Status == BelemetryStatusCode.Error) text.Append(" ERROR ").Append(span.StatusMessage);
+                if (span.Status == BelemetryStatusCode.Error) AppendEscaped(text.Append(" ERROR "), span.StatusMessage);
                 AppendAttributes(text, span.Attributes);
                 text.AppendLine();
             }
@@ -29,9 +31,11 @@ internal sealed class BelemetryConsoleExporter(BelemetryConsoleExporterOptions o
         {
             foreach (var log in batch.Logs)
             {
-                text.Append("[belemetry] log ").Append(service).Append(' ').Append(log.SeverityText ?? log.Severity.ToString()).Append(' ');
-                if (log.EventName is not null) text.Append('<').Append(log.EventName).Append("> ");
-                text.Append(log.Body);
+                text.Append("[belemetry] log ");
+                AppendEscaped(text, service).Append(' ');
+                AppendEscaped(text, log.SeverityText ?? log.Severity.ToString()).Append(' ');
+                if (log.EventName is not null) AppendEscaped(text.Append('<'), log.EventName).Append("> ");
+                AppendEscaped(text, log.Body);
                 AppendAttributes(text, log.Attributes);
                 text.AppendLine();
             }
@@ -43,13 +47,15 @@ internal sealed class BelemetryConsoleExporter(BelemetryConsoleExporterOptions o
             {
                 foreach (var p in metric.Points)
                 {
-                    text.Append("[belemetry] metric ").Append(service).Append(' ').Append(metric.Name).Append(' ');
+                    text.Append("[belemetry] metric ");
+                    AppendEscaped(text, service).Append(' ');
+                    AppendEscaped(text, metric.Name).Append(' ');
                     text.Append(metric.Type switch
                     {
                         BelemetryMetricType.Histogram => $"count={p.Count} sum={p.Sum} min={p.Min} max={p.Max}",
                         _ => p.IsInteger ? p.LongValue.ToString(System.Globalization.CultureInfo.InvariantCulture) : p.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     });
-                    if (string.IsNullOrEmpty(metric.Unit) is false) text.Append(' ').Append(metric.Unit);
+                    if (string.IsNullOrEmpty(metric.Unit) is false) AppendEscaped(text.Append(' '), metric.Unit);
                     AppendAttributes(text, p.Attributes);
                     text.AppendLine();
                 }
@@ -69,9 +75,25 @@ internal sealed class BelemetryConsoleExporter(BelemetryConsoleExporterOptions o
         foreach (var (key, value) in attributes)
         {
             if (first is false) text.Append(", ");
-            text.Append(key).Append('=').Append(BelemetryAttributes.ToInvariantString(value));
+            AppendEscaped(text, key).Append('=');
+            AppendEscaped(text, BelemetryAttributes.ToInvariantString(value));
             first = false;
         }
         text.Append('}');
+    }
+
+    private static StringBuilder AppendEscaped(StringBuilder text, string? value)
+    {
+        if (value is null) return text;
+
+        foreach (var c in value)
+        {
+            if (c == '\n') text.Append("\\n");
+            else if (c == '\r') text.Append("\\r");
+            else if ((c != '\t' && char.IsControl(c)) || c is '\u2028' or '\u2029') text.Append("\\u").Append(((int)c).ToString("x4", System.Globalization.CultureInfo.InvariantCulture));
+            else text.Append(c);
+        }
+
+        return text;
     }
 }

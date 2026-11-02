@@ -9,6 +9,8 @@
     .my-eye::before { content: "o"; }
     .my-eye-off::before { content: "-"; }
     .e2e-tf-box { width: 600px; }
+    .e2e-tf-square { border-radius: 0; }
+    .e2e-tf-round { border-radius: 9px; }
 </style>
 
 <h1>BitTextField</h1>
@@ -539,6 +541,29 @@
         <BitTextField Id="tf-cssvar-explicit" Label="Explicit Background wins" Background="BitColorKind.Secondary" Size="BitSize.Small" />
     </div>
     <BitTextField Id="tf-cssvar-style" Label="Variable on Style" Style="--bit-TextField-border-color: rgb(7, 8, 9); --bit-TextField-placeholder-color: rgb(11, 12, 13);" Placeholder="placeholder" />
+</E2ESection>
+
+@* ---------- Corners ---------- *@
+
+<E2ESection Id="corners" Title="Corners">
+    <div style="--bit-TextField-radius: 20px;">
+        <BitTextField Id="tf-corner-affixes" Label="Affixes" Prefix="P" Suffix="S" />
+        <BitTextField Id="tf-corner-clear" Label="Clear button" ShowClearButton DefaultValue="x" />
+        <BitTextField Id="tf-corner-rtl" Dir="BitDir.Rtl" Label="RTL with an LTR input" Prefix="P"
+                      InputHtmlAttributes="@(new() { { "dir", "ltr" } })" />
+        <BitTextField Id="tf-corner-templates" Label="Text templates">
+            <PrefixTemplate>https://</PrefixTemplate>
+            <SuffixTemplate>.com</SuffixTemplate>
+        </BitTextField>
+        <BitTextField Id="tf-corner-resizable" Label="Resizable" Multiline Resizable Rows="3" GhostText=" ghost" />
+        <BitTextField Id="tf-corner-fixed" Label="Not resizable" Multiline Rows="3" />
+        <BitTextField Id="tf-corner-autoheight" Label="AutoHeight" Multiline AutoHeight />
+        <BitTextField Id="tf-corner-square" Label="Frame squared by a class" Prefix="P" Suffix="S"
+                      Classes="@(new() { FieldGroup = "e2e-tf-square" })" />
+        <BitTextField Id="tf-corner-classes" Label="Parts shaped by classes" Prefix="P"
+                      Classes="@(new() { PrefixContainer = "e2e-tf-round", Input = "e2e-tf-round" })" />
+    </div>
+    <BitTextField Id="tf-corner-top" Label="Top corners only" Prefix="P" Style="--bit-TextField-radius: 8px 8px 0 0;" />
 </E2ESection>
 
 @* ---------- RTL ---------- *@

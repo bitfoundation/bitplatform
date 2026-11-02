@@ -1,0 +1,256 @@
+@page "/theming"
+@using System.Globalization
+
+<PageTitle>Theming &amp; accessibility · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Theming &amp; accessibility</h1>
+    <p class="bb-subtitle">
+        Every colour Borm draws - and the corner radius, the gap between fields and the form's width - is a
+        <code>--bit-borm-*</code> custom property declared on the form, with a light and a dark palette. Restyling every
+        form is a few lines of CSS, no stylesheet of your own to maintain. And whatever it looks like, the markup underneath
+        stays accessible: real labels, ARIA wiring, focus that goes where the problem is.
+    </p>
+</div>
+
+<div class="bb-note">
+    Every form on this site is re-tinted to the site's own palette, which is what you see first. Switch to
+    <em>Borm's own palette</em> for what an app gets out of the box, then choose a colour mode: a <code>data-theme</code>
+    on the form, or any ancestor, beats the system's preference. Move the controls to override single tokens - an inline
+    style here, a CSS rule in an app - and the CSS they come to is written out below. Submit the empty form to see the
+    error colours.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+
+    <div class="bb-toolbar">
+        <span class="bb-soft" id="palette-label">Palette</span>
+        <div class="bb-segmented" role="group" aria-labelledby="palette-label">
+            <button type="button" aria-pressed="@(!_stock ? "true" : "false")" @onclick="() => _stock = false">This site's tint</button>
+            <button type="button" aria-pressed="@(_stock ? "true" : "false")" @onclick="() => _stock = true">Borm's own palette</button>
+        </div>
+        @if (_stock)
+        {
+            <span class="bb-soft" id="mode-label">Colour mode</span>
+            <div class="bb-segmented" role="group" aria-labelledby="mode-label">
+                @foreach (var (mode, name) in Modes)
+                {
+                    <button type="button" aria-pressed="@(mode == _mode ? "true" : "false")" @onclick="() => _mode = mode">@name</button>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="bb-fields demo-theme-controls">
+        <label class="bb-field">
+            Accent
+            <input type="color" value="@(_accent ?? "#1276c6")" @oninput="e => _accent = e.Value?.ToString()" />
+        </label>
+        <label class="bb-field">
+            Corner radius: @(_radius is { } r ? $"{r}px" : "default")
+            <input type="range" min="0" max="16" value="@(_radius ?? 8)" @oninput="SetRadius" />
+        </label>
+        <label class="bb-field">
+            Field gap: @(_gap is { } g ? $"{g.ToString(CultureInfo.InvariantCulture)}rem" : "default")
+            <input type="range" min="0.5" max="2" step="0.25" value="@((_gap ?? 1m).ToString(CultureInfo.InvariantCulture))" @oninput="SetGap" />
+        </label>
+        <label class="bb-check">
+            <input type="checkbox" checked="@_fullWidth" @onchange="e => _fullWidth = e.Value is true" /> Fill the width
+        </label>
+        <button type="button" class="btn btn-secondary" aria-disabled="@(Overridden ? null : "true")" @onclick="ResetTokens">Reset the tokens</button>
+    </div>
+
+    @* Every other attribute BormView is given is splatted onto its <form>: a class, a data-theme, a style. *@
+    <BormView Definition="_schema" Data="_data" ShowErrorSummary="true" ShowResetButton="true" OnValidSubmit="() => _submitted = true"
+              class="@(_stock ? "demo-stock-theme" : null)" data-theme="@(_stock ? DataTheme : null)" style="@InlineStyle" />
+
+    <div class="demo-readout">
+        <p class="bb-overline">The CSS this comes to</p>
+        <pre>@Css</pre>
+    </div>
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Subscribed ✓</strong></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> The custom properties</h3>
+    <p class="bb-card-desc">
+        Each is declared on <code>.bit-borm-form</code> itself, so a value set on an ancestor (<code>:root</code>,
+        <code>body</code>) is shadowed: write <code>.bit-borm-form</code>, or <code>.my-page .bit-borm-form</code>.
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Property</th><th>Light</th><th>Dark</th><th>Used for</th></tr></thead>
+            <tbody>
+                @foreach (var (name, light, dark, use) in Tokens)
+                {
+                    <tr><td class="bb-table-key"><code>@name</code></td><td><code>@light</code></td><td><code>@dark</code></td><td>@use</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        A token both themes share - the accent, the radius, the gap, the width - needs one rule. One that differs between them
+        has to be set once per theme, mirroring the stylesheet's own four rules, or the dark value would be replaced too:
+    </p>
+    <pre class="bb-code">.bit-borm-form { --bit-borm-surface: #fffdf7; }
+[data-theme="light"] .bit-borm-form, .bit-borm-form[data-theme="light"] { --bit-borm-surface: #fffdf7; }
+
+@@media (prefers-color-scheme: dark) {
+    .bit-borm-form { --bit-borm-surface: #1c1917; }
+}
+[data-theme="dark"] .bit-borm-form, .bit-borm-form[data-theme="dark"] { --bit-borm-surface: #1c1917; }</pre>
+    <p class="bb-card-desc">
+        Each theme also sets <code>color-scheme</code>, so the parts of a control the browser draws - date pickers, open
+        dropdowns, the file button, scrollbars - follow it too.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Styling hooks</h3>
+    <p class="bb-card-desc">The markup uses BEM-style classes under <code>bit-borm-</code>. The ones most worth targeting:</p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Class</th><th>Element</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>bit-borm-form</code></td><td>The <code>&lt;form&gt;</code>, carrying the tokens; <code>__title</code>, <code>__description</code>, <code>__body</code>, <code>__actions</code> are its parts. <code>Class</code> on <code>BormView</code> adds your own.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-field</code></td><td>One field - label, control, help and messages; <code>--invalid</code>, <code>--checkbox</code>, <code>--static</code> are its states.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-label</code>, <code>bit-borm-help</code>, <code>bit-borm-required</code></td><td>A label, its help text and the required marker.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-input</code></td><td>Every text-like control, select and textarea; <code>--invalid</code> while it holds an error.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-messages</code>, <code>bit-borm-message</code></td><td>A field's messages; <code>--error</code>, <code>--warning</code>, <code>--info</code> per severity.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-group</code>, <code>bit-borm-fieldgroup</code></td><td>A nested object, and a run of fields sharing a group name.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-array</code></td><td>A repeater; <code>__item</code>, <code>__item-body</code>, <code>__item-actions</code>, <code>__header</code>, <code>__empty</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-stepper</code>, <code>bit-borm-tabs</code>, <code>bit-borm-section</code></td><td>A wizard's steps, steps as tabs (<code>__badge</code> counts the errors), and steps as sections or an accordion.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-review</code>, <code>bit-borm-summary</code></td><td>A review of the answers, and the error summary.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-btn</code></td><td>Every button; <code>--primary</code>, <code>--ghost</code>, <code>--danger</code>, <code>--add</code>, <code>--icon</code>, <code>--sm</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>bit-borm-grid</code>, <code>bit-borm-sr-only</code></td><td>The form body when <code>Columns(...)</code> is set, and text read out but not shown.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Accessible by default</h3>
+    <ul class="bb-detail-list">
+        <li>Every control has a real <code>&lt;label&gt;</code> - a hidden one still names it with <code>HideLabel()</code> - and radio groups, multi-selects, groups and repeaters are <code>&lt;fieldset&gt;</code>s with a <code>&lt;legend&gt;</code>.</li>
+        <li><code>aria-required</code>, <code>aria-invalid</code> and <code>aria-describedby</code> are on every control, the last pointing at its help and its messages, so a message is read out when focus reaches the field.</li>
+        <li>After a failed submit, focus moves to the first invalid field - or to the error summary, whose links reach each field, or its step. With nothing to focus, the outcome is announced.</li>
+        <li>Changing a wizard step moves focus to the new step; adding a repeater row puts the caret in it, and removing one moves it to the row that took its place. Repeater, tag and character-count changes are announced.</li>
+        <li>A message's severity is said in words as well as colour - "Error:", "Warning:", "Note:" - and an error is set heavier. A tab or section holding errors carries a count that is read out too.</li>
+        <li>Tabs follow the WAI-ARIA tabs pattern, an accordion is the browser's own <code>&lt;details&gt;</code>, and <code>ReadOnlyWhen</code> keeps a settled value focusable where a disabled one would leave the tab order. <code>Autofocus()</code> focuses a field when the form first renders.</li>
+        <li>Every target the stylesheet draws is at least 24 × 24 CSS pixels (WCAG 2.2), and the layout uses logical properties only, so a form mirrors inside <code>dir="rtl"</code>.</li>
+    </ul>
+    <p class="bb-card-desc">
+        What the library cannot vouch for: a custom renderer's own markup, the browser's built-in pickers, and the colours an
+        app re-tints the tokens to - check their contrast against WCAG 1.4.3 when you do.
+    </p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@* Any attribute BormView does not know is put on its <form>: a class, a data-theme, a style. *@
+<BormView Definition="_schema" Data="_data" ShowErrorSummary="true" ShowResetButton="true"
+          data-theme="dark" style="--bit-borm-accent: #0d9488; --bit-borm-radius: 4px;" />
+
+/* Or, for every form in the app - in a stylesheet loaded after bit-borm.css: */
+.bit-borm-form {
+    --bit-borm-accent: #0d9488;
+    --bit-borm-radius: 4px;
+    --bit-borm-max-width: none;      /* fill the container */
+}
+
+/* A theme toggle of your own: data-theme on any ancestor - or the form - beats the OS preference. */
+<html data-theme="dark">
+""";
+
+    private enum Mode { System, Light, Dark }
+
+    private static readonly (Mode Mode, string Name)[] Modes = [(Mode.System, "Follow the system"), (Mode.Light, "Light"), (Mode.Dark, "Dark")];
+
+    private static readonly (string Name, string Light, string Dark, string Use)[] Tokens =
+    [
+        ("--bit-borm-accent", "#4f46e5", "#4f46e5", "The primary button, focus rings, a checked switch, the range slider."),
+        ("--bit-borm-accent-contrast", "#ffffff", "#ffffff", "Text and marks drawn on the accent colour."),
+        ("--bit-borm-surface", "#ffffff", "#111827", "The background of controls, tags and buttons."),
+        ("--bit-borm-surface-muted", "#fafafa", "#1f2937", "Read-only controls, affixes and hovered buttons."),
+        ("--bit-borm-surface-disabled", "#f3f4f6", "#374151", "Disabled controls."),
+        ("--bit-borm-border", "#d1d5db", "#4b5563", "Control and card borders."),
+        ("--bit-borm-border-focus", "var(--bit-borm-accent)", "var(--bit-borm-accent)", "The border of a focused control."),
+        ("--bit-borm-error", "#dc2626", "#f87171", "Error text, invalid borders, the required marker."),
+        ("--bit-borm-error-contrast", "#ffffff", "#111827", "Text drawn on the error colour: a step's error count."),
+        ("--bit-borm-error-surface", "#fef2f2", "#2a1215", "The error summary's background, and a tag's remove button on hover."),
+        ("--bit-borm-warning", "#d97706", "#fbbf24", "Warning messages."),
+        ("--bit-borm-text", "#111827", "#f9fafb", "Labels and values."),
+        ("--bit-borm-muted", "#6b7280", "#9ca3af", "Help text, counters, placeholders."),
+        ("--bit-borm-radius", "8px", "8px", "Corner radius of controls and cards."),
+        ("--bit-borm-gap", "1rem", "1rem", "The space between fields."),
+        ("--bit-borm-max-width", "720px", "720px", "The form's maximum width; none fills the container."),
+    ];
+
+    private readonly BormDefinition _schema = BormBuilder.Create()
+        .Title("Newsletter")
+        .Description("A small form with something of everything the tokens paint.")
+        .Text("name", f => f.Label("Your name").Required())
+        .Email("email", f => f.Label("Email").Required())
+        .Radio("frequency", f => f.Label("How often").Options(("weekly", "Weekly"), ("monthly", "Monthly")).Default("weekly"))
+        .Integer("interest", f => f.Label("How much do you like forms?").AsRange().Range(0, 10).Default(7))
+        .Checkbox("offers", f => f.Label("Send me offers too").AsSwitch())
+        .Build();
+
+    private readonly Dictionary<string, object?> _data = new();
+
+    private bool _stock;
+    private Mode _mode = Mode.System;
+    private string? _accent;
+    private int? _radius;
+    private decimal? _gap;
+    private bool _fullWidth;
+    private bool _submitted;
+
+    private string? DataTheme => _mode switch { Mode.Light => "light", Mode.Dark => "dark", _ => null };
+
+    private bool Overridden => _accent is not null || _radius is not null || _gap is not null || _fullWidth;
+
+    private IEnumerable<string> Declarations()
+    {
+        if (_accent is not null) yield return $"--bit-borm-accent: {_accent};";
+        if (_radius is { } radius) yield return $"--bit-borm-radius: {radius}px;";
+        if (_gap is { } gap) yield return $"--bit-borm-gap: {gap.ToString(CultureInfo.InvariantCulture)}rem;";
+        if (_fullWidth) yield return "--bit-borm-max-width: none;";
+    }
+
+    // Null rather than empty, so a form nobody has restyled carries no style attribute at all.
+    private string? InlineStyle => Overridden ? string.Join(" ", Declarations()) : null;
+
+    private string Css => Overridden
+        ? ".bit-borm-form {" + Environment.NewLine + string.Concat(Declarations().Select(d => "    " + d + Environment.NewLine)) + "}"
+        : "/* Nothing overridden: every token has its default. */";
+
+    private void SetRadius(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var radius)) _radius = radius;
+    }
+
+    private void SetGap(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out var gap)) _gap = gap;
+    }
+
+    private void ResetTokens()
+    {
+        _accent = null;
+        _radius = null;
+        _gap = null;
+        _fullWidth = false;
+    }
+}

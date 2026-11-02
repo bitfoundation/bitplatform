@@ -10,6 +10,12 @@
     font-style: normal;
     font-weight: normal;
     display: inline-block;
+}
+
+// The class twice: the icons' stylesheet, linked after this one, draws every .bit-icon from its own font as importantly,
+// and a publish may cut that font down to the icons an app lists - so the font has to outrank it, not follow it. The
+// font alone: the rest stays as weighty as a class of the app's own, which still restyles the glyph.
+.bit-icon-ex.bit-icon-ex {
     font-family: 'Fabric MDL2 bit BlazorUI Extras' !important;
 }
 
@@ -17,3 +23,7 @@
 .bit-icon-ex--ChevronLeftSmall::before { content: "\E96F"; }
 .bit-icon-ex--More::before { content: "\E712"; }
 .bit-icon-ex--ColumnRightTwoThirds::before { content: "\F1D7"; }
+.bit-icon-ex--ClearFilter::before { content: "\EF8F"; }
+.bit-icon-ex--ColumnOptions::before { content: "\F317"; }
+.bit-icon-ex--ExcelDocument::before { content: "\EF73"; }
+.bit-icon-ex--TextDocument::before { content: "\F029"; }

@@ -3,33 +3,61 @@
 <PageTitle>Overview · Blow</PageTitle>
 
 <ExampleScaffold Title="Overview"
-                 Summary="A larger graph combining node types, several edge types (animated, labelled, smooth-step), a background, controls and a minimap.">
-    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" MinZoom="0.2" MaxZoom="4">
-        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-        <BlowControls />
-        <BlowMiniMap NodeColorFunc="NodeColor" />
-        <BlowPanel Position="top-left">
-            <strong>bit Blow Overview</strong>
-        </BlowPanel>
-    </BlowCanvas>
+                 Summary="A bigger graph that puts the pieces together: the built-in node types, four edge types with labels and animation, a styled node, a widened zoom range, and the background, control bar, minimap and panel add-ons. The control bar's lock button is wired up, so the whole flow can be made read-only.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" MinZoom="0.1" MaxZoom="4"
+                    NodesDraggable="_interactive" NodesConnectable="_interactive" ElementsSelectable="_interactive">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            @* The lock button only reports the toggle; the bound field is what switches the canvas's interaction off. *@
+            <BlowControls ShowInteractive="true" @bind-Interactive="_interactive" />
+            <BlowMiniMap NodeColorFunc="NodeColor" />
+            <BlowPanel Anchor="BlowPanelPosition.TopLeft">
+                <div class="ov-panel">
+                    <strong>Order flow</strong>
+                    <span>@(_interactive ? "editable" : "locked: pan and zoom only")</span>
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+    <TryIt>
+        <li>Follow the edge types: the two edges out of <strong>Start</strong> are animated beziers (the default type), the two into <strong>In stock?</strong> are smooth-step, <strong>yes</strong> and <strong>no</strong> are labelled step edges, and of the last two one is a bezier and one is straight.</li>
+        <li><strong>Drag</strong>, <strong>connect</strong>, <strong>select</strong> and <strong>delete</strong> as on any canvas.</li>
+        <li>Press the <strong>lock button</strong> at the bottom of the control bar: nodes can no longer be dragged, connected or selected, and the panel says so - panning and zooming still work. Press it again to unlock.</li>
+        <li><strong>Scroll</strong> or use the control bar to zoom anywhere from 10% to 400%; the zoom buttons disable themselves at either end.</li>
+        <li>The minimap colours the input and output nodes in their border colours; <strong>drag in it</strong> to move the view.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>An edge's <code>Type</code> picks its path: <code>BlowEdgeType.Bezier</code> (the default), <code>SmoothStep</code>, <code>Step</code> and <code>Straight</code> are all used here. <code>Label</code> draws text at its middle and <code>Animated</code> runs dashes along it.</li>
+        <li>A node's <code>Style</code> adds inline CSS to its element: <strong>In stock?</strong> mixes a blue into <code>var(--bit-blow-node-bg)</code>, so the tint reads in both colour modes.</li>
+        <li><code>MinZoom</code> and <code>MaxZoom</code> widen the zoom range from the default 0.2-2.5 to 0.1-4.</li>
+        <li><code>BlowControls</code> shows its lock button only with <code>ShowInteractive="true"</code>, and the button only reports the toggle: <code>@@bind-Interactive</code> binds it to a field, and that field drives the canvas's <code>NodesDraggable</code>, <code>NodesConnectable</code> and <code>ElementsSelectable</code>.</li>
+        <li><code>BlowMiniMap</code>'s <code>NodeColorFunc</code> picks each node's fill on the map. With it set, a selected node keeps its own colour there instead of taking the selection colour.</li>
+        <li><code>BlowPanel</code> with <code>Anchor="BlowPanelPosition.TopLeft"</code> pins content of your own over the pane; it stays put as the graph pans and zooms.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .ov-panel { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; font-size: 12px; color: var(--bit-blow-text); background: var(--bit-blow-surface-translucent); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+    .ov-panel span { color: var(--bit-blow-text-muted); }
+</style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private bool _interactive = true;
 
     protected override void OnInitialized()
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(0, 0) },
-            new BlowNode { Id = "2", Label = "Default", Position = new(-120, 120) },
-            new BlowNode { Id = "3", Label = "Default", Position = new(120, 120) },
-            new BlowNode { Id = "4", Label = "Process", Position = new(0, 240), Style = "background:color-mix(in srgb, #60a5fa 22%, var(--bit-blow-node-bg));border-color:#60a5fa;" },
-            new BlowNode { Id = "5", Label = "Decision", Position = new(-180, 360) },
-            new BlowNode { Id = "6", Label = "Step", Position = new(180, 360) },
-            new BlowNode { Id = "7", Type = "output", Label = "Output A", Position = new(-180, 480) },
-            new BlowNode { Id = "8", Type = "output", Label = "Output B", Position = new(180, 480) },
+            new BlowNode { Id = "1", Type = "input", Label = "Start", Position = new(0, 0) },
+            new BlowNode { Id = "2", Label = "Fetch orders", Position = new(-120, 120) },
+            new BlowNode { Id = "3", Label = "Fetch stock", Position = new(120, 120) },
+            new BlowNode { Id = "4", Label = "In stock?", Position = new(0, 240), Style = "background:color-mix(in srgb, #60a5fa 22%, var(--bit-blow-node-bg));border-color:#60a5fa;" },
+            new BlowNode { Id = "5", Label = "Reserve", Position = new(-180, 360) },
+            new BlowNode { Id = "6", Label = "Back-order", Position = new(180, 360) },
+            new BlowNode { Id = "7", Type = "output", Label = "Ship", Position = new(-180, 480) },
+            new BlowNode { Id = "8", Type = "output", Label = "Notify buyer", Position = new(180, 480) },
         ];
 
         _edges =
@@ -45,10 +73,11 @@
         ];
     }
 
+    // The theme's own input and output border colours, so the map matches the canvas in both colour modes.
     private string NodeColor(BlowNode n) => n.Type switch
     {
-        "input" => "#6ede87",
-        "output" => "#6865f0",
+        "input" => "var(--bit-blow-node-input-border)",
+        "output" => "var(--bit-blow-node-output-border)",
         _ => "var(--bit-blow-minimap-node)",
     };
 }

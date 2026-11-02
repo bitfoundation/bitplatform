@@ -15,6 +15,15 @@
     </p>
 </div>
 
+<div class="bb-note">
+    Press <em>Load record from server</em>: two lines arrive and the readout says <code>dirty=False</code> - they are the
+    new baseline, not changes. Edit a price and it turns dirty; <em>Save &amp; rebase</em> makes the edit the baseline
+    again. Type a two-letter, lower-case customer name and press <em>Check just the customer</em>: only that field is
+    judged, and it breaks two rules. Tick <em>One error per field</em> and the two complaints become one - every rule
+    still runs, the user just reads one at a time. <em>Stash a draft</em>, change things, then
+    <em>Restore the draft</em>. The readout under the form is <code>GetFieldState("Customer")</code>, live.
+</div>
+
 <div class="bb-demo">
     <div class="bb-demo-bar">
         <span class="bb-demo-label">Live form</span>
@@ -24,12 +33,12 @@
 
     <div class="bb-toolbar">
         <button type="button" class="btn btn-secondary" @onclick="LoadRecord">Load record from server</button>
-        <button type="button" class="btn btn-secondary" @onclick="SaveRoundTrip" disabled="@(!_state.IsFormDirty)">Save &amp; rebase</button>
-        <button type="button" class="btn btn-secondary" @onclick="SwapFirstTwoLines" disabled="@(LineCount < 2)">Swap first two lines</button>
-        <button type="button" class="btn btn-secondary" @onclick="ClearLines" disabled="@(LineCount == 0)">Clear all lines</button>
+        <button type="button" class="btn btn-secondary" @onclick="SaveRoundTrip" aria-disabled="@(_state.IsFormDirty ? null : "true")">Save &amp; rebase</button>
+        <button type="button" class="btn btn-secondary" @onclick="SwapFirstTwoLines" aria-disabled="@(LineCount < 2 ? "true" : null)">Swap first two lines</button>
+        <button type="button" class="btn btn-secondary" @onclick="ClearLines" aria-disabled="@(LineCount == 0 ? "true" : null)">Clear all lines</button>
         <button type="button" class="btn btn-secondary" @onclick="CheckCustomer">Check just the customer</button>
         <button type="button" class="btn btn-secondary" @onclick="StashDraft">Stash a draft</button>
-        <button type="button" class="btn btn-secondary" @onclick="RestoreDraft" disabled="@(_draft is null)">Restore the draft</button>
+        <button type="button" class="btn btn-secondary" @onclick="RestoreDraft" aria-disabled="@(_draft is null ? "true" : null)">Restore the draft</button>
     </div>
 
     <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Submit order" TitleLevel="2" />
@@ -49,6 +58,12 @@
     <summary class="btn btn-secondary">View source</summary>
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
+
+<div class="bb-note">
+    When the server refuses a save, its errors go back onto the fields they belong to - see
+    <a href="saving">saving &amp; server errors</a>. Every member of <code>BormState</code> is listed in the
+    <a href="api-reference">API reference</a>.
+</div>
 
 @code {
     private const string Source =
@@ -101,6 +116,22 @@ state.SingleErrorPerField = true;
 // A read-only wizard keeps Back and Next (reading a form is not editing it) and loses Submit and
 // Reset.
 state.ReadOnly = true;
+
+// --- Typed, and in one go -----------------------------------------------------------------------
+// For<TModel>() addresses the same state by expression, so a rename renames every read and write
+// and a typo does not compile.
+var order = state.For<Invoice>();
+order.SetValue(x => x.Lines[0].Quantity, 3);
+var customer = order.GetFieldState(x => x.Customer);
+await order.FocusAsync(x => x.Customer);
+
+// SetValues and Batch write many values as one change: one re-render, and one step to undo.
+state.SetValues(new Dictionary<string, object?> { ["Lines[0].Quantity"] = 3, ["Lines[1].Quantity"] = 5 });
+state.Batch(() =>
+{
+    state.SetValue("Customer", "Contoso Ltd");
+    state.SetValue("Lines[0].UnitPrice", 18.00m);
+});
 """;
 
     private readonly Invoice _model = new();
@@ -163,14 +194,21 @@ state.ReadOnly = true;
 
     private void SaveRoundTrip()
     {
+        if (!_state.IsFormDirty) return;
         // What a real save does: post, then rebase onto the stored record so the form is clean again.
         _saved = true;
         _state.Reset(_state.DirtyFields.ToDictionary(path => path, _state.GetValue));
     }
 
-    private void SwapFirstTwoLines() => _state.SwapArrayItems("Lines", 0, 1);
+    private void SwapFirstTwoLines()
+    {
+        if (LineCount >= 2) _state.SwapArrayItems("Lines", 0, 1);
+    }
 
-    private void ClearLines() => _state.ClearArrayItems("Lines");
+    private void ClearLines()
+    {
+        if (LineCount > 0) _state.ClearArrayItems("Lines");
+    }
 
     private Task CheckCustomer() => _state.ValidateFieldAsync("Customer").AsTask();
 

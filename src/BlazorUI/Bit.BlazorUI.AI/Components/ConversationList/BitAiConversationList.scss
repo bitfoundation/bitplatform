@@ -1,0 +1,122 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a conversation list inherits down to every conversation list under it:
+//   --bit-AiConversationList-gap                       room between two conversations                (default: spacing(0.25))
+//   --bit-AiConversationList-padding                   inset of the list                             (default: spacing(1))
+//   --bit-AiConversationList-group-color               text of the heading of a group                (default: $clr-fg-ter)
+//   --bit-AiConversationList-item-radius               corners of a conversation                     (default: $shp-radius-control)
+//   --bit-AiConversationList-item-color                text of a conversation                        (default: $clr-fg-pri)
+//   --bit-AiConversationList-item-background           background of a conversation                  (default: transparent)
+//   --bit-AiConversationList-item-hover-background     background of a conversation under the pointer (default: $clr-bg-pri-hover)
+//   --bit-AiConversationList-selected-color            text of the conversation that is open         (default: $clr-pri-fg)
+//   --bit-AiConversationList-selected-background       background of the conversation that is open   (default: $clr-pri-tint)
+//   --bit-AiConversationList-selected-hover-background background of it under the pointer            (default: $clr-bg-pri-hover)
+
+.bit-aicvl {
+    display: flex;
+    overflow-y: auto;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    gap: var(--bit-AiConversationList-gap, #{spacing(0.25)});
+    padding: var(--bit-AiConversationList-padding, #{spacing(1)});
+}
+
+.bit-aicvl-grp {
+    font-size: $tg-fs-xs;
+    text-transform: uppercase;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: spacing(1) spacing(1) spacing(0.5);
+    color: var(--bit-AiConversationList-group-color, #{$clr-fg-ter});
+}
+
+.bit-aicvl-lst {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    list-style: none;
+    flex-direction: column;
+    gap: var(--bit-AiConversationList-gap, #{spacing(0.25)});
+}
+
+.bit-aicvl-itm {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.5);
+}
+
+// The button a conversation is chosen with is drawn here rather than by a core component, since it is a row of the list
+// rather than a button standing on its own. The pointer moves the variable its background is painted from rather than
+// the background itself, so a row the app paints through Classes keeps that paint under the pointer.
+.bit-aicvl-ibt {
+    --bit-aicvl-ibt-bg: var(--bit-AiConversationList-item-background, transparent);
+    --bit-aicvl-ibt-hvr-bg: var(--bit-AiConversationList-item-hover-background, #{$clr-bg-pri-hover});
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    font: inherit;
+    text-align: start;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: $tg-fs-sm;
+    gap: spacing(1);
+    padding: spacing(1) spacing(1.5);
+    min-height: $siz-ctrl-md;
+    border-radius: var(--bit-AiConversationList-item-radius, #{$shp-radius-control});
+    color: var(--bit-AiConversationList-item-color, #{$clr-fg-pri});
+    background-color: var(--bit-aicvl-ibt-bg);
+    transition: background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-aicvl-ibt-bg: var(--bit-aicvl-ibt-hvr-bg);
+        }
+    }
+
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        color: $clr-fg-dis;
+        background-color: transparent;
+    }
+}
+
+// The conversation that is open is set apart by its color, its weight and aria-current, so it is never told by its
+// color alone.
+.bit-aicvl-sel {
+    font-weight: $tg-fw-medium;
+    --bit-aicvl-ibt-bg: var(--bit-AiConversationList-selected-background, #{$clr-pri-tint});
+    --bit-aicvl-ibt-hvr-bg: var(--bit-AiConversationList-selected-hover-background, #{$clr-bg-pri-hover});
+    color: var(--bit-AiConversationList-selected-color, #{$clr-pri-fg});
+}
+
+.bit-aicvl-ttl {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+// The background that sets the open conversation apart is dropped by the forced colors, so it is outlined instead.
+@media (forced-colors: active) {
+    .bit-aicvl-sel {
+        outline: $shp-border-width-thick solid Highlight;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
+}
+
+@media (prefers-contrast: more) {
+    .bit-aicvl-sel {
+        outline: $shp-border-width-thick solid currentcolor;
+        outline-offset: calc(-1 * #{$shp-border-width-thick});
+    }
+}

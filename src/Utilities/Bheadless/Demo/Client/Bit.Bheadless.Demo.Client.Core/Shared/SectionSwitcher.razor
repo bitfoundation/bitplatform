@@ -1,0 +1,28 @@
+﻿@*
+    Compact toggle that lets visitors flip between the CSS and Tailwind
+    versions of the current demo page. Lives in the page header.
+
+    Usage:
+        <SectionSwitcher Slug="button" Current="DemoSection.Css" />
+*@
+
+<div class="section-switcher section-switcher-sticky" role="group" aria-label="Styling implementation">
+    <span class="section-switcher-label">Implementation:</span>
+    <NavLink class="section-switcher-link"
+             href="@Slug"
+             Match="NavLinkMatch.All"
+             ActiveClass="section-switcher-link-active">
+        CSS
+    </NavLink>
+    <NavLink class="section-switcher-link"
+             href="@($"tw/{Slug}")"
+             Match="NavLinkMatch.All"
+             ActiveClass="section-switcher-link-active">
+        Tailwind
+    </NavLink>
+</div>
+
+@code {
+    /// <summary>The component slug, e.g. <c>button</c> or <c>accordion</c>.</summary>
+    [Parameter, EditorRequired] public string Slug { get; set; } = string.Empty;
+}

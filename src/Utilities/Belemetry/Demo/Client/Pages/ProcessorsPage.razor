@@ -1,14 +1,16 @@
 ﻿@page "/processors"
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <PageTitle>Processors · Belemetry</PageTitle>
 
 <div class="bb-intro">
     <h1>Processors</h1>
     <p class="bb-subtitle">
-        A processor sees every record the .NET pipeline handles before it is queued, and can change it or drop it: add a
-        tenant id to every span, rename a noisy log, drop health checks and static files, strip an attribute only your
-        app knows is sensitive. It is one small interface with three optional methods.
+        A processor sees every record before it is exported, and can change it or drop it: add a tenant id to every
+        span, rename a noisy log, drop health checks and static files, strip an attribute only your app knows is
+        sensitive. On the .NET side it is one small interface with three optional methods; in the browser it is a
+        plain function, next to <code>setAttributes</code> for context every record should carry.
     </p>
 </div>
 
@@ -25,7 +27,10 @@
     <div class="bb-note bb-note-warn">
         Processors run synchronously, on the thread that produced the record - inside the code that logged, or
         stopped the activity. They must be fast and must not block, await or call out over the network. A processor
-        that throws is skipped for that record; the record itself is kept.
+        that throws is skipped for that record and the record itself is kept; the first failure of each processor is
+        logged once, as a warning in the <code>Bit.Belemetry</code> category, so a broken filter does not pass for
+        missing data. A record a processor drops is counted as <code>filtered</code> on the
+        <code>Bit.Belemetry</code> meter.
     </div>
 </div>
 
@@ -42,10 +47,83 @@
         <li>Everything the <a href="/server-pipeline">server pipeline</a> collects, when it is on.</li>
     </ul>
     <p>
-        With the Direct transport the browser script exports its own records, and .NET never sees them. Shape those
-        with the browser options instead - <code>IgnoreUrls</code>, <code>IgnoreErrorMessages</code>,
-        <code>data-bit-belemetry-ignore</code> and the <a href="/privacy">privacy rules</a>.
+        With the Direct transport (the default outside Hybrid) the browser script exports its own records, and .NET
+        never sees them. Shape those in the page instead: with a browser processor (below), or with the browser
+        options - <code>IgnoreUrls</code>, <code>IgnoreErrorMessages</code>, <code>data-bit-belemetry-ignore</code> and the
+        <a href="/privacy">privacy rules</a>.
     </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> In the browser</h3>
+    <p>
+        <code>BitBelemetry.addProcessor(fn)</code> runs <code>fn(record)</code> on every browser record as it is
+        exported (or relayed to .NET), after consent and the privacy rules. Change the record in place, or return
+        <code>false</code> to drop it; one that throws is skipped for that record. It returns the function that removes
+        it, and may be called before the script starts - a processor added right after the script loaded still sees
+        the initial page view. The record is the browser record model: a span has <code>traceId</code>,
+        <code>spanId</code>, <code>name</code>, <code>kind</code>, <code>startTime</code>, <code>endTime</code>,
+        <code>status</code> and <code>events</code>; a log record has <code>time</code>, <code>severityNumber</code>,
+        <code>body</code> and <code>eventName</code>; both have <code>attributes</code>, <code>scope</code> and
+        <code>feature</code>.
+    </p>
+    <p>
+        <code>BitBelemetry.setAttributes(attributes)</code> adds attributes to every record from now on - app context
+        such as a tenant or a feature flag. Calls merge; a <code>null</code> value removes one key, and
+        <code>setAttributes(null)</code> removes them all. They go through the privacy rules like any attribute, a
+        record's own attributes win, and the consent-governed ids (<code>session.id</code>,
+        <code>enduser.pseudo.id</code>, <code>user.id</code>) cannot be set this way - use <code>setUser</code>.
+    </p>
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live<span class="demo-sample-title">addProcessor and setAttributes</span></span></div>
+        <dl class="bb-params">
+            <dt>Processor</dt>
+            <dd><span class="bb-badge @(_processor is true ? "bb-badge-success" : "demo-badge-off")">@(_processor is true ? "added: tags app.release.channel = beta, drops the noisy button's clicks" : "not added")</span></dd>
+            <dt>Global attributes</dt>
+            <dd><span class="bb-badge @(_tenant ? "bb-badge-success" : "demo-badge-off")">@(_tenant ? "app.tenant = contoso, feature.checkout_v2 = true" : "none set from this page")</span></dd>
+        </dl>
+        <div class="bb-toolbar">
+            @if (_processor is true)
+            {
+                <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => SetProcessorAsync(false))">Remove the processor</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-primary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => SetProcessorAsync(true))">addProcessor(...)</button>
+            }
+            @if (_tenant)
+            {
+                <button type="button" class="btn demo-btn-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => SetAttributesAsync(false))">setAttributes(null)</button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => SetAttributesAsync(true))">setAttributes({ 'app.tenant': 'contoso', ... })</button>
+            }
+        </div>
+        <p class="bb-overline demo-sublabel">Then make records</p>
+        <div class="bb-toolbar">
+            <button type="button" class="btn btn-secondary" data-bit-belemetry-name="demo.processors.click">A recorded button</button>
+            <button type="button" class="btn btn-secondary" data-bit-belemetry-name="demo.processors.noise">The noisy button</button>
+            <button type="button" class="btn btn-secondary" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackEventAsync">BitBelemetry.trackEvent</button>
+        </div>
+        @if (_status is not null)
+        {
+            <p class="demo-status" role="status">@_status</p>
+        }
+        <TelemetryFeedView Compact="true" Match="@IsBrowserDemoRecord"
+                           EmptyText="Nothing yet - add the processor, then press the buttons (clicks need Interactions, the event needs Events)." />
+    </div>
+    <p>
+        Open a record to read its attributes. With the processor added, every record carries
+        <code>app.release.channel</code> and the noisy button's clicks never arrive; with the attributes set, every
+        record carries <code>app.tenant</code> and <code>feature.checkout_v2</code>. Both live in the script, not in the
+        page: they stay for the rest of the visit, on every page of this site, until you remove them or reload.
+    </p>
+    <CodeSnippet Code="@BrowserProcessorCode" Language="JavaScript" Expanded="true" />
+    <div class="bb-note bb-note-warn">
+        Browser processors must be fast and synchronous too: while the page unloads, the final batch is exported in
+        the same task, and nothing else runs.
+    </div>
 </div>
 
 <div class="bb-card">
@@ -94,9 +172,76 @@
 
     private int _kept;
     private int _dropped;
+    private bool? _processor;
+    private bool _tenant;
+    private string? _status;
 
     private static bool IsWasmHttpSpan(TelemetryRecord r)
         => r.Source == "wasm" && r.Signal == "span" && r.Scope == "System.Net.Http";
+
+    private static bool IsBrowserDemoRecord(TelemetryRecord r)
+        => r.Source == "browser"
+        && (r.Name == "demo.processors"
+            || (r.Attributes.TryGetValue("target.name", out var target) && target.StartsWith("demo.processors.", StringComparison.Ordinal)));
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        // The processor outlives the page (it lives in the script), so a reader coming back finds it still added.
+        try { _processor = await JS.InvokeAsync<bool>("blDemo.hasProcessor"); } catch { _processor = false; }
+        StateHasChanged();
+    }
+
+    private async Task SetProcessorAsync(bool add)
+    {
+        try
+        {
+            _processor = await JS.InvokeAsync<bool>(add ? "blDemo.addProcessor" : "blDemo.removeProcessor");
+            _status = _processor is true
+                ? "Added. Every browser record exported from now on goes through it."
+                : "Removed. Records are exported as they are again.";
+        }
+        catch (Exception ex)
+        {
+            _status = $"The browser script did not answer: {ex.Message}";
+        }
+    }
+
+    private async Task SetAttributesAsync(bool set)
+    {
+        try
+        {
+            if (set)
+            {
+                await JS.InvokeVoidAsync("BitBelemetry.setAttributes", new Dictionary<string, object?> { ["app.tenant"] = "contoso", ["feature.checkout_v2"] = true });
+                _status = "Set. Every browser record from now on carries app.tenant and feature.checkout_v2.";
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("BitBelemetry.setAttributes", (object?)null);
+                _status = "Cleared. setAttributes(null) removed every global attribute.";
+            }
+
+            _tenant = set;
+        }
+        catch (Exception ex)
+        {
+            _status = $"The browser script did not answer: {ex.Message}";
+        }
+    }
+
+    private async Task TrackEventAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("BitBelemetry.trackEvent", "demo.processors", new Dictionary<string, object?> { ["demo.page"] = "processors" });
+        }
+        catch (Exception ex)
+        {
+            _status = $"The browser script did not answer: {ex.Message}";
+        }
+    }
 
     private async Task GetAsync(string url, bool keep)
     {
@@ -172,6 +317,24 @@
 
         // Shared by the client and the server (Services/DemoTelemetry.cs):
         options.AddProcessor(new DemoNoiseFilter());
+        """;
+
+    private const string BrowserProcessorCode = """
+        // Anywhere after the module loaded - a script tag, a JS initializer, or IJSRuntime from .NET.
+        const remove = BitBelemetry.addProcessor(record => {
+            // Drop: clicks on an element the dashboards do not care about.
+            if (record.eventName === 'browser.user_interaction' && record.attributes['target.name'] === 'demo.processors.noise') return false;
+
+            // Enrich: the release channel this page was served from.
+            record.attributes['app.release.channel'] = 'beta';
+        });
+
+        // Context for every record from now on (merged with what was set before).
+        BitBelemetry.setAttributes({ 'app.tenant': 'contoso', 'feature.checkout_v2': true });
+        BitBelemetry.setAttributes({ 'feature.checkout_v2': null });   // removes one key
+        BitBelemetry.setAttributes(null);                              // removes them all
+
+        remove();   // the processor is gone
         """;
 
     private const string ExamplesCode = """

@@ -52,13 +52,6 @@ public partial class MainLayout : IDisposable
         },
     ];
 
-    private readonly List<BitNavItem> besqlNavItems =
-    [
-        new BitNavItem { Text = "Overview", Url = "/besql/overview" },
-        new BitNavItem { Text = "Install", Url = "/besql/install" },
-        new BitNavItem { Text = "Usage", Url = "/besql/usage" },
-    ];
-
     private readonly List<BitNavItem> toolingsNavItems =
     [
         new BitNavItem { Text = "bit CLI", Url = Urls.Cli },
@@ -91,7 +84,6 @@ public partial class MainLayout : IDisposable
         navMenuService.UpdateRouteFlags($"/{navigationManager.ToBaseRelativePath(navigationManager.Uri)}");
 
         navItems = navMenuService.IsTemplateDocRoute ? templatesNavItems
-                 : navMenuService.IsBesqlDocRoute ? besqlNavItems
                  : navMenuService.IsToolingsDocRoute ? toolingsNavItems
                  : [];
     }

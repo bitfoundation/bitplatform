@@ -55,26 +55,34 @@ internal static class ParallelRows
             MaxDegreeOfParallelism = Math.Min(context.MaxDegreeOfParallelism, bands),
             CancellationToken = context.CancellationToken,
         };
+        For(0, bands, options, band =>
+        {
+            // Bands of nearly equal height, the first rows - rows % bands of them one row taller.
+            var start = top + (int)((long)rows * band / bands);
+            var end = top + (int)((long)rows * (band + 1) / bands);
+            body(start, end, bandContext);
+            progress?.Completed(end - start);
+        });
+        // Back on the caller's thread with every band done: whatever the other threads finished last is reported now.
+        progress?.ReportOnCaller();
+    }
+
+    /// <summary>
+    /// <see cref="Parallel.For(int, int, ParallelOptions, Action{int})"/>, rethrowing what the body threw rather than an
+    /// <see cref="AggregateException"/> around it, so callers see the same exception the sequential loop would raise.
+    /// </summary>
+    public static void For(int fromInclusive, int toExclusive, ParallelOptions options, Action<int> body)
+    {
         try
         {
-            Parallel.For(0, bands, options, band =>
-            {
-                // Bands of nearly equal height, the first rows - rows % bands of them one row taller.
-                var start = top + (int)((long)rows * band / bands);
-                var end = top + (int)((long)rows * (band + 1) / bands);
-                body(start, end, bandContext);
-                progress?.Completed(end - start);
-            });
+            Parallel.For(fromInclusive, toExclusive, options, body);
         }
         catch (AggregateException ex)
         {
-            context.ThrowIfCancellationRequested();
-            // Rethrow what the band threw, so callers see the same exception the sequential loop would raise.
+            options.CancellationToken.ThrowIfCancellationRequested();
             var inner = ex.Flatten().InnerExceptions;
             ExceptionDispatchInfo.Capture(inner.FirstOrDefault(e => e is not OperationCanceledException) ?? inner[0]).Throw();
         }
-        // Back on the caller's thread with every band done: whatever the other threads finished last is reported now.
-        progress?.ReportOnCaller();
     }
 
     /// <summary>

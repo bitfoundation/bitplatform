@@ -1,0 +1,38 @@
+﻿@* Lists that can be emptied: ChildContent shows an empty state, and an empty list still takes a drop. *@
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Inbox</div>
+        <Bortable @bind-Items="_inbox" TItem="string" Group="shared-empty" Id="shared-inbox" AriaLabel="Inbox"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+            <ChildContent>
+                @if (_inbox.Count == 0)
+                {
+                    <div class="demo-empty" role="listitem">Inbox zero - nothing left to sort.</div>
+                }
+            </ChildContent>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Archive</div>
+        <Bortable @bind-Items="_archive" TItem="string" Group="shared-empty" Id="shared-archive" AriaLabel="Archive"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+            <ChildContent>
+                @if (_archive.Count == 0)
+                {
+                    <div class="demo-empty" role="listitem">Nothing archived yet - drop a message here.</div>
+                }
+            </ChildContent>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Inbox:</strong> <span id="shared-inbox-order">@string.Join(", ", _inbox)</span></p>
+<p class="demo-order"><strong>Archive:</strong> <span id="shared-archive-order">@string.Join(", ", _archive)</span></p>
+
+@code {
+    private IList<string> _inbox = new List<string> { "Invoice", "Newsletter", "Meeting notes" };
+    private IList<string> _archive = new List<string>();
+}

@@ -1,0 +1,161 @@
+﻿@page "/rich-fields"
+@implements IDisposable
+
+<PageTitle>Masks, formatted text, signatures &amp; uploads · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Masks, formatted text, signatures &amp; uploads</h1>
+    <p class="bb-subtitle">
+        Four kinds of answer a plain text box does not give. A <strong>mask</strong> writes a phone number or an IBAN in
+        its shape once it is typed. <strong>Markdown</strong> is formatted text with a preview, rendered safely. A
+        <strong>signature</strong> is drawn - or typed instead - and kept as an image. A <strong>file</strong> is sent
+        the moment it is chosen, with its progress shown, and the field keeps what came back.
+    </p>
+</div>
+
+<div class="bb-note">
+    Type the phone number any way you like - <code>5551234567</code>, <code>555-123-4567</code> - and leave the box. The
+    IBAN is stored without its spaces, and shown with them. Open the cover letter's preview and try
+    <code>**bold**</code> or a <code>[link](https://bitplatform.dev)</code>; a <code>javascript:</code> link stays text.
+    Sign with the mouse or a finger, or choose <em>Type it instead</em>. The upload here goes nowhere: it reads the file
+    in pieces to move the bar, so pick something of a few megabytes to watch it.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send application" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Sent ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Masks</h3>
+    <p class="bb-card-desc">
+        In a mask <code>0</code> is a digit, <code>A</code> a letter written in capitals, <code>a</code> a letter as typed and
+        <code>*</code> either; a backslash makes the next character literal, and anything else is literal already. When the user
+        leaves the box, what they typed is put into the shape - separators they typed differently are passed over. A value that
+        does not fit is left as typed and reported with the shape to write it in. <code>storeRaw: true</code> keeps only what
+        filled the slots in the model, while the box and a review show it formatted; a mask of digits alone brings up the
+        number pad. The box is deliberately not rewritten under the caret as the user types: that needs script, and assistive
+        technology describes it badly. <code>x-mask</code> and <code>x-maskStoresRaw</code> carry it through JSON Schema.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Markdown and signatures</h3>
+    <p class="bb-card-desc">
+        <code>AsMarkdown()</code> understands paragraphs, headings, lists, quotes, code, rules, <code>**bold**</code>,
+        <code>*italic*</code>, <code>~~struck~~</code> and links. Everything the user wrote is HTML-encoded, only those elements
+        are written, a link goes only to <code>http</code>, <code>https</code> or <code>mailto</code>, and links carry
+        <code>rel="nofollow noopener noreferrer"</code>. The value is the Markdown text, so length rules count what was typed;
+        <code>BormMarkdown.ToHtml</code> renders it anywhere else and <code>ToPlainText</code> takes the formatting out. It is
+        not a WYSIWYG editor - that needs script, and Borm has none.
+    </p>
+    <p class="bb-card-desc">
+        <code>AsSignature()</code> is drawn with a mouse, a finger or a pen - the page does not scroll while signing - or typed
+        in a handwriting face. Either way the value is an SVG <code>data:</code> URL an <code>&lt;img&gt;</code> shows as it is,
+        and only a value in that shape is ever shown; <code>BormSignature</code> builds, checks and decodes them. A signature is
+        personal data: mark it <code>Sensitive()</code> to keep it out of drafts.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Uploads</h3>
+    <p class="bb-card-desc">
+        With <code>UploadWith</code>, each file is judged by <code>Accept</code> and <code>MaxFileSize</code> first, then sent,
+        listed with a progress bar and a Cancel button while it goes, Remove once it is there, and Retry - with the reason - if
+        the uploader throws. The field holds what the uploader returned (a list of them for a field taking several), never the
+        file, so it is an answer like any other: it goes into a draft and reaches the server as an id. A submit pressed while a
+        file is on its way waits for it; Cancel, clearing the field or leaving the form cancels
+        <code>upload.CancellationToken</code>. <code>state.UploadsFor(path)</code> lists them for a control of your own. To keep
+        the <code>IBrowserFile</code> on the model instead and read it at submit, see <a href="files">file upload</a>.
+    </p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/rich-fields"
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Send application" />
+
+@code {
+    private readonly Dictionary<string, object?> _data = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.Create()
+            .Title("Application")
+            .Text("Phone", f => f.Required().Mask("(000) 000-0000"))
+            .Text("Iban", f => f.Label("IBAN").Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
+            .Text("CoverLetter", f => f.Label("Cover letter").AsMarkdown().Required().MaxLength(2000).CharacterCount())
+            .Field("Resume", BormFieldType.File, f => f.Label("Résumé").Accept(".pdf,.doc,.docx,.txt")
+                .MaxFileSize(20 * 1024 * 1024).Required().UploadWith(SendAsync))
+            .Text("Signature", f => f.AsSignature().Required())
+            .Build();
+
+        _state = new BormState(schema, new BormDictionaryDataAccessor(_data));
+    }
+
+    // Reads the file as a request body would be read, and returns what storage would.
+    private static async Task<string> SendAsync(BormUploadContext upload)
+    {
+        await using var stream = upload.OpenReadStream();          // counts what is read as sent
+        var buffer = new byte[256 * 1024];
+        while (await stream.ReadAsync(buffer, upload.CancellationToken) > 0)
+            await Task.Delay(40, upload.CancellationToken);       // ... await http.PostAsync(...) ...
+        return $"file-{Guid.NewGuid():N}";
+    }
+
+    public void Dispose() => _state.Dispose();
+}
+""";
+
+    private readonly Dictionary<string, object?> _data = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.Create()
+            .Title("Application")
+            .Text("Phone", f => f.Required().Mask("(000) 000-0000"))
+            .Text("Iban", f => f.Label("IBAN").Mask("AA00 0000 0000 0000 0000 00", storeRaw: true))
+            .Text("CoverLetter", f => f.Label("Cover letter").AsMarkdown().Required().MaxLength(2000).CharacterCount())
+            .Field("Resume", BormFieldType.File, f => f.Label("Résumé").Accept(".pdf,.doc,.docx,.txt")
+                .MaxFileSize(20 * 1024 * 1024).Required().UploadWith(SendAsync))
+            .Text("Signature", f => f.AsSignature().Required())
+            .Build();
+
+        _state = new BormState(schema, new BormDictionaryDataAccessor(_data));
+    }
+
+    private static async Task<string> SendAsync(BormUploadContext upload)
+    {
+        await using var stream = upload.OpenReadStream();
+        var buffer = new byte[256 * 1024];
+        while (await stream.ReadAsync(buffer, upload.CancellationToken) > 0)
+            await Task.Delay(40, upload.CancellationToken);
+        return $"file-{Guid.NewGuid():N}";
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        // The signature is an image: shown here by its size rather than as a page of base64.
+        var shown = _data.ToDictionary(kv => kv.Key, kv => kv.Value is string s && BormSignature.IsImage(s) ? $"(signature, {s.Length:N0} characters)" : kv.Value);
+        _json = System.Text.Json.JsonSerializer.Serialize(shown, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose() => _state.Dispose();
+}

@@ -1,0 +1,126 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static string[] Options(IRenderedComponent<Bunit.Rendering.ContainerFragment> cut)
+        => cut.FindAll("[role=option]").Select(o => o.TextContent.Trim()).ToArray();
+
+    [TestMethod]
+    public void A_controlled_value_keeps_its_item_highlighted_on_the_first_render()
+    {
+        var cut = Render(
+            @<Stateful T="string" Initial="@("billing")" Context="s">
+                <BitBhCommand Label="Commands" Value="@s.Value" ValueChanged="s.Set">
+                    <BitBhCommandInput />
+                    <BitBhCommandList>
+                        <BitBhCommandItem Value="profile">Profile</BitBhCommandItem>
+                        <BitBhCommandItem Value="billing">Billing</BitBhCommandItem>
+                    </BitBhCommandList>
+                </BitBhCommand>
+            </Stateful>);
+
+        cut.WaitForAssertion(() => Assert.AreEqual("Billing", Text(ActiveOf(cut.Find("input")))));
+        Assert.AreEqual("billing", cut.FindComponent<Stateful<string>>().Instance.Value);
+    }
+
+    [TestMethod]
+    public void Backspace_with_a_controlled_page_goes_back_one_page()
+    {
+        var cut = Render(
+            @<Stateful T="string" Context="s">
+                <BitBhCommand Label="Commands" Page="@s.Value" PageChanged="s.Set">
+                    <BitBhCommandInput />
+                    <BitBhCommandList>
+                        <BitBhCommandPage>
+                            <Template Context="c">
+                                <BitBhCommandItem OnSelect="@(() => c.PushPageAsync("theme"))">Theme…</BitBhCommandItem>
+                            </Template>
+                        </BitBhCommandPage>
+                        <BitBhCommandPage Name="theme">
+                            <Template Context="c">
+                                <BitBhCommandItem OnSelect="@(() => c.PushPageAsync("accent"))">Accent…</BitBhCommandItem>
+                            </Template>
+                        </BitBhCommandPage>
+                        <BitBhCommandPage Name="accent">
+                            <BitBhCommandItem>Blue</BitBhCommandItem>
+                        </BitBhCommandPage>
+                    </BitBhCommandList>
+                </BitBhCommand>
+            </Stateful>);
+
+        cut.Find("input").Press("Enter");
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual("accent", cut.FindComponent<Stateful<string>>().Instance.Value);
+
+        cut.Find("input").Press("Backspace");
+
+        Assert.AreEqual("theme", cut.FindComponent<Stateful<string>>().Instance.Value);
+        Assert.AreSequenceEqual(new[] { "Accent…" }, Options(cut));
+    }
+
+    [TestMethod]
+    public async Task Clearing_the_search_from_code_clears_the_input()
+    {
+        var cut = Render(
+            @<BitBhCommand Label="Commands">
+                <BitBhCommandInput />
+                <BitBhCommandList>
+                    <BitBhCommandItem>Apple</BitBhCommandItem>
+                    <BitBhCommandItem>Banana</BitBhCommandItem>
+                </BitBhCommandList>
+            </BitBhCommand>);
+
+        cut.Find("input").Input("a");
+        Assert.AreEqual("Apple", Text(ActiveOf(cut.Find("input"))));
+
+        // The highlight stays on Apple, so only the search changes.
+        await cut.InvokeAsync(() => cut.FindComponent<BitBhCommand>().Instance.Context.ClearSearchAsync());
+
+        Assert.AreEqual(string.Empty, cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Sorted_results_never_put_a_disabled_match_above_the_best_one()
+    {
+        var cut = Render(
+            @<BitBhCommand Label="Commands" Sort="true">
+                <BitBhCommandInput />
+                <BitBhCommandList>
+                    <BitBhCommandItem Disabled="true">Calculator</BitBhCommandItem>
+                    <BitBhCommandItem>Calendar</BitBhCommandItem>
+                </BitBhCommandList>
+            </BitBhCommand>);
+
+        cut.Find("input").Input("cal");
+
+        foreach (var option in cut.FindAll("[role=option]"))
+            Assert.DoesNotContain("order:-1", option.GetAttribute("style") ?? string.Empty);
+    }
+
+    [TestMethod]
+    public void A_command_without_a_label_references_no_label()
+    {
+        var cut = Render(
+            @<BitBhCommand>
+                <BitBhCommandInput aria-label="Search commands" />
+                <BitBhCommandList aria-label="Commands">
+                    <BitBhCommandItem>Profile</BitBhCommandItem>
+                </BitBhCommandList>
+            </BitBhCommand>);
+
+        Assert.IsNull(cut.Find("[role=listbox]").GetAttribute("aria-labelledby"));
+        Assert.AreEqual(cut.Find("[role=listbox]").Id, cut.Find("input").GetAttribute("aria-controls"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void A_command_without_a_list_controls_nothing()
+    {
+        var cut = Render(
+            @<BitBhCommand Label="Commands">
+                <BitBhCommandInput />
+            </BitBhCommand>);
+
+        Assert.IsNull(cut.Find("input").GetAttribute("aria-controls"));
+    }
+}

@@ -1,0 +1,18 @@
+@inherits WorkbenchComponentBase
+
+<div class="card">
+    @foreach (var item in Items)
+    {
+        <div class="stock-row">
+            <span class="stock-name">@item.Name</span>
+            <BitTag Text="@Localizer[nameof(WorkbenchStrings.AssistantUnitsLeft), item.Left]"
+                    Variant="BitVariant.Outline"
+                    Color="@(item.Left <= 2 ? BitColor.Error : BitColor.Warning)"
+                    Size="BitSize.Small" />
+            <span class="stock-order">
+                <BitIcon IconName="@BitIconName.ShoppingCart" Size="BitSize.Small" />
+                @PosFormat.Number(item.Order)
+            </span>
+        </div>
+    }
+</div>

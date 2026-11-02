@@ -1,0 +1,76 @@
+﻿@namespace Bit.BevTools.Demo.Client.Extension
+@inherits BevToolsTab
+@inject FilterState Filter
+@inject CartState Cart
+
+@* The demo extension's panel (DemoBevToolsExtension.AddPanel). Inheriting BevToolsTab gives it the session and makes
+   it re-read whenever BevTools refreshes the open tab (live updates, or Refresh). A panel is BevTools' own UI: its
+   renders and clicks are never recorded as the app's. It shows names and counts only - an application value would
+   reach a panel through BevTools' inspector, which applies the session's ValueAccess. *@
+
+<div class="bev-stat-grid">
+    <div class="bev-stat"><div class="bev-stat-value">@_subscribers.Length</div><div class="bev-stat-label">handlers subscribed to FilterState.Changed</div></div>
+    <div class="bev-stat"><div class="bev-stat-value">@_notifications</div><div class="bev-stat-label">FilterState notifications since the store was created</div></div>
+    <div class="bev-stat"><div class="bev-stat-value">@_cartItems</div><div class="bev-stat-label">items in CartState · @_cartLines line(s)</div></div>
+</div>
+<div class="bev-section">
+    <div class="bev-section-title">Who listens to FilterState <span class="bev-muted" style="font-weight:normal">every PriceAlert shown on the Products page stays on this list after it is hidden (problem 16)</span></div>
+    <div class="bev-section-body">
+        <label class="bev-muted"><input type="checkbox" @bind="_compiledNames" /> compiled names</label>
+        @if (_subscribers.Length == 0)
+        {
+            <div class="bev-muted">Nothing is subscribed: open the Products page.</div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Handler</th><th class="bev-num">Subscriptions</th></tr></thead>
+                <tbody>
+                    @foreach (var group in _subscribers.GroupBy(Describe).OrderByDescending(g => g.Count()))
+                    {
+                        <tr><td class="bev-mono">@group.Key</td><td class="bev-num">@group.Count()</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>The panel's id: the descriptor's, and what a command passes to ShowPanel.</summary>
+    public const string Id = "demo-store";
+
+    private Delegate[] _subscribers = [];
+    private int _notifications;
+    private int _cartItems;
+    private int _cartLines;
+    private bool _compiledNames;
+
+    protected override void OnParametersSet()
+    {
+        _subscribers = Filter.Subscribers;
+        _notifications = Filter.Notifications;
+        _cartItems = Cart.ItemCount;
+        _cartLines = Cart.Lines.Count;
+    }
+
+    private string Describe(Delegate handler)
+    {
+        var method = handler.Method;
+        var type = method.DeclaringType;
+        // A lambda that captures locals is compiled into a nested closure class: name the class that wrote it.
+        while (type is { DeclaringType: not null } && type.Name.StartsWith('<'))
+        {
+            type = type.DeclaringType;
+        }
+
+        var owner = type?.Name ?? "?";
+        if (_compiledNames || !method.Name.StartsWith('<'))
+        {
+            return owner + "." + method.Name;
+        }
+
+        // "<OnInitialized>b__2_0" is a lambda written in OnInitialized.
+        return "lambda in " + owner + "." + method.Name[1..method.Name.IndexOf('>')];
+    }
+}

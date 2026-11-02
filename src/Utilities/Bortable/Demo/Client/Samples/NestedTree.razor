@@ -1,0 +1,44 @@
+﻿@* A tree of nested lists: NestedList renders a list of its own inside every item. *@
+
+<NestedList Items="_tree" OnTreeChanged="StateHasChanged" />
+
+<p class="demo-order"><strong>Tree:</strong> <span id="nested-order">@Describe(_tree)</span></p>
+
+@code {
+    private List<NestedItem> _tree = new()
+    {
+        new NestedItem
+        {
+            Name = "Item 1.1",
+            Children = new()
+            {
+                new NestedItem { Name = "Item 2.1" },
+                new NestedItem
+                {
+                    Name = "Item 2.2",
+                    Children = new()
+                    {
+                        new NestedItem { Name = "Item 3.1" },
+                        new NestedItem { Name = "Item 3.2" },
+                    }
+                },
+                new NestedItem { Name = "Item 2.3" },
+            }
+        },
+        new NestedItem { Name = "Item 1.2" },
+        new NestedItem
+        {
+            Name = "Item 1.3",
+            Children = new()
+            {
+                new NestedItem { Name = "Item 2.4" },
+                new NestedItem { Name = "Item 2.5" },
+            }
+        },
+        new NestedItem { Name = "Item 1.4" },
+    };
+
+    // "Item 1.1 [Item 2.1, Item 2.2 [Item 3.1, Item 3.2]], Item 1.2": every item, its children in brackets.
+    private static string Describe(List<NestedItem> items)
+        => string.Join(", ", items.Select(i => i.Children.Count == 0 ? i.Name : $"{i.Name} [{Describe(i.Children)}]"));
+}

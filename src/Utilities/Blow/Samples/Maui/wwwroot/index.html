@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <title>Blow samples (MAUI)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Blow does not inject its stylesheet, in a BlazorWebView any more than in a browser: without this link the
+         canvas, its nodes and its add-ons render unstyled. app.css comes after it, so the samples' own rules win. -->
+    <link rel="stylesheet" href="_content/Bit.Blow/bit-blow.css" />
+    <link rel="stylesheet" href="_content/Bit.Blow.Samples.Core/app.css" />
+    <!-- The app has no favicon; an empty one keeps the WebView from requesting /favicon.ico on every load. -->
+    <link rel="icon" href="data:," />
+</head>
+
+<body>
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <!-- No script tag for Blow: it ships its JavaScript as a static web asset and the canvas imports it itself. -->
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+
+</html>

@@ -137,6 +137,67 @@ public class BmProps
     /// </summary>
     public BmTransition? Transition { get; set; }
 
+    // ── Composition ───────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// A copy of these props with <paramref name="other"/>'s layered on top: every property <paramref name="other"/>
+    /// sets wins, every one it leaves unset keeps this one's value, <see cref="Css"/>/<see cref="CssVars"/> merge key
+    /// by key, and its <see cref="Transition"/> wins when it has one. Neither input is changed.
+    /// <code>
+    /// var hidden = Bm.To(opacity: 0).With(Bm.To(y: 20));   // opacity 0 and y 20
+    /// </code>
+    /// </summary>
+    public BmProps With(BmProps? other) => Merge(this, other) ?? new BmProps();
+
+    /// <summary>Layers <paramref name="over"/> onto <paramref name="under"/> - see <see cref="With"/>.</summary>
+    public static BmProps operator +(BmProps under, BmProps over) => under.With(over);
+
+    /// <summary>
+    /// <see cref="With"/> for possibly-absent targets: <c>null</c> only when both are, otherwise a fresh instance
+    /// (never one of the inputs, so callers can't alias a shared target).
+    /// </summary>
+    internal static BmProps? Merge(BmProps? under, BmProps? over)
+    {
+        if (under is null && over is null) return null;
+        var a = under ?? new BmProps();
+        var b = over ?? new BmProps();
+        return new BmProps
+        {
+            X = b.X ?? a.X, Y = b.Y ?? a.Y, Z = b.Z ?? a.Z,
+            Scale = b.Scale ?? a.Scale, ScaleX = b.ScaleX ?? a.ScaleX, ScaleY = b.ScaleY ?? a.ScaleY,
+            Rotate = b.Rotate ?? a.Rotate, RotateX = b.RotateX ?? a.RotateX, RotateY = b.RotateY ?? a.RotateY, RotateZ = b.RotateZ ?? a.RotateZ,
+            SkewX = b.SkewX ?? a.SkewX, SkewY = b.SkewY ?? a.SkewY,
+            Perspective = b.Perspective ?? a.Perspective,
+            OriginX = b.OriginX ?? a.OriginX, OriginY = b.OriginY ?? a.OriginY,
+            Opacity = b.Opacity ?? a.Opacity,
+            BackgroundColor = b.BackgroundColor ?? a.BackgroundColor, Color = b.Color ?? a.Color,
+            BorderColor = b.BorderColor ?? a.BorderColor, OutlineColor = b.OutlineColor ?? a.OutlineColor,
+            Fill = b.Fill ?? a.Fill, Stroke = b.Stroke ?? a.Stroke,
+            Width = b.Width ?? a.Width, Height = b.Height ?? a.Height,
+            BorderRadius = b.BorderRadius ?? a.BorderRadius, BoxShadow = b.BoxShadow ?? a.BoxShadow, Filter = b.Filter ?? a.Filter,
+            PathLength = b.PathLength ?? a.PathLength, PathOffset = b.PathOffset ?? a.PathOffset, PathSpacing = b.PathSpacing ?? a.PathSpacing,
+            Top = b.Top ?? a.Top, Left = b.Left ?? a.Left, Right = b.Right ?? a.Right, Bottom = b.Bottom ?? a.Bottom,
+            Margin = b.Margin ?? a.Margin, Padding = b.Padding ?? a.Padding, Gap = b.Gap ?? a.Gap,
+            LetterSpacing = b.LetterSpacing ?? a.LetterSpacing, LineHeight = b.LineHeight ?? a.LineHeight, FontSize = b.FontSize ?? a.FontSize,
+            ClipPath = b.ClipPath ?? a.ClipPath, BackgroundPosition = b.BackgroundPosition ?? a.BackgroundPosition,
+            BackgroundSize = b.BackgroundSize ?? a.BackgroundSize,
+            OffsetPath = b.OffsetPath ?? a.OffsetPath, OffsetDistance = b.OffsetDistance ?? a.OffsetDistance,
+            D = b.D ?? a.D,
+            CssVars = MergeMaps(a.CssVars, b.CssVars),
+            Css = MergeMaps(a.Css, b.Css),
+            Transition = b.Transition ?? a.Transition,
+        };
+
+        static Dictionary<string, TValue>? MergeMaps<TValue>(Dictionary<string, TValue>? under, Dictionary<string, TValue>? over)
+        {
+            if (under is null && over is null) return null;
+            var merged = under is null ? new Dictionary<string, TValue>() : new Dictionary<string, TValue>(under, under.Comparer);
+            if (over is not null)
+                foreach (var (key, value) in over) merged[key] = value;
+            return merged;
+        }
+    }
+
     // The extended string-valued props (layout/typography/misc), listed once so the runtime,
     // initial-style and instant-set paths all emit them consistently. EngineKey is the camelCase
     // key JS applies via style[key]; CssProp is the dash-case name for the initial inline style.
@@ -244,11 +305,17 @@ public class BmProps
     }
 
     /// <summary>
-    /// Enumerates every string-valued CSS declaration this target carries (all keyframes of each
-    /// string prop, plus CSS-var values) as <c>(prop, value)</c> pairs. Used by the opt-in
-    /// CSS-injection safe mode to validate values written verbatim into inline style.
+    /// Enumerates every string-valued CSS declaration this target can write (all keyframes of each
+    /// string prop, the free-form <see cref="Css"/> entries under the names they were given, and the
+    /// custom properties) as <c>(prop, value)</c> pairs. Used by the opt-in CSS-injection safe mode to
+    /// validate the names and values written verbatim into inline style.
+    /// <para>
+    /// It is the union of what the serializers write: a <see cref="Css"/> entry shadowing a typed prop
+    /// (<c>Css["backgroundColor"]</c> next to <see cref="BackgroundColor"/>) leaves one of the two in
+    /// <see cref="ToJsDictionary"/> but both in <see cref="ToCssStyleString"/>, so both are listed.
+    /// </para>
     /// </summary>
-    internal IEnumerable<(string Prop, string Value)> EnumerateCssStringValues()
+    internal IEnumerable<(string Prop, string? Value)> EnumerateCssDeclarations()
     {
         foreach (var pair in Frames("backgroundColor", BackgroundColor)) yield return pair;
         foreach (var pair in Frames("color", Color)) yield return pair;
@@ -271,9 +338,12 @@ public class BmProps
 
         if (CssVars != null)
             foreach (var kv in CssVars)
+            {
+                if (!kv.Key.StartsWith("--")) continue; // never written (see ToJsDictionary), so nothing to check
                 yield return (kv.Key, kv.Value);
+            }
 
-        static IEnumerable<(string, string)> Frames(string prop, BmStringKeyframes? k)
+        static IEnumerable<(string, string?)> Frames(string prop, BmStringKeyframes? k)
         {
             if (k is null) yield break;
             foreach (var f in k.Frames) yield return (prop, f);

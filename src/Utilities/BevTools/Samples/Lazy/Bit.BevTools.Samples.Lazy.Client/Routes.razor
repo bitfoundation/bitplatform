@@ -1,0 +1,8 @@
+﻿@* A plain router: nothing here loads Bit.BevTools.wasm. BevToolsLoader.OpenAsync does, when someone asks for the
+   tools, so no page waits for it. *@
+<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

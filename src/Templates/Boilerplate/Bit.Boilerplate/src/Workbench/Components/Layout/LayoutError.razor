@@ -1,0 +1,7 @@
+@inherits WorkbenchComponentBase
+
+<div class="layout-error" role="alert">
+    <BitIcon IconName="@BitIconName.ErrorBadge" Size="BitSize.Large" Color="BitColor.Error" />
+    <BitText Typography="BitTypography.Body1">@Localizer[nameof(WorkbenchStrings.PageFailed)]</BitText>
+    <BitButton IconName="@BitIconName.Refresh" OnClick="Reload">@Localizer[nameof(WorkbenchStrings.ReloadPage)]</BitButton>
+</div>

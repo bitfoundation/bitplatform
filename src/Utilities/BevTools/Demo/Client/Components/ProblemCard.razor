@@ -13,7 +13,7 @@
     @if (Href is not null)
     {
         <div class="bb-try">
-            <a class="btn btn-outline" href="@Href">Open @(DocsCatalog.FindByPath(Href)?.Title ?? Href) →</a>
+            <a class="btn btn-outline" href="@Href">Open @(PageName ?? DocsCatalog.FindByPath(Href)?.Title ?? Href) →</a>
         </div>
     }
 </div>
@@ -27,6 +27,9 @@
     [Parameter] public string Symptom { get; set; } = "";
 
     [Parameter] public string? Href { get; set; }
+
+    /// <summary>What the link calls its page when the page is not in the docs catalog (the planted account page).</summary>
+    [Parameter] public string? PageName { get; set; }
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

@@ -38,6 +38,18 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// The icon of the Add row button, from an external icon library. Takes precedence over
+    /// <see cref="AddRowIconName"/> when both are set, and is not applied to a grid that sets its own AddRowIcon or
+    /// AddRowIconName.
+    /// </summary>
+    public BitIconInfo? AddRowIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the Add row button, from the Fluent UI icon set.
+    /// </summary>
+    public string? AddRowIconName { get; set; }
+
+    /// <summary>
     /// Whether a third click on a sortable header removes its sort (ascending, descending, unsorted) instead of cycling between the two directions.
     /// </summary>
     public bool? AllowUnsorted { get; set; }
@@ -58,14 +70,62 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
     public BitDataGridClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The icon of the Clear filters button, from an external icon library. Takes precedence over
+    /// <see cref="ClearFiltersIconName"/> when both are set, and is not applied to a grid that sets its own ClearFiltersIcon or
+    /// ClearFiltersIconName.
+    /// </summary>
+    public BitIconInfo? ClearFiltersIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the Clear filters button, from the Fluent UI icon set.
+    /// </summary>
+    public string? ClearFiltersIconName { get; set; }
+
+    /// <summary>
     /// Lets Ctrl/Cmd+C on a focused cell copy the selected rows (or the focused one) as tab-separated text.
     /// </summary>
     public bool? ClipboardCopy { get; set; }
 
     /// <summary>
+    /// The icon of the Columns button, from an external icon library. Takes precedence over
+    /// <see cref="ColumnChooserIconName"/> when both are set, and is not applied to a grid that sets its own ColumnChooserIcon or
+    /// ColumnChooserIconName.
+    /// </summary>
+    public BitIconInfo? ColumnChooserIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the Columns button, from the Fluent UI icon set.
+    /// </summary>
+    public string? ColumnChooserIconName { get; set; }
+
+    /// <summary>
+    /// The icon of the CSV export button, from an external icon library. Takes precedence over
+    /// <see cref="CsvExportIconName"/> when both are set, and is not applied to a grid that sets its own CsvExportIcon or
+    /// CsvExportIconName.
+    /// </summary>
+    public BitIconInfo? CsvExportIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the CSV export button, from the Fluent UI icon set.
+    /// </summary>
+    public string? CsvExportIconName { get; set; }
+
+    /// <summary>
     /// The content shown in place of the rows when there are none.
     /// </summary>
     public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// The icon of the Excel export button, from an external icon library. Takes precedence over
+    /// <see cref="ExcelExportIconName"/> when both are set, and is not applied to a grid that sets its own ExcelExportIcon
+    /// or ExcelExportIconName.
+    /// </summary>
+    public BitIconInfo? ExcelExportIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the Excel export button, from the Fluent UI icon set.
+    /// </summary>
+    public string? ExcelExportIconName { get; set; }
 
     /// <summary>
     /// Bakes the grid's rendered colors and fonts into the Excel export.
@@ -238,6 +298,11 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
     public BitDataGridClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Renders the toolbar's buttons as icons alone, their text naming them for assistive tech and shown as tooltips.
+    /// </summary>
+    public bool? ToolbarIconOnly { get; set; }
+
+    /// <summary>
     /// Whether the nodes of a tree grid start expanded.
     /// </summary>
     public bool? TreeInitiallyExpanded { get; set; }
@@ -266,6 +331,16 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDataGrid);
 
+        if (AddRowIcon is not null)
+        {
+            bitDataGrid.TakeFromCascade(nameof(AddRowIcon), AddRowIcon, static d => d.AddRowIcon, static (d, v) => d.AddRowIcon = v);
+        }
+
+        if (AddRowIconName.HasValue())
+        {
+            bitDataGrid.TakeFromCascade(nameof(AddRowIconName), AddRowIconName, static d => d.AddRowIconName, static (d, v) => d.AddRowIconName = v);
+        }
+
         if (AllowUnsorted.HasValue)
         {
             bitDataGrid.TakeFromCascade(nameof(AllowUnsorted), AllowUnsorted.Value, static d => d.AllowUnsorted, static (d, v) => d.AllowUnsorted = v);
@@ -286,14 +361,54 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
             bitDataGrid.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
+        if (ClearFiltersIcon is not null)
+        {
+            bitDataGrid.TakeFromCascade(nameof(ClearFiltersIcon), ClearFiltersIcon, static d => d.ClearFiltersIcon, static (d, v) => d.ClearFiltersIcon = v);
+        }
+
+        if (ClearFiltersIconName.HasValue())
+        {
+            bitDataGrid.TakeFromCascade(nameof(ClearFiltersIconName), ClearFiltersIconName, static d => d.ClearFiltersIconName, static (d, v) => d.ClearFiltersIconName = v);
+        }
+
         if (ClipboardCopy.HasValue)
         {
             bitDataGrid.TakeFromCascade(nameof(ClipboardCopy), ClipboardCopy.Value, static d => d.ClipboardCopy, static (d, v) => d.ClipboardCopy = v);
         }
 
+        if (ColumnChooserIcon is not null)
+        {
+            bitDataGrid.TakeFromCascade(nameof(ColumnChooserIcon), ColumnChooserIcon, static d => d.ColumnChooserIcon, static (d, v) => d.ColumnChooserIcon = v);
+        }
+
+        if (ColumnChooserIconName.HasValue())
+        {
+            bitDataGrid.TakeFromCascade(nameof(ColumnChooserIconName), ColumnChooserIconName, static d => d.ColumnChooserIconName, static (d, v) => d.ColumnChooserIconName = v);
+        }
+
+        if (CsvExportIcon is not null)
+        {
+            bitDataGrid.TakeFromCascade(nameof(CsvExportIcon), CsvExportIcon, static d => d.CsvExportIcon, static (d, v) => d.CsvExportIcon = v);
+        }
+
+        if (CsvExportIconName.HasValue())
+        {
+            bitDataGrid.TakeFromCascade(nameof(CsvExportIconName), CsvExportIconName, static d => d.CsvExportIconName, static (d, v) => d.CsvExportIconName = v);
+        }
+
         if (EmptyTemplate is not null)
         {
             bitDataGrid.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static d => d.EmptyTemplate, static (d, v) => d.EmptyTemplate = v);
+        }
+
+        if (ExcelExportIcon is not null)
+        {
+            bitDataGrid.TakeFromCascade(nameof(ExcelExportIcon), ExcelExportIcon, static d => d.ExcelExportIcon, static (d, v) => d.ExcelExportIcon = v);
+        }
+
+        if (ExcelExportIconName.HasValue())
+        {
+            bitDataGrid.TakeFromCascade(nameof(ExcelExportIconName), ExcelExportIconName, static d => d.ExcelExportIconName, static (d, v) => d.ExcelExportIconName = v);
         }
 
         if (ExcelExportStyled.HasValue)
@@ -464,6 +579,11 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
         if (Styles is not null)
         {
             bitDataGrid.TakeFromCascade(nameof(Styles), Styles, static d => d.Styles, static (d, v) => d.Styles = v);
+        }
+
+        if (ToolbarIconOnly.HasValue)
+        {
+            bitDataGrid.TakeFromCascade(nameof(ToolbarIconOnly), ToolbarIconOnly.Value, static d => d.ToolbarIconOnly, static (d, v) => d.ToolbarIconOnly = v);
         }
 
         if (TreeInitiallyExpanded.HasValue)

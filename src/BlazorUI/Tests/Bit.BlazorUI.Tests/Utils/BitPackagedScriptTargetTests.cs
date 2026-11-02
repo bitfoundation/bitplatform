@@ -17,6 +17,7 @@ public sealed partial class BitPackagedScriptTargetTests
     [DataRow("Bit.BlazorUI")]
     [DataRow("Bit.BlazorUI.Extras")]
     [DataRow("Bit.BlazorUI.Legacy")]
+    [DataRow("Bit.BlazorUI.AI")]
     public void EveryMinifiedScriptShouldBeHeldToTheTargetTsconfigCompilesTo(string project)
     {
         var tsconfig = SourceFiles.Read(project, "tsconfig.json");

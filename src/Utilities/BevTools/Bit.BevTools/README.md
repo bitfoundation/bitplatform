@@ -39,5 +39,5 @@ and value formatters, write events with `IBevToolsTimeline`, and mark members wi
 `[BevToolsIgnore]`. The application registers an extension with
 `services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()))`.
 
-Targets .NET 8, 9 and 10; the UI-event render causes and the framework timings need .NET 10, and the About panel says
+Targets .NET 10 and 11; the UI-event render causes and the framework timings need .NET 10, and the About panel says
 which capabilities this app has and why. Full guide: https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools

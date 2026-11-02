@@ -170,6 +170,19 @@ public class SelfUpdateTests
         Assert.IsEmpty(source.Runner.Detached);
     }
 
+    [TestMethod]
+    public async Task BitUpdate_Should_SayHowToUpdateAToolPathInstall()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Services.SelfUpdate = new SelfUpdate(host.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = true, InstallMethod = "tool-path", BaseDirectory = "/home/me/bin/.store/bit.cli/1.6.2/bit.cli/1.6.2/tools/net10.0/any/" };
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "1.7.0" })));
+
+        Assert.AreEqual(0, await host.RunAsync("update"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "bit 1.7.0 is out. Update it with: dotnet tool update Bit.Cli --tool-path /home/me/bin --version 1.7.0");
+        Assert.IsEmpty(host.Runner.Detached);
+    }
+
     private static async Task AssertStaysAsync(Func<TestHost, SelfUpdate> update, Dictionary<string, string>? variables = null, params string[] extra)
     {
         using var host = new TestHost(HostOs.Linux, variables);

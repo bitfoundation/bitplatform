@@ -5,7 +5,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <!-- Always single-targeted, whatever a build passes down: a publish that narrows every project with
-             -p:TargetFrameworks=net10.0 (the harness publish gate does) would otherwise retarget an analyzer
+             -p:TargetFrameworks=net11.0 (the harness publish gate does) would otherwise retarget an analyzer
              that only ever runs inside the compiler. TreatAsLocalProperty above is what lets this win. -->
         <TargetFrameworks></TargetFrameworks>
         <!-- Roslyn source generator. It is not a package of its own: Bit.Blex packs this project's output

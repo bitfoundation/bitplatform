@@ -61,7 +61,7 @@
                         ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
                         : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
                      Transition="Bm.Tween(0.8, BmEase.InOut)">
-                <div class="box" />
+                <div class="box box-solid" />
             </Bmotion>
         </div>
 
@@ -72,7 +72,7 @@
                             ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
                             : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
                          Transition="Bm.Tween(0.8, BmEase.InOut)">
-                    <div class="box" />
+                    <div class="box box-solid" />
                 </Bmotion>
             </BmotionConfig>
         </div>
@@ -151,17 +151,24 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Knowing what the runtime can do</h3>
     <p>
         Rather than guessing which render mode you are in, inject <strong>BmotionCapabilities</strong>.
-        On Blazor Server there is no synchronous interop, so the per-frame loop cannot run: inertia,
-        colour interpolation, keyframe arrays and motion values collapse to instant state changes,
-        while compositor-eligible animations still play normally. Drag still works, but follows the
-        pointer a round trip behind - immediate pointer response needs WebAssembly. Detect it and
-        offer a different affordance instead of shipping a control that does not feel the way you meant.
+        On Blazor Server there is no synchronous interop, so the per-frame loop cannot run. The browser
+        still plays almost everything there: transforms, opacity, colours, sizes, filters, keyframes,
+        springs, inertia and arcs all animate. What only the loop can play, per-frame callbacks and SVG
+        path morphs, lands on its target at once. Drag works, but follows the pointer a round trip
+        behind, so immediate pointer response needs WebAssembly. Detect it and offer a different
+        affordance instead of shipping a control that does not feel the way you meant.
+        <code>SupportsCompositor</code> is true everywhere - the browser's Web Animations API is what plays most
+        animations on both runtimes. <code>IsPrerendering</code> is true during the server's prerender pass,
+        when nothing animates and the other two describe the server rather than the runtime that takes over -
+        so check it first. (This page is prerendered too: the badges below were briefly the server's before
+        WebAssembly took over.)
     </p>
 
     <div class="demo-row">
         <div class="demo-card stack">
             <span class="demo-label">This runtime</span>
             <div class="caps-list">
+                <span class="bb-badge">IsPrerendering: @Caps.IsPrerendering</span>
                 <span class="bb-badge">SupportsFrameLoop: @Caps.SupportsFrameLoop</span>
                 <span class="bb-badge">SupportsCompositor: @Caps.SupportsCompositor</span>
             </div>
@@ -197,7 +204,8 @@
         anywhere in a development build and it lists every element registered with the engine, its
         active drivers and its live values. It is the answer to "is this element animating, and
         what does the engine think its transform is?" - a question that is otherwise very hard to
-        ask from the outside.
+        ask from the outside. <code>RefreshMs</code> sets how often it polls the engine (200&nbsp;ms by default)
+        and <code>StartOpen="false"</code> starts it collapsed to its title bar.
     </p>
 
     <div class="bb-toolbar">
@@ -233,11 +241,20 @@
 
     private readonly double[] _speeds = [1, 0.35, 0.1];
 
+    private long _lastFrameRender;
+
     // Plain delegate, not an EventCallback: this runs inside the engine's frame loop, so it must
-    // not re-render per frame. Here it only reads the transform into a field that the *next*
-    // ordinary render happens to pick up.
+    // not re-render per frame. It reads the transform into a field on every frame and throttles
+    // to state - a render ten times a second shows the readout live at a fraction of the cost.
     private void OnFrame(IReadOnlyDictionary<string, string> css)
-        => _lastFrame = css.TryGetValue("transform", out var t) ? t : string.Join("; ", css.Values);
+    {
+        _lastFrame = css.TryGetValue("transform", out var t) ? t : string.Join("; ", css.Values);
+
+        var now = Environment.TickCount64;
+        if (now - _lastFrameRender < 100) return;
+        _lastFrameRender = now;
+        _ = InvokeAsync(StateHasChanged);
+    }
 
     private const string _modesCode = """
         // Program.cs - pick the policy once.
@@ -259,7 +276,7 @@
                         ? Bm.To(x: 60, rotate: 180, backgroundColor: "#FD7F36")
                         : Bm.To(x: -60, rotate: 0, backgroundColor: "#1276C6"))'
                      Transition="Bm.Tween(0.8, BmEase.InOut)">
-                <div class="box" />
+                <div class="box" style="background:#1276C6" />
             </Bmotion>
         </BmotionConfig>
 
@@ -308,18 +325,29 @@
         @using Bit.Bmotion
         @inject BmotionCapabilities Caps
 
-        @* SupportsFrameLoop is false on Blazor Server, where inertia, colour interpolation and
-           keyframe arrays degrade to instant state changes and drag follows the pointer a round trip
-           behind. Branch on it rather than shipping a control that doesn't feel the way you meant. *@
-        @if (Caps.SupportsFrameLoop)
+        @* SupportsFrameLoop is false on Blazor Server, where drag follows the pointer a round trip
+           behind and per-frame callbacks and SVG path morphs land at once. Branch on it rather than
+           shipping a control that doesn't feel the way you meant - after IsPrerendering, which is
+           true while the server prerenders and makes the other flags describe the server. *@
+        @if (Caps.IsPrerendering)
+        {
+            <div class="box" />
+        }
+        else if (Caps.SupportsFrameLoop)
         {
             <Bmotion Drag="true"><div class="box" /></Bmotion>
         }
         else
         {
-            @* Drag works here too, a round trip behind the pointer; offer a more immediate control alongside it. *@
-            <Bmotion Drag="true"><div class="box" /></Bmotion>
-            <p>Dragging responds instantly only on Blazor WebAssembly - the buttons move it too.</p>
+            @* Drag works here too: the browser keeps the element under the pointer, and .NET follows a
+               round trip behind. Buttons serve whoever finds that lag gets in the way. *@
+            <Bmotion @ref="_box" Drag="true"><div class="box" /></Bmotion>
+            <button @onclick="@(() => _box.AnimateAsync(Bm.To(x: -80)).AsTask())">◀</button>
+            <button @onclick="@(() => _box.AnimateAsync(Bm.To(x: 80)).AsTask())">▶</button>
+        }
+
+        @code {
+            private Bmotion _box = default!;
         }
         """;
 
@@ -333,16 +361,27 @@
                  OnUpdate="OnFrame">
             <div class="box" />
         </Bmotion>
+        <code>@_lastFrame</code>
 
         @* The whole engine at once: every registered element, its active drivers and live values.
-           Drop it into a development build. *@
-        <BmotionInspector RefreshMs="120" />
+           Drop it into a development build. RefreshMs is the polling interval (default 200);
+           StartOpen="false" starts it collapsed. *@
+        <BmotionInspector RefreshMs="120" StartOpen="true" />
 
         @code {
             private string _lastFrame = "";
+            private long _lastRender;
 
+            // Every frame updates the field; a render at most ten times a second shows it.
             private void OnFrame(IReadOnlyDictionary<string, string> css)
-                => _lastFrame = css.TryGetValue("transform", out var t) ? t : "";
+            {
+                _lastFrame = css.TryGetValue("transform", out var t) ? t : "";
+
+                var now = Environment.TickCount64;
+                if (now - _lastRender < 100) return;
+                _lastRender = now;
+                _ = InvokeAsync(StateHasChanged);
+            }
         }
         """;
 }

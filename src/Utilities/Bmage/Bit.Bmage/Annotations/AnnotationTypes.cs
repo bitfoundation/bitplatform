@@ -458,11 +458,16 @@ public enum RedactionMode
 /// </summary>
 public sealed record RedactionAnnotation : Annotation
 {
+    private const float DefaultStrength = 12f;
+
+    /// <summary>A block or radius this large already reaches past any image, so a larger one hides no differently.</summary>
+    private const float MaxStrength = 1e8f;
+
     public required RectangleF Rectangle { get; init; }
     public RedactionMode Mode { get; init; } = RedactionMode.Solid;
     public Rgba32 Color { get; init; } = Rgba32.Black;
     /// <summary>Block size for <see cref="RedactionMode.Pixelate"/> or radius for <see cref="RedactionMode.Blur"/>.</summary>
-    public float Strength { get; init; } = 12f;
+    public float Strength { get; init; } = DefaultStrength;
 
     public override string Kind => "Redaction";
     public override RectangleF GetBounds() => Rectangle;
@@ -523,9 +528,12 @@ public sealed record RedactionAnnotation : Annotation
     /// <summary>Pixelates or blurs a region of a buffer in place.</summary>
     private void Redact(ImageBuffer buffer, System.Drawing.Rectangle region, Operations.OperationContext context)
     {
+        // The strength comes from a document, or from scaling one, so it can be infinite or not a number at all. It is
+        // clamped rather than left to fail the render, and one that is not a number hides as much as the default does.
+        var strength = float.IsNaN(Strength) ? DefaultStrength : Math.Clamp(Strength, 1f, MaxStrength);
         Operations.IImageOperation filter = Mode == RedactionMode.Pixelate
-            ? new PixelateFilter(Math.Max(2, (int)Strength), region)
-            : new BlurFilter(Math.Max(1f, Strength), region);
+            ? new PixelateFilter(Math.Max(2, (int)strength), region)
+            : new BlurFilter(strength, region);
         filter.Apply(buffer, context.WithProgress(null).WithMutation(true));
     }
 

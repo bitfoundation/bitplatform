@@ -1,0 +1,59 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root, on an ancestor or on
+// the Style of an approval prompt reaches every approval prompt under it:
+//   --bit-AiToolApproval-color                    text of the question                        (default: $clr-fg-pri)
+//   --bit-AiToolApproval-background               surface of the prompt                       (default: $clr-wrn-tint)
+//   --bit-AiToolApproval-destructive-background   surface of the prompt of a destructive tool (default: $clr-err-tint)
+//   --bit-AiToolApproval-radius                   corner radius of the prompt                 (default: $shp-radius-surface)
+//   --bit-AiToolApproval-padding                  inset of the prompt                         (default: spacing(1.5))
+//   --bit-AiToolApproval-gap                      room between the question and the buttons  (default: spacing(1))
+//
+// The buttons are BitButtons, restyled through the --bit-Button-* variables (or Classes / Styles): the decline and
+// the always-allow ones are drawn as Tertiary outlines, the allow one in the primary role - or the error role, for a
+// tool declared destructive - each through the host-default class, so those variables still reach them.
+
+.bit-aitap {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: $tg-fs-sm;
+    font-family: $tg-font-family;
+    gap: var(--bit-AiToolApproval-gap, #{spacing(1)});
+    padding: var(--bit-AiToolApproval-padding, #{spacing(1.5)});
+    color: var(--bit-AiToolApproval-color, #{$clr-fg-pri});
+    background-color: var(--bit-AiToolApproval-background, #{$clr-wrn-tint});
+    border-radius: var(--bit-AiToolApproval-radius, #{$shp-radius-surface});
+}
+
+// A tool that cannot be undone is asked about on a surface of the error role, which is what sets the prompt apart
+// before its words are read.
+.bit-aitap-dst {
+    background-color: var(--bit-AiToolApproval-destructive-background, #{$clr-err-tint});
+}
+
+// The question takes the line the buttons leave it, down to a width it can still be read at; below that the buttons
+// wrap onto a line of their own.
+.bit-aitap-txt {
+    min-width: 0;
+    flex: 1 1 spacing(24);
+    overflow-wrap: anywhere;
+}
+
+.bit-aitap-act {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bit-AiToolApproval-gap, #{spacing(1)});
+}
+
+// A forced palette takes the tint away, so the prompt is outlined instead of being left as text on the page - drawn
+// inside its box, so nothing around it moves.
+@media (forced-colors: active) {
+    .bit-aitap {
+        outline: $shp-border-width solid CanvasText;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+}

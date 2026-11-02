@@ -1,0 +1,43 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The content is rendered with no element of the boundary's own around it, so a boundary changes nothing about the
+   layout of what it protects. The root is the notice that stands in for the content once it has failed, which is
+   where the Class, the Style, the Id and the splatted attributes land - the way BitErrorBoundary does it. *@
+@RenderBoundary()
+
+@code {
+    // The error boundary is an internal component, which a tag in markup cannot name, so it is written out here. Its key
+    // is what retries content that failed: a new boundary replaces the one that failed (see BitAiRendererErrorBoundary).
+    private RenderFragment RenderBoundary() => __builder =>
+    {
+        __builder.OpenComponent<BitAiRendererErrorBoundary>(0);
+        __builder.SetKey(_generation);
+        __builder.AddComponentParameter(1, nameof(ErrorBoundary.ChildContent), ChildContent);
+        __builder.AddComponentParameter(2, nameof(ErrorBoundary.ErrorContent), (RenderFragment<Exception>)RenderNotice);
+        __builder.AddComponentReferenceCapture(3, boundary => _boundary = (BitAiRendererErrorBoundary)boundary);
+        __builder.CloseComponent();
+    };
+
+    // The message of the exception is the title of the tag rather than its text: what the reader needs is which piece
+    // failed, and the message, written for a developer, is there for whoever points at the tag. The notice is a span
+    // (laid out as a block by its stylesheet), as the tag in it is, so it is phrasing content: a boundary around inline
+    // content - a math expression or a citation chip in a paragraph - stands where a div would close the paragraph
+    // early once the markup is parsed, as a prerendered page is.
+    private RenderFragment RenderNotice(Exception exception) => __builder =>
+    {
+        <span @ref="RootElement" @attributes="HtmlAttributes"
+              id="@_Id"
+              style="@StyleBuilder.Value"
+              class="@ClassBuilder.Value"
+              dir="@Dir?.ToString().ToLower()">
+            <BitTag IconName="Warning"
+                    Text="@(Label ?? Strings.RenderFailed)"
+                    Title="@exception.Message"
+                    Color="BitColor.Error"
+                    Variant="BitVariant.Outline"
+                    Styles="@Styles?.Notice"
+                    Classes="@Classes?.Notice" />
+        </span>
+    };
+}

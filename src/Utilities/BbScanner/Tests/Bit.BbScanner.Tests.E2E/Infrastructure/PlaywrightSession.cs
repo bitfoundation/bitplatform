@@ -53,7 +53,7 @@ public static class PlaywrightSession
         if (launch is null)
         {
             playwright.Dispose();
-            return Session.Fail("no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install chromium', or install Chrome or Edge.");
+            return Session.Fail("no Chromium-based browser could be launched. Run 'pwsh bin/<configuration>/net11.0/playwright.ps1 install chromium', or install Chrome or Edge.");
         }
 
         var clips = CameraClips.Write();

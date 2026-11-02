@@ -295,6 +295,23 @@ public class EnumOptionTests
     [TestMethod]
     public void Plain_enums_stay_single_selects()
         => Assert.AreEqual(BormFieldType.Select, BormSchemaGenerator.Generate<TypedModel>().FindField("Priority")!.Type);
+
+    [TestMethod]
+    public void A_list_of_enum_members_offers_the_enums_members_from_the_typed_builder_as_from_the_generator()
+    {
+        // The builder made the list a multi-select but gave it no choices: a label over an empty group.
+        var built = BormBuilder.For<DaysModel>().Field(x => x.Days).Build().FindField("Days")!;
+        var generated = BormSchemaGenerator.Generate<DaysModel>().FindField("Days")!;
+
+        Assert.AreEqual(BormFieldType.MultiSelect, built.Type);
+        Assert.AreSequenceEqual(generated.Options.Select(o => o.Value), built.Options.Select(o => o.Value));
+        Assert.AreEqual(7, built.Options.Count);
+    }
+
+    private sealed class DaysModel
+    {
+        public List<DayOfWeek> Days { get; set; } = [];
+    }
 }
 
 [TestClass]

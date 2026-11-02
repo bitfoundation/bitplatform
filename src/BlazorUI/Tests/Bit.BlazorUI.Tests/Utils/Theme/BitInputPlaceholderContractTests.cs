@@ -213,5 +213,5 @@ public sealed class BitInputPlaceholderContractTests
         => ComponentFolders().SelectMany(folder => Directory.EnumerateFiles(folder, "*.scss", SearchOption.AllDirectories));
 
     private static IEnumerable<string> ComponentFolders()
-        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }.Select(project => SourceFiles.GetDirectory(project, "Components"));
+        => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.AI" }.Select(project => SourceFiles.GetDirectory(project, "Components"));
 }

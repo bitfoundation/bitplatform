@@ -129,7 +129,7 @@
     --bit-ctp-tlb-minwidth: #{spacing(32.5)};
 }
 
-$ctp-private-properties: rl-clr, rl-text, rl-focus, inp-h, inp-fs, lbl-fs, clk-size, num-size, txt-fontsize,
+$ctp-private-properties: rl-clr, rl-fg, rl-text, rl-focus, inp-h, inp-fs, lbl-fs, clk-size, num-size, txt-fontsize,
                          apb-fontsize, apk-fontsize, num-fontsize, thb-size, thb-size-min;
 
 .bit-ctp,
@@ -834,7 +834,7 @@ span.bit-ctp-txt {
     font-family: $tg-font-family;
     font-size: var(--bit-CircularTimePicker-action-font-size, #{$tg-fs-sm});
     border-radius: var(--bit-CircularTimePicker-border-radius, #{$shp-radius-control});
-    color: var(--bit-ctp-rl-clr, var(--bit-CircularTimePicker-action-color, var(--bit-ctp-clr)));
+    color: var(--bit-ctp-rl-fg, var(--bit-CircularTimePicker-action-color, var(--bit-ctp-clr)));
 
     // The states change the variable the button is painted from rather than its background, so only the rule
     // at rest paints it: a button the app paints through Classes keeps that paint under the pointer and while
@@ -1071,10 +1071,13 @@ span.bit-ctp-txt {
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only
 // by an explicit Color, and read ahead of the public variables, so a choice outranks the variable that
-// restyles the default.
+// restyles the default. The label of an action button is read on the callout rather than over the role's
+// fill, so it takes the role's text color (role-text): a secondary or a warning main is picked to fill a
+// surface and falls under the 4.5:1 of body text on white.
 @each $role, $tokens in $bit-color-roles {
     .bit-ctp-#{$role} {
         --bit-ctp-rl-clr: #{role($tokens, main)};
+        --bit-ctp-rl-fg: #{role-text($role, $tokens)};
         --bit-ctp-rl-text: #{role($tokens, on)};
         --bit-ctp-rl-focus: #{role($tokens, focus)};
     }

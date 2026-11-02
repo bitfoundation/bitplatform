@@ -146,7 +146,9 @@
                of the input, so the required state is written out rather than left to the required attribute
                that role supersedes.
                data-bit-esc claims the Escape that clears the field (see Utils.claimEscape), so a dialog around it
-               does not close on that same press. *@
+               does not close on that same press.
+               data-bit-focus-value is the plain number a NumberFormat is edited as, which the browser swaps in as
+               the focus comes in (see GetInputValueAsString). *@
             <input @ref="InputElement" @attributes="@InputHtmlAttributes"
                    @onblur="HandleOnBlur"
                    @onclick="HandleOnClick"
@@ -156,13 +158,14 @@
                    @onfocusin="HandleOnFocusIn"
                    @onfocusout="HandleOnFocusOut"
                    @onwheel="HandleOnMouseWheel"
-                   @bind-value:get="@GetDisplayValueAsString()"
+                   @bind-value:get="@GetInputValueAsString()"
                    @bind-value:set="@HandleOnStringValueSet"
                    @bind-value:event="@(Immediate ? "oninput" : "onchange")"
                    name="@Name"
                    id="@_inputId"
                    readonly="@(ReadOnly || IsInputReadOnly)"
                    data-bit-esc="@(ClearsOnEscape() ? "claim" : null)"
+                   data-bit-focus-value="@GetPlainText()"
                    required="@Required"
                    style="@Styles?.Input"
                    autofocus="@AutoFocus"

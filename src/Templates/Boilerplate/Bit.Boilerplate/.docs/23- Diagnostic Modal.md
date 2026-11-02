@@ -1,6 +1,6 @@
 # Stage 23: Diagnostic Modal
 
-The **Diagnostic Modal** is an incredibly powerful built-in troubleshooting tool that provides developers and support teams with comprehensive runtime information about the application. The modal itself is available in **all environments** (Development, Staging, and Production) and on **all platforms** (Web, Android, iOS, Windows, macOS). Its **log list** additionally needs the `DiagnosticLogger` provider, which is registered on the client runtimes (Blazor WebAssembly, MAUI, Windows) in every environment, and on a Blazor Server host only in Development.
+The **Diagnostic Modal** is an incredibly powerful built-in troubleshooting tool that provides developers and support teams with comprehensive runtime information about the application. The modal itself is available in **all environments** (Development, Staging, and Production) and on **all platforms** (Web, Android, iOS, Windows, macOS). Its **log list** additionally needs the `DiagnosticLogger` provider, which is registered on the client runtimes (Blazor WebAssembly, MAUI, Windows) in every environment, and on a Blazor Server host only in Development. On that Development host the list is the server's own, shared by every visitor, and the dev launch profile listens on every network interface (`http://*:5030`), so anyone on your network who opens the modal can read the server's logs, reset and confirmation links included.
 
 ## What is the Diagnostic Modal?
 
@@ -120,6 +120,7 @@ The two are meant to read almost identically, so the page shows one at a time: t
 
 #### ♻️ **Call GC** (Non-Browser Platforms Only)
 - Forces garbage collection on .NET MAUI and Windows platforms
+- In Blazor Server the button shows only in Development: there any visitor who opens the modal can force a full garbage collection on the server, outside Development nobody can
 - Shows memory usage **before** and **after** GC using SnackBar notifications
 - Performs aggressive GC with compaction:
   ```csharp

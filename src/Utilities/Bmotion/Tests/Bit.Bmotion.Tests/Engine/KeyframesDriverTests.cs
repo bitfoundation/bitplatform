@@ -276,7 +276,7 @@ public class ColorKeyframesDriverTests
         driver.Tick(0);
         driver.Tick(400); // t=1.0 → last frame is blue
 
-        Assert.AreEqual("rgba(0,0,255,1)", lastValue);
+        Assert.AreEqual("#0000ff", lastValue); // the authored last frame
     }
 
     [TestMethod]
@@ -336,9 +336,9 @@ public class ColorKeyframesDriverTests
 
         driver.Tick(0);   // → rgba(0,0,0,1)
         driver.Tick(300); // → rgba(255,255,255,1), mirrors
-        driver.Tick(600); // reversed pass end → rgba(0,0,0,1)
+        driver.Tick(600); // reversed pass end → the first frame, as authored
 
-        Assert.AreEqual("rgba(0,0,0,1)", lastValue);
+        Assert.AreEqual("#000000", lastValue);
     }
 
     // ── Reverse repeat ────────────────────────────────────────────────────────
@@ -360,9 +360,9 @@ public class ColorKeyframesDriverTests
 
         driver.Tick(0);   // → rgba(0,0,0,1)
         driver.Tick(300); // forward pass end → rgba(255,255,255,1), reverses
-        driver.Tick(600); // reversed pass end → rgba(0,0,0,1)
+        driver.Tick(600); // reversed pass end → the first frame, as authored
 
-        Assert.AreEqual("rgba(0,0,0,1)", lastValue);
+        Assert.AreEqual("#000000", lastValue);
     }
 
     [TestMethod]

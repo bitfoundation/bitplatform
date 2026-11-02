@@ -33,6 +33,7 @@ public static class Prerenderer
         services.AddBitBlazorUIServices();
         services.AddBitBlazorUIExtrasServices();
         services.AddBitBlazorUILegacyServices();
+        services.AddBitBlazorUIAIServices();
         configureServices?.Invoke(services);
 
         await using var provider = services.BuildServiceProvider();

@@ -35,10 +35,12 @@ public sealed class BormModelDataAccessor : IBormDataAccessor
     {
         var segments = BormPath.Parse(path);
         object? current = Root;
-        foreach (var seg in segments)
+        // Indexed, not foreach: through the interface, every read would box the list's enumerator. This
+        // is the read beneath every condition, computed value and render.
+        for (var i = 0; i < segments.Count; i++)
         {
             if (current is null) return null;
-            current = ReadSegment(current, seg);
+            current = ReadSegment(current, segments[i]);
         }
         return current;
     }
@@ -59,8 +61,9 @@ public sealed class BormModelDataAccessor : IBormDataAccessor
         }
 
         object? current = Root;
-        foreach (var seg in segments)
+        for (var i = 0; i < segments.Count; i++)
         {
+            var seg = segments[i];
             // The path continues past something that is not there, so it cannot be resolved.
             if (current is null) return false;
 
@@ -165,8 +168,9 @@ public sealed class BormModelDataAccessor : IBormDataAccessor
     {
         var segments = BormPath.Parse(path);
         Type? currentType = Root!.GetType();
-        foreach (var seg in segments)
+        for (var i = 0; i < segments.Count; i++)
         {
+            var seg = segments[i];
             if (currentType is null) return null;
             currentType = seg.IsIndex
                 ? BormFieldTypeResolver.GetEnumerableElementType(currentType)
@@ -239,7 +243,7 @@ public sealed class BormModelDataAccessor : IBormDataAccessor
     {
         if (seg.IsIndex)
         {
-            if (target is not IList list) { LastWriteFailed = true; return; }
+            if (target is not IList list || seg.Index - list.Count > BormPath.MaxPadding) { LastWriteFailed = true; return; }
 
             var elementType = BormFieldTypeResolver.GetEnumerableElementType(target.GetType()) ?? typeof(object);
             if (!BormValueConverter.TryCoerce(value, elementType, out var converted))

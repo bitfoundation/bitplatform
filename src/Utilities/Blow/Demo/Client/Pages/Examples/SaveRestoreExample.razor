@@ -1,23 +1,154 @@
 ﻿@page "/examples/save-restore"
+@using System.Text.Json.Nodes
 @inject IJSRuntime JS
 
 <PageTitle>Save & Restore · Blow</PageTitle>
 
 <ExampleScaffold Title="Save & Restore"
-                 Summary="Persist the flow (nodes, edges and viewport) to the browser's local storage and reload it later. Move some nodes, Save, change things, then Restore.">
+                 Summary="Save the flow - nodes, edges, viewport and custom node data - as a versioned JSON document and load it back: to local storage with the canvas's ToJson and LoadJsonAsync, to a file with BlowSerializer and a BlowDocument. Loading never throws: every problem comes back with a code and the place in the file, and a React Flow object can be brought in and sent back.">
     <Toolbar>
+        <span class="sr-group">Local storage</span>
         <button class="btn btn-primary" @onclick="Save">Save</button>
         <button class="btn btn-secondary" @onclick="Restore">Restore</button>
+
+        <span class="sr-group">File</span>
+        @if (_json is not null)
+        {
+            <a class="btn btn-secondary" download="flow.blow.json" href="@DataUrl(_json)">Download</a>
+        }
+        else
+        {
+            @* Without an href a link is neither focusable nor clickable; with "#" the download attribute would save the page. *@
+            <a class="btn btn-secondary sr-disabled" aria-disabled="true" title="The graph cannot be saved as it is: see the preview under the canvas.">Download</a>
+        }
+        <label class="btn btn-secondary sr-upload">
+            Upload
+            <InputFile accept=".json,application/json" OnChange="Upload" />
+        </label>
+        <label>
+            Sample
+            <select @bind="_sample">
+                @for (var i = 0; i < Samples.Length; i++)
+                {
+                    <option value="@i">@Samples[i].Name</option>
+                }
+            </select>
+        </label>
+        <button class="btn btn-secondary" @onclick="LoadSample">Load sample</button>
+
+        <span class="sr-group">React Flow</span>
+        <button class="btn btn-secondary" @onclick="ImportReactFlow">Import an object</button>
+        @if (_reactFlowJson is not null)
+        {
+            <a class="btn btn-secondary" download="flow.reactflow.json" href="@DataUrl(_reactFlowJson)">Export</a>
+        }
+        else
+        {
+            <a class="btn btn-secondary sr-disabled" aria-disabled="true" title="The graph cannot be saved as it is: see the preview under the canvas.">Export</a>
+        }
+
+        <span class="sr-group">Edit</span>
         <button class="btn btn-secondary" @onclick="AddNode">Add node</button>
-        <span class="bb-muted">@_status</span>
+        <button class="btn btn-secondary" @onclick="AddUnmappedNode">Add node with unmapped data</button>
+        <label><input type="checkbox" @bind="IncludeSelection" /> Save the selection</label>
+
+        <span class="sr-status" role="status">@_status</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
-            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
-            <BlowControls />
+        @* The change callbacks keep the preview, and with it the two download links, describing the graph as it is now;
+           OnInit writes it the first time, once there is a canvas to read. *@
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnInit="@(_ => UpdatePreview())"
+                    NodesChanged="@(_ => UpdatePreview())" EdgesChanged="@(_ => UpdatePreview())"
+                    OnSelectionChange="@(_ => UpdatePreview())" OnViewportChanged="@(_ => UpdatePreview())">
+            <NodeTemplate Context="node">
+                @if (node.Data is TaskInfo task)
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div><strong>@node.Label</strong></div>
+                    <div class="sr-owner">owner: @task.Owner, @task.Hours h</div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+                else
+                {
+                    <BlowDefaultNode Node="node" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                @if (_issues.Count > 0)
+                {
+                    <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                        <div class="sr-issues">
+                            <strong>@_issues.Count issue(s) in the last load</strong>
+                            @foreach (var issue in _issues.Take(12))
+                            {
+                                <div class="sr-issue sr-@issue.Severity.ToString().ToLowerInvariant()">
+                                    <span class="sr-severity">@issue.Severity</span> <code>@issue.Code</code> at <code>@issue.Path</code>
+                                    <div>@issue.Message</div>
+                                </div>
+                            }
+                        </div>
+                    </BlowPanel>
+                }
+            </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <Footer>
+        @* Not read out as it changes, unlike the footer's usual log: the whole document changes with every pan. *@
+        <section aria-label="Download preview" aria-live="off">
+            <h2 class="sr-footer-title">What Download writes now</h2>
+            @if (_json is not null)
+            {
+                <pre class="sr-json">@_json</pre>
+            }
+            else if (_jsonError is not null)
+            {
+                <p class="sr-unsaveable"><code>BlowSerializationException</code>: @_jsonError</p>
+            }
+        </section>
+    </Footer>
+    <TryIt>
+        <li>Move a node or press <strong>Add node</strong>, then <strong>Save</strong>; change the graph again and press <strong>Restore</strong> to put the saved graph and viewport back. Restore with nothing saved says so.</li>
+        <li>The preview under the canvas is the file <strong>Download</strong> would write: pan, drag or select and watch it change. <strong>Upload</strong> reads a file back - one you downloaded, or one you broke by hand.</li>
+        <li>Pick a <strong>Sample</strong> and press <strong>Load sample</strong>. The version 0 file is upgraded as it loads (its <code>job</code> node becomes a <code>task</code> with an owner); the others are refused, and the panel lists every issue with its severity, code and JSON path. A refused load leaves the graph as it was.</li>
+        <li><strong>Import an object</strong> reads a React Flow <code>toObject()</code>; <strong>Export</strong> downloads the graph in that shape for a React Flow front end.</li>
+        <li><strong>Add node with unmapped data</strong> adds a node carrying a <code>DateTime</code>, which no mapping says how to save: the preview shows the exception, the two downloads switch off and <strong>Save</strong> reports it. Select the node and press <strong>Delete</strong> to be able to save again.</li>
+        <li>Tick <strong>Save the selection</strong>, select a node and look for <code>"selected": true</code> in the preview; loading such a file selects it again.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ToJson(options)</code> saves the graph and viewport as JSON, and <code>LoadJsonAsync(json, options)</code> reads it back: it replaces the graph in place, adopts the document's viewport when it has one, and records an undo step when the built-in history is on - but only when the document was read without errors.</li>
+        <li>Download builds a <code>BlowDocument</code> with <code>ToDocument()</code>, gives it an <code>Id</code> and <code>Metadata</code> of its own (a title and an author) and writes it with <code>BlowSerializer.Serialize(document, options)</code>. Upload reads it with <code>BlowSerializer.DeserializeAsync(stream, options)</code>, which stops at <code>MaxBytes</code>, and hands <code>document.ToSnapshot()</code> to <code>RestoreAsync</code>. The serializer needs no canvas, so the same code runs on a server.</li>
+        <li>Only persistent state is written, in a fixed order with defaults left out, so saving the same graph twice gives the same text. <code>WriteIndented</code> lays it out for reading, and <code>IncludeSelection</code> (off by default) adds which elements are selected.</li>
+        <li>Node data is written as it is when it is JSON already, a string, a number or a boolean; anything else needs a contract. <code>MapNodeData("task", SaveRestoreJsonContext.Default.TaskInfo)</code> registers a source-generated one for <code>task</code> nodes. Saving data of a type nothing maps throws a <code>BlowSerializationException</code> naming the element.</li>
+        <li>Reading never throws. A <code>BlowImportResult</code> holds the <code>Document</code> (null when nothing could be read), the <code>Issues</code> - each a <code>BlowImportCodes</code> value such as <code>missing-property</code>, <code>invalid-value</code>, <code>data-not-read</code> or <code>unknown-property</code>, with a <code>Severity</code> and a JSON <code>Path</code> - and <code>Succeeded</code>, true when there is a document and no error. Duplicate ids and edges to missing nodes are warnings, since the canvas can draw round them.</li>
+        <li><code>BlowImportLimits</code> on <code>options.Limits</code> bound what is read. This page sets them far below the defaults - <code>MaxStringLength</code> 1,000 characters, <code>MaxPortsPerNode</code> 8, <code>MaxDepth</code> 16, <code>MaxBytes</code> 2 MB, <code>MaxNodes</code> 5,000, <code>MaxEdges</code> 10,000 - so the samples can trip them (<code>string-too-long</code>, <code>too-many</code>, <code>too-deep</code>).</li>
+        <li><code>CurrentVersion = 1</code> is this application's document version. A <code>BlowMigration(0, ...)</code> rewrites a version 0 document's JSON (renaming <code>job</code> nodes to <code>task</code>) before it is read, and <code>SourceVersion</code> says what the file was; a file from a newer version is refused with <code>newer-version</code>.</li>
+        <li><code>BlowReactFlowFormat.Import(json, options)</code> reads <code>{ nodes, edges, viewport }</code> into the same <code>BlowImportResult</code>, taking <code>data.label</code> as the label and style objects as CSS; <code>BlowReactFlowFormat.Export(document, options)</code> writes it back.</li>
+    </HowItWorks>
 </ExampleScaffold>
+
+<style>
+    .sr-group { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--bb-text-soft); margin-left: .75rem; }
+    .sr-group:first-child { margin-left: 0; }
+    .sr-status { font-size: 12px; color: var(--bb-text-soft); }
+    .sr-upload { position: relative; overflow: hidden; }
+    .sr-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .sr-disabled { opacity: .5; cursor: not-allowed; }
+    .sr-owner { font-size: 11px; color: var(--bit-blow-text-muted); }
+    .sr-issues { max-width: 380px; max-height: 260px; overflow: auto; padding: 8px 10px; font-size: 12px;
+                 background: var(--bit-blow-surface); color: var(--bit-blow-text);
+                 border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+    .sr-issue { padding: 3px 0; border-top: 1px solid var(--bit-blow-border-subtle); }
+    .sr-severity { font-weight: 600; }
+    .sr-error .sr-severity { color: var(--bit-blow-error); }
+    .sr-warning .sr-severity { color: var(--bit-blow-warning); }
+    .sr-info .sr-severity { color: var(--bit-blow-text-muted); }
+    .sr-footer-title { margin: 0 0 4px; font-size: 12px; }
+    .sr-json { margin: 0; font-family: var(--bb-mono); font-size: 11px; white-space: pre; }
+    .sr-unsaveable { margin: 0; color: var(--bb-danger-text); }
+</style>
 
 @code {
     private const string StorageKey = "bit-blow-save-restore";
@@ -25,62 +156,295 @@
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private List<BlowImportIssue> _issues = [];
     private string _status = "";
-    private int _id = 2;
+    private int _id = 3;
+    private int _sample;
+
+    // The document as Download and Export would write it, refreshed after every edit; null when the graph holds data
+    // no mapping can save, with the serializer's reason in _jsonError.
+    private string? _json;
+    private string? _reactFlowJson;
+    private string? _jsonError;
+
+    // One set of options for saving and loading alike: what is written has to be readable by the same contracts.
+    private readonly BlowSerializerOptions _options = CreateOptions();
+
+    private bool IncludeSelection
+    {
+        get => _options.IncludeSelection;
+        set
+        {
+            _options.IncludeSelection = value;
+            UpdatePreview();
+        }
+    }
+
+    private static BlowSerializerOptions CreateOptions()
+    {
+        // Data of a type the serializer has no contract for cannot be saved; this one maps "task" nodes to TaskInfo.
+        // The limits are far tighter than the defaults, so the samples below can trip them in a few lines of JSON.
+        var options = new BlowSerializerOptions
+        {
+            CurrentVersion = 1,
+            WriteIndented = true,
+            Limits =
+            {
+                MaxBytes = 2 * 1024 * 1024,
+                MaxNodes = 5000,
+                MaxEdges = 10_000,
+                MaxPortsPerNode = 8,
+                MaxDepth = 16,
+                MaxStringLength = 1000,
+            },
+        }.MapNodeData("task", SaveRestoreJsonContext.Default.TaskInfo);
+
+        // Version 1 of this app's documents renamed the node type "job" to "task"; the migration upgrades old files.
+        options.Migrations.Add(new BlowMigration(0, document =>
+        {
+            foreach (var node in document["nodes"]?.AsArray() ?? [])
+            {
+                if (node is not null && (string?)node["type"] == "job") node["type"] = "task";
+            }
+            return document;
+        }));
+        return options;
+    }
 
     protected override void OnInitialized()
     {
         _nodes =
         [
-            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(120, 40) },
-            new BlowNode { Id = "2", Type = "output", Label = "Node 2", Position = new(120, 200) },
+            new BlowNode { Id = "1", Type = "input", Label = "Order placed", Position = new(120, 40) },
+            new BlowNode { Id = "2", Type = "task", Label = "Pack", Position = new(120, 160), Data = new TaskInfo { Owner = "ana", Hours = 2 } },
+            new BlowNode { Id = "3", Type = "output", Label = "Shipped", Position = new(120, 300) },
         ];
-        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
+        ];
     }
 
-    private record SavedEdge(string Id, string Source, string Target, string? SourceHandle, string? TargetHandle, string Type, string? Label, bool Animated);
-    private record SavedNode(string Id, string Type, string? Label, double X, double Y, double? Width, double? Height, string? Style);
-    private record SavedFlow(List<SavedNode> Nodes, List<SavedEdge> Edges, double Vx, double Vy, double Vz);
+    private void UpdatePreview()
+    {
+        if (_flow is null) return;
+        try
+        {
+            _json = BlowSerializer.Serialize(Document(), _options);
+            _reactFlowJson = BlowReactFlowFormat.Export(_flow.ToDocument(), _options);
+            _jsonError = null;
+        }
+        catch (BlowSerializationException ex)
+        {
+            _json = _reactFlowJson = null;
+            _jsonError = ex.Message;
+        }
+    }
+
+    // ToDocument holds the live nodes and edges, so it is serialized straight away rather than kept.
+    private BlowDocument Document()
+    {
+        var document = _flow!.ToDocument();
+        document.Id = "order-fulfilment";
+        document.Metadata = new JsonObject { ["title"] = "Order fulfilment", ["author"] = "Blow demo" };
+        return document;
+    }
 
     private async Task Save()
     {
-        var snap = _flow?.ToObject();
-        if (snap is null) return;
-        var dto = new SavedFlow(
-            snap.Nodes.Select(n => new SavedNode(n.Id, n.Type, n.Label, n.Position.X, n.Position.Y, n.Width, n.Height, n.Style)).ToList(),
-            snap.Edges.Select(e => new SavedEdge(e.Id, e.Source, e.Target, e.SourceHandle, e.TargetHandle, e.Type.ToString(), e.Label, e.Animated)).ToList(),
-            snap.Viewport.X, snap.Viewport.Y, snap.Viewport.Zoom);
-        var json = System.Text.Json.JsonSerializer.Serialize(dto);
-        await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
-        _status = $"saved {dto.Nodes.Count} nodes at {DateTime.Now:HH:mm:ss}";
+        if (_flow is null) return;
+        _issues = [];
+
+        string json;
+        try
+        {
+            json = _flow.ToJson(_options);
+        }
+        catch (BlowSerializationException ex)
+        {
+            _status = $"Not saved: {ex.Message}";
+            return;
+        }
+
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+            _status = $"Saved {_nodes.Count} nodes and {_edges.Count} edges to local storage ({json.Length:N0} characters).";
+        }
+        catch (JSException)
+        {
+            _status = "This browser does not let the page use local storage.";
+        }
     }
 
     private async Task Restore()
     {
-        var json = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
-        if (string.IsNullOrEmpty(json)) { _status = "nothing saved yet"; return; }
+        if (_flow is null) return;
 
-        var dto = System.Text.Json.JsonSerializer.Deserialize<SavedFlow>(json);
-        if (dto is null) return;
+        string? json;
+        try
+        {
+            json = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+        }
+        catch (JSException)
+        {
+            json = null;
+        }
 
-        var snapshot = new BlowSnapshot(
-            dto.Nodes.Select(n => new BlowNode { Id = n.Id, Type = n.Type, Label = n.Label, Position = new(n.X, n.Y), Width = n.Width, Height = n.Height, Style = n.Style }).ToList(),
-            dto.Edges.Select(e => new BlowEdge { Id = e.Id, Source = e.Source, Target = e.Target, SourceHandle = e.SourceHandle, TargetHandle = e.TargetHandle, Type = Enum.Parse<BlowEdgeType>(e.Type), Label = e.Label, Animated = e.Animated }).ToList(),
-            new BlowViewport(dto.Vx, dto.Vy, dto.Vz));
+        if (string.IsNullOrEmpty(json))
+        {
+            _issues = [];
+            _status = "Nothing saved yet: press Save first.";
+            return;
+        }
 
-        // RestoreAsync swaps the graph into the bound lists in place, so _nodes/_edges keep
-        // pointing at the live collections and the viewport comes back with it.
-        if (_flow is not null) await _flow.RestoreAsync(snapshot);
-
-        // The restored graph may hold nodes added after the one the counter last handed out;
-        // carry on from the highest id in it, or the next Add would reuse an id already taken.
-        _id = snapshot.Nodes.Select(n => int.TryParse(n.Id, out var id) ? id : 0).DefaultIfEmpty(0).Max();
-        _status = "restored";
+        Report(await _flow.LoadJsonAsync(json, _options), "local storage");
     }
+
+    private async Task Upload(InputFileChangeEventArgs e)
+    {
+        if (_flow is null) return;
+
+        // Refused before it is opened: OpenReadStream throws for a file larger than it is allowed to read.
+        if (e.File.Size > _options.Limits.MaxBytes)
+        {
+            _issues = [];
+            _status = $"Could not load {e.File.Name}: it is larger than the {_options.Limits.MaxBytes:N0} bytes allowed.";
+            return;
+        }
+
+        await using var stream = e.File.OpenReadStream(maxAllowedSize: _options.Limits.MaxBytes);
+        var result = await BlowSerializer.DeserializeAsync(stream, _options);
+        if (result.Succeeded && result.Document is { } document)
+        {
+            await _flow.RestoreAsync(document.ToSnapshot(), restoreViewport: document.Viewport is not null, detach: false);
+        }
+
+        var title = result.Document?.Metadata?["title"] is JsonValue value && value.TryGetValue<string>(out var t) ? $" (\"{t}\")" : "";
+        Report(result, e.File.Name + title);
+    }
+
+    private async Task LoadSample()
+    {
+        if (_flow is null) return;
+        var (name, json) = Samples[_sample];
+        var result = await _flow.LoadJsonAsync(json, _options);
+
+        // The samples carry no viewport, so the view the graph was loaded into may not show it.
+        if (result.Succeeded && result.Document?.Viewport is null) _flow.FitView();
+        Report(result, $"the \"{name}\" sample");
+    }
+
+    private async Task ImportReactFlow()
+    {
+        if (_flow is null) return;
+
+        const string reactFlowObject = """
+            {
+              "nodes": [
+                { "id": "1", "type": "input", "position": { "x": 0, "y": 0 }, "data": { "label": "From React Flow" } },
+                { "id": "2", "position": { "x": 0, "y": 120 }, "data": { "label": "Still connected" }, "style": { "backgroundColor": "#fef3c7", "color": "#1f2937" } }
+              ],
+              "edges": [ { "id": "e1-2", "source": "1", "target": "2", "animated": true, "markerEnd": { "type": "arrowclosed" } } ],
+              "viewport": { "x": 120, "y": 60, "zoom": 1 }
+            }
+            """;
+
+        var result = BlowReactFlowFormat.Import(reactFlowObject, _options);
+        if (result.Succeeded && result.Document is { } document)
+        {
+            await _flow.RestoreAsync(document.ToSnapshot(), restoreViewport: document.Viewport is not null, detach: false);
+        }
+
+        // A React Flow object has no version of this app's documents to upgrade from.
+        Report(result, "a React Flow object", blowDocument: false);
+    }
+
+    /// <summary>Lists what reading found and says what became of the load.</summary>
+    private void Report(BlowImportResult result, string from, bool blowDocument = true)
+    {
+        _issues = [.. result.Issues];
+        if (!result.Succeeded)
+        {
+            var errors = result.Issues.Count(i => i.Severity == BlowValidationSeverity.Error);
+            _status = result.Document is null
+                ? $"Could not read {from}: nothing was loaded."
+                : $"Not loaded: {from} has {errors} error(s), so the graph on screen was left as it was.";
+            return;
+        }
+
+        _id = _nodes.Select(n => int.TryParse(n.Id, out var id) ? id : 0).DefaultIfEmpty(0).Max();
+        _status = blowDocument && result.SourceVersion < _options.CurrentVersion
+            ? $"Loaded {from}, upgraded from version {result.SourceVersion}."
+            : $"Loaded {from}.";
+    }
+
+    private static string DataUrl(string json)
+        => "data:application/json;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
 
     private void AddNode()
     {
         _id++;
-        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 360), Random.Shared.Next(40, 280)) });
+        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(320, 40 + (_id % 4) * 90) });
     }
+
+    private void AddUnmappedNode()
+    {
+        _id++;
+        // A DateTime is none of the types the serializer writes as they are, and no mapping covers it: the canvas draws
+        // the node happily, but saving it throws a BlowSerializationException naming the node.
+        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = "Carries a DateTime", Position = new(320, 40 + (_id % 4) * 90), Data = DateTime.Now });
+    }
+
+    // ---- sample files: one that is upgraded, and one for each way a file can be refused ----
+
+    private static readonly (string Name, string Json)[] Samples =
+    [
+        ("Version 0, upgraded on load", """
+            {"format":"bit-blow","schemaVersion":1,"version":0,
+             "nodes":[{"id":"a","type":"input","label":"Order placed","position":{"x":0,"y":0}},
+                      {"id":"b","type":"job","label":"Pick","position":{"x":0,"y":120},"data":{"owner":"li","hours":1}},
+                      {"id":"c","type":"output","label":"Shipped","position":{"x":0,"y":260}}],
+             "edges":[{"id":"e1","source":"a","target":"b"},{"id":"e2","source":"b","target":"c","animated":true}]}
+            """),
+        ("Mistakes, reported with paths", """
+            {"format":"bit-blow","schemaVersion":1,"version":1,
+             "nodes":[{"id":"a","type":"input","label":"Order placed","position":{"x":0,"y":0}},
+                      {"label":"A node with no id","position":{"x":0,"y":120}},
+                      {"id":"b","label":"Pack","position":{"x":"left","y":120}},
+                      {"id":"c","type":"task","label":"Ship","position":{"x":0,"y":240},"data":{"owner":7,"hours":"two"}},
+                      {"id":"a","label":"Order placed again","position":{"x":200,"y":0}},
+                      {"id":"d","label":"Wrapped","colour":"red","position":{"x":200,"y":120}}],
+             "edges":[{"id":"e1","source":"a","target":"b"},{"id":"e2","source":"b","target":"ghost"}]}
+            """),
+        ("Over the limits", OverTheLimits()),
+        ("Nested too deep", NestedTooDeep()),
+        ("Saved by a newer version", """
+            {"format":"bit-blow","schemaVersion":1,"version":7,"nodes":[],"edges":[]}
+            """),
+        ("Not JSON", """
+            {"format":"bit-blow","schemaVersion":1,"nodes":[{"id":"a" "label":"a comma is missing"}]}
+            """),
+        ("Not a Blow document", """
+            {"nodes":[{"id":"1","data":{"label":"A React Flow object: import it instead"}}],"edges":[]}
+            """),
+    ];
+
+    // A label longer than MaxStringLength, and a node declaring more ports than MaxPortsPerNode.
+    private static string OverTheLimits()
+    {
+        var ports = string.Join(",", Enumerable.Range(0, 10).Select(i => "{\"id\":\"in" + i + "\",\"type\":\"target\"}"));
+        return "{\"format\":\"bit-blow\",\"schemaVersion\":1,\"version\":1,\"nodes\":["
+            + "{\"id\":\"a\",\"label\":\"" + new string('x', 1200) + "\",\"position\":{\"x\":0,\"y\":0}},"
+            + "{\"id\":\"b\",\"label\":\"Too many ports\",\"position\":{\"x\":0,\"y\":120},\"ports\":[" + ports + "]}"
+            + "],\"edges\":[]}";
+    }
+
+    // Node data nested twenty objects deep, past MaxDepth: refused before it is parsed at all.
+    private static string NestedTooDeep()
+        => "{\"format\":\"bit-blow\",\"schemaVersion\":1,\"version\":1,\"nodes\":["
+            + "{\"id\":\"a\",\"label\":\"Deep data\",\"position\":{\"x\":0,\"y\":0},\"data\":"
+            + string.Concat(Enumerable.Repeat("{\"next\":", 20)) + "0" + string.Concat(Enumerable.Repeat("}", 20))
+            + "}],\"edges\":[]}";
 }

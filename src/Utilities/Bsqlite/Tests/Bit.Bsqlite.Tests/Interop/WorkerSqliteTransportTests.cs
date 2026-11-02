@@ -277,6 +277,41 @@ public sealed class WorkerSqliteTransportTests
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => transport.OpenAsync("app.db", Ct));
     }
 
+    /// <summary>
+    /// Terminating the worker fails every request still in flight, and the work unwinding from those
+    /// failures - EF's first-use step letting go of the lock it holds, say - runs while the transport is
+    /// still tearing down. The release must not throw: from a lock's dispose, it would replace the
+    /// failure being unwound with one that explains nothing.
+    /// </summary>
+    [TestMethod]
+    public async Task ReleasingALock_WhileTheTransportIsBeingDisposed_DoesNotThrow()
+    {
+        var js = new ScriptedJsRuntime();
+        js.EnqueueEnvelope("""{ "ok": true, "result": { "build": "synchronous" } }""");
+
+        var transport = new BsqliteWorkerTransport(js, DefaultOptions());
+        await transport.OpenAsync("app.db", Ct);
+        var held = await transport.AcquireLockAsync("ef-first-use", Ct);
+
+        Exception? releaseFailure = null;
+        js.Host.Disposing = async () =>
+        {
+            try
+            {
+                await held.DisposeAsync();
+            }
+            catch (Exception exception)
+            {
+                releaseFailure = exception;
+            }
+        };
+
+        await transport.DisposeAsync();
+
+        Assert.IsTrue(js.Host.Disposed);
+        Assert.IsNull(releaseFailure, releaseFailure?.ToString());
+    }
+
     private static BsqliteWorkerTransportOptions DefaultOptions() => new()
     {
         RequiredBuild = BsqliteEngineBuild.Synchronous,

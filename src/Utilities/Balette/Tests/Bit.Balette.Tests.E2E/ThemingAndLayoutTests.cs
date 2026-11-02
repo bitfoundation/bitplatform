@@ -63,6 +63,8 @@ public sealed class ThemingAndLayoutTests : BaletteTest
         await ExpectFirstItemAsync(page, "preferences.theme");
         await Assertions.Expect(Item(page, "preferences.theme")).ToContainTextAsync("Dark");
         await page.Keyboard.PressAsync("Enter");
+        // On the Theme page - the breadcrumb says so; its options are listed on the root too, found through Theme.
+        await Assertions.Expect(Crumbs(page)).ToHaveTextAsync(["Theme"]);
         await Assertions.Expect(Item(page, "theme:dark").Locator(".bit-balette-toggle")).ToHaveAttributeAsync("data-on", "true");
 
         // Back to the system's light theme from the palette: the toggle's choice is dropped rather than pinned.
@@ -80,6 +82,8 @@ public sealed class ThemingAndLayoutTests : BaletteTest
         await ModeButton(page, "Commands mode").ClickAsync();
         await ExpectOpenAsync(page);
         await TypeAsync(page, "ren");
+        // Over a Blazor Server circuit the highlights arrive a round trip after the keys.
+        await Assertions.Expect(page.Locator("[data-balette='mark']").First).ToBeVisibleAsync();
         var defaultMark = await ComputedAsync(page, "[data-balette='mark']", "backgroundColor");
         Assert.AreEqual(BrandAccent, await ComputedAsync(page, "[data-balette='mode']", "color"), "the default accent is not the site's");
         await page.Keyboard.PressAsync("Escape");

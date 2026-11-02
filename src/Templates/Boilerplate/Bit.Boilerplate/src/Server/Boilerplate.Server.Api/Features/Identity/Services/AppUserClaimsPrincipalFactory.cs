@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Boilerplate.Server.Api.Features.Identity.Services;
 
+// [mirror] the claims a signed-in user carries - keep in sync with:
+// - src/Workbench/Infrastructure/Services/StandIns/WorkbenchAuthenticationStateProvider.cs
 public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsService, UserManager<User> userManager, RoleManager<Role> roleManager,
         IOptions<IdentityOptions> optionsAccessor, IConfiguration configuration, IServiceProvider serviceProvider,
         DistributedLockFactory distributedLockProvider,

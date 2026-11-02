@@ -1,0 +1,228 @@
+﻿@page "/saving"
+
+<PageTitle>Saving - Blow samples</PageTitle>
+
+<h1>Saving</h1>
+
+<p>
+    The built-in undo history, the clipboard, the JSON document and the SVG export. None of them needs the browser:
+    the history and the clipboard are held by the canvas in .NET memory - on the server under Server, in the browser
+    on WebAssembly - and the document and the image are written and read by plain C#.
+</p>
+
+<HostFacts />
+
+<div class="toolbar">
+    <button type="button" disabled="@(!_history.CanUndo)" @onclick="UndoAsync">Undo @_history.UndoLabel</button>
+    <button type="button" disabled="@(!_history.CanRedo)" @onclick="RedoAsync">Redo @_history.RedoLabel</button>
+    <button type="button" @onclick="Copy">Copy</button>
+    <button type="button" @onclick="PasteAsync">Paste</button>
+    <button type="button" @onclick="DuplicateAsync">Duplicate</button>
+    <span class="muted" role="status">@_clipboardStatus</span>
+</div>
+
+<p class="muted">
+    On the canvas: <kbd>Ctrl</kbd>+<kbd>Z</kbd> undoes, <kbd>Ctrl</kbd>+<kbd>Y</kbd> redoes, and
+    <kbd>Ctrl</kbd>+<kbd>C</kbd>, <kbd>X</kbd>, <kbd>V</kbd> and <kbd>D</kbd> copy, cut, paste and duplicate the selection
+    (<kbd>Cmd</kbd> on macOS). Both sets of keys are off by default, so a canvas does not take them from the page around it.
+</p>
+
+<div class="flow">
+    <BlowCanvas @ref="_flow"
+                Nodes="_nodes"
+                Edges="_edges"
+                FitViewOnInit="true"
+                HistoryEnabled="true"
+                HistoryCapacity="50"
+                OnHistoryChanged="s => _history = s"
+                ClipboardShortcutsEnabled="true">
+        <NodeTemplate Context="node">
+            @if (node.Data is TaskInfo task)
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div><strong>@node.Label</strong></div>
+                <div class="muted">@task.Owner, @task.Hours h</div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            }
+            else
+            {
+                <BlowDefaultNode Node="node" />
+            }
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+<section>
+    <h2>The document</h2>
+    <p>
+        <em>Save</em> writes the graph and the viewport as a versioned JSON document, the data of the task nodes through
+        a source-generated contract. Edit it and <em>Load</em> reads it back as one undo step. Every problem comes back
+        with its place in the document: an error - a node without an id, a value of the wrong type, JSON that does not
+        parse - leaves the graph on screen as it was, while a warning - an edge to a node that is not there, a
+        duplicate id - is loaded and reported.
+    </p>
+    <div class="toolbar">
+        <button type="button" @onclick="Save">Save</button>
+        <button type="button" disabled="@string.IsNullOrWhiteSpace(_json)" @onclick="LoadAsync">Load</button>
+        <span class="muted" role="status">@_documentStatus</span>
+    </div>
+    <textarea class="json" @bind="_json" rows="14" spellcheck="false" aria-label="The saved document"></textarea>
+    @if (_issues.Count > 0)
+    {
+        <ul class="issues">
+            @foreach (var issue in _issues)
+            {
+                <li>
+                    <span class="badge @(issue.Severity == BlowValidationSeverity.Error ? "badge-error" : null)">@issue.Severity</span>
+                    <code>@issue.Path</code> @issue.Message
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+<section>
+    <h2>The picture</h2>
+    <p>
+        <code>ToSvg</code> draws the graph as it is on screen as a standalone SVG image, for a report, a thumbnail or
+        printing. It is safe to embed: every label is written as escaped text, never as markup.
+    </p>
+    <div class="toolbar">
+        <button type="button" @onclick="ExportSvg">Export SVG</button>
+        <span class="muted">@_svgStatus</span>
+    </div>
+    @if (_svg is not null)
+    {
+        <img class="export" src="@_svg" alt="The flow, exported as an SVG image" />
+    }
+</section>
+
+@code {
+    // One set of options for saving and loading alike: what is written has to be readable by the same contracts.
+    private readonly BlowSerializerOptions _options = new BlowSerializerOptions { CurrentVersion = 1, WriteIndented = true }
+        .MapNodeData("task", SampleJsonContext.Default.TaskInfo);
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new BlowNode { Id = "order", Type = "input", Label = "Order placed", Position = new(120, 0) },
+        new BlowNode { Id = "pick", Type = "task", Label = "Pick", Position = new(0, 120), Data = new TaskInfo { Owner = "Ana", Hours = 1 } },
+        new BlowNode { Id = "pack", Type = "task", Label = "Pack", Position = new(240, 120), Data = new TaskInfo { Owner = "Li", Hours = 2 } },
+        new BlowNode { Id = "ship", Type = "output", Label = "Shipped", Position = new(120, 260) },
+    ];
+
+    private readonly List<BlowEdge> _edges =
+    [
+        new BlowEdge { Id = "e-order-pick", Source = "order", Target = "pick" },
+        new BlowEdge { Id = "e-order-pack", Source = "order", Target = "pack" },
+        new BlowEdge { Id = "e-pick-ship", Source = "pick", Target = "ship" },
+        new BlowEdge { Id = "e-pack-ship", Source = "pack", Target = "ship", Animated = true },
+    ];
+
+    private IReadOnlyList<BlowImportIssue> _issues = [];
+    private BlowHistoryState _history;
+    private BlowCanvas? _flow;
+    private string _json = string.Empty;
+    private string _clipboardStatus = "Select a node or two to copy them.";
+    private string _documentStatus = "Nothing saved yet.";
+    private string _svgStatus = string.Empty;
+    private string? _svg;
+
+    private Task UndoAsync() => _flow?.UndoAsync() ?? Task.CompletedTask;
+
+    private Task RedoAsync() => _flow?.RedoAsync() ?? Task.CompletedTask;
+
+    private void Copy()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        // Copy takes the selected nodes and every edge between two of them. With no node selected it keeps the clipboard
+        // and returns what was copied last, which says nothing about this click: so the selection is checked first.
+        if (!_nodes.Any(n => n.Selected))
+        {
+            _clipboardStatus = "Nothing selected to copy.";
+            return;
+        }
+
+        var copied = _flow.Copy();
+        _clipboardStatus = $"Copied {copied.Nodes.Count} node(s) and {copied.Edges.Count} edge(s).";
+    }
+
+    private async Task PasteAsync()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        // A paste mints fresh ids, rewires the edges to the copies, and selects them, offset so they are visibly new.
+        var pasted = await _flow.PasteAsync();
+        _clipboardStatus = pasted.IsEmpty ? "Nothing to paste: copy a selection first." : $"Pasted {pasted.Nodes.Count} node(s).";
+    }
+
+    private async Task DuplicateAsync()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        var duplicated = await _flow.DuplicateSelectionAsync();
+        _clipboardStatus = duplicated.IsEmpty ? "Nothing selected to duplicate." : $"Duplicated {duplicated.Nodes.Count} node(s).";
+    }
+
+    private void Save()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _json = _flow.ToJson(_options);
+            _issues = [];
+            _documentStatus = $"Saved {_nodes.Count} nodes and {_edges.Count} edges ({_json.Length:N0} characters).";
+        }
+        catch (BlowSerializationException ex)
+        {
+            // A node carrying data no mapping says how to write: the exception names it.
+            _documentStatus = $"Not saved: {ex.Message}";
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        // Loading never throws for a bad document: every problem is an issue with a code and a path.
+        var result = await _flow.LoadJsonAsync(_json, _options);
+        _issues = result.Issues;
+        _documentStatus = result.Succeeded
+            ? $"Loaded {_nodes.Count} nodes and {_edges.Count} edges{(result.Issues.Count > 0 ? $", with {result.Issues.Count} issue(s) to look at" : null)}."
+            : result.Document is null
+                ? "Could not read the document: nothing was loaded."
+                : "Not loaded: the document has errors, so the graph on screen was left as it was.";
+    }
+
+    private void ExportSvg()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        var svg = _flow.ToSvg();
+        _svg = "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svg));
+        _svgStatus = $"{svg.Length:N0} characters of SVG.";
+    }
+}

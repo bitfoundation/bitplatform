@@ -13,8 +13,9 @@ namespace Bit.Bmotion.Demo.Server.Controllers;
 /// <para>
 /// Documentation tools alone are not enough for an animation library. An agent can read every
 /// parameter of <c>Bm.Spring</c> and still not know that
-/// <c>Bm.Spring(stiffness: 400, damping: 2)</c> wobbles for five seconds, or that animating
-/// <c>height</c> stops working the moment the app is served over Blazor Server. Both facts live in
+/// <c>Bm.Spring(stiffness: 400, damping: 2)</c> wobbles for five seconds, or that morphing an SVG
+/// path's <c>d</c> stops working the moment the app is served over Blazor Server while a
+/// <c>height</c> animation beside it keeps playing. Both facts live in
 /// the engine, not in prose. So the tools here fall into two halves: the ones that answer from
 /// this build's own text - the guide, the XML documentation compiled into the assembly, the demo's
 /// sources - and the ones that answer by <b>running the real engine off-screen</b> and reporting
@@ -83,18 +84,30 @@ public class McpController : ControllerBase
             3. `GetBmotionApiDetails` for every type you are about to use. In an animation library the
                default values *are* the behaviour.
             4. `SimulateBmotionTransition` to choose the transition on measurements rather than adjectives.
-            5. `AnalyzeBmotionAnimation` before finishing, on anything that is not WebAssembly-only - it is
-               what decides whether the animation plays or silently snaps on Blazor Server.
+            5. `AnalyzeBmotionAnimation` before finishing, on anything that is not WebAssembly-only - it runs
+               the real engine and says whether the browser plays the animation, as a timeline or as a
+               recording, or only the frame loop can, in which case it silently snaps on Blazor Server.
             6. `ReviewBmotionCode` on what you wrote.
 
             ## Rules of thumb when writing Bmotion code
 
-            - **Only transform components (`x`, `y`, `z`, `scale`, `rotate`, `skew`, `perspective`) and `opacity`
-              can be handed to the browser compositor.** Those animations play everywhere, including Blazor Server.
-              Everything else - colour, `width`/`height`, keyframe arrays, drag, motion values - needs the C# frame
-              loop, which exists only on WebAssembly. On Server it becomes an instant jump, with no error anywhere.
-            - Prefer `x`/`y` over `top`/`left`, and `scale` over `width`/`height`. Same visual result, no layout
-              cost, and it stays on the compositor.
+            - **The browser plays almost every animation, on every runtime - Blazor Server included.** The engine
+              hands it to the Web Animations API as a two-keyframe *timeline*, with the curve as its easing, when
+              one tween or zero-velocity spring covers every property and every value is one the browser
+              interpolates exactly: transforms, `opacity`, colours, lengths in the same unit at both ends, filters,
+              shadows and clip paths of the same shape. Anything else the frame loop can play - keyframe arrays,
+              per-property transitions, mirrored repeats, repeat delays, springs with velocity, inertia, arcs,
+              gradients, custom properties - it *records* at 60 Hz and the browser plays the recording.
+            - **Only the C# frame loop can play** a transition `OnUpdate`, an SVG `d`/`points` morph, an endless
+              `BmRepeat.Reverse`, per-property transitions with an endless repeat, and a recording longer than 10
+              seconds. That loop exists only on WebAssembly: on Server those become an instant jump, with no error
+              anywhere.
+            - Prefer a timeline to a recording where the motion allows: a recording sends more keyframes (a few
+              KB for a long spring) and costs main-thread time on WebAssembly at the moment it starts, where a
+              timeline is two keyframes whatever its length.
+            - Prefer `x`/`y` over `top`/`left`, and `scale` over `width`/`height`. Both play in the browser, but
+              transforms and `opacity` run on its compositor, off the main thread, while a length runs layout on
+              every frame.
             - `Initial` runs on mount only. To replay an entrance, change the element's `@key`.
             - `Exit` needs a presence component (`BmotionAnimatePresence`, `BmotionPresenceGroup`,
               `BmotionPresenceSwitch`) around it. Wrapping the content in `@if` instead is the single most common
@@ -123,7 +136,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionSetupGuide))]
-    [Description("Gets the complete wiring needed to add Bit.Bmotion to a Blazor app in one render mode, as the real files of a working project: 'wasm' (Blazor Web App, InteractiveWebAssembly), 'server' (InteractiveServer), 'auto' (InteractiveAuto) or 'standalone-wasm'. Call this before writing any setup code - which DI containers register the services, and which library features work at all, both differ per render mode.")]
+    [Description("Gets the complete wiring needed to add Bit.Bmotion to a Blazor app in one render mode, as the real files of a working project: 'wasm' (Blazor Web App, InteractiveWebAssembly), 'server' (InteractiveServer), 'auto' (InteractiveAuto) or 'standalone-wasm'. Call this before writing any setup code - which DI containers register the services, and which library features work at all, both differ per render mode. Only a WebAssembly app that lazy loads Bit.Bmotion leaves the registration out of the browser's Program.cs - see GetBmotionGuideSection(heading: \"Lazy loading on WebAssembly\").")]
     public string GetBmotionSetupGuide(string renderMode)
     {
         return BmotionSetupGuide.Get(renderMode)
@@ -161,6 +174,10 @@ public class McpController : ControllerBase
     // either ran three separate simulations or never learned it could ask for three at once.
     public const int MaxSimulatedTransitions = 8;
 
+    // The most transitions one call answers about, measured or not. Each one past MaxSimulatedTransitions is still
+    // named as unmeasured, so the caller knows which to send again; past this the rest of the list is one answer.
+    public const int MaxListedTransitions = 64;
+
     [HttpGet]
     [McpServerTool(Name = nameof(SimulateBmotionTransition))]
     [Description("Runs one or more transitions on the real Bit.Bmotion engine, off-screen, and reports what the motion actually does: how long it takes to come to rest, how far it overshoots its target, how many times it wobbles, and the shape of the curve. No transition states its own settle time - a spring's falls out of the physics, and a tween's duration says nothing about how the value gets there - so this is the only way to know what one feels like without opening a browser. Pass several, separated by semicolons or newlines, to measure them side by side and choose between them on evidence rather than on the names of the arguments. Accepts 'spring(stiffness: 260, damping: 12)', 'spring(bounce: 0.4, duration: 0.6)', 'tween(0.4, InOut)' or 'inertia(velocity: 500)'.")]
@@ -170,9 +187,9 @@ public class McpController : ControllerBase
         [Description("The value the animation targets.")] double to = 100,
         [Description("Also return the sampled (seconds, value) points of the curve. Off by default: the sparkline and the measurements answer 'what does this feel like', and the raw samples are only worth their size when the curve is being plotted or differentiated.")] bool includeSamples = false)
     {
+        // The split stops one spec past MaxListedTransitions: that last entry is the rest of the list, unread.
         var specs = (transition ?? string.Empty)
-            .Split([';', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToArray();
+            .Split([';', '\n', '\r'], MaxListedTransitions + 1, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // An empty argument is still a question - the lab answers it with the default tween, and
         // saying nothing at all would read as a server that failed rather than a spec that was blank.
@@ -182,10 +199,20 @@ public class McpController : ControllerBase
         // read with; the interesting comparisons are between two and four candidates. The ones over
         // that limit come back unmeasured rather than not at all: a caller who asked about ten and
         // received eight answers cannot tell which two were left out, or that any were.
-        var overLimit = specs.Skip(MaxSimulatedTransitions).Select(spec => BmotionMotionLab.NotMeasured(spec,
-            $"Not measured: {nameof(SimulateBmotionTransition)} measures at most {MaxSimulatedTransitions} " +
-            "transitions per call, and this one came after those. Call it again with this spec to measure it.",
-            from, to));
+        var overLimit = specs.Skip(MaxSimulatedTransitions).Take(MaxListedTransitions - MaxSimulatedTransitions)
+            .Select(spec => BmotionMotionLab.NotMeasured(spec,
+                $"Not measured: {nameof(SimulateBmotionTransition)} measures at most {MaxSimulatedTransitions} " +
+                "transitions per call, and this one came after those. Call it again with this spec to measure it.",
+                from, to));
+
+        // Naming every spec past the limit costs an answer per spec, so a list of any length would cost a response
+        // as long. Past MaxListedTransitions the rest of the list is one answer, which does not echo it back.
+        BmotionSimulationDto[] unread = specs.Length > MaxListedTransitions
+            ? [BmotionMotionLab.NotMeasured(string.Empty,
+                $"Not read: {nameof(SimulateBmotionTransition)} lists at most {MaxListedTransitions} transitions per " +
+                "call, and the rest of the list came after those. Send the ones to compare in calls of their own.",
+                from, to)]
+            : [];
 
         // Every run owns its engine and its frame clock (see BmotionMotionLab), so the comparison
         // costs one simulation rather than the sum of them. Task.WhenAll keeps the order asked for,
@@ -193,28 +220,39 @@ public class McpController : ControllerBase
         var measured = await Task.WhenAll(specs.Take(MaxSimulatedTransitions)
                                                .Select(spec => BmotionMotionLab.SimulateAsync(spec, from, to)));
 
-        BmotionSimulationDto[] results = [.. measured, .. overLimit];
+        BmotionSimulationDto[] results = [.. measured, .. overLimit, .. unread];
 
         return includeSamples ? results : [.. results.Select(result => result with { Samples = [] })];
     }
 
+    public const int MaxAnalyzedProperties = 64;
+
     [HttpGet]
     [McpServerTool(Name = nameof(AnalyzeBmotionAnimation))]
-    [Description("Starts an animation on the real Bit.Bmotion engine and reports which playback path the engine chose for it: the browser compositor (Web Animations API), or the C# per-frame loop. That choice is what decides whether the animation plays on Blazor Server or silently collapses into an instant state change there - nothing in the build output or the browser console says which. Call it before finishing any animation for an app that is not WebAssembly-only. When the answer is the frame loop, it also says why, and what to change.")]
+    [Description("Starts an animation on the real Bit.Bmotion engine, as Blazor WebAssembly and as Blazor Server, and reports where the engine played it: in the browser as a two-keyframe timeline, in the browser as a recording of the frames its own drivers draw, only on the C# per-frame loop, or at once. Both browser shapes play on Blazor Server; what only the frame loop can play silently collapses into an instant state change there - nothing in the build output or the browser console says which. Call it before finishing any animation for an app that is not WebAssembly-only. It also says why, what it costs - a recording sends more keyframes than a timeline - and what to change.")]
     public Task<BmotionPlaybackDto> AnalyzeBmotionAnimation(
         [Description("The animated properties by their Bm.To(...) argument names, separated by commas, e.g. 'x, opacity' or 'width, backgroundColor'.")] string properties,
         [Description("The transition, e.g. 'spring(stiffness: 200, damping: 20)' or 'tween(0.4, InOut)'. Defaults to a plain tween.")] string? transition = null)
     {
+        // The split stops one name past the limit: a list too long to analyse is not split whole only to be refused.
         var names = (properties ?? string.Empty)
-            .Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToArray();
+            .Split([',', ';', ' '], MaxAnalyzedProperties + 1, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // Refused as an answer rather than an exception: an exception reaches an MCP client as a bare "an error
+        // occurred", which says nothing of the limit or how to stay under it.
+        if (names.Length > MaxAnalyzedProperties)
+        {
+            return Task.FromResult(BmotionMotionLab.NotAnalysed([], transition ?? string.Empty,
+                $"Not analysed: {nameof(AnalyzeBmotionAnimation)} takes at most {MaxAnalyzedProperties} property names " +
+                "per call. Split the list over several calls."));
+        }
 
         return BmotionMotionLab.AnalyzePlaybackAsync(names, transition);
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(ReviewBmotionCode))]
-    [Description("Reviews Razor or C# that uses Bit.Bmotion and reports the mistakes that compile cleanly and then do nothing: an Exit with no presence component around it, an animated element in a loop with no @key, a spring whose stiffness the engine discards, a nested-quote attribute that does not parse as intended, properties that will snap rather than animate on Blazor Server. Every finding names the line and the correction. Run this on animation code before calling it done - none of these produce a compiler warning, an exception or a console message.")]
+    [Description("Reviews Razor or C# that uses Bit.Bmotion and reports the mistakes that compile cleanly and then do nothing: an Exit with no presence component around it, an animated element in a loop with no @key, a spring whose stiffness the engine discards, a nested-quote attribute that does not parse as intended, the few animations - a path morph, a transition OnUpdate, an endless BmRepeat.Reverse - that will snap rather than animate on Blazor Server. Every finding names the line and the correction. Run this on animation code before calling it done - none of these produce a compiler warning, an exception or a console message.")]
     public BmotionReviewDto ReviewBmotionCode(
         [Description("The Razor markup or C# to review. A component, a fragment, or just the <Bmotion> element in question.")] string code)
     {
@@ -248,9 +286,9 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionAnimatableProperties))]
-    [Description("Lists the properties Bit.Bmotion can animate, with the CSS each one writes, an example value, and - measured by running it through the real engine - whether the browser compositor can own it and therefore whether it animates or jumps on Blazor Server. Use it when choosing what to animate, or to find the compositor-friendly equivalent of a property that is not. Narrow it with 'filter' rather than reading all 48: most questions are about one category, one name, or only about what survives Blazor Server.")]
+    [Description("Lists the properties Bit.Bmotion can animate, with the CSS each one writes, an example value, and - measured by running it through the real engine as Blazor Server - whether the browser plays it, as a two-keyframe timeline or as a recording, and therefore whether it animates or jumps on Blazor Server; plus whether it runs on the browser's compositor, off the main thread. Use it when choosing what to animate, or to find the compositor equivalent of a property that costs layout or paint. Narrow it with 'filter' rather than reading all 48: most questions are about one category, one name, or only about what survives Blazor Server.")]
     public async Task<BmotionPropertyDto[]> GetBmotionAnimatableProperties(
-        [Description("Optional. A category ('Transform', 'Visual', 'Layout', 'Typography', 'SVG', 'Motion path', 'Custom'), 'compositor' for only the properties the compositor can own, 'frame-loop' for only the ones that jump on Blazor Server, or any substring of a property name. Omitted, every property is returned.")] string? filter = null)
+        [Description("Optional. A category ('Transform', 'Visual', 'Layout', 'Typography', 'SVG', 'Motion path', 'Custom'), 'browser' for the properties the browser plays (every runtime), 'timeline' or 'recorded' for one of its two shapes, 'compositor' for the ones it runs off the main thread, 'frame-loop' for only the ones that jump on Blazor Server, or any substring of a property name. Omitted, every property is returned.")] string? filter = null)
     {
         var properties = await BmotionPropertyCatalog.GetAsync();
 
@@ -262,9 +300,14 @@ public class McpController : ControllerBase
         {
             _ when term.Equals("compositor", StringComparison.OrdinalIgnoreCase)
                 => properties.Where(property => property.CompositorEligible),
+            _ when term.Equals("browser", StringComparison.OrdinalIgnoreCase)
+                => properties.Where(property => property.PlayedByBrowser),
+            _ when term.Equals("timeline", StringComparison.OrdinalIgnoreCase)
+                 || term.Equals("recorded", StringComparison.OrdinalIgnoreCase)
+                => properties.Where(property => string.Equals(property.BrowserPlayback, term, StringComparison.OrdinalIgnoreCase)),
             _ when term.Equals("frame-loop", StringComparison.OrdinalIgnoreCase)
                  || term.Equals("frameloop", StringComparison.OrdinalIgnoreCase)
-                => properties.Where(property => property.CompositorEligible is false),
+                => properties.Where(property => property.PlayedByBrowser is false),
             _ => properties.Where(property => property.Category.Contains(term, StringComparison.OrdinalIgnoreCase)
                                            || property.Name.Contains(term, StringComparison.OrdinalIgnoreCase))
         };

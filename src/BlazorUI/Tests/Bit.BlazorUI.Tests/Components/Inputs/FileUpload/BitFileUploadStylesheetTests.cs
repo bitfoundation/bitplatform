@@ -92,7 +92,7 @@ public class BitFileUploadStylesheetTests
         // A file upload can sit in a template of another one, which must not inherit the outer one's Color or Size:
         // each root starts the values those classes publish out unset, and the classes - declared further down at
         // the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-upl-clr", "--bit-upl-clr-txt", "--bit-upl-clr-hover", "--bit-upl-clr-active", "--bit-upl-clr-focus",
+        foreach (var property in new[] { "--bit-upl-clr", "--bit-upl-clr-fg", "--bit-upl-clr-txt", "--bit-upl-clr-hover", "--bit-upl-clr-active", "--bit-upl-clr-focus",
                                          "--bit-upl-clr-tint-8", "--bit-upl-clr-tint-10", "--bit-upl-lbl-height", "--bit-upl-lbl-fontsize",
                                          "--bit-upl-lbl-padding", "--bit-upl-bab-height", "--bit-upl-bab-padding", "--bit-upl-itm-fontsize",
                                          "--bit-upl-fs-fontsize", "--bit-upl-prv-size", "--bit-upl-btn-size", "--bit-upl-ico-fontsize" })
@@ -107,5 +107,25 @@ public class BitFileUploadStylesheetTests
         var roles = SourceFiles.GetScssBlock(stylesheet, ".bit-upl-#{$role} {");
         StringAssert.Contains(roles, "--bit-upl-clr-tint-8: #{translucent(role($tokens, main), 8%)};");
         StringAssert.Contains(roles, "--bit-upl-clr-tint-10: #{translucent(role($tokens, main), 10%)};");
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldDrawTheTextItReadsOnThePageInTheRoleTextColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The label of an Outline or Text browse button, the batch buttons and a paused file's status line sit on the
+        // page rather than on the role's fill, so they are drawn in the role's text color: a secondary or a warning main
+        // is picked to fill a surface and is under 3:1 as text on white.
+        StringAssert.Contains(stylesheet, "color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-outline-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-fg, var(--bit-FileUpload-text-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-upl-clr-fg, var(--bit-FileUpload-batch-action-color, #{$clr-pri}));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-upl-clr-fg, var(--bit-FileUpload-paused-color, #{$clr-pri}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ".bit-upl-#{$role} {"), "--bit-upl-clr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-upl.bit-inv:not(.bit-dis) {"), "--bit-upl-clr-fg: #{$clr-err-fg};");
+
+        // Only the text: the outline, the drop area's icon and the progress bar keep the role's main.
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-border-color, ");
+        StringAssert.Contains(stylesheet, "color: var(--bit-upl-clr, var(--bit-FileUpload-drop-area-icon-color, #{$clr-pri}));");
     }
 }

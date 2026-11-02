@@ -1,0 +1,99 @@
+﻿@namespace Bit.Bonboarding
+
+@* An onboarding checklist. Rendered only once its progress is known, so it never shows every item unticked
+   for a moment while the store is being read (or while prerendering, where it cannot be read at all). *@
+
+@if (_items is not null && !_dismissed && !(HideWhenComplete && AllDone))
+{
+    <section class="@BonboardingCss.Classes("bit-bonboarding-checklist", "bit-bonboarding-themed", Class)"
+             data-bonboarding-theme="@ThemeAttribute"
+             data-bonboarding-checklist="@Checklist.Id"
+             data-bonboarding-complete="@(AllDone ? "true" : "false")"
+             aria-labelledby="@(_title is null ? null : _headingId)"
+             aria-label="@(_title is null ? Labels.ProgressLabel : null)">
+
+        <div class="bit-bonboarding-checklist-header">
+            @if (_title is not null)
+            {
+                <div class="bit-bonboarding-checklist-title" id="@_headingId" role="heading" aria-level="@HeadingLevel">@_title</div>
+            }
+
+            <span class="bit-bonboarding-checklist-count">@ProgressText</span>
+
+            @if (Dismissible)
+            {
+                <button type="button"
+                        class="bit-bonboarding-close"
+                        aria-label="@Labels.ChecklistDismiss"
+                        data-bonboarding-action="dismiss-checklist"
+                        @onclick="DismissAsync">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                    </svg>
+                </button>
+            }
+        </div>
+
+        <div class="bit-bonboarding-progress-bar bit-bonboarding-checklist-progress"
+             role="progressbar"
+             aria-valuemin="0"
+             aria-valuemax="@_items.Count"
+             aria-valuenow="@DoneCount"
+             aria-valuetext="@ProgressText"
+             aria-label="@(_title ?? Labels.ProgressLabel)">
+            <div class="bit-bonboarding-progress-bar-fill" style="@FillStyle"></div>
+        </div>
+
+        @if (_description is not null)
+        {
+            <p class="bit-bonboarding-checklist-description">@_description</p>
+        }
+
+        <ul class="bit-bonboarding-checklist-items">
+            @for (var index = 0; index < _items.Count; index++)
+            {
+                var state = _items[index];
+                var position = index;
+
+                <li class="bit-bonboarding-checklist-item"
+                    data-bonboarding-item="@state.Item.Id"
+                    data-bonboarding-state="@(state.IsDone ? "done" : "todo")">
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(state)
+                    }
+                    else
+                    {
+                        // By position rather than by item id: an id with a space in it would break the reference.
+                        var descriptionId = state.Item.Description is null ? null : $"{_headingId}-{position}";
+
+                        @if (state.IsActionable)
+                        {
+                            <button type="button"
+                                    class="bit-bonboarding-checklist-action"
+                                    aria-describedby="@descriptionId"
+                                    @onclick="state.ActivateAsync">
+                                <span class="bit-bonboarding-checklist-check" aria-hidden="true"></span>
+                                <span class="bit-bonboarding-checklist-item-title">@Localizer.Localize(state.Item.Title)</span>
+                                <span class="bit-bonboarding-sr-only">, @(state.IsDone ? Labels.ChecklistItemDone : Labels.ChecklistItemTodo)</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="bit-bonboarding-checklist-action">
+                                <span class="bit-bonboarding-checklist-check" aria-hidden="true"></span>
+                                <span class="bit-bonboarding-checklist-item-title">@Localizer.Localize(state.Item.Title)</span>
+                                <span class="bit-bonboarding-sr-only">, @(state.IsDone ? Labels.ChecklistItemDone : Labels.ChecklistItemTodo)</span>
+                            </div>
+                        }
+
+                        @if (descriptionId is not null)
+                        {
+                            <p class="bit-bonboarding-checklist-item-description" id="@descriptionId">@Localizer.Localize(state.Item.Description)</p>
+                        }
+                    }
+                </li>
+            }
+        </ul>
+    </section>
+}

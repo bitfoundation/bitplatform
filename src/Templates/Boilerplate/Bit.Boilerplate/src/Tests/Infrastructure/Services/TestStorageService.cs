@@ -2,6 +2,7 @@
 // - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiStorageService.cs
 // - src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsStorageService.cs
 // - src/Client/Boilerplate.Client.Web/Infrastructure/Services/WebStorageService.cs
+// - src/Workbench/Infrastructure/Services/StandIns/WorkbenchStorageService.cs
 // IStorageServiceContractTests pins the behaviour all four must share.
 
 namespace Boilerplate.Tests.Infrastructure.Services;

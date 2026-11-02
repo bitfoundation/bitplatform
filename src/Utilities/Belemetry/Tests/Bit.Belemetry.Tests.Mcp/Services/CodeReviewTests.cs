@@ -12,6 +12,7 @@ public class CodeReviewTests
         CollectionAssert.Contains(Rules("builder.Services.AddBelemetryServices();"), "BLM001");
         CollectionAssert.Contains(Rules("window.Belemetry.getContext()"), "BLM001");
         CollectionAssert.DoesNotContain(Rules("builder.Services.AddBitBelemetryServices(); BitBelemetry.getContext();"), "BLM001");
+        CollectionAssert.DoesNotContain(Rules("// builder.Services.AddBelemetryServices();"), "BLM001");
     }
 
     [TestMethod]
@@ -107,5 +108,18 @@ public class CodeReviewTests
 
         CollectionAssert.AreEqual(new int?[] { 1, 2 }, findings.Select(f => f.Line).ToArray());
         StringAssert.Contains(BelemetryCodeReview.Review("").Summary, "Nothing to review");
+    }
+
+    [TestMethod]
+    public void AnOversizedSnippet_IsRefused_AndEachRulesFindingsAreCapped()
+    {
+        var oversized = BelemetryCodeReview.Review(new string('x', 64 * 1024 + 1));
+        StringAssert.StartsWith(oversized.Summary, "Not reviewed");
+        Assert.IsEmpty(oversized.Findings);
+
+        var repeated = BelemetryCodeReview.Review(string.Concat(Enumerable.Repeat("builder.Services.AddBelemetryServices();\n", 500)) + "o.Consent.Default = BelemetryFeatures.All;");
+        Assert.HasCount(10, repeated.Findings.Where(f => f.Rule == "BLM001"));
+        CollectionAssert.Contains(repeated.Findings.Select(f => f.Rule).ToArray(), "BLM004", "A flood of one rule's findings does not hide another rule's.");
+        StringAssert.Contains(repeated.Summary, "at most 10");
     }
 }

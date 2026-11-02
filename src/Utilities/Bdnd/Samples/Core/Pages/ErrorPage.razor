@@ -1,0 +1,12 @@
+﻿@page "/Error"
+@attribute [ExcludeFromInteractiveRouting]
+
+@* Target of UseExceptionHandler("/Error") in the web hosts' Program.cs, outside Development. It renders statically,
+   with no circuit or WebAssembly runtime that could fail again, and lives here once for the three web hosts. *@
+
+<PageTitle>Error · Bdnd samples</PageTitle>
+
+<h1>Error</h1>
+<p>An error occurred while processing your request.</p>
+
+<a href="" class="btn">Back to the samples</a>

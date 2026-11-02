@@ -1,0 +1,33 @@
+﻿@page "/whiteboard"
+@using Bit.Bink
+
+<PageTitle>Whiteboard - Bink lazy loading sample</PageTitle>
+
+<h1>Whiteboard</h1>
+
+<p>
+    <code>Bit.Bink.wasm</code> was downloaded as this page opened. The canvas takes only <code>IJSRuntime</code> and
+    <code>NavigationManager</code> from the app and imports its browser module itself: the app registers nothing of
+    Bink's.
+</p>
+
+<div class="board">
+    <BinkCanvas @ref="_canvas" Height="320px" AriaLabel="Whiteboard"
+                Ready="() => _ready = true" DocumentChanged="() => StateHasChanged()" />
+</div>
+
+<p>
+    <span id="strokes">@(_canvas?.CurrentDocument.ElementCount ?? 0)</span> strokes,
+    <span id="render-path">@RenderPath</span>
+    <button type="button" @onclick="() => _canvas!.Clear()" disabled="@(_canvas?.CurrentDocument.IsEmpty ?? true)">Clear</button>
+</p>
+
+@code {
+    private BinkCanvas? _canvas;
+    private bool _ready;
+
+    // Known once the canvas has attached in the browser: whether its draw commands reach JavaScript as a view over
+    // managed memory, which the README says works from a lazily loaded Bit.Bink as well.
+    private string RenderPath => _ready is false ? "not attached yet"
+        : _canvas!.UsesFastRenderPath ? "zero-copy render" : "standard interop";
+}

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 internal static class BitMarkdownDelimiterResolver
 {
-    public static void Process(List<Tok> tokens, BitMarkdownPipeline pipeline)
+    public static void Process(List<Tok> tokens, BitMarkdownPipeline pipeline, int maxHeight)
     {
         // Cache the "bottom" delimiter (per char + length-mod-3 + can-open) below
         // which no matching opener exists. Closers that can also open must use a
@@ -19,13 +19,14 @@ internal static class BitMarkdownDelimiterResolver
         // invalidate cached integer indices.
         var openersBottom = new Dictionary<(char, int, bool), Tok?>();
 
-        int closerIdx = 0;
-        while (closerIdx < tokens.Count)
+        var list = new LinkedList<Tok>(tokens);
+        var closerNode = list.First;
+        while (closerNode is not null)
         {
-            var closer = tokens[closerIdx];
+            var closer = closerNode.Value;
             if (closer.Kind != TokKind.Delim || !closer.Active || !closer.CanClose)
             {
-                closerIdx++;
+                closerNode = closerNode.Next;
                 continue;
             }
 
@@ -39,13 +40,14 @@ internal static class BitMarkdownDelimiterResolver
             // cached bottom token, if any). A candidate that the processor cannot
             // turn into a node only disqualifies that opener/closer pairing, so we
             // keep scanning for an earlier opener rather than giving up on the closer.
-            int openerIdx = closerIdx - 1;
+            var openerNode = closerNode.Previous;
             bool found = false;
             BitMarkdownNode? node = null;
             int used = 0;
-            while (openerIdx >= 0)
+            int height = 0;
+            while (openerNode is not null)
             {
-                var opener = tokens[openerIdx];
+                var opener = openerNode.Value;
                 if (bottom is not null && ReferenceEquals(opener, bottom)) break;
                 if (opener.Kind == TokKind.Delim && opener.Active && opener.CanOpen
                     && opener.DelimChar == dc)
@@ -58,7 +60,10 @@ internal static class BitMarkdownDelimiterResolver
                         && !(opener.Count % 3 == 0 && closer.Count % 3 == 0);
                     if (!oddMatch)
                     {
-                        var candidateInner = ToNodes(tokens.GetRange(openerIdx + 1, closerIdx - openerIdx - 1));
+                        var inner = Range(openerNode, closerNode, out height);
+                        if (height >= maxHeight) break;
+
+                        var candidateInner = ToNodes(inner);
                         used = processor.TryCreate(dc, opener.Count, closer.Count, candidateInner, out node);
                         if (used > 0 && node is not null)
                         {
@@ -69,39 +74,53 @@ internal static class BitMarkdownDelimiterResolver
                         // searching for an earlier opener instead of dropping the closer.
                     }
                 }
-                openerIdx--;
+                openerNode = openerNode.Previous;
             }
 
             if (!found)
             {
-                openersBottom[key] = closerIdx > 0 ? tokens[closerIdx - 1] : null;
+                openersBottom[key] = closerNode.Previous?.Value;
                 if (!closer.CanOpen) closer.Active = false;
-                closerIdx++;
+                closerNode = closerNode.Next;
                 continue;
             }
 
-            var op = tokens[openerIdx];
+            var op = openerNode!.Value;
 
             // Remove the inner tokens and splice in the wrapping node.
-            tokens.RemoveRange(openerIdx + 1, closerIdx - openerIdx - 1);
-            closerIdx = openerIdx + 1;
+            while (openerNode.Next != closerNode) list.Remove(openerNode.Next!);
 
             op.Count -= used;
             closer.Count -= used;
 
-            tokens.Insert(openerIdx + 1, new Tok { Kind = TokKind.Node, Node = node });
-            closerIdx = openerIdx + 2;
+            list.AddAfter(openerNode, new Tok { Kind = TokKind.Node, Node = node, Height = height + 1 });
 
             if (op.Count == 0)
             {
-                tokens.RemoveAt(openerIdx);
-                closerIdx--;
+                list.Remove(openerNode);
             }
             if (closer.Count == 0)
             {
-                tokens.RemoveAt(closerIdx);
+                var next = closerNode.Next;
+                list.Remove(closerNode);
+                closerNode = next;
             }
             // Re-evaluate from the opener neighbourhood to catch newly adjacent delimiters.
         }
+
+        tokens.Clear();
+        tokens.AddRange(list);
+    }
+
+    private static List<Tok> Range(LinkedListNode<Tok> opener, LinkedListNode<Tok> closer, out int height)
+    {
+        var range = new List<Tok>();
+        height = 0;
+        for (var current = opener.Next; current is not null && current != closer; current = current.Next)
+        {
+            range.Add(current.Value);
+            height = Math.Max(height, current.Value.Kind == TokKind.Node ? current.Value.Height : 1);
+        }
+        return range;
     }
 }

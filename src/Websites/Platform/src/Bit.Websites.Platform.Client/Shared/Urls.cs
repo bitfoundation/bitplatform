@@ -19,7 +19,6 @@ public static class Urls
     public const string Templates = "/templates";
 
     public const string Bswup = "https://bswup.bitplatform.dev/";
-    public const string Besql = "/besql";
     public const string Butil = "https://butil.bitplatform.dev/";
     public const string Brouter = "https://brouter.bitplatform.dev/";
     public const string Bmotion = "https://bmotion.bitplatform.dev/";
@@ -37,6 +36,7 @@ public static class Urls
     public const string Bortable = "https://bortable.bitplatform.dev/";
     public const string Blex = "https://blex.bitplatform.dev/";
     public const string Belemetry = "https://belemetry.bitplatform.dev/";
+    public const string Bheadless = "https://bheadless.bitplatform.dev/";
 
     public const string Cli = "/toolings/cli";
     public const string Minifier = "/toolings/minifier";

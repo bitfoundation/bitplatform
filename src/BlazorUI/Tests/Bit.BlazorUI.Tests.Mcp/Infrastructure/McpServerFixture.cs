@@ -207,7 +207,7 @@ public class McpServerFixture
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
-        // Long, because an un-warmed checkout builds the whole demo - and its 110 component pages -
+        // Long, because an un-warmed checkout builds the whole demo - and its 150 component pages -
         // before the host starts.
         var deadline = DateTime.UtcNow.AddMinutes(8);
 

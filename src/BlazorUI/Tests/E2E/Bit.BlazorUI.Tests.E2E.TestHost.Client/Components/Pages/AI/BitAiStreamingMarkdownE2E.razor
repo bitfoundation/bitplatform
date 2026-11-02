@@ -1,0 +1,156 @@
+﻿@page "/e2e/aistreamingmarkdown"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiStreamingMarkdown E2E</PageTitle>
+
+<h1>BitAiStreamingMarkdown</h1>
+
+@* The text grows one step at a time, each step cut where a model's tokens would leave the Markdown half written: a bold
+   run without its closing marker, an emphasis, a code span, a fence, a table row. Finish ends the stream. *@
+<E2ESection Id="steps" Title="Progressive rendering">
+    <p>
+        Step: <span id="sm-step">@_step</span>,
+        streaming: <span id="sm-streaming">@(_streaming ? "yes" : "no")</span>
+    </p>
+    <button id="sm-next" @onclick="Next">Next step</button>
+    <button id="sm-finish" @onclick="Finish">Finish</button>
+    <button id="sm-reset" @onclick="Reset">Reset</button>
+    <pre id="sm-raw">@_stepText</pre>
+    <div style="width:640px">
+        <BitAiStreamingMarkdown Id="sm-steps" Text="@_stepText" IsStreaming="_streaming" />
+    </div>
+</E2ESection>
+
+@* A Markdown answer played by the scripted transport, a few characters every 25ms, drawn as it arrives. *@
+<E2ESection Id="transport" Title="Streamed by the transport">
+    <button id="sm-send" @onclick="SendAsync">Send</button>
+    <span id="sm-live-state">@_liveState</span>
+    <div style="width:640px">
+        @if (LiveText is { } part)
+        {
+            <BitAiStreamingMarkdown Id="sm-live" Text="@part.Text" IsStreaming="@part.IsStreaming" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="caret" Title="Caret">
+    <BitAiStreamingMarkdown Id="sm-caret" Text="The answer is still being" IsStreaming />
+    <BitAiStreamingMarkdown Id="sm-caret-done" Text="The answer is complete." />
+    <BitAiOptionsProvider UiOptions="_noCaret">
+        <BitAiStreamingMarkdown Id="sm-caret-off" Text="No caret is drawn after this" IsStreaming />
+    </BitAiOptionsProvider>
+    <div class="bit-fam">
+        <BitAiStreamingMarkdown Id="sm-caret-fam" Text="ForceAnimation keeps the caret blinking" IsStreaming />
+    </div>
+</E2ESection>
+
+<E2ESection Id="options" Title="Markdown options">
+    <BitAiOptionsProvider UiOptions="_hardBreaks">
+        <BitAiStreamingMarkdown Id="sm-hard" Text="@LineBreakText" />
+    </BitAiOptionsProvider>
+    <BitAiStreamingMarkdown Id="sm-soft" Text="@LineBreakText" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:480px">
+        <BitAiStreamingMarkdown Id="sm-rtl" Dir="BitDir.Rtl" Text="@RtlText" IsStreaming />
+    </div>
+    <div dir="rtl" style="width:480px">
+        <BitAiStreamingMarkdown Id="sm-rtl-inherited" Text="@RtlText" IsStreaming />
+    </div>
+    <div style="width:480px">
+        <BitAiStreamingMarkdown Id="sm-ltr" Text="The answer is still being" IsStreaming />
+    </div>
+</E2ESection>
+
+<E2ESection Id="styles" Title="Style & Class">
+    <div style="--bit-AiMarkdownView-caret-color: rgb(1, 2, 3); --bit-AiMarkdownView-heading-color: rgb(4, 5, 6)">
+        <BitAiStreamingMarkdown Id="sm-vars" Text="@StyledText" IsStreaming />
+    </div>
+    <BitAiStreamingMarkdown Id="sm-parts"
+                            Text="@StyledText"
+                            IsStreaming
+                            Class="e2e-sm-class"
+                            Style="outline: 2px solid rgb(7, 8, 9)"
+                            Classes="@(new() { Root = "e2e-sm-root", Markdown = new() { Root = "e2e-sm-view", Heading = "e2e-sm-heading", Caret = "e2e-sm-caret" } })"
+                            Styles="@(new() { Root = "padding: 6px", Markdown = new() { Heading = "letter-spacing: 3px", Caret = "width: 20px" } })" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] Steps =
+    [
+        "The **short",
+        " answer** is *ma",
+        "tters*.\n\nCall `State",
+        "HasChanged` sparingly.\n\n```csharp\nvar total = items.Sum(i => i.Price",
+        ");\n``",
+        "`\n\n| Mode | Runs on |\n| --- | --- |\n| Server | The ser",
+        "ver |\n| WebAssembly | The browser |\n\nAnd a **dangling",
+    ];
+
+    private const string LineBreakText = "Server rendering is fast to first paint.\nWebAssembly works offline.";
+
+    private const string RtlText = "پاسخ هنوز در حال نوشتن است";
+
+    private const string StyledText = "#### A styled answer\n\nStill being written";
+
+    private readonly BitAiUiOptions _noCaret = BitAiUiOptions.Default with { ShowStreamingCaret = false };
+    private readonly BitAiUiOptions _hardBreaks = BitAiUiOptions.Default with
+    {
+        Markdown = BitAiMarkdownOptions.Default with { SoftBreaksAsHardBreaks = true },
+    };
+
+    private int _step;
+    private string _stepText = string.Empty;
+    private bool _streaming = true;
+
+    private void Next()
+    {
+        if (_step >= Steps.Length) return;
+
+        _stepText += Steps[_step++];
+    }
+
+    private void Finish() => _streaming = false;
+
+    private void Reset()
+    {
+        _step = 0;
+        _stepText = string.Empty;
+        _streaming = true;
+    }
+
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Markdown, 25));
+    private BitAiRenderScheduler? _scheduler;
+    private string _liveState = "Idle";
+
+    private BitAiTextPart? LiveText => _session.Conversation.Messages
+        .LastOrDefault(m => m.Role.IsAssistant)?.PartsOf<BitAiTextPart>().FirstOrDefault();
+
+    protected override void OnInitialized()
+    {
+        _scheduler = new BitAiRenderScheduler(() => InvokeAsync(StateHasChanged));
+        _session.StateChanged += OnSessionChanged;
+    }
+
+    private void OnSessionChanged() => _scheduler?.Request();
+
+    private async Task SendAsync()
+    {
+        _liveState = "Streaming";
+
+        await _session.SubmitAsync("Explain the render modes");
+
+        _liveState = "Complete";
+        if (_scheduler is not null) await _scheduler.FlushAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _session.StateChanged -= OnSessionChanged;
+        await _session.DisposeAsync();
+        if (_scheduler is not null) await _scheduler.DisposeAsync();
+    }
+}

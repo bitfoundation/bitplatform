@@ -1,0 +1,506 @@
+﻿@page "/tabs"
+@using Bit.BlazeDb.Browser
+@implements IAsyncDisposable
+
+<PageTitle>Multiple tabs · BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Multiple tabs" Title="One writer, any number of readers"
+            Lead="A database in the browser belongs to the tab holding its Web Lock. Every other tab can open the same database read-only and reload whenever the writer checkpoints. Only the notification crosses tabs - the data always travels through storage, so a replica can never see a state the writer has not committed.">
+    <span class="bb-badge bd-badge-neutral">Web Locks elect the writer</span>
+    <span class="bb-badge bd-badge-neutral">BroadcastChannel carries the signal</span>
+    @if (_opfs is { } opfs)
+    {
+        <span class="bb-badge bd-badge-neutral">@(opfs ? "OPFS writable here" : "No writable OPFS here - IndexedDB instead")</span>
+    }
+</PageHeader>
+
+<Section Title="The wiring"
+         Lead="The writer hands its checkpoints to a publisher; each replica opens read-only storage, sets ReadOnly, and lets a replica subscription reload it.">
+    <div class="bb-split">
+        <CodeBlock Title="The writer tab" Code="@WriterSnippet" />
+        <CodeBlock Title="Every other tab" Code="@ReplicaSnippet" />
+    </div>
+    <div class="bb-grid">
+        <div class="bb-card">
+            <h4 class="bb-card-title">A replica waits for the writer</h4>
+            <p class="bb-card-desc"><code>CreateReadOnlyAsync</code> returns <code>null</code> when the database does not exist yet, rather than inventing an empty one of its own.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">A replica cannot write</h4>
+            <p class="bb-card-desc">Its storage refuses every write, so forgetting <code>ReadOnly = true</code> cannot turn it into a second, unelected writer. With it, the database refuses writes itself.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">A reload is all or nothing</h4>
+            <p class="bb-card-desc">It reads the whole generation - manifest, snapshot and log - before it touches a row, and re-reads the manifest at the end. A reload that fails leaves the replica serving what it had.</p>
+        </div>
+        <div class="bb-card">
+            <h4 class="bb-card-title">Restored from the back/forward cache</h4>
+            <p class="bb-card-desc">A writer tab that comes back re-checks that it still holds the lock. If another tab took over, it stops writing - the data stays in memory and <code>db.LastBackgroundError</code> says why.</p>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Try it across tabs"
+         Lead="Press Become the writer here, then open this page in a second tab and press Open as a replica there. Insert in the writer, checkpoint, and watch the other tab catch up. Both roles also work side by side in this one tab - the publisher and the replica each get a BroadcastChannel of their own.">
+    <div class="bb-split">
+        <Panel Title="Writer" IconName="lock" Sub="@(_writer is null ? "closed" : $"{_writerBackend} · holds blazedb:{DatabaseName}")">
+            <div class="bd-actions">
+                @if (_writer is null)
+                {
+                    <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="OpenWriterAsync">
+                        <Icon Name="lock" /> Become the writer
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="InsertAsync">
+                        <Icon Name="plus" /> Insert a person
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="FlushAsync">
+                        <Icon Name="download" /> FlushAsync - durable, not announced
+                    </button>
+                    <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="CheckpointAsync">
+                        <Icon Name="layers" /> CheckpointAsync - announced to replicas
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="WriterReloadAsync">
+                        <Icon Name="refresh" /> ReloadAsync on the writer
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="CloseWriterAsync">
+                        <Icon Name="close" /> Close - release the lock
+                    </button>
+                }
+            </div>
+            @if (_writer is not null)
+            {
+                <PeopleList People="_writer.GetTable(Person.Table)" />
+            }
+        </Panel>
+
+        <Panel Title="Replica" IconName="search" Sub="@(_replica is null ? "closed" : $"{_replicaBackend} · read-only")">
+            <div class="bd-actions">
+                @if (_replica is null)
+                {
+                    <button type="button" class="btn btn-primary" disabled="@_busy" @onclick="OpenReplicaAsync">
+                        <Icon Name="search" /> Open as a replica
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ReplicaReloadAsync">
+                        <Icon Name="refresh" /> Reload now
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ReplicaWrite">
+                        <Icon Name="plus" /> Try to write
+                    </button>
+                    <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="CloseReplicaAsync">
+                        <Icon Name="close" /> Close
+                    </button>
+                }
+            </div>
+            @if (_replica is not null)
+            {
+                <dl class="bb-params">
+                    <dt>db.IsReadOnly</dt>
+                    <dd>@_replica.IsReadOnly.ToString().ToLowerInvariant()</dd>
+                    <dt>storage.IsReadOnly</dt>
+                    <dd>@StorageIsReadOnly(_replicaStorage)</dd>
+                    <dt>Reloads</dt>
+                    <dd>@_reloads</dd>
+                    <dt>Changed with IsReset</dt>
+                    <dd>@_resets</dd>
+                    <dt>sync.LastError</dt>
+                    <dd>@(_replicaSync?.LastError?.Message ?? "none")</dd>
+                </dl>
+                <PeopleList People="_replica.GetTable(Person.Table)" />
+            }
+        </Panel>
+    </div>
+
+    <div class="bb-split">
+        <Panel Title="Trace" IconName="history" Flush="true">
+            <Actions>
+                @if (_busy)
+                {
+                    <span class="bb-spinner"></span>
+                }
+            </Actions>
+            <ChildContent>
+                <ScenarioSteps Steps="_log.Steps" EmptyText="Become the writer to start." />
+            </ChildContent>
+        </Panel>
+        <Panel Title="Housekeeping" IconName="trash">
+            <p>
+                The demo database is called <code>@DatabaseName</code> and lives in this origin's storage until it is
+                deleted. Deleting needs the writer lock, so close the writer - here and in every other tab - first.
+            </p>
+            <button type="button" class="btn btn-secondary" disabled="@(_busy || _writer is not null || _replica is not null)" @onclick="DeleteAsync">
+                <Icon Name="trash" /> BlazeDbDatabase.DeleteAsync(storage)
+            </button>
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="Choosing the backend"
+         Lead="OPFS is the fast path. Where it cannot be written from the main thread - Firefox private windows, Safari before 26, which can read OPFS but lacks createWritable - BlazeDbIndexedDbStorage takes its place with the same CreateAsync and CreateReadOnlyAsync pair. This page picks one exactly the way the snippet does.">
+    <div class="bb-split">
+        <CodeBlock Title="Pick a backend" Code="@ChooseSnippet" />
+        <Panel Title="This browser" IconName="info">
+            <dl class="bb-params">
+                <dt>BlazeDbIndexedDbStorage.IsOpfsAvailableAsync()</dt>
+                <dd>@(_opfs?.ToString().ToLowerInvariant() ?? "…")</dd>
+                <dt>BlazeDbTabSync.IsSupportedAsync()</dt>
+                <dd>@(_broadcast?.ToString().ToLowerInvariant() ?? "…")</dd>
+            </dl>
+            <p class="bd-foot">
+                Both backends need the Web Locks API to elect the writer. On a browser without it
+                <code>CreateAsync</code> throws rather than guess; pass <code>allowWithoutWebLocks: true</code> only when
+                the application guarantees a single tab. Each backend imports its ES module from
+                <code>_content/Bit.BlazeDb/</code> the first time it is used; every <code>CreateAsync</code> takes a
+                <code>moduleUrl</code> for an app that serves the modules from somewhere else - and the IndexedDB
+                backend an <code>opfsModuleUrl</code> as well, since the writer lock and the storage estimate live in the
+                OPFS module.
+            </p>
+        </Panel>
+    </div>
+    <Callout Tone="info" Title="This site's own database takes the simple road.">
+        The database behind the other pages opens OPFS for writing and, when another tab already holds it, falls back to
+        an in-memory database instead of a replica - open the site in a second tab and the storage badge in the corner
+        says so. An application that wants every tab to show the same data uses the wiring on this page.
+    </Callout>
+</Section>
+
+@code {
+    private const string DatabaseName = "blazedb-tabs-demo";
+
+    private static readonly string[] Names =
+        ["Ada Lovelace", "Grace Hopper", "Alan Turing", "Katherine Johnson", "Barbara Liskov", "Edsger Dijkstra", "Margaret Hamilton", "Donald Knuth"];
+
+    private bool? _opfs;
+    private bool? _broadcast;
+    private bool _busy;
+    private readonly ScenarioLog _log = new();
+
+    private IDisposable? _writerStorage;
+    private BlazeDbDatabase? _writer;
+    private BlazeDbTabSync? _publisher;
+    private string _writerBackend = "";
+
+    private IDisposable? _replicaStorage;
+    private BlazeDbDatabase? _replica;
+    private BlazeDbTabSync? _replicaSync;
+    private string _replicaBackend = "";
+    private int _reloads;
+    private int _resets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _opfs = await BlazeDbIndexedDbStorage.IsOpfsAvailableAsync();
+            _broadcast = await BlazeDbTabSync.IsSupportedAsync();
+        }
+        catch (Exception ex)
+        {
+            _log.Error("The browser modules could not be loaded", ex.GetType().Name, ex.Message);
+        }
+    }
+
+    private async Task Busy(Func<Task> work)
+    {
+        _busy = true;
+        try
+        {
+            await work();
+        }
+        catch (Exception ex)
+        {
+            _log.Error("Unexpected exception", ex.GetType().Name, ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    // ------------------------------------------------------------------ writer
+
+    private Task OpenWriterAsync() => Busy(async () =>
+    {
+        IDisposable storage;
+        try
+        {
+            if (_opfs is true)
+            {
+                var opfs = await BlazeDbOpfsStorage.CreateAsync(DatabaseName);
+                (storage, _writerBackend) = (opfs, "OPFS");
+            }
+            else
+            {
+                var idb = await BlazeDbIndexedDbStorage.CreateAsync(DatabaseName);
+                (storage, _writerBackend) = (idb, "IndexedDB");
+            }
+        }
+        catch (BlazeDbDatabaseLockedException ex)
+        {
+            _log.Error("Another tab is the writer", "BlazeDbDatabaseLockedException", $"{ex.Message} Open a replica here instead, or close the writer there.");
+            return;
+        }
+
+        _publisher = await BlazeDbTabSync.CreatePublisherAsync(DatabaseName);
+        try
+        {
+            _writer = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+            {
+                Storage = (IBlazeDbStorage)storage,
+                OnCheckpoint = _publisher.PublishCheckpoint,
+            }.AddTable(Person.Table));
+        }
+        catch
+        {
+            await _publisher.DisposeAsync();
+            _publisher = null;
+            storage.Dispose();
+            throw;
+        }
+
+        _writerStorage = storage;
+        _log.Ok("This tab is the writer",
+            $"await {(_writerBackend == "OPFS" ? "BlazeDbOpfsStorage" : "BlazeDbIndexedDbStorage")}.CreateAsync(\"{DatabaseName}\")",
+            $"It won the Web Lock blazedb:{DatabaseName}. people.Count → {_writer.GetTable(Person.Table).Count}");
+    });
+
+    private Task InsertAsync() => Busy(() =>
+    {
+        var people = _writer!.GetTable(Person.Table);
+        var id = people.Count == 0 ? 1 : people.Scan().Max(p => p.Id) + 1;
+        people.Insert(new Person { Id = id, Name = Names[(id - 1) % Names.Length], City = "London", Role = "engineer", Joined = DateOnly.FromDateTime(DateTime.Today) });
+        _log.Add($"Writer inserted person {id}", "people.Insert(row)",
+            "Committed in the writer's memory and queued for its log. Replicas see nothing yet.");
+        return Task.CompletedTask;
+    });
+
+    private Task FlushAsync() => Busy(async () =>
+    {
+        await _writer!.FlushAsync();
+        _log.Add("Writer flushed", "await db.FlushAsync()",
+            "The commits are in storage now, but nothing was announced: a replica picks them up on its next reload, whenever that is.");
+    });
+
+    private Task CheckpointAsync() => Busy(async () =>
+    {
+        await _writer!.CheckpointAsync();
+        _log.Ok("Writer checkpointed", "await db.CheckpointAsync()",
+            "OnCheckpoint ran, the publisher posted the new generation, and every replica subscribed to it reloads.");
+    });
+
+    private Task WriterReloadAsync() => Busy(async () =>
+    {
+        try
+        {
+            await _writer!.ReloadAsync();
+            _log.Error("Reloaded", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("ReloadAsync is for replicas", "InvalidOperationException", ex.Message);
+        }
+    });
+
+    private Task CloseWriterAsync() => Busy(async () =>
+    {
+        await CloseWriterCoreAsync();
+        _log.Add("Writer closed", "await db.DisposeAsync(); storage.Dispose()",
+            "The database flushed what was pending, and disposing the storage released the lock for the next tab.");
+    });
+
+    private async Task CloseWriterCoreAsync()
+    {
+        if (_writer is not null)
+        {
+            await _writer.DisposeAsync();
+            _writer = null;
+        }
+        if (_publisher is not null)
+        {
+            await _publisher.DisposeAsync();
+            _publisher = null;
+        }
+        _writerStorage?.Dispose();
+        _writerStorage = null;
+    }
+
+    // ----------------------------------------------------------------- replica
+
+    /// <summary>Opened with CreateReadOnlyAsync, a storage holds no lock and refuses writes on its own.</summary>
+    private static string StorageIsReadOnly(IDisposable? storage) => storage switch
+    {
+        BlazeDbOpfsStorage opfs => opfs.IsReadOnly.ToString().ToLowerInvariant(),
+        BlazeDbIndexedDbStorage idb => idb.IsReadOnly.ToString().ToLowerInvariant(),
+        _ => "-",
+    };
+
+    private Task OpenReplicaAsync() => Busy(async () =>
+    {
+        IDisposable? storage;
+        if (_opfs is true)
+        {
+            storage = await BlazeDbOpfsStorage.CreateReadOnlyAsync(DatabaseName);
+            _replicaBackend = "OPFS";
+        }
+        else
+        {
+            storage = await BlazeDbIndexedDbStorage.CreateReadOnlyAsync(DatabaseName);
+            _replicaBackend = "IndexedDB";
+        }
+
+        if (storage is null)
+        {
+            _log.Error("There is no database to follow yet", $"CreateReadOnlyAsync(\"{DatabaseName}\") → null",
+                "Become the writer first - here or in another tab - so there is something to read.");
+            return;
+        }
+
+        try
+        {
+            _replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+            {
+                Storage = (IBlazeDbStorage)storage,
+                ReadOnly = true,
+            }.AddTable(Person.Table));
+        }
+        catch
+        {
+            storage.Dispose();
+            throw;
+        }
+
+        _replicaStorage = storage;
+        _reloads = 0;
+        _resets = 0;
+        _replica.Changed += (_, e) =>
+        {
+            if (e.IsReset)
+            {
+                _resets++;
+            }
+        };
+        _replicaSync = await BlazeDbTabSync.CreateReplicaAsync(DatabaseName, _replica, onChanged: () =>
+        {
+            _reloads++;
+            _log.Ok("Replica reloaded", "BlazeDbTabSync → await replica.ReloadAsync()",
+                $"A checkpoint was announced. people.Count → {_replica?.GetTable(Person.Table).Count}");
+            return new ValueTask(InvokeAsync(StateHasChanged));
+        });
+
+        _log.Ok("This tab follows the writer", $"await {(_replicaBackend == "OPFS" ? "BlazeDbOpfsStorage" : "BlazeDbIndexedDbStorage")}.CreateReadOnlyAsync(\"{DatabaseName}\")",
+            $"Opened with ReadOnly = true and subscribed to checkpoints. people.Count → {_replica.GetTable(Person.Table).Count}");
+    });
+
+    private Task ReplicaReloadAsync() => Busy(async () =>
+    {
+        await _replicaSync!.RefreshAsync();
+        _log.Add("Replica reloaded on request", "await sync.RefreshAsync()",
+            "It read the whole generation from storage - everything the writer had flushed, checkpointed or not.");
+    });
+
+    private void ReplicaWrite()
+    {
+        try
+        {
+            _replica!.GetTable(Person.Table).Insert(new Person { Id = 1000, Name = "Not allowed" });
+            _log.Error("Written", "unexpected");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("The replica refused the write", "InvalidOperationException", ex.Message);
+        }
+    }
+
+    private Task CloseReplicaAsync() => Busy(async () =>
+    {
+        await CloseReplicaCoreAsync();
+        _log.Add("Replica closed", "await sync.DisposeAsync(); await db.DisposeAsync()");
+    });
+
+    private async Task CloseReplicaCoreAsync()
+    {
+        if (_replicaSync is not null)
+        {
+            await _replicaSync.DisposeAsync();
+            _replicaSync = null;
+        }
+        if (_replica is not null)
+        {
+            await _replica.DisposeAsync();
+            _replica = null;
+        }
+        _replicaStorage?.Dispose();
+        _replicaStorage = null;
+    }
+
+    // ------------------------------------------------------------ housekeeping
+
+    private Task DeleteAsync() => Busy(async () =>
+    {
+        try
+        {
+            if (_opfs is true)
+            {
+                using var storage = await BlazeDbOpfsStorage.CreateAsync(DatabaseName);
+                await BlazeDbDatabase.DeleteAsync(storage);
+            }
+            else
+            {
+                using var storage = await BlazeDbIndexedDbStorage.CreateAsync(DatabaseName);
+                await BlazeDbDatabase.DeleteAsync(storage);
+            }
+            _log.Ok("Deleted", "await BlazeDbDatabase.DeleteAsync(storage)", "The manifest, snapshot and log are gone; a replica now finds nothing to open.");
+        }
+        catch (BlazeDbDatabaseLockedException ex)
+        {
+            _log.Error("Another tab holds the writer lock", "BlazeDbDatabaseLockedException", ex.Message);
+        }
+    });
+
+    public async ValueTask DisposeAsync()
+    {
+        await CloseReplicaCoreAsync();
+        await CloseWriterCoreAsync();
+    }
+
+    private const string WriterSnippet = """
+        var sync = await BlazeDbTabSync.CreatePublisherAsync("mydb");
+
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+        {
+            Storage = await BlazeDbOpfsStorage.CreateAsync("mydb"),   // takes the writer lock
+            OnCheckpoint = sync.PublishCheckpoint,                     // announce each checkpoint
+        }.AddTable(Person.Table));
+        """;
+
+    private const string ReplicaSnippet = """
+        var storage = await BlazeDbOpfsStorage.CreateReadOnlyAsync("mydb");   // null: no database yet
+
+        var replica = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+        {
+            Storage = storage,
+            ReadOnly = true,
+        }.AddTable(Person.Table));
+
+        // Reload on every announced checkpoint, then re-render.
+        await BlazeDbTabSync.CreateReplicaAsync("mydb", replica, onChanged: RefreshUiAsync);
+
+        replica.Changed += (_, e) => { /* e.IsReset: the whole table was replaced */ };
+        """;
+
+    private const string ChooseSnippet = """
+        IBlazeDbStorage storage = await BlazeDbIndexedDbStorage.IsOpfsAvailableAsync()
+            ? await BlazeDbOpfsStorage.CreateAsync("mydb")
+            : await BlazeDbIndexedDbStorage.CreateAsync("mydb");
+
+        // A replica asks the same question, and gets the same answer:
+        IBlazeDbStorage? replicaStorage = await BlazeDbIndexedDbStorage.IsOpfsAvailableAsync()
+            ? await BlazeDbOpfsStorage.CreateReadOnlyAsync("mydb")
+            : await BlazeDbIndexedDbStorage.CreateReadOnlyAsync("mydb");
+        """;
+}

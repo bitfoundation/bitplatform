@@ -136,6 +136,10 @@ public class BitHeaderE2ETests : E2ETestBase
             var mainColor = await ResolveAsync("color", $"var({main})");
             Assert.AreNotEqual(transparent, mainColor, $"{main} resolves to a color");
 
+            // The text of the borderless variants is read on the page rather than over the role's fill, so it is drawn in
+            // the role's text color (role-text).
+            var textColor = await ResolveAsync("color", $"var(--bit-clr-{E2EColors.TextToken(suffix)})");
+
             var fill = Page.Locator($"#color-fill-{name}");
             await Expect(fill).ToHaveClassAsync(HasClass($"bit-hdr-{suffix}"));
             await Expect(fill).ToHaveCSSAsync("background-color", mainColor);
@@ -143,10 +147,10 @@ public class BitHeaderE2ETests : E2ETestBase
 
             var outline = Page.Locator($"#color-outline-{name}");
             await Expect(outline).ToHaveCSSAsync("border-top-color", mainColor);
-            await Expect(outline).ToHaveCSSAsync("color", mainColor);
+            await Expect(outline).ToHaveCSSAsync("color", textColor);
 
             var text = Page.Locator($"#color-text-{name}");
-            await Expect(text).ToHaveCSSAsync("color", mainColor);
+            await Expect(text).ToHaveCSSAsync("color", textColor);
             await Expect(text).ToHaveCSSAsync("background-color", transparent);
 
             var disabled = Page.Locator($"#color-dis-{name}");

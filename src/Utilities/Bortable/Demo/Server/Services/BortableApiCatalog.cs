@@ -300,6 +300,11 @@ public static class BortableApiCatalog
             // same on every record and documented nowhere; listing it would bury the members someone
             // wrote on purpose.
             if (method.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), inherit: false)) continue;
+            // An override of what every object has, which the type does not document, says nothing about the
+            // type - and split into words it answers questions it has nothing to do with: to a search,
+            // GetHashCode is "code", and the top hit for anything done from code.
+            var summary = Documentation(method, BortableXmlDocs.GetSummary);
+            if (summary is null && method.Name is "Equals" or "GetHashCode" or "ToString") continue;
 
             var signature = Signature(method, nullability);
             if (seen.Add($"{method.Name}{signature}") is false) continue;
@@ -310,7 +315,7 @@ public static class BortableApiCatalog
                 Kind = "Method",
                 Type = FriendlyName(method.ReturnType, Annotations(() => nullability.Create(method.ReturnParameter))),
                 Signature = signature,
-                Summary = Documentation(method, BortableXmlDocs.GetSummary),
+                Summary = summary,
                 Remarks = Documentation(method, BortableXmlDocs.GetRemarks)
             };
         }

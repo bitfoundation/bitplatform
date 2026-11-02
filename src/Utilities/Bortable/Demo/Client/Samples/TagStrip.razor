@@ -1,0 +1,12 @@
+﻿@* A horizontal list: a row of tags that wraps when it is full. *@
+
+<Bortable @bind-Items="_tags" TItem="string" Id="layout-tags" AriaLabel="Tags"
+          Class="demo-strip" ItemClass="demo-chip" GhostClass="demo-ghost">
+    <ItemTemplate Context="tag">@tag</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Tags:</strong> <span id="layout-tags-order">@string.Join(", ", _tags)</span></p>
+
+@code {
+    private IList<string> _tags = new List<string> { "blazor", "dotnet", "drag-and-drop", "sortable", "css", "a11y" };
+}

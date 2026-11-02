@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Bit.BevTools.Tests;
@@ -154,7 +155,11 @@ public class LoaderTests : BunitContext
     {
         var services = ScopeServices(environment: "Production");
         services.AddBitBevToolsServices();
-        services.AddBitBevToolsLoaderServices(o => o.AllowInMultiUserHost = true);
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => ValueTask.FromResult(true);
+        });
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
         var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
@@ -279,6 +284,82 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public async Task Authorize_decides_who_sees_a_BevTools_registered_at_startup_too()
+    {
+        var accepted = false;
+        Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.Authorize = _ => ValueTask.FromResult(accepted);
+        });
+        var cut = RenderHost();
+        var loader = cut.Instance.Loader;
+
+        Assert.IsTrue(loader.IsActive);
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+        Assert.IsFalse(await loader.IsAuthorizedAsync());
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
+        StringAssert.Contains(loader.Problem, "did not accept");
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+
+        accepted = true;
+        Assert.IsTrue(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()), loader.Problem);
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(cut.FindAll(".bev-root")));
+
+        accepted = false;
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
+        StringAssert.Contains(loader.Problem, "did not accept");
+        cut.WaitForAssertion(() => Assert.IsEmpty(cut.FindAll(".bev-root")));
+    }
+
+    [TestMethod]
+    public async Task An_open_a_newer_open_overtook_does_not_act_on_its_authorization()
+    {
+        var first = new TaskCompletionSource<bool>();
+        var answers = new Queue<Task<bool>>(new[] { first.Task, Task.FromResult(false) });
+        Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.Authorize = _ => new ValueTask<bool>(answers.Dequeue());
+        });
+        var cut = RenderHost();
+        var loader = cut.Instance.Loader;
+
+        var overtaken = Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync());
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync()));
+        first.SetResult(true);
+
+        Assert.IsFalse(await overtaken);
+        Assert.IsEmpty(cut.FindAll(".bev-root"));
+    }
+
+    [TestMethod]
+    public async Task Authorize_runs_as_BevTools_own_work()
+    {
+        var authorization = new TaskCompletionSource<bool>();
+        var resolved = new List<BevToolsSession?>();
+        Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.Authorize = async _ =>
+            {
+                resolved.Add(SessionResolver.Resolve());
+                await authorization.Task;
+                resolved.Add(SessionResolver.Resolve());
+                return true;
+            };
+        });
+        var cut = RenderHost();
+
+        var opening = Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync());
+        authorization.SetResult(true);
+
+        Assert.IsTrue(await opening);
+        Assert.HasCount(2, resolved);
+        Assert.IsTrue(resolved.All(session => session is null), "requests, logs and activities of the callback are not the app's, before or after it awaits");
+    }
+
+    [TestMethod]
     public void By_default_BevTools_registers_at_startup_in_Development_only()
     {
         var development = new ServiceCollection().AddSingleton<IHostEnvironment>(new StubEnvironment("Development")).AddBitBevToolsLoaderServices();
@@ -355,6 +436,10 @@ public class LoaderTests : BunitContext
         {
             o.RegisterAtStartup = false;
             o.AllowInMultiUserHost = allow;
+            if (allow)
+            {
+                o.Authorize = _ => ValueTask.FromResult(true);
+            }
         });
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
@@ -363,6 +448,155 @@ public class LoaderTests : BunitContext
         Assert.IsTrue(loader.CanOpen);
         Assert.IsTrue(await loader.OpenAsync());
         Assert.IsTrue(RuntimeAttachment.Resolve(scope.ServiceProvider)!.IsEnabled);
+    }
+
+    [TestMethod]
+    public async Task Allowing_it_in_a_server_process_outside_Development_takes_an_Authorize_callback_too()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(loader.CanOpen);
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "Authorize");
+        Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task Authorize_refusing_or_throwing_leaves_BevTools_unloaded(bool throws)
+    {
+        var asked = 0;
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ =>
+            {
+                asked++;
+                return throws ? throw new InvalidOperationException("no user") : ValueTask.FromResult(false);
+            };
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsTrue(loader.CanOpen, "the policy allows it; the callback is what refuses");
+        Assert.IsFalse(await loader.IsAuthorizedAsync());
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, throws ? "threw InvalidOperationException" : "did not accept");
+        Assert.IsFalse(loader.Problem!.Contains("no user", StringComparison.Ordinal), "the refused user is not shown what the callback threw");
+        Assert.AreEqual(2, asked, "asked again on open, never answered from a cache");
+        Assert.IsNull(RuntimeAttachment.Resolve(scope.ServiceProvider));
+    }
+
+    /// <summary>
+    /// The app renders its button through IsAuthorizedAsync for every visitor, on every render: a callback that throws for
+    /// anonymous visitors would otherwise write a warning with a stack trace each time.
+    /// </summary>
+    [TestMethod]
+    public async Task A_throwing_Authorize_is_logged_when_someone_opens_BevTools_not_whenever_the_button_is_rendered()
+    {
+        var logs = new ListLoggerProvider();
+        var services = ScopeServices(environment: "Production");
+        services.AddLogging(logging => logging.AddProvider(logs));
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => throw new InvalidOperationException("no user");
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        for (var render = 0; render < 3; render++)
+        {
+            Assert.IsFalse(await loader.IsAuthorizedAsync());
+        }
+
+        Assert.IsEmpty(logs.Entries);
+        Assert.IsFalse(await loader.OpenAsync());
+        var entry = logs.Entries.Single();
+        Assert.AreEqual(LogLevel.Warning, entry.Level);
+        Assert.AreEqual("no user", entry.Exception?.Message);
+        StringAssert.Contains(loader.Problem, "(logged)");
+    }
+
+    [TestMethod]
+    public async Task A_throwing_Authorize_is_not_said_to_be_logged_where_nothing_logs_it()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => throw new InvalidOperationException("no user");
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "Authorize threw InvalidOperationException");
+        Assert.IsFalse(loader.Problem!.Contains("(logged)", StringComparison.Ordinal), loader.Problem);
+    }
+
+    [TestMethod]
+    public async Task A_failure_of_BevTools_before_it_asks_Authorize_is_not_blamed_on_the_callback()
+    {
+        var asked = 0;
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.Authorize = _ =>
+            {
+                asked++;
+                return ValueTask.FromResult(true);
+            };
+        });
+        Context(services).Deferred(new ThrowingEntryPoint(new InvalidOperationException("boom")), "test");
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(await loader.OpenAsync());
+        StringAssert.Contains(loader.Problem, "Bit.BevTools failed before asking");
+        StringAssert.Contains(loader.Problem, "boom");
+        Assert.IsFalse(loader.Problem!.Contains("Authorize threw", StringComparison.Ordinal), loader.Problem);
+        Assert.AreEqual(0, asked, "a refusal: the callback is not asked outside BevTools' own work");
+    }
+
+    [TestMethod]
+    public async Task A_session_opened_outside_Development_in_a_server_process_reads_no_values_unless_told_to()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AllowInMultiUserHost = true;
+            o.Authorize = _ => ValueTask.FromResult(true);
+        });
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.IsTrue(await scope.ServiceProvider.GetRequiredService<BevToolsLoader>().OpenAsync());
+        var session = RuntimeAttachment.Resolve(scope.ServiceProvider)!;
+
+        Assert.AreEqual(BevValueAccess.None, session.ValueAccess);
+        var node = session.Inspector.Describe("Customer", new { Name = "Ada" });
+        Assert.AreEqual(BevRedactor.HiddenValue, node.Display);
+        Assert.IsFalse(node.IsExpandable);
     }
 
     [TestMethod]
@@ -403,12 +637,7 @@ public class LoaderTests : BunitContext
         var activator = scope.ServiceProvider.GetRequiredService<IComponentActivator>();
         Assert.IsInstanceOfType<BevToolsComponentActivator>(activator);
 
-#if NET9_0_OR_GREATER
         Assert.IsNotNull(((ConstructorInjected)activator.CreateInstance(typeof(ConstructorInjected))).Service);
-#else
-        // .NET 8's own activator has no constructor injection: such a component fails without BevTools too.
-        Assert.ThrowsExactly<MissingMethodException>(() => activator.CreateInstance(typeof(ConstructorInjected)));
-#endif
     }
 
     [TestMethod]
@@ -469,6 +698,34 @@ public class LoaderTests : BunitContext
         public bool TryAddServices(IServiceCollection services, BevToolsLoaderContext context, out string reason) => throw exception;
 
         public IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context) => throw exception;
+
+        public IDisposable BeginOwnWork() => throw exception;
+    }
+
+    private sealed class ListLoggerProvider : ILoggerProvider
+    {
+        public List<(string Category, LogLevel Level, Exception? Exception)> Entries { get; } = [];
+
+        public ILogger CreateLogger(string categoryName) => new Logger(this, categoryName);
+
+        public void Dispose()
+        {
+        }
+
+        private sealed class Logger(ListLoggerProvider provider, string category) : ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (category == "Bit.BevTools")
+                {
+                    provider.Entries.Add((category, logLevel, exception));
+                }
+            }
+        }
     }
 
     private sealed class CountingActivator : IComponentActivator

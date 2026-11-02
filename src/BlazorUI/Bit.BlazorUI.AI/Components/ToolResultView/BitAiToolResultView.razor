@@ -1,0 +1,28 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <div style="@Styles?.Header" class="bit-aitrv-hdr @Classes?.Header">
+        <i aria-hidden="true" style="@Styles?.Icon" class="bit-aitrv-ico @_ToolIcon @Classes?.Icon"></i>
+        <span style="@Styles?.Title" class="bit-aitrv-ttl @Classes?.Title">@(Part.ToolName ?? Strings.Result)</span>
+    </div>
+
+    <div style="@Styles?.Body" class="bit-aitrv-bdy @Classes?.Body">
+        @if (Part.Outcome.IsSuccess is false && Part.Outcome.Error is { } error)
+        {
+            <BitAiErrorView Error="error" Compact="true" />
+        }
+        else if (Part.Outcome.Text is { Length: > 0 } text)
+        {
+            <div style="@Styles?.Text" class="bit-aitrv-txt @Classes?.Text">@text</div>
+        }
+        else if (Part.Outcome.Value is { } value)
+        {
+            <BitAiJsonView Value="value" />
+        }
+    </div>
+</div>

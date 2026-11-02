@@ -8,7 +8,6 @@ public class ProjectSetup
     public string Database { get; set; } = "Sqlite";
     public string FilesStorage { get; set; } = "Local";
     public string Api { get; set; } = "Integrated";
-    public string Pipeline { get; set; } = "GitHub";
     public bool GitHubRepo { get; set; } = true;
     public string Module { get; set; } = "None";
     public string Captcha { get; set; } = "None";
@@ -18,7 +17,7 @@ public class ProjectSetup
     public bool Notification { get; set; } = true;
     public bool Cloudflare { get; set; } = true;
     public bool Redis { get; set; }
-    public bool SignalR { get; set; }
+    public bool SignalR { get; set; } = true;
     public bool OfflineDb { get; set; }
     public bool Sentry { get; set; }
     public bool AppInsights { get; set; }
@@ -39,7 +38,6 @@ public class ProjectSetup
         Database = other.Database;
         FilesStorage = other.FilesStorage;
         Api = other.Api;
-        Pipeline = other.Pipeline;
         GitHubRepo = other.GitHubRepo;
         Module = other.Module;
         Captcha = other.Captcha;
@@ -76,9 +74,8 @@ public class ProjectSetup
         StringBuilder command = new(withName ? $"bit new {Name} " : "bit new ");
 
         Choice(command, "captcha", Captcha, defaults.Captcha);
-        Choice(command, "pipeline", Pipeline, defaults.Pipeline);
 
-        if (Pipeline is "GitHub" && GitHubRepo)
+        if (GitHubRepo)
         {
             command.Append("--github-repo ");
         }
@@ -113,7 +110,7 @@ public class ProjectSetup
 
         Choice(command, "ide", Ide, defaults.Ide);
 
-        command.Append("--yes");
+        command.Append("--yes --non-interactive");
 
         return command.ToString();
     }
@@ -138,7 +135,6 @@ public class ProjectSetup
     {
         Database = "PostgreSQL",
         FilesStorage = "S3",
-        Redis = true,
-        SignalR = true
+        Redis = true
     };
 }

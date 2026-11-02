@@ -56,7 +56,7 @@ code and chooses for itself.
 ## Web Workers
 
 In the browser, decoding, encoding and resizing the editor's working copy run in a small pool of Web Workers
-(`_content/Bit.Bmage/bit-bmage-worker.js`) wherever the browser can do them there, which is everywhere with a 2D
+(`_content/Bit.Bmage.Blazor/bit-bmage-worker.js`) wherever the browser can do them there, which is everywhere with a 2D
 `OffscreenCanvas`: current Chrome, Edge, Firefox, and Safari from 16.4. The work is the browser's own either way; what
 changes is where it runs. The page's thread, which on WebAssembly is also .NET's, keeps painting and handling input while
 a photo decodes or encodes, and several decodes or encodes at once, as a batch makes, spread over several workers and

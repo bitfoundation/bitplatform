@@ -366,6 +366,114 @@ public class BitMarkdownPipelineTests
     }
 
     [TestMethod]
+    public void BitMarkdownPipelineShouldBoundTheNestingOfEmphasis()
+    {
+        var source = new string('*', 40_000) + "a" + new string('*', 40_000);
+
+        var document = BitMarkdownPipelines.Basic.Parse(source);
+
+        Assert.IsTrue(MaxDepth(document) <= 102);
+        Assert.IsTrue(BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownStrongNode>().Any());
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipelineShouldKeepEmphasisUnchangedWithinTheNestingLimit()
+    {
+        var document = BitMarkdownPipelines.Basic.Parse("*a **b** c* and ***d***");
+
+        Assert.AreEqual(2, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownEmphasisNode>().Count());
+        Assert.AreEqual(2, BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownStrongNode>().Count());
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipelineShouldShareOneUrlAcrossReferenceImages()
+    {
+        var source = "[d]: </a b c.png>\n\n" + string.Concat(Enumerable.Repeat("![x][d] ", 1_000));
+
+        var urls = BitMarkdownAstHelper.Descendants(BitMarkdownParser.Parse(source))
+            .OfType<BitMarkdownImageNode>().Select(image => image.Url).ToList();
+
+        Assert.AreEqual(1_000, urls.Count);
+        Assert.AreEqual("/a%20b%20c.png", urls[0]);
+        Assert.IsTrue(urls.All(url => ReferenceEquals(url, urls[0])));
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipelineShouldStopExpandingReferencesPastTheUrlBudget()
+    {
+        var source = $"[d]: /{new string('a', 100_000)}\n\n" + string.Concat(Enumerable.Repeat("[x][d] ", 20));
+
+        var links = BitMarkdownAstHelper.Descendants(BitMarkdownParser.Parse(source)).OfType<BitMarkdownLinkNode>().Count();
+
+        Assert.AreEqual(10, links);
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipelineShouldParseBlankRunsInsideAListItemInLinearTime()
+    {
+        BitMarkdownParser.Parse("- a\n\n  b");
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var document = BitMarkdownParser.Parse("- a" + new string('\n', 60_000) + "  b");
+        long elapsed = watch.ElapsedMilliseconds;
+
+        Assert.IsTrue(elapsed < 500, $"60K blank lines in a list item took {elapsed}ms");
+        var item = BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownListItemNode>().Single();
+        Assert.AreEqual(2, item.Children.OfType<BitMarkdownParagraphNode>().Count());
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipeTableShouldStopSynthesizingCellsPastTheBudget()
+    {
+        int columns = 2_000;
+        var source = "|" + string.Concat(Enumerable.Repeat("a|", columns)) + "\n"
+                     + "|" + string.Concat(Enumerable.Repeat("-|", columns)) + "\n"
+                     + string.Concat(Enumerable.Repeat("|\n", 1_000));
+
+        var table = BitMarkdownAstHelper.Descendants(BitMarkdownPipelines.GitHub.Parse(source))
+            .OfType<BitMarkdownTableNode>().Single();
+
+        Assert.AreEqual(50, table.Rows.Count);
+        Assert.IsTrue(table.Rows.All(row => row.Count == columns));
+    }
+
+    [TestMethod]
+    public void BitMarkdownPipelineShouldBlankDestinationsThatHoldControlCharacters()
+    {
+        var nodes = BitMarkdownAstHelper
+            .Descendants(BitMarkdownParser.Parse("![x](<https:&#9;//evil.example/a.png>) [y](<ht&#10;tps://evil.example>)"))
+            .ToList();
+
+        Assert.AreEqual(string.Empty, nodes.OfType<BitMarkdownImageNode>().Single().Url);
+        Assert.AreEqual(string.Empty, nodes.OfType<BitMarkdownLinkNode>().Single().Url);
+    }
+
+    [TestMethod]
+    public void BitMarkdownLinkHelpersShouldTreatASchemeWithoutSlashesAsExternal()
+    {
+        Assert.IsTrue(BitMarkdownLinkHelpers.IsExternalUrl("https:evil.example/path"));
+        Assert.IsTrue(BitMarkdownLinkHelpers.IsExternalUrl("HTTP:evil.example"));
+        Assert.IsFalse(BitMarkdownLinkHelpers.IsExternalUrl("/docs/http:page"));
+    }
+
+    private static int MaxDepth(BitMarkdownNode root)
+    {
+        int max = 0;
+        var stack = new Stack<(BitMarkdownNode Node, int Depth)>();
+        stack.Push((root, 0));
+        while (stack.Count > 0)
+        {
+            var (node, depth) = stack.Pop();
+            max = Math.Max(max, depth);
+            foreach (var list in node.ChildLists)
+            {
+                foreach (var child in list) stack.Push((child, depth + 1));
+            }
+        }
+        return max;
+    }
+
+    [TestMethod]
     public void BitMarkdownMathBlockShouldNotBreakAParagraphItDoesNotOpen()
     {
         var pipeline = new BitMarkdownPipelineBuilder().UseMathematics().Build();

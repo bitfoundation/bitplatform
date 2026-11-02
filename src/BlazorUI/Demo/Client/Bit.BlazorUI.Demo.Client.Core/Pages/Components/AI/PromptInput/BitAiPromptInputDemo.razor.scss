@@ -1,0 +1,19 @@
+﻿::deep {
+    .custom-class {
+        border-width: 2px;
+        border-color: var(--bit-clr-pri);
+    }
+
+    .custom-root {
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-input {
+        font-style: italic;
+    }
+
+    .custom-footer {
+        font-weight: bold;
+        color: var(--bit-clr-pri);
+    }
+}

@@ -14,14 +14,14 @@
     @if (HasAffix)
     {
         <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
-            @if (!string.IsNullOrEmpty(Field.Prefix))
+            @if (!string.IsNullOrEmpty(Context.Prefix))
             {
-                <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+                <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Context.Prefix</span>
             }
             @Control
-            @if (!string.IsNullOrEmpty(Field.Suffix))
+            @if (!string.IsNullOrEmpty(Context.Suffix))
             {
-                <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+                <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Context.Suffix</span>
             }
             @if (ShowClear)
             {
@@ -65,12 +65,13 @@
     // Splat first so the renderer's own id and ARIA wiring below always wins.
     private RenderFragment Control => @<input @attributes="ExtraAttributes"
                                               id="@Context.ElementId"
+                                              name="@Context.InputName"
                                               @ref="Element"
                                               class="@CssClass"
                                               type="text"
                                               list="@ListId"
                                               value="@DisplayText"
-                                              placeholder="@Field.Placeholder"
+                                              placeholder="@Context.Placeholder"
                                               disabled="@Disabled"
                                               readonly="@ReadOnly"
                                               autocomplete="off"
@@ -81,8 +82,47 @@
                                               aria-busy="@(Context.IsLoadingOptions ? "true" : null)"
                                               aria-describedby="@DescribedBy"
                                               @onchange="OnCommit"
+                                              @oninput="SearchHandler"
                                               @onblur="OnBlur" />
     ;
+
+    /// <summary>
+    /// The <c>input</c> handler of a field that searches its options, or none — so a combobox over a
+    /// fixed list still costs no round trip per keystroke.
+    /// </summary>
+    private EventCallback<ChangeEventArgs> SearchHandler
+        => Field.SearchMinLength is null ? default : EventCallback.Factory.Create<ChangeEventArgs>(this, OnSearchInput);
+
+    private CancellationTokenSource? _search;
+
+    /// <summary>
+    /// Searches once the user pauses. Nothing is written to the model here: what the box holds is
+    /// still text the user is typing, and only a choice — or leaving the box — commits it.
+    /// </summary>
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        var text = e.Value?.ToString() ?? "";
+        _search?.Cancel();
+        _search?.Dispose();
+        var cts = _search = new CancellationTokenSource();
+        try
+        {
+            if (Field.SearchDebounceMilliseconds > 0) await Task.Delay(Field.SearchDebounceMilliseconds, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return; // typed past
+        }
+        await Context.State.SearchOptionsAsync(Field, Context.Path, text);
+    }
+
+    public override void Dispose()
+    {
+        _search?.Cancel();
+        _search?.Dispose();
+        _search = null;
+        base.Dispose();
+    }
 
     protected override Task OnParametersSetAsync() => LoadOptionsAsync();
 
@@ -124,9 +164,16 @@
 
             foreach (var opt in Context.Options)
                 if (string.Equals(opt.Value, stored, StringComparison.Ordinal))
+                {
+                    // Remembered as a pick is: a search's results are replaced as soon as the user types, and
+                    // the record the form opened with then showed its bare id - written into the box under the
+                    // caret, so typing over "Northwind Bank" turned "con" into "C-0042".
+                    if (Field.SearchMinLength is not null) Context.State.RememberChoice(Context.Path, opt);
                     return opt.Label;
+                }
 
-            return stored;
+            // A search field's choice outlives the results it was picked from.
+            return Context.State.ChosenOption(Context.Path, stored)?.Label ?? stored;
         }
     }
 
@@ -135,16 +182,72 @@
     /// matches no label is kept verbatim, so a field that allows custom answers gets one and a field
     /// that does not still shows the user their own text next to the message explaining it.
     /// </summary>
-    private Task OnCommit(ChangeEventArgs e)
+    private async Task OnCommit(ChangeEventArgs e)
     {
         var text = e.Value?.ToString() ?? "";
-        if (text.Length == 0) return Context.SetValueAsync(null);
+        if (text.Length == 0)
+        {
+            await Context.SetValueAsync(null);
+            return;
+        }
 
+        if (Match(text) is { } chosen)
+        {
+            await Commit(chosen);
+            return;
+        }
+
+        if (Field.SearchMinLength is not null)
+        {
+            // Committed before the results for this text arrived — typed quickly and tabbed away. The
+            // search is run for exactly this text, and only what it finds can be the answer. Tracked, so a
+            // submit pressed while it runs waits for the answer instead of sending the value from before.
+            _search?.Cancel();
+            await Context.State.TrackEntryAsync(SearchAndCommitAsync(text));
+            return;
+        }
+
+        await Context.SetFromStringAsync(text);
+    }
+
+    private async Task SearchAndCommitAsync(string text)
+    {
+        await Context.State.SearchOptionsAsync(Field, Context.Path, text);
+        if (Match(text) is { } found)
+        {
+            await Commit(found);
+            return;
+        }
+
+        // A search field stands for a record, and text that names none is refused rather than
+        // stored as though it were one — unless the field takes answers of its own.
+        if (Field.Validators.Any(v => v is BormOneOfRule))
+        {
+            Context.State.RefuseEntry(Context.Path, text);
+            return;
+        }
+
+        await Context.SetFromStringAsync(text);
+    }
+
+    private BormSelectOption? Match(string text)
+    {
         foreach (var opt in Context.Options)
-            if (string.Equals(opt.Label, text, StringComparison.OrdinalIgnoreCase))
-                return Context.SetFromStringAsync(opt.Value);
+            if (!opt.Disabled && string.Equals(opt.Label, text, StringComparison.OrdinalIgnoreCase))
+                return opt;
+        // An option's own value typed in, in any casing - "FR" for France. Stored as typed, it passed the list's
+        // rule (which compares without regard to case) while the model held a value no option has, and the box
+        // went on showing "FR"; taken as the option, it stores "fr" and shows "France".
+        foreach (var opt in Context.Options)
+            if (!opt.Disabled && string.Equals(opt.Value, text, StringComparison.OrdinalIgnoreCase))
+                return opt;
+        return null;
+    }
 
-        return Context.SetFromStringAsync(text);
+    private Task Commit(BormSelectOption option)
+    {
+        if (Field.SearchMinLength is not null) Context.State.RememberChoice(Context.Path, option);
+        return Context.SetFromStringAsync(option.Value);
     }
 
     /// <summary>
@@ -159,7 +262,7 @@
     /// a choice was committed while the box still had focus.
     /// </summary>
     private bool HasAffix
-        => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix) || OffersClear;
+        => !string.IsNullOrEmpty(Context.Prefix) || !string.IsNullOrEmpty(Context.Suffix) || OffersClear;
 
     private bool ShowClear => OffersClear && Context.StringValue.Length > 0;
 
@@ -171,12 +274,17 @@
     private async Task Clear()
     {
         await Context.SetValueAsync(null);
-        await FocusAsync();
+        // After the render that empties the box, not before it: Firefox decides whether a later change fires
+        // against the value the box held when it took the focus, so focused while it still showed "France",
+        // typing France again raised nothing, and the field stayed empty with the word in it.
+        RequestFocusAfterRender();
     }
 
     private string Announce(int count) => Context.IsLoadingOptions
         ? Context.Text(BormMessageKeys.SelectLoading)
         : Context.OptionsFailed
             ? Context.Text(BormMessageKeys.SelectError)
-            : Context.Text(BormMessageKeys.ComboboxAvailable, count);
+            : Field.SearchMinLength is { } min && (Context.State.SearchText(Context.Path)?.Length ?? 0) < min
+                ? Context.Text(BormMessageKeys.ComboboxSearchHint, min)
+                : Context.Text(BormMessageKeys.ComboboxAvailable, count);
 }

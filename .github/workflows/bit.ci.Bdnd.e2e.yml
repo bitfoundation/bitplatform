@@ -1,8 +1,9 @@
 name: bit platform CI - Bdnd E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright, from its
-# build output and, in the publish gate, from trimmed and AOT-compiled publishes. It takes far longer than the
-# build-and-unit pipeline (bit.ci.Bdnd.yml), so it runs only when started by hand. See
+# build output and, in the publish gate, from trimmed and AOT-compiled publishes, and the published lazy loading sample
+# next to it. It takes far longer than the build-and-unit pipeline (bit.ci.Bdnd.yml), so it runs only when started by
+# hand. See
 # src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/README.md for what it proves and how to run it locally.
 
 on:
@@ -19,7 +20,7 @@ jobs:
 
   e2e:
     name: Bdnd E2E (Chromium)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
 
     steps:
@@ -29,7 +30,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -38,16 +39,17 @@ jobs:
       with:
         node-version: 24
 
-    - name: dotnet workload restore
-      run: cd src/Utilities/Bdnd && dotnet workload restore
-
-    - name: Build the demo and the E2E suite
+    # No dotnet workload restore: neither project below needs a workload, and a restore over Bit.Bdnd.slnx would
+    # install the Android workloads its MAUI sample needs.
+    - name: Build the demo, publish the lazy loading sample and build the E2E suite
+      # The sample is published rather than built: LazyLoadingTests drives what an app that lazy loads ships, trimmed.
       run: |
         dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bdnd/Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Release
         dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
@@ -64,14 +66,78 @@ jobs:
         path: '**/bdnd-e2e.trx'
         if-no-files-found: ignore
 
+  # Blazor Hybrid: a WinForms BlazorWebView harness (Tests/Bit.Bdnd.Tests.Harness.Hybrid), driven through WebView2's
+  # DevTools port - the renderer out of the browser's process, as Blazor Hybrid runs it.
+  e2e-hybrid:
+    name: Bdnd E2E - Blazor Hybrid (WebView2)
+    runs-on: windows-2025
+    timeout-minutes: 45
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # windows-2025 ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
+    - name: Install the WebView2 Runtime
+      shell: pwsh
+      run: |
+        $clientKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+        $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        if (-not $version -or $version -eq '0.0.0.0') {
+          $installer = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
+          Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installer
+          Start-Process $installer -ArgumentList '/silent', '/install' -Wait
+          $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
+        }
+        if (-not $version -or $version -eq '0.0.0.0') { throw 'The WebView2 Runtime did not install.' }
+        Write-Host "WebView2 Runtime $version"
+
+    - name: Build the hybrid harness and the E2E suite
+      run: |
+        dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Harness.Hybrid/Bit.Bdnd.Tests.Harness.Hybrid.csproj -c Release
+        dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
+
+    # No Playwright browser download: the suite attaches to the WebView2 Runtime installed above.
+    - name: Run hybrid E2E tests
+      env:
+        BDND_E2E_CONFIGURATION: Release
+        BDND_E2E_SKIP_BUILD: 1
+      run: >
+        cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --filter "FullyQualifiedName~HybridHostingTests"
+        --report-trx --report-trx-filename bdnd-e2e-hybrid.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bdnd-e2e-hybrid
+        path: '**/bdnd-e2e-hybrid.trx'
+        if-no-files-found: ignore
+
   # Publishes the demo the way bdnd.demo.cd.yml deploys it - its WebAssembly client trimmed, with the wasm-tools
   # workload installed so the runtime is relinked as well - and in a second leg AOT-compiled, as the deployed demo is
   # not but an app using the library may be. Either leg fails on any trim/AOT analysis warning raised inside Bit.Bdnd,
   # then runs the browser suite against that published output. Trimming is where the interop types System.Text.Json
-  # reads and writes through reflection lose their members, and none of it is visible in a build output.
+  # reads and writes through reflection lose their members, and none of it is visible in a build output. The lazy
+  # loading sample is published the same way next to it: in the AOT leg it leaves its lazy mark out, as the README says
+  # an AOT build must, and LazyLoadingTests checks that it then loads Bit.Bdnd with the app and works all the same.
   publish-gate:
     name: Bdnd publish gate (${{ matrix.name }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # The whole browser suite runs after the publish, which in the AOT leg compiles the entire client ahead of time.
     timeout-minutes: ${{ matrix.timeout }}
     strategy:
@@ -80,9 +146,11 @@ jobs:
         include:
         - name: trimmed
           properties: ''
+          lazy-aot: ''
           timeout: 90
         - name: aot
           properties: '-p:RunAOTCompilation=true'
+          lazy-aot: '1'
           timeout: 150
 
     steps:
@@ -92,7 +160,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -110,15 +178,19 @@ jobs:
     - name: Publish the demo (fails on trim/AOT warnings from Bit.Bdnd)
       run: cd src/Utilities/Bdnd && bash Tests/Bit.Bdnd.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/demo-${{ matrix.name }} ${{ matrix.properties }}
 
+    - name: Publish the lazy loading sample
+      run: cd src/Utilities/Bdnd && dotnet publish Samples/Lazy/Bit.Bdnd.Samples.Lazy/Bit.Bdnd.Samples.Lazy.csproj -c Release ${{ matrix.properties }}
+
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published demo
       env:
         BDND_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/demo-${{ matrix.name }}
+        BDND_E2E_LAZY_AOT: ${{ matrix.lazy-aot }}
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
         cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E &&

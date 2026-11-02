@@ -1,0 +1,193 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root, on an ancestor or on
+// the Style of a tool card reaches every tool card under it:
+//   --bit-AiToolCallView-background                surface of the card                           (default: $clr-bg-sec)
+//   --bit-AiToolCallView-border-color              outline of the card                           (default: $clr-brd-sec)
+//   --bit-AiToolCallView-running-border-color      outline of the card of a running call         (default: $clr-pri)
+//   --bit-AiToolCallView-failed-border-color       outline of the card of a failed or declined
+//                                                  call                                          (default: $clr-err)
+//   --bit-AiToolCallView-approval-border-color     outline of the card of a call awaiting a
+//                                                  decision                                      (default: $clr-wrn)
+//   --bit-AiToolCallView-radius                    corner radius of the card                     (default: $shp-radius-surface)
+//   --bit-AiToolCallView-header-color              text and icons of the header                  (default: $clr-fg-sec)
+//   --bit-AiToolCallView-header-hover-color        text and icons of the header under the
+//                                                  pointer                                       (default: $clr-fg-pri)
+//   --bit-AiToolCallView-header-hover-background   surface of the header under the pointer       (default: $clr-bg-sec-hover)
+//   --bit-AiToolCallView-body-background           surface of the expanded body                  (default: $clr-bg-pri)
+//   --bit-AiToolCallView-label-color               labels of the arguments and the result        (default: $clr-fg-ter)
+//
+// The status of a call outlines its card, and the outline of a status is read ahead of the one at rest: a card that
+// fails is outlined in the failed color whatever --bit-AiToolCallView-border-color says. The progress bar is a
+// BitProgress, the busy dots a BitBouncingDotsLoading, the approval prompt a BitAiToolApproval, the arguments and a
+// structured result a BitAiJsonView and a failed result a compact BitAiErrorView - each restyled through its own
+// variables.
+
+.bit-aitcv {
+    min-width: 0;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-size: $tg-fs-sm;
+    font-family: $tg-font-family;
+    border: $shp-border-width $shp-border-style var(--bit-AiToolCallView-border-color, #{$clr-brd-sec});
+    border-radius: var(--bit-AiToolCallView-radius, #{$shp-radius-surface});
+    background-color: var(--bit-AiToolCallView-background, #{$clr-bg-sec});
+}
+
+.bit-aitcv-run {
+    border-color: var(--bit-AiToolCallView-running-border-color, #{$clr-pri});
+}
+
+.bit-aitcv-fld {
+    border-color: var(--bit-AiToolCallView-failed-border-color, #{$clr-err});
+}
+
+.bit-aitcv-apr {
+    border-color: var(--bit-AiToolCallView-approval-border-color, #{$clr-wrn});
+}
+
+// A tool drawn by a renderer of the app's own is that renderer's to draw: the card leaves it without a frame.
+.bit-aitcv.bit-aitcv-cst {
+    display: block;
+    border: none;
+    overflow: visible;
+    border-radius: 0;
+    background: none;
+}
+
+// The header is the button that expands the card. The pointer moves the variables it is painted from rather than the
+// colors themselves, so a header an app paints through Classes.Header keeps that paint under the pointer as well.
+.bit-aitcv-hdr {
+    --bit-aitcv-hdr-fg: initial;
+    --bit-aitcv-hdr-bg: initial;
+    margin: 0;
+    width: 100%;
+    border: none;
+    display: flex;
+    font: inherit;
+    min-width: 0;
+    gap: spacing(1);
+    cursor: pointer;
+    text-align: start;
+    align-items: center;
+    box-sizing: border-box;
+    padding: spacing(1) spacing(1.5);
+    color: var(--bit-aitcv-hdr-fg, var(--bit-AiToolCallView-header-color, #{$clr-fg-sec}));
+    background-color: var(--bit-aitcv-hdr-bg, transparent);
+    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-aitcv-hdr-fg: var(--bit-AiToolCallView-header-hover-color, #{$clr-fg-pri});
+            --bit-aitcv-hdr-bg: var(--bit-AiToolCallView-header-hover-background, #{$clr-bg-sec-hover});
+        }
+    }
+
+    // The header sits flush against the edges of a card that clips its corners, where a ring drawn outside it would be
+    // cut off, so it is drawn inside.
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+}
+
+// The chevron points at the title it belongs to - the other way round in right-to-left text - and turns down once
+// the card is open. Only the turn animates: it is the transform, and the mirror of right-to-left text is the scale
+// property, which is not transitioned, so a card changing direction flips its chevron at once rather than spinning it
+// round. The scale applies after the transform, so the open chevron, turned down first, still points down mirrored.
+.bit-aitcv-chv {
+    flex: 0 0 auto;
+    line-height: 1;
+    font-size: $tg-fs-xs;
+    transition: transform $mot-duration $mot-easing;
+}
+
+.bit-aitcv-chv:is(:dir(rtl), .bit-aitcv.bit-rtl > * > *) {
+    scale: -1 1;
+}
+
+.bit-aitcv-opn > .bit-aitcv-hdr > .bit-aitcv-chv {
+    transform: rotate(90deg);
+}
+
+.bit-aitcv-ico {
+    flex: 0 0 auto;
+    line-height: 1;
+    font-size: $siz-icon-sm;
+}
+
+.bit-aitcv-ttl {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-medium;
+}
+
+.bit-aitcv-sts {
+    flex: 0 0 auto;
+    display: inline-flex;
+    gap: spacing(0.5);
+    align-items: center;
+    font-size: $tg-fs-xs;
+    color: $clr-fg-ter;
+    font-variant-numeric: tabular-nums;
+}
+
+.bit-aitcv-prg {
+    width: 100%;
+}
+
+.bit-aitcv-bdy {
+    min-width: 0;
+    display: flex;
+    gap: spacing(1.5);
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: spacing(1.5);
+    border-block-start: $shp-border-width $shp-border-style var(--bit-AiToolCallView-border-color, #{$clr-brd-sec});
+    background-color: var(--bit-AiToolCallView-body-background, #{$clr-bg-pri});
+}
+
+.bit-aitcv-pms {
+    font-size: $tg-fs-xs;
+    color: $clr-fg-ter;
+    overflow-wrap: anywhere;
+}
+
+.bit-aitcv-sec {
+    min-width: 0;
+}
+
+// The heading of a section of the body: the word naming the arguments or the result under it, not a field's caption.
+.bit-aitcv-shd {
+    font-size: $tg-fs-xs;
+    text-transform: uppercase;
+    margin-block-end: spacing(0.5);
+    color: var(--bit-AiToolCallView-label-color, #{$clr-fg-ter});
+}
+
+// The arguments before they parse, and a result written as text, are shown the way they were written: their line
+// breaks are kept, and a long token wraps rather than running off the side of the card.
+.bit-aitcv-raw {
+    display: block;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: $tg-font-family-mono;
+}
+
+// The approval prompt is the foot of the card here, under a rule of the card's own, rather than a surface of its own
+// with rounded corners.
+.bit-aitcv > .bit-aitcv-apv {
+    border-radius: 0;
+    border-block-start: $shp-border-width $shp-border-style var(--bit-AiToolCallView-border-color, #{$clr-brd-sec});
+}

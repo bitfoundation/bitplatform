@@ -465,15 +465,9 @@ public partial class BitProgress : BitComponentBase
         }
     }
 
-    // Only from net9.0 on does the framework say how a component is rendered; before it, a prerender cannot be told
-    // from a static render, and both reveal themselves through the stylesheet.
     private bool IsPrerendering()
     {
-#if NET9_0_OR_GREATER
         return AssignedRenderMode is not null && RendererInfo.IsInteractive is false;
-#else
-        return false;
-#endif
     }
 
     private void EndDelay()

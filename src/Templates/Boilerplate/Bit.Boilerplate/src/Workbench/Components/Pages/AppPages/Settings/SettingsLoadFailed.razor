@@ -1,0 +1,7 @@
+@inherits WorkbenchComponentBase
+
+<BitStack HorizontalAlign="BitAlignment.Center" Class="load-failed" role="alert">
+    <BitIcon IconName="@BitIconName.Warning" Size="BitSize.Large" Color="BitColor.Warning" />
+    <BitText Typography="BitTypography.Body1">@Localizer[nameof(WorkbenchStrings.LoadFailed)]</BitText>
+    <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Refresh" OnClick="OnRetry">@Localizer[nameof(WorkbenchStrings.PosRetry)]</BitButton>
+</BitStack>

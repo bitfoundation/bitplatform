@@ -1,9 +1,9 @@
 ﻿# Bit.Bmage end-to-end tests
 
-MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Demo`) and the hosting
-samples (`src/Utilities/Bmage/Samples`) in a real Chromium, and the MAUI sample in its WebView2 on Windows. It covers what the unit tests in `Bit.Bmage.Tests` cannot: the `bit-bmage.js` browser bridge, the
-browser's own codecs, canvas rendering, pointer and keyboard input on the editor, and the demo pages as a reader
-uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via
+MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Demo`), the hosting
+samples (`src/Utilities/Bmage/Samples`) and the published lazy loading sample (`Samples/Lazy`) in a real Chromium, and the MAUI sample in its WebView2 on Windows. It covers what the unit tests in `Bit.Bmage.Tests` cannot: the `bit-bmage.js` browser bridge, the
+browser's own codecs, canvas rendering, pointer and keyboard input on the editor, the demo pages as a reader
+uses them, and an app that downloads Bmage only when its editor opens. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via
 `EnableMSTestRunner`.
 
 ## What runs
@@ -19,7 +19,8 @@ uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo 
 | `DemoRegressionTests` | Defects found by driving the demo: overlay alignment, crop handles, pan, selection, undo of a move, history, paste, failing batches, toggle state, the headless examples, the editor page's readout and export defaults, step numbers drawn with the site's font, a file that is not a project, searching on Enter, the upload table on a narrow phone, a Persian label drawn into the image, a stopped batch keeping what it finished, Escape closing the site menu, and the newer tools - straighten, borders, colour tools, a clipped group, a picked white balance and a trim, a duotone look - running from their demo pages. |
 | `EditingToolTests` | The brush, eraser, fill, eyedropper and compare tools, straighten and canvas size from the Transform tab, an arrow staying on its target through a quarter turn, a layer's opacity and blend mode, clipping and grouping layers, the selection tools and actions, the histogram, the busy state of a long action, accessible names of the new controls, and a project saved, reopened and still editable. |
 | `SamplesBrowserTests` | The hosting samples under Interactive Server, WebAssembly and Auto: each becomes interactive on its own renderer and probes the browser, Auto moves to WebAssembly once the runtime is downloaded, and in every mode the managed engine runs where the component does, an image is loaded (generated and uploaded), processed, encoded and downloaded, and the editor loads, rotates and exports. Each sample is built and started on a free port the first time a test needs it. |
-| `SamplesMauiTests` | The MAUI sample as a Windows app, its WebView2 driven over the DevTools Protocol: the pages run on the Blazor Hybrid renderer with Bmage reporting `BrowserServer`, the managed engine runs in the app's process, an image is loaded (generated and uploaded), processed, encoded to WebP by the WebView and downloaded, and the editor loads, rotates and exports. Windows only (Inconclusive elsewhere); needs the MAUI workloads to build the app and the WebView2 Runtime to run it. |
+| `SamplesMauiTests` | The MAUI sample as a Windows app, its WebView2 driven over the DevTools Protocol: the pages run on the Blazor Hybrid renderer with Bmage reporting `BrowserServer`, the managed engine runs in the app's process, an image is loaded (generated and uploaded), processed, encoded to WebP by .NET in the app and downloaded, and the editor loads, rotates and exports. Windows only (Inconclusive elsewhere); needs the MAUI workloads to build the app and the WebView2 Runtime to run it. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.Bmage.wasm` and `Bit.Bmage.Blazor.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, no `AddBitBmageServices` in the browser - as `docs/getting-started.md`'s "Lazy loading Bmage on WebAssembly" sets it up: its home page downloads neither assembly; navigating to the editor's page downloads each once (and not again on the way back), and a deep link to it is prerendered by the server (which registers Bmage's services and the router's `LazyAssemblyLoader`) and then downloads them; either way the `BmageEditor` there, which builds its own services when none are registered, opens the sample image from its own file input, turns it a quarter and exports it as a 600 x 800 PNG - again on the way back, from the services it built the first time - with no console error, unhandled exception, failed request or error message. Published with AOT (`BMAGE_E2E_LAZY_AOT=1`), the sample leaves the lazy marks out as the guide says an AOT build must, and the same tests check that it loads Bmage with the app and nothing on demand. The suite publishes the sample the first time a test needs it. |
 | `PerformanceMeasurements` | Opt-in (`BMAGE_E2E_MEASURE=1`): runs the editing tools' benchmark on the performance page and writes the timings to a file, for the WebAssembly columns of `docs/performance.md`. Inconclusive otherwise. |
 
 ## First-time setup
@@ -38,8 +39,8 @@ Without `pwsh`, `node .\bin\Debug\net10.0\.playwright\package\cli.js install chr
 Run from inside `src` (so `src/global.json` selects the test runner):
 
 ```powershell
-# Builds each host the tests need (the demo, the samples, the MAUI app) the first time one needs it,
-# starts it on a free 127.0.0.1 port, runs every test, stops them all.
+# Builds each host the tests need (the demo, the samples, the MAUI app; the lazy loading sample is published) the
+# first time one needs it, starts it on a free 127.0.0.1 port, runs every test, stops them all.
 dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj
 
 # One class, or one test.
@@ -68,7 +69,9 @@ ahead of time) is several times faster.
 | --- | --- |
 | `BMAGE_E2E_HOST_URL` | An already-running demo to drive instead of building and booting one. When unset, the suite starts `Bit.Bmage.Demo.Server` on a free port on 127.0.0.1 - never on the launch profile's port, which other checkouts may hold. |
 | `BMAGE_E2E_CONFIGURATION` | Build configuration of the demo host the suite boots; defaults to the test assembly's. |
-| `BMAGE_E2E_SKIP_BUILD` | `1`: the demo host and the hosting samples were built beforehand (as CI does); do not rebuild them. |
+| `BMAGE_E2E_SKIP_BUILD` | `1`: the demo host and the hosting samples were built, and the lazy loading sample published, beforehand (as CI does); do not do it again. |
+| `BMAGE_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of publishing and booting one. |
+| `BMAGE_E2E_LAZY_AOT` | `1`: the lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy marks out: `LazyLoadingTests` then checks that Bmage comes with the app and nothing is downloaded on demand. The suite does not publish the sample itself then. |
 | `BMAGE_E2E_CHANNEL` | Launch an installed browser channel instead - e.g. `chrome`, `msedge`. When unset the suite tries Playwright's bundled Chromium, then Chrome, then Edge. |
 | `BMAGE_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
 | `BMAGE_E2E_HEADED` | `1`: watch the run in a visible window. |
@@ -80,11 +83,26 @@ ahead of time) is several times faster.
 When no browser can be launched at all, every test reports **Inconclusive** with the reason rather than failing, so a
 checkout without browsers still runs the rest of the repository's suites.
 
+`LazyLoadingTests` drives the lazy loading sample as `dotnet publish` leaves it, never a build output: only a publish
+trims the client, fingerprints `Bit.Bmage.wasm` and `Bit.Bmage.Blazor.wasm` and writes the lazy marks into the boot
+configuration. The first test that needs it publishes the sample in the suite's configuration (unless
+`BMAGE_E2E_SKIP_BUILD=1`) and starts it from its publish folder (`bin/<configuration>/net11.0/publish`) in the
+Production environment (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`, the harness every lazy-loadable library
+shares). To check an AOT publish, which needs the `wasm-tools` workload:
+
+```powershell
+dotnet publish Utilities\Bmage\Samples\Lazy\Bit.Bmage.Samples.Lazy\Bit.Bmage.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+$env:BMAGE_E2E_LAZY_AOT = "1"
+dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj -c Release --filter "FullyQualifiedName~LazyLoadingTests"
+```
+
 ## CI
 
 `.github/workflows/bit.ci.Bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
 "bit platform CI - Bmage E2E" > Run workflow); the test results (TRX) and the demo's output are uploaded as an
-artifact. Its `e2e` job runs everything but `SamplesMauiTests` on Linux; its `e2e-maui` job runs those on
+artifact. Its `e2e` job runs everything but `SamplesMauiTests` on Linux, `LazyLoadingTests` against the lazy loading
+sample published trimmed; its `lazy-loading-aot` job runs `LazyLoadingTests` alone against the sample published with
+`-p:RunAOTCompilation=true` (`BMAGE_E2E_LAZY_AOT=1`); its `e2e-maui` job runs `SamplesMauiTests` on
 `windows-2025`, with the MAUI workloads, the WebView2 Runtime and the debugging-port policy set up first. The
 pull-request pipeline, `bit.ci.Bmage.yml`, runs the build, engine, MCP server and hosting tests only;
 `Bit.Bmage.Tests.Hosting` boots the same samples in-process and checks what their prerendered responses contain.
@@ -95,6 +113,7 @@ constructor lost its parameter names, a getter nothing but System.Text.Json read
 
 ```bash
 dotnet publish src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+dotnet publish src/Utilities/Bmage/Samples/Lazy/Bit.Bmage.Samples.Lazy/Bit.Bmage.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
 dotnet build src/Utilities/Bmage/Samples/Server/Bit.Bmage.Samples.Server.csproj -c Release   # and Wasm, Auto
 pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
@@ -109,6 +128,9 @@ cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E && BMAGE_E2E_HOST_URL=http://12
 * `Infrastructure/DemoHost.cs` - the demo every test drives: an external URL, or the built server started with
   `ASPNETCORE_ENVIRONMENT=Development` (a build output finds its static web assets - the client's `_framework`,
   `bit-bmage.js`, the editor's stylesheet - through the development manifest).
+* `LazyLoadingTests.cs` - drives the lazy loading sample instead of the demo, by overriding `DemoTest.StartHostAsync`;
+  the harness that boots it from its publish folder and counts the requests for its assemblies is linked in from
+  `src/Utilities/Shared/Tests/E2E` (under `Shared/` in the project).
 * `Infrastructure/DemoTest.cs` - the base class: a browser context per test, closed afterwards; `OpenAsync`, which
   waits for the layout's `data-interactive="true"` before handing the page over (the site is prerendered, so its
   HTML is on screen well before a single handler is attached); the sample upload; and loading it into an editor,

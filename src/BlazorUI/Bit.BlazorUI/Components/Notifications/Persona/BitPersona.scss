@@ -50,8 +50,9 @@ $prs-private-properties:
     // than inherited from a persona this one sits inside - so the var() reading it falls through to the public
     // radius and then to the circle an unset Shape stands for.
     coin-radius,
-    // The pair of colors a CoinColor (or AutoCoinColor) class publishes (.bit-prs-pri and the rest).
-    coin-clr-bg, coin-clr-txt;
+    // The colors a CoinColor (or AutoCoinColor) class publishes (.bit-prs-pri and the rest): the fill, the text
+    // over it, and the text an Outline or a Text coin writes on the page.
+    coin-clr-bg, coin-clr-txt, coin-clr-fg;
 
 .bit-prs {
     display: flex;
@@ -963,15 +964,18 @@ $prs-private-properties:
     }
 }
 
-// The coin reads its pair of colors through these two: first the pair a CoinColor (or AutoCoinColor) class below
-// declared, then the public variables, then the Info pair an unset CoinColor stands for. The pair itself is unset on
-// every root by $prs-private-properties - rather than inherited from a persona this one sits inside - and the
-// classes, declared further down at the same weight, still win on the root that carries them; left unset, the var()
-// reading it falls through to the variables. So an explicit color wins over them and an unset one leaves them in
-// charge.
+// The coin reads its colors through these three: first the ones a CoinColor (or AutoCoinColor) class below
+// declared, then the public variables, then the Info colors an unset CoinColor stands for. The colors themselves
+// are unset on every root by $prs-private-properties - rather than inherited from a persona this one sits inside -
+// and the classes, declared further down at the same weight, still win on the root that carries them; left unset,
+// the var() reading one falls through to the variables. So an explicit color wins over them and an unset one leaves
+// them in charge. The initials of an Outline or a Text coin are read on the page rather than over the fill, so they
+// take the role's text color (coin-fg, the role-text of color-role-maps.scss) - a secondary or a warning fill falls
+// under the 4.5:1 of body text on white - while the ring keeps the fill.
 .bit-prs {
     --bit-prs-coin-bg: var(--bit-prs-coin-clr-bg, var(--bit-Persona-coin-background, #{$clr-inf}));
     --bit-prs-coin-clr: var(--bit-prs-coin-clr-txt, var(--bit-Persona-coin-color, #{$clr-inf-text}));
+    --bit-prs-coin-fg: var(--bit-prs-coin-clr-fg, var(--bit-Persona-coin-background, #{$clr-inf-fg}));
 }
 
 .bit-prs-fil {
@@ -982,14 +986,14 @@ $prs-private-properties:
 
 .bit-prs-otl {
     background-color: transparent;
-    color: var(--bit-prs-coin-bg);
+    color: var(--bit-prs-coin-fg);
     border-color: var(--bit-prs-coin-bg);
 }
 
 .bit-prs-txt {
     border-color: transparent;
     background-color: transparent;
-    color: var(--bit-prs-coin-bg);
+    color: var(--bit-prs-coin-fg);
 }
 
 // A filled coin's edge is drawn in its fill so the initials sit on one seamless disc, but a picture only covers the
@@ -1004,87 +1008,104 @@ $prs-private-properties:
 .bit-prs-pri {
     --bit-prs-coin-clr-bg: #{$clr-pri};
     --bit-prs-coin-clr-txt: #{$clr-pri-text};
+    --bit-prs-coin-clr-fg: #{$clr-pri};
 }
 
 .bit-prs-sec {
     --bit-prs-coin-clr-bg: #{$clr-sec};
     --bit-prs-coin-clr-txt: #{$clr-sec-text};
+    --bit-prs-coin-clr-fg: #{$clr-sec-fg};
 }
 
 .bit-prs-ter {
     --bit-prs-coin-clr-bg: #{$clr-ter};
     --bit-prs-coin-clr-txt: #{$clr-ter-text};
+    --bit-prs-coin-clr-fg: #{$clr-ter-fg};
 }
 
 .bit-prs-inf {
     --bit-prs-coin-clr-bg: #{$clr-inf};
     --bit-prs-coin-clr-txt: #{$clr-inf-text};
+    --bit-prs-coin-clr-fg: #{$clr-inf-fg};
 }
 
 .bit-prs-suc {
     --bit-prs-coin-clr-bg: #{$clr-suc};
     --bit-prs-coin-clr-txt: #{$clr-suc-text};
+    --bit-prs-coin-clr-fg: #{$clr-suc-fg};
 }
 
 .bit-prs-wrn {
     --bit-prs-coin-clr-bg: #{$clr-wrn};
     --bit-prs-coin-clr-txt: #{$clr-wrn-text};
+    --bit-prs-coin-clr-fg: #{$clr-wrn-fg};
 }
 
 .bit-prs-swr {
     --bit-prs-coin-clr-bg: #{$clr-swr};
     --bit-prs-coin-clr-txt: #{$clr-swr-text};
+    --bit-prs-coin-clr-fg: #{$clr-swr-fg};
 }
 
 .bit-prs-err {
     --bit-prs-coin-clr-bg: #{$clr-err};
     --bit-prs-coin-clr-txt: #{$clr-err-text};
+    --bit-prs-coin-clr-fg: #{$clr-err-fg};
 }
 
 
 .bit-prs-pbg {
     --bit-prs-coin-clr-bg: #{$clr-bg-pri};
     --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-pri};
 }
 
 .bit-prs-sbg {
     --bit-prs-coin-clr-bg: #{$clr-bg-sec};
     --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-pri};
 }
 
 .bit-prs-tbg {
     --bit-prs-coin-clr-bg: #{$clr-bg-ter};
     --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-pri};
 }
 
 .bit-prs-pfg {
     --bit-prs-coin-clr-bg: #{$clr-fg-pri};
     --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-pri};
 }
 
 .bit-prs-sfg {
     --bit-prs-coin-clr-bg: #{$clr-fg-sec};
     --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-sec};
 }
 
 .bit-prs-tfg {
     --bit-prs-coin-clr-bg: #{$clr-fg-ter};
     --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-ter};
 }
 
 .bit-prs-pbr {
     --bit-prs-coin-clr-bg: #{$clr-brd-pri};
     --bit-prs-coin-clr-txt: #{$clr-fg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-pri};
 }
 
 .bit-prs-sbr {
     --bit-prs-coin-clr-bg: #{$clr-brd-sec};
     --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-pri};
 }
 
 .bit-prs-tbr {
     --bit-prs-coin-clr-bg: #{$clr-brd-ter};
     --bit-prs-coin-clr-txt: #{$clr-bg-pri};
+    --bit-prs-coin-clr-fg: #{$clr-fg-pri};
 }
 
 // Forced colors, after the variants and the role classes these rules paint over.
@@ -1104,8 +1125,9 @@ $prs-private-properties:
         background-color: Canvas;
     }
 
-    // An Outline or a Text coin draws its initials, and an Outline one its ring, in the coin color itself, which
-    // for a background role is the page's own color - Canvas here, in both engines.
+    // An Outline coin draws its ring in the coin color itself, which for a background role is the page's own
+    // color - Canvas here, in both engines. Its initials, and a Text coin's, are the text color the role pairs with
+    // (fg-pri, CanvasText here) already; they are pinned along with the ring so the coin never depends on that.
     @each $role in $bit-background-color-roles {
         .bit-prs-#{$role} .bit-prs-otl {
             color: CanvasText;

@@ -1,0 +1,65 @@
+@inherits WorkbenchComponentBase
+
+@* Blocking, so only Close, Cancel, Save or Delete close it and a stray tap keeps the draft. *@
+<BitModal @bind-IsOpen="isOpen" Blocking MaxWidth="30rem" Classes="@(new() { Content = "editor-modal" })">
+    @if (isOpen)
+    {
+        <div class="editor">
+            <header class="editor-header">
+                <span class="editor-icon"><BitIcon IconName="@(isNew ? BitIconName.Add : BitIconName.Edit)" /></span>
+                <BitText Typography="BitTypography.H6">@Localizer[isNew ? nameof(WorkbenchStrings.ShiftsAddTitle) : nameof(WorkbenchStrings.ShiftsEditTitle)]</BitText>
+                <BitSpacer />
+                <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="Close"
+                           Title="@Localizer[nameof(WorkbenchStrings.Close)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.Close)]" />
+            </header>
+
+            <div class="fields">
+                <div class="field full">
+                    <BitDropdown Label="@Localizer[nameof(WorkbenchStrings.ShiftsStaffLabel)]" Items="staffItems" Value="staffKey" ValueChanged="(string? key) => SetStaff(key)" Responsive>
+                        <ItemTemplate Context="item">
+                            <BitPersona Size="BitPersonaSize.Size24" ImageUrl="@WorkbenchPhotos.Find(item.Value!)" PrimaryText="@item.Text" />
+                        </ItemTemplate>
+                    </BitDropdown>
+                </div>
+                <div class="field full">
+                    <BitTextField Label="@Localizer[nameof(WorkbenchStrings.ShiftsNameLabel)]"
+                                  Value="@title"
+                                  ValueChanged="(string? value) => Update(() => title = value)"
+                                  Placeholder="@Localizer[nameof(WorkbenchStrings.ShiftsNamePlaceholder)]" />
+                </div>
+                <div class="field full">
+                    <BitDropdown Label="@Localizer[nameof(WorkbenchStrings.ShiftsRoleLabel)]" Items="roleItems" Value="role" ValueChanged="(ShiftRole value) => Update(() => role = value)" Responsive>
+                        <ItemTemplate Context="item">
+                            <span class="role-item"><span class="role-dot" style="--data-color:@(ShiftsPage.RoleColor(item.Value))"></span>@item.Text</span>
+                        </ItemTemplate>
+                    </BitDropdown>
+                </div>
+                <div class="field full">
+                    <BitDatePicker Label="@Localizer[nameof(WorkbenchStrings.ShiftsDayLabel)]" Value="day" ValueChanged="(DateTimeOffset? value) => Update(() => day = value)" Responsive />
+                </div>
+                <div class="field">
+                    <BitTimePicker Label="@Localizer[nameof(WorkbenchStrings.ShiftsStartsLabel)]" Value="start" ValueChanged="(TimeSpan? value) => Update(() => start = value)" Responsive />
+                </div>
+                <div class="field">
+                    <BitTimePicker Label="@Localizer[nameof(WorkbenchStrings.ShiftsEndsLabel)]" Value="end" ValueChanged="(TimeSpan? value) => Update(() => end = value)" Responsive />
+                </div>
+                @if (error is not null)
+                {
+                    <div class="field full">
+                        <BitMessage Color="BitColor.SevereWarning" Multiline>@error</BitMessage>
+                    </div>
+                }
+            </div>
+
+            <footer class="editor-footer">
+                @if (isNew is false)
+                {
+                    <BitButton Variant="BitVariant.Text" Color="BitColor.Error" IconName="@BitIconName.Delete" OnClick="Delete">@AppLocalizer[nameof(AppStrings.Delete)]</BitButton>
+                }
+                <BitSpacer />
+                <BitButton Variant="BitVariant.Text" OnClick="Close">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                <BitButton IconName="@BitIconName.Save" OnClick="Save">@Localizer[nameof(WorkbenchStrings.Save)]</BitButton>
+            </footer>
+        </div>
+    }
+</BitModal>

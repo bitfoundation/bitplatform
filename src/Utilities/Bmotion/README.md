@@ -2,9 +2,9 @@
 
 A Blazor-native animation library inspired by [Motion](https://motion.dev) (Framer Motion). Springs, gestures, keyframes, variants, drag, layout (FLIP) animations, shared-element transitions and exit animations - **no manual JavaScript wiring required**. All animation math runs in C#; the slim browser bridge is auto-loaded for you.
 
-**Hybrid engine:** compositor-eligible animations (tweens and zero-velocity springs on transform/opacity - i.e. most enter/exit/hover/variant animations) are pre-sampled in C# and handed to the browser's **Web Animations API**, so they play off the main thread with zero per-frame interop. Everything else runs on the C# rAF engine.
+**Hybrid engine:** the animation math runs in C#, and the browser plays whatever it can reproduce exactly. A tween or spring between two values goes to the **Web Animations API** as a two-keyframe timeline. Anything the browser can't express directly is recorded frame by frame in C#, against a copy of the element's state, and handed over as keyframes. That covers per-property transitions, springs that carry velocity into a retarget, arcs, inertia, keyframe sequences and mirrored loops. Either way it plays off the main thread with no per-frame interop. The C# frame loop keeps only what the browser can't own: per-frame callbacks (`OnUpdate`/`OnFrame`), SVG `d`/`points` morphs, motion-value bindings and drag.
 
-> Targets **.NET 8, 9, and 10** · Full support on **Blazor WebAssembly**. On **Blazor Server**, compositor-eligible animations play normally (they need only async interop), and drag follows the pointer a round trip behind (one position, and one `OnDrag`, per frame); features that require the per-frame loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation, keyframe arrays off the compositor - degrade to instant state changes.
+> Targets **.NET 10 and 11** · **Blazor WebAssembly** and **Blazor Server** play the same animations. Transforms, opacity, colours (any CSS colour syntax), sizes (to and from `auto` too), filters, shadows, keyframes, springs, inertia and arcs all animate on both. On Server, what needs the per-frame loop (`OnUpdate`/`OnFrame` callbacks, SVG `d`/`points` morphs) lands on its target at once and logs a warning once. Drag there stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs once per frame, a round trip behind.
 
 ---
 
@@ -24,12 +24,14 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 - [Transitions](#transitions)
 - [Keyframes](#keyframes)
 - [Variants](#variants)
+- [Presets](#presets)
 - [Drag](#drag)
 - [Layout & shared elements](#layout--shared-elements)
 - [Scroll timelines](#scroll-timelines)
 - [Programmatic API](#programmatic-api)
 - [Motion values](#motion-values)
 - [Prerendering & static SSR](#prerendering--static-ssr)
+- [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Accessibility](#accessibility)
 
@@ -52,6 +54,12 @@ builder.Services.AddBitBmotionServices();
 The browser bridge (`bit-bmotion.js`) ships as a static web asset of the package and is
 imported automatically the first time an animation runs, so no manual `<script>` tag is
 required.
+
+In a Blazor Web App, register them in both `Program.cs` files: the pages are prerendered on the
+server before they run in the browser. Without it an animated element throws
+`Bit.Bmotion's services are not registered` as it is created. Only a WebAssembly app that
+[lazy loads](#lazy-loading-on-webassembly) Bmotion goes without, and creates the services with
+`IServiceProvider.ConfigureBmotionServices(...)` instead.
 
 ---
 
@@ -108,6 +116,32 @@ one configured spring can drive a whole staggered set without them fighting over
 Anything without a typed parameter goes through `css`, which takes dash-case or camelCase keys:
 `Bm.To(css: new() { ["mix-blend-mode"] = "screen" })`.
 
+Colours take any CSS syntax: hex, named colours, `transparent`, `rgb()`/`hsl()` (legacy commas or
+modern `rgb(0 0 0 / 50%)`), `hwb()`, `oklab()`, `oklch()`, `lab()`, `lch()` and
+`color(srgb | srgb-linear | display-p3 …)`. They mix with premultiplied alpha, so a fade to
+`transparent` never passes through grey. The element ends on the colour you wrote, so a wide-gamut
+`oklch()` target isn't left as its sRGB approximation. A value the engine never set itself, such as a
+colour or width from your stylesheet, is read off the page before it animates rather than guessed.
+
+Filters and shadows animate to and from `none` the way CSS does, through the other end's neutral
+values: `none → blur(8px)` starts at `blur(0px)`, and a shadow grows out of a transparent zero-size
+one. A shadow from your stylesheet blends into one you author, even though the page reports it as
+`rgba(0, 0, 0, 0.3) 0px 4px 12px 0px` and you wrote `0 4px 12px rgba(0,0,0,.3)`.
+
+`width` and `height` animate to and from `"auto"`. The natural size is measured, the element plays
+to it, and then it is set to `auto` itself so it keeps following its content:
+
+```razor
+<Bmotion Initial='Bm.To(height: "0px")'
+         Animate='Bm.To(height: _open ? "auto" : "0px")'>
+    <div style="overflow: hidden">…</div>
+</Bmotion>
+```
+
+A length can change units on the way: `width: "100px"` → `"50%"`, `"2rem"` → `"40vw"`. It plays
+through `calc()` of both ends, the way CSS interpolates such a pair, so nothing is measured and it's
+exact in any unit. It lands on the value you wrote, so `50%` keeps following its container.
+
 > **Security:** string-valued properties are written verbatim into the element's inline style.
 > They are intended for developer-authored values; binding untrusted end-user input risks CSS
 > injection.
@@ -152,8 +186,9 @@ literals, single-quote the attribute: `WhileHover='Bm.To(backgroundColor: "#8a66
 | `Initial` | `BmTarget?` | Starting state (props or `false` to disable the enter animation) |
 | `Animate` | `BmTarget?` | Target state; animates on mount and on every change |
 | `Exit` | `BmTarget?` | State to animate to before unmounting (requires a presence component) |
-| `WhileHover` / `WhileTap` / `WhileFocus` / `WhileDrag` / `WhileInView` | `BmTarget?` | Gesture overlays; automatically revert when the gesture ends |
+| `WhileHover` / `WhileTap` / `WhileFocus` / `WhileDrag` / `WhileInView` | `BmTarget?` | Gesture overlays; automatically revert when the gesture ends. `WhileFocus` (and `OnFocusStart`/`OnFocusEnd`) follow keyboard focus - where the browser draws a focus ring (`:focus-visible`) - so a button clicked with the mouse plays no focus overlay, as in Motion |
 | `Transition` | `BmTransition?` | Timing/physics for all of this element's transitions |
+| `Preset` | `BmPreset?` | A packaged animation (`BmPresets.Fade()`, `Modal()`, `HoverLift()`, …) supplying any target, viewport or transition the element doesn't set itself (see [Presets](#presets)) |
 | `Variants` | `BmVariants?` | Named animation states |
 | `State` / `InitialState` | `string?` | Active / initial variant name (razor-literal friendly) |
 | `Custom` | `object?` | Data passed to dynamic variants |
@@ -268,6 +303,45 @@ exit animation plays, then are removed.
 | `Mode` | `BmPresenceMode` | `Sync` (default), `Wait` (exit finishes before re-enter) or `PopLayout` (exiting content pops out of the layout flow so siblings reflow immediately) |
 | `OnExitComplete` | `EventCallback` | Fires when all exit animations finish |
 
+An element playing its `Exit` is `inert` until it is gone. Nothing in a closing dialog can be
+focused, pressed a second time or read out by a screen reader, and clicks reach what is behind it.
+If it re-enters before the exit is over, it is interactive again. An `inert` your app set on the
+element itself is never removed. Set `BitBmotionOptions.InertWhileExiting = false` to keep exiting
+content interactive.
+
+**Components of your own** can take part in exits too (Motion's `usePresence`), for an exit that
+isn't a `<Bmotion>`: a CSS animation, a canvas fade, a chart that tweens its series out. Register
+with the cascaded `BmotionPresenceContext`. The presence keeps the content mounted until every
+`<Bmotion>` in it has finished and every registration has called `SafeToRemove()`:
+
+```razor
+@implements IDisposable
+
+<div class="panel @(_leaving ? "closing" : "")">…</div>
+
+@code {
+    [CascadingParameter] public BmotionPresenceContext? Presence { get; set; }
+    private BmPresenceRegistration? _presence;
+    private bool _leaving;
+
+    protected override void OnInitialized() => _presence = Presence?.Register();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_presence is not { IsPresent: false } || _leaving) return;
+        _leaving = true;
+        await Task.Delay(300); // the .closing transition
+        _leaving = false;
+        _presence.SafeToRemove(); // ignored if the content came back meanwhile
+    }
+
+    public void Dispose() => _presence?.Dispose();
+}
+```
+
+This works in every presence component and mode: `Wait` holds the next content until your exit is
+over, and a re-entry cancels it. Disposing the registration stops it holding anything up.
+
 ### BmotionPresenceSwitch
 
 Animates **between** items - the paging / toast idiom covered by motion.dev's keyed
@@ -331,11 +405,51 @@ release:
 |---|---|---|
 | `Items` / `ItemsChanged` | `List<TItem>` | The list being reordered (`@bind-Items` supported) |
 | `ItemKey` | `Func<TItem, object>?` | Stable identity across renders; keys must be unique |
-| `Axis` | `BmDragAxis` | `Y` (vertical, default) or `X` (horizontal); wrapping grids are not supported |
+| `Axis` | `BmDragAxis` | `Y` (vertical, default), `X` (horizontal) or `Both`: a wrapping grid, where the dragged item takes the cell nearest its centre |
 | `WhileDrag` | `BmTarget?` | Overlay while dragging (default: slight scale-up) |
 | `HandleSelector` | `string?` | CSS selector of a drag grip inside each item; the rest of the row stays clickable |
 | `Transition` | `BmTransition?` | Spring for sibling displacement and the release settle |
 | `OnReorder` | `EventCallback` | Fires after a reorder is committed |
+| `AutoScroll` | `bool` | Default `true`: an item held near the edge of the list's scroller (or the page) scrolls it |
+| `Keyboard` | `bool` | Default `true`: keyboard users can reorder too (see below) |
+| `Announce` | `Func<BmReorderAnnouncement<TItem>, string>?` | What screen readers hear at each keyboard step (default: English) |
+
+**Grids.** With `Axis="BmDragAxis.Both"` the items can sit in any wrapping layout - a CSS grid,
+a `flex-wrap` row. The dragged item takes the cell nearest its centre and the others close up
+around it in reading order:
+
+```razor
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+    <BmotionReorderGroup @bind-Items="_photos" Axis="BmDragAxis.Both" Context="photo">
+        <img class="tile" src="@photo.Url" alt="@photo.Title" />
+    </BmotionReorderGroup>
+</div>
+```
+
+**Changes from outside.** The group follows any change to the bound list, and a new order from
+anywhere else - move-up / move-down buttons, a sort, a server push - animates like a drag: each item
+slides from where it was to its new place.
+
+**Long lists.** An item held near the edge of the list's scroll container - or of the page -
+scrolls it, faster the closer it gets, and travels with the scroll, so it can be carried past
+what's in view. It stops at the end of the list. Turn it off with `AutoScroll="false"`.
+
+**Keyboard.** Every item is focusable (it is made so if it isn't). <kbd>Space</kbd> or
+<kbd>Enter</kbd> on a focused item picks it up, and it lifts with the `WhileDrag` overlay. The
+arrow keys along the list's axis move it while the others make way, as for a drag. In a grid,
+<kbd>←</kbd>/<kbd>→</kbd> move it one place and <kbd>↑</kbd>/<kbd>↓</kbd> a row.
+<kbd>Space</kbd> or <kbd>Enter</kbd> drops it and commits the order, and focus stays on the item.
+<kbd>Escape</kbd> puts it back. Moving focus away also drops it. Each step is announced through a
+polite live region ("Picked up, position 1 of 4…", "Position 2 of 4.", "Dropped at position
+2 of 4."). Pass `Announce` to name the item or to translate:
+
+```razor
+<BmotionReorderGroup @bind-Items="_tracks" Context="track"
+                     Announce='a => $"{a.Item.Title}: {a.Position} / {a.Count}"'>
+```
+
+Keys typed into a field or a button inside an item stay theirs: only keys on the item itself, or
+on its `HandleSelector` grip, reorder it.
 
 ### BmotionSplitText
 
@@ -362,7 +476,8 @@ nothing to re-split on re-render and nothing for a script to undo:
 | `Transition` | `BmTransition?` | Timing for every unit; each unit's stagger offset is added to its delay |
 | `Stagger` | `BmStagger?` | The cascade across units. Default `Bm.Stagger(0.03)` |
 | `As` / `Class` / `Style` / `UnitClass` | `string?` | The container element/styling and the per-unit class |
-| `Accessible` | `bool` | Default `true`: `aria-label` on the container, `aria-hidden` on the units |
+| any other attribute | - | Rendered on the container - e.g. the `href` of an `As="a"` |
+| `Accessible` | `bool` | Default `true`: `aria-label` on the container, `aria-hidden` on the units, and `role="text"` on a generic container, an `a` without an `href` included (a heading, link, button, list item, table cell, … keeps its own role) |
 | `OnComplete` | `EventCallback` | Fires once the last unit finishes |
 
 The split is **not** a bag of one-character spans: whitespace is rendered as whitespace rather than
@@ -407,6 +522,16 @@ Bm.Spring(bounce: 0.4, duration: 0.5)
 // Inertia (momentum deceleration)
 Bm.Inertia(velocity: 500, timeConstant: 700, min: 0, max: 1000)
 Bm.Inertia(velocity: 500, modifyTarget: Bm.SnapTo(100))   // coast, then settle on a 100px grid
+```
+
+An inertia with `min`/`max` keeps the speed it was thrown with until it reaches the bound. There a
+spring takes over and bounces it off the bound before it settles, rather than braking from the
+start to stop exactly on it. Started outside the bounds, it springs straight back. Tune the wall
+with `BounceStiffness` (default 500, harder above) and `BounceDamping` (default 10; from about
+`2·√BounceStiffness` up it doesn't bounce at all):
+
+```csharp
+new BmInertia { Velocity = 800, Max = 300, BounceStiffness = 300, BounceDamping = 40 }
 ```
 
 Repeat via `BmRepeat` (no more `int.MaxValue` sentinel):
@@ -456,9 +581,8 @@ keeps working when either end moves:
 
 The timing still comes from the transition, so a spring on a path arcs *and* overshoots. An arc
 needs both `x` and `y` as single values in the same target - a keyframe sequence on either axis is
-already describing its own path, so it is left alone. Because the two axes have to move together,
-an arc runs on the C# frame loop rather than the compositor (so it is a **Blazor WebAssembly**
-feature).
+already describing its own path, so it is left alone. The two axes have to move together, so an arc
+is recorded frame by frame and played by the browser, on Blazor Server as on WebAssembly.
 
 ## Keyframes
 
@@ -580,6 +704,56 @@ _item.Add("visible", custom => Bm.To(x: 10 * (int)custom!));
 </Bmotion>
 ```
 
+## Presets
+
+`BmPresets` packages the animations most UIs need, so you don't have to rewrite the same
+`Initial`/`Animate`/`Exit` triple and its transition for every modal and toast. Pass one to
+`Preset`:
+
+```razor
+<BmotionAnimatePresence>
+    @if (_open)
+    {
+        <Bmotion Preset="BmPresets.Modal()">
+            <div class="dialog">…</div>
+        </Bmotion>
+    }
+</BmotionAnimatePresence>
+
+<Bmotion Preset="BmPresets.HoverLift()"><button>Save</button></Bmotion>
+<Bmotion Preset="BmPresets.Reveal(from: BmEdge.Left)"><section>…</section></Bmotion>
+```
+
+A preset only supplies what the element leaves unset. Anything you set on the element wins, so a
+preset is a starting point rather than a cage:
+
+```razor
+<Bmotion Preset="BmPresets.Slide()" Transition="Bm.Spring(bounce: 0.3)">…</Bmotion>
+```
+
+Presets compose with `+`, target by target, and the right-hand side's transition and viewport win.
+They are records, so `with` adjusts one:
+
+```csharp
+var enter = BmPresets.Fade() + BmPresets.Scale(from: 0.8) with { Transition = Bm.Spring() };
+```
+
+| Group | Presets |
+|---|---|
+| Enter / exit | `Fade`, `Slide(from, distance)`, `Scale(from)`, `Pop(from, bounce)`, `Blur(amount)`, `Rotate(degrees)`, `Flip(axis, degrees)` |
+| Overlays | `Modal`, `Drawer(edge)`, `Popover(origin)`, `Tooltip(from)`, `Toast(from, distance)` |
+| Gestures | `HoverLift(lift, scale)`, `HoverScale(scale)`, `Press(scale)` |
+| Attention (play on mount) | `Pulse(scale, repeat)`, `Shake(distance)`, `Wiggle(degrees)`, `Jump(height)`, `Heartbeat(scale)` |
+| Scroll | `Reveal(from, distance, once, amount)` |
+| Loops | `Spin(secondsPerTurn)`, `Shimmer(duration)` |
+
+Every parameter has a default, so `BmPresets.Toast()` is complete as it stands. Exits need a
+presence component, as any `Exit` does. Under reduced motion a preset behaves like hand-written
+targets: moves snap, fades still fade.
+
+`BmProps` merge the same way presets do: `a + b` (or `a.With(b)`) is `a` with everything `b` sets
+laid over it, and neither input changes.
+
 ## Drag
 
 Motion-style flat parameters:
@@ -653,8 +827,10 @@ carousel pages and a slider clicks onto a grid: the fling projects a resting pos
 ```
 
 With a `modifyTarget` set, even a slow release coasts to the nearest stop instead of resting
-where the pointer left it. Snapping happens before constraint clamping, so a snapped target can
-never land outside the bounds.
+where the pointer left it. A snapped target can never land outside the constraints: a throw that
+reaches one bounces off it and settles on it. That bounce uses the same spring as the snap-back
+of a drag let go outside its constraints, unless the `DragTransition` inertia sets its own
+`BounceStiffness`/`BounceDamping`.
 
 **Per-edge elasticity.** `DragElastic` accepts a uniform value or per-edge values
 (unspecified edges are rigid):
@@ -665,6 +841,23 @@ never land outside the bounds.
     <div />
 </Bmotion>
 ```
+
+**Scrolling during a drag.** A dragged element stays under the pointer when anything scrolls
+underneath it - the page, the container it's in, a wheel turned mid-drag. `DragAutoScroll="true"`
+also scrolls the nearest scrollable container, or the page, while the pointer is near its edge
+(`BmotionReorderGroup` turns it on for its items).
+
+**The throw.** The release velocity that momentum starts from is the pointer's average over its
+last 100 ms (as in motion.dev). A pointer that stood still that long before letting go throws
+nothing, and moves the browser delivers in a burst don't produce a spike.
+
+**On Blazor Server** the browser keeps the element under the pointer on its own: .NET hears of each
+move a round trip later, and until its transform catches up the bridge makes up the difference
+with the CSS `translate` property. Nothing waits for the circuit while the pointer moves, and
+`translate` is cleared once .NET has caught up after the release. `OnDrag` handlers still run on
+the server, a round trip behind the pointer. (On WebAssembly the drag runs in-process and needs
+none of this.) So on Blazor Server, don't put a `translate` of your own on a draggable element:
+the drag overrides it while it lasts and removes an inline one. Move it with `x`/`y` instead.
 
 **Reconfiguring a drag mid-gesture ends it.** Changing any gesture parameter (`Drag`, `DragConstraints`,
 `DragElastic`, `DragHandle`, ...) while a drag is in progress re-attaches the element's listeners,
@@ -692,6 +885,9 @@ Keep those parameters stable for the duration of a drag - bind them to state you
     <div />
 </Bmotion>
 ```
+
+On Blazor Server the FLIP arrives a round trip after the render that moved the element. Until then
+the bridge holds the element where it was, so it doesn't flash at its new place first.
 
 Four options control how the projection is measured:
 
@@ -728,6 +924,51 @@ idiom:
 
 Wrap independent groups in `<BmotionLayoutGroup Name="sidebar">` to namespace their ids.
 
+**Crossfade.** When the old holder is still on screen as the new one mounts - it is exiting
+under `BmotionAnimatePresence` or a `Sync` `BmotionPresenceSwitch` - the two crossfade, as in
+motion.dev. The new one grows out of the old one's box while it fades in, and the old one
+travels onto the new one's box while it fades out:
+
+```razor
+<BmotionPresenceSwitch Item="_selected" Mode="BmPresenceMode.Sync" Context="item">
+    <Bmotion LayoutId="card" Exit="Bm.To(opacity: 0)">
+        <div class="@(item.Expanded ? "detail" : "thumb")">@item.Title</div>
+    </Bmotion>
+</BmotionPresenceSwitch>
+```
+
+The fade is a `filter: opacity()`, so it multiplies with the elements' own opacity: their own
+enter and exit fades play on underneath. `LayoutCrossfade="false"` turns it off, leaving only
+the FLIP.
+
+### View transitions
+
+`BmotionViewTransition` wraps the browser's [View Transitions API](https://developer.mozilla.org/docs/Web/API/View_Transition_API)
+around a state change. The browser snapshots the page, your update runs, and the old and new
+states cross-fade (or play whatever your `::view-transition-*` CSS says):
+
+```razor
+@inject BmotionViewTransition ViewTransition
+
+<button @onclick="Next">Next</button>
+
+@code {
+    Task Next() => ViewTransition.StartAsync(() => _page++,
+        new BmViewTransitionOptions { Types = ["forward"] }).AsTask();
+}
+```
+
+```css
+:active-view-transition-type(forward)::view-transition-old(root) { animation-name: slide-out-left; }
+```
+
+`StartAsync` returns `true` when the browser played a transition. A browser without the API just
+runs the update and returns `false`. `Types` lets one stylesheet treat "forward" and "back"
+differently; a browser without typed transitions plays an untyped one. The library's reduced-motion
+policy applies here too: when motion is reduced the update runs without a transition. Set
+`ReduceMotion = false` for a transition whose stylesheet already handles `prefers-reduced-motion`,
+or `true` to always skip it.
+
 ---
 
 ## Scroll timelines
@@ -759,6 +1000,39 @@ compositor.
 
 `range` takes CSS `animation-range` syntax (`"entry 0% cover 50%"`) and needs native support.
 
+**Smoothing.** `.Smoothed()` makes the animation follow the scroll through a spring instead of
+exactly - motion.dev's `useSpring(scrollYProgress)` - so a flick of the wheel glides instead of
+jumping:
+
+```razor
+<Bmotion Timeline="BmScrollTimeline.Page().Smoothed()" Animate="Bm.To(scaleX: [0, 1])">
+    <div class="progress-bar" style="transform-origin:0 50%;" />
+</Bmotion>
+
+@* a springier follow *@
+<Bmotion Timeline="BmScrollTimeline.Page().Smoothed(Bm.Spring(stiffness: 300, damping: 20))" ...>
+```
+
+The default spring is motion.dev's recipe: stiffness 100, damping 30, no overshoot. A native
+scroll timeline can't be smoothed, so a smoothed one always plays through the bridge's scrub: a
+passive scroll listener and a spring stepped once a frame in the browser. That works the same on
+WebAssembly and Blazor Server, still with no .NET interop per frame. Like the scrub fallback, it
+covers the full journey and ignores `range`.
+
+**Pinning** (GSAP ScrollTrigger's `pin`) is `position: sticky` in CSS: a tall section with a
+sticky stage inside it. Drive what plays while it's pinned from the section's journey:
+
+```razor
+<section id="story" style="height: 300vh">
+    <div style="position: sticky; top: 0; height: 100vh">
+        <Bmotion Timeline='BmScrollTimeline.ViewOf("#story", range: "contain 0% contain 100%")'
+                 Animate="Bm.To(x: [0, -1200])">
+            <div class="filmstrip" />
+        </Bmotion>
+    </div>
+</section>
+```
+
 - Only **transform components and `opacity`** can be scroll-driven - they are what the browser can
   interpolate for us. A target touching anything else falls back to the ordinary time-based path.
 - `Transition` does not apply while a timeline is attached: scroll position *is* the progress.
@@ -777,7 +1051,9 @@ the browser can't own.
 ## Programmatic API
 
 `BmotionAnimateService` (inject as `Motion`) animates elements by CSS selector or
-`ElementReference` - no `<Bmotion>` wrapper needed:
+`ElementReference` - no `<Bmotion>` wrapper needed. (In an app that
+[lazy loads](#lazy-loading-on-webassembly) Bmotion, and so registers no services, take it from
+`Services.GetBmotionService<BmotionAnimateService>()` instead.)
 
 ```razor
 @inject BmotionAnimateService Motion
@@ -791,6 +1067,9 @@ the browser can't own.
         await controls;            // directly awaitable
     }
 
+    // Where it is, and moving it: Time / Duration / Progress / State, and Seek (or set Time)
+    void Scrub(double fraction) => _controls.Seek(fraction * _controls.Duration);
+
     // Stagger across all matched elements
     Task Cascade() => Motion.AnimateAsync(".item", Bm.To(opacity: 1, y: 0),
         Bm.Spring(), stagger: Bm.Stagger(0.08, from: BmStaggerFrom.Center)).AsTask();
@@ -800,6 +1079,27 @@ the browser can't own.
         v => { _count = (int)v; StateHasChanged(); }, Bm.Tween(1.5));
 }
 ```
+
+**Time.** The controls report where the animation is: `Time` (seconds of animation time, so a speed of
+2 advances it twice as fast), `Duration` (delays, staggers and repeats included; a spring's settling
+time is estimated; infinity for a loop), `Progress` (0–1) and `State` (`Running`, `Paused`,
+`Finished`, `Stopped`). `Seek(seconds)`, or setting `Time`, moves it and keeps its speed: a playing
+animation plays on from there, and a paused one holds there.
+
+* What the browser plays (nearly everything, see the hosting note at the top) moves in place. That
+  is exact and cheap, so binding a slider to `Seek` scrubs smoothly.
+* Anything else plays again from that point, starting from the values the animation started from.
+  A spring or an inertia is simulated up to the point, so it is exactly where it would have been.
+* A finished or stopped animation that is sought is taken hold of again and holds there until
+  `Play()`. `Play()` on a finished animation plays it again from the start.
+
+```razor
+<input type="range" min="0" max="1" step="0.001" @oninput="e => _controls?.Seek(double.Parse((string)e.Value!, CultureInfo.InvariantCulture) * _controls.Duration)" />
+```
+
+A sequence seeks by playing again from the point. Steps over by then land on their end values, and
+a step under way starts part-way through it, so two steps that overlap on one property start the
+later one from the earlier's end value.
 
 ### Sequences
 
@@ -835,13 +1135,13 @@ A reactive value graph, fully composable and bindable to elements:
 var x = Bm.Value(0.0);
 x.Subscribe(v => Console.WriteLine(v));
 x.SetSync(100);
-x.GetVelocity();                                  // units/sec
+x.GetVelocity();                                  // units/sec; 0 once x has stopped changing
 x.Jump(0);                                        // set without feeding physics
 
 var angle = x.Transform([0, 200], [0, 360]);      // range mapping
 var raw   = x.Transform([0, 200], [0, 360], clamp: false);  // extrapolate past the ends
 var label = x.Transform(v => $"{v:0}px");         // arbitrary derivation (useTransform)
-var speed = Bm.Velocity(x);                       // units/sec as its own value (useVelocity)
+var speed = Bm.Velocity(x);                       // units/sec as its own value (useVelocity), back to 0 when x stops
 var smooth = Motion.Spring(x, Bm.Spring(stiffness: 120));  // spring follower (useSpring)
 
 await Motion.AnimateAsync(x, 200, Bm.Spring());   // animate the value itself
@@ -970,11 +1270,186 @@ How `Animate` works, and what it covers:
 
 ---
 
+## Lazy loading on WebAssembly
+
+A WebAssembly app can fetch Bmotion only when someone opens a part of the app that animates. It
+leaves `AddBitBmotionServices` out and calls `IServiceProvider.ConfigureBmotionServices(...)`
+instead, before the first animated element is created: that creates every service `Bmotion`,
+`BmotionReorderGroup` and `BmotionInspector` need, once per WebAssembly runtime, with the options
+it sets, and `IServiceProvider.GetBmotionService<T>()` hands the app's own code the same ones. Mark
+the assembly as lazy loaded in the project that runs in the browser, and load it before the first
+page that uses it renders:
+
+```xml
+<ItemGroup>
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bmotion.wasm" />
+</ItemGroup>
+```
+
+```razor
+@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+   before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    ...
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages that animate: fetch Bmotion before they render. A second call loads nothing again. Routes
+        // match regardless of case, so /Showcase/cards is one of them too.
+        if (context.Path.StartsWith("showcase", StringComparison.OrdinalIgnoreCase))
+        {
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmotion.wasm"]);
+        }
+    }
+}
+```
+
+Those pages, or a layout only they use, hold the animated elements as usual. The layout creates the
+services, with the options `AddBitBmotionServices` would have been given:
+
+```razor
+@* ShowcaseLayout.razor *@
+@inherits LayoutComponentBase
+@inject IServiceProvider Services
+
+@Body
+
+@code {
+    // Runs before the elements of the page are created. Where the services are registered - the server of a Blazor
+    // Web App prerendering this layout - it checks that these are the options given to AddBitBmotionServices there.
+    protected override void OnInitialized() => Services.ConfigureBmotionServices(o =>
+    {
+        o.ReducedMotion = BmReducedMotionMode.User;
+        o.Prerender = BmPrerenderMode.Animate;
+    });
+}
+```
+
+And a component that animates from code takes its service from `GetBmotionService<T>()` instead of
+injecting it - `BmotionAnimateService`, `BmotionScrollTracker`, `BmotionViewTransition` or
+`BmotionCapabilities`:
+
+```razor
+@* Counter.razor *@
+@inject IServiceProvider Services
+
+<button @onclick="CountUpAsync">@_count</button>
+
+@code {
+    // Taken once, as an injected service would be.
+    private BmotionAnimateService Motion => field ??= Services.GetBmotionService<BmotionAnimateService>();
+    private int _count;
+
+    private Task CountUpAsync()
+        => Motion.AnimateAsync(0, 100, v => { _count = (int)v; StateHasChanged(); }, Bm.Tween(1.5));
+}
+```
+
+Nothing else changes: the bridge is imported the first time an animation runs either way, and
+`bit-bmotion.css` is a plain `<link>`, served whether the assembly has loaded or not.
+
+- Leave `AddBitBmotionServices` out of that project's `Program.cs`: calling it references Bmotion's
+  types before the assembly is there. For the same reason only what renders after the assembly has
+  loaded may use Bmotion's types - the pages it is loaded for and a layout only they use, not
+  `App.razor`, `Routes.razor`, a layout every page shares or `Program.cs`.
+- No type in an assembly the router reads when the app starts - the app's own assembly first of
+  all - may derive from or implement one of Bmotion's: no component that inherits
+  `BmotionAnimatePresence` or `BmotionConfig`, no `IBmotionInterop` of your own. The router reads the
+  types of those assemblies at startup, and on WebAssembly a type whose base type or interface lives
+  in an assembly that is not loaded yet fails to load - and keeps failing after Bit.Bmotion has
+  loaded. Put such a type in a library that is lazy loaded together with Bit.Bmotion.
+- Call `ConfigureBmotionServices` in every page or layout that holds animated elements, not only in
+  the one a visitor opens first. Until it has run, an element - and `GetBmotionService<T>()` - throws
+  `Bit.Bmotion's services are not registered`, as it does wherever the registration is missing: the
+  call is what tells an app that lazy loads Bmotion apart from one that forgot to register it, such
+  as the client project of a Blazor Web App.
+- The options are set once per runtime, by the first call, and shared by every element. Every later
+  call has to set the same ones or it throws, naming the options that differ - so give every call
+  the same configuration, from one shared method. Changing them while the app runs, from a settings
+  page for instance, is an error rather than a change; per element, the `Prerender` parameter and a
+  surrounding `<BmotionConfig ReduceMotion="...">` still override them.
+- Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there
+  is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup.
+
+In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` or
+`InteractiveAuto` render mode in `App.razor`, so the router - and its `OnNavigateAsync` - runs in the
+browser; with per-page render modes it renders statically on the server and never loads the
+assembly in the browser. The server project loads Bmotion with the rest of the app and keeps its
+`AddBitBmotionServices(...)`, and registers `LazyAssemblyLoader`, which `Routes.razor` injects while
+it is prerendered there and which loads nothing outside the browser:
+`builder.Services.AddScoped<LazyAssemblyLoader>()`.
+
+Give `ConfigureBmotionServices` the options the server gives `AddBitBmotionServices`. The runtime
+takes an element prerendered at rest over at rest only when it agrees on how the element was
+prerendered - otherwise the element's entrance plays a second time - so on the server, where the
+services are registered, the layout's call checks the two agree and throws while prerendering if
+they do not.
+
+And load Bmotion for the page the visitor arrives on in the client's `Program.cs` as well, before
+the app starts. The router renders nothing until `OnNavigateAsync` has finished, so a download
+started there replaces the prerendered page with an empty one until the assembly arrives; started
+before `RunAsync`, it leaves the prerendered page on screen, and `OnNavigateAsync` then finds the
+assembly loaded and renders the same page at once:
+
+```csharp
+// Client/Program.cs
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
+
+var host = builder.Build();
+
+// The same pages as in OnNavigateAsync.
+var navigation = host.Services.GetRequiredService<NavigationManager>();
+if (navigation.ToBaseRelativePath(navigation.Uri).StartsWith("showcase", StringComparison.OrdinalIgnoreCase))
+{
+    await host.Services.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["Bit.Bmotion.wasm"]);
+}
+
+await host.RunAsync();
+```
+
+The [lazy loading sample](Samples/Lazy/) does all of this in a Blazor Web App - its project file leaves the mark out of
+AOT builds, and sets a switch next to it that tells its router and its `Program.cs` whether there is an assembly to
+load - and the [end-to-end suite](Tests/Bit.Bmotion.Tests.E2E/) runs its published copy in a browser, trimmed and
+AOT-compiled: the home page never downloads `Bit.Bmotion.wasm`, and the showcase downloads it once, whether opened from
+the home page or by a deep link the server prerenders. There its card enters - or, prerendered, is taken over without
+playing its enter again - and grows under the pointer, and its buttons animate from code through
+`GetBmotionService<BmotionAnimateService>()`.
+
+---
+
 ## Examples
 
 See the `Demo` samples app for runnable examples of basic animations, gestures, springs,
 drag, variants & stagger, keyframes, enter/exit transitions, presence switching, layout
 (FLIP) animations, scroll-linked motion values and programmatic control.
+
+[`Samples`](Samples/) is the hosting harness rather than the docs: one shared [Core](Samples/Core/) project of
+pages (gestures and drag, presence, layout and reorder, the programmatic API, and scroll), hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
+Android, iOS, macOS and Windows). The bar on every page names the renderer it is on, and the home, Gestures and
+Programmatic pages say whether the engine has its per-frame loop there. It does on WebAssembly. On Server and in the
+MAUI app interop is asynchronous, so the browser plays nearly everything and what needs the loop lands on its target
+at once. The web hosts prerender every page with `BmPrerenderMode.Animate`. [Lazy](Samples/Lazy/) stands apart: a
+Blazor Web App of its own whose browser half downloads `Bit.Bmotion.wasm` only when its showcase, the part that
+animates, opens (see [lazy loading](#lazy-loading-on-webassembly)).
+
+```bash
+dotnet run --project src/Utilities/Bmotion/Samples/Server
+dotnet run --project src/Utilities/Bmotion/Samples/Wasm/Bit.Bmotion.Samples.Wasm
+dotnet run --project src/Utilities/Bmotion/Samples/Auto/Bit.Bmotion.Samples.Auto
+dotnet build -t:Run -f net10.0-android src/Utilities/Bmotion/Samples/Maui
+```
+
+`Bit.Bmotion.slnx` includes the MAUI sample, whose Android, iOS and Mac Catalyst (and, on Windows, Windows) targets
+need the `maui-*` workloads - `dotnet workload restore` from `src/Utilities/Bmotion` installs them. Without them the
+solution build fails with `NETSDK1147`; the library, the demo, the tests and the web samples still build as projects
+of their own.
 
 ---
 
@@ -1025,7 +1500,22 @@ visible in any signature. See
 Tap gestures are keyboard-accessible out of the box: when a tappable element has focus,
 <kbd>Enter</kbd> and <kbd>Space</kbd> press and release it exactly like a pointer tap
 (`WhileTap` plays, `OnTapStart`/`OnTap` fire; losing focus mid-press cancels). Give the
-element `tabindex="0"` if it isn't natively focusable.
+element `tabindex="0"` if it isn't natively focusable. Only keys pressed on the element itself
+count, not keys typed into a field inside it. On a native control (a button, a checkbox, a
+`<summary>`) <kbd>Space</kbd> keeps its own behaviour, so a tappable `<button>` still clicks.
+
+Gestures follow the input that made them. A touch doesn't trigger `WhileHover`, which a finger has
+no way to end, and a press on a form field inside a draggable element types into the field rather
+than starting a drag. `WhileFocus` follows keyboard focus (`:focus-visible`): it plays when a
+keyboard user tabs to the element, and not when a mouse click happens to focus it.
+
+When gestures overlap, the stronger one shows, as in Motion: drag over tap over hover over focus
+over in-view. A keyboard tap is pressed while the element has focus, so its `WhileTap` shows over
+the `WhileFocus` and gives way back to it on release.
+
+Content that is leaving is `inert` while its exit plays (see
+[BmotionAnimatePresence](#bmotionanimatepresence)): keyboard and screen-reader users never land on
+a dialog that is already closing.
 
 Bmotion honours the user's **prefers-reduced-motion** preference. Choose how, globally, at
 registration:
@@ -1042,9 +1532,11 @@ builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMod
 | `Never` | Never reduce, regardless of the OS. |
 
 When motion is reduced, Bmotion follows Motion's `"user"` semantics: **transforms, layout and
-dimension changes snap to their target instantly, while opacity and colour still animate** - a
-softer, more correct reduction than collapsing every property to instant. Stagger delays are
-dropped too, so a reduced list appears at once instead of trickling in.
+dimension changes snap to their target instantly, while opacity, colour, filters (`filter`,
+`backdropFilter`) and shadows still animate**. That is a softer and more correct reduction than
+making every property instant: nothing moves, but nothing jumps either. Stagger delays are dropped
+too, so a reduced list appears at once instead of trickling in. View transitions are skipped (see
+[View transitions](#view-transitions)).
 
 A local `<BmotionConfig ReduceMotion="true|false">` always overrides the global mode for its
 subtree (`null` = follow the mode):

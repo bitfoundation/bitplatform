@@ -12,7 +12,7 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-#if NET10_0_OR_GREATER
+#if NET11_0_OR_GREATER
         // One host failing to stop still leaves the others to be stopped.
         try
         {

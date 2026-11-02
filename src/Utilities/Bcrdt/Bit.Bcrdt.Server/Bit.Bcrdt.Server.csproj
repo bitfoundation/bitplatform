@@ -3,11 +3,11 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <RootNamespace>Bit.Bcrdt.Server</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
-        <Description>The ASP.NET Core relays for bit Bcrdt: the SignalR hub the Bit.Bcrdt.SignalR transport talks to, and the WebSocket endpoint the built-in WebSocket transport talks to. Both only relay - neither decodes a message nor holds a replica.</Description>
+        <Description>The ASP.NET Core relays for bit Bcrdt: the SignalR hub the Bit.Bcrdt.SignalR transport talks to, and the WebSocket endpoint the built-in WebSocket transport talks to. Both only relay - neither decodes a message nor holds a replica. Also the Blazor Server circuit handler that withdraws a closed tab's presence.</Description>
         <PackageDescription>$(Description)</PackageDescription>
         <PackageTags>$(PackageTags);ASP.NET Core;CRDT;Collaboration;Realtime;SignalR;WebSockets</PackageTags>
     </PropertyGroup>

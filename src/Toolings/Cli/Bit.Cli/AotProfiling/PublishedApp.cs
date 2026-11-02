@@ -25,8 +25,6 @@ public sealed class PublishedApp : IAsyncDisposable
 
     public bool IsStatic => server is null;
 
-    public string Framework => Path.Combine(WebRoot, "_framework");
-
     public static string? FindServer(string publishFolder)
     {
         return Directory.EnumerateFiles(publishFolder, "*.runtimeconfig.json")
@@ -74,26 +72,34 @@ public sealed class PublishedApp : IAsyncDisposable
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         var waited = Stopwatch.StartNew();
 
-        while (true)
+        try
         {
-            try
+            while (true)
             {
-                using var response = await http.GetAsync(address, cancellationToken);
-                return app;
-            }
-            catch (Exception exp) when (exp is HttpRequestException or TaskCanceledException && cancellationToken.IsCancellationRequested is false)
-            {
-            }
+                try
+                {
+                    using var response = await http.GetAsync(address, cancellationToken);
+                    return app;
+                }
+                catch (Exception exp) when (exp is HttpRequestException or TaskCanceledException && cancellationToken.IsCancellationRequested is false)
+                {
+                }
 
-            if (process.HasExited || waited.Elapsed > TimeSpan.FromMinutes(2))
-            {
-                await app.DisposeAsync();
-                string text;
-                lock (output) text = output.ToString().Trim();
-                throw new InvalidOperationException($"{Path.GetFileName(dll)} didn't start. {text}");
-            }
+                if (process.HasExited || waited.Elapsed > TimeSpan.FromMinutes(2))
+                {
+                    await app.DisposeAsync();
+                    string text;
+                    lock (output) text = output.ToString().Trim();
+                    throw new InvalidOperationException($"{Path.GetFileName(dll)} didn't start. {text}");
+                }
 
-            await Task.Delay(250, cancellationToken);
+                await Task.Delay(250, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            await app.DisposeAsync();
+            throw;
         }
     }
 

@@ -1,5 +1,4 @@
-﻿#if NET10_0_OR_GREATER
-using Bunit;
+﻿using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,8 +7,7 @@ namespace Bit.Brouter.Tests;
 
 /// <summary>
 /// .NET 10 not-found contract: application code calls <c>NavigationManager.NotFound()</c> and the
-/// router is expected to take over rendering via the <c>OnNotFound</c> event. These tests only run
-/// on net10.0 because the API doesn't exist on earlier targets.
+/// router is expected to take over rendering via the <c>OnNotFound</c> event.
 /// </summary>
 [TestClass]
 public class NotFoundInteropTests : BunitTestContext
@@ -56,4 +54,3 @@ public class NotFoundInteropTests : BunitTestContext
         });
     }
 }
-#endif

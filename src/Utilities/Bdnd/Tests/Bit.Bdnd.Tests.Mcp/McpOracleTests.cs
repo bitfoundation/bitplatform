@@ -162,6 +162,7 @@ public partial class McpOracleTests
             foreach (var (target, actual) in targets.Zip(report.Targets!))
             {
                 Assert.AreEqual(target.Id, actual.Id, context);
+                Assert.AreEqual(target.Parent is null ? null : (int?)targets.IndexOf(target.Parent), actual.ParentIndex, $"{context} - {target.Id}.ParentIndex");
                 Assert.AreEqual(CanDrop(target), actual.CanDrop, $"{context} - {target.Id}.CanDrop");
                 Assert.AreEqual(IsOver(target), actual.IsOver, $"{context} - {target.Id}.IsOver");
                 Assert.AreEqual(IsOver(target) && chain.SkipWhile(other => other != target).Skip(1).Any(IsOver) is false, actual.IsOverShallow, $"{context} - {target.Id}.IsOverShallow");

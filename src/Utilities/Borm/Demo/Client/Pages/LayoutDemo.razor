@@ -1,15 +1,26 @@
 ﻿@page "/layout"
 
-<PageTitle>Layout &amp; field types · Borm</PageTitle>
+<PageTitle>Layout, groups &amp; multi-selects · Borm</PageTitle>
 
 <div class="bb-intro">
-    <h1>Layout &amp; field types</h1>
+    <h1>Layout, groups &amp; multi-selects</h1>
     <p class="bb-subtitle">
         Forms are not always one field per row. Set <code>Columns</code> on the definition and
         <code>ColumnSpan</code> on individual fields to get a responsive grid that collapses to a single
         column on small screens. This form also shows a <code>[Flags]</code> enum <em>and</em> a plain
         <code>List&lt;TEnum&gt;</code> rendering as multi-selects, plus a typed nested object group.
     </p>
+</div>
+
+<div class="bb-note">
+    Narrow the window and the two columns become one. <em>Available on</em> is a <code>[Flags]</code> enum and
+    <em>Preferred contact</em> a <code>List&lt;ContactMethod&gt;</code>: both are a set of tick boxes in one
+    <code>&lt;fieldset&gt;</code>, because the answers are a closed set either way. The address is a nested object - a
+    group with a legend - laid out in two columns of its own with <code>Attr("columns", 2)</code>. The browser can fill
+    the whole form in: each field says what it is with <code>Autocomplete(...)</code>, the phone brings up the phone keypad
+    with <code>InputMode("tel")</code>, and the first name takes the focus as the form opens with <code>Autofocus()</code>.
+    <em>Reset</em> puts back what the form started with. Every built-in control is on <a href="field-types">every field type</a>,
+    and fieldsets around runs of fields are on <a href="composition">groups &amp; custom layout</a>.
 </div>
 
 <div class="bb-demo">
@@ -53,8 +64,9 @@
             // …and so does a plain List<TEnum>: the answers are a closed set either way, so it is a
             // set of tick boxes rather than a repeater of dropdowns.
             .Field(x => x.ContactMethods, f => f.ColumnSpan(2))
+            // A nested object is a group with a legend. Attr("columns", 2) lays its own fields out in
+            // two columns; ColumnSpan(2) lets the group take the form's whole width.
             .Object(x => x.Address, a => a
-                .Columns(2)
                 .Field(p => p.Street, f => f.ColumnSpan(2).Autocomplete("street-address"))
                 .Field(p => p.City, f => f.Autocomplete("address-level2"))
                 .Field(p => p.PostCode, f => f.Autocomplete("postal-code"))
@@ -85,7 +97,6 @@
             // set of tick boxes rather than a repeater of dropdowns.
             .Field(x => x.ContactMethods, f => f.ColumnSpan(2))
             .Object(x => x.Address, a => a
-                .Columns(2)
                 .Field(p => p.Street, f => f.ColumnSpan(2).Autocomplete("street-address"))
                 .Field(p => p.City, f => f.Autocomplete("address-level2"))
                 .Field(p => p.PostCode, f => f.Autocomplete("postal-code"))

@@ -3,13 +3,25 @@
 <PageTitle>Handle Rules · Blow</PageTitle>
 
 <ExampleScaffold Title="Handle Rules"
-                 Summary="Validation can live on the handle it belongs to rather than in one canvas-wide predicate. The 'number' input only accepts the number output, the 'text' input only the text output, and each input announces what arrived. Both ends of a prospective connection get a say, so a rule sits wherever it reads best.">
+                 Summary="Rules can live on the handle they belong to instead of in one canvas-wide predicate: a BlowHandle can carry its own IsValidConnection and OnConnect, a DataType and a MaxConnections, and can refuse to start or to accept connections at all. Use it when each port of a node template has rules of its own.">
     <Toolbar>
-        <span class="rules-log">@(_lastConnected ?? "No connection made yet.")</span>
+        <label>
+            Formatter's input
+            <select @bind="_formatter">
+                <option value="all">connectable</option>
+                <option value="nostart">IsConnectableStart = false</option>
+                <option value="noend">IsConnectableEnd = false</option>
+                <option value="none">IsConnectable = false</option>
+            </select>
+        </label>
+        <label><input type="checkbox" @bind="_oneWire" /> Adder takes one wire</label>
         <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+        <span class="rules-log" aria-live="polite">@(_lastConnected ?? "No connection made yet.")</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionRadius="30">
+        @* EdgesChanged re-renders the page after every edit, so the Adder's count follows deletions too. *@
+        <BlowCanvas @ref="_flow" Class="rules-flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionRadius="30"
+                    OnConnectEnd="OnConnectEnd" EdgesChanged="@(_ => { })">
             <NodeTemplate Context="node">
                 @switch (node.Id)
                 {
@@ -19,31 +31,38 @@
                            on that row's label rather than on the node. *@
                         <div class="rules-port">
                             number
-                            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="number" Class="port-number" />
+                            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="number" DataType="number" />
                         </div>
                         <div class="rules-port">
                             text
-                            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="text" Class="port-text" />
+                            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="text" DataType="text" />
                         </div>
                         break;
 
                     case "adder":
-                        @* The rule lives on the handle: only the number output may land here. *@
+                        @* The rule lives on the handle: only the number output may land here. No DataType, so the
+                           predicate - not the types - is what refuses text. *@
                         <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="value"
-                                Class="port-number"
-                                IsValidConnection="@(c => c.SourceHandle == "number")"
-                                OnConnect="@(c => Note("adder", c))" />
+                                    Class="port-number"
+                                    MaxConnections="@(_oneWire ? 1 : (int?)null)"
+                                    IsValidConnection="@(c => c.SourceHandle == "number")"
+                                    OnConnect="@(c => Note("adder", c))" />
                         <div class="rules-title">Adder</div>
-                        <div class="rules-sub">accepts numbers</div>
+                        <div class="rules-sub">rule: numbers only</div>
+                        <div class="rules-sub">@AdderCount</div>
                         break;
 
                     default:
+                        @* Here the data type does the refusing: a "number" output is not a "text" input. *@
                         <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="value"
-                                Class="port-text"
-                                IsValidConnection="@(c => c.SourceHandle == "text")"
-                                OnConnect="@(c => Note("formatter", c))" />
+                                    DataType="text"
+                                    Class="@(_formatter == "none" ? "rules-inert" : null)"
+                                    IsConnectable="@(_formatter != "none")"
+                                    IsConnectableStart="@(_formatter != "nostart")"
+                                    IsConnectableEnd="@(_formatter != "noend")"
+                                    OnConnect="@(c => Note("formatter", c))" />
                         <div class="rules-title">Formatter</div>
-                        <div class="rules-sub">accepts text</div>
+                        <div class="rules-sub">DataType: text</div>
                         break;
                 }
             </NodeTemplate>
@@ -53,6 +72,20 @@
             </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Drag</strong> from Producer's <em>number</em> output: the Adder's input turns green and the Formatter's red. From the <em>text</em> output it is the other way round. Release on the green one to connect; the line beside the toolbar says which input announced the arrival.</li>
+        <li>Release on a red input: nothing connects, and the line says why - the Adder refuses by its rule, the Formatter by its data type.</li>
+        <li><strong>Drag backwards</strong> from the Adder's input to the <em>text</em> output: refused too, because the rule of the handle a drag starts at gets a say as well as the one it ends on.</li>
+        <li>With <strong>Adder takes one wire</strong> ticked, connect the number output to the Adder, then try again: the Adder's input is full, shows <em>1/1 - full</em>, and no longer starts or accepts connections until you delete the edge (select it, then <strong>Delete</strong>) or untick the box.</li>
+        <li>Change <strong>Formatter's input</strong>: with <em>IsConnectableStart = false</em> pressing it starts nothing, but a drag still ends there; with <em>IsConnectableEnd = false</em> nothing can be dropped on it, though a drag can still start from it; <em>IsConnectable = false</em> does neither. <strong>Reset</strong> clears the edges.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>IsValidConnection</code> on a <code>BlowHandle</code> is a <code>Func&lt;BlowConnection, bool&gt;</code> like the canvas's. The rules of both handles a connection would join are asked, together with the canvas's, and a refusal is <code>RejectedByRule</code>.</li>
+        <li><code>DataType</code> declares what a handle carries; incompatible types are refused as <code>IncompatibleTypes</code>, and the type is rendered as <code>data-port-type</code>, which this page's stylesheet colours by. It overrides the <code>DataType</code> of a port declared in <code>BlowNode.Ports</code> - see Typed Ports for the model side.</li>
+        <li><code>MaxConnections</code> (null for no limit) caps a handle's edges. At the limit the handle neither starts nor accepts connections and is not drawn as connectable; a drop is <code>TargetFull</code> or <code>SourceFull</code>. The canvas's <code>CountConnections</code> and <code>IsHandleAtLimit</code> give the Adder's <em>1/1 - full</em>.</li>
+        <li><code>IsConnectableStart</code> and <code>IsConnectableEnd</code> (both true by default) switch off starting a connection at the handle, or ending one on it; <code>IsConnectable</code> switches off both. A drop on a handle that takes none is refused as <code>NotConnectable</code>.</li>
+        <li><code>OnConnect</code> on a handle is raised when the user makes a new connection at it - by dragging, by clicks or from the keyboard, though not when an existing edge is reconnected to it. <code>OnConnectEnd</code> on the canvas reports the refusals, with their <code>Rejection</code>.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -61,17 +94,32 @@
     /* The negative margin carries each row out over the node's 14px side padding, so a handle
        pinned to the row's right edge lands on the node's edge like any other handle. */
     .rules-port { position: relative; font-size: 11px; text-align: right; margin-right: -14px; padding-right: 20px; }
-    .rules-log { font-size: 12px; color: var(--bb-text-muted); margin-right: 0.75rem; }
+    .rules-log { font-size: 12px; color: var(--bb-text-muted); }
     /* Set through the handle's own colour token rather than a background with !important, so the
-       live valid/invalid highlight still shows while a connection is being dragged. */
-    .port-number { --bit-blow-handle-bg: #2563eb; }
-    .port-text { --bit-blow-handle-bg: #9333ea; }
+       live valid/invalid highlight still shows while a connection is being dragged. Typed handles are
+       coloured by the data-port-type their DataType renders; the Adder's input has no type, so a class. */
+    .rules-flow .bit-blow-handle[data-port-type="number"], .port-number { --bit-blow-handle-bg: #2563eb; }
+    .rules-flow .bit-blow-handle[data-port-type="text"] { --bit-blow-handle-bg: #9333ea; }
+    .rules-inert { opacity: .35; }
 </style>
 
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private string? _lastConnected;
+    private string _formatter = "all";
+    private bool _oneWire = true;
+
+    private string AdderCount
+    {
+        get
+        {
+            var count = _flow?.CountConnections("adder", BlowHandleType.Target, "value") ?? 0;
+            if (!_oneWire) return $"{count} wire(s), no limit";
+            return _flow?.IsHandleAtLimit("adder", "value", BlowHandleType.Target) == true ? $"{count}/1 - full" : $"{count}/1";
+        }
+    }
 
     protected override void OnInitialized() => Reset();
 
@@ -87,7 +135,22 @@
         _lastConnected = null;
     }
 
-    // Raised by the handle the connection landed on, for drags and click-to-connect alike.
+    // Raised by the input the connection was made at, however the user made it.
     private void Note(string target, BlowConnection c) =>
         _lastConnected = $"{c.SourceHandle} output connected to {target}.";
+
+    private void OnConnectEnd(BlowConnectEndInfo end)
+    {
+        if (end.IsValid || end.Rejection == BlowConnectionRejection.None) return;
+
+        _lastConnected = end.Rejection switch
+        {
+            BlowConnectionRejection.RejectedByRule => "Refused by a handle's IsValidConnection.",
+            BlowConnectionRejection.IncompatibleTypes => "Refused: the data types do not match.",
+            BlowConnectionRejection.TargetFull => "Refused: that input already has as many wires as MaxConnections allows.",
+            BlowConnectionRejection.NotConnectable => "Refused: that handle takes no drops.",
+            BlowConnectionRejection.Duplicate => "Refused: those two are already connected.",
+            var other => $"Refused: {other}.",
+        };
+    }
 }

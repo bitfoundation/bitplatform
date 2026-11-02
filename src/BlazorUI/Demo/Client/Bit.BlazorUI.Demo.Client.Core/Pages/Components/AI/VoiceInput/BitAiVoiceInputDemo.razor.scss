@@ -1,0 +1,16 @@
+﻿::deep {
+    .custom-class {
+        padding: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-button {
+        border: 2px solid var(--bit-clr-pri);
+    }
+
+    .custom-checked {
+        border-color: var(--bit-clr-err);
+        box-shadow: 0 0 0 0.25rem var(--bit-clr-err-light);
+    }
+}

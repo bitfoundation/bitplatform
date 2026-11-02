@@ -197,23 +197,12 @@ public static class ProjectOptionCatalog
         },
         new()
         {
-            Key = "pipeline",
-            Title = "CI/CD",
-            Summary = "Pipelines that build, test and deploy the project on every push.",
-            Flag = "--pipeline",
-            Choices = [new("GitHub", "GitHub Actions"), new("Azure", "Azure DevOps"), new("None", "None")],
-            GetChoice = s => s.Pipeline,
-            SetChoice = (s, v) => s.Pipeline = v
-        },
-        new()
-        {
             Key = "githubRepo",
             Title = "GitHub repository",
             Summary = "Creates a private GitHub repository and pushes the project to it.",
             Flag = "--github-repo",
             GetBool = s => s.GitHubRepo,
-            SetBool = (s, v) => s.GitHubRepo = v,
-            IsAvailable = s => s.Pipeline is "GitHub"
+            SetBool = (s, v) => s.GitHubRepo = v
         },
         new()
         {

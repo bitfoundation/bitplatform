@@ -282,6 +282,11 @@ builder.Services.AddSingleton<IImageCapabilityProvider, FixedCapabilityProvider>
 
 Handy for tests, and for forcing a conservative configuration.
 
+In a browser, `DecodableFormats` and `EncodableFormats` include what the managed codecs add to the browser's own, and
+`NativeDecodableFormats` and `NativeEncodableFormats` say which part is the browser's: only those formats are given to
+the browser codecs. A provider that wraps the browser one should change its result with `with`, which keeps them, or copy
+them over when it builds a new one; left null, the whole sets are taken as the browser's.
+
 ## A custom mask
 
 Derive from `Mask` and write the plain coverage; `Render` applies the feather, inversion and opacity afterwards, and

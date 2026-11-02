@@ -43,6 +43,9 @@ public sealed class BormConditionGroup : IBormCondition
     {
         null => [],
         BormConditionGroup group => group.Conditions.SelectMany(NamedPaths),
+        // Every path the expression names, not only the lists a `[]` reference depends on, so a typo
+        // after the `[]` is reported too.
+        BormExpressionCondition expression => BormDefinition.ResolvablePaths(expression.Expression),
         _ => condition.Dependencies
     };
 

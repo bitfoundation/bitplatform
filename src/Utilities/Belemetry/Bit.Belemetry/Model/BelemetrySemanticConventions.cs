@@ -93,6 +93,8 @@ public static class BelemetrySemanticConventions
     public const string ServerPort = "server.port";
     /// <summary><c>client.address</c></summary>
     public const string ClientAddress = "client.address";
+    /// <summary><c>user_agent.original</c></summary>
+    public const string UserAgentOriginal = "user_agent.original";
     /// <summary><c>error.type</c></summary>
     public const string ErrorType = "error.type";
     /// <summary><c>db.system.name</c></summary>

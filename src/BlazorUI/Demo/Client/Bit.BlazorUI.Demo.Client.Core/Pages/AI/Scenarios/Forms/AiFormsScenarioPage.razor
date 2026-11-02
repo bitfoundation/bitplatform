@@ -1,0 +1,87 @@
+﻿@page "/ai/scenarios/forms"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/forms"
+            Title="AI-proposed forms"
+            Keywords="AI form generation, JSON Schema form, human confirmation, BitAiForm, structured renderer, Blazor AI forms"
+            Description="The model proposes a form from a JSON Schema, the user corrects it, and only the corrected, validated values execute - bit BlazorUI's BitAiForm as a structured renderer." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Forms"
+             Lead="The model proposes a form from a JSON Schema, the user corrects it, and the corrected values are what execute."
+             GitHubUrl="AI/Scenarios/Forms/AiFormsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ask it to book something: check the form it proposes, correct it, and submit. The values that would execute appear beside the chat, under the schema's property names.">
+            <DemoExample Title="A booking to confirm" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame AsideLabel="Submitted values">
+                    <Aside>
+                        <BitText Element="h4" Typography="BitTypography.Subtitle2">Submitted values</BitText>
+                        @if (_values is { } values)
+                        {
+                            <ul>
+                                @foreach (var (key, value) in values)
+                                {
+                                    <li><code>@key</code>: @value</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <BitText Element="p" Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">Nothing yet. Submit the form in the chat.</BitText>
+                        }
+                    </Aside>
+                    <ChildContent>
+                        <CascadingValue Name="BookingSubmitted" Value="_onSubmitted" IsFixed="true">
+                            <BitAiChat Session="_session"
+                                       EmptyTitle="Ask it to book something"
+                                       Suggestions="_suggestions" />
+                        </CascadingValue>
+                    </ChildContent>
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                Confirmation, not guessing. The model produced a schema, not a booking: the form is built from that schema
+                (<code>BitAiFormDefinition.FromJsonSchema</code>), validated by the application rather than by the model, and
+                only submits once it is valid.
+            </p>
+            <p>
+                The transport writes a line of text, then streams the JSON Schema as <code>BitAiStructuredDataDeltaEvent</code>s
+                named <code>booking_form</code>. A structured renderer registered for that name
+                (<code>renderers.RegisterStructured("booking_form", context =&gt; ...)</code>, a
+                <code>BitAiStructuredDataRenderer</code> handed a <code>BitAiStructuredDataContext</code> with the part and its
+                message) replaces the default view, so the user sees a form rather than the JSON behind it. The renderer,
+                <code>BookingForm</code>, hands the values - keyed by the schema's property names - to whatever page
+                cascaded a <code>BookingSubmitted</code> callback, so it stays reusable and the page decides what a booking
+                means: this one lists them beside the chat, where a real one would make the booking, and could tell the
+                model what was booked with the session's <code>SubmitAsync</code>.
+            </p>
+            <p>
+                Fields appear as the schema streams in, and anything already typed survives a new field arriving. What the
+                model inferred arrives as the schema's <code>default</code>s, which the form starts from; it cannot be
+                submitted until the whole schema is in (<code>Busy</code>), and takes no more edits once it has been
+                (<code>Disabled</code>).
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/form"><code>BitAiForm</code></BitLink> - the form, built from the core input components.</li>
+                <li><BitLink Href="/components/ai/structureddataview"><code>BitAiStructuredDataView</code></BitLink> - the structured part that hands its schema to the registered renderer.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

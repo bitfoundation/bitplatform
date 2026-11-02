@@ -75,6 +75,64 @@ internal static class Snippets
                 _orders = await db.Orders.Where(o => o.Status == OrderStatus.Draft).ToListAsync();
             }
             """;
+
+        public const string LazyServices =
+            """
+            // Program.cs registers nothing of Bsqlite's: it runs before the assemblies are there.
+            // Called only from the pages the assemblies are loaded for - and, to register, from a server
+            // that prerenders them or a Blazor Hybrid app that shares them: public for those.
+            public static class AppDatabase
+            {
+                // What Program.cs would have registered, unchanged. Pass this one method to
+                // every call - and register with it in MauiProgram.cs, in a Blazor Hybrid app.
+                public static void Register(IServiceCollection services)
+                {
+                    services.AddBitBsqliteServices(sqlite => sqlite
+                        .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                        .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+                        .UseStorage(s => s
+                            .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                            .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
+                        .AddDatabase("app.db"));
+
+                    services.AddBitBsqliteDbContext<AppDbContext>();
+                }
+
+                public static IBsqliteDbContextFactory<AppDbContext> Contexts(IServiceProvider provider) => provider
+                    .GetBitBsqliteServices(Register)
+                    .GetRequiredService<IBsqliteDbContextFactory<AppDbContext>>();
+            }
+
+            // A page - once it runs in the browser, not while it is prerendered:
+            @inject IServiceProvider Services
+
+            if (RendererInfo.IsInteractive)
+            {
+                await using var db = await AppDatabase.Contexts(Services).CreateDbContextAsync();
+            }
+            """;
+
+        public const string LazyRouter =
+            """
+            @inject LazyAssemblyLoader LazyAssemblyLoader
+
+            <Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+                ...
+            </Router>
+
+            @code {
+                // Set next to the marks, so unset in an AOT build: loading an assembly that is not marked throws.
+                private static readonly bool LazyLoadsBsqlite = AppContext.TryGetSwitch("MyApp.LazyLoadsBsqlite", out var on) && on;
+
+                private async Task OnNavigateAsync(NavigationContext context)
+                {
+                    // Every assembly the project file marks BlazorWebAssemblyLazyLoad: Bit.Bsqlite.wasm,
+                    // the EF Core assemblies, what only they use, and the library with your model.
+                    if (LazyLoadsBsqlite && UsesTheDatabase(context.Path))
+                        await LazyAssemblyLoader.LoadAssembliesAsync(DatabaseAssemblies);
+                }
+            }
+            """;
     }
 
     public static class Home
@@ -512,17 +570,19 @@ internal static class Snippets
 
         public const string Import =
             """
-            // Close the worker first so it cannot keep writing the image being replaced.
-            await Database.CloseSessionAsync();
+            // The worker is closed for the whole of the work, so it cannot keep writing the image
+            // being replaced - and nothing can reopen the database halfway through.
+            await Database.WhileClosedAsync(async ct =>
+            {
+                await provider.Admin.ImportAsync("app.db", bytes, ct);
 
-            await provider.Admin.ImportAsync("app.db", bytes);
+                // Record the sticky binding, or the next open would create an empty file on the
+                // preferred backend and the import would look like it vanished.
+                await Database.Bindings.SetProviderNameAsync("app.db", provider.Name, ct);
+            });
 
-            // Record the sticky binding, or the next open would create an empty file on the
-            // preferred backend and the import would look like it vanished.
-            await Database.Bindings.SetProviderNameAsync("app.db", provider.Name);
-
-            // Reopen once so migrations run before the pages come back for the database. The
-            // open raises Opened, which is how every page hears it should reload.
+            // The reopen raises Opened, which is how every page hears it should reload; a context
+            // runs the migrations before they come back for the database.
             await using (await Database.OpenContextAsync())
             {
             }
@@ -530,11 +590,13 @@ internal static class Snippets
 
         public const string Delete =
             """
-            await Database.CloseSessionAsync();
-            await provider.Admin.DeleteAsync("app.db");
+            await Database.WhileClosedAsync(async ct =>
+            {
+                await provider.Admin.DeleteAsync("app.db", ct);
 
-            // Forget the binding so selection is free to pick the preferred backend again.
-            await Database.Bindings.RemoveAsync("app.db");
+                // Forget the binding so selection is free to pick the preferred backend again.
+                await Database.Bindings.RemoveAsync("app.db", ct);
+            });
 
             // Migrates and reseeds the now-empty database.
             await using (await Database.OpenContextAsync())

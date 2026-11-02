@@ -1,0 +1,57 @@
+﻿@page "/tree"
+
+<PageTitle>Tree - Bortable samples</PageTitle>
+
+<h1>Tree</h1>
+
+<p>
+    Lists inside the items of lists, to any depth: every entry renders a list of its own (TreeBranch), and every level
+    shares a group, so an entry moves into another folder, out of one, or to another level - never inside itself. A
+    drag that starts in an inner list moves only that entry, not the one around it.
+</p>
+
+<HostFacts />
+
+<TreeBranch Items="_tree" AriaLabel="Project" OnTreeChanged="StateHasChanged" />
+
+<section>
+    <h2>The tree</h2>
+    <pre class="outline">@Describe(_tree, 0)</pre>
+</section>
+
+@code {
+    private readonly List<TreeNode> _tree =
+    [
+        new TreeNode
+        {
+            Name = "src",
+            Children =
+            [
+                new TreeNode { Name = "Program.cs" },
+                new TreeNode
+                {
+                    Name = "Pages",
+                    Children =
+                    [
+                        new TreeNode { Name = "Home.razor" },
+                        new TreeNode { Name = "Settings.razor" },
+                    ],
+                },
+                new TreeNode { Name = "App.razor" },
+            ],
+        },
+        new TreeNode
+        {
+            Name = "tests",
+            Children =
+            [
+                new TreeNode { Name = "HomeTests.cs" },
+            ],
+        },
+        new TreeNode { Name = "README.md" },
+    ];
+
+    // One entry a line, indented by its depth.
+    private static string Describe(List<TreeNode> nodes, int depth)
+        => string.Concat(nodes.Select(n => $"{new string(' ', depth * 2)}{n.Name}\n{Describe(n.Children, depth + 1)}"));
+}

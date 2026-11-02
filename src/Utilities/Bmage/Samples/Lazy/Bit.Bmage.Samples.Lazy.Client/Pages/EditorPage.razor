@@ -1,0 +1,45 @@
+﻿@page "/editor"
+@using Bit.Bmage
+@using Bit.Bmage.Editor.Components
+
+<PageTitle>Editor - Bmage lazy loading sample</PageTitle>
+
+<h1>Editor</h1>
+
+<p>
+    <code>Bit.Bmage.wasm</code> and <code>Bit.Bmage.Blazor.wasm</code> were downloaded as this page opened. The editor
+    builds the services it needs itself, with Bmage's defaults: the app does not register them. Open an image on it,
+    edit it, then export the result.
+</p>
+
+<p>
+    <button type="button" id="export" disabled="@(_loaded is false)" @onclick="ExportAsync">Export</button>
+    <span id="exported">@_exported</span>
+</p>
+
+@if (_error is not null)
+{
+    <p role="alert">@_error</p>
+}
+
+<div class="editor-frame">
+    <BmageEditor @ref="_editor" OnImageLoaded="OnImageLoaded" OnError="OnError" />
+</div>
+
+@code {
+    private BmageEditor? _editor;
+    private bool _loaded;
+    private string? _exported;
+    private string? _error;
+
+    private void OnImageLoaded(ImageBuffer image) => _loaded = true;
+
+    private void OnError(Exception ex) => _error = ex.Message;
+
+    private async Task ExportAsync()
+    {
+        // In the editor's default format, PNG, through the exporter the editor built for itself.
+        if (await _editor!.ExportAsync() is { } image)
+            _exported = $"{image.Width} x {image.Height} {image.Format}, {image.Length} bytes";
+    }
+}

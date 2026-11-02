@@ -520,7 +520,7 @@ public sealed class AdversarialPipelineTests
         var processor = new ImageProcessor();
         using var img = Noise(16, 16, 73);
         await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, ImageExportOptions.Avif));
-        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, ImageExportOptions.WebP));
+        await Assert.ThrowsExactlyAsync<ImageCapabilityException>(async () => await processor.EncodeAsync(img, new ImageExportOptions { Format = ImageFormat.Tiff }));
     }
 
     // ------------------------------------------------------------------ batch

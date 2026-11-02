@@ -217,7 +217,7 @@ describe('error reporting', () => {
         const listeners = installBrowser();
         const reports = [];
         const bridge = await loadBridge();
-        bridge.attach({ invokeMethodAsync: (method, payload) => { reports.push([method, payload && payload.message]); return Promise.resolve(); } }, {});
+        bridge.attach({ invokeMethodAsync: (method, payload) => { if (method !== 'OnTargetsChanged') reports.push([method, payload && payload.message]); return Promise.resolve(); } }, {});
 
         listeners.get('unhandledrejection')({ reason: new Error("Cannot send data if the connection is not in the 'Connected' State.") });
         listeners.get('error')({ error: new Error("Cannot send data if the connection is not in the 'Connected' State.") });
@@ -235,7 +235,7 @@ describe('keyboard shortcuts', () => {
         globalThis.document.querySelector = selector => (selector === '.bev-root .bev-panel' && panelOpen ? {} : null);
         const reports = [];
         const bridge = await loadBridge();
-        bridge.attach({ invokeMethodAsync: method => { reports.push(method); return Promise.resolve(); } }, {});
+        bridge.attach({ invokeMethodAsync: method => { if (method !== 'OnTargetsChanged') reports.push(method); return Promise.resolve(); } }, {});
         const press = (modifiers = {}) => {
             const e = { key: 'k', ctrlKey: true, shiftKey: false, altKey: false, metaKey: false, ...modifiers, prevented: false, preventDefault() { this.prevented = true; } };
             listeners.get('keydown')(e);

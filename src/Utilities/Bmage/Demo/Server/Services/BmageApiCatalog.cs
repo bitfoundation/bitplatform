@@ -9,8 +9,8 @@ namespace Bit.Bmage.Demo.Server.Services;
 
 /// <summary>
 /// Builds the API reference the MCP tools serve, by reflecting over the public surface of the
-/// Bit.Bmage assembly - the engine, the browser integration and the editor components - and pairing
-/// every type and member with its XML documentation.
+/// Bit.Bmage assembly - the engine - and the Bit.Bmage.Blazor assembly - the browser integration and
+/// the editor components - and pairing every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new pipeline method shows up the moment it is written, with its real parameter list
@@ -26,12 +26,13 @@ public static class BmageApiCatalog
     private const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
     /// <summary>
-    /// The assemblies whose types are listed: Bit.Bmage alone, which ships the engine, the browser
-    /// integration and the editor components.
+    /// The assemblies whose types are listed: Bit.Bmage, which ships the engine, and Bit.Bmage.Blazor,
+    /// which ships the browser integration and the editor components.
     /// </summary>
     public static readonly Assembly[] Assemblies =
     [
         typeof(BitBmage).Assembly,
+        typeof(BitBmageBlazor).Assembly,
     ];
 
     private static readonly Lazy<Type[]> _publicTypes = new(() =>
@@ -300,6 +301,11 @@ public static class BmageApiCatalog
             if (method.Name.Contains('<', StringComparison.Ordinal)) continue;
             if (method.DeclaringType == typeof(object)) continue;
             if (IsCompilerGenerated(method)) continue;
+            // An override of what every object has, which the type does not document, says nothing about the
+            // type - and split into words it answers questions it has nothing to do with: to a search,
+            // GetHashCode is "code", and the top hit for anything done from code.
+            var summary = BmageXmlDocs.GetSummary(DocumentationId(method));
+            if (summary is null && method.Name is "Equals" or "GetHashCode" or "ToString") continue;
 
             var signature = Signature(method.GetParameters(), method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false));
             if (seen.Add($"{method.Name}{signature}") is false) continue;
@@ -310,7 +316,7 @@ public static class BmageApiCatalog
                 Kind = "Method",
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
-                Summary = BmageXmlDocs.GetSummary(DocumentationId(method)),
+                Summary = summary,
                 Remarks = BmageXmlDocs.GetRemarks(DocumentationId(method))
             };
         }

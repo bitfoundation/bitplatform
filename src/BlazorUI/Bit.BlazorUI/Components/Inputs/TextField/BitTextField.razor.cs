@@ -34,6 +34,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
+    private string? _typedText;
+    private string? _typedTextBase;
     private bool _isPasswordRevealed;
     private BitInputType? _elementType;
     private string _inputId = string.Empty;
@@ -531,7 +533,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Shows the custom prefix for text field.
     /// </summary>
-    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
+    [Parameter, ResetClassBuilder] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
     /// Prevents the enter to add new line character into the input in the Multiline mode.
@@ -628,7 +630,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Shows the custom suffix for text field.
     /// </summary>
-    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
+    [Parameter, ResetClassBuilder] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// A more descriptive title of the text field, shown by the browser as its tooltip.
@@ -791,6 +793,13 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => PermanentGhost ? "bit-tfl-pgt" : string.Empty);
 
+        // The parts at an end of the frame take its corners only while nothing else sits beyond them, which the
+        // stylesheet reads off their position - except for a template, which may leave nothing but text there, and
+        // text is a thing no selector can see. These classes are what tell it that a template holds that end.
+        ClassBuilder.Register(() => PrefixTemplate is not null ? "bit-tfl-ptm" : string.Empty);
+
+        ClassBuilder.Register(() => SuffixTemplate is not null ? "bit-tfl-stm" : string.Empty);
+
         // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
         // tell a default from a choice: the public --bit-TextField-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tfl"));
@@ -856,6 +865,13 @@ public partial class BitTextField : BitTextInputBase<string?>
             _oldCountStrategy = CountStrategy;
             _hasText = string.IsNullOrEmpty(Value) is false;
             _charCount = CountOf(Value);
+        }
+
+        // A value that moved without the field moving it - the page emptying it after a send, say - is what the
+        // input shows from then on, whatever had been typed into it before.
+        if (_typedText is not null && string.Equals(Value, _typedTextBase, StringComparison.Ordinal) is false)
+        {
+            _typedText = null;
         }
 
         SyncLiveRegion();
@@ -1032,6 +1048,42 @@ public partial class BitTextField : BitTextInputBase<string?>
         result = _trimOnParse ? value?.Trim() : value;
         parsingErrorMessage = null;
         return true;
+    }
+
+    // What the value attribute of the input is rendered with: the text typed into it while the value has not caught
+    // up with that text - Immediate off, a debounce or a throttle still running, a binding that refuses it - and the
+    // value itself otherwise. Rendering the value in between would write it back over what is being typed.
+    private string? ElementValue => _typedText ?? CurrentValueAsString;
+
+    // The input event is bound rather than only handled for what the binding does before the handler runs: the
+    // renderer writes the text the event carries into the value attribute of the last render, so the render that
+    // follows finds no difference and leaves the element alone. Next to a plain handler, every render in reply to a
+    // keystroke wrote the text of that keystroke back into the element, which by then often holds the keys typed
+    // since, and fast typing lost them.
+    private async Task HandleOnElementInput(string? text)
+    {
+        _typedText = text;
+        _typedTextBase = Value;
+
+        await HandleOnStringValueInputAsync(new ChangeEventArgs { Value = text });
+    }
+
+    protected override async Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
+    {
+        await base.HandleOnStringValueChangeAsync(e);
+
+        if (_typedText is null) return;
+
+        // Once the value holds the typed text the input shows the value again; until then the value this commit
+        // ended up with is the field's own doing, not a change from the page (see OnParametersSet).
+        if (string.Equals(_typedText, CurrentValueAsString ?? string.Empty, StringComparison.Ordinal))
+        {
+            _typedText = null;
+        }
+        else
+        {
+            _typedTextBase = Value;
+        }
     }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
@@ -1385,6 +1437,9 @@ public partial class BitTextField : BitTextInputBase<string?>
             _trimOnParse = false;
         }
 
+        // Whatever the commit made of the text - all of it, trimmed, or refused - the input shows the value from here on.
+        _typedText = null;
+
         // The change event is the one that commits the value, so the counter and the clear button are
         // re-synced from what the value ended up being rather than from the text the event carried: an
         // internal change does not run OnParametersSet, and a trimmed value is shorter than what was typed.
@@ -1392,9 +1447,10 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         // What the field committed is not always what the element reported: Trim takes the whitespace off
         // on the way in, and a Value bound without a ValueChanged or an OnChange refuses the new text
-        // altogether. Blazor only patches the value attribute when it differs from the previous render, so
-        // a committed value that did not move - the same text with its spaces trimmed, or the old value
-        // kept - leaves the typed text sitting on screen under a field that holds something else.
+        // altogether. Blazor only patches the value attribute when it differs from the previous render, and a
+        // change raised without an input event before it - a script setting the text - never put that text
+        // into a render, so the committed value would leave the typed text sitting on screen under a field
+        // that holds something else.
         if (string.Equals(e.Value?.ToString() ?? string.Empty, CurrentValueAsString ?? string.Empty, StringComparison.Ordinal) is false)
         {
             await SyncInputElementValue();
@@ -1431,6 +1487,8 @@ public partial class BitTextField : BitTextInputBase<string?>
         ResetInputRateLimiter();
 
         await SetCurrentValueAsStringAsync(string.Empty, true);
+
+        _typedText = null;
 
         var cleared = string.IsNullOrEmpty(CurrentValue);
 

@@ -27,6 +27,7 @@
     agents    Creates a project with bit new, then hands each scenario of agent-scenarios.json to a headless Claude Code
               that sees nothing but that project, in a copy of its own, and checks what it did: which skills it read,
               which tools it called and which files it changed after each turn. -Sha and -Keep as above.
+              All three create the project for the template's default .NET version unless -Framework names another.
 
     What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
     RunTests.bat rather than repeated here, so this script follows them.
@@ -105,7 +106,11 @@ param(
     # agents: runs one scenario of the lab that -Lab names; the command starts these itself.
     [switch] $Worker,
 
-    [string] $Lab
+    [string] $Lab,
+
+    # devcontainer, aspire, agents: the project's --framework; the template's default when omitted.
+    [ValidateSet('net10.0', 'net11.0')]
+    [string] $Framework
 )
 
 $ErrorActionPreference = 'Stop'
@@ -261,7 +266,13 @@ function Get-AndroidDevices {
     @((Invoke-Adb devices) -split "`n" | Select-Object -Skip 1 | Where-Object { $_ -match '^\S+\s+device\b' })
 }
 
-# Exactly one device, since adb and the E2E suite both address "the" device. With none, the first AVD is booted.
+function Get-AvdApiLevel([string] $avd) {
+    $config = Join-Path $env:USERPROFILE ".android\avd\$avd.avd\config.ini"
+    $sysdir = (Test-Path $config) ? (Select-String -Path $config -Pattern 'image\.sysdir\.1\s*=.*android-(\d+)' | Select-Object -First 1) : $null
+    return $sysdir ? [int] $sysdir.Matches[0].Groups[1].Value : 0
+}
+
+# Exactly one device, since adb and the E2E suite both address "the" device. With none, the AVD of the newest Android is booted.
 function Disable-AndroidSystemSheets {
     foreach ($setting in @{ autofill_service = 'null'; stylus_handwriting_enabled = '0' }.GetEnumerator()) {
         if ((Invoke-Adb shell settings get secure $setting.Key).Trim() -ne $setting.Value) {
@@ -286,7 +297,8 @@ function Initialize-AndroidDevice {
     $emulator = Join-Path $script:androidSdk 'emulator\emulator.exe'
 
     # Newer emulators mix INFO lines into -list-avds, while an AVD name has no spaces.
-    $avd = (& $emulator -list-avds 2>$null) | Where-Object { $_ -and $_ -notmatch '\s' } | Select-Object -First 1
+    $avd = (& $emulator -list-avds 2>$null) | Where-Object { $_ -and $_ -notmatch '\s' } |
+        Sort-Object { Get-AvdApiLevel $_ } -Descending | Select-Object -First 1
 
     if (-not $avd) {
         throw "No Android device is connected and $emulator lists no AVD to boot."
@@ -394,12 +406,18 @@ function Install-AndroidApps {
             $output = Invoke-Adb install $apk.Path
         }
 
-        if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE') {
+        if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
             Write-Host "  $($Matches[0]): retrying with the low-storage limit lowered to 100 MB for this install."
             Invoke-Adb shell settings put global sys_storage_threshold_max_bytes 104857600 | Out-Null
 
             try {
                 $output = Invoke-Adb install -r -d $apk.Path
+
+                if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
+                    Write-Host "  $($Matches[0]) again, with no room for both copies: uninstalling it first, which drops its data."
+                    Invoke-Adb uninstall $apk.Package | Out-Null
+                    $output = Invoke-Adb install $apk.Path
+                }
             }
             finally {
                 Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
@@ -559,7 +577,7 @@ function Get-WebAppVersions {
 
 #region Windows
 
-# Every Client.Windows app starts WebView2 with --remote-debugging-port=9222, so only one of them may run while one is
+# The helper starts every Client.Windows app with --remote-debugging-port=9222, so only one of them may run while one is
 # driven over CDP - a leftover instance would be the one answering. /T takes its WebView2 processes along.
 function Stop-WindowsApps {
     $deadline = (Get-Date).AddSeconds(30)
@@ -603,6 +621,7 @@ function Update-WindowsApps {
         Write-Host "$($app.Id): at $before, opening it..."
 
         Stop-WindowsApps
+        $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9222'
         Start-Process $app.Exe -WindowStyle Minimized
 
         # The version button runs ForceUpdate: Velopack downloads the release and restarts the app into it.
@@ -708,7 +727,7 @@ function Invoke-E2EStages {
         $buildArguments = @()
 
         if ($PrereleasePackages) {
-            $lab = Join-Path ([IO.Path]::GetTempPath()) 'test-platform-e2e'
+            $lab = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'test-platform-e2e'
             $feed = Join-Path $lab 'feed'
             $env:NUGET_PACKAGES = Join-Path $lab 'packages'
             Remove-Item $feed -Recurse -Force -ErrorAction SilentlyContinue
@@ -718,6 +737,10 @@ function Invoke-E2EStages {
             Set-BitUnderTestFeed $lab $feed
 
             dotnet restore --nologo -v q --configfile (Join-Path $lab 'nuget.config') > (Join-Path $results 'restore.log')
+
+            if ($LASTEXITCODE -ne 0 -and (Select-String -Path (Join-Path $results 'restore.log') -Pattern 'NU1202' -Quiet)) {
+                dotnet restore --nologo -v q --configfile (Join-Path $lab 'nuget.config') > (Join-Path $results 'restore.log')
+            }
 
             if ($LASTEXITCODE -ne 0) {
                 Select-String -Path (Join-Path $results 'restore.log') -Pattern ': error ' | ForEach-Object Line | Select-Object -Unique | Write-Host
@@ -777,9 +800,7 @@ function Invoke-E2EStages {
                 $env:ANDROID_HOME = $script:androidSdk
                 $env:PATH = "$(Join-Path $script:androidSdk 'platform-tools');$env:PATH"
 
-                if ((Get-AndroidDevices).Count -eq 1) {
-                    Disable-AndroidSystemSheets
-                }
+                Initialize-AndroidDevice
             }
 
             $testFilter = "TestCategory=$($settings.Category)" + $(if ($Filter) { "&$Filter" })
@@ -954,7 +975,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --version 10.7.0-pre-04 | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-16 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -1027,10 +1048,11 @@ function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options
     Push-Location $lab
 
     $templateArguments = $bit.TemplateArguments
+    $frameworkArguments = $Framework ? @('--framework', $Framework) : @()
 
     try {
         $setupArguments = $setup ? @('--no-tools', '--no-workloads', '--ide', 'none') : @('--no-setup')
-        & $bit.Path new $name --yes --no-open --no-trust @setupArguments @options @templateArguments *> (Join-Path $lab 'new.log')
+        & $bit.Path new $name --yes --no-open --no-trust @setupArguments @options @frameworkArguments @templateArguments *> (Join-Path $lab 'new.log')
         $newExitCode = $LASTEXITCODE
     }
     finally {
@@ -1060,7 +1082,7 @@ function Remove-BitUnderTest([string] $lab) {
 function Invoke-DevContainerTest {
     Assert-DockerLinux
 
-    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:MM-dd-HH-mm-ss}' -f (Get-Date))
     $feed = Join-Path $lab 'feed'
     $project = Join-Path $lab 'DevApp'
     New-Item -ItemType Directory -Force $lab | Out-Null
@@ -1084,16 +1106,20 @@ function Invoke-DevContainerTest {
         if ($Sha) {
             Set-BitUnderTestFeed $project '/feed'
             $mount = '--mount', "type=bind,source=$($feed -replace '\\', '/'),target=/feed"
+
+            $devContainerJson = Join-Path $project '.devcontainer\devcontainer.json'
+            $content = Get-Content $devContainerJson -Raw
+            Set-Content $devContainerJson -Encoding utf8NoBOM -NoNewline -Value ($content -replace '(Bit\.Cli --version )\S+', '${1}0.0.0')
         }
 
         $upLog = Join-Path $lab 'up.log'
         Write-Host "Bringing the dev container up at $(Get-Date -Format 'HH:mm:ss'), log: $upLog"
-        $started = Get-Date
+        $started = [DateTimeOffset]::Now
         npx -y '@devcontainers/cli' up --workspace-folder $project @mount *> $upLog
         $result = Get-Content $upLog -Encoding utf8 | Where-Object { $_ -match '^\{"outcome"' } | Select-Object -Last 1 | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Write-BitSteps $upLog 'Running the onCreateCommand'
-        Write-Host ('The dev container {0} after {1:mm\:ss}.' -f ($result.outcome -eq 'success' ? 'came up' : "didn't come up ($($result.outcome ?? 'no result'))"), ((Get-Date) - $started))
+        Write-Host ('The dev container {0} after {1:mm\:ss}.' -f ($result.outcome -eq 'success' ? 'came up' : "didn't come up ($($result.outcome ?? 'no result'))"), ([DateTimeOffset]::Now - $started))
 
         if ($result.outcome -ne 'success') {
             $failures.Add("the dev container didn't come up; see $upLog")
@@ -1180,10 +1206,10 @@ function Get-IdleMinutes([string] $appHost) {
 }
 
 function Start-AppHostRun([string] $appHost, [string] $aliveUrl, [string] $log) {
-    $started = Get-Date
+    $started = [DateTimeOffset]::Now
     $process = Start-Process dotnet -ArgumentList 'run', '--project', $appHost, '--no-build' -WorkingDirectory $appHost -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru -WindowStyle Hidden
 
-    while (((Get-Date) - $started).TotalMinutes -lt 15) {
+    while (([DateTimeOffset]::Now - $started).TotalMinutes -lt 15) {
         Start-Sleep -Seconds 3
 
         if ($process.HasExited) {
@@ -1191,8 +1217,8 @@ function Start-AppHostRun([string] $appHost, [string] $aliveUrl, [string] $log) 
         }
 
         try {
-            if ((Invoke-WebRequest $aliveUrl -TimeoutSec 5 -SkipHttpErrorCheck).StatusCode -eq 200) {
-                return [pscustomobject]@{ Process = $process; Seconds = [int]((Get-Date) - $started).TotalSeconds }
+            if ((Select-String -LiteralPath $log -SimpleMatch 'Distributed application started' -Quiet) -and (Invoke-WebRequest $aliveUrl -TimeoutSec 5 -SkipHttpErrorCheck).StatusCode -eq 200) {
+                return [pscustomobject]@{ Process = $process; Seconds = [int]([DateTimeOffset]::Now - $started).TotalSeconds }
             }
         }
         catch {
@@ -1258,7 +1284,9 @@ function Remove-AspireContainers([string[]] $names, [string] $appHostName) {
 
     docker rm -f -v $containers.Id | Out-Null
 
-    foreach ($volume in $containers.Volumes | Where-Object { $_ -like "$($appHostName.ToLowerInvariant())-*" } | Sort-Object -Unique) {
+    $prefixes = $containers.Volumes | Where-Object { $_ -like "$($appHostName.ToLowerInvariant())-*" } | ForEach-Object { $_ -replace "^($([regex]::Escape($appHostName.ToLowerInvariant()))-[^-]+)-.*", '$1' } | Sort-Object -Unique
+
+    foreach ($volume in docker volume ls --format '{{.Name}}' | Where-Object { $name = $_; $prefixes | Where-Object { $name.StartsWith("$_-") } }) {
         docker volume rm $volume 2>&1 | Out-Null
     }
 
@@ -1268,7 +1296,7 @@ function Remove-AspireContainers([string[]] $names, [string] $appHostName) {
 function Invoke-AspireTest {
     Assert-DockerLinux
 
-    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-aspire-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-aspire-{0:MM-dd-HH-mm-ss}' -f (Get-Date))
     $appHostName = 'AspireApp.Server.AppHost'
     New-Item -ItemType Directory -Force $lab | Out-Null
 
@@ -1339,16 +1367,16 @@ function Invoke-AspireTest {
         }
 
         Stop-AppHostRun $second $appHostName
-        $idleSince = Get-Date
+        $idleSince = [DateTimeOffset]::Now
         Write-Host "Waiting up to $($idleMinutes + 3) minutes for the containers to stop, from $($idleSince.ToString('HH:mm:ss'))..."
 
         do {
             Start-Sleep -Seconds 30
             $running = @(Get-AspireContainers $names | Where-Object Status -eq 'running')
         }
-        while ($running -and ((Get-Date) - $idleSince).TotalMinutes -lt $idleMinutes + 3)
+        while ($running -and ([DateTimeOffset]::Now - $idleSince).TotalMinutes -lt $idleMinutes + 3)
 
-        $idle = (Get-Date) - $idleSince
+        $idle = [DateTimeOffset]::Now - $idleSince
 
         if ($running) {
             $failures.Add("$($running.Name -join ', ') still running $([int]$idle.TotalMinutes) minutes after the last run")
@@ -1560,7 +1588,7 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         '--permission-mode', 'auto', '--permission-prompts', 'none', '--max-budget-usd', "$budget",
         '--disallowedTools', 'mcp__aspire', 'Bash(aspire *)', 'PowerShell(aspire *)', 'Bash(git push *)', 'PowerShell(git push *)',
         '--allowedTools', 'Read', 'Glob', 'Grep', 'Edit', 'Write', 'TodoWrite', 'Skill', 'Agent', 'WebFetch', 'WebSearch', 'ToolSearch',
-        'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp')
+        'mcp__bitplatform', 'mcp__playwright', 'mcp__dev-mcp-test', 'mcp__dev-mcp-production')
 
     if ($session) {
         $arguments += '--resume', $session
@@ -1640,7 +1668,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     $turns = [Collections.Generic.List[object]]::new()
     $states = @{}
     $session = $null
-    $started = Get-Date
+    $started = [DateTimeOffset]::Now
 
     for ($i = 0; $i -lt $prompts.Count; $i++) {
         $turn = Invoke-AgentTurn $folder $model $prompts[$i] $session $budget (Join-Path $results "turn$($i + 1).jsonl")
@@ -1677,7 +1705,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     [pscustomobject]@{
         Scenario = $id
         Model = $model
-        Minutes = [Math]::Round(((Get-Date) - $started).TotalMinutes, 1)
+        Minutes = [Math]::Round(([DateTimeOffset]::Now - $started).TotalMinutes, 1)
         Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
         Checks = @($checks)
         Changed = $states[$turns.Count]
@@ -1693,7 +1721,7 @@ function Invoke-AgentsTest {
         throw "No scenario $id in $agentScenariosFile."
     }
 
-    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-agents-{0:MMdd-HHmm}' -f (Get-Date))
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-agents-{0:MM-dd-HH-mm-ss}' -f (Get-Date))
     New-Item -ItemType Directory -Force $lab | Out-Null
     $nugetPackages = $env:NUGET_PACKAGES
     $runs = foreach ($id in $ids) {
@@ -1719,14 +1747,14 @@ function Invoke-AgentsTest {
         $running = [Collections.Generic.List[object]]::new()
 
         while ($pending.Count -or $running.Count) {
-            foreach ($run in @($running | Where-Object { $_.Process.HasExited -or ((Get-Date) - $_.Started).TotalMinutes -gt 120 })) {
+            foreach ($run in @($running | Where-Object { $_.Process.HasExited -or ([DateTimeOffset]::Now - $_.Started).TotalMinutes -gt 120 })) {
                 if (-not $run.Process.HasExited) {
                     taskkill /PID $run.Process.Id /T /F 2>&1 | Out-Null
                     Stop-FolderProcesses (Join-Path $lab "runs\$($run.Id)-$($run.Model)")
                 }
 
                 $running.Remove($run) | Out-Null
-                Write-Host "Done: $($run.Id) with $($run.Model) in $([int]((Get-Date) - $run.Started).TotalMinutes) min."
+                Write-Host "Done: $($run.Id) with $($run.Model) in $([int]([DateTimeOffset]::Now - $run.Started).TotalMinutes) min."
             }
 
             while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
@@ -1734,7 +1762,7 @@ function Invoke-AgentsTest {
                 $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
                 $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
                 $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
-                $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started (Get-Date)))
+                $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started ([DateTimeOffset]::Now)))
                 Write-Host "Started: $($run.Id) with $($run.Model)."
             }
 

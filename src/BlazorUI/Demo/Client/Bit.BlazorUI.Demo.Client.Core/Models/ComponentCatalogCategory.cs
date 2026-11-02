@@ -20,8 +20,8 @@ public sealed class ComponentCatalogCategory
 
     /// <summary>
     /// The NuGet package every component in this category ships in. The split follows the projects:
-    /// the Extras and Theming groups are <c>Bit.BlazorUI.Extras</c>, the Legacy group is
-    /// <c>Bit.BlazorUI.Legacy</c>, and everything else is the core package.
+    /// the Extras and Theming groups are <c>Bit.BlazorUI.Extras</c>, the AI group is <c>Bit.BlazorUI.AI</c>,
+    /// the Legacy group is <c>Bit.BlazorUI.Legacy</c>, and everything else is the core package.
     /// </summary>
     public required string Package { get; init; }
 

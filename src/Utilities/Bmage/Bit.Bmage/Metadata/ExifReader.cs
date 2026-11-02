@@ -23,16 +23,17 @@ public static class ExifReader
         if (ifd0Offset >= (uint)data.Length) return null;
 
         var visited = new HashSet<uint>();
-        var primary = ReadIfd(data, ifd0Offset, bigEndian, visited, out var nextIfd);
+        var budget = MaxValueBytes;
+        var primary = ReadIfd(data, ifd0Offset, bigEndian, visited, ref budget, out var nextIfd);
         if (primary is null) return null;
 
         ExifDirectory? exif = null, gps = null, interop = null;
         if (primary.Get(ExifTag.ExifIfdPointer)?.GetDouble() is { } exifOff && exifOff < data.Length)
-            exif = ReadIfd(data, (uint)exifOff, bigEndian, visited, out _);
+            exif = ReadIfd(data, (uint)exifOff, bigEndian, visited, ref budget, out _);
         if (primary.Get(ExifTag.GpsIfdPointer)?.GetDouble() is { } gpsOff && gpsOff < data.Length)
-            gps = ReadIfd(data, (uint)gpsOff, bigEndian, visited, out _);
+            gps = ReadIfd(data, (uint)gpsOff, bigEndian, visited, ref budget, out _);
         if (exif?.Get(ExifTag.InteropIfdPointer)?.GetDouble() is { } iopOff && iopOff < data.Length)
-            interop = ReadIfd(data, (uint)iopOff, bigEndian, visited, out _);
+            interop = ReadIfd(data, (uint)iopOff, bigEndian, visited, ref budget, out _);
 
         // Pointers are re-created on write; drop them from the directories.
         primary = primary.Without(ExifTag.ExifIfdPointer, ExifTag.GpsIfdPointer, ExifTag.InteropIfdPointer);
@@ -41,22 +42,56 @@ public static class ExifReader
         ReadOnlyMemory<byte> thumbnail = default;
         if (nextIfd != 0 && nextIfd < data.Length)
         {
-            var ifd1 = ReadIfd(data, nextIfd, bigEndian, visited, out _);
-            if (ifd1?.Get(0x0201)?.GetDouble() is { } thOff && ifd1.Get(0x0202)?.GetDouble() is { } thLen && thOff >= 0 && thLen > 0 && thOff + thLen <= data.Length && thLen < MaxValueBytes)
+            var ifd1 = ReadIfd(data, nextIfd, bigEndian, visited, ref budget, out _);
+            if (ifd1?.Get(0x0201)?.GetDouble() is { } thOff && ifd1.Get(0x0202)?.GetDouble() is { } thLen && thOff >= 0 && thLen > 0 && thOff + thLen <= data.Length && thLen < MaxValueBytes && thLen <= budget)
                 thumbnail = data.Slice((int)thOff, (int)thLen).ToArray();
         }
 
         return new ExifData(primary, exif, gps, interop, thumbnail);
     }
 
-    private static ExifDirectory? ReadIfd(ReadOnlySpan<byte> data, uint offset, bool be, HashSet<uint> visited, out uint nextIfd)
+    /// <summary>
+    /// Reads one whole-number tag of the first directory without copying any value out, for a caller that needs only a
+    /// JPEG's orientation or a TIFF's size. Null when the tag is missing or holds something else.
+    /// </summary>
+    internal static uint? ReadPrimaryNumber(ReadOnlySpan<byte> data, ushort tag)
+    {
+        if (data.StartsWith("Exif\0\0"u8)) data = data[6..];
+        if (data.Length < 8) return null;
+        bool be;
+        if (data[0] == 'I' && data[1] == 'I' && data[2] == 0x2A && data[3] == 0) be = false;
+        else if (data[0] == 'M' && data[1] == 'M' && data[2] == 0 && data[3] == 0x2A) be = true;
+        else return null;
+
+        var offset = ReadU32(data, 4, be);
+        if (offset > (uint)data.Length - 2) return null;
+        var count = Math.Min((int)ReadU16(data, (int)offset, be), MaxEntries);
+        uint? value = null;
+        for (int i = 0, pos = (int)offset + 2; i < count && pos + 12 <= data.Length; i++, pos += 12)
+        {
+            if (ReadU16(data, pos, be) != tag || ReadU32(data, pos + 4, be) == 0) continue;
+            // A tag listed twice keeps its last readable value, as Read does.
+            value = (ExifType)ReadU16(data, pos + 2, be) switch
+            {
+                ExifType.Byte => data[pos + 8],
+                ExifType.Short => ReadU16(data, pos + 8, be),
+                ExifType.Long => ReadU32(data, pos + 8, be),
+                _ => value,
+            };
+        }
+        return value;
+    }
+
+    private static ExifDirectory? ReadIfd(ReadOnlySpan<byte> data, uint offset, bool be, HashSet<uint> visited, ref int budget, out uint nextIfd)
     {
         nextIfd = 0;
         // Written without addition so an offset near uint.MaxValue cannot wrap into the valid range.
         if (offset > (uint)data.Length - 2 || !visited.Add(offset)) return null;
         int count = ReadU16(data, (int)offset, be);
         if (count > MaxEntries) count = MaxEntries;
-        var dir = new Dictionary<ushort, ExifValue>();
+        // A tag listed twice keeps its last readable value. Only that one is copied and charged to the budget, so
+        // repeating a tag cannot spend the budget the directory's other tags, the orientation among them, need.
+        var entries = new Dictionary<ushort, (ExifType Type, uint Count, int Offset, int Length)>();
         var pos = (int)offset + 2;
         for (var i = 0; i < count; i++, pos += 12)
         {
@@ -67,21 +102,24 @@ public static class ExifReader
             var size = ExifValue.SizeOf(type);
             if (!Enum.IsDefined(type) || n > MaxValueBytes / (uint)size) continue;
             var byteLen = (int)(n * (uint)size);
-            ReadOnlySpan<byte> raw;
-            if (byteLen <= 4)
-            {
-                raw = data.Slice(pos + 8, byteLen);
-            }
-            else
+            var rawOffset = pos + 8;
+            if (byteLen > 4)
             {
                 // Compare without adding, so a hostile offset near uint.MaxValue cannot wrap past the check.
                 var valueOffset = ReadU32(data, pos + 8, be);
                 if (valueOffset > (uint)data.Length || byteLen > data.Length - (int)valueOffset) continue;
-                raw = data.Slice((int)valueOffset, byteLen);
+                rawOffset = (int)valueOffset;
             }
-            dir[tag] = new ExifValue(type, (int)n, Normalise(raw, type, be));
+            entries[tag] = (type, n, rawOffset, byteLen);
         }
         if (pos + 4 <= data.Length) nextIfd = ReadU32(data, pos, be);
+        var dir = new Dictionary<ushort, ExifValue>(entries.Count);
+        foreach (var (tag, entry) in entries)
+        {
+            if (entry.Length > budget) continue;
+            budget -= entry.Length;
+            dir[tag] = new ExifValue(entry.Type, (int)entry.Count, Normalise(data.Slice(entry.Offset, entry.Length), entry.Type, be));
+        }
         return new ExifDirectory(dir);
     }
 

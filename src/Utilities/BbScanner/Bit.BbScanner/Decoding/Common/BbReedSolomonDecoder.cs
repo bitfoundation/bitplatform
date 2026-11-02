@@ -64,6 +64,14 @@ public sealed class BbReedSolomonDecoder
             return false;
         }
 
+        // Locating t errors takes 2t check codewords. With an odd count the algorithm can return a locator one
+        // degree too high, whose correction lands on a valid codeword - and so passes the re-check below - that is
+        // not the one written: one error more than the block can correct is a misread, not a repair.
+        if (2 * sigma.Degree > twoS)
+        {
+            return false;
+        }
+
         // A locator of degree zero names no positions. The syndromes are known to be non-zero
         // here, so that is not a clean block: it is one whose damage the algorithm could not
         // place, which must be reported rather than passed on uncorrected.
@@ -99,6 +107,16 @@ public sealed class BbReedSolomonDecoder
         errorsCorrected = errorLocations.Length;
         return true;
     }
+
+    /// <summary>
+    /// Whether <paramref name="codewords"/> also has the root that a block with one more error correction codeword
+    /// than <paramref name="twoS"/> would have. A genuine block has it by chance, one time in the field's size; a block
+    /// whose data codeword count was overstated has it always, because its real check codewords are the next roots.
+    /// </summary>
+    /// <param name="codewords">A block that decoded.</param>
+    /// <param name="twoS">The number of error correction codewords it was decoded with.</param>
+    internal bool HasNextRoot(int[] codewords, int twoS) =>
+        new BbGfPoly(_field, codewords).EvaluateAt(_field.Exp(twoS + _field.GeneratorBase)) == 0;
 
     private bool TryRunEuclideanAlgorithm(BbGfPoly a, BbGfPoly b, int r, out BbGfPoly sigma, out BbGfPoly omega)
     {

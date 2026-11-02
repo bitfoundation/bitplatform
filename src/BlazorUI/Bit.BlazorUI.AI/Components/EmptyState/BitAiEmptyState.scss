@@ -1,0 +1,50 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of an empty state inherits down to every empty state under it:
+//   --bit-AiEmptyState-gap                room between the icon, the heading, the line and the suggestions (default: spacing(1.5))
+//   --bit-AiEmptyState-padding            inset of the empty state                (default: spacing(6) spacing(2))
+//   --bit-AiEmptyState-color              text of the supporting line             (default: $clr-fg-sec)
+//   --bit-AiEmptyState-icon-color         color of the icon                       (default: $clr-pri)
+//   --bit-AiEmptyState-icon-size          size of the icon                        (default: $tg-fs-4xl)
+//   --bit-AiEmptyState-title-color        color of the heading                    (default: $clr-fg-pri)
+//   --bit-AiEmptyState-title-font-size    size of the heading                     (default: $tg-fs-xl)
+//   --bit-AiEmptyState-title-font-weight  weight of the heading                   (default: $tg-fw-semibold)
+//   --bit-AiEmptyState-suggestions-gap    room between two suggestions            (default: spacing(1))
+
+.bit-aiems {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    box-sizing: border-box;
+    justify-content: center;
+    font-family: $tg-font-family;
+    gap: var(--bit-AiEmptyState-gap, #{spacing(1.5)});
+    padding: var(--bit-AiEmptyState-padding, #{spacing(6)} #{spacing(2)});
+    color: var(--bit-AiEmptyState-color, #{$clr-fg-sec});
+}
+
+.bit-aiems-ico {
+    line-height: 1;
+    color: var(--bit-AiEmptyState-icon-color, #{$clr-pri});
+    font-size: var(--bit-AiEmptyState-icon-size, #{$tg-fs-4xl});
+}
+
+.bit-aiems-ttl {
+    overflow-wrap: anywhere;
+    color: var(--bit-AiEmptyState-title-color, #{$clr-fg-pri});
+    font-size: var(--bit-AiEmptyState-title-font-size, #{$tg-fs-xl});
+    font-weight: var(--bit-AiEmptyState-title-font-weight, #{$tg-fw-semibold});
+}
+
+.bit-aiems-bdy {
+    overflow-wrap: anywhere;
+}
+
+.bit-aiems-sgs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--bit-AiEmptyState-suggestions-gap, #{spacing(1)});
+}

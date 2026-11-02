@@ -2,8 +2,8 @@
 
 // Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
 // it is nested in. A private variable added to the component goes in this list.
-$mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark-hover, clr-dark-active, clr-focus,
-                         clr-dis, clr-dis-text, font-size, min-height, icon-size, item-height, pad-y, padding,
+$mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, clr-dark-hover, clr-dark-active,
+                         clr-focus, clr-dis, clr-dis-text, font-size, min-height, icon-size, item-height, pad-y, padding,
                          item-padding;
 
 // The values the Color and Size classes publish, started out unset on each element those classes land on - the
@@ -571,7 +571,7 @@ $mnb-cal-private-properties: cal-bg;
     flex-shrink: 0;
     line-height: 1;
     visibility: hidden;
-    color: var(--bit-mnb-clr, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));
+    color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));
     font-size: var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}));
     width: var(--bit-mnb-icon-size, var(--bit-MenuButton-icon-size, #{$siz-icon-md}));
 }
@@ -671,7 +671,7 @@ $mnb-cal-private-properties: cal-bg;
 }
 
 .bit-mnb-otl {
-    color: var(--bit-mnb-clr, var(--bit-MenuButton-outline-color, var(--bit-MenuButton-color, #{$clr-pri})));
+    color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-outline-color, var(--bit-MenuButton-color, #{$clr-pri})));
     border-color: var(--bit-mnb-sbr, var(--bit-mnb-clr, var(--bit-MenuButton-outline-border-color, var(--bit-MenuButton-border-color, #{$clr-pri}))));
     background-color: var(--bit-MenuButton-outline-background, var(--bit-MenuButton-background, transparent));
     --bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-outline-divider-color, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-outline-border-color, var(--bit-MenuButton-border-color, #{$clr-pri})))));
@@ -703,7 +703,7 @@ $mnb-cal-private-properties: cal-bg;
 }
 
 .bit-mnb-txt {
-    color: var(--bit-mnb-clr, var(--bit-MenuButton-text-color, var(--bit-MenuButton-color, #{$clr-pri})));
+    color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-text-color, var(--bit-MenuButton-color, #{$clr-pri})));
     border-color: var(--bit-MenuButton-text-border-color, var(--bit-MenuButton-border-color, transparent));
     background-color: var(--bit-MenuButton-text-background, var(--bit-MenuButton-background, transparent));
     --bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-text-divider-color, var(--bit-MenuButton-divider-color, #{$clr-pri})));
@@ -728,10 +728,14 @@ $mnb-cal-private-properties: cal-bg;
 // rendered on the callout as well as on the root, which is a sibling of it rather than an ancestor: the focus
 // ring of an item and the glyph of a checked one are what follows the color the menu button was given inside it.
 // Published only by an explicit Color, on both; an unset one is the primary role, which the fallbacks above spell
-// out after the public variables.
+// out after the public variables. The label of an Outline or Text menu button and the glyph of a checked item are
+// read on the page or the callout rather than over the role's fill, so they are drawn in the role's text color
+// (role-text) - a secondary or a warning main is picked to fill a surface and falls under the 4.5:1 of body text on
+// white - while the border, the divider and the fills keep the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-mnb-#{$role} {
         --bit-mnb-clr: #{role($tokens, main)};
+        --bit-mnb-clr-fg: #{role-text($role, $tokens)};
         --bit-mnb-clr-txt: #{role($tokens, on)};
         --bit-mnb-clr-hover: #{role($tokens, hover)};
         --bit-mnb-clr-active: #{role($tokens, active)};

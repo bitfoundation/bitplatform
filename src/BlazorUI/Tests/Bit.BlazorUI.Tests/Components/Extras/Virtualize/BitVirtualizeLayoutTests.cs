@@ -263,6 +263,52 @@ public class BitVirtualizeLayoutTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitVirtualizeMinLaneSizeShouldKeepAReportedWidthWithinOneWindow()
+    {
+        SetupViewport(300, 1000);
+
+        var component = RenderGrid(5_000, 1, 100, p => p.Add(x => x.MinLaneSize, 220f));
+
+        // A width that is not a number of pixels leaves the 4 lanes of the measured 1000px alone.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, double.PositiveInfinity));
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 4)");
+
+        // An absurd one yields no more lanes than one window renders.
+        await component.InvokeAsync(() => component.Instance._Scroll(0, 300, -1, 1e12));
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 1000)");
+        Assert.IsTrue(RenderedIndices(component).Length <= 1_000);
+
+        // Scrolled, the row in view is rendered whole, with no more behind it than one window: the bound a huge
+        // overscan has too.
+        await component.InvokeAsync(() => component.Instance._Scroll(200, 300, -1, 1e12));
+        var rendered = RenderedIndices(component);
+        Assert.IsTrue(rendered.Length <= 2_000);
+        CollectionAssert.IsSubsetOf(Enumerable.Range(2_000, 1_000).ToArray(), rendered);
+    }
+
+    [TestMethod]
+    public void BitVirtualizeMinLaneSizeShouldIgnoreAMeasuredWidthThatIsNotANumberOfPixels()
+    {
+        SetupViewport(300, double.PositiveInfinity);
+
+        var component = RenderGrid(100, 2, 100, p => p.Add(x => x.MinLaneSize, 220f));
+
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 2)");
+    }
+
+    [TestMethod]
+    public void BitVirtualizeLanesShouldBeKeptWithinOneWindow()
+    {
+        SetupViewport(300);
+
+        var component = RenderGrid(5_000, int.MaxValue, 100);
+
+        StringAssert.Contains(component.Find("[data-bit-vir-index='1']").GetAttribute("style"), "width:calc(100% / 1000)");
+        StringAssert.Contains(component.Find(".bit-vir-spc").GetAttribute("style"), "height:500px");
+        Assert.IsTrue(RenderedIndices(component).Length <= 2_000);
+    }
+
+    [TestMethod]
     public void BitVirtualizeMinLaneSizeShouldFallBackToLanesUntilTheListIsMeasured()
     {
         var component = RenderGrid(100, 2, 100, p => p.Add(x => x.MinLaneSize, 220f));

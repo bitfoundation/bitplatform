@@ -2515,9 +2515,10 @@ public class BitFullCalendarTests : BunitTestContext
         var triggersBefore = component.FindAll(".bit-bfc-dtp-trigger");
         Assert.AreEqual(2, triggersBefore.Count);
 
-        // Open the start picker and pick the first day of the rendered grid.
+        // Open the start picker and pick the first day of the rendered grid that is not the start
+        // itself: on a day the grid opens with (a Sunday that is the 1st), that one would move nothing.
         triggersBefore[0].Click();
-        component.FindAll(".bit-bfc-dtp-panel .bit-bfc-dtp-day")[0].Click();
+        component.FindAll(".bit-bfc-dtp-panel .bit-bfc-dtp-day:not(.bit-bfc-dtp-day-selected)")[0].Click();
 
         var triggers = component.FindAll(".bit-bfc-dtp-trigger");
         Assert.AreNotEqual(

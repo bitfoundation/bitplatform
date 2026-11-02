@@ -3,7 +3,8 @@
    stroked path with optional markers, and an optional label. Use inside an EdgeTemplate
    to build custom edges while keeping default interaction/appearance. *@
 
-<path class="bit-blow-edge-interaction" d="@Path" fill="none" stroke="transparent" stroke-width="@Inv(InteractionWidth)" />
+<path class="bit-blow-edge-interaction" d="@Path" fill="none" stroke="transparent" stroke-width="@Inv(InteractionWidth)"
+      style="@BlowEdgeStyles.InteractionWidth(InteractionWidth)" />
 
 <path class="bit-blow-edge-path @Class"
       d="@Path"
@@ -29,6 +30,7 @@
     [Parameter] public string? MarkerStart { get; set; }
     [Parameter] public string? MarkerEnd { get; set; }
 
+    /// <summary>Width, in screen pixels at any zoom, of the invisible path that makes the edge easy to click.</summary>
     [Parameter] public double InteractionWidth { get; set; } = 14;
 
     [Parameter] public string? Label { get; set; }

@@ -102,9 +102,25 @@
             </BitDataGrid>
         </div>
         <div data-probe="rte" style="width: 300px;"><BitRichTextEditor Dir="dir" /></div>
+        <div data-probe="aijsonview" style="width: 300px;"><BitAiJsonView Dir="dir" Value="AiJson" DefaultExpandDepth="0" /></div>
+        <div data-probe="aipromptinput" style="width: 300px;"><BitAiPromptInput Dir="dir" Value="Hello" /></div>
+        <div data-probe="aitoolcallview" style="width: 300px;"><BitAiToolCallView Dir="dir" Call="AiCall" /></div>
     };
 
     private BitSnackBar? SnackBar { set => _snackBars.Add(value); }
+
+    // The AI probes' content: a JSON object to collapse, and a call that has completed (a completed call starts collapsed).
+    private static readonly System.Text.Json.JsonElement AiJson = System.Text.Json.JsonDocument.Parse("{\"a\":{\"b\":1}}").RootElement;
+    private static readonly BitAiToolCallPart AiCall = CompletedCall();
+
+    private static BitAiToolCallPart CompletedCall()
+    {
+        var call = new BitAiToolCallPart("c1", "search_docs");
+        call.CompleteArguments(System.Text.Json.JsonDocument.Parse("{\"query\":\"rtl\"}").RootElement);
+        call.SetStatus(BitAiToolCallStatus.Completed);
+        call.SetResult(BitAiToolOutcome.FromText("2 passages"));
+        return call;
+    }
 
     private static BitChartData ChartData() => new()
     {

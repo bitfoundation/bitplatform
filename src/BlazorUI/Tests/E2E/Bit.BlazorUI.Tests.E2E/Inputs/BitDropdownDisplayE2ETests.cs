@@ -532,6 +532,10 @@ public class BitDropdownDisplayE2ETests : BitDropdownE2ETestBase
 
         Assert.AreNotEqual("rgb(255, 0, 255)", header, "The Color parameter wins over the header color variable.");
         Assert.AreNotEqual("rgb(0, 100, 0)", check, "The Color parameter wins over the accent variable.");
-        Assert.AreEqual(header, check, "Both take the error role.");
+
+        // Both take the error role: the checkbox fills with its main, and the header - text read on the callout rather
+        // than over the role's fill - is drawn in the role's text color.
+        Assert.AreEqual(await Page.ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken("err")})"), header, "The header takes the error role's text color.");
+        Assert.AreEqual(await Page.ResolveColorAsync("var(--bit-clr-err)"), check, "The checkbox takes the error role's main.");
     }
 }

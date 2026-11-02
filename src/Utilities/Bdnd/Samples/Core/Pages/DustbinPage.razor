@@ -1,0 +1,79 @@
+﻿@page "/dustbin"
+
+<PageTitle>Dustbin · Bdnd samples</PageTitle>
+
+<h1>Dustbin</h1>
+
+<p>
+    Each box has a type, and each bin accepts the types it lists: while a box is dragged, only the bins that can take
+    it light up. A box can be dragged with the mouse, held for a moment with a finger, or picked up with the keyboard -
+    <kbd>Tab</kbd> to it, <kbd>Space</kbd>, an arrow key to a bin and <kbd>Space</kbd> again. The look of a drag comes
+    from the <code>data-bit-bdnd-*</code> attributes on the hosts (see app.css): the components render no classes for it.
+</p>
+
+<BdndProvider>
+    <div class="row">
+        @foreach (var box in _boxes)
+        {
+            <BdndDraggable TItem="Box" Type="@box.Kind" Item="box" Label="@box.Name" class="box" @key="box">
+                @box.Name <span class="muted">@box.Kind</span>
+            </BdndDraggable>
+        }
+        @if (_boxes.Count == 0)
+        {
+            <span class="muted">Every box is in a bin.</span>
+        }
+    </div>
+
+    <div class="row">
+        @foreach (var bin in _bins)
+        {
+            <BdndDropTarget TItem="Box" AcceptTypes="bin.Accepts" Label="@bin.Name" class="bin"
+                            OnDrop="@(e => Drop(e, bin))" Context="drop">
+                <strong>@bin.Name</strong>
+                <span class="muted">takes @string.Join(" and ", bin.Accepts)</span>
+                <span>@(drop.IsOver && drop.CanDrop ? "Release to drop" : bin.Contents.Count == 0 ? "Empty" : string.Join(", ", bin.Contents))</span>
+            </BdndDropTarget>
+        }
+    </div>
+</BdndProvider>
+
+<div class="row">
+    <button type="button" class="btn" @onclick="Reset">Put the boxes back</button>
+    <span id="last-drop" aria-live="polite">@_last</span>
+</div>
+
+@code {
+    // The Id tells two boxes apart: a record compares by value, and @key and Remove would take two boxes of the same
+    // name and kind for one.
+    public sealed record Box(int Id, string Name, string Kind);
+
+    public sealed record Bin(string Name, string[] Accepts)
+    {
+        public List<string> Contents { get; } = [];
+    }
+
+    private static readonly Box[] AllBoxes = [new(1, "Bottle", "glass"), new(2, "Newspaper", "paper"), new(3, "Banana", "food"), new(4, "Jar", "glass")];
+
+    private readonly Bin[] _bins = [new("Recycling", ["glass", "paper"]), new("Compost", ["food"])];
+    private readonly List<Box> _boxes = [.. AllBoxes];
+    private string? _last;
+
+    // The box leaves the row while its drag is ending: the draggable that started it is removed mid-drag, and Bdnd
+    // still ends the drag cleanly.
+    private void Drop(BdndDropEventArgs<Box> e, Bin bin)
+    {
+        if (e.Item is not { } box || _boxes.Remove(box) is false) return;
+
+        bin.Contents.Add(box.Name);
+        _last = $"{box.Name} went into {bin.Name} ({e.Monitor.GetDragInput()}).";
+    }
+
+    private void Reset()
+    {
+        _boxes.Clear();
+        _boxes.AddRange(AllBoxes);
+        foreach (var bin in _bins) bin.Contents.Clear();
+        _last = null;
+    }
+}

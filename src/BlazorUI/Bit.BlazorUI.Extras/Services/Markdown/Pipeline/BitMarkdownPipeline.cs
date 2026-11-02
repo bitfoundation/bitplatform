@@ -77,6 +77,7 @@ public sealed partial class BitMarkdownPipeline
 
         var lines = SplitLines(markdown);
         var context = new BitMarkdownParseContext(options, ScanReferenceLabels(lines));
+        context.TableCellBudget = Math.Max(context.TableCellBudget, markdown.Length);
 
         document.Children.AddRange(ParseBlocks(lines, context, 0, 0));
 

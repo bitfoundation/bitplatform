@@ -741,7 +741,7 @@ internal static class ScriptBundling
         var packedTargets = packed.Where(entry => entry.Include.Contains(".targets", StringComparison.OrdinalIgnoreCase)).ToArray();
         checks.That(packedTargets.Any(entry => entry.Include.Contains("Bit.Butil.targets", StringComparison.OrdinalIgnoreCase)
                 && entry.Include.Contains("Bit.Butil.Endpoints.targets", StringComparison.OrdinalIgnoreCase)),
-            "both consumer-side targets files are packed - the .NET 9+ half is imported by the other, and a package without it fails every consumer's build",
+            "both consumer-side targets files are packed - the endpoints half is imported by the other, and a package without it fails every consumer's build",
             $"packed [{string.Join(", ", packedTargets.Select(entry => entry.Include))}]");
 
         checks.That(packedTargets.Any(entry => PackageFolders(entry.PackagePath).Contains("buildtransitive")

@@ -38,7 +38,7 @@ public static class SiteInfo
         "field and one [BlexAction] method, with effects, persistence, undo/redo and Redux DevTools time-travel " +
         "built in. This site is itself a Blex app.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["effect", "persist", "selector", "undo", "devtools"];
@@ -167,7 +167,7 @@ public static class DocsCatalog
         [
             new("/persistence", "Persistence",
                 "Persist = true: rehydration on startup and on late registration, transient fields, debounced writes, versioning, migrations, sync across tabs and encrypted storage.",
-                "persistence persist localStorage sessionStorage rehydrate hydrate debounce version migrate SyncAcrossTabs IBlexStorage transient Persist = false late registration scoped Protector IBlexStateProtector encrypt encryption DataProtection tamper",
+                "persistence persist localStorage sessionStorage rehydrate hydrate debounce version migrate store version PersistVersion __blexStoreVersion BLEX024 BLEX025 BLEX026 SyncAcrossTabs IBlexStorage transient Persist = false late registration scoped Protector IBlexStateProtector encrypt encryption DataProtection tamper",
                 typeof(Pages.Persistence)),
             new("/history", "Undo & redo",
                 "BlexHistory: in-app undo and redo over the state tree or a chosen scope of it, with labels, jumps, grouping and filters.",

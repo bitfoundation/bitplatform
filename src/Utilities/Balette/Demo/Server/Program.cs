@@ -11,8 +11,17 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorComponents()
+// Demo:RenderMode=Server runs the same pages on Blazor Server instead - for the browser suite, which drives the palette
+// over a circuit as well (BALETTE_E2E_RENDER_MODE=Server). The published site never sets it.
+var renderMode = DemoRenderMode.From(builder.Configuration["Demo:RenderMode"]);
+builder.Services.AddSingleton(renderMode);
+
+var razorComponents = builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
+if (renderMode.IsServer)
+{
+    razorComponents.AddInteractiveServerComponents();
+}
 
 // The same registration as the WebAssembly client, so the components get the same services while
 // they are prerendered here.
@@ -68,11 +77,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
@@ -93,9 +98,13 @@ app.MapStaticAssets();
 app.MapControllers();
 app.MapMcp("/mcp");
 
-app.MapRazorComponents<App>()
+var components = app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.Balette.Demo.Client._Imports).Assembly);
+if (renderMode.IsServer)
+{
+    components.AddInteractiveServerRenderMode();
+}
 
 app.Run();
 

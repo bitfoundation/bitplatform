@@ -14,8 +14,18 @@ public class CommandTests
         var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
 
         CollectionAssert.AreEquivalent(
-            new[] { "new", "setup", "diff", "doctor", "trust", "clean", "rename", "remove", "translate", "decode", "aot-profile", "telemetry", "update", "about" },
+            new[] { "new", "setup", "run", "diff", "doctor", "trust", "clean", "rename", "remove", "migration", "translate", "decode", "keys", "pipeline", "aot-profile", "telemetry", "update", "about", "admin-helper" },
             root.Subcommands.Select(c => c.Name).ToArray());
+    }
+
+    [TestMethod]
+    public void ANestedCommand_Should_BeNamedByItsWholePath()
+    {
+        var root = CliApp.BuildRootCommand(() => throw new InvalidOperationException());
+
+        CollectionAssert.AreEqual(new[] { "migration", "remove" }, CliApp.CommandPath(root.Parse(["migration", "remove"]).CommandResult, root).ToArray());
+        CollectionAssert.AreEqual(new[] { "remove" }, CliApp.CommandPath(root.Parse(["remove"]).CommandResult, root).ToArray());
+        Assert.IsEmpty(CliApp.CommandPath(root.Parse([]).CommandResult, root));
     }
 
     [TestMethod]
@@ -134,13 +144,10 @@ public class CommandTests
     }
 
     [TestMethod]
-    public async Task AGitHubRepo_Should_NeedTheGitHubPipelineAndGit()
+    public async Task AGitHubRepo_Should_NeedGit()
     {
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
-
-        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "--pipeline", "Azure", "--github-repo", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.Output, "--github-repo needs the GitHub pipeline");
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("new", "Contoso", "--github-repo", "--no-git", "--dry-run", "--yes"), host.Output);
         StringAssert.Contains(host.Output, "can't go with --no-git");
@@ -200,6 +207,19 @@ public class CommandTests
     }
 
     [TestMethod]
+    public async Task Setup_Should_RefuseAnAppIdTheNativeAppsCantHave()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var folder = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "Shop")).FullName;
+        File.WriteAllText(Path.Combine(folder, "Shop.Web.slnf"), "{}");
+        File.WriteAllText(Path.Combine(Directory.CreateDirectory(Path.Combine(folder, "src", "Client", "Shop.Client.Maui")).FullName, "Shop.Client.Maui.csproj"), "<Project>\n  <PropertyGroup>\n    <ApplicationId>com.companyname.</ApplicationId>\n  </PropertyGroup>\n</Project>\n");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("setup", folder, "--platforms", "android", "--yes"), host.Output);
+        StringAssert.Contains(host.FlatOutput, "the app id com.companyname.,");
+        Assert.IsEmpty(host.Runner.Calls);
+    }
+
+    [TestMethod]
     public async Task Decode_Should_RunTheBitMinifierThatWroteTheMap()
     {
         using var host = new TestHost();
@@ -239,6 +259,7 @@ public class CommandTests
 
         StringAssert.Contains(project, "<PackageDownload Include=\"Bit.Minifier\" Version=\"[10.8.0]\" />");
         CollectionAssert.Contains(host.Runner.Calls[0].Arguments.ToArray(), $"-p:RestoreRootConfigDirectory={host.WorkingDirectory}");
+        Assert.AreEqual(Path.Combine(host.Environment.BitDirectory, "decode"), Path.GetDirectoryName(host.Runner.Calls[0].WorkingDirectory), "Others can plant build files in the shared temp folder.");
         Assert.IsFalse(Directory.Exists(host.Runner.Calls[0].WorkingDirectory));
         CollectionAssert.AreEqual(new[] { minifier, "--decode", map }, host.Runner.Calls[1].Arguments.ToArray());
     }
@@ -253,6 +274,7 @@ public class CommandTests
         Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("decode", map));
 
         StringAssert.Contains(host.FlatOutput, "Couldn't restore Bit.Minifier 99.0.0");
+        StringAssert.Contains(host.Output, $"--decode {map}. The package is at https://www.nuget.org/packages/Bit.Minifier/99.0.0");
         StringAssert.Contains(host.FlatOutput, "error NU1102");
         Assert.HasCount(1, host.Runner.Calls);
     }
@@ -276,7 +298,7 @@ public class CommandTests
     public void Decode_Should_FindTheNewestMapUnderObj()
     {
         using var host = new TestHost();
-        var older = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "obj", "Release", "net9.0")).FullName, "bit-minifier.map");
+        var older = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "obj", "Release", "net10.0")).FullName, "bit-minifier.map");
         var newer = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "App", "obj", "Release", "net10.0")).FullName, "bit-minifier.map");
         File.WriteAllText(older, "");
         File.WriteAllText(newer, "");

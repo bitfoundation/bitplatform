@@ -743,9 +743,12 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
 // an explicit Color; an unset one is the primary role, which the reads spell out after the public variables.
+// Without the fill the labels are read on the bar's own background, so they are drawn in the role's text color
+// (role-text) - a secondary or a warning main is picked to fill a surface and falls under the 4.5:1 of body text
+// on white - while the indicator, a rule rather than text, keeps the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-nbr-#{$role} {
-        --bit-nbr-clr: #{role($tokens, main)};
+        --bit-nbr-clr: #{role-text($role, $tokens)};
         --bit-nbr-clr-ind: #{role($tokens, main)};
         --bit-nbr-clr-dis: #{role($tokens, dis-text)};
         --bit-nbr-clr-fcs: #{role($tokens, focus)};

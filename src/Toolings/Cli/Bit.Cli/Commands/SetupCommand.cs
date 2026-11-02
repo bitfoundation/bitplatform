@@ -37,8 +37,7 @@ public static class SetupCommand
 
             if (name is null)
             {
-                cli.Console.Fail($"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit setup in the project's folder.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit setup in the project's folder.");
             }
 
             var (platforms, error) = SharedOptions.ParsePlatforms(parseResult.GetValue(shared.Platforms), cli.Environment.Os);
@@ -46,8 +45,7 @@ public static class SetupCommand
 
             if ((error ?? propertyError) is { } usageError)
             {
-                cli.Console.Fail(usageError);
-                return CliApp.ExitUsage;
+                return cli.UsageError(error is null ? "properties-invalid" : "platforms-invalid", usageError);
             }
 
             NewWorkflow.WriteHeader(cli);
@@ -55,6 +53,11 @@ public static class SetupCommand
             if (interactive && parseResult.GetResult(shared.Platforms) is null)
             {
                 platforms = NewWorkflow.AskPlatforms(cli, platforms);
+            }
+
+            if (Platforms.BuildsSolution(platforms) && ProjectContext.ReadAppId(directory, name) is { } appId && ProjectName.IsValidAppId(appId) is false)
+            {
+                return cli.UsageError("app-id-invalid", $"{Platforms.MauiProject(name)} gives the native apps the app id {appId}, and each part of an app id must start with a Latin letter and have only Latin letters, digits and underscores. Set a valid <ApplicationId> there, or leave the native apps out of --platforms.");
             }
 
             var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, BuildProperties = properties };
@@ -72,29 +75,58 @@ public static class SetupCommand
             }
 
             cli.Telemetry.SetTag(Telemetry.TelemetryFields.Platforms, string.Join(',', platforms.Order().Select(Platforms.Name)));
+
+            var administrator = await AdministratorNeeds.FindAsync(cli, tools, needs, parseResult.GetValue(shared.NoWorkloads) is false, cancellationToken);
+            NewWorkflow.WriteAdministratorNote(cli, tools, administrator);
             cli.Console.Out.WriteLine();
 
             var stopwatch = Stopwatch.StartNew();
             var steps = new StepRunner(cli);
-
-            if (tools.Count > 0)
-            {
-                await new ToolInstaller(cli, steps).InstallAsync(tools, NewWorkflow.CreateToolContext(cli, needs), cancellationToken);
-            }
-
             var projectSteps = new ProjectSteps(cli, context);
-            var sdkReady = await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), cancellationToken);
-
-            if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
-            {
-                await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
-            }
-
             var runMode = ProjectRun.Mode(cli, aspire, parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoRun));
 
-            if (sdkReady && runMode is not ProjectRunMode.None)
+            await AdministratorNeeds.StartAsync(cli, administrator, cancellationToken);
+
+            try
             {
-                await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, aspire, cancellationToken);
+                try
+                {
+                    if (tools.Count > 0)
+                    {
+                        await new ToolInstaller(cli, steps).InstallAsync(tools, NewWorkflow.CreateToolContext(cli, needs), cancellationToken);
+                    }
+
+                    var sdkReady = await NewWorkflow.RunSetupStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoBrowsers), runMode, cancellationToken);
+
+                    if (sdkReady && parseResult.GetValue(shared.NoRestore) is false && projectSteps.LacksInitialMigration)
+                    {
+                        await NewWorkflow.RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
+                    }
+
+                    if (cli.Environment.IsCI is false && IdeLocator.FindVsCode(cli.Environment, cli.Runner) is not null)
+                    {
+                        await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
+                    }
+
+                    if (sdkReady && runMode is not ProjectRunMode.None)
+                    {
+                        await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, aspire, cancellationToken);
+                    }
+
+                    if (sdkReady)
+                    {
+                        await NewWorkflow.RunNativeStepsAsync(cli, steps, context, projectSteps, parseResult.GetValue(shared.NoWorkloads), parseResult.GetValue(shared.NoRestore), parseResult.GetValue(shared.NoBuild), cancellationToken);
+                    }
+                }
+                finally
+                {
+                    await AdministratorNeeds.EndAsync(cli);
+                }
+            }
+            catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null)
+            {
+                await ProjectRun.StopAsync(projectSteps.Running, projectSteps.Workbench);
+                throw;
             }
 
             cli.Console.Out.WriteLine();
@@ -107,10 +139,7 @@ public static class SetupCommand
                 cli.Console.Out.MarkupLine($"    {Markup.Escape(followUp.FollowUp!)}");
             }
 
-            if (projectSteps.Running is { } running)
-            {
-                await ProjectRun.KeepRunningAsync(cli, running, cancellationToken);
-            }
+            await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, cancellationToken);
 
             return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
         });

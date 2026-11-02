@@ -284,6 +284,11 @@ public static class BinkApiCatalog
             // same on every record and documented nowhere; listing it on each of the library's many records
             // would bury the members someone wrote on purpose.
             if (method.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), inherit: false)) continue;
+            // An override of what every object has, which the type does not document, says nothing about the
+            // type - and split into words it answers questions it has nothing to do with: to a search,
+            // GetHashCode is "code", and the top hit for anything done from code.
+            var summary = Documentation(method, BinkXmlDocs.GetSummary);
+            if (summary is null && method.Name is "Equals" or "GetHashCode" or "ToString") continue;
 
             var signature = Signature(method);
             if (seen.Add($"{method.Name}{signature}") is false) continue;
@@ -294,7 +299,7 @@ public static class BinkApiCatalog
                 Kind = "Method",
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
-                Summary = Documentation(method, BinkXmlDocs.GetSummary),
+                Summary = summary,
                 Remarks = Documentation(method, BinkXmlDocs.GetRemarks)
             };
         }

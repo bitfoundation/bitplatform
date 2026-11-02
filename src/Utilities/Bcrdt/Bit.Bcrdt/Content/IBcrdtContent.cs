@@ -67,6 +67,20 @@ public interface IBcrdtContent
     /// <summary>The individual values this payload represents, one per logical unit.</summary>
     IReadOnlyList<object?> GetContent();
 
+    /// <summary>The value of one logical unit, without building the others.</summary>
+    /// <remarks>
+    /// What reading one element of an array, or a map entry, costs. <see cref="GetContent"/> may build
+    /// every value of the payload to hand out one of them - a run of a million characters is a million
+    /// strings - so reading such a run by index would cost time in the square of its length.
+    /// </remarks>
+    /// <returns>The unit's value, or <see langword="null"/> for a payload that carries none, such as a deleted range.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is outside the payload.</exception>
+    object? GetValue(int index)
+    {
+        IReadOnlyList<object?> content = GetContent();
+        return content.Count == 0 ? null : content[index];
+    }
+
     /// <summary>Creates an independent copy, used when undo re-inserts deleted content.</summary>
     IBcrdtContent Copy();
 
@@ -74,6 +88,17 @@ public interface IBcrdtContent
     /// Splits the payload at <paramref name="offset"/>, keeping the left part and returning the right.
     /// </summary>
     IBcrdtContent Splice(int offset);
+
+    /// <summary>
+    /// Whether <see cref="TryMergeWith"/> would absorb <paramref name="right"/>. Changes nothing.
+    /// </summary>
+    /// <remarks>
+    /// Lets transaction cleanup find every block a run of them would fold into before folding any, so it
+    /// can fold them from the left: each merge then appends one neighbour, rather than copying everything
+    /// gathered so far into the next block over. The default - two payloads of the same kind - is the
+    /// condition every payload that merges at all puts first; one that never merges says so.
+    /// </remarks>
+    bool CanMergeWith(IBcrdtContent right) => GetType() == right.GetType();
 
     /// <summary>
     /// Absorbs <paramref name="right"/> if the two payloads can be represented as one.

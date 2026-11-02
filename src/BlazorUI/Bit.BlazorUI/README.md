@@ -50,7 +50,7 @@ Install-Package Bit.BlazorUI
 
 ### Only what your app uses, in production
 
-When an app is published, `bit.blazorui.css` and `bit.blazorui.js` (and the bundles of `Bit.BlazorUI.Extras`, `Bit.BlazorUI.Legacy` and `Bit.BlazorUI.Icons`) are put back together from only the components and scripts the app can use - under the same names, so the tags above stay as they are. A build, `dotnet run` and `dotnet watch` always serve the full bundles.
+When an app is published, `bit.blazorui.css` and `bit.blazorui.js` (and the bundles of `Bit.BlazorUI.Extras`, `Bit.BlazorUI.AI`, `Bit.BlazorUI.Legacy` and `Bit.BlazorUI.Icons`) are put back together from only the components and scripts the app can use - under the same names, so the tags above stay as they are. A build, `dotnet run` and `dotnet watch` always serve the full bundles.
 
 - A standalone **Blazor WebAssembly** app gets it by default, off what the .NET trimmer kept - as does any project published with `PublishTrimmed`.
 - A **Blazor Web App** or **Blazor Server** app turns it on in the server project: `<BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>`. The publish then reads the app's assemblies for what it uses (`BitBlazorUIScan`: `TypeReferences`, the default, or the coarser `TypeNames`).

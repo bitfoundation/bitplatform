@@ -51,6 +51,8 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
         var watcherAvatar = watcher.Locator("header .persona img").First;
         await Expect(watcherAvatar).ToHaveCountAsync(0);
 
+        await WaitUntilSessionsHoldASignalRConnection(email, sessions: 2);
+
         await UploadProfilePicture(uploader);
 
         // Its own header first: the upload went through.

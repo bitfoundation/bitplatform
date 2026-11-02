@@ -114,7 +114,7 @@ public sealed class BlexComponentStatePersistence : IDisposable
         if (_manager is { } manager)
             manager.ReportError("prerender", exception, detail);
         else
-            Console.Error.WriteLine($"[Blex] {detail}: {exception.Message}");
+            Console.Error.WriteLine(BlexManager.EscapeControlCharacters($"[Blex] {detail}: {exception.Message}"));
     }
 
     /// <inheritdoc />

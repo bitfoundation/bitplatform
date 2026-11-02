@@ -318,6 +318,35 @@
             case "otp-input":
                 <BitOtpInput Id="otp" Length="4" Value="@_key" ValueChanged="@(v => Set("Value", v))" OnFill="@(v => Log($"OnFill:{v}"))" />
                 break;
+
+            case "ai-prompt-input":
+                @* The composer registers its submit key, its paste and its drop with its script, and grows with its text. *@
+                <div id="ai-prompt-input" style="width: 400px;">
+                    <BitAiPromptInput Value="@_key" ValueChanged="@(v => Set("Value", v))" OnSubmit="@(s => Log($"OnSubmit:{s.Text}"))" />
+                </div>
+                break;
+
+            case "ai-message-list":
+                @* The transcript follows the newest message through its script, which calls back as the view leaves it. It
+                   takes the height of the column it is a flex item of, as in a chat. *@
+                <div style="display: flex; flex-direction: column; height: 200px; width: 400px;">
+                    <BitAiMessageList Id="ai-message-list" Conversation="_aiConversation" OnPinnedChange="@(v => Log($"OnPinnedChange:{v}"))" />
+                </div>
+                break;
+
+            case "ai-chat":
+                @* The whole chat over the host's echo transport: a transcript, a composer and a session of its own. *@
+                <div id="ai-chat" style="height: 360px; width: 480px;">
+                    <BitAiChat />
+                </div>
+                break;
+
+            case "ai-artifact-view":
+                @* Expanded, the panel watches the Escapes claimed inside it through its script. *@
+                <div id="ai-artifact-view" style="width: 480px;">
+                    <BitAiArtifactView Artifact="_aiArtifact" />
+                </div>
+                break;
         }
     </div>
 }
@@ -337,6 +366,8 @@
     private BitSnackBar? _snackBar;
     private bool _snackShown;
     private readonly List<int> _numbers = Enumerable.Range(1, 1000).ToList();
+    private readonly BitAiConversation _aiConversation = AiConversation();
+    private readonly BitAiArtifact _aiArtifact = AiArtifact();
     // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
     // interactive render moves it on, which is what the test waits for before it drives the page.
     private string _status = "Loading";
@@ -411,6 +442,28 @@
         _ = InvokeAsync(StateHasChanged);
 
         return Task.FromResult(new BitDataGridReadResult<Row>([new() { Name = "Apple", Price = 1 }, new() { Name = "Banana", Price = 2 }], 2));
+    }
+
+    // A transcript taller than its box, so the view can be scrolled away from its newest message.
+    private static BitAiConversation AiConversation()
+    {
+        var conversation = new BitAiConversation();
+        for (var i = 1; i <= 12; i++)
+        {
+            conversation.AddMessage(BitAiRole.User, $"Question {i}");
+            var answer = new BitAiMessage(BitAiRole.Assistant);
+            answer.AddPart(new BitAiTextPart($"Answer {i}, long enough to take a line or two of the transcript's width."));
+            conversation.AddMessage(answer);
+        }
+        return conversation;
+    }
+
+    private static BitAiArtifact AiArtifact()
+    {
+        var artifact = new BitAiConversation().GetOrAddArtifact("a1", BitAiArtifactKind.Document, "README");
+        artifact.SetContent("# Hello");
+        artifact.Complete();
+        return artifact;
     }
 
     private async ValueTask<IEnumerable<int>> LoadItems(BitInfiniteScrollingItemsProviderRequest request)

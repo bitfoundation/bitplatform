@@ -5,13 +5,11 @@
 <div class="bb-intro">
     <h1>Interactions Playground</h1>
     <p class="bb-subtitle">
-        Toggle behaviours on the left and watch the event log. <strong>Shift-drag</strong> the background
-        to box-select, select an edge to drag its endpoints (<strong>reconnect</strong>), and use the
-        imperative API buttons. Arrow keys nudge selected nodes.
+        The canvas parameters that change its gestures - snapping, click-to-connect, drag-to-select, scroll-to-pan,
+        double-click zoom and culling - as live switches, the methods you call on a captured <code>BlowCanvas</code> as
+        buttons, and an event log of what the canvas raises while you work.
     </p>
 </div>
-
-<DemoCode />
 
 <div class="bb-demo blow-demo bb-page-wide">
     <div class="demo-canvas">
@@ -30,6 +28,7 @@
                     OnConnectStart="@(_ => Log("connect: start"))"
                     OnConnectEnd="@(() => Log("connect: end"))"
                     OnReconnect="OnReconnect"
+                    OnDelete="OnDelete"
                     OnSelectionChange="OnSelectionChange"
                     OnNodeDoubleClick="@(e => Log($"dblclick node {e.Node.Id}"))"
                     OnNodeContextMenu="@(e => Log($"context menu on node {e.Node.Id}"))"
@@ -59,27 +58,52 @@
                 </div>
             </BlowPanel>
 
-            @* Bottom-centre: the corners below are taken by the controls and the minimap. *@
-            <BlowPanel Position="bottom-center">
-                <div class="event-log">
-                    <div class="event-log__title">Event log &middot; selected: @_selectedCount</div>
-                    @foreach (var line in _log)
-                    {
-                        <div class="event-log__line">@line</div>
-                    }
-                </div>
-            </BlowPanel>
         </BlowCanvas>
     </div>
+
+    @* Under the canvas rather than over it: the corners are the controls', the minimap's and the toolbars', and a
+       log in the middle of the bottom edge grows over the output node as the events come in. *@
+    <div class="event-log" aria-live="polite">
+        <div class="event-log__title">Event log &middot; selected: @_selectedCount</div>
+        @foreach (var line in _log)
+        {
+            <div class="event-log__line">@line</div>
+        }
+    </div>
 </div>
+
+<DemoCode />
+
+<DemoNotes>
+    <TryIt>
+        <li>Tick <strong>Snap to grid</strong> and drag a node: it jumps from dot to dot of the background, and each arrow-key press moves a selected node one dot.</li>
+        <li>Tick <strong>Connect on click</strong>, then <strong>click a handle</strong> and <strong>click another node's handle</strong>: the two are connected without a drag. Clicking empty space or pressing <strong>Escape</strong> abandons it.</li>
+        <li>Tick <strong>Selection on drag</strong>: a plain drag on the background now draws a selection box; hold <strong>Space</strong> while dragging to pan instead. Without it, <strong>Shift+drag</strong> draws the box.</li>
+        <li>Tick <strong>Pan on scroll</strong>: the wheel or trackpad now pans the view (<strong>Shift</strong> turns it sideways), and <strong>Ctrl+wheel</strong> still zooms.</li>
+        <li>Untick <strong>Zoom on double-click</strong>: double-clicking the background no longer zooms in.</li>
+        <li>Tick <strong>Cull off-screen</strong> and pan a node out of view: it is no longer rendered at all - the browser's element inspector shows it gone - and comes back as soon as it is in view again.</li>
+        <li><strong>Click an edge</strong> to select it, then drag the dot at either end onto another handle to <strong>reconnect</strong> it.</li>
+        <li><strong>Double-click</strong> or <strong>right-click</strong> a node (or focus it and press <strong>Shift+F10</strong>), drag one, connect two or change the selection, and watch each event arrive at the top of the log; the log's title counts what is selected.</li>
+        <li><strong>Add node</strong>, <strong>Delete selected</strong>, <strong>Fit view</strong>, <strong>Zoom 1.5×</strong> and <strong>Export</strong> call the canvas from code; Export logs how many nodes and edges a snapshot holds and its zoom.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>SnapToGrid</code> snaps dragged positions to a <code>SnapGridX</code> by <code>SnapGridY</code> grid (15 by 15 by default; 20 here, the background's <code>Gap</code>, so the dots show the grid). The same grid sets the arrow keys' step.</li>
+        <li><code>ConnectOnClick</code> (off) adds click-a-handle, click-another to dragging. <code>SelectionOnDrag</code> (off) makes a plain pane drag box-select, with <code>PanActivationKey</code> (Space) to pan; <code>SelectionKey</code> (Shift) box-selects either way.</li>
+        <li><code>PanOnScroll</code> (off) makes the wheel pan instead of zoom; <code>ZoomOnDoubleClick</code> is on by default; <code>OnlyRenderVisibleElements</code> (off) renders only the nodes and edges in view, for large graphs.</li>
+        <li>An edge is reconnectable while <code>EdgesReconnectable</code> (on) and its own <code>Reconnectable</code> are; <code>OnReconnect</code> reports the new wiring and the edge keeps its id.</li>
+        <li>The log comes from <code>OnConnectStart</code>, <code>OnConnect</code> and <code>OnConnectEnd</code>, <code>OnReconnect</code>, <code>OnSelectionChange</code>, <code>OnNodeDoubleClick</code>, <code>OnNodeContextMenu</code> (handling it suppresses the browser's menu), <code>OnNodeDragStop</code> and <code>OnDelete</code>, which reports a deletion by key and by button alike.</li>
+        <li>The buttons use the canvas captured with <code>@@ref</code>: <code>AddNodes</code>, <code>DeleteElementsAsync</code> with the selected nodes and edges, <code>FitView()</code>, <code>ZoomTo(1.5)</code> and <code>ToObject()</code>, which returns a <code>BlowSnapshot</code> of the nodes, edges and viewport.</li>
+        <li>Both control groups are <code>BlowPanel</code>s inside the canvas, so they stay put while the graph pans and zooms, and the minimap is <code>Pannable</code> (its default): click or drag in it to move the view. The edges show <code>Animated</code>, an arrowhead at each end (<code>MarkerStart</code> with <code>ArrowClosed</code>) and a <code>SmoothStep</code> path.</li>
+    </HowItWorks>
+</DemoNotes>
 
 <style>
     .toolbar { display:flex; flex-direction:column; gap:4px; font-size:13px; }
     .toolbar label { display:flex; align-items:center; gap:6px; white-space:nowrap; }
     .toolbar button { width:100%; }
-    .event-log { width:230px; max-height:200px; overflow:auto; padding:6px 8px; font-size:12px; font-family:monospace; color:var(--bit-blow-text); background:var(--bit-blow-surface-translucent); border:1px solid var(--bit-blow-border); border-radius:6px; }
+    .event-log { height:8.5rem; overflow:auto; padding:6px .875rem; font-size:12px; font-family:var(--bb-mono, monospace); color:var(--bb-text); background:var(--bb-surface-sunken); border-top:1px solid var(--bb-border); }
     .event-log__title { font-weight:600; margin-bottom:4px; font-family:inherit; }
-    .event-log__line { color:var(--bit-blow-text-muted); padding:1px 0; border-top:1px solid var(--bit-blow-border-subtle); }
+    .event-log__line { color:var(--bb-text-soft); padding:1px 0; border-top:1px solid var(--bb-border); }
 </style>
 
 @code {
@@ -138,14 +162,14 @@
         Log($"added node {_counter}");
     }
 
+    // OnDelete logs what went, here as for the Delete key - edges taken along with their nodes included.
     private async Task DeleteSelected()
     {
         if (_flow is null) return;
-        var nodes = _nodes.Where(n => n.Selected).ToList();
-        var edges = _edges.Where(e => e.Selected).ToList();
-        await _flow.DeleteElementsAsync(nodes, edges);
-        Log($"deleted {nodes.Count} node(s), {edges.Count} edge(s)");
+        await _flow.DeleteElementsAsync(_nodes.Where(n => n.Selected).ToList(), _edges.Where(e => e.Selected).ToList());
     }
+
+    private void OnDelete(BlowSelectionChange removed) => Log($"deleted {removed.Nodes.Count} node(s), {removed.Edges.Count} edge(s)");
 
     private void Export()
     {

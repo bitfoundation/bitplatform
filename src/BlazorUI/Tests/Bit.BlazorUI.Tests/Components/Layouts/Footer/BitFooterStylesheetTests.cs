@@ -81,5 +81,18 @@ public class BitFooterStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitFooterShouldDrawTheTextOfItsBorderlessVariantsInTheRoleTextColor()
+    {
+        var roles = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n    .bit-ftr-#{$role} {");
+
+        // The text of an Outline or Text footer is read on the page rather than over the role's fill, so it takes the
+        // role's text color - a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white -
+        // while the border and the fill keep the main.
+        StringAssert.Contains(roles, "--bit-ftr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(roles, "--bit-ftr-brd: #{role($tokens, main)};");
+        StringAssert.Contains(roles, "--bit-ftr-bg: #{role($tokens, main)};");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Layouts", "Footer", "BitFooter.scss");
 }

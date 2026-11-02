@@ -17,13 +17,6 @@
     trip and so that this page has something real to show.
 </div>
 
-<div class="bb-note bb-note-warn">
-    The PDF417 sample is drawn with the library's <em>placeholder</em> symbol character table. It
-    round trips here, which is what validates the detector, the GF(929) error correction and the
-    compaction modes, but it is not a conforming PDF417 symbol and no other scanner will read it.
-    See the PDF417 section of the README for why the real table cannot be derived.
-</div>
-
 @* The linear symbols are drawn at two pixels a module, up to 720 wide: the page gives up the
    "on this page" rail for the width. *@
 <div class="bb-card bb-page-wide">
@@ -31,7 +24,7 @@
     <div class="sample-grid">
         @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllMatrix) != 0))
         {
-            <BarcodeSvg Matrix="sample.Matrix" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
+            <BarcodeSvg Matrix="sample.Matrix" Format="sample.Format" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
         }
     </div>
 </div>
@@ -54,10 +47,50 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Which is which</h3>
+    <p class="bb-card-desc">
+        Each symbology is one flag of <code>BbBarcodeFormat</code>; combine them with <code>|</code>, or use
+        <code>AllMatrix</code>, <code>AllLinear</code> or <code>All</code> (the default).
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Symbology</th><th>Flag</th><th>Where you meet it</th><th>Read</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key">QR Code</td><td class="bb-mono">QrCode</td><td>Links, payments, tickets, Wi-Fi</td><td>Versions 1-40, every error correction level, ECI, structured append, mirrored</td></tr>
+                <tr><td class="bb-table-key">Micro QR</td><td class="bb-mono">MicroQrCode</td><td>Small parts and components</td><td>M1 to M4, every segment mode</td></tr>
+                <tr><td class="bb-table-key">Data Matrix</td><td class="bb-mono">DataMatrix</td><td>Electronics, pharmaceuticals, part marking</td><td>ECC 200, square and rectangular, every encodation, GS1</td></tr>
+                <tr><td class="bb-table-key">PDF417</td><td class="bb-mono">Pdf417</td><td>Driving licences, boarding passes, shipping labels</td><td>Any orientation, compact (truncated) too, Macro PDF417</td></tr>
+                <tr><td class="bb-table-key">Aztec</td><td class="bb-mono">Aztec</td><td>Boarding passes, rail and transit tickets</td><td>Compact and full range, Aztec Runes, mirrored</td></tr>
+                <tr><td class="bb-table-key">MaxiCode</td><td class="bb-mono">MaxiCode</td><td>Parcel sorting labels</td><td>Modes 2 to 5, the carrier's structured message</td></tr>
+                <tr><td class="bb-table-key">Code 128</td><td class="bb-mono">Code128</td><td>Logistics, shipping, GS1-128</td><td>Code sets A, B and C, FNC1</td></tr>
+                <tr><td class="bb-table-key">Code 39</td><td class="bb-mono">Code39</td><td>Industry, defence, ID badges</td><td>Optional check character and full ASCII (see the playground's options)</td></tr>
+                <tr><td class="bb-table-key">Code 93</td><td class="bb-mono">Code93</td><td>Logistics, Canada Post</td><td>Full ASCII, both check characters verified</td></tr>
+                <tr><td class="bb-table-key">Codabar</td><td class="bb-mono">Codabar</td><td>Libraries, blood banks, courier waybills</td><td>Start and stop characters kept only with <code>CodabarStartStop</code></td></tr>
+                <tr><td class="bb-table-key">EAN-13 / EAN-8</td><td class="bb-mono">Ean13, Ean8</td><td>Retail products outside North America</td><td>Check digit verified; EAN-2 and EAN-5 add-ons into <code>Metadata.Extension</code></td></tr>
+                <tr><td class="bb-table-key">UPC-A / UPC-E</td><td class="bb-mono">UpcA, UpcE</td><td>Retail products in North America</td><td>Reported as UPC, not as EAN-13; add-ons read</td></tr>
+                <tr><td class="bb-table-key">ITF</td><td class="bb-mono">Itf</td><td>Cartons and cases (ITF-14)</td><td>Only the lengths in <code>ItfLengths</code></td></tr>
+                <tr><td class="bb-table-key">GS1 DataBar</td><td class="bb-mono">DataBar</td><td>Loose produce, small retail items</td><td>Omnidirectional, Truncated and both Stacked forms, as <code>01</code> + GTIN-14</td></tr>
+                <tr><td class="bb-table-key">GS1 DataBar Limited</td><td class="bb-mono">DataBarLimited</td><td>Pharmaceuticals, cosmetics</td><td>A GTIN-14 starting with 0 or 1</td></tr>
+                <tr><td class="bb-table-key">GS1 DataBar Expanded</td><td class="bb-mono">DataBarExpanded</td><td>Weighed fresh food, coupons</td><td>Any GS1 element string, Expanded Stacked too</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        Some variants are read but not drawn above, because the test encoders do not write them: compact PDF417,
+        the EAN and UPC add-ons, the stacked DataBar forms and Code 39 full ASCII. Scan a printed one with the
+        <a href="scan">playground</a>, or check what each symbology reads in full with the
+        <a href="mcp-server">MCP server</a>'s <code>GetBbScannerFormats</code>.
+    </p>
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Decode them right here</h3>
     <p class="bb-card-desc">
         The same symbols, decoded in place without a camera: each one is rasterised into a grayscale
-        buffer and pushed through <code>BbBarcodeDecoder</code>, exactly as a camera frame would be.
+        buffer and pushed through <code>BbBarcodeDecoder</code>, exactly as a camera frame would be. Every
+        symbology is enabled for every sample, so a match also shows that none was mistaken for another.
     </p>
 
     <div class="bb-toolbar">
@@ -125,35 +158,18 @@
 
         foreach (var sample in SampleCatalog.All)
         {
-            using var image = sample.Matrix is not null
-                ? Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix, scale: 6)
-                : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: 3, height: 90);
+            using var image = SampleCatalog.Render(sample, scale: 6, linearScale: 3, height: 90);
 
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
-            string? text;
 
-            if (sample.Format == BbBarcodeFormat.Pdf417)
+            using var decoder = new BbBarcodeDecoder(new BbScannerOptions
             {
-                // The pipeline deliberately leaves PDF417 disabled while the symbol table is a
-                // placeholder, so this sample goes straight to the reader to show that everything
-                // apart from that table works.
-                using var binary = new BbHybridBinarizer().GetBlackMatrix(image.View);
-                text = binary is null
-                    ? null
-                    : new BbPdf417Reader()
-                        .Decode(binary, BbMatrixDecodeOptions.Thorough)?.Payload.Text;
-            }
-            else
-            {
-                using var decoder = new BbBarcodeDecoder(new BbScannerOptions
-                {
-                    Formats = BbBarcodeFormat.All,
-                    DuplicateSuppressionWindow = TimeSpan.Zero,
-                    MaxScanLines = 30,
-                });
+                Formats = BbBarcodeFormat.All,
+                DuplicateSuppressionWindow = TimeSpan.Zero,
+                MaxScanLines = 30,
+            });
 
-                text = decoder.Decode(image.View, suppressDuplicates: false)?.Text;
-            }
+            var text = decoder.Decode(image.View, suppressDuplicates: false)?.Text;
 
             var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds;
 

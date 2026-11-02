@@ -14,6 +14,36 @@ namespace Bit.Blow.Tests.E2E;
 public sealed class GestureTests : BlowTest
 {
     [TestMethod]
+    public async Task A_mouse_click_on_a_node_is_the_nodes_click_and_a_small_nudge_still_is()
+    {
+        // The press captures the pointer on the pane, so the browser fires the click at the pane: it must still be
+        // reported as the node's.
+        var page = await OpenAsync("/examples/click-distance");
+        await WaitForEdgesAnchoredAsync(page);
+        var status = page.Locator(".example-toolbar .bb-muted");
+
+        var node = await NodeBoxAsync(page, "2");
+        await page.Mouse.ClickAsync((float)(node.Centre.X), (float)(node.Centre.Y));
+        await Expect(status).ToContainTextAsync("node clicks: 1 · pane clicks: 0");
+        await Expect(status).ToContainTextAsync("click on node 2");
+
+        // Within the click distance (20 px) a press that moved a little is a click too; past it, a drag is not.
+        await page.Mouse.MoveAsync((float)(node.Centre.X), (float)(node.Centre.Y));
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)(node.Centre.X + 6), (float)(node.Centre.Y), new() { Steps = 3 });
+        await page.Mouse.UpAsync();
+        await Expect(status).ToContainTextAsync("node clicks: 2 · pane clicks: 0");
+
+        node = await NodeBoxAsync(page, "2");
+        await page.Mouse.MoveAsync((float)(node.Centre.X), (float)(node.Centre.Y));
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)(node.Centre.X + 80), (float)(node.Centre.Y + 40), new() { Steps = 8 });
+        await page.Mouse.UpAsync();
+        await WaitForQuietAsync(page);
+        await Expect(status).ToContainTextAsync("node clicks: 2 · pane clicks: 0");
+    }
+
+    [TestMethod]
     public async Task Dragging_a_node_moves_it_with_the_pointer_and_its_edges_follow()
     {
         var page = await OpenAsync("/basic-flow");
@@ -43,7 +73,10 @@ public sealed class GestureTests : BlowTest
         var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
         var node = await NodeBoxAsync(page, "2");
-        var grab = node.Centre;
+
+        // Firefox and WebKit report a mouse event at whole pixels: the press and the drop aim at one, or the node would be
+        // held up to a pixel away, on each axis, from the fractional points the assertion computes with.
+        var grab = node.Centre.Snapped();
 
         // Out over the sidebar and back. The pane captures the pointer, so leaving it neither ends the drag (the
         // pane treats pointerleave as a release) nor loses the moves made outside it.
@@ -51,7 +84,7 @@ public sealed class GestureTests : BlowTest
         StringAssert.Contains(await page.Locator(".bit-blow-node[data-id=\"2\"]").GetAttributeAsync("class"), "dragging",
             "the drag ended when the pointer left the canvas");
 
-        var drop = new Point(pane.X + 320, pane.Y + 220);
+        var drop = new Point(pane.X + 320, pane.Y + 220).Snapped();
         await page.Mouse.MoveAsync((float)drop.X, (float)drop.Y, new MouseMoveOptions { Steps = 10 });
         await page.WaitForTimeoutAsync(60);
         await page.Mouse.UpAsync();
@@ -59,7 +92,7 @@ public sealed class GestureTests : BlowTest
 
         // The node ends up held exactly where it was grabbed, however far auto-pan scrolled the view meanwhile.
         var after = await NodeBoxAsync(page, "2");
-        AssertNear(new Point(grab.X - node.X, grab.Y - node.Y), new Point(drop.X - after.X, drop.Y - after.Y), 1, "grab offset at the drop");
+        AssertNear(new Point(grab.X - node.X, grab.Y - node.Y), new Point(drop.X - after.X, drop.Y - after.Y), 0.5, "grab offset at the drop");
 
         // And the release ended it: moving on without a button pressed leaves the node where it is.
         await page.Mouse.MoveAsync((float)drop.X + 100, (float)drop.Y + 80, new MouseMoveOptions { Steps = 5 });
@@ -303,11 +336,16 @@ public sealed class GestureTests : BlowTest
         var page = await OpenAsync("/basic-flow");
         var pane = await PaneBoxAsync(page);
 
+        // Firefox and WebKit report a mouse event at whole pixels, and a minimap pixel is several on the canvas: the
+        // click aims at one, and the view has to centre on exactly the point that pixel stands for.
         var rect = await BoxAsync(page, ".bit-blow-minimap-node:nth-of-type(4)");
-        await page.Mouse.ClickAsync((float)rect.Centre.X, (float)rect.Centre.Y);
+        var scale = (await NodeBoxAsync(page, "4")).Width / rect.Width;
+        var at = rect.Centre.Snapped();
+        await page.Mouse.ClickAsync((float)at.X, (float)at.Y);
         await WaitForQuietAsync(page);
 
-        AssertNear(pane.Centre, (await NodeBoxAsync(page, "4")).Centre, 2, "centre of node 4");
+        var expected = pane.Centre.Offset((rect.Centre.X - at.X) * scale, (rect.Centre.Y - at.Y) * scale);
+        AssertNear(expected, (await NodeBoxAsync(page, "4")).Centre, 2, "centre of node 4");
     }
 
     [TestMethod]

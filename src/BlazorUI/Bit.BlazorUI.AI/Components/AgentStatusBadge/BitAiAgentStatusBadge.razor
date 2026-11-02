@@ -1,0 +1,20 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@* The root is the polite live region, kept on the page across every status, so a screen reader hears each transition
+   without being interrupted - the tag inside it is replaced along with the word. A role or a politeness the page
+   splatted on is honored rather than written over. *@
+<span @ref="RootElement" @attributes="HtmlAttributes"
+      id="@_Id"
+      style="@StyleBuilder.Value"
+      class="@ClassBuilder.Value"
+      dir="@Dir?.ToString().ToLower()"
+      role="@(GetSplattedAttribute("role") ?? "status")"
+      aria-live="@(GetSplattedAttribute("aria-live") ?? "polite")">
+    <BitTag Text="@_Label"
+            Color="@_Color"
+            Class="@_DefaultClass"
+            Disabled="Disabled"
+            Styles="@Styles?.Tag"
+            Classes="@Classes?.Tag" />
+</span>

@@ -3,12 +3,12 @@
 <PageTitle>Key Bindings · Blow</PageTitle>
 
 <ExampleScaffold Title="Key Bindings"
-                 Summary="Which keys the canvas claims is configurable. A flow embedded in a long page usually should not swallow Backspace or hijack the scroll wheel - narrow the delete keys and require a modifier to zoom, and the page behaves normally again.">
+                 Summary="Which keys the canvas claims is up to you. A flow embedded in a long page usually should not swallow Backspace or hijack the scroll wheel, so this one starts with the delete keys narrowed to Delete and the wheel zooming only with Ctrl held. DeleteKeys, ZoomActivationKey, MultiSelectionKey, ConnectionKey and SelectAllKeyEnabled each pick a key or turn one off.">
     <Toolbar>
         <label>
             Delete keys
             <select @bind="_deleteKeys">
-                <option value="both">Delete + Backspace</option>
+                <option value="both">Delete + Backspace (default)</option>
                 <option value="delete">Delete only</option>
                 <option value="none">Disabled</option>
             </select>
@@ -16,7 +16,7 @@
         <label>
             Zoom needs
             <select @bind="_zoomKey">
-                <option value="">nothing (plain wheel)</option>
+                <option value="">nothing, plain wheel (default)</option>
                 <option value="Control">Ctrl</option>
                 <option value="Meta">Cmd / Meta</option>
                 <option value="Alt">Alt</option>
@@ -25,52 +25,72 @@
         <label>
             Multi-select
             <select @bind="_multiKey">
-                <option value="Shift">Shift</option>
+                <option value="Shift">Shift (default)</option>
                 <option value="Control">Ctrl</option>
                 <option value="Alt">Alt</option>
                 <option value="Meta">Cmd / Meta</option>
             </select>
         </label>
+        <label>
+            Connect key
+            <select @bind="_connectKey">
+                <option value="c">C (default)</option>
+                <option value="k">K</option>
+                <option value="">Off</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_selectAll" @onchange="@(e => _selectAll = (bool)e.Value!)" /> Ctrl+A selects all</label>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes"
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
                     Edges="_edges"
                     DeleteKeyEnabled="DeleteEnabled"
                     DeleteKeys="DeleteKeys"
                     ZoomActivationKey="ZoomActivationKey"
                     MultiSelectionKey="MultiSelectionKey"
+                    SelectAllKeyEnabled="_selectAll"
+                    ConnectionKey="@(_connectKey.Length == 0 ? null : _connectKey)"
                     FitViewOnInit="true">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
-            <BlowPanel Anchor="BlowPanelPosition.TopRight">
-                <div class="keys-hint">
-                    Click the canvas to focus it, select a node, then try the keys.
-                </div>
-            </BlowPanel>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li><strong>Click</strong> a node to select it and press <strong>Delete</strong>: it goes. Select another and press <strong>Backspace</strong>: with <strong>Delete only</strong> nothing happens, so Backspace keeps meaning whatever it means to the page. <strong>Delete + Backspace</strong> lets both delete, and <strong>Disabled</strong> neither.</li>
+        <li><strong>Scroll</strong> over the canvas: with <strong>Zoom needs</strong> set to Ctrl the page scrolls past it. Hold the chosen key and scroll to zoom; pick <strong>nothing</strong> and a plain scroll zooms again.</li>
+        <li>Hold the <strong>Multi-select</strong> key and <strong>click</strong> nodes or edges to add each to the selection. With it left at Shift, <strong>Shift+drag</strong> on the background draws a box that adds to the selection too.</li>
+        <li><strong>Tab</strong> to the node One and press the <strong>Connect key</strong> (<strong>C</strong>), <strong>Tab</strong> on to Three and press <strong>Enter</strong>: an edge from One to Three is drawn. Pick <strong>K</strong> to move the binding, or <strong>Off</strong> to turn connecting from the keyboard off.</li>
+        <li>With the canvas focused press <strong>Ctrl+A</strong> (<strong>Cmd+A</strong>) to select everything, then untick <strong>Ctrl+A selects all</strong>: the shortcut is left to the browser.</li>
+        <li><strong>Reset</strong> brings back the three nodes and their edges.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>DeleteKeys</code> (<code>["Delete", "Backspace"]</code>) are the <code>KeyboardEvent.key</code> names that delete the selection; <code>DeleteKeyEnabled</code> (<code>true</code>) switches the binding off altogether. The page passes <code>["Delete"]</code> for Delete only.</li>
+        <li><code>ZoomActivationKey</code> (<code>null</code>) is a <code>BlowModifierKey</code> that must be held for the wheel to zoom; without it a plain scroll reaches the page. Ctrl+wheel - how browsers report a trackpad pinch - always zooms.</li>
+        <li><code>MultiSelectionKey</code> (<code>BlowModifierKey.Shift</code>) adds to the selection on a click, and makes a selection box add to what is selected.</li>
+        <li><code>SelectAllKeyEnabled</code> (<code>true</code>) binds Ctrl/Cmd+A to selecting every selectable, visible node and edge; turned off, the canvas leaves the key alone.</li>
+        <li><code>ConnectionKey</code> (<code>"c"</code>) starts a connection from the focused node, and <code>Enter</code> on another node completes it; <code>null</code> turns connecting from the keyboard off. It is ignored with Ctrl, Cmd or Alt held, so Ctrl+C still copies.</li>
+        <li>The canvas acts on these keys only while focus is in the flow, and never while you type in a field inside it. The keys that change what a drag does - <code>PanActivationKey</code> and <code>SelectionKey</code> - are on Selection Gestures.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
-<style>
-    .keys-hint {
-        max-width: 220px;
-        padding: 6px 10px;
-        font-size: 11px;
-        background: var(--bit-blow-surface);
-        color: var(--bit-blow-text);
-        border: 1px solid var(--bit-blow-border);
-        border-radius: 6px;
-    }
-</style>
-
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+
+    // Starts with the settings suggested for a flow inside a long page, not the library's defaults: those are marked
+    // in the lists above.
     private string _deleteKeys = "delete";
     private string _zoomKey = "Control";
     private string _multiKey = "Shift";
+    private string _connectKey = "c";
+    private bool _selectAll = true;
 
-    protected override void OnInitialized()
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
     {
         _nodes =
         [
@@ -83,15 +103,16 @@
             new BlowEdge { Id = "e1", Source = "1", Target = "2" },
             new BlowEdge { Id = "e2", Source = "2", Target = "3" },
         ];
+        _flow?.Refresh(remeasure: true);
     }
 
     private bool DeleteEnabled => _deleteKeys != "none";
 
-    private IReadOnlyList<string> DeleteKeys => _deleteKeys switch
-    {
-        "delete" => ["Delete"],
-        _ => ["Delete", "Backspace"],
-    };
+    // One instance per choice, so the canvas is handed the same list on every render rather than a fresh one.
+    private static readonly string[] DeleteOnly = ["Delete"];
+    private static readonly string[] DeleteAndBackspace = ["Delete", "Backspace"];
+
+    private IReadOnlyList<string> DeleteKeys => _deleteKeys == "delete" ? DeleteOnly : DeleteAndBackspace;
 
     private BlowModifierKey? ZoomActivationKey =>
         string.IsNullOrEmpty(_zoomKey) ? null : Enum.Parse<BlowModifierKey>(_zoomKey);

@@ -76,6 +76,11 @@ public interface IBcrdtCollaborationService : IAsyncDisposable
     /// Releases a reference taken by <see cref="OpenAsync"/>. The document is closed, and everything
     /// it owns released, when the last reference goes.
     /// </summary>
+    /// <remarks>
+    /// References are counted per identifier, not per caller: a close without a matching open releases
+    /// somebody else's reference, and can close the document under them. Pair them exactly - or let
+    /// <c>BcrdtCollaborationScope</c> do it.
+    /// </remarks>
     ValueTask CloseAsync(string documentId);
 
     /// <summary>The documents currently open.</summary>

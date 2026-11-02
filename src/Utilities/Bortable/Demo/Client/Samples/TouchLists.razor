@@ -1,0 +1,65 @@
+﻿@* Three lists for a finger, a pen and the mouse: a long press, a handle that drags at once, and
+   ForceFallback. *@
+
+<div class="demo-controls">
+    <label>
+        <code>TouchDelay</code> (Long press): <strong id="touch-delay-value">@_touchDelay ms</strong>
+        <input id="touch-delay" type="range" min="0" max="1000" step="50" value="@_touchDelay"
+               @oninput="e => _touchDelay = Parse(e, _touchDelay)" />
+    </label>
+    <label>
+        <code>Delay</code> (Long press, mouse and pen): <strong id="mouse-delay-value">@_delay ms</strong>
+        <input id="mouse-delay" type="range" min="0" max="1000" step="50" value="@_delay"
+               @oninput="e => _delay = Parse(e, _delay)" />
+    </label>
+    <label>
+        <code>DelayTolerance</code> (Long press): <strong id="delay-tolerance-value">@_tolerance px</strong>
+        <input id="delay-tolerance" type="range" min="0" max="40" step="1" value="@_tolerance"
+               @oninput="e => _tolerance = Parse(e, _tolerance)" />
+    </label>
+</div>
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Long press</div>
+        <Bortable @bind-Items="_longPress" TItem="string" Id="touch-list" AriaLabel="Long press"
+                  TouchDelay="_touchDelay" Delay="_delay" DelayTolerance="_tolerance"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Handle, at once</div>
+        <Bortable @bind-Items="_handle" TItem="string" Id="touch-handle-list" AriaLabel="Handle, at once"
+                  Handle=".handle" TouchDelay="0"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">
+                <span class="handle touch-handle">☰</span>@item
+            </ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Mouse too (ForceFallback)</div>
+        <Bortable @bind-Items="_fallback" TItem="string" Id="touch-fallback-list" AriaLabel="Mouse too"
+                  ForceFallback="true"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Long press:</strong> <span id="touch-order">@string.Join(", ", _longPress)</span></p>
+<p class="demo-order"><strong>Handle:</strong> <span id="touch-handle-order">@string.Join(", ", _handle)</span></p>
+<p class="demo-order"><strong>Mouse too:</strong> <span id="touch-fallback-order">@string.Join(", ", _fallback)</span></p>
+
+@code {
+    private IList<string> _longPress = new List<string> { "Apples", "Bread", "Coffee", "Dates", "Eggs" };
+    private IList<string> _handle = new List<string> { "Flour", "Grapes", "Honey", "Ice", "Jam" };
+    private IList<string> _fallback = new List<string> { "Kale", "Lemons", "Milk", "Nuts", "Oats" };
+
+    private int _touchDelay = 200;
+    private int _delay;
+    private int _tolerance = 5;
+
+    private static int Parse(ChangeEventArgs e, int current) => int.TryParse(e.Value?.ToString(), out var v) ? v : current;
+}

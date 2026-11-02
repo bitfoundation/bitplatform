@@ -1,0 +1,55 @@
+﻿@page "/e2e/aijsonview"
+@using System.Text.Json
+
+<PageTitle>BitAiJsonView E2E</PageTitle>
+
+<h1>BitAiJsonView</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitAiJsonView Id="jsv-basic" Value="_person" />
+    <BitAiJsonView Id="jsv-null" Value="null" />
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <button id="jsv-before">Before the tree</button>
+    <BitAiJsonView Id="jsv-keys" Value="_small" />
+    <button id="jsv-after">After the tree</button>
+</E2ESection>
+
+<E2ESection Id="depth" Title="Depth and size">
+    <BitAiJsonView Id="jsv-depth1" DefaultExpandDepth="1" Value="_person" />
+    <BitAiJsonView Id="jsv-large" Value="_large" />
+    <BitAiJsonView Id="jsv-large-allowed" LargeContainerSize="40" Value="_large" />
+</E2ESection>
+
+<E2ESection Id="paths" Title="Paths">
+    <BitAiJsonView Id="jsv-paths" DefaultExpandDepth="1" Value="_twins" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiJsonView Id="jsv-ltr" DefaultExpandDepth="1" Value="_nested" />
+    <BitAiJsonView Id="jsv-rtl" Dir="BitDir.Rtl" DefaultExpandDepth="1" Value="_nested" />
+    <div dir="rtl">
+        <BitAiJsonView Id="jsv-rtl-inherited" DefaultExpandDepth="1" Value="_nested" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <p>Clicks on the disabled tree: <span id="jsv-disabled-clicks">@_disabledClicks</span></p>
+    <p>Clicks on the enabled tree: <span id="jsv-enabled-clicks">@_enabledClicks</span></p>
+    <BitAiJsonView Id="jsv-disabled" Disabled DefaultExpandDepth="1" Value="_nested" @onclick="() => _disabledClicks++" />
+    <BitAiJsonView Id="jsv-enabled" DefaultExpandDepth="1" Value="_nested" @onclick="() => _enabledClicks++" />
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <BitAiJsonView Id="jsv-vars" Value="_person"
+                   Style="--bit-AiJsonView-font-size: 18px; --bit-AiJsonView-line-height: 2; --bit-AiJsonView-indent: 31px; --bit-AiJsonView-key-color: rgb(1, 2, 3); --bit-AiJsonView-string-color: rgb(4, 5, 6); --bit-AiJsonView-number-color: rgb(7, 8, 9); --bit-AiJsonView-boolean-color: rgb(10, 11, 12); --bit-AiJsonView-null-color: rgb(13, 14, 15); --bit-AiJsonView-toggle-color: rgb(16, 17, 18); --bit-AiJsonView-chevron-size: 13px" />
+</E2ESection>
+
+<E2ESection Id="styles" Title="Classes and styles">
+    <BitAiJsonView Id="jsv-styled" Value="_person"
+                   Styles="@(new() { Key = "color: rgb(40, 41, 42)", String = "color: rgb(43, 44, 45)", Group = "padding-inline-start: 50px" })"
+                   Classes="@(new() { Toggle = "jsv-toggle-class", Row = "jsv-row-class" })" />
+</E2ESection>
+
+<E2EStatus />

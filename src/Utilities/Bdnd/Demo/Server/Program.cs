@@ -11,7 +11,9 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveWebAssemblyComponents()
+    // only for /hosting/server-check, which shows the library over a circuit (see App.razor)
+    .AddInteractiveServerComponents();
 
 // The same registration as the WebAssembly client, so the components get the same services while
 // they are prerendered here.
@@ -67,11 +69,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
@@ -94,6 +92,7 @@ app.MapMcp("/mcp");
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
+    .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.Bdnd.Demo.Client._Imports).Assembly);
 
 app.Run();

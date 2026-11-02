@@ -46,9 +46,10 @@ public static class BdndServerInstructions
         - Do not write a Bdnd type or member from memory. There is one package and one namespace, `Bit.Bdnd`, and every
           public type is prefixed `Bdnd`; React DnD's hooks and connector refs do not exist here. `GetBdndApi` gives the
           real names, types and default values.
-        - Call `GetBdndSetupGuide` before writing wiring. `builder.Services.AddBitBdndServices()` is required - in a
-          Blazor Web App in both Program.cs files - there is no stylesheet to link, every draggable and drop target must
-          sit inside a `BdndProvider`, and the page must render interactively.
+        - Call `GetBdndSetupGuide` before writing wiring. Register `builder.Services.AddBitBdndServices()` - in a
+          Blazor Web App in both Program.cs files; only a WebAssembly app that lazy loads Bit.Bdnd leaves it out - there
+          is no stylesheet to link, every draggable and drop target must sit inside a `BdndProvider`, and the page must
+          render interactively.
         - A target only reacts to an item whose draggable `Type` is in its `Accept`/`AcceptTypes`; nested targets all
           get `OnDrop`, innermost first; native OS drags arrive through `OnNativeDrop`, never `OnDrop`.
         - To check how a drag plays out - which targets can drop, deep and shallow hover, the order of the drops and

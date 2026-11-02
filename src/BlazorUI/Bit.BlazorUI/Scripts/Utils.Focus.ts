@@ -138,18 +138,35 @@
             // walks backwards out of the container altogether. Everything the trap holds is inside the
             // container, so the next stop is its first element and the previous one its last.
             if (active === root) {
-                (e.shiftKey ? last : first).focus();
+                Utils.focusFromKey(e.shiftKey ? last : first);
                 e.preventDefault();
                 return;
             }
 
             if (e.shiftKey && active === first) {
-                last.focus();
+                Utils.focusFromKey(last);
                 e.preventDefault();
             } else if (!e.shiftKey && active === last) {
-                first.focus();
+                Utils.focusFromKey(first);
                 e.preventDefault();
             }
+        }
+
+        // Focuses an element from the handler of the key that asks for it. Firefox does not move the focus into a frame
+        // from in there - a frame on the edge of a trap, an HTML preview in a dialog, kept the focus where it was - so a
+        // frame that did not take it is focused once the key has been handled, unless the focus has moved on by then.
+        export function focusFromKey(el: HTMLElement) {
+            const from = document.activeElement;
+
+            el.focus();
+
+            if (el instanceof HTMLIFrameElement === false || document.activeElement === el) return;
+
+            setTimeout(() => {
+                if (document.activeElement === from) {
+                    el.focus();
+                }
+            });
         }
 
         // Moves the focus to the first focusable element inside the given container, falling back to the

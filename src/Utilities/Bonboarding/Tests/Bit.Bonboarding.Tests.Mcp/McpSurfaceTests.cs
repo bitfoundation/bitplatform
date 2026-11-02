@@ -52,6 +52,7 @@ public class McpSurfaceTests
     {
         var info = McpTestHost.Client.ServerInfo;
 
+        Assert.IsNotNull(info);
         Assert.AreEqual("bit-bonboarding", info.Name);
         Assert.AreEqual("Bit.Bonboarding", info.Title);
         Assert.AreEqual(BonboardingServerInstructions.BonboardingVersion, info.Version);
@@ -88,6 +89,14 @@ public class McpSurfaceTests
     public void Every_expected_tool_is_published_and_nothing_else_is()
     {
         CollectionAssert.AreEquivalent(ExpectedTools, _tools.Select(tool => tool.Name).ToArray());
+    }
+
+    [TestMethod]
+    public void No_tool_shares_a_name_with_the_library_API()
+    {
+        // The prose is checked for tool names with the library's own members left out (GetBonboardingService), so a
+        // tool named like one of them would pass unchecked - and an agent could not tell which of the two it is told to call.
+        foreach (var tool in _tools) Assert.DoesNotContain(tool.Name, ToolNames.LibraryMembers, $"'{tool.Name}' is also a member of Bit.Bonboarding.");
     }
 
     [TestMethod]

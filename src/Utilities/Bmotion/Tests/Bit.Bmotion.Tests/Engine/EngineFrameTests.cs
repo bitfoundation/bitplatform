@@ -11,10 +11,10 @@ namespace Bit.Bmotion.Tests.Engine;
 [TestClass]
 public class EngineFrameTests
 {
+    // A browser without Web Animations: every animation runs on the frame loop, which these tests tick by hand.
     private static BmotionAnimationEngine NewEngine()
-        => new(new FakeBmotionInterop { IsInProcess = true });
+        => new(new FakeBmotionInterop { IsInProcess = true, WebAnimationsSupported = false });
 
-    // Colors never offload to the compositor, so they stay on the rAF path we can tick by hand.
     private static readonly Dictionary<string, object?> ToRed = new() { ["backgroundColor"] = "#ff0000" };
 
     private static string? ColorOf(Dictionary<string, Dictionary<string, string>>? frame, string id)

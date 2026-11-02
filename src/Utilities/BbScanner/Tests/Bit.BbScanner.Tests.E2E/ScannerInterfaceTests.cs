@@ -86,6 +86,11 @@ public class ScannerInterfaceTests : BbScannerTest
 
         var announcement = await session.Page.TextContentAsync(".bit-bbscanner__sr");
         Assert.IsFalse(string.IsNullOrWhiteSpace(announcement));
+
+        // The symbology by its written name and the value, not the enum member.
+        var values = await session.ResultValuesAsync();
+        Assert.IsTrue(values.Any(v => announcement.Contains(v, StringComparison.Ordinal)), $"'{announcement}' announced none of the values read.");
+        Assert.DoesNotContain("QrCode:", announcement);
     }
 
     [TestMethod]
@@ -117,8 +122,11 @@ public class ScannerInterfaceTests : BbScannerTest
         await session.Page.Keyboard.PressAsync("Enter");
         await session.WaitForStatusAsync(["paused"]);
 
-        var pressed = await session.Page.GetAttributeAsync(".bit-bbscanner__button[aria-pressed]", "aria-pressed");
-        Assert.AreEqual("true", pressed);
+        // The same button, still focused, now says what pressing it does. It carries no aria-pressed as well: a
+        // toggle state on top of a label that changes would be read as "Resume, pressed".
+        var focused = await session.Page.EvaluateAsync<string>(
+            "() => { const a = document.activeElement; return a ? `${a.textContent.trim()}|${a.getAttribute('aria-pressed') ?? ''}` : ''; }");
+        Assert.AreEqual("Resume|", focused);
     }
 
     [TestMethod]
@@ -235,6 +243,27 @@ public class ScannerInterfaceTests : BbScannerTest
         var values = await session.ResultValuesAsync();
         Assert.AreEqual(2, values.Count);
         foreach (var v in values) { Assert.AreEqual(FakeCameraVideo.QrPayload, v); };
+    }
+
+    [TestMethod]
+    public async Task AFileThatIsNotAnImageIsRefusedBeforeItIsDecoded()
+    {
+        await using var session = await OpenAsync(BlankClip);
+        await session.GoToAsync("image");
+
+        // The picker's accept attribute is only a hint; a user can still choose any file.
+        await session.Page.SetInputFilesAsync("input[type=file]", new FilePayload
+        {
+            Name = "notes.txt",
+            MimeType = "text/plain",
+            Buffer = System.Text.Encoding.UTF8.GetBytes("not an image"),
+        });
+
+        var message = session.Page.Locator(".bit-bbscanner__message");
+        await message.Filter(new() { HasText = "not an image" }).WaitForAsync(new() { Timeout = 20_000 });
+
+        Assert.IsEmpty(await session.ResultValuesAsync());
+        Assert.IsEmpty(session.PageErrors);
     }
 
     [TestMethod]

@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>अज्ञात त्रुटि हुई है</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>बाहरी अकाउंट से साइन इन करते समय अज्ञात त्रुटि हुई है</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>रिकॉर्ड को मूल डेटा प्राप्त करने के बाद किसी अन्य उपयोगकर्ता द्वारा संशोधित किया गया था। क्रिया रद्द कर दी गई।</value>
   </data>
@@ -1101,6 +1104,12 @@
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>यह आपका विश्लेषणात्मक डेटा है</value>
+  </data>
+  <data name="Resize" xml:space="preserve">
+    <value>आकार बदलें</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>छिपाएँ</value>
   </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>श्रेणी हटाएं</value>
@@ -2096,4 +2105,15 @@
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>इस डिवाइस के सभी खातों से साइन आउट करें</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
+    <data name="KioskTitle" xml:space="preserve">
+    <value>कियोस्क मोड</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>यह ऐप स्क्रीन पर लॉक है: Windows की, Alt+Tab और विंडो बंद करना सभी अवरुद्ध हैं। बाहर निकलने के लिए बटन का उपयोग करें।</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>ऐप से बाहर निकलें</value>
+  </data>
+  <!--#endif -->
 </root>

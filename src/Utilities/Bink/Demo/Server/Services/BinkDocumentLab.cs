@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Numerics;
+using System.Globalization;
 using System.Text.Json;
 using Bit.Bink.Demo.Server.Dtos;
 
@@ -35,6 +36,12 @@ public static class BinkDocumentLab
     /// </summary>
     private const long PngCheckPixels = 250_000;
 
+    private const long PngCheckImagePixels = 4_000_000;
+
+    private const long PngCheckRasterWork = 512_000_000;
+
+    private static readonly SemaphoreSlim _gate = new(2, 2);
+
     public static readonly string[] Regions = ["Page", "Content"];
 
     private static readonly Lazy<string> _sample = new(BuildSample);
@@ -42,7 +49,21 @@ public static class BinkDocumentLab
     /// <summary>A small document written by the library itself with readable points.</summary>
     public static string Sample => _sample.Value;
 
-    public static BinkDocumentReportDto Inspect(string? json, bool includeSvg, string? region)
+    public static async Task<BinkDocumentReportDto> InspectAsync(string? json, bool includeSvg, string? region, CancellationToken cancellationToken = default)
+    {
+        await _gate.WaitAsync(cancellationToken);
+
+        try
+        {
+            return Inspect(json, includeSvg, region);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private static BinkDocumentReportDto Inspect(string? json, bool includeSvg, string? region)
     {
         var supported = FormattableString.Invariant($"{BinkSerializer.MinimumSupportedVersion}..{BinkSerializer.CurrentVersion}");
 
@@ -217,11 +238,24 @@ public static class BinkDocumentLab
 
             try
             {
-                var svg = BinkSvgExporter.Export(document, new BinkSvgExportOptions { Region = exportRegion });
+                var builder = new StringBuilder();
+
+                using (var writer = new StringWriter(builder, CultureInfo.InvariantCulture))
+                {
+                    try
+                    {
+                        BinkSvgExporter.Export(document, writer, new BinkSvgExportOptions { Region = exportRegion, MaxLength = MaxSvgLength + 1 });
+                    }
+                    catch (InvalidOperationException) when (builder.Length > MaxSvgLength)
+                    {
+                    }
+                }
+
+                var svg = builder.ToString();
 
                 if (svg.Length > MaxSvgLength)
                 {
-                    notes.Add($"The SVG is {svg.Length} characters long; only the first {MaxSvgLength} are returned.");
+                    notes.Add($"The SVG is longer than {MaxSvgLength} characters; only the first {MaxSvgLength} are returned.");
                     var cut = svg.LastIndexOf('>', MaxSvgLength - 1);
                     svg = svg[..(cut > 0 ? cut + 1 : MaxSvgLength)];
                 }
@@ -254,7 +288,7 @@ public static class BinkDocumentLab
 
             var scale = (float)Math.Min(1d, Math.Sqrt(PngCheckPixels / ((double)width * height)));
 
-            BinkPngExporter.Render(document, BinkPngExportOptions.Default with { Scale = scale }, out var skippedText, out var skippedImages);
+            BinkPngExporter.Render(document, BinkPngExportOptions.Default with { Scale = scale, MaxPixels = PngCheckImagePixels, MaxRasterWork = PngCheckRasterWork }, out var skippedText, out var skippedImages);
 
             if (skippedText > 0)
             {
@@ -264,7 +298,7 @@ public static class BinkDocumentLab
 
             if (skippedImages > 0)
             {
-                notes.Add($"BinkPngExporter skipped {skippedImages} image(s): the server-side path decodes only embedded PNG data URIs. BinkCanvas.ExportPngAsync renders in the browser and draws every format the browser decodes.");
+                notes.Add($"BinkPngExporter skipped {skippedImages} image(s): the server-side path decodes only embedded PNG data URIs, and this check decodes at most {PngCheckImagePixels} image pixels, far fewer than BinkPngExportOptions.MaxPixels allows by default. BinkCanvas.ExportPngAsync renders in the browser and draws every format the browser decodes.");
             }
 
             return new BinkPngReportDto

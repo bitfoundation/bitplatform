@@ -34,4 +34,10 @@ public sealed class BonboardingStepContext(
 
     /// <summary>Per-session scratch state, shared by every hook in the tour.</summary>
     public IDictionary<string, object?> State => Session.State;
+
+    /// <summary>
+    /// Set inside <see cref="BonboardingStepDefinition.CanAdvance"/> to say why the user is held on the step; the
+    /// message is shown in the popover and announced. Wins over <see cref="BonboardingStepDefinition.ValidationMessage"/>.
+    /// </summary>
+    public string? ValidationMessage { get; set; }
 }

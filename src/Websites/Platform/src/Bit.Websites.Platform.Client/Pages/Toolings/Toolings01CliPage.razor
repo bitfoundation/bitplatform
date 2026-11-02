@@ -15,9 +15,9 @@
         With the bit CLI it's one command. <code>bit new</code> creates a bit Boilerplate project, installs what your machine is missing,
         builds it, starts it and opens it in your editor, ready for you and your AI assistant to work on.
     </BitText>
-    <CodeBox>dotnet tool install --global Bit.Cli --version 10.7.0-pre-04
+    <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-16
 bit new MyApp</CodeBox>
-    Or run it once without installing it: <code>dnx Bit.Cli --version 10.7.0-pre-04 -- new MyApp</code>
+    Or run it once without installing it: <code>dnx Bit.Cli --version 11.0.0-pre-16 -- new MyApp</code>
     <br />
     <br />
 
@@ -55,12 +55,12 @@ bit new MyApp</CodeBox>
             <ol>
                 <li>Checks this machine and installs what the project needs and you tick: the .NET SDK, Node.js, Git, a container runtime that's free for commercial use, the Aspire CLI, VS Code and more. The versions come from the project, and anything already installed isn't shown.</li>
                 <li>Warns, only when it's sure, about hardware that makes development slow: virtualization turned off, less than 15 GB of memory, or a hard disk instead of an SSD.</li>
-                <li>Creates the project with a development certificate of its own, and initializes git with <b>develop</b> and <b>main</b>.</li>
-                <li>Installs the build tools the chosen platforms need, restores the packages, builds, and installs the browser the UI tests run in.</li>
-                <li>Formats the code and adds the initial database migration, each in a commit of its own.</li>
-                <li>With <code>--github-repo</code>, creates a private GitHub repository and pushes to it.</li>
-                <li>Trusts the folder for the AI coding tools and installs the VS Code extensions the project recommends.</li>
-                <li>Starts the project, opens it in VS Code, then opens the Aspire dashboard and the app in your browser.</li>
+                <li>Creates the project with a development certificate and web push keys of its own, and initializes git with <b>develop</b> and <b>main</b>.</li>
+                <li>Builds the project's Workbench and opens it in your browser first, then installs the WebAssembly build tools, restores the packages, builds the web app, and installs the browser the UI tests run in.</li>
+                <li>Adds the initial database migration in a commit of its own, trusts the folder for the AI coding tools and installs the VS Code extensions the project recommends.</li>
+                <li>Starts the project and opens the Aspire dashboard and the app in your browser.</li>
+                <li>Formats the code in a commit of its own and, with <code>--github-repo</code>, creates a private GitHub repository and pushes to it.</li>
+                <li>Installs the build tools of the native apps you picked and builds them while the project runs, then opens the project in VS Code.</li>
             </ol>
             A step that fails doesn't stop the rest: the summary lists the commands that finish whatever didn't work.
             <CodeBox>bit new Contoso.Shop
@@ -96,7 +96,7 @@ bit new Contoso.Shop --dry-run</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>In CI</BitText>
             <code>bit new</code> and <code>bit setup</code> prepare CI machines too, so a pipeline needs no steps of its own for Node.js, build tools, Playwright or the development certificate.
             The pipelines bit Boilerplate ships install bit once per job and let it build:
-            <CodeBox>dotnet tool install --global Bit.Cli --version 10.7.0-pre-04
+            <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-16
 bit setup --platforms android --no-browsers --yes</CodeBox>
             In CI it installs what a build and its tests need, and leaves alone what only a developer's machine needs, such as containers and the Aspire CLI.
         </div>

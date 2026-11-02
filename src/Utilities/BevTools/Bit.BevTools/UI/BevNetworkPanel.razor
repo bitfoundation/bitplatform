@@ -1,33 +1,98 @@
 ﻿@namespace Bit.BevTools
 @inherits BevToolsTab
 
+@if (Ui.GetQuery("network-view") == "ws")
+{
+    <div class="bev-split" style="flex-direction:column"><BevTrafficView /></div>
+    return;
+}
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:58%">
         <div class="bev-toolbar">
-            <input type="text" placeholder='Filter: url text, method:GET, status:failed|pending|2xx|4xx|5xx' value="@Query" @oninput="OnQuery" />
-            <button type="button" @onclick="() => Session.Http.Clear()">Clear</button>
-            <span class="bev-muted bev-nowrap">@_rows.Count / @_all.Length · @Session.Http.FailedCount failed</span>
+            <input type="text" aria-label="Filter requests" placeholder='Filter: url text, method:GET, status:failed|cancelled|pending|2xx|4xx|5xx' @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
+            <span class="bev-segmented" role="group" aria-label="Show">
+                <button type="button" aria-pressed="@(View.ByEndpoint ? "false" : "true")" @onclick="() => ShowEndpoints(false)">Requests</button>
+                <button type="button" aria-pressed="@(View.ByEndpoint ? "true" : "false")" title="One row per endpoint, with ids in the path as {id}: counts, failures, p50/p95 durations, bytes" @onclick="() => ShowEndpoints(true)">Endpoints</button>
+            </span>
+            <button type="button" @onclick="Clear">Clear</button>
+            <button type="button" title="The page's WebSockets: the Blazor Server circuit and SignalR hub connections" @onclick="ShowTraffic">WebSockets (@Session.Browser.Sockets.Count)</button>
+            <span class="bev-muted bev-nowrap">@(View.ByEndpoint ? _endpoints.Count + " endpoints · " + _filtered + " requests" : _rows.Count + " / " + _all.Length) · @Session.Http.FailedCount failed</span>
         </div>
+        @if (!View.ByEndpoint && View.Endpoint is { } endpoint)
+        {
+            <div class="bev-toolbar">
+                <span class="bev-muted">Endpoint</span> <span class="bev-chip bev-on bev-mono">@endpoint</span>
+                <button type="button" aria-label="Show the requests to every endpoint" @onclick="ClearEndpoint">✕</button>
+            </div>
+        }
         @* overflow inline too: Virtualize picks its scroll root when it first renders, which can be before the stylesheet applies. *@
         <div class="bev-scroll" style="overflow:auto">
-            @if (_rows.Count == 0)
+            @if (_all.Length == 0)
             {
                 <div class="bev-empty">No HTTP requests captured. Requests made through IHttpClientFactory clients are tracked automatically; hand-built HttpClient instances need <code>BevToolsHttpMessageHandler</code>.</div>
+            }
+            else if (View.ByEndpoint)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <BevSortHeader Key="endpoint" Label="Endpoint" Numeric="false" Active="@(View.Endpoints.Key == "endpoint")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <BevSortHeader Key="requests" Label="Requests" Active="@(View.Endpoints.Key == "requests")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <BevSortHeader Key="failed" Label="Failed" Title="Errors and 4xx/5xx responses; cancelled requests are counted apart" Active="@(View.Endpoints.Key == "failed")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <BevSortHeader Key="p50" Label="p50" Title="Median duration of the completed requests" Active="@(View.Endpoints.Key == "p50")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <BevSortHeader Key="p95" Label="p95" Title="95th percentile duration of the completed requests (nearest rank)" Active="@(View.Endpoints.Key == "p95")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <BevSortHeader Key="max" Label="Max" Active="@(View.Endpoints.Key == "max")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <BevSortHeader Key="bytes" Label="Received" Title="Response bodies, as the transport reported them" Active="@(View.Endpoints.Key == "bytes")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <BevSortHeader Key="last" Label="Last" Active="@(View.Endpoints.Key == "last")" Ascending="View.Endpoints.Ascending" OnSort="SortEndpoints" />
+                            <th>Sent from</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var e in _endpoints)
+                        {
+                            <tr class="bev-row @(e.Failed > 0 ? "bev-sev-error" : "")" @onclick="() => OpenEndpoint(e.Endpoint)">
+                                <td class="bev-mono bev-truncate" style="max-width:340px"><button type="button" class="bev-link bev-mono" title="@e.Endpoint: show its requests (@e.DistinctUrls different URL@(e.DistinctUrls == 1 ? "" : "s"))" @onclick:stopPropagation="true" @onclick="() => OpenEndpoint(e.Endpoint)">@WithoutOrigin(e.Endpoint)</button></td>
+                                <td class="bev-num">@e.Requests</td>
+                                <td class="bev-num @(e.Failed > 0 ? "bev-err" : "")">@e.Failed@(e.Cancelled > 0 ? " · " + e.Cancelled + " cancelled" : "")</td>
+                                <td class="bev-num">@BevFmt.Ms(e.P50Ms)</td>
+                                <td class="bev-num">@BevFmt.Ms(e.P95Ms)</td>
+                                <td class="bev-num">@BevFmt.Ms(e.MaxMs)</td>
+                                <td class="bev-num">@BevFmt.Bytes(e.ResponseBytes)</td>
+                                <td class="bev-num" title="@BevFmt.Time(e.LastAt)">@BevFmt.Ago(e.LastAt)@(e.LastStatus is { } status ? " · " + status : "")</td>
+                                <td class="bev-mono bev-truncate" style="max-width:220px" title="@string.Join(", ", e.Callers.Select(c => c.Component + " ×" + c.Requests))">@(e.Callers.Count == 0 ? "–" : e.Callers[0].Component + (e.Callers[0].Requests > 1 ? " ×" + e.Callers[0].Requests : "") + (e.CallerCount > 1 ? " +" + (e.CallerCount - 1) : ""))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else if (_rows.Count == 0)
+            {
+                <div class="bev-empty">No request matches.</div>
             }
             else
             {
                 <table>
-                    <thead><tr><th>Time</th><th>Method</th><th>URL</th><th class="bev-num">Status</th><th class="bev-num">Duration</th><th class="bev-num">Size</th><th>Trigger</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <BevSortHeader Key="time" Label="Time" Numeric="false" Active="@(View.Requests.Key == "time")" Ascending="View.Requests.Ascending" OnSort="SortRequests" />
+                            <BevSortHeader Key="method" Label="Method" Numeric="false" Active="@(View.Requests.Key == "method")" Ascending="View.Requests.Ascending" OnSort="SortRequests" />
+                            <BevSortHeader Key="url" Label="URL" Numeric="false" Active="@(View.Requests.Key == "url")" Ascending="View.Requests.Ascending" OnSort="SortRequests" />
+                            <BevSortHeader Key="status" Label="Status" Active="@(View.Requests.Key == "status")" Ascending="View.Requests.Ascending" OnSort="SortRequests" />
+                            <BevSortHeader Key="duration" Label="Duration" Active="@(View.Requests.Key == "duration")" Ascending="View.Requests.Ascending" OnSort="SortRequests" />
+                            <BevSortHeader Key="size" Label="Size" Active="@(View.Requests.Key == "size")" Ascending="View.Requests.Ascending" OnSort="SortRequests" />
+                            <th>Trigger</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <Virtualize Items="_rows" ItemSize="23" Context="r" SpacerElement="tr">
-                            <tr class="bev-row @(Ui.SelectedHttpId == r.Id ? "bev-selected" : "") @(r.IsFailed ? "bev-sev-error" : "")" @onclick="() => { Ui.SelectedHttpId = r.Id; Ui.Touch(); }">
+                            <tr class="bev-row @(Ui.SelectedHttpId == r.Id ? "bev-selected" : "") @(r.IsFailed ? "bev-sev-error" : r.IsCancelled ? "bev-sev-warning" : "")" @onclick="() => { Ui.SelectedHttpId = r.Id; Ui.Touch(); }">
                                 <td class="bev-mono">@BevFmt.Time(r.StartedAt)</td>
                                 <td class="bev-mono">@r.Method</td>
                                 <td class="bev-mono bev-truncate" style="max-width:320px" title="@r.Url">@BevToolsHttpMessageHandler.StripOrigin(r.Url)</td>
-                                <td class="bev-num @(r.IsFailed ? "bev-err" : "")">@(r.Error is not null ? "ERR" : r.StatusCode?.ToString() ?? "…")</td>
+                                <td class="bev-num @(r.IsFailed ? "bev-err" : r.IsCancelled ? "bev-warn" : "")" title="@(r.IsCancelled ? r.Error : null)">@(r.IsCancelled ? "cancelled" : r.Error is not null ? "ERR" : r.StatusCode?.ToString() ?? "…")</td>
                                 <td class="bev-num">@(r.IsPending ? "pending" : BevFmt.Ms(r.DurationMs))</td>
                                 <td class="bev-num">@BevFmt.Bytes(r.ResponseBytes)</td>
-                                <td class="bev-truncate bev-muted" style="max-width:180px" title="@r.TriggerDescription">@(r.TriggerDescription ?? "–")</td>
+                                <td class="bev-truncate bev-muted" style="max-width:180px" title="@(string.Join(" · ", new[] { r.TriggerDescription, r.Caller is null ? null : "from " + r.Caller }.Where(t => t is not null)))">@(r.TriggerDescription ?? (r.Caller is null ? "–" : "from " + r.CallerComponent))</td>
                             </tr>
                         </Virtualize>
                     </tbody>
@@ -49,6 +114,7 @@
                         <dt>Request size</dt><dd>@BevFmt.Bytes(s.RequestBytes)</dd>
                         <dt>Response size</dt><dd>@BevFmt.Bytes(s.ResponseBytes) @(s.ContentType is null ? "" : "· " + s.ContentType)</dd>
                         <dt>Trigger</dt><dd>@if (s.TriggerEventId is { } t) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(t)">@s.TriggerDescription ↗</button> } else { <span class="bev-muted">not inside a UI event (lifecycle method, timer or background work)</span> }</dd>
+                        <dt>Sent from</dt><dd class="bev-mono">@if (s.CallerComponent is { } component) { @component @if (s.CallerVia is { } via) { <span class="bev-muted"> via @via</span> } } else if (s.CallerMissing is { } missing) { <span class="bev-muted" style="font-family:inherit">@missing</span> } else { <span class="bev-muted" style="font-family:inherit">not captured (CaptureHttpCallers is off)</span> }</dd>
                         <dt>Timeline</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectEvent(s.TimelineEventId)">open event ↗</button></dd>
                     </dl>
                     <div class="bev-muted" style="margin-top:4px">Bodies are never captured. Sensitive headers and query values are redacted.</div>
@@ -83,8 +149,19 @@
 @code {
     private string? Query => Ui.GetQuery("network");
 
+    private void ShowTraffic()
+    {
+        Ui.SetQuery("network-view", "ws");
+        Ui.Touch();
+        Host.RefreshView();
+    }
+
+    private BevNetworkView View => Ui.Network;
+
     private BevHttpRecord[] _all = [];
     private List<BevHttpRecord> _rows = [];
+    private List<BevHttpEndpointSummary> _endpoints = [];
+    private int _filtered;
     private BevHttpRecord? _selected;
     private int _duplicates;
 
@@ -94,12 +171,13 @@
         var filter = BevQueryFilter.Parse(Query);
         var status = filter.Token("status");
         var method = filter.Token("method");
-        _rows = _all.Reverse().Where(r =>
-            filter.MatchesText(r.Url, r.Method, r.TriggerDescription, r.Error)
+        var matching = _all.Where(r =>
+            filter.MatchesText(r.Url, r.Method, r.TriggerDescription, r.Error, r.Caller)
             && (method is null || r.Method.Equals(method, StringComparison.OrdinalIgnoreCase))
             && (status is null || status.ToLowerInvariant() switch
             {
                 "failed" => r.IsFailed,
+                "cancelled" => r.IsCancelled,
                 "pending" => r.IsPending,
                 "2xx" => r.StatusCode is >= 200 and < 300,
                 "3xx" => r.StatusCode is >= 300 and < 400,
@@ -107,13 +185,101 @@
                 "5xx" => r.StatusCode is >= 500,
                 var code => r.StatusCode?.ToString() == code,
             })).ToList();
+        _filtered = matching.Count;
+        if (View.Endpoint is { } shown && !_all.Any(r => r.EndpointTemplate == shown))
+        {
+            // Cleared, or every request to it left the buffer: nothing is left to filter by.
+            View.Endpoint = null;
+        }
+
+        if (View.ByEndpoint)
+        {
+            var ascending = View.Endpoints.Ascending;
+            var endpoints = BevHttpEndpoints.Summarize(matching);
+            _endpoints = (View.Endpoints.Key switch
+            {
+                "endpoint" => Ordered(endpoints, e => e.Endpoint, ascending),
+                "requests" => Ordered(endpoints, e => e.Requests, ascending),
+                "failed" => Ordered(endpoints, e => e.Failed, ascending),
+                "p50" => Ordered(endpoints, e => e.P50Ms ?? -1, ascending),
+                "p95" => Ordered(endpoints, e => e.P95Ms ?? -1, ascending),
+                "max" => Ordered(endpoints, e => e.MaxMs ?? -1, ascending),
+                "bytes" => Ordered(endpoints, e => e.ResponseBytes ?? -1, ascending),
+                "last" => Ordered(endpoints, e => e.LastAt, ascending),
+                _ => Ordered(endpoints, e => e.Requests, ascending),
+            }).ThenBy(e => e.Endpoint, StringComparer.Ordinal).ToList();
+            _rows = [];
+        }
+        else
+        {
+            var requests = View.Endpoint is { } endpoint ? matching.Where(r => r.EndpointTemplate == endpoint) : matching;
+            var ascending = View.Requests.Ascending;
+            _rows = (View.Requests.Key switch
+            {
+                "method" => Ordered(requests, r => r.Method, ascending),
+                "url" => Ordered(requests, r => r.Url, ascending),
+                // A request that failed without a response is worse than any status; pending and cancelled ones have
+                // none yet and sort below every response.
+                "status" => Ordered(requests, r => r.IsCancelled ? -2 : r.Error is not null && r.StatusCode is null ? 600 : r.StatusCode ?? -1, ascending),
+                "duration" => Ordered(requests, r => r.DurationMs ?? -1, ascending),
+                "size" => Ordered(requests, r => r.ResponseBytes ?? -1, ascending),
+                _ => Ordered(requests, r => r.Id, ascending),
+            }).ThenByDescending(r => r.Id).ToList();
+            _endpoints = [];
+        }
+
         _selected = Ui.SelectedHttpId is { } id ? Session.Http.Find(id) : null;
         _duplicates = _selected is null ? 0 : _all.Count(r => r.Signature == _selected.Signature);
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("network", e.Value?.ToString());
+        Ui.SetQuery("network", value);
+        OnParametersSet();
+    }
+
+    /// <summary>"GET /api/orders/{id}": the method, then the address without its origin, as the request list shows it.</summary>
+    private static string WithoutOrigin(string endpoint) =>
+        endpoint.IndexOf(' ') is var space and > 0 ? endpoint[..(space + 1)] + BevToolsHttpMessageHandler.StripOrigin(endpoint[(space + 1)..]) : endpoint;
+
+    private static IOrderedEnumerable<T> Ordered<T, TKey>(IEnumerable<T> rows, Func<T, TKey> key, bool ascending) =>
+        ascending ? rows.OrderBy(key) : rows.OrderByDescending(key);
+
+    private void Clear()
+    {
+        Session.Http.Clear();
+        View.Endpoint = null;
+        OnParametersSet();
+    }
+
+    private void ShowEndpoints(bool byEndpoint)
+    {
+        View.ByEndpoint = byEndpoint;
+        OnParametersSet();
+    }
+
+    private void OpenEndpoint(string endpoint)
+    {
+        View.Endpoint = endpoint;
+        View.ByEndpoint = false;
+        OnParametersSet();
+    }
+
+    private void ClearEndpoint()
+    {
+        View.Endpoint = null;
+        OnParametersSet();
+    }
+
+    private void SortRequests(string key)
+    {
+        View.Requests.Select(key, ascendingFirst: key is "method" or "url");
+        OnParametersSet();
+    }
+
+    private void SortEndpoints(string key)
+    {
+        View.Endpoints.Select(key, ascendingFirst: key == "endpoint");
         OnParametersSet();
     }
 }

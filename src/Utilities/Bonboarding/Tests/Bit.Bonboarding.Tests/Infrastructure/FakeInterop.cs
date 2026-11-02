@@ -23,6 +23,9 @@ internal sealed class FakeInterop : IBonboardingInterop
     /// <summary>Element reference ids that currently "exist".</summary>
     public HashSet<string> ExistingElements { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>Selectors the fake browser "cannot parse", reported as the real one reports them.</summary>
+    public HashSet<string> InvalidSelectors { get; } = new(StringComparer.Ordinal);
+
     public BonboardingRect TargetRect { get; set; } = new(100, 100, 120, 40);
 
     public BonboardingRect Viewport { get; set; } = new(0, 0, 1024, 768);
@@ -89,7 +92,14 @@ internal sealed class FakeInterop : IBonboardingInterop
         Throw();
         Activations.Add(activation);
 
-        var reply = Measure(activation.Target, activation.AdditionalTargets);
+        var invalid = new[] { activation.Target }.Concat(activation.AdditionalTargets ?? [])
+            .Select(descriptor => descriptor.Selector)
+            .FirstOrDefault(selector => selector is not null && InvalidSelectors.Contains(selector));
+
+        var reply = invalid is null
+            ? Measure(activation.Target, activation.AdditionalTargets)
+            : Measure(BonboardingTargetDescriptor.None, null) with { InvalidSelector = invalid };
+
         if (DuringActivation is { } during) await during(activation);
 
         return reply;
@@ -252,6 +262,60 @@ internal sealed class FakeInterop : IBonboardingInterop
         BonboardingTargetKind.Element => descriptor.Element is { } element && ExistingElements.Contains(element.Id),
         _ => false,
     };
+
+    // ---- Other tabs ---------------------------------------------------------
+
+    private readonly List<(string Prefix, Func<string?, ValueTask> Callback)> _storageWatchers = [];
+
+    public ValueTask WatchStorageAsync(string prefix, Func<string?, ValueTask> onChanged, CancellationToken cancellationToken = default)
+    {
+        Throw();
+        _storageWatchers.Add((prefix, onChanged));
+        return ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// Writes (or with a null value, removes) a storage entry as another tab of the site would, and delivers the
+    /// storage event that tab's write raises here. A null key clears the whole storage.
+    /// </summary>
+    public async Task ChangeStorageInAnotherTabAsync(string? key, string? value)
+    {
+        if (key is null) Storage.Clear();
+        else if (value is null) Storage.Remove(key);
+        else Storage[key] = value;
+
+        foreach (var (prefix, callback) in _storageWatchers.ToArray())
+        {
+            if (key is null || key.StartsWith(prefix, StringComparison.Ordinal)) await callback(key);
+        }
+    }
+
+    // ---- Beacons ----------------------------------------------------------
+
+    /// <summary>The beacons the browser layer is positioning, by beacon id.</summary>
+    public Dictionary<string, BonboardingBeaconActivation> Beacons { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Every target focus was moved to, oldest first.</summary>
+    public List<BonboardingTargetDescriptor> FocusedTargets { get; } = [];
+
+    public ValueTask AttachBeaconAsync(BonboardingBeaconActivation activation, ElementReference beacon, CancellationToken cancellationToken = default)
+    {
+        Throw();
+        Beacons[activation.BeaconId] = activation;
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask DetachBeaconAsync(string beaconId, CancellationToken cancellationToken = default)
+    {
+        Beacons.Remove(beaconId);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask FocusTargetAsync(BonboardingTargetDescriptor target, CancellationToken cancellationToken = default)
+    {
+        FocusedTargets.Add(target);
+        return ValueTask.CompletedTask;
+    }
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

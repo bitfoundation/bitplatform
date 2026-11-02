@@ -1,0 +1,42 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of an image part view inherits down to every image part view under it:
+//   --bit-AiImagePartView-radius               corner radius of the image     (default: $shp-radius-surface)
+//   --bit-AiImagePartView-caption-color        text color of the caption      (default: $clr-fg-ter)
+//   --bit-AiImagePartView-caption-font-size    text size of the caption       (default: $tg-fs-xs)
+//   --bit-AiImagePartView-muted-color          text of a blocked image        (default: $clr-fg-sec)
+//
+// The button shown in place of an image the policy loads only on request is a BitActionButton, restyled through the
+// --bit-ActionButton-* variables or Classes.ImagePlaceholder.
+
+.bit-aiipv {
+    margin: 0;
+    min-width: 0;
+}
+
+// Never wider than the message it sits in; the height follows the width, whatever intrinsic size was declared.
+.bit-aiipv-img {
+    height: auto;
+    display: block;
+    max-width: 100%;
+    border-radius: var(--bit-AiImagePartView-radius, #{$shp-radius-surface});
+}
+
+// What is left of an image the policy blocks: its alternative text.
+.bit-aiipv-imb {
+    font-style: italic;
+    color: var(--bit-AiImagePartView-muted-color, #{$clr-fg-sec});
+}
+
+.bit-aiipv-cap {
+    margin-block-start: spacing(0.5);
+    color: var(--bit-AiImagePartView-caption-color, #{$clr-fg-ter});
+    font-size: var(--bit-AiImagePartView-caption-font-size, #{$tg-fs-xs});
+}
+
+@media print {
+    .bit-aiipv {
+        break-inside: avoid;
+    }
+}

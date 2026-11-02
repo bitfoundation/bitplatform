@@ -1,0 +1,38 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.card {
+    gap: 0.625rem;
+    display: flex;
+    padding: 0.875rem;
+    border-radius: 14px;
+    flex-direction: column;
+    background-color: $bit-color-background-primary;
+    border: 1px solid $bit-color-border-tertiary;
+}
+
+.stock-row {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.stock-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.stock-order {
+    gap: 0.25rem;
+    display: flex;
+    min-width: 3.5rem;
+    font-size: 13px;
+    font-weight: 600;
+    align-items: center;
+    justify-content: flex-end;
+    color: $bit-color-foreground-secondary;
+}

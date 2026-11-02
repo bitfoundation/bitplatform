@@ -12,6 +12,11 @@
     <Project Path="Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
     <Project Path="Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Samples/Lazy/">
+    <Project Path="Samples/Lazy/Bit.Bsqlite.Samples.Lazy.Client/Bit.Bsqlite.Samples.Lazy.Client.csproj" />
+    <Project Path="Samples/Lazy/Bit.Bsqlite.Samples.Lazy.Data/Bit.Bsqlite.Samples.Lazy.Data.csproj" />
+    <Project Path="Samples/Lazy/Bit.Bsqlite.Samples.Lazy/Bit.Bsqlite.Samples.Lazy.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />
     <Project Path="Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj" />

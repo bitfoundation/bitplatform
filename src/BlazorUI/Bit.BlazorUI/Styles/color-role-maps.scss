@@ -27,7 +27,8 @@
  * to be a fill. A foreground role (pfg/sfg/tfg) is a text color already, so its fg is simply its
  * main. A background or border role (pbg/sbg/tbg/pbr/sbr/tbr) is not: its main read as text on the
  * page is the page's own color (invisible) or a hairline's (far under the 4.5:1 of WCAG 1.4.3), so
- * its fg is its on color, the text that role is already paired with.
+ * its fg is its on color, the text that role is already paired with. The label of an unfilled
+ * control reads it through role-text() below, which differs from it for the primary role alone.
  *
  * `tint` is the role laid over a surface as a faint wash rather than as a fill - the surface of a
  * tinted message, read with `fg` on top of it. A semantic role reads its own --bit-clr-<role>-tint
@@ -391,4 +392,58 @@ $bit-background-color-roles: ();
     }
 
     @return map.get($tokens, on);
+}
+
+/*
+ * role-wash($tokens, $amount)
+ * --------------------------------------------------
+ * The role laid over the page as a translucent wash under its text rather than as a fill - the selected or hovered
+ * surface of an unfilled control, whose text (role-text, or fg) is read on top of it. A semantic role washes with
+ * its main: at the default amount that is its tint token, the wash its fg is solved to be read on, which a preset
+ * can retune; a deeper $amount mixes the main in directly. A surface role washes with its fg instead, since the main
+ * of a background role is the page itself and would wash nothing. Never the light tier: that one is a standalone
+ * pastel, which in a dark palette sits as light as the role's text.
+ */
+@function role-wash($tokens, $amount: null) {
+    @if map.get($tokens, kind) == semantic {
+        @if $amount == null {
+            @return map.get($tokens, tint);
+        }
+
+        @return color-mix(in srgb, #{map.get($tokens, main)} #{$amount}, transparent);
+    }
+
+    @return color-mix(in srgb, #{map.get($tokens, fg)} #{if($amount == null, 10%, $amount)}, transparent);
+}
+
+/*
+ * role-text($role, $tokens)
+ * --------------------------------------------------
+ * The color a role's text is drawn in when the role is READ on the page rather than filled behind its on-color - the
+ * label of an outlined or text-only button, tag or badge, a colored text. It is the role's `fg` slot (see the map
+ * above): a secondary orange or a warning amber main is picked to fill a surface and falls under the 4.5:1 of body
+ * text on white (WCAG 1.4.3), and a background role's main is the page's own color. The one exception is the
+ * primary role, which keeps its main: the brand color is the library's link color, which every packaged preset
+ * tunes to hold 4.5:1 over bg-pri, and an outlined or a text-only control is labeled in it as Material's are and as
+ * BitLink is. Its `fg` (--bit-clr-pri-fg) is still what reads over the role's tint, where the main drops under
+ * that floor - a selected outlined tag, a tinted message.
+ */
+@function role-text($role, $tokens) {
+    @if $role == pri {
+        @return map.get($tokens, main);
+    }
+
+    @return map.get($tokens, fg);
+}
+
+/*
+ * deep-wash-text($text)
+ * --------------------------------------------------
+ * The text an unfilled control draws over a wash deeper than the role's tint - the pointer's wash laid over the one a
+ * selected chip already wears - where the role's fg, solved for the tint alone, drops under 4.5:1 (a warning amber's
+ * in a light palette). It is that text leaned towards the page's own text color, which keeps the hue and holds 4.5:1
+ * there under every packaged palette (BitThemePaletteContrastTests).
+ */
+@function deep-wash-text($text) {
+    @return color-mix(in srgb, #{$text} 85%, #{$clr-fg-pri});
 }

@@ -299,6 +299,41 @@ public sealed class AdversarialAnnotationTests
         Assert.IsTrue(alternations < 40, $"{mode} left {alternations} pixel transitions inside the redacted region");
     }
 
+    /// <summary>
+    /// A document can carry any float for a redaction's strength, and scaling one can overflow it, so an infinite one or
+    /// one that is not a number still renders, and still hides what is underneath.
+    /// </summary>
+    [TestMethod]
+    [DataRow(RedactionMode.Pixelate, float.PositiveInfinity)]
+    [DataRow(RedactionMode.Pixelate, float.MaxValue)]
+    [DataRow(RedactionMode.Pixelate, float.NaN)]
+    [DataRow(RedactionMode.Blur, float.PositiveInfinity)]
+    [DataRow(RedactionMode.Blur, float.MaxValue)]
+    [DataRow(RedactionMode.Blur, float.NaN)]
+    public void ARedactionWithANonFiniteStrengthStillRenders(RedactionMode mode, float strength)
+    {
+        using var secret = ImageBuffer.Create(64, 64, Rgba32.White);
+        for (var y = 0; y < 64; y++)
+            for (var x = 0; x < 64; x++)
+                secret[x, y] = ((x / 2 + y / 2) % 2 == 0) ? Rgba32.Black : Rgba32.White;
+        var redaction = new RedactionAnnotation { Rectangle = new RectangleF(8, 8, 32, 32), Mode = mode, Strength = strength };
+
+        foreach (var scale in new[] { 1.0, 1e30 })
+        {
+            var scaled = (RedactionAnnotation)redaction.ForScale(scale) with { Rectangle = redaction.Rectangle };
+            var document = ImageDocument.Create(secret.Size).AddAnnotation(scaled);
+            using var result = secret.Clone();
+            new DocumentRenderer().RenderAnnotations(document, result);
+
+            // The pattern steps from black to white; anything near that step between neighbours is a leak.
+            var largestStep = 0;
+            for (var y = 12; y < 36; y++)
+                for (var x = 12; x < 35; x++)
+                    largestStep = Math.Max(largestStep, Math.Abs(result[x, y].R - result[x + 1, y].R));
+            Assert.IsLessThan(64, largestStep, $"{mode} at strength {strength} (scaled by {scale}) left the pattern");
+        }
+    }
+
     /// <summary>Z-order operations must be stable and must not lose or duplicate annotations.</summary>
     [TestMethod]
     public void ZOrderOperationsPreserveEveryAnnotation()

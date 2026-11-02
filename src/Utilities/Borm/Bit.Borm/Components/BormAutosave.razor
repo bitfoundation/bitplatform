@@ -1,0 +1,145 @@
+﻿@namespace Bit.Borm
+@implements IAsyncDisposable
+
+@code {
+    /// <summary>
+    /// Writes a draft of the form (see <see cref="BormDraft"/>) a moment after the user stops changing
+    /// it, and hands it to <see cref="OnSave"/> to keep wherever the application keeps such things.
+    /// Renders nothing.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A save waits for a pause rather than following every keystroke, and only a form with unsaved
+    /// changes is saved — reopening a record and leaving it alone writes nothing. A save still waiting
+    /// when the component goes away (the user navigated off the page) is made then, so the last few
+    /// answers are not the ones lost.
+    /// </para>
+    /// <para>
+    /// Clear the stored draft once the form has been submitted: this component neither knows nor cares
+    /// where it lives.
+    /// </para>
+    /// </remarks>
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+
+    /// <summary>Receives the draft to keep. A failure is reported the way any failing event handler is.</summary>
+    [Parameter, EditorRequired] public EventCallback<string> OnSave { get; set; }
+
+    /// <summary>How long the form has to stay unchanged before it is saved, in milliseconds (default 1000).</summary>
+    [Parameter] public int DelayMilliseconds { get; set; } = 1000;
+
+    /// <summary>What the draft keeps and leaves out.</summary>
+    [Parameter] public BormDraftOptions? Options { get; set; }
+
+    /// <summary>
+    /// Runs when the form is back where it started after it had changed - reset, or every change undone - so the
+    /// draft kept for it would only bring back what the user gave up: remove it. A clean form is never saved, so
+    /// without this the last draft outlived the reset, and the next visit restored it.
+    /// </summary>
+    [Parameter] public EventCallback OnDiscard { get; set; }
+
+    private BormState? _subscribed;
+    private CancellationTokenSource? _pending;
+    private bool _wasDirty;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_subscribed, State)) return;
+        Unsubscribe();
+        _subscribed = State;
+        _wasDirty = State.IsFormDirty;
+        _subscribed.FieldChanged += OnFieldChanged;
+        _subscribed.StateChanged += OnStateChanged;
+    }
+
+    private void Unsubscribe()
+    {
+        if (_subscribed is null) return;
+        _subscribed.FieldChanged -= OnFieldChanged;
+        _subscribed.StateChanged -= OnStateChanged;
+    }
+
+    // The event can be raised off the renderer's thread, so _pending is only ever touched on it.
+    private void OnFieldChanged(string path)
+    {
+        // A draft being put back is the draft already kept. Saved again at once, it came back the next time as
+        // "saved a moment ago", whatever its age.
+        if (_subscribed is { IsRestoringDraft: true }) return;
+
+        _ = InvokeAsync(() =>
+        {
+            _pending?.Cancel();
+            _pending?.Dispose();
+            var cts = _pending = new CancellationTokenSource();
+            return SaveAfterPause(cts);
+        });
+    }
+
+    private void OnStateChanged()
+    {
+        if (_subscribed is not { } state || state.IsFormDirty == _wasDirty) return;
+        _wasDirty = state.IsFormDirty;
+        if (_wasDirty || !OnDiscard.HasDelegate) return;
+
+        _ = InvokeAsync(async () =>
+        {
+            // Nothing left to save either.
+            _pending?.Cancel();
+            _pending?.Dispose();
+            _pending = null;
+            try
+            {
+                await OnDiscard.InvokeAsync();
+            }
+            catch (Exception ex)
+            {
+                await DispatchExceptionAsync(ex);
+            }
+        });
+    }
+
+    private async Task SaveAfterPause(CancellationTokenSource cts)
+    {
+        try
+        {
+            await Task.Delay(Math.Max(0, DelayMilliseconds), cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return; // Superseded by a later change, which restarts the wait.
+        }
+
+        if (!ReferenceEquals(_pending, cts)) return;
+        _pending = null;
+        cts.Dispose();
+        await SaveNow();
+    }
+
+    private async Task SaveNow()
+    {
+        if (_subscribed is not { IsFormDirty: true } state) return;
+        try
+        {
+            await OnSave.InvokeAsync(BormDraft.Serialize(state, Options));
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Unsubscribe();
+
+        // A save still waiting out its pause is made now: the user's last changes are the likeliest to
+        // be the ones that matter, and the page they were made on is going away.
+        if (_pending is { } pending)
+        {
+            _pending = null;
+            pending.Cancel();
+            pending.Dispose();
+            await SaveNow();
+        }
+        _subscribed = null;
+    }
+}

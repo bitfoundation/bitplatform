@@ -6,8 +6,28 @@ public sealed class BdndNativeDropEventArgs
     /// <summary>The matched native item type (one of <see cref="BdndNativeTypes"/>).</summary>
     public required string ItemType { get; init; }
 
-    /// <summary>Files for a <see cref="BdndNativeTypes.File"/> drop.</summary>
+    /// <summary>The edge of the target the drop was closest to, of the target's <see cref="BdndDropTarget{TItem}.Edges"/>, or null.</summary>
+    public BdndEdge? ClosestEdge { get; init; }
+
+    /// <summary>
+    /// Files for a <see cref="BdndNativeTypes.File"/> drop - those of the target's
+    /// <see cref="BdndDropTarget{TItem}.AcceptFileTypes"/>, up to its <see cref="BdndDropTarget{TItem}.MaxFiles"/> - whose
+    /// contents <see cref="BdndNativeFile.OpenReadStreamAsync"/> reads.
+    /// </summary>
     public IReadOnlyList<BdndNativeFile> Files { get; init; } = [];
+
+    /// <summary>
+    /// How many files the drop carried before the target's file types and file limit were applied: more than
+    /// <see cref="Files"/> holds when some were left out, so the application can say so.
+    /// </summary>
+    public int TotalFileCount { get; init; }
+
+    /// <summary>
+    /// True when the dropped folders (<see cref="BdndDropTarget{TItem}.ExpandDirectories"/>) were not listed in full:
+    /// an entry could not be read (no permission), the walk stopped at <see cref="BdndDropTarget{TItem}.MaxFiles"/>, or a
+    /// folder held more than 10,000 entries. <see cref="TotalFileCount"/> then counts only the files the walk saw.
+    /// </summary>
+    public bool FileListIncomplete { get; init; }
 
     /// <summary>
     /// Raw data keyed by DataTransfer type (e.g. <c>text/plain</c>, <c>text/html</c>). Only the types the

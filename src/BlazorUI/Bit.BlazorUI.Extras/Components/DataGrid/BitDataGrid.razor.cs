@@ -254,6 +254,58 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// in-process with no external dependency; in server mode it covers all matching rows.</summary>
     [Parameter] public bool ShowExcelExport { get; set; }
 
+    /// <summary>Renders the toolbar's buttons - Add row, Clear filters, the CSV and Excel exports and Columns - as icons
+    /// alone, for a compact toolbar. Each button's text (<see cref="Strings"/>) stays its accessible name and is shown in a
+    /// tooltip on hover, on keyboard focus and on a touch. A button given no icon of its own draws a built-in one, from a
+    /// font the package ships: Add, ClearFilter, TextDocument, ExcelDocument and ColumnOptions.</summary>
+    /// <remarks>Each button takes its icon from a pair of parameters - <c>XIcon</c> for an external icon library (a
+    /// ligature set like Material Icons included), <c>XIconName</c> for the Fluent UI icon set of the
+    /// <c>Bit.BlazorUI.Icons</c> nuget package - shown beside the text, or in place of it in this mode. A name is drawn by
+    /// that package's stylesheet, so the app links it, and is written as a literal (a <c>BitIconName</c> constant) for a
+    /// trimmed publish to keep its glyph; a button left without either keeps its built-in glyph, which needs
+    /// neither.</remarks>
+    [Parameter] public bool ToolbarIconOnly { get; set; }
+
+    /// <summary>The icon of the Add row button, from an external icon library. Takes precedence over
+    /// <see cref="AddRowIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? AddRowIcon { get; set; }
+
+    /// <summary>The name of the icon of the Add row button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.CirclePlus</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? AddRowIconName { get; set; }
+
+    /// <summary>The icon of the Clear filters button, from an external icon library. Takes precedence over
+    /// <see cref="ClearFiltersIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ClearFiltersIcon { get; set; }
+
+    /// <summary>The name of the icon of the Clear filters button, from the Fluent UI icon set of the
+    /// <c>Bit.BlazorUI.Icons</c> nuget package (e.g. <c>BitIconName.FilterSolid</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ClearFiltersIconName { get; set; }
+
+    /// <summary>The icon of the Columns button, which opens the column chooser, from an external icon library. Takes
+    /// precedence over <see cref="ColumnChooserIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ColumnChooserIcon { get; set; }
+
+    /// <summary>The name of the icon of the Columns button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.TripleColumn</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ColumnChooserIconName { get; set; }
+
+    /// <summary>The icon of the CSV export button, from an external icon library. Takes precedence over
+    /// <see cref="CsvExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? CsvExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the CSV export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.Download</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? CsvExportIconName { get; set; }
+
+    /// <summary>The icon of the Excel export button, from an external icon library. Takes precedence over
+    /// <see cref="ExcelExportIconName"/> when both are set. See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public BitIconInfo? ExcelExportIcon { get; set; }
+
+    /// <summary>The name of the icon of the Excel export button, from the Fluent UI icon set of the <c>Bit.BlazorUI.Icons</c>
+    /// nuget package (e.g. <c>BitIconName.ExcelLogo</c>). See <see cref="ToolbarIconOnly"/>.</summary>
+    [Parameter] public string? ExcelExportIconName { get; set; }
+
     /// <summary>
     /// Base name (without extension) of the downloaded export files, so a grid can name its own
     /// downloads instead of the generic default. <c>"orders"</c> produces <c>orders.csv</c> and
@@ -303,8 +355,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public EventCallback<BitDataGridRowReorderEventArgs<TItem>> OnRowReorder { get; set; }
 
     // ------------------------------------------------------------- Selection
-    /// <summary>How rows are selected: not at all, by a row click (Single), or by a checkbox column with a select-all
-    /// box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
+    /// <summary>How rows are selected: not at all, by a row click (Single; a click on a control in a cell selects
+    /// nothing, see <see cref="OnRowClick"/>), or by a checkbox column with a select-all box (Multiple). Single makes the cells keyboard-navigable (<see cref="CellNavigation"/>), so Space can select the
     /// focused row.</summary>
     [Parameter] public BitSelectionMode SelectionMode { get; set; } = BitSelectionMode.None;
 
@@ -315,23 +367,34 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>Raised with the new selection whenever it changes.</summary>
     [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
 
-    /// <summary>Raised when a row is clicked.</summary>
+    /// <summary>
+    /// Raised when a row is clicked. A click on a control in one of its cells is the control's, not the row's: a
+    /// button, a link or a field of a template, an ARIA widget, an element in the tab sequence, an element marked
+    /// <c>data-bit-interactive</c>, the grid's own checkbox and toggles, and anything in a dialog or a grid rendered in a
+    /// cell raise neither this nor <see cref="OnCellClick"/>, and select or expand nothing. <c>data-bit-interactive</c>
+    /// opts an element of a template in (an icon with an <c>@onclick</c>), and <c>data-bit-interactive="false"</c>
+    /// opts a control out, whose clicks then reach the cell and the row too.
+    /// </summary>
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
 
     /// <summary>
     /// Raised when a row is double-clicked - the row-level counterpart of
     /// <see cref="OnCellDoubleClick"/>, and the usual hook for "open this record" or for starting an
-    /// inline edit with <see cref="BeginEdit"/>.
+    /// inline edit with <see cref="BeginEdit"/>. Not raised for a double-click on a control in one of its cells
+    /// (see <see cref="OnRowClick"/>).
     /// </summary>
     [Parameter] public EventCallback<TItem> OnRowDoubleClick { get; set; }
 
-    /// <summary>Raised when a data cell is clicked.</summary>
+    /// <summary>Raised when a data cell is clicked, unless the click is on a control in it (see <see cref="OnRowClick"/>).</summary>
     [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellClick { get; set; }
 
-    /// <summary>Raised when a data cell is double-clicked.</summary>
+    /// <summary>Raised when a data cell is double-clicked, unless the double-click is on a control in it, which opens no
+    /// editor either (see <see cref="OnRowClick"/>).</summary>
     [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellDoubleClick { get; set; }
 
-    /// <summary>Raised when a data cell is right-clicked. Useful for custom context menus.</summary>
+    /// <summary>Raised when a data cell is right-clicked. Useful for custom context menus: the browser's own menu is
+    /// suppressed while it is set. A right-click on a control in the cell (see <see cref="OnRowClick"/>) raises nothing
+    /// and keeps the browser's menu - a link's "open in a new tab", a field's "paste".</summary>
     [Parameter] public EventCallback<BitDataGridCellEventArgs<TItem>> OnCellContextMenu { get; set; }
 
     /// <summary>
@@ -470,6 +533,19 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// </summary>
     [Parameter] public EventCallback<BitDataGridState> OnStateChange { get; set; }
 
+    /// <summary>
+    /// Raised with the rows of the view across every page (see <see cref="GetViewItems"/>) once the grid has
+    /// re-rendered after they changed - the search, the filters or the sorts took rows in or out or put them in another
+    /// order, or <see cref="Items"/> did - so a map or a chart of the same rows can stay in step with the grid. Rows are
+    /// told apart by <see cref="KeyField"/> (by reference without one), so a source handing over new instances of the
+    /// same rows on every render needs a <see cref="KeyField"/> not to be taken for a new view each time. Raised only in
+    /// the modes that work the view out of <see cref="Items"/> (a list, a tree, or an <see cref="IQueryable{T}"/>, where
+    /// a change that can alter the view costs a query of the whole of it, unless one page holds it all); server
+    /// (<see cref="OnRead"/>) and infinite-scrolling (<see cref="OnLoadMore"/>) modes only ever hold a window of it,
+    /// which <see cref="GetViewItemsAsync"/> reads in full. The list handed over is read-only.
+    /// </summary>
+    [Parameter] public EventCallback<IReadOnlyList<TItem>> OnViewChange { get; set; }
+
     // -------------------------------------------------------- Master detail
     /// <summary>
     /// Renders the expand/collapse toggle column on the inline-start edge of every row while a
@@ -483,8 +559,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Expands (and collapses) a row's detail content when the row itself is clicked, so the toggle
     /// button is no longer the only way in. Combines with <see cref="SelectionMode"/>: a click both
-    /// selects the row and toggles its detail. Clicks inside the reorder/select/command cells are
-    /// excluded, since those cells own their own interaction.
+    /// selects the row and toggles its detail. Clicks inside the reorder/detail/select/command cells and on a
+    /// control in a cell (see <see cref="OnRowClick"/>) are excluded, since those own their own interaction.
     /// </summary>
     [Parameter] public bool ExpandDetailOnRowClick { get; set; }
 
@@ -569,6 +645,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     private IReadOnlyList<TItem> _view = Array.Empty<TItem>();      // filtered + sorted (full)
     private IReadOnlyList<TItem> _pageItems = Array.Empty<TItem>(); // current page slice
+    // The rows OnViewChange was last raised with (a read-only copy: the view can be the parent's own list, changed in
+    // place, and the handler gets this very list), and whether a refresh since the last render may have changed them.
+    private IReadOnlyList<TItem>? _lastViewItems;
+    private bool _viewMayHaveChanged;
+    // The row RevealItemAsync scrolls into view once the render it asked for has put it on screen.
+    private TItem? _revealItem;
+    private bool _revealPending;
     private List<BitDataGridGroup<TItem>>? _viewGroups;
     private List<BitDataGridAggregateResult> _footerAggregates = new();
     private int _totalCount;
@@ -633,14 +716,20 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private DotNetObjectReference<BitDataGrid<TItem>>? _gridSelfRef;
     private IJSObjectReference? _pointerReorderHandle;
     private bool _pointerReorderAttached;
-    private bool _nestedSurfaceKeysWatched;
+    private bool _nestedTargetsWatched;
 
     // select-all indeterminate state ("some but not all selected") is a DOM property, not an HTML
     // attribute, so Blazor markup can't express it; it is synced via a small JS call after render.
     private ElementReference _selectAllCheckbox;
 
-    // The column chooser's toggle, which takes the focus back when Escape closes the panel from inside it.
-    private ElementReference _columnChooserButton;
+    // The buttons of the toolbar, built on the first parameters and brought up to date by every later set of them
+    // (UpdateToolbarButtons), so the grid's own renders - a sort, a keystroke of a filter, a page - resolve no icon and
+    // build no class again. The column chooser's toggle also takes the focus back when Escape closes the panel.
+    private ToolbarButton? _addRowButton;
+    private ToolbarButton? _clearFiltersButton;
+    private ToolbarButton? _csvExportButton;
+    private ToolbarButton? _excelExportButton;
+    private ToolbarButton? _columnChooserButton;
     private bool? _lastIndeterminate;
 
     // Maps row key -> absolute 0-based position in the full data view, rebuilt whenever the view
@@ -767,6 +856,9 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     // Cancels superseded in-flight OnRead/OnLoadMore requests.
     private CancellationTokenSource? _loadCts;
+    // Cancelled when the grid is disposed, for the reads a caller starts (GetViewItemsAsync) that are not superseded by
+    // the grid's own loads.
+    private readonly CancellationTokenSource _disposalCts = new();
     // Monotonic load version; bumped on every (re)load so a superseded response can detect it is stale.
     private int _loadVersion;
 
@@ -998,7 +1090,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 _groups[i] = new BitDataGridGroupDescriptor { ColumnId = column.Id, Direction = _groups[i].Direction };
         }
 
-        InvokeAsync(RefreshAsync);
+        // A server-sortable template column that lost its ColumnId now goes by a generated id, which no server
+        // orders by: its sort goes rather than travel under that id.
+        if (DropSortWithoutKey(column)) InvokeAsync(RefreshWithoutDroppedSortAsync);
+        else InvokeAsync(RefreshAsync);
     }
 
     // ------------------------------------------------------- Lifecycle
@@ -1009,6 +1104,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         // The razor markup dereferences Strings unconditionally; tolerate an explicit null.
         Strings ??= new BitDataGridStrings();
+
+        UpdateToolbarButtons();
+
+        // Without a handler the rows OnViewChange was last raised with are of no use, and holding them would keep every
+        // row of that view alive; a handler bound (again) is told the view after the render, whatever it last was.
+        if (!OnViewChange.HasDelegate) _lastViewItems = null;
+        else if (_lastViewItems is null) _viewMayHaveChanged = true;
 
         // Server mode (OnRead) and infinite-scrolling mode (OnLoadMore) drive paging, total count and
         // ARIA state in mutually exclusive ways. Allowing both would let RefreshAsync behave like
@@ -1147,7 +1249,11 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     /// <summary>Recomputes the data view (filter → sort → group → page).</summary>
-    public async Task RefreshAsync()
+    public Task RefreshAsync() => RefreshAsync(viewRowsKept: false);
+
+    // viewRowsKept: what changed only moves which rows of the view are on screen - another page or page size, a tree
+    // branch opened or closed - so the rows OnViewChange reports, every page's and every branch's, are as they were.
+    private async Task RefreshAsync(bool viewRowsKept)
     {
         if (IsInfiniteMode)
         {
@@ -1200,8 +1306,41 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // and the removed rows would stay selected/expanded (and strongly referenced). Pruning here
             // covers that path too; tree sources keep their own expand state and are left alone.
             if (!IsTreeMode) await PruneStaleRowStateAsync();
+
+            // Whether the rows did change is worked out once, after the render (see TakeViewChange), however many
+            // refreshes led up to it - a column registering refreshes too.
+            if (!viewRowsKept) _viewMayHaveChanged = true;
         }
         StateHasChanged();
+    }
+
+    // The rows of the view when they differ from the ones OnViewChange was last raised with, or null when they do not,
+    // when nothing handles the event, or when the grid holds only a window of the view. Compared rather than raised on
+    // every refresh: a list source refreshes on every render of the parent, which the callback itself re-renders - and
+    // compared by KeyEquals, so a parent handing over new instances of the same rows does not raise it all over again.
+    private IReadOnlyList<TItem>? TakeViewChange()
+    {
+        if (!OnViewChange.HasDelegate || IsServerMode || IsInfiniteMode)
+        {
+            _lastViewItems = null;
+            return null;
+        }
+
+        var rows = GetSyncExportRows();
+        if (_lastViewItems is not null && SameRows(_lastViewItems, rows)) return null;
+
+        return _lastViewItems = Array.AsReadOnly(rows.ToArray());
+    }
+
+    // Whether two lists hold the same rows in the same order, told apart the way the grid tells rows apart.
+    private bool SameRows(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
+    {
+        if (a.Count != b.Count) return false;
+        for (var i = 0; i < a.Count; i++)
+        {
+            if ((a[i] is null) != (b[i] is null) || (a[i] is not null && !KeyEquals(a[i], b[i]))) return false;
+        }
+        return true;
     }
 
     // ---------------------------------------------- Server-side virtualization
@@ -1501,7 +1640,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         }
 
         // A grouped view shows its rows in group order, which is what the row numbers count by.
-        RebuildRowIndexMap(_viewGroups is not null ? FlattenGroups(_viewGroups) : _pageItems,
+        RebuildRowIndexMap(_viewGroups is not null ? ViewInDisplayOrder : _pageItems,
             _groups.Count == 0 && Pageable ? (_currentPage - 1) * _effectivePageSize : 0);
         ReconcileEditState();
     }
@@ -1565,7 +1704,19 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         var flat = new List<TItem>();
         _treeMeta.Clear();
-        Walk(roots, 0, keepAll: false);
+        WalkTree(roots, (item, ancestors, children) =>
+        {
+            // In lazy mode an unloaded node's expandability comes from HasChildrenSelector (the
+            // children themselves don't exist locally yet). Once the children are loaded (or a
+            // selector provides them) the real list wins, so a node whose fetch returned no
+            // children drops its expand toggle even when the selector claimed it had some.
+            var hasChildren = ChildrenProvider is not null && children is null
+                ? HasChildrenSelector?.Invoke(item) ?? false
+                : children is { Count: > 0 };
+            _treeMeta[GetKey(item)] = (ancestors.Count, hasChildren);
+            flat.Add(item);
+            return IsTreeRowExpanded(item) ? TreeStep.Into : TreeStep.Over;
+        });
 
         _treeRows = flat;
         _view = flat;
@@ -1573,34 +1724,57 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         _viewGroups = null;
         _footerAggregates = BitDataGridDataProcessor.Aggregate(flat, _columns);
         RebuildRowIndexMap(flat, 0);
+    }
 
-        // keepAll marks a subtree whose ancestor matched the criteria itself: everything under a
-        // matching node stays, the way Excel's and AG Grid's tree filters treat a matching group.
-        void Walk(IEnumerable<TItem> siblings, int level, bool keepAll)
+    // Where a walk of the tree goes after a node (see WalkTree).
+    private enum TreeStep { Over, Into, Stop }
+
+    /// <summary>
+    /// Walks the hierarchy the way the view shows it - every level sorted, and while a search or a filter is active only
+    /// the branches that hold a match, all of a node's subtree when the node matched the criteria itself (the way Excel's
+    /// and AG Grid's tree filters treat a matching group) - the one walk behind the rendered rows, the exports and
+    /// RevealItemAsync, so they never disagree on which rows are in the view. <paramref name="visit"/> gets each node,
+    /// the nodes it sits under (outermost first; a live list, copied to keep it) and its children as the view keeps them
+    /// (null while a lazy node's are not loaded), and says whether to walk into them, past them or no further. A node is
+    /// never walked into from beneath itself, so a self-referencing hierarchy ends.
+    /// </summary>
+    private void WalkTree(IEnumerable<TItem> roots, Func<TItem, IReadOnlyList<TItem>, IReadOnlyList<TItem>?, TreeStep> visit)
+    {
+        var filtering = TreeFilteringActive;
+        var ancestors = new List<TItem>();
+        var ancestorKeys = new HashSet<object>();
+        IReadOnlyList<TItem> top = roots as IReadOnlyList<TItem> ?? roots.ToList();
+        Walk(filtering ? top.Where(Kept).ToList() : top, keepAll: false);
+
+        bool Kept(TItem node) => node is not null && KeepTreeNode(node);
+
+        // Walks siblings the criteria already pruned; false once the visit has stopped the walk.
+        bool Walk(IReadOnlyList<TItem> siblings, bool keepAll)
         {
-            var source = siblings as IReadOnlyList<TItem> ?? siblings.ToList();
-            if (filtering && !keepAll) source = source.Where(KeepTreeNode).ToList();
-            var sorted = _sorts.Count > 0
-                ? BitDataGridDataProcessor.Sort(source, _sorts, _columnsById)
-                : source;
+            var sorted = _sorts.Count > 0 ? BitDataGridDataProcessor.Sort(siblings, _sorts, _columnsById) : siblings;
             foreach (var item in sorted)
             {
+                if (item is null) continue;
+                var key = GetKey(item);
+                // A node turning up beneath itself is a cycle in the hierarchy, not another row.
+                if (ancestorKeys.Contains(key)) continue;
+
                 var subtreeKept = filtering && (keepAll || TreeNodeSelfMatches(item));
                 var children = ResolveTreeChildren(item);
-                if (filtering && !subtreeKept && children is { Count: > 0 })
-                    children = children.Where(KeepTreeNode).ToList();
-                // In lazy mode an unloaded node's expandability comes from HasChildrenSelector (the
-                // children themselves don't exist locally yet). Once the children are loaded (or a
-                // selector provides them) the real list wins, so a node whose fetch returned no
-                // children drops its expand toggle even when the selector claimed it had some.
-                var hasChildren = ChildrenProvider is not null && children is null
-                    ? HasChildrenSelector?.Invoke(item) ?? false
-                    : children is { Count: > 0 };
-                _treeMeta[GetKey(item)] = (level, hasChildren);
-                flat.Add(item);
-                if (children is { Count: > 0 } && IsTreeRowExpanded(item))
-                    Walk(children, level + 1, subtreeKept);
+                if (filtering && !subtreeKept && children is { Count: > 0 }) children = children.Where(Kept).ToList();
+
+                var step = visit(item, ancestors, children);
+                if (step == TreeStep.Stop) return false;
+                if (step == TreeStep.Over || children is not { Count: > 0 }) continue;
+
+                ancestors.Add(item);
+                ancestorKeys.Add(key);
+                var finished = Walk(children, subtreeKept);
+                ancestors.RemoveAt(ancestors.Count - 1);
+                ancestorKeys.Remove(key);
+                if (!finished) return false;
             }
+            return true;
         }
     }
 
@@ -1727,10 +1901,12 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (TreeFilteringActive)
         {
             if (_treeFilterCollapsed.Remove(key) is false) _treeFilterCollapsed.Add(key);
-            await RefreshAsync();
+            await RefreshAsync(viewRowsKept: true);
             return;
         }
 
+        // Children a lazy node loads join the view; opening or closing a branch otherwise leaves its rows as they are.
+        var childrenLoaded = false;
         if (_expandedTree.Add(key))
         {
             // Expanding a lazy node for the first time: fetch and cache its children. A re-entrant
@@ -1747,6 +1923,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 {
                     var children = await ChildrenProvider(item);
                     _loadedChildren[key] = children as IReadOnlyList<TItem> ?? children?.ToList() ?? (IReadOnlyList<TItem>)Array.Empty<TItem>();
+                    childrenLoaded = true;
                 }
                 catch
                 {
@@ -1765,7 +1942,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             _expandedTree.Remove(key);
         }
-        await RefreshAsync();
+        await RefreshAsync(viewRowsKept: !childrenLoaded);
     }
 
     /// <summary>Expands every node in the tree. No-op outside tree mode. In lazy mode
@@ -1785,7 +1962,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             ExpandTreeRecursive(Items ?? Enumerable.Empty<TItem>());
         }
-        await RefreshAsync();
+        await RefreshAsync(viewRowsKept: true);
     }
 
     /// <summary>Collapses every node in the tree. No-op outside tree mode.</summary>
@@ -1802,7 +1979,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 if (meta.HasChildren) _treeFilterCollapsed.Add(key);
             }
         }
-        await RefreshAsync();
+        await RefreshAsync(viewRowsKept: true);
     }
 
     // --------------------------------------------------- Infinite scrolling
@@ -1945,6 +2122,24 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             if (OnStateChange.HasDelegate) await OnStateChange.InvokeAsync(GetState());
         }
 
+        if (_revealPending)
+        {
+            _revealPending = false;
+            var item = _revealItem;
+            _revealItem = default;
+            if (item is not null && AriaRowIndex(item) is { } rowIndex)
+            {
+                // A virtualized row may not be rendered yet, so its place among the body's rows (each RowHeight tall
+                // there) goes along to scroll to when it is not.
+                var position = (UseVirtualization || UseServerVirtualization) && RowDataIndex(item) is { } index
+                    ? index - (PagingActive ? (_currentPage - 1) * _effectivePageSize : 0) + PendingRowCount
+                    : -1;
+                try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.revealRow", RootElement, rowIndex, position, RowHeight); }
+                catch (JSException) { }
+                catch (JSDisconnectedException) { }
+            }
+        }
+
         if (_editorFocusRequest is { } editorColumn && _editItem is not null)
         {
             _editorFocusRequest = null;
@@ -2065,20 +2260,21 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             }
         }
 
-        // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, which the
-        // script tells apart for them (see KeyInNestedSurface).
-        if (!_nestedSurfaceKeysWatched)
+        // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, and so do
+        // the clicks on a control in a cell, which the script tells apart for them (see KeyInNestedSurface and
+        // ClickOnCellControl).
+        if (!_nestedTargetsWatched)
         {
-            _nestedSurfaceKeysWatched = true;
+            _nestedTargetsWatched = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.watchNestedTargets", RootElement, _gridSelfRef);
             }
             // Released on failure so a failed call retries on a later render.
             catch (Exception ex)
             {
-                _nestedSurfaceKeysWatched = false;
+                _nestedTargetsWatched = false;
                 if (IsInteropFailure(ex) is false) throw;
             }
         }
@@ -2135,6 +2331,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // Drop the callback reference too; a later re-enable recreates it via the ??= above.
             _infiniteSelfRef?.Dispose();
             _infiniteSelfRef = null;
+        }
+
+        // Last, so a slow handler (a map redrawn over interop) holds up none of the scrolling and focusing above.
+        if (_viewMayHaveChanged)
+        {
+            _viewMayHaveChanged = false;
+            if (TakeViewChange() is { } viewItems) await OnViewChange.InvokeAsync(viewItems);
         }
     }
 
@@ -2208,6 +2411,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         // lifecycle (ResetLoadCancellation). Disposing it during teardown could surface an
         // ObjectDisposedException for an OnRead/OnLoadMore call still holding the token.
         _loadCts?.Cancel();
+        _disposalCts.Cancel();
 
         await base.DisposeAsync(disposing);
     }
@@ -2301,13 +2505,37 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     // ------------------------------------------------------------- Sorting
-    internal bool ColumnSortable(BitDataGridColumn<TItem> column)
-        // A custom SortBy key makes a template-only column sortable; otherwise a bound field is required.
-        // In server mode a SortBy delegate cannot be forwarded through the read request, and in
-        // queryable mode a delegate has no expression tree to translate, so only field-backed columns
-        // are sortable there.
-        => (column.HasField || (column.SortBy is not null && !IsServerMode && !IsInfiniteMode && !IsQueryableMode))
-        && (column.Sortable ?? Sortable);
+    internal bool ColumnSortable(BitDataGridColumn<TItem> column) => HasSortKey(column) && (column.Sortable ?? Sortable);
+
+    // Whether the grid's source can order the column at all; Sortable only decides whether its header does. Every
+    // source orders a field-backed column, by its field or by its id. A template-only column has no field: on the
+    // client its SortBy delegate is the key. In server and infinite mode the read request carries the column's id
+    // rather than a delegate, so such a column sorts there only when the app opted it in with ServerSortable and
+    // named it with a ColumnId its server orders by - a generated id means nothing to a server. A queryable source
+    // needs an expression tree, which a delegate cannot give it, so only field-backed columns sort there.
+    private bool HasSortKey(BitDataGridColumn<TItem> column)
+    {
+        if (column.HasField) return true;
+        if (IsQueryableMode) return false;
+        if (IsServerMode || IsInfiniteMode) return column.ServerSortable && column.HasExplicitId;
+        return column.SortBy is not null;
+    }
+
+    // Drops the sort of a column that lost its sort key (its SortBy, its ServerSortable or its ColumnId), so the
+    // source is not asked to order by a key that is gone and the header, no longer a sort button, does not show a
+    // sort nobody can clear. Returns whether a sort went.
+    private bool DropSortWithoutKey(BitDataGridColumn<TItem> column)
+    {
+        if (HasSortKey(column) || _sorts.RemoveAll(s => s.ColumnId == column.Id) == 0) return false;
+        Reprioritize();
+        return true;
+    }
+
+    private async Task RefreshWithoutDroppedSortAsync()
+    {
+        await NotifySortChangeAsync();
+        await RefreshAsync();
+    }
 
     internal BitDataGridSortDescriptor? GetSort(BitDataGridColumn<TItem> column)
         => _sorts.FirstOrDefault(s => s.ColumnId == column.Id);
@@ -3136,6 +3364,19 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// grid's content changes (see <c>KeyInNestedSurface</c>).</summary>
     [JSInvokable]
     public void OnNestedSurfaceKey(bool nested) => KeyInNestedSurface = nested;
+
+    // Whether the click, double-click or right-click the cells and the rows are about to hear landed on a control in a
+    // cell - a button, a link or an input of a template, an element marked data-bit-interactive, the grid's own control
+    // cells - or in a surface or a grid rendered in a cell's content, rather than on the cell itself. The click is the
+    // control's: the cells and the rows hear it on its way out too, and leave it to it - no row selected or expanded,
+    // no editor opened, none of their click events raised. The script reports it ahead of the click, whenever it
+    // changes, and again after a report that may not have arrived (BitDataGrid.ts, reportCellControlClick).
+    internal bool ClickOnCellControl { get; private set; }
+
+    /// <summary>Invoked from JavaScript ahead of a click, a double-click or a right-click when whether it landed on a
+    /// control in a cell of the grid changes (see <c>ClickOnCellControl</c>).</summary>
+    [JSInvokable]
+    public void OnCellControlClick(bool onControl) => ClickOnCellControl = onControl;
 
     internal int EditVersion => _editVersion;
 
@@ -4246,7 +4487,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     private int IndexOfRow(IReadOnlyList<TItem> rows, TItem item)
     {
         for (int i = 0; i < rows.Count; i++)
-            if (KeyEquals(rows[i], item)) return i;
+            if (rows[i] is not null && KeyEquals(rows[i], item)) return i;
         return -1;
     }
 
@@ -4365,7 +4606,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         _currentPage = Math.Clamp(page, 1, TotalPages);
         Announce(string.Format(Strings.AnnouncementPage, _currentPage, TotalPages));
         await NotifyPageChangeAsync();
-        await RefreshAsync();
+        await RefreshAsync(viewRowsKept: true);
     }
 
     /// <summary>Changes the page size and resets to the first page. Overrides the <see cref="PageSize"/>
@@ -4376,10 +4617,138 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         _effectivePageSize = Pageable ? _pageSizeOverride.Value : int.MaxValue;
         _currentPage = 1;
         await NotifyPageChangeAsync();
-        await RefreshAsync();
+        await RefreshAsync(viewRowsKept: true);
         // A new page size starts over at page 1 of a different number of pages, which the dropdown alone does not say.
         Announce(string.Format(Strings.AnnouncementPage, _currentPage, TotalPages));
         StateHasChanged();
+    }
+
+    // --------------------------------------------------------------- View
+    /// <summary>
+    /// The rows of the current view across every page, in the order the grid shows them: what the quick search and
+    /// the filters leave, sorted - in group order while grouped (collapsed groups included), and a tree's matching
+    /// rows with their collapsed branches. Queryable mode runs the query without the page window. Server and
+    /// infinite-scrolling modes hold only the rows loaded so far; use <see cref="GetViewItemsAsync"/> there.
+    /// </summary>
+    public IReadOnlyList<TItem> GetViewItems() => GetSyncExportRows().ToList();
+
+    /// <summary>
+    /// The rows of the current view across every page, like <see cref="GetViewItems"/>, in every data mode: server
+    /// and infinite-scrolling modes read them through <see cref="OnRead"/>/<see cref="OnLoadMore"/> with no paging
+    /// (<c>Take = null</c>) and the active search, filters and sorts.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Goes to the provider with the read, which the grid also cancels when it is disposed. A caller following the
+    /// view cancels the read it no longer needs when it starts the next one, so an older view cannot land last.
+    /// </param>
+    public async Task<IReadOnlyList<TItem>> GetViewItemsAsync(CancellationToken cancellationToken = default)
+    {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disposalCts.Token);
+        return (await GetExportRowsAsync(cancellationToken: cts.Token)).ToList();
+    }
+
+    /// <summary>
+    /// Brings a row of the view into sight, for a row picked outside the grid (on a map or a chart of the same rows):
+    /// goes to the page that holds it, opens the collapsed groups or tree branches it is in, and scrolls it into the
+    /// viewport - also when the grid is virtualized and the row is not rendered yet. Returns <c>false</c>, changing
+    /// nothing, when the row is not in the view: left out by the search or the filters, under a branch of a lazy tree
+    /// not loaded yet, or - in server and infinite-scrolling modes, where the grid cannot tell where an unloaded row
+    /// is - not among the rows loaded.
+    /// </summary>
+    public async Task<bool> RevealItemAsync(TItem item)
+    {
+        if (item is null) return false;
+
+        if (IsTreeMode)
+        {
+            if (FindTreeAncestors(item) is not { } ancestors) return false;
+
+            var expanded = false;
+            foreach (var ancestor in ancestors)
+            {
+                if (IsTreeRowExpanded(ancestor)) continue;
+                // A pruned tree renders from the per-criteria collapse set, an unpruned one from the expand state.
+                if (TreeFilteringActive) _treeFilterCollapsed.Remove(GetKey(ancestor));
+                else _expandedTree.Add(GetKey(ancestor));
+                expanded = true;
+            }
+            if (expanded) await RefreshAsync(viewRowsKept: true);
+        }
+        else if (_viewGroups is not null)
+        {
+            if (FindGroupPath(_viewGroups, item) is not { } groups) return false;
+
+            var opened = false;
+            foreach (var group in groups)
+            {
+                if (!IsGroupCollapsed(group)) continue;
+                if (!_groupStateOverrides.Add(group.Path)) _groupStateOverrides.Remove(group.Path);
+                opened = true;
+            }
+            if (opened)
+            {
+                _groupExpansionVersion++;
+                MarkStateChanged();
+            }
+        }
+        else if (PagingActive && !IsServerMode)
+        {
+            // The view across every page: the rows OnViewChange was last raised with while no refresh has changed them
+            // since - which spares a queryable source a query of the whole view - or else the local view, or the
+            // queryable source's whole result.
+            var rows = !_viewMayHaveChanged && _lastViewItems is { } viewItems ? viewItems : GetSyncExportRows();
+            var index = IndexOfRow(rows, item);
+            if (index < 0) return false;
+
+            var page = index / _effectivePageSize + 1;
+            if (page != _currentPage) await GoToPageAsync(page);
+        }
+        else if (RowDataIndex(item) is null)
+        {
+            // Every row of the view is in the row index map here, and in server and infinite-scrolling modes every
+            // row loaded: one it does not know is not in the view, or not where the grid can tell.
+            return false;
+        }
+
+        _revealItem = item;
+        _revealPending = true;
+        StateHasChanged();
+        return true;
+    }
+
+    // The nodes the first place of a row in the tree's view sits under, outermost first, or null when the row is not in
+    // the view. A lazy tree is walked only as far as its children are loaded.
+    private List<TItem>? FindTreeAncestors(TItem item)
+    {
+        List<TItem>? found = null;
+        WalkTree(Items ?? Enumerable.Empty<TItem>(), (node, ancestors, _) =>
+        {
+            if (!KeyEquals(node, item)) return TreeStep.Into;
+            found = ancestors.ToList();
+            return TreeStep.Stop;
+        });
+        return found;
+    }
+
+    // The groups a row of the grouped view sits in, outermost first, or null when it is in none.
+    private List<BitDataGridGroup<TItem>>? FindGroupPath(IReadOnlyList<BitDataGridGroup<TItem>> groups, TItem item)
+    {
+        foreach (var group in groups)
+        {
+            if (group.HasSubGroups)
+            {
+                if (FindGroupPath(group.SubGroups, item) is { } path)
+                {
+                    path.Insert(0, group);
+                    return path;
+                }
+            }
+            else if (group.Items.Any(row => row is not null && KeyEquals(row, item)))
+            {
+                return [group];
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------ Public state API
@@ -4398,11 +4767,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <summary>
     /// Programmatically sorts by the given column. <paramref name="direction"/> of
     /// <see cref="BitDataGridSortDirection.None"/> removes the column's sort. When
-    /// <paramref name="additive"/> is false (default) all other sorts are cleared first.
+    /// <paramref name="additive"/> is false (default) all other sorts are cleared first. A column the grid's
+    /// source cannot order (see <see cref="BitDataGridColumn{TItem}.Sortable"/>) is left as it is.
     /// </summary>
     public async Task SortByAsync(string columnId, BitDataGridSortDirection direction, bool additive = false)
     {
-        if (!_columnsById.ContainsKey(columnId)) return;
+        if (!_columnsById.TryGetValue(columnId, out var column)) return;
+        if (direction != BitDataGridSortDirection.None && !HasSortKey(column)) return;
         if (!additive) _sorts.Clear();
         else _sorts.RemoveAll(s => s.ColumnId == columnId);
 
@@ -4511,8 +4882,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     /// <summary>
     /// Restores a state snapshot captured by <see cref="GetState"/>. Descriptors and column entries
-    /// referencing ids that no longer exist are ignored; columns missing from the snapshot keep their
-    /// relative order after the restored ones.
+    /// referencing ids that no longer exist are ignored, as are sorts of columns the grid's source cannot
+    /// order; columns missing from the snapshot keep their relative order after the restored ones.
     /// <para>
     /// Restoring is deliberately silent: <see cref="OnSortChange"/>, <see cref="OnFilterChange"/>,
     /// <see cref="OnGroupChange"/> and <see cref="OnPageChange"/> report changes the view undergoes,
@@ -4549,7 +4920,8 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         _sorts.Clear();
         foreach (var s in state.Sorts.OrderBy(s => s.Priority))
         {
-            if (s.ColumnId is not null && _columnsById.ContainsKey(s.ColumnId) && s.Direction != BitDataGridSortDirection.None)
+            if (s.ColumnId is not null && _columnsById.TryGetValue(s.ColumnId, out var sortColumn) && HasSortKey(sortColumn)
+                && s.Direction != BitDataGridSortDirection.None)
                 _sorts.Add(new BitDataGridSortDescriptor { ColumnId = s.ColumnId, Direction = s.Direction, Priority = _sorts.Count + 1 });
         }
 
@@ -4619,6 +4991,80 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         await RefreshAsync();
     }
 
+    // ------------------------------------------------------- Toolbar buttons
+    // The built-in glyphs are full literals, never put together from a name: the Add one is the core font's, the others
+    // the Extras' own subset (Styles/fabric.mdl2.bit.blazoui.extras.scss), so they draw without Bit.BlazorUI.Icons.
+    private void UpdateToolbarButtons()
+    {
+        (_addRowButton ??= NewToolbarButton(static s => s.AddRowText, "bit-dtg-btn bit-dtg-btn-primary", "bit-dtg-btn-ico bit-icon bit-icon--Add", AddNewRowAsync))
+            .Update(AddRowIcon, AddRowIconName, ToolbarIconOnly);
+
+        (_clearFiltersButton ??= NewToolbarButton(static s => s.ClearFiltersText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--ClearFilter", ClearFiltersFromToolbarAsync))
+            .Update(ClearFiltersIcon, ClearFiltersIconName, ToolbarIconOnly);
+
+        (_csvExportButton ??= NewToolbarButton(static s => s.ExportCsvText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--TextDocument", () => ExportCsvAsync()))
+            .Update(CsvExportIcon, CsvExportIconName, ToolbarIconOnly);
+
+        (_excelExportButton ??= NewToolbarButton(static s => s.ExportExcelText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--ExcelDocument", () => ExportExcelAsync()))
+            .Update(ExcelExportIcon, ExcelExportIconName, ToolbarIconOnly);
+
+        (_columnChooserButton ??= NewToolbarButton(static s => s.ColumnsText, "bit-dtg-btn", "bit-dtg-btn-ico bit-icon-ex bit-icon-ex--ColumnOptions", () => { ToggleColumnChooser(); return Task.CompletedTask; }, disclosure: true))
+            .Update(ColumnChooserIcon, ColumnChooserIconName, ToolbarIconOnly);
+    }
+
+    private ToolbarButton NewToolbarButton(Func<BitDataGridStrings, string> text, string cssClass, string glyph, Func<Task> onClick, bool disclosure = false)
+    {
+        var button = new ToolbarButton(text, cssClass, glyph, onClick, disclosure);
+        button.Anchor = builder => RenderToolbarButton(builder, button);
+        return button;
+    }
+
+    /// <summary>A button of the toolbar: what it says and what a press of it does, fixed when it is built, and the classes
+    /// and icon it renders with, resolved from the grid's parameters whenever they are set.</summary>
+    private sealed class ToolbarButton(Func<BitDataGridStrings, string> text, string cssClass, string glyph, Func<Task> onClick, bool disclosure)
+    {
+        private readonly string _compactCssClass = $"{cssClass} bit-dtg-btn-compact";
+
+        public Func<BitDataGridStrings, string> Text { get; } = text;
+
+        public Func<Task> OnClick { get; } = onClick;
+
+        /// <summary>The Columns button, which shows and hides the column chooser below the toolbar.</summary>
+        public bool Disclosure { get; } = disclosure;
+
+        /// <summary>The button itself, as the anchor of its tooltip while the toolbar is icon-only.</summary>
+        public RenderFragment? Anchor { get; set; }
+
+        public ElementReference Element { get; set; }
+
+        public string CssClass { get; private set; } = cssClass;
+
+        /// <summary>The classes of its icon, or null for none: a text button shows only an icon it is given.</summary>
+        public string? IconClass { get; private set; }
+
+        /// <summary>The ligature of an icon set that names its glyphs with one (Material Icons), written inside it.</summary>
+        public string? IconContent { get; private set; }
+
+        public void Update(BitIconInfo? icon, string? iconName, bool iconOnly)
+        {
+            CssClass = iconOnly ? _compactCssClass : cssClass;
+
+            // An instance naming no glyph is no icon (BitIconInfo.From already passes it over for a name beside it), so a
+            // button given one still draws the built-in glyph rather than an empty square.
+            if (BitIconInfo.From(icon, iconName) is { IsEmpty: false } resolved)
+            {
+                var classes = resolved.GetCssClasses();
+                IconClass = classes.HasValue() ? $"bit-dtg-btn-ico {classes}" : "bit-dtg-btn-ico";
+                IconContent = resolved.Content;
+            }
+            else
+            {
+                IconClass = iconOnly ? glyph : null;
+                IconContent = null;
+            }
+        }
+    }
+
     // ------------------------------------------------------- Column chooser
     internal void ToggleColumnChooser() { _showColumnChooserPanel = !_showColumnChooserPanel; StateHasChanged(); }
 
@@ -4658,6 +5104,17 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         InvalidateVisibleColumns();
         InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Called by a column when its <c>SortBy</c> comes or goes, or its <c>ServerSortable</c> flips, from the parent
+    /// after registration: the header renders again as a sort button or as plain text, and a sort the column can no
+    /// longer carry is dropped.
+    /// </summary>
+    internal void NotifyColumnSortKeyChanged(BitDataGridColumn<TItem> column)
+    {
+        if (DropSortWithoutKey(column)) InvokeAsync(RefreshWithoutDroppedSortAsync);
+        else InvokeAsync(StateHasChanged);
     }
 
     // ----------------------------------------------------------- Identity
@@ -4956,19 +5413,19 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// the children already loaded - fetching the rest could be unbounded).
     /// <para>A selected-rows export is resolved locally in every mode: the selection can only ever
     /// contain rows the grid already holds, so there is nothing a provider round-trip could add.</para></summary>
-    private async Task<IReadOnlyList<TItem>> GetExportRowsAsync(bool selectedOnly = false)
+    private async Task<IReadOnlyList<TItem>> GetExportRowsAsync(bool selectedOnly = false, CancellationToken cancellationToken = default)
     {
         if (selectedOnly) return SelectedExportRows();
 
         if (IsServerMode)
         {
-            var result = await OnRead!(BuildExportReadRequest());
+            var result = await OnRead!(BuildExportReadRequest(cancellationToken));
             return result.Items;
         }
 
         if (IsInfiniteMode)
         {
-            var result = await OnLoadMore!(BuildExportReadRequest());
+            var result = await OnLoadMore!(BuildExportReadRequest(cancellationToken));
             return result.Items;
         }
 
@@ -4991,37 +5448,43 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             // Collapsed branches are included (the export is not "what is on screen"), but the active
             // search/filters still apply: an export must carry the matching rows, not the whole tree.
-            var pruning = TreeFilteringActive;
             var all = new List<TItem>();
-            WalkAll(Items ?? Enumerable.Empty<TItem>(), keepAll: false);
-            return all;
-
-            void WalkAll(IEnumerable<TItem> siblings, bool keepAll)
+            WalkTree(Items ?? Enumerable.Empty<TItem>(), (item, _, _) =>
             {
-                var source = siblings as IReadOnlyList<TItem> ?? siblings.ToList();
-                if (pruning && !keepAll) source = source.Where(KeepTreeNode).ToList();
-                IEnumerable<TItem> sorted = _sorts.Count > 0
-                    ? BitDataGridDataProcessor.Sort(source, _sorts, _columnsById)
-                    : source;
-                foreach (var item in sorted)
-                {
-                    all.Add(item);
-                    // Mirrors the rendered view: a node that matched itself carries its whole subtree.
-                    var subtreeKept = pruning && (keepAll || TreeNodeSelfMatches(item));
-                    if (ResolveTreeChildren(item) is { Count: > 0 } children) WalkAll(children, subtreeKept);
-                }
-            }
+                all.Add(item);
+                return TreeStep.Into;
+            });
+            return all;
         }
 
+        // The rows loaded hold the whole view when there are as many as it counts: paging is off, or one page holds it.
         if (IsQueryableMode && Items is IQueryable<TItem> queryable)
-            return BitDataGridQueryableProcessor.Apply(queryable, _search, _filters, _sorts, _columnsById).ToList();
+            return _view.Count >= _queryableTotal
+                ? _view
+                : BitDataGridQueryableProcessor.Apply(queryable, _search, _filters, _sorts, _columnsById).ToList();
 
         return ViewInDisplayOrder;
     }
 
     /// <summary>The rows of the view in the order the grid shows them: group order while grouped (collapsed groups
     /// included), so an export or a copy reads the way the grid does.</summary>
-    private IReadOnlyList<TItem> ViewInDisplayOrder => _viewGroups is not null ? FlattenGroups(_viewGroups) : _view;
+    private IReadOnlyList<TItem> ViewInDisplayOrder
+    {
+        get
+        {
+            if (_viewGroups is null)
+            {
+                _groupedRows = default;
+                return _view;
+            }
+            if (!ReferenceEquals(_groupedRows.View, _viewGroups)) _groupedRows = (_viewGroups, FlattenGroups(_viewGroups));
+            return _groupedRows.Rows;
+        }
+    }
+
+    // The grouped view's rows in group order, flattened once per grouping they come from: the row numbers, the exports
+    // and OnViewChange all read them, and a refresh of a list source runs on every render of the parent.
+    private (IReadOnlyList<BitDataGridGroup<TItem>>? View, IReadOnlyList<TItem> Rows) _groupedRows;
 
     /// <summary>The selected rows in the order they appear in the current view (rather than in
     /// selection order), so a selected-rows export reads exactly like the grid does. Empty when
@@ -5033,7 +5496,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// "all rows") with the active sorts/filters, so the provider streams every matching row.
     /// Deliberately not using ResetLoadCancellation: an export must not cancel (or be treated as
     /// superseding) the grid's own in-flight data load.</summary>
-    private BitDataGridReadRequest BuildExportReadRequest() => new()
+    private BitDataGridReadRequest BuildExportReadRequest(CancellationToken cancellationToken = default) => new()
     {
         Skip = 0,
         Take = null,
@@ -5041,7 +5504,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         Filters = _filters.ToList(),
         Groups = _groups.ToList(),
         Search = _search,
-        CancellationToken = CancellationToken.None
+        CancellationToken = cancellationToken
     };
 
     /// <summary>Builds a CSV string of the full (filtered/sorted) dataset without going async:
@@ -5238,6 +5701,15 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// <see cref="RowHeight"/> is always returned, because virtualization requires a constant row height.
     /// </summary>
     internal float ResolveRowHeight(TItem item) => Virtualize ? RowHeight : (RowHeightSelector?.Invoke(item) ?? RowHeight);
+
+    /// <summary>
+    /// The inline height declaration of a row. While <see cref="Virtualize"/> is enabled every row is exactly
+    /// that tall - the size Virtualize, the grid's own spacers and <c>revealRow</c> count each one at - and content
+    /// taller than it is clipped by the cells rather than pushing the rows after it out of place; otherwise it is
+    /// only a minimum the row grows past.
+    /// </summary>
+    internal string RowHeightStyle(float height) =>
+        FormattableString.Invariant($"{(Virtualize ? "height" : "min-height")}:{height}px;");
 
     /// <summary>Builds the CSS grid template-columns value for the whole row layout.</summary>
     private string BuildGridTemplate()

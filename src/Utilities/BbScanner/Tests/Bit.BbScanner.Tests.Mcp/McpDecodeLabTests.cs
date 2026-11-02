@@ -79,13 +79,13 @@ public class McpDecodeLabTests
     }
 
     [TestMethod]
-    public async Task Pdf417_is_left_unread_while_the_symbol_table_is_a_placeholder()
+    public async Task Pdf417_is_read_with_the_shipped_specification_table()
     {
-        var report = await InspectAsync(new() { ["format"] = "Pdf417" });
+        var report = await InspectAsync(new() { ["format"] = "Pdf417", ["rotation"] = 12.0 });
 
         Assert.IsTrue(report.Encoded);
-        Assert.IsTrue(report.Attempts!.All(attempt => attempt.Decoded is false));
-        Assert.IsTrue(report.Notes.Any(note => note.Contains("placeholder", StringComparison.Ordinal)));
+        Assert.IsTrue(report.Attempts!.All(attempt => attempt.Decoded && attempt.Matches == true));
+        Assert.IsFalse(report.Notes.Any(note => note.Contains("does not create its PDF417 reader", StringComparison.Ordinal)));
     }
 
     [TestMethod]
@@ -101,7 +101,7 @@ public class McpDecodeLabTests
     [TestMethod]
     public async Task An_unknown_symbology_lists_the_real_ones()
     {
-        var report = await InspectAsync(new() { ["format"] = "aztec" });
+        var report = await InspectAsync(new() { ["format"] = "dotcode" });
 
         Assert.IsFalse(report.Encoded);
         Assert.IsTrue(report.Notes.Any(note => note.Contains("QrCode", StringComparison.Ordinal)));

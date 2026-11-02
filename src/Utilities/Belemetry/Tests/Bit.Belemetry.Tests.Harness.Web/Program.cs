@@ -26,16 +26,9 @@ builder.Services.AddCors(options => options.AddPolicy(HarnessCollectorEndpoints.
 
 var app = builder.Build();
 
-#if NET9_0_OR_GREATER
 app.UseCors();
 app.UseAntiforgery();
 app.MapStaticAssets();
-#else
-app.UseStaticFiles();
-app.UseRouting();
-app.UseCors();
-app.UseAntiforgery();
-#endif
 
 app.MapHarnessCollector();
 

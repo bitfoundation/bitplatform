@@ -19,7 +19,7 @@ jobs:
   build-Borm:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Borm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -28,20 +28,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
-    - name: Setup .NET 9.0
+    - name: Setup .NET 10.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
 
     # Bit.Borm targets up to net10.0 but runs on .NET 11 too, whose runtime converts numbers differently
     # (a double cast to decimal keeps its exact binary value). The net10.0 tests are run on it below.
@@ -54,6 +49,12 @@ jobs:
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
+
+    # The MAUI sample is the one project that needs a workload (maui-android here). Installing it and building an
+    # Android app would add minutes to every library change, so this build leaves the sample out; it still builds from
+    # Bit.Borm.slnx on a developer's machine.
+    - name: Leave the MAUI sample out of the build
+      run: cd src/Utilities/Borm && dotnet sln Bit.Borm.slnx remove Samples/Maui/Bit.Borm.Samples.Maui.csproj
 
     - name: dotnet workload restore
       run:  cd src/Utilities/Borm && dotnet workload restore

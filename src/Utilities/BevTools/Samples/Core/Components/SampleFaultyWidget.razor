@@ -1,0 +1,5 @@
+﻿<button @onclick="Fail">Throw in an event handler</button>
+
+@code {
+    private void Fail() => throw new InvalidOperationException("SampleFaultyWidget failed on purpose.");
+}

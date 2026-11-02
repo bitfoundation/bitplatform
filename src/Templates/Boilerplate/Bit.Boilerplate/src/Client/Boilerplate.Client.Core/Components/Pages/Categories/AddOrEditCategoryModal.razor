@@ -44,21 +44,15 @@
                         <BitLabel Element="div" Id="category-color-label">@Localizer[nameof(AppStrings.Color)]</BitLabel>
 
                         <BitStack role="group" aria-labelledby="category-color-label">
-                            <BitStack Horizontal role="group" aria-label="@Localizer[nameof(AppStrings.PresetColors)]">
-                                @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
-                                {
-                                    <button @onclick="() => SetCategoryColor(color)"
-                                            type="button"
-                                            title="@color"
-                                            aria-label="@color"
-                                            aria-pressed="@(category.Color == color ? "true" : "false")"
-                                            style="background-color: @color"
-                                            class="color-btn @(category.Color == color ? "color-btn--active" : null)" />
-                                }
-                            </BitStack>
+                            <BitColorPicker @bind-Value="category.Color"
+                                            ShowSaturationArea="false"
+                                            ShowHueSlider="false"
+                                            ShowPreview
+                                            Presets="presetColors"
+                                            Format="BitColorFormat.Hex"
+                                            AriaLabel="@Localizer[nameof(AppStrings.PresetColors)]" />
 
                             <BitStack Horizontal>
-                                <div class="color-square selected" style="background-color: @category.Color"></div>
                                 <BitToggleButton @bind-IsChecked="isColorPickerOpen"
                                                  Variant="BitVariant.Outline"
                                                  AriaMode="BitToggleButtonAriaMode.Expanded"

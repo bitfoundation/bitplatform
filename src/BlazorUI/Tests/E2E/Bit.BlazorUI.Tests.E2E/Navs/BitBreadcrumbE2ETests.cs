@@ -618,9 +618,12 @@ public class BitBreadcrumbE2ETests : E2ETestBase
             var id = $"bc-color-{color}";
             await Expect(Root(id)).ToHaveClassAsync(HasClass($"bit-brc-{suffix}"));
 
+            // An item is text read on the page, so it is drawn in the role's text color (role-text); the divider is
+            // decoration and keeps the main.
             var expected = await ResolveColorAsync($"var({main})");
-            await Expect(Step(id, "Item 1")).ToHaveCSSAsync("color", expected);
-            await Expect(Step(id, "Item 4")).ToHaveCSSAsync("color", expected);
+            var text = await ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken(suffix)})");
+            await Expect(Step(id, "Item 1")).ToHaveCSSAsync("color", text);
+            await Expect(Step(id, "Item 4")).ToHaveCSSAsync("color", text);
             await Expect(Root(id).Locator("i.bit-brc-div").First).ToHaveCSSAsync("color", expected);
         }
     }
@@ -811,7 +814,7 @@ public class BitBreadcrumbE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync(0, 0);
 
         var item = Step("bc-css-vars-color", "Item 1");
-        await Expect(item).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-err)"));
+        await Expect(item).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-err-fg)"));
         Assert.IsTrue(ParsePx(await item.EvaluateAsync<string>("el => getComputedStyle(el).fontSize")) < 19);
     }
 

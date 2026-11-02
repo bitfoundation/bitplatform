@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.14" />
     <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.3.0" />
     <!-- InspectBlazeDbTable compiles the submitted table type and runs the generator over it. The version the
@@ -37,6 +37,11 @@
     <!-- The MCP tests boot this very app and reach the internal helpers the tools are built from:
          WebApplicationFactory needs its entry point type, which top-level statements declare as internal. -->
     <InternalsVisibleTo Include="Bit.BlazeDb.Tests.Mcp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The ranking SearchBlazeDb answers with, which every utility's MCP server that searches this way shares. -->
+    <Compile Include="..\..\..\Shared\Mcp\*.cs" LinkBase="Services\Shared" />
   </ItemGroup>
 
   <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep

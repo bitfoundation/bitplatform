@@ -1,0 +1,196 @@
+﻿@page "/e2e/aimessagelist"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiMessageList E2E</PageTitle>
+
+<h1>BitAiMessageList</h1>
+
+@* The list is the scroll container and takes whatever height its flex parent leaves it, so each one is put in a column
+   of a fixed height. *@
+<E2ESection Id="basic" Title="Basic">
+    <div style="height:320px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-basic" Conversation="_basicSession.Conversation" Session="_basicSession" />
+    </div>
+    <div style="height:240px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-system" Conversation="_systemConversation" HideSystemMessages="false" AriaLabel="Support transcript" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="pinned" Title="Pinned">
+    <button id="msl-pin-ask" @onclick="AskPinned">Ask</button>
+    <button id="msl-pin-latest-instant" @onclick="ScrollToLatestInstantly">Scroll to latest instantly</button>
+    <span id="msl-pinned">@_pinned</span>
+    <span id="msl-pin-changes">@_pinChanges</span>
+    <span id="msl-pin-log">@string.Join(",", _pinLog)</span>
+    @* The list and its scroll-to-latest button assembled by hand, the way BitAiChat composes them: the button floats
+       above the box under the list, which is the positioned ancestor it is placed against. *@
+    <div style="height:360px;display:flex;flex-direction:column">
+        <BitAiMessageList @ref="_pinList"
+                          Id="msl-pin"
+                          Conversation="_pinSession.Conversation"
+                          Session="_pinSession"
+                          OnPinnedChange="HandleOnPinnedChange" />
+        <div id="msl-pin-anchor" style="position:relative;height:40px;flex:0 0 auto">
+            <BitAiScrollToLatest Id="msl-pin-stl" Visible="@(_pinned is false)" OnClick="ScrollToLatest" />
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="autoscroll-off" Title="AutoScroll off">
+    <button id="msl-noauto-ask" @onclick="AskNoAuto">Ask</button>
+    <BitAiOptionsProvider UiOptions="_noAutoScroll">
+        <div style="height:240px;display:flex;flex-direction:column">
+            <BitAiMessageList Id="msl-noauto" Conversation="_noAutoSession.Conversation" Session="_noAutoSession" />
+        </div>
+    </BitAiOptionsProvider>
+</E2ESection>
+
+<E2ESection Id="virtualize" Title="Virtualize">
+    <BitAiOptionsProvider UiOptions="_virtualOptions">
+        <div style="height:400px;display:flex;flex-direction:column">
+            <BitAiMessageList Id="msl-virtual" Conversation="_virtualConversation" />
+        </div>
+    </BitAiOptionsProvider>
+    <div style="height:300px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-below" Conversation="_belowConversation" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <button id="msl-tpl-add" @onclick="AddTemplated">Add a message</button>
+    <button id="msl-tpl-remove" @onclick="RemoveFirstTemplated">Remove the first message</button>
+    <div style="height:240px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-tpl" Conversation="_templatedConversation">
+            <HeaderTemplate>
+                <div id="msl-tpl-header">The start of the conversation</div>
+            </HeaderTemplate>
+            <EmptyTemplate>
+                <div id="msl-tpl-empty">No messages yet</div>
+            </EmptyTemplate>
+            <FooterTemplate>
+                <div id="msl-tpl-footer">The end of the conversation</div>
+            </FooterTemplate>
+        </BitAiMessageList>
+    </div>
+    <div style="height:240px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-custom" Conversation="_customConversation">
+            <MessageTemplate Context="message">
+                <div class="msl-custom-item" data-id="@message.MessageId">@message.Role.Value: @message.GetText()</div>
+            </MessageTemplate>
+        </BitAiMessageList>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div style="height:240px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-disabled" Conversation="_disabledSession.Conversation" Session="_disabledSession" Disabled />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <div id="msl-vars" style="height:280px;display:flex;flex-direction:column;--bit-AiMessageList-max-width:420px;--bit-AiMessageList-gap:30px;--bit-AiMessageList-padding:11px 12px 13px 14px;--bit-AiMessageList-scrollbar-color:rgb(200, 10, 20)">
+        <BitAiMessageList Id="msl-var" Conversation="_styleConversation" />
+    </div>
+    <div style="height:240px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-classes"
+                          Conversation="_styleConversation"
+                          Class="e2e-msl-root"
+                          Styles="@(new() { Root = "outline: 2px solid rgb(4, 5, 6)", Content = "max-width: 300px" })"
+                          Classes="@(new() { Content = "e2e-msl-content" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="height:240px;display:flex;flex-direction:column">
+        <BitAiMessageList Id="msl-rtl" Dir="BitDir.Rtl" Conversation="_styleConversation" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitAiChatSession _basicSession = new(E2EAiTransport.For(E2EAiScripts.Echo), Transcript("bas", 4));
+    private readonly BitAiConversation _systemConversation = WithSystem();
+    private readonly BitAiChatSession _pinSession = new(E2EAiTransport.For(E2EAiScripts.Long, 25), Transcript("pin", 30));
+    private readonly BitAiChatSession _noAutoSession = new(E2EAiTransport.For(E2EAiScripts.Long, 20), Transcript("noa", 1));
+    private readonly BitAiChatSession _disabledSession = new(E2EAiTransport.For(E2EAiScripts.Echo), Transcript("dis", 2));
+    private readonly BitAiConversation _virtualConversation = Transcript("v", 200);
+    private readonly BitAiConversation _belowConversation = Transcript("b", 30);
+    private readonly BitAiConversation _templatedConversation = new("tpl-conversation");
+    private readonly BitAiConversation _customConversation = Transcript("cus", 4);
+    private readonly BitAiConversation _styleConversation = Transcript("sty", 2);
+
+    private readonly BitAiUiOptions _noAutoScroll = BitAiUiOptions.Default with { AutoScroll = false };
+    private readonly BitAiUiOptions _virtualOptions = BitAiUiOptions.Default with { VirtualizeThreshold = 20 };
+
+    private BitAiMessageList? _pinList;
+    private bool _pinned = true;
+    private int _pinChanges;
+    private readonly List<bool> _pinLog = [];
+    private int _templatedCount;
+
+    // A conversation of the given number of messages, a user question then an answer of a few lines, with ids made of
+    // the prefix and the number.
+    private static BitAiConversation Transcript(string prefix, int count)
+    {
+        var conversation = new BitAiConversation($"{prefix}-conversation");
+
+        for (var i = 1; i <= count; i++)
+        {
+            var user = i % 2 == 1;
+            var message = new BitAiMessage(user ? BitAiRole.User : BitAiRole.Assistant, $"{prefix}{i}");
+            message.AddPart(new BitAiTextPart(user
+                ? $"Message {i}: how does this part work?"
+                : $"Message {i}: it renders on the server or in the browser, and the transcript keeps every reply in a column as wide as reading is comfortable."));
+            conversation.AddMessage(message);
+        }
+
+        return conversation;
+    }
+
+    private static BitAiConversation WithSystem()
+    {
+        var conversation = new BitAiConversation("sys-conversation");
+        conversation.AddMessage(new BitAiMessage(BitAiRole.System, "sys1")).AddPart(new BitAiTextPart("You are a terse assistant."));
+        conversation.AddMessage(new BitAiMessage(BitAiRole.User, "sys2")).AddPart(new BitAiTextPart("Hi"));
+        conversation.AddMessage(new BitAiMessage(BitAiRole.Assistant, "sys3")).AddPart(new BitAiTextPart("Hello."));
+        return conversation;
+    }
+
+    private void AskPinned() => _ = _pinSession.SubmitAsync("write a lot");
+
+    private void AskNoAuto() => _ = _noAutoSession.SubmitAsync("write a lot");
+
+    private Task ScrollToLatest() => _pinList?.ScrollToLatestAsync() ?? Task.CompletedTask;
+
+    private Task ScrollToLatestInstantly() => _pinList?.ScrollToLatestAsync(smooth: false) ?? Task.CompletedTask;
+
+    private void HandleOnPinnedChange(bool pinned)
+    {
+        _pinned = pinned;
+        _pinChanges++;
+        _pinLog.Add(pinned);
+    }
+
+    private void AddTemplated()
+    {
+        _templatedCount++;
+        var message = new BitAiMessage(_templatedCount % 2 == 1 ? BitAiRole.User : BitAiRole.Assistant, $"tpl{_templatedCount}");
+        message.AddPart(new BitAiTextPart($"Templated message {_templatedCount}"));
+        _templatedConversation.AddMessage(message);
+        _customConversation.AddMessage(new BitAiMessage(BitAiRole.User, $"cus-add{_templatedCount}")).AddPart(new BitAiTextPart($"Added {_templatedCount}"));
+    }
+
+    private void RemoveFirstTemplated()
+    {
+        if (_customConversation.Messages.Count > 0) _customConversation.RemoveMessage(_customConversation.Messages[0].MessageId);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _basicSession.DisposeAsync();
+        await _pinSession.DisposeAsync();
+        await _noAutoSession.DisposeAsync();
+        await _disabledSession.DisposeAsync();
+    }
+}

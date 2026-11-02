@@ -2,8 +2,8 @@
 
 ## Key Technologies
 
-- **C# 13.0**
-- **ASP.NET Core 9.0**
+- **C# 14.0**
+- **ASP.NET Core 10.0**
 - **Blazor**: Component-based web UI framework
 - **.NET MAUI Blazor Hybrid**: Cross-platform app development
 - **ASP.NET Core Identity**: Authentication and authorization
@@ -46,8 +46,8 @@
 ## Rules
 
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit Balette`, `bit BbScanner`, `bit Bdnd`, `bit BlazeDb`, `bit Blow`, `bit Borm`, `bit Bcrdt`, `bit Bonboarding`, `bit Bortable`, `bit Blex`, `bit Bmage`, `bit Bsqlite`, `bit Brouter`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
-you **MUST** use the `bitplatform` MCP server's tools - start with the matching `Search<Library>` tool (e.g. `SearchBitBlazorUI`, `SearchBswup`, `SearchButil`, `SearchBmotion`, `SearchBink`, `SearchBalette`, `SearchBbScanner`, `SearchBdnd`, `SearchBlazeDb`, `SearchBlow`, `SearchBorm`, `SearchBcrdt`, `SearchBonboarding`, `SearchBortable`, `SearchBlex`, `SearchBmage`, `SearchBsqlite`, `SearchBrouter`) and follow the calls it names - to find the correct implementation and usage patterns before writing or changing any code.
+or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit Balette`, `bit BbScanner`, `bit Bdnd`, `bit BlazeDb`, `bit Blow`, `bit Borm`, `bit Bcrdt`, `bit Bonboarding`, `bit Bortable`, `bit Blex`, `bit Bmage`, `bit Bsqlite`, `bit Bheadless`, `bit Brouter`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
+you **MUST** use the `bitplatform` MCP server's tools - start with the matching `Search<Library>` tool (e.g. `SearchBitBlazorUI`, `SearchBswup`, `SearchButil`, `SearchBmotion`, `SearchBink`, `SearchBalette`, `SearchBbScanner`, `SearchBdnd`, `SearchBlazeDb`, `SearchBlow`, `SearchBorm`, `SearchBcrdt`, `SearchBonboarding`, `SearchBortable`, `SearchBlex`, `SearchBmage`, `SearchBsqlite`, `SearchBheadless`, `SearchBrouter`) and follow the calls it names - to find the correct implementation and usage patterns before writing or changing any code.
 
 **End of RULE 1**
 

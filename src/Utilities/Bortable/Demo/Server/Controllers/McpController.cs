@@ -42,10 +42,11 @@ namespace Bit.Bortable.Demo.Server.Controllers;
 public class McpController : ControllerBase
 {
     // The longest real answer is the component's own code - the sorting engine, every rule a drag is
-    // put through - at about 45,000 characters; the component's reference, the README's longest
-    // sections and the demo's pages land far below it. The cap sits above all of them so each arrives
-    // whole, and is there so a pathological answer cannot dominate a client's context window.
-    private const int MaxDocumentLength = 60_000;
+    // put through, the keyboard and the moves made by code - at under 100,000 characters; the
+    // component's reference, the README's longest sections and the demo's pages land far below it. The
+    // cap sits above all of them so each arrives whole, and is there so a pathological answer cannot
+    // dominate a client's context window.
+    private const int MaxDocumentLength = 120_000;
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBortable), Title = "Search everything about Bit.Bortable", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
@@ -153,9 +154,9 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBortableSourceFile), Title = "Read a source file", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one working Bit.Bortable source file verbatim - e.g. 'Demo/Client/Pages/Shared.razor' (two lists of a group), 'Demo/Client/Pages/Cloning.razor' (a clone factory), 'Demo/Client/Pages/SwapDemo.razor', 'Demo/Client/Pages/MultiDragDemo.razor', 'Demo/Client/Pages/NestedList.razor' (a recursive tree), 'Library/Components/Bortable.razor.cs' (the sorting engine) or 'Library/Styles/bit-bortable.css' (the shipped stylesheet); a demo page's route, such as '/swap', works too. Omit the path for the index of files: the demo pages, each a working list, the library's component and stylesheet, and the hosting files of a Blazor Web App. These are worked examples - for what a parameter means, GetBortableApi answers in a fraction of the characters.")]
+    [Description("Gets one working Bit.Bortable source file verbatim - e.g. 'Demo/Client/Samples/GroupedLists.razor' (two lists of a group), 'Demo/Client/Samples/CloneSource.razor' (a clone factory), 'Demo/Client/Samples/SwapAcross.razor', 'Demo/Client/Samples/MultiSelectList.razor', 'Demo/Client/Samples/NestedList.razor' (a recursive tree), 'Library/Components/Bortable.razor.cs' (the sorting engine) or 'Library/Styles/bit-bortable.css' (the shipped stylesheet); a demo page's route, such as '/swap', gives the page, which names the samples it renders. Omit the path for the index of files: the demo pages and their samples, each sample a working list, the library's component and stylesheet, and the hosting files of a Blazor Web App. These are worked examples - for what a parameter means, GetBortableApi answers in a fraction of the characters.")]
     public string GetBortableSourceFile(
-        [Description("The file's path as the index lists it, e.g. 'Demo/Client/Pages/Shared.razor', or a demo page's route, e.g. '/shared'. Omit it for the index of files.")] string? path = null)
+        [Description("The file's path as the index lists it, e.g. 'Demo/Client/Samples/GroupedLists.razor', or a demo page's route, e.g. '/shared'. Omit it for the index of files.")] string? path = null)
     {
         if (string.IsNullOrWhiteSpace(path)) return Truncate(BortableSourceCatalog.RenderSourceIndex());
 

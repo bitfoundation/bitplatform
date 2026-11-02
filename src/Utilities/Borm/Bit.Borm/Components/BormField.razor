@@ -53,7 +53,7 @@
             _subscribed.StateChanged += OnStateChanged;
         }
 
-        _field = State.Definition.FindByPath(Name);
+        _field = State.FindField(Name);
 
         if (_field is null && ThrowIfMissing)
             throw new InvalidOperationException(

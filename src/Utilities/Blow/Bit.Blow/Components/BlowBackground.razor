@@ -29,7 +29,8 @@
 </svg>
 
 @code {
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.ViewportVersion)] private int ViewportVersion { get; set; }
 
     /// <summary>Pattern style: dots, lines or cross.</summary>
     [Parameter] public BlowBackgroundVariant Variant { get; set; } = BlowBackgroundVariant.Dots;

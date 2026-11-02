@@ -8,13 +8,14 @@ public enum BmColorSpace
 {
     /// <summary>
     /// Per-channel sRGB interpolation (default, matching Framer Motion). Fast and predictable, but
-    /// complementary colors can pass through a desaturated grey mid-point.
+    /// between two distant colors it dips darker and muddier in the middle than its two ends suggest.
     /// </summary>
     Srgb = 0,
 
     /// <summary>
-    /// Perceptual OKLab interpolation. Keeps mid-points saturated (e.g. blue→yellow stays vivid) at
-    /// a small extra cost per frame.
+    /// Perceptual OKLab interpolation: the lightness changes evenly between the two ends, so mid-points
+    /// stay clean and bright (blue→yellow passes a light blue-grey rather than sRGB's dark one), at a
+    /// small extra cost per frame.
     /// </summary>
     Oklab = 1,
 }

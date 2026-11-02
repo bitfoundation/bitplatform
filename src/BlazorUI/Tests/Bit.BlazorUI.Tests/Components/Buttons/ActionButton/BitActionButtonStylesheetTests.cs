@@ -41,9 +41,14 @@ public partial class BitActionButtonStylesheetTests
 
         // So does an explicit Color, for every color it paints - the disabled icon and focus ring included.
         StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-ico, var(--bit-ActionButton-icon-color, #{$clr-pri}));");
-        // The hover and press states set the variable the rule at rest paints from, never the color itself.
-        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
+        // The hover and press states set the variable the rule at rest paints from, never the color itself. The label is
+        // still read on the page there, so under a Color it takes the role's text color while the icon moves through the
+        // role's hover and press colors.
+        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
+        StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-acb-#{$role} {"), "--bit-acb-clr-fg: #{role-text($role, $tokens)};");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color)))");
         StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-dis-text, var(--bit-ActionButton-disabled-color, #{$clr-pri-dis-text}));");
 

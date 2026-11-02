@@ -45,7 +45,7 @@
 /* ---------- The editor component, on the site's theme ----------
 
    The Bmage editor is themed entirely through custom properties on .bmg-editor (see
-   _content/Bit.Bmage/bit-bmage-editor.css), and out of the box it follows the operating system's
+   _content/Bit.Bmage.Blazor/bit-bmage-editor.css), and out of the box it follows the operating system's
    prefers-color-scheme. This site has a theme switch of its own in the header, so an editor left
    on the defaults would be dark on a light page whenever the two disagree. These rules are the fix
    a real host would write too: they point the editor's tokens at the site's, which already follow

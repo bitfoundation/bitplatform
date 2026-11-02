@@ -1,0 +1,285 @@
+﻿@page "/e2e/aiagentrunview"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiAgentRunView E2E</PageTitle>
+
+<h1>BitAiAgentRunView</h1>
+
+@* A run the session builds from the agent script, its events paced so every step is seen running before it completes;
+   the clock moves every 100ms so its ticking is quick to see. *@
+<E2ESection Id="session" Title="A run of the session">
+    <button id="btn-session-start" @onclick="StartResearch">Start the research</button>
+    <p>Reply: <span id="session-reply">@_research?.Reply</span></p>
+    @if (_research?.Run is { } researchRun)
+    {
+        <BitAiAgentRunView Id="arv-session" Run="researchRun" Session="_research.Session" ClockInterval="TimeSpan.FromMilliseconds(100)" />
+    }
+</E2ESection>
+
+@* Two runs of the agent-input script, which stops at its second step to ask the user: one is answered by a suggestion,
+   the other by an answer typed into the field. Neither has an OnRespond, so the answer goes to the session, which
+   resumes the run. *@
+<E2ESection Id="input" Title="Asking the user">
+    <button id="btn-input-pick-start" @onclick="StartPick">Start the migration (pick)</button>
+    <p>Reply: <span id="input-pick-reply">@_pick?.Reply</span> (generating: <span id="input-pick-generating">@(_pick?.Session.IsGenerating.ToString() ?? "-")</span>)</p>
+    @if (_pick?.Run is { } pickRun)
+    {
+        <BitAiAgentRunView Id="arv-input-pick" Run="pickRun" Session="_pick.Session" />
+    }
+
+    <button id="btn-input-type-start" @onclick="StartType">Start the migration (type)</button>
+    <p>Reply: <span id="input-type-reply">@_type?.Reply</span> (generating: <span id="input-type-generating">@(_type?.Session.IsGenerating.ToString() ?? "-")</span>)</p>
+    @if (_type?.Run is { } typeRun)
+    {
+        <BitAiAgentRunView Id="arv-input-type" Run="typeRun" Session="_type.Session" />
+    }
+
+    @* The same script paced, so its question is up while the turn that asked it still streams its last sentence. *@
+    <button id="btn-input-busy-start" @onclick="StartBusy">Start the migration (answer while it streams)</button>
+    <p>Reply: <span id="input-busy-reply">@_busy?.Reply</span> (generating: <span id="input-busy-generating">@(_busy?.Session.IsGenerating.ToString() ?? "-")</span>)</p>
+    @if (_busy?.Run is { } busyRun)
+    {
+        <BitAiAgentRunView Id="arv-input-busy" Run="busyRun" Session="_busy.Session" />
+    }
+</E2ESection>
+
+<E2ESection Id="fail" Title="A failed run">
+    <button id="btn-fail-start" @onclick="StartFail">Deploy the release</button>
+    <p>Reply: <span id="fail-reply">@_fail?.Reply</span></p>
+    @if (_fail?.Run is { } failRun)
+    {
+        <BitAiAgentRunView Id="arv-fail" Run="failRun" Session="_fail.Session" />
+    }
+</E2ESection>
+
+@* A run the page moves itself, one button per transition, so each state can be looked at for as long as a test wants. *@
+<E2ESection Id="manual" Title="A run moved by the page">
+    <button id="btn-manual-start" @onclick="StartNextManualStep">Start the next step</button>
+    <button id="btn-manual-complete" @onclick="CompleteManualStep">Complete the running step</button>
+    <button id="btn-manual-fail-step" @onclick="FailManualStep">Fail the running step</button>
+    <button id="btn-manual-finish" @onclick="FinishManualRun">Finish the run</button>
+    <button id="btn-manual-fail-run" @onclick="FailManualRun">Fail the run</button>
+    <button id="btn-manual-reset" @onclick="ResetManualRun">Reset the run</button>
+    <BitAiAgentRunView Id="arv-manual" Run="_manual" ClockInterval="TimeSpan.FromMilliseconds(100)" />
+</E2ESection>
+
+@* A run whose question is answered through OnRespond: the page records the answer and resumes the run itself. *@
+<E2ESection Id="respond" Title="OnRespond">
+    <p>Answered: <span id="respond-answer">@_answered</span> (<span id="respond-count">@_answerCount</span>)</p>
+    <button id="btn-respond-reset" @onclick="ResetAskingRun">Ask again</button>
+    <BitAiAgentRunView Id="arv-respond" Run="_asking" OnRespond="RespondToAskingRun" />
+</E2ESection>
+
+@* ShowUsage on through the options in force: the header totals the usage the run is given. *@
+<E2ESection Id="usage" Title="Usage">
+    <button id="btn-usage-add" @onclick="AddUsage">Add usage</button>
+    <BitAiOptionsProvider UiOptions="_usageOptions">
+        <BitAiAgentRunView Id="arv-usage" Run="_usageRun" />
+    </BitAiOptionsProvider>
+    <BitAiAgentRunView Id="arv-usage-hidden" Run="_usageRun" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiAgentRunView Id="arv-disabled" Run="_disabledRun" Disabled="true" />
+</E2ESection>
+
+<E2ESection Id="vars" Title="Public variables, Styles and Classes">
+    <div style="--bit-AiAgentRunView-background: rgb(1, 2, 3);
+                --bit-AiAgentRunView-body-background: rgb(4, 5, 6);
+                --bit-AiAgentRunView-border-color: rgb(7, 8, 9);
+                --bit-AiAgentRunView-border-width: 3px;
+                --bit-AiAgentRunView-radius: 9px;
+                --bit-AiAgentRunView-header-color: rgb(10, 11, 12);
+                --bit-AiAgentRunView-text-color: rgb(13, 14, 15);
+                --bit-AiAgentRunView-prompt-background: rgb(16, 17, 18);
+                --bit-AiAgentRunView-progress-max-width: 50px;">
+        <BitAiAgentRunView Id="arv-vars" Run="_styledRun" />
+    </div>
+    <BitAiAgentRunView Id="arv-styles"
+                       Run="_styledRun"
+                       Style="background-color: rgb(20, 21, 22)"
+                       Styles="@(new() { Goal = "color: rgb(30, 31, 32)", Question = "font-weight: 700" })"
+                       Classes="@(new() { Header = "e2e-arv-header", StepItem = "e2e-arv-item", Step = new() { Root = "e2e-arv-step" } })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiAgentRunView Id="arv-rtl" Dir="BitDir.Rtl" Run="_styledRun" />
+    <div dir="rtl">
+        <BitAiAgentRunView Id="arv-rtl-inherited" Run="_styledRun" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private ScriptedRun? _research;
+    private ScriptedRun? _pick;
+    private ScriptedRun? _type;
+    private ScriptedRun? _busy;
+    private ScriptedRun? _fail;
+
+    private BitAiAgentRun _manual = NewManualRun();
+    private BitAiAgentRun _asking = NewAskingRun();
+    private string _answered = "-";
+    private int _answerCount;
+
+    private readonly BitAiUiOptions _usageOptions = BitAiUiOptions.Default with { ShowUsage = true };
+    private readonly BitAiAgentRun _usageRun = NewRunningRun("usage", "Usage agent");
+    private readonly BitAiAgentRun _disabledRun = NewWaitingRun("disabled");
+    private readonly BitAiAgentRun _styledRun = NewWaitingRun("styled");
+
+    private async Task StartResearch()
+    {
+        _research = await StartAsync(_research, E2EAiScripts.Agent, 400, "Find out why the three studies disagree");
+    }
+
+    private async Task StartPick()
+    {
+        _pick = await StartAsync(_pick, E2EAiScripts.AgentInput, 0, "Migrate the database");
+    }
+
+    private async Task StartType()
+    {
+        _type = await StartAsync(_type, E2EAiScripts.AgentInput, 0, "Migrate the database");
+    }
+
+    private async Task StartBusy()
+    {
+        _busy = await StartAsync(_busy, E2EAiScripts.AgentInput, 250, "Migrate the database");
+    }
+
+    private async Task StartFail()
+    {
+        _fail = await StartAsync(_fail, E2EAiScripts.AgentFail, 0, "Ship the release");
+    }
+
+    private async Task<ScriptedRun> StartAsync(ScriptedRun? previous, string script, int delayMs, string prompt)
+    {
+        if (previous is not null) await previous.DisposeAsync();
+
+        var run = new ScriptedRun(script, delayMs, () => InvokeAsync(StateHasChanged));
+
+        // The turn runs on without holding the click up; the page follows it through the session's StateChanged.
+        _ = run.Session.SubmitAsync(prompt);
+
+        return run;
+    }
+
+    private void StartNextManualStep()
+    {
+        var step = _manual.Steps.FirstOrDefault(s => s.Status is BitAiAgentStepStatus.Pending);
+        _manual.SetStatus(BitAiAgentRunStatus.Running);
+        step?.Start();
+    }
+
+    private void CompleteManualStep()
+    {
+        if (_manual.Steps.FirstOrDefault(s => s.Status is BitAiAgentStepStatus.Running) is { } step)
+        {
+            step.Complete(summary: $"{step.Title} done");
+        }
+    }
+
+    private void FailManualStep()
+    {
+        if (_manual.Steps.FirstOrDefault(s => s.Status is BitAiAgentStepStatus.Running) is { } step)
+        {
+            step.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("Review rejected"));
+        }
+    }
+
+    private void FinishManualRun() => _manual.SetStatus(BitAiAgentRunStatus.Completed);
+
+    private void FailManualRun() => _manual.SetError(new BitAiError("The agent gave up") { Detail = "No reviewer answered." });
+
+    private void ResetManualRun() => _manual = NewManualRun();
+
+    private void RespondToAskingRun(string answer)
+    {
+        _answered = answer;
+        _answerCount++;
+        _asking.ResolveInput();
+        _asking.Steps[0].Complete(summary: $"Picked {answer}");
+        _asking.Steps[1].Start();
+    }
+
+    private void ResetAskingRun()
+    {
+        _asking = NewAskingRun();
+        _answered = "-";
+        _answerCount = 0;
+    }
+
+    private void AddUsage() => _usageRun.AddUsage(new BitAiTokenUsage { InputTokens = 1200, OutputTokens = 300, Cost = 0.0081m, Currency = "USD" });
+
+    private static BitAiAgentRun NewManualRun()
+    {
+        var run = new BitAiAgentRun("manual", "Docs agent") { Goal = "Publish the release notes" };
+        run.SetPlan([new BitAiAgentPlanStep("m1", "Draft"), new BitAiAgentPlanStep("m2", "Review"), new BitAiAgentPlanStep("m3", "Publish")]);
+        return run;
+    }
+
+    private static BitAiAgentRun NewAskingRun()
+    {
+        var run = new BitAiAgentRun("asking", "Paint agent") { Goal = "Paint the fence" };
+        run.SetPlan([new BitAiAgentPlanStep("c1", "Pick a color"), new BitAiAgentPlanStep("c2", "Paint")]);
+        run.SetStatus(BitAiAgentRunStatus.Running);
+        run.Steps[0].Start();
+        run.RequestInput("Which color should I use?", ["Red", "Blue"]);
+        return run;
+    }
+
+    private static BitAiAgentRun NewRunningRun(string id, string name)
+    {
+        var run = new BitAiAgentRun(id, name) { Goal = "Count the tokens" };
+        run.SetPlan([new BitAiAgentPlanStep($"{id}-1", "Think"), new BitAiAgentPlanStep($"{id}-2", "Answer")]);
+        run.SetStatus(BitAiAgentRunStatus.Running);
+        run.Steps[0].Start();
+        return run;
+    }
+
+    private static BitAiAgentRun NewWaitingRun(string id)
+    {
+        var run = new BitAiAgentRun(id, "Styled agent") { Goal = "Look the part" };
+        run.SetPlan([new BitAiAgentPlanStep($"{id}-1", "Look around"), new BitAiAgentPlanStep($"{id}-2", "Ask"), new BitAiAgentPlanStep($"{id}-3", "Finish")]);
+        run.SetStatus(BitAiAgentRunStatus.Running);
+        run.Steps[0].Start();
+        run.Steps[0].Complete(summary: "Looked around");
+        run.Steps[1].Start();
+        run.RequestInput("Shall I go on?", ["Yes", "No"]);
+        return run;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var run in new[] { _research, _pick, _type, _busy, _fail })
+        {
+            if (run is not null) await run.DisposeAsync();
+        }
+    }
+
+    // One session over a transport that plays a single script, and the run it builds.
+    private sealed class ScriptedRun : IAsyncDisposable
+    {
+        private readonly Action _changed;
+
+        public ScriptedRun(string script, int delayMs, Action changed)
+        {
+            _changed = changed;
+            Session = new BitAiChatSession(E2EAiTransport.For(script, delayMs));
+            Session.StateChanged += _changed;
+        }
+
+        public BitAiChatSession Session { get; }
+
+        public BitAiAgentRun? Run => Session.Conversation.Runs.Values.FirstOrDefault();
+
+        public string Reply => Session.Conversation.Messages.LastOrDefault(m => m.Role == BitAiRole.Assistant)?.GetText() ?? string.Empty;
+
+        public async ValueTask DisposeAsync()
+        {
+            Session.StateChanged -= _changed;
+            await Session.DisposeAsync();
+        }
+    }
+}

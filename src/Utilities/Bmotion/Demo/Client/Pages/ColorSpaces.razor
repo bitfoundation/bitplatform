@@ -7,9 +7,11 @@
     <p class="bb-subtitle">
         Interpolating a color means walking a straight line between two points - but <em>which</em>
         space you draw that line in decides what the midpoints look like. In sRGB the channels are
-        mixed numerically, which is why complementary colors pass through a desaturated grey on the
-        way. <strong>OKLab</strong> is built so that equal steps look like equal steps, so the same
-        journey keeps its chroma the whole way across.
+        mixed numerically, which is why two distant colors pass through a dark, muddy middle on the
+        way. <strong>OKLab</strong> is built so that equal steps look like equal steps: the lightness
+        travels evenly from one end to the other, so the same journey stays clean and bright the
+        whole way across. Opposite hues still meet near grey in the middle - in any space a straight
+        line between them crosses it - but a light grey, not a dark one.
     </p>
 </div>
 
@@ -55,7 +57,37 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> When it matters</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> For a whole subtree</h3>
+    <p>
+        <code>&lt;BmotionConfig ColorSpace="BmColorSpace.Oklab"&gt;</code> sets the space for every colour
+        animation inside it that doesn't choose its own - colour keyframes included, so a palette cycle passes
+        clean mid-points at every step. A transition that sets its own <code>colorSpace</code> still wins inside
+        it, so one exception needs no second config. Both orbs below cycle through the same four stops on the
+        same 4.5&nbsp;s loop; only the right one sits inside the config.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">no config &middot; sRGB</span>
+            <Bmotion Animate="_palette" Transition="Bm.Tween(4.5, BmEase.Linear, repeat: BmRepeat.Forever)">
+                <div class="box color-orb" style="background-color:#0000FF" />
+            </Bmotion>
+        </div>
+        <div class="demo-card stack">
+            <span class="demo-label">inside BmotionConfig ColorSpace="Oklab"</span>
+            <BmotionConfig ColorSpace="BmColorSpace.Oklab">
+                <Bmotion Animate="_palette" Transition="Bm.Tween(4.5, BmEase.Linear, repeat: BmRepeat.Forever)">
+                    <div class="box color-orb" style="background-color:#0000FF" />
+                </Bmotion>
+            </BmotionConfig>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_configCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> When it matters</h3>
     <p>
         Not every transition needs it. The two colors have to be far enough apart for the midpoint
         to be visible at all, so the difference is obvious on opposites - blue to yellow, red to
@@ -86,18 +118,45 @@
         Pair("magenta → teal", "#C61Ecb", "#12B8A6"),
     ];
 
+    // A palette cycle: blue, yellow, red and back to blue, so each loop arrives where the next begins.
+    private static readonly BmProps _palette = Bm.To(backgroundColor: ["#0000FF", "#FFDD00", "#E01B24", "#0000FF"]);
+
+    private const string _configCode = """
+        @using Bit.Bmotion
+
+        @* Every colour animation inside picks OKLab unless its transition names a space itself -
+           keyframe palettes included. *@
+        <BmotionConfig ColorSpace="BmColorSpace.Oklab">
+            <Bmotion Animate='Bm.To(backgroundColor: ["#0000FF", "#FFDD00", "#E01B24", "#0000FF"])'
+                     Transition="Bm.Tween(4.5, BmEase.Linear, repeat: BmRepeat.Forever)">
+                <div class="orb" style="background-color:#0000FF" />
+            </Bmotion>
+
+            @* The exception: this one keeps sRGB without leaving the config. *@
+            <Bmotion Animate='Bm.To(backgroundColor: "#FFDD00")'
+                     Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Srgb)">
+                <div class="orb" style="background-color:#0000FF" />
+            </Bmotion>
+        </BmotionConfig>
+        """;
+
     private const string _code = """
         @using Bit.Bmotion
 
         @* Per-transition. sRGB is the default, matching Framer Motion. *@
-        <Bmotion Animate='Bm.To(backgroundColor: "#FFDD00")'
+        <Bmotion Animate='@(_on ? Bm.To(backgroundColor: "#FFDD00") : Bm.To(backgroundColor: "#0000FF"))'
                  Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
-            <div class="swatch" />
+            <div class="swatch" style="background:#0000FF" />
         </Bmotion>
+        <button @onclick="@(() => _on = !_on)">Cross-fade</button>
 
         @* …or once, for a whole subtree. *@
         <BmotionConfig ColorSpace="BmColorSpace.Oklab">
             ...
         </BmotionConfig>
+
+        @code {
+            private bool _on;
+        }
         """;
 }

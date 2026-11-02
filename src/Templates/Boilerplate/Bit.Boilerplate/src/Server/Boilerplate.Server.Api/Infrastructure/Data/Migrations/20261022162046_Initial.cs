@@ -391,6 +391,7 @@ public partial class Initial : Migration
                 Trusted = table.Column<bool>(type: "INTEGER", nullable: false),
                 StartedOn = table.Column<long>(type: "INTEGER", nullable: false),
                 RenewedOn = table.Column<long>(type: "INTEGER", nullable: true),
+                PreviousRenewedOn = table.Column<long>(type: "INTEGER", nullable: true),
                 UserId = table.Column<Guid>(type: "TEXT", nullable: false),
                 TenantId = table.Column<Guid>(type: "TEXT", nullable: true),
                 SignalRConnectionId = table.Column<string>(type: "TEXT", nullable: true),

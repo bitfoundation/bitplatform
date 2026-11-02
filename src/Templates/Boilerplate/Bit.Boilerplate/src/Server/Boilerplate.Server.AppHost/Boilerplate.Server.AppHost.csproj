@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <IsAspireHost>true</IsAspireHost>
         <EntryPointAccessibility>public</EntryPointAccessibility>
         <UserSecretsId>AC87AA5B-4B37-4E52-8468-2D5DF24AF256</UserSecretsId>
@@ -11,14 +11,18 @@
     <ItemGroup>
         <PackageReference Condition="'$(cloudflare)' == 'true' OR '$(cloudflare)' == ''" Include="Shirubasoft.Aspire.CloudflareTunnels" />
         <PackageReference Include="Aspire.Hosting.Keycloak" />
+        <PackageReference Include="Aspire.Hosting.Docker" />
         <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="Aspire.Hosting.MySql" />
         <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Redis" />
-        <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="Aspire.Hosting.Azure.Redis" />
         <PackageReference Include="CommunityToolkit.Aspire.Hosting.MailPit" />
         <PackageReference Condition=" '$(database)' == 'Sqlite' OR '$(database)' == '' " Include="CommunityToolkit.Aspire.Hosting.Sqlite" />
-        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.Azure.Sql" />
+        <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="Aspire.Hosting.SqlServer" />
         <PackageReference Condition=" '$(database)' == 'SqlServer' OR '$(database)' == ''" Include="CommunityToolkit.Aspire.Hosting.SqlServer.Extensions" />
-        <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Aspire.Hosting.Azure.PostgreSQL" />
+        <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="Aspire.Hosting.PostgreSQL" />
+        <PackageReference Condition=" '$(database)' == 'PostgreSQL' OR '$(database)' == '' " Include="CommunityToolkit.Aspire.Hosting.PostgreSQL.Extensions" />
+        <PackageReference Condition=" '$(database)' == 'MySql' OR '$(database)' == '' " Include="CommunityToolkit.Aspire.Hosting.MySql.Extensions" />
+        <PackageReference Condition="'$(redis)' == 'true' OR '$(redis)' == ''" Include="CommunityToolkit.Aspire.Hosting.Redis.Extensions" />
+        <PackageReference Condition=" '$(database)' != 'Other' OR '$(redis)' == 'true' " Include="CommunityToolkit.Aspire.Hosting.DbGate" />
         <PackageReference Condition=" '$(filesStorage)' == 'AzureBlobStorage' OR '$(filesStorage)' == '' " Include="Aspire.Hosting.Azure.Storage" />
         <PackageReference Condition=" '$(filesStorage)' == 'S3' OR '$(filesStorage)' == '' " Include="CommunityToolkit.Aspire.Hosting.RustFs" />
     </ItemGroup>
@@ -26,6 +30,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Web\Boilerplate.Client.Web.csproj" />
         <ProjectReference Include="..\..\Client\Boilerplate.Client.Windows\Boilerplate.Client.Windows.csproj" />
+        <ProjectReference Include="..\..\Workbench\Boilerplate.Workbench.csproj" />
         <ProjectReference Include="..\Boilerplate.Server.Web\Boilerplate.Server.Web.csproj" />
         <ProjectReference Include="..\Boilerplate.Server.Shared\Boilerplate.Server.Shared.csproj" IsAspireProjectResource="false" />
         <ProjectReference Condition=" '$(api)' == 'Standalone' OR '$(api)' == ''" Include="..\Boilerplate.Server.Api\Boilerplate.Server.Api.csproj" />

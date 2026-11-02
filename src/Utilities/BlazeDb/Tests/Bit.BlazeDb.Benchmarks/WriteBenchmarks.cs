@@ -30,11 +30,12 @@ public class WriteBenchmarks
         _memDb = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions().AddTable(BenchPerson.Table));
         _memPeople = _memDb.GetTable(BenchPerson.Table);
 
+        // The default checkpoint threshold, as an application runs: a long run would otherwise grow the
+        // in-memory log without bound, and checkpoints are part of what sustained writing costs.
         _journaledDb = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
         {
             Storage = new BlazeDbInMemoryStorage(),
             FlushInterval = TimeSpan.FromMilliseconds(100),
-            CheckpointWalSize = long.MaxValue,
         }.AddTable(BenchPerson.Table));
         _journaledPeople = _journaledDb.GetTable(BenchPerson.Table);
 

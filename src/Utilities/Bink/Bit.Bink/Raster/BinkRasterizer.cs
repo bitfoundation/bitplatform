@@ -16,6 +16,8 @@ public sealed class BinkRasterizer
     /// <summary>Sub-rows sampled per pixel row. 16 is visually indistinguishable from exact area coverage for ink.</summary>
     public const int SubSamples = 16;
 
+    internal const string WorkLimitMessage = "Drawing the document takes more rasterizing work than the export allows.";
+
     private readonly List<Edge> _edges = new(256);
     private readonly List<int> _active = new(64);
     private readonly List<Crossing> _crossings = new(64);
@@ -105,19 +107,21 @@ public sealed class BinkRasterizer
     /// <param name="clip">Device-pixel clip rectangle; nothing outside it is produced.</param>
     /// <param name="rule">Fill rule.</param>
     /// <param name="onRow">Receives the row index, the first covered column and the coverage values for that span.</param>
-    public void Rasterize(BinkRect clip, BinkFillRule rule, RowCallback onRow)
+    public void Rasterize(BinkRect clip, BinkFillRule rule, RowCallback onRow) => Rasterize(clip, rule, onRow, long.MaxValue);
+
+    internal long Rasterize(BinkRect clip, BinkFillRule rule, RowCallback onRow, long workLimit)
     {
         ArgumentNullException.ThrowIfNull(onRow);
-        if (_edges.Count == 0) return;
+        if (_edges.Count == 0) return 0;
 
         BinkRect bounds = Bounds.Intersect(clip);
-        if (bounds.IsEmpty) return;
+        if (bounds.IsEmpty) return 0;
 
         int yStart = Math.Max((int)MathF.Floor(bounds.Top), (int)MathF.Floor(clip.Top));
         int yEnd = Math.Min((int)MathF.Ceiling(bounds.Bottom), (int)MathF.Ceiling(clip.Bottom));
         int xStart = Math.Max((int)MathF.Floor(bounds.Left), (int)MathF.Floor(clip.Left));
         int xEnd = Math.Min((int)MathF.Ceiling(bounds.Right), (int)MathF.Ceiling(clip.Right));
-        if (yEnd <= yStart || xEnd <= xStart) return;
+        if (yEnd <= yStart || xEnd <= xStart) return 0;
 
         int rowWidth = xEnd - xStart;
         if (_coverage.Length < rowWidth) _coverage = new float[Math.Max(rowWidth, _coverage.Length * 2)];
@@ -129,23 +133,31 @@ public sealed class BinkRasterizer
         int nextEdge = 0;
         const float subHeight = 1f / SubSamples;
         float weight = 1f / SubSamples;
+        long work = 0;
 
         for (int y = yStart; y < yEnd; y++)
         {
-            coverage.Clear();
             float rowTop = y;
             float rowBottom = y + 1f;
 
             while (nextEdge < _edges.Count && _edges[nextEdge].YMin < rowBottom) _active.Add(nextEdge++);
-            for (int i = _active.Count - 1; i >= 0; i--)
+            int kept = 0;
+            for (int i = 0; i < _active.Count; i++)
             {
-                if (_edges[_active[i]].YMax <= rowTop) _active.RemoveAt(i);
+                int index = _active[i];
+                if (_edges[index].YMax > rowTop) _active[kept++] = index;
             }
+            _active.RemoveRange(kept, _active.Count - kept);
             if (_active.Count == 0)
             {
                 if (nextEdge >= _edges.Count) break;
+                work++;
                 continue;
             }
+
+            coverage.Clear();
+            work += rowWidth + (long)_active.Count * SubSamples;
+            if (work > workLimit) throw new InvalidOperationException(WorkLimitMessage);
 
             bool touched = false;
             for (int s = 0; s < SubSamples; s++)
@@ -159,6 +171,8 @@ public sealed class BinkRasterizer
                     _crossings.Add(new Crossing(edge.XAt(sampleY), edge.Direction));
                 }
                 if (_crossings.Count < 2) continue;
+                work += (long)_crossings.Count * BitOperations.Log2((uint)_crossings.Count);
+                if (work > workLimit) throw new InvalidOperationException(WorkLimitMessage);
                 _crossings.Sort(static (a, b) => a.X.CompareTo(b.X));
 
                 int winding = 0;
@@ -170,7 +184,7 @@ public sealed class BinkRasterizer
                     float spanStart = _crossings[i].X;
                     float spanEnd = _crossings[i + 1].X;
                     if (spanEnd <= xStart || spanStart >= xEnd) continue;
-                    AccumulateSpan(coverage, xStart, xEnd, spanStart, spanEnd, weight);
+                    work += AccumulateSpan(coverage, xStart, xEnd, spanStart, spanEnd, weight);
                     touched = true;
                 }
             }
@@ -183,15 +197,18 @@ public sealed class BinkRasterizer
             if (first >= rowWidth) continue;
             int last = rowWidth - 1;
             while (last > first && coverage[last] <= 0.0005f) last--;
+            work += last + 1 - first;
             onRow(y, xStart + first, coverage[first..(last + 1)]);
         }
+        if (work > workLimit) throw new InvalidOperationException(WorkLimitMessage);
+        return work;
     }
 
-    private static void AccumulateSpan(Span<float> coverage, int xStart, int xEnd, float spanStart, float spanEnd, float weight)
+    private static int AccumulateSpan(Span<float> coverage, int xStart, int xEnd, float spanStart, float spanEnd, float weight)
     {
         spanStart = MathF.Max(spanStart, xStart);
         spanEnd = MathF.Min(spanEnd, xEnd);
-        if (spanEnd <= spanStart) return;
+        if (spanEnd <= spanStart) return 0;
 
         int first = (int)MathF.Floor(spanStart);
         int last = (int)MathF.Ceiling(spanEnd) - 1;
@@ -199,12 +216,13 @@ public sealed class BinkRasterizer
         if (first == last)
         {
             coverage[first - xStart] += (spanEnd - spanStart) * weight;
-            return;
+            return 1;
         }
         // Partial pixel at both ends, full pixels in between.
         coverage[first - xStart] += (first + 1 - spanStart) * weight;
         for (int x = first + 1; x < last; x++) coverage[x - xStart] += weight;
         coverage[last - xStart] += (spanEnd - last) * weight;
+        return last - first + 1;
     }
 
     /// <summary>Receives one rasterized row: its y, the x of the first value and the coverage values.</summary>

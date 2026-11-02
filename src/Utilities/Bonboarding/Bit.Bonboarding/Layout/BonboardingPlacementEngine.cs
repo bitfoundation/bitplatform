@@ -98,7 +98,7 @@ public static class BonboardingPlacementEngine
             return (BestSide(target, safe), BonboardingPlacementAlign.Center);
         }
 
-        var (side, align) = Split(placement);
+        var (side, align) = Split(placement, rtl);
         return (side, rtl && side is BonboardingPlacementSide.Top or BonboardingPlacementSide.Bottom ? Mirror(align) : align);
     }
 
@@ -133,7 +133,7 @@ public static class BonboardingPlacementEngine
             foreach (var fallback in explicitFallbacks)
             {
                 if (fallback is BonboardingPlacement.Auto or BonboardingPlacement.Center) continue;
-                var (side, align) = Split(fallback);
+                var (side, align) = Split(fallback, rtl);
                 if (rtl && side is BonboardingPlacementSide.Top or BonboardingPlacementSide.Bottom) align = Mirror(align);
                 AddDistinct(list, (side, align));
             }
@@ -298,8 +298,18 @@ public static class BonboardingPlacementEngine
         return (true, center - popoverStart);
     }
 
-    internal static (BonboardingPlacementSide Side, BonboardingPlacementAlign Align) Split(BonboardingPlacement placement) => placement switch
+    /// <summary>
+    /// The physical side and the alignment of a placement. The logical sides resolve against the direction here;
+    /// the logical alignments of Top and Bottom are mirrored by the caller.
+    /// </summary>
+    internal static (BonboardingPlacementSide Side, BonboardingPlacementAlign Align) Split(BonboardingPlacement placement, bool rtl) => placement switch
     {
+        BonboardingPlacement.InlineStart => (rtl ? BonboardingPlacementSide.Right : BonboardingPlacementSide.Left, BonboardingPlacementAlign.Center),
+        BonboardingPlacement.InlineStartTop => (rtl ? BonboardingPlacementSide.Right : BonboardingPlacementSide.Left, BonboardingPlacementAlign.Start),
+        BonboardingPlacement.InlineStartBottom => (rtl ? BonboardingPlacementSide.Right : BonboardingPlacementSide.Left, BonboardingPlacementAlign.End),
+        BonboardingPlacement.InlineEnd => (rtl ? BonboardingPlacementSide.Left : BonboardingPlacementSide.Right, BonboardingPlacementAlign.Center),
+        BonboardingPlacement.InlineEndTop => (rtl ? BonboardingPlacementSide.Left : BonboardingPlacementSide.Right, BonboardingPlacementAlign.Start),
+        BonboardingPlacement.InlineEndBottom => (rtl ? BonboardingPlacementSide.Left : BonboardingPlacementSide.Right, BonboardingPlacementAlign.End),
         BonboardingPlacement.Top => (BonboardingPlacementSide.Top, BonboardingPlacementAlign.Center),
         BonboardingPlacement.TopStart => (BonboardingPlacementSide.Top, BonboardingPlacementAlign.Start),
         BonboardingPlacement.TopEnd => (BonboardingPlacementSide.Top, BonboardingPlacementAlign.End),

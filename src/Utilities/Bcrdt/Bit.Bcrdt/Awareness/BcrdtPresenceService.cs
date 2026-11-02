@@ -191,7 +191,8 @@ public sealed partial class BcrdtPresenceService : IDisposable
     /// browser tab leaves its circuit - and so its document and heartbeat - alive for the circuit
     /// retention period, which would keep the person listed as present for minutes. Call this from a
     /// <c>CircuitHandler</c>'s <c>OnConnectionDownAsync</c>, and <see cref="Resume"/> from
-    /// <c>OnConnectionUpAsync</c>.
+    /// <c>OnConnectionUpAsync</c> - which is what <c>AddBitBcrdtCircuitPresence</c> from
+    /// <c>Bit.Bcrdt.Server</c> registers.
     /// </remarks>
     public void Suspend()
     {

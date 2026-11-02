@@ -20,7 +20,7 @@ public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
         int bracket = isImage ? i + 1 : i;
         if (bracket >= s.Length || s[bracket] != '[') return false;
 
-        int labelEnd = BitMarkdownLinkHelpers.FindLabelEnd(s, bracket);
+        int labelEnd = state.FindLabelEnd(bracket);
         if (labelEnd < 0) return false;
 
         string label = s.Substring(bracket + 1, labelEnd - bracket - 1);
@@ -58,7 +58,7 @@ public sealed class BitMarkdownLinkInlineParser : BitMarkdownInlineParser
         int p = labelEnd + 1;
         if (p < s.Length && s[p] == '[')
         {
-            int referenceEnd = BitMarkdownLinkHelpers.FindLabelEnd(s, p);
+            int referenceEnd = state.FindLabelEnd(p);
             if (referenceEnd < 0) return false;
 
             string inner = s.Substring(p + 1, referenceEnd - p - 1);

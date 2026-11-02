@@ -17,7 +17,7 @@ jobs:
   build-BlazorES2019:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.BlazorES2019
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -26,41 +26,19 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
-    - name: Setup .NET 9.0
+    - name: Setup .NET 10.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
-
-    - name: Generate .NET 9.0 blazor.*.js files
-      run: |
-        git clone https://github.com/dotnet/aspnetcore.git
-        cd aspnetcore
-        git switch release/9.0
-        git submodule update --init --recursive
-        sed -i 's/"target": "ES2022"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
-        npm install
-        npm run-script build
-        cd src/Components/Web.JS
-        npm install
-        npm run-script build:production
-        cd ../../../../
-        mkdir -p src/Toolings/BlazorES2019/wwwroot.net9/
-        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net9/
-        rm -rf aspnetcore
 
     - name: Generate .NET 10.0 blazor.*.js files
       run: |
@@ -77,6 +55,23 @@ jobs:
         cd ../../../../
         mkdir -p src/Toolings/BlazorES2019/wwwroot.net10/
         cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net10/
+        rm -rf aspnetcore
+
+    - name: Generate .NET 11.0 blazor.*.js files
+      run: |
+        git clone https://github.com/dotnet/aspnetcore.git
+        cd aspnetcore
+        git switch release/11.0
+        git submodule update --init --recursive
+        sed -i 's/"target": "ES2024"/"target": "ES2019"/' src/Components/Shared.JS/tsconfig.json
+        npm install
+        npm run-script build
+        cd src/Components/Web.JS
+        npm install
+        npm run-script build:production
+        cd ../../../../
+        mkdir -p src/Toolings/BlazorES2019/wwwroot.net11/
+        cp aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js aspnetcore/src/Components/Web.JS/dist/Release/_framework/blazor.*.js src/Toolings/BlazorES2019/wwwroot.net11/
         rm -rf aspnetcore
 
     - name: dotnet workload restore

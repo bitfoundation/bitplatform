@@ -33,6 +33,20 @@ public abstract class BcrdtAbstractStruct
     /// <summary>Absorbs the struct immediately to the right if the two can be represented as one.</summary>
     public abstract bool TryMergeWith(BcrdtAbstractStruct right);
 
+    /// <summary>Whether <see cref="TryMergeWith"/> would absorb <paramref name="right"/>. Changes nothing.</summary>
+    internal virtual bool CanMergeWith(BcrdtAbstractStruct right) => false;
+
+    /// <summary>
+    /// Whether two adjacent ranges fit in one struct, whose length is an <see cref="int"/>.
+    /// </summary>
+    /// <remarks>
+    /// Clocks are 64-bit, lengths are not, and an update can legitimately describe two neighbouring
+    /// ranges each close to the limit. Merging them anyway would wrap the length negative, after which
+    /// the replica's state vector, and everything it encodes, is garbage to every peer - from a
+    /// well-formed message. Two blocks that do not fit simply stay two blocks.
+    /// </remarks>
+    internal static bool FitsOneBlock(int left, int right) => (long)left + right <= int.MaxValue;
+
     /// <summary>Writes this struct, skipping its first <paramref name="offset"/> logical units.</summary>
     public abstract void Write(ref BcrdtBufferWriter writer, int offset);
 
@@ -57,10 +71,14 @@ public sealed class BcrdtGarbageCollected(BcrdtItemId id, int length) : BcrdtAbs
     /// <inheritdoc/>
     public override bool TryMergeWith(BcrdtAbstractStruct right)
     {
-        if (right is not BcrdtGarbageCollected) return false;
+        if (!CanMergeWith(right)) return false;
         Length += right.Length;
         return true;
     }
+
+    /// <inheritdoc/>
+    internal override bool CanMergeWith(BcrdtAbstractStruct right) =>
+        right is BcrdtGarbageCollected && FitsOneBlock(Length, right.Length);
 
     /// <inheritdoc/>
     public override void Write(ref BcrdtBufferWriter writer, int offset)
@@ -98,10 +116,14 @@ public sealed class BcrdtSkip(BcrdtItemId id, int length) : BcrdtAbstractStruct(
     /// <inheritdoc/>
     public override bool TryMergeWith(BcrdtAbstractStruct right)
     {
-        if (right is not BcrdtSkip) return false;
+        if (!CanMergeWith(right)) return false;
         Length += right.Length;
         return true;
     }
+
+    /// <inheritdoc/>
+    internal override bool CanMergeWith(BcrdtAbstractStruct right) =>
+        right is BcrdtSkip && FitsOneBlock(Length, right.Length);
 
     /// <inheritdoc/>
     public override void Write(ref BcrdtBufferWriter writer, int offset)

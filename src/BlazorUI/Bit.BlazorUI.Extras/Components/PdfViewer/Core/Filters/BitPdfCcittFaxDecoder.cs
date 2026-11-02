@@ -24,13 +24,17 @@ internal static class BitPdfCcittFaxDecoder
     {
         var reader = new BitReader(data);
         int columns = p.Columns <= 0 ? 1728 : p.Columns;
+        if ((long)columns * Math.Max(p.Rows, 1) > BitPdfImage.MaxImagePixels)
+        {
+            throw new BitPdfFormatException("CCITT image too large.");
+        }
         int rowBytes = (columns + 7) / 8;
         var output = new List<byte>();
 
         // Reference line changing elements; initialized so the first row is
         // coded against an all-white line.
         var refChanges = new List<int> { columns, columns };
-        int maxRows = p.Rows > 0 ? p.Rows : int.MaxValue;
+        int maxRows = p.Rows > 0 ? p.Rows : (int)(BitPdfImage.MaxImagePixels / columns);
         int rowCount = 0;
 
         while (rowCount < maxRows && !reader.AtEnd)
@@ -181,6 +185,8 @@ internal static class BitPdfCcittFaxDecoder
     {
         int a0 = -1;
         int color = 0; // white
+        int refStart = 0;
+        int refStartFor = -1;
 
         while (a0 < columns)
         {
@@ -190,8 +196,18 @@ internal static class BitPdfCcittFaxDecoder
                 return changes.Count > 0;
             }
 
-            int b1 = FindB1(refChanges, a0, color, columns);
-            int b2 = b1 < columns ? NextChange(refChanges, b1, columns) : columns;
+            if (a0 < refStartFor)
+            {
+                refStart = 0;
+            }
+            refStartFor = a0;
+            while (refStart < refChanges.Count && refChanges[refStart] <= a0)
+            {
+                refStart++;
+            }
+
+            int b1 = FindB1(refChanges, refStart, a0, color, columns);
+            int b2 = b1 < columns ? NextChange(refChanges, refStart, b1, columns) : columns;
 
             if (mode == Pass)
             {
@@ -233,12 +249,12 @@ internal static class BitPdfCcittFaxDecoder
         _ = upto;
     }
 
-    private static int FindB1(List<int> refChanges, int a0, int color, int columns)
+    private static int FindB1(List<int> refChanges, int start, int a0, int color, int columns)
     {
         // b1 = first changing element on the reference line to the right of a0
         // and of opposite colour to a0's colour. Reference changes alternate
         // colour starting with white->index0.
-        for (int i = 0; i < refChanges.Count; i++)
+        for (int i = start; i < refChanges.Count; i++)
         {
             if (refChanges[i] > a0)
             {
@@ -253,13 +269,13 @@ internal static class BitPdfCcittFaxDecoder
         return columns;
     }
 
-    private static int NextChange(List<int> refChanges, int afterValue, int columns)
+    private static int NextChange(List<int> refChanges, int start, int afterValue, int columns)
     {
-        foreach (int c in refChanges)
+        for (int i = start; i < refChanges.Count; i++)
         {
-            if (c > afterValue)
+            if (refChanges[i] > afterValue)
             {
-                return c;
+                return refChanges[i];
             }
         }
         return columns;

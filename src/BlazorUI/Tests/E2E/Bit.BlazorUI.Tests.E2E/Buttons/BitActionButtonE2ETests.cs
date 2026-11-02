@@ -704,10 +704,11 @@ public class BitActionButtonE2ETests : E2ETestBase
         var disabled = Btn($"color-dis-{name}");
         await Expect(disabled.Locator(".bit-acb-ico")).ToHaveCSSAsync("color", await Token($"{token}-dis-text"));
 
+        // Under the pointer the label is still read on the page, so it takes the role's text color, while the icon moves
+        // to the role's hover color.
         await button.HoverAsync();
-        var hover = await Token($"{token}-hover");
-        await Expect(button).ToHaveCSSAsync("color", hover);
-        await Expect(button.Locator(".bit-acb-ico")).ToHaveCSSAsync("color", hover);
+        await Expect(button).ToHaveCSSAsync("color", await Token(E2EColors.TextToken(suffix)));
+        await Expect(button.Locator(".bit-acb-ico")).ToHaveCSSAsync("color", await Token($"{token}-hover"));
     }
 
     [TestMethod]

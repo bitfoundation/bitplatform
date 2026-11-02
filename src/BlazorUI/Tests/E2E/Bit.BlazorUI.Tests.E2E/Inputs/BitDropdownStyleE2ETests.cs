@@ -55,7 +55,9 @@ public class BitDropdownStyleE2ETests : BitDropdownE2ETestBase
         var fill = await CheckFillAsync(callout);
         var header = await StyleAsync(callout.Locator(".bit-drp-ihd"), "color");
 
-        Assert.AreEqual(fill, header, "The check box and the group header both take the role's main color.");
+        // The check box fills with the role's main, while the group header - text read on the callout rather than over the
+        // role's fill - is drawn in the role's text color (role-text).
+        Assert.AreEqual(await Page.ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken(suffix)})"), header, "The group header takes the role's text color.");
 
         if (color == "Primary")
         {

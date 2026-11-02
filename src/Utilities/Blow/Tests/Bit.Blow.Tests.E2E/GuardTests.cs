@@ -73,7 +73,7 @@ public sealed class GuardTests : BlowTest
         var page = await OpenAsync("/basic-flow");
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => document.documentElement.scrollHeight > window.innerHeight + 40"),
             "the page is not tall enough to scroll");
-        await page.EvaluateAsync("() => window.scrollTo(0, 0)");
+        await page.EvaluateAsync("() => window.scrollTo({ top: 0, behavior: 'instant' })");
         await page.WaitForTimeoutAsync(250);
 
         // Over the flow the wheel zooms, and the browser layer cancels the page scroll it would also cause.

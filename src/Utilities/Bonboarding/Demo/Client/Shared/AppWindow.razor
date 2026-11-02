@@ -8,7 +8,7 @@
         <input type="text" placeholder="Search projects" aria-label="Search projects" data-bonboarding-anchor="search" />
         <span class="spacer"></span>
         <button type="button" class="btn btn-secondary" data-bonboarding-anchor="settings" @onclick="OnSettingsClick">Settings</button>
-        <button type="button" class="btn btn-secondary" data-bonboarding-anchor="account" aria-label="Account">@Initials</button>
+        <button type="button" class="btn btn-secondary" data-bonboarding-anchor="account" aria-label="@($"{Initials}, account")">@Initials</button>
     </div>
 
     <div class="app-body">

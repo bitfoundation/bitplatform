@@ -11,6 +11,12 @@ public static partial class Program
 {
     public static async Task Main(string[] args)
     {
+        //-:cnd:noEmit
+#if Development
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+#endif
+        //+:cnd:noEmit
+
         ConfigureGlobalization();
 
         var builder = WebApplication.CreateBuilder(options: new()
@@ -35,14 +41,21 @@ public static partial class Program
         TaskScheduler.UnobservedTaskException += (_, e) => { LogException(e.Exception, reportedBy: nameof(TaskScheduler.UnobservedTaskException), app); e.SetObserved(); };
 
         //#if (api == "Integrated")
+        // A deployment's one-shot `migrations` service runs this same image with MigrateDatabaseAndExit=true before the
+        // new version starts (See the app host's DockerComposePublishingExtensions).
+        var migrateDatabaseAndExit = app.Configuration.GetValue<bool>("MigrateDatabaseAndExit");
+
         //#if (database != "Sqlite")
-        if (builder.Environment.IsDevelopment())
+        if (builder.Environment.IsDevelopment() || migrateDatabaseAndExit)
         //#endif
         {
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.Database.MigrateAsync();
         }
+
+        if (migrateDatabaseAndExit)
+            return;
         //#endif
 
         app.ConfigureMiddlewares();

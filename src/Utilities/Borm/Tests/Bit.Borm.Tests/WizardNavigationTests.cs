@@ -33,6 +33,33 @@ public class VisitedStepNavigationTests : ComponentTestBase
     }
 
     [TestMethod]
+    public async Task A_step_that_appears_behind_the_user_is_reached_by_Next_rather_than_skipped_past()
+    {
+        // Walked to the end as a personal account, then back to choose business: the company step that appears is
+        // one the user has never seen. It is not done, and the step after it is no shortcut past its validation.
+        var form = BormBuilder.Create()
+            .Text("kind").Text("company").Text("confirm")
+            .Step("kind", s => s.Fields("kind"))
+            .Step("company", s => s.Fields("company").VisibleWhen("{kind} = 'business'"))
+            .Step("confirm", s => s.Fields("confirm"))
+            .Build();
+        var data = new Dictionary<string, object?> { ["kind"] = "personal" };
+        var state = new BormState(form, new BormDictionaryDataAccessor(data));
+
+        await state.NextStepAsync();
+        Assert.AreEqual(2, state.CurrentStepIndex);
+        state.PreviousStep();
+        state.SetValue("kind", "business");
+
+        Assert.IsFalse(state.IsStepReachable(1));
+        Assert.IsFalse(state.IsStepReachable(2));
+
+        await state.NextStepAsync();
+        Assert.AreEqual(1, state.CurrentStepIndex);
+        Assert.IsTrue(state.IsStepReachable(2), "walked through the company step, the rest is reachable again");
+    }
+
+    [TestMethod]
     public async Task Going_back_does_not_forget_where_the_user_had_got_to()
     {
         var state = new BormState(Schema(), new BormDictionaryDataAccessor());

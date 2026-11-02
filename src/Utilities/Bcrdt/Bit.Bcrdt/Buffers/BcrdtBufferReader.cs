@@ -182,4 +182,17 @@ public struct BcrdtBufferReader
         }
         return count;
     }
+
+    /// <summary>
+    /// How much room to reserve for a collection of <paramref name="count"/> elements before any of
+    /// them has been read.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="ValidateCount"/> bounds one count by the bytes left, but nested collections are each
+    /// checked against the same remaining bytes, so a payload of a megabyte nested sixty levels deep
+    /// could otherwise make the decoder reserve room for sixty megabytes' worth of elements before it
+    /// noticed the lie. Reserving a bounded amount up front and growing as elements actually arrive
+    /// keeps what a payload can make the decoder allocate proportional to its size.
+    /// </remarks>
+    public static int InitialCapacity(int count) => Math.Min(count, 256);
 }

@@ -1,0 +1,26 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack FillContent HorizontalAlign="BitAlignment.Center" Class="max-width">
+        <BitText Typography="BitTypography.H6" Element="h3" Color="BitColor.Error" Align="BitTextAlign.Center">
+            @AppLocalizer[nameof(AppStrings.DeleteAccount)]
+        </BitText>
+
+        <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
+            @AppLocalizer[nameof(AppStrings.DeleteAccountPrompt)]
+        </BitText>
+        <br />
+        <BitButton Color="BitColor.Error"
+                   Variant="BitVariant.Outline"
+                   OnClick="() => store.OpenDeleteDialog(true)">
+            @AppLocalizer[nameof(AppStrings.DeleteAccount)]
+        </BitButton>
+        <br />
+    </BitStack>
+</section>
+
+<BitDialog OnOk="DeleteAccount"
+           IsOpen="store.IsDeleteDialogOpen"
+           IsOpenChanged="store.OpenDeleteDialog"
+           Title="@AppLocalizer[nameof(AppStrings.DeleteAccount)]"
+           Message="@AppLocalizer[nameof(AppStrings.DeleteAccountPrompt)]" />

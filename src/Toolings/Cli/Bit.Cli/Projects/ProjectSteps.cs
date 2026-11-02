@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Telemetry;
@@ -49,23 +47,47 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private IEnumerable<string> BuildProperties => project.BuildProperties.Select(p => $"-p:{p}");
 
+    private bool migrationAdded;
+
     public Task<StepResult> AppCertificateAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
             return Task.FromResult(StepResult.Skipped("Skipped the app certificate", "the project has no Server.Api folder"));
 
         WriteDevelopmentCertificate(project.ServerApiDirectory);
-        return Task.FromResult(StepResult.Succeeded("Created a unique app certificate", "development only"));
+
+        return Task.FromResult(ReplaceSampleVapidKeys(project.Directory)
+            ? StepResult.Succeeded("Created a unique app certificate and web push keys", "development only")
+            : StepResult.Succeeded("Created a unique app certificate", "development only"));
     }
 
-    public static void WriteDevelopmentCertificate(string directory)
-    {
-        using var rsa = RSA.Create(3072);
-        var request = new CertificateRequest(DevelopmentCertificateSubject, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(5));
+    public static void WriteDevelopmentCertificate(string directory) => Keys.AppCertificates.Write(directory, Keys.AppCertificates.ActiveName, Keys.AppCertificates.CreateDevelopment());
 
-        AtomicFile.WriteAllText(Path.Combine(directory, "AppCertificate.crt"), certificate.ExportCertificatePem().ReplaceLineEndings("\n") + "\n");
-        AtomicFile.WriteAllText(Path.Combine(directory, "AppCertificate.key"), rsa.ExportPkcs8PrivateKeyPem().ReplaceLineEndings("\n") + "\n");
+    /// <summary>
+    /// Gives the project a web push key pair of its own in every appsettings file that has the template's sample pair, which
+    /// every other project created from the template shares. False when no file has it, as without the notification option.
+    /// </summary>
+    public static bool ReplaceSampleVapidKeys(string projectDirectory)
+    {
+        var sample = Keys.VapidKeys.Sample;
+
+        var files = System.IO.Directory.EnumerateFiles(Path.Combine(projectDirectory, "src"), "appsettings*.json", SearchOption.AllDirectories)
+            .Where(file => file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Any(part => part is "bin" or "obj" or "node_modules") is false)
+            .Select(file => (Path: file, Text: File.ReadAllText(file)))
+            .Where(file => file.Text.Contains(sample.PublicKey, StringComparison.Ordinal) || file.Text.Contains(sample.PrivateKey, StringComparison.Ordinal))
+            .ToList();
+
+        if (files.Count == 0)
+            return false;
+
+        var keys = Keys.VapidKeys.Create();
+
+        foreach (var file in files)
+        {
+            AtomicFile.WriteAllText(file.Path, file.Text.Replace(sample.PublicKey, keys.PublicKey, StringComparison.Ordinal).Replace(sample.PrivateKey, keys.PrivateKey, StringComparison.Ordinal));
+        }
+
+        return true;
     }
 
     public async Task<StepResult> GitAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -138,19 +160,38 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             $"cd {ProcessSpec.Quote(project.Directory)} && bit setup", resultCode: "sdk.missing");
     }
 
-    public async Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
+    public async Task<StepResult> ContainerRuntimeAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var needed = Templates.Platforms.Workloads(project.Platforms, cli.Environment.Os);
+        if (await ToolCatalog.ContainerRuntimeAsync(Runner, cli.Environment, cancellationToken) is not { } runtime)
+            return StepResult.Skipped("Skipped the container runtime", "neither Docker nor Podman answers");
+
+        var name = runtime is "podman" ? "Podman" : "Docker";
+        string[] arguments = ["user-secrets", "set", "DcpPublisher:ContainerRuntime", runtime, "--project", project.AppHostDirectory];
+        var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(2));
+
+        return StepResult.FromProcess(result, $"Aspire runs the containers on {name}", $"Couldn't tell Aspire to use {name}",
+            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}", "kept in the AppHost's user secrets");
+    }
+
+    public Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
+        => WorkloadsAsync(Templates.Platforms.BuildSupport([Platform.Web]), [Templates.Platforms.WebAssemblyWorkload], progress, cancellationToken);
+
+    public Task<StepResult> NativeWorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
+        => WorkloadsAsync(Templates.Platforms.NativeBuildSupport(project.Platforms), Templates.Platforms.NativeWorkloads(project.Platforms, cli.Environment.Os), progress, cancellationToken);
+
+    private async Task<StepResult> WorkloadsAsync(string support, IReadOnlyList<string> needed, Action<string> progress, CancellationToken cancellationToken)
+    {
         var list = await Dotnet(["workload", "list"], cancellationToken, progress, TimeSpan.FromMinutes(2));
         var installed = ParseInstalledWorkloads(list.Output);
         var missing = needed.Where(w => installed.Contains(w) is false).ToArray();
 
         if (list.Succeeded && missing.Length == 0)
-            return StepResult.Succeeded("Build tools already installed", string.Join(", ", needed));
+            return StepResult.Succeeded($"{support} is installed", string.Join(", ", needed));
 
         var toInstall = list.Succeeded ? missing : [.. needed];
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet workload install {string.Join(' ', toInstall)}";
-        var result = await Dotnet(["workload", "install", .. toInstall], cancellationToken, progress, TimeSpan.FromMinutes(60));
+        var administrator = cli.Environment.IsWindows && AdministratorNeeds.DotnetNeedsIt(cli) ? cli.Administrator : null;
+        var result = await Dotnet(["workload", "install", .. toInstall], cancellationToken, progress, TimeSpan.FromMinutes(60), administrator);
 
         if (result.Succeeded is false && cli.Environment.IsWindows is false && NeedsElevation(result.Output) && cli.Environment.IsElevated is false && cli.Runner.FindExecutable("sudo") is not null)
         {
@@ -160,20 +201,19 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             {
                 result = await Runner.RunAsync(new ProcessSpec
                 {
-                    FileName = "sudo",
-                    Arguments = ["-n", "dotnet", "workload", "install", .. toInstall],
+                    FileName = "dotnet",
+                    Arguments = ["workload", "install", .. toInstall],
                     WorkingDirectory = project.Directory,
-                    OnOutputLine = progress,
-                    Timeout = TimeSpan.FromMinutes(60)
-                }, cancellationToken);
+                    OnOutputLine = progress
+                }.WithSudo(Runner), cancellationToken);
             }
             else
             {
-                return StepResult.Warning("Build tools need sudo", string.Join(", ", toInstall), followUp.Replace("dotnet workload", "sudo dotnet workload", StringComparison.Ordinal));
+                return StepResult.Warning($"{support} needs sudo", string.Join(", ", toInstall), followUp.Replace("dotnet workload", "sudo dotnet workload", StringComparison.Ordinal));
             }
         }
 
-        return StepResult.FromProcess(result, "Installed build tools", "Couldn't install build tools", followUp, string.Join(", ", toInstall));
+        return StepResult.FromProcess(result, $"Installed {support}", $"Couldn't install {support}", followUp, string.Join(", ", toInstall));
     }
 
     public static IReadOnlySet<string> ParseInstalledWorkloads(string output)
@@ -191,20 +231,54 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
-    public async Task<StepResult> RestoreAsync(Action<string> progress, CancellationToken cancellationToken)
+    public Task<StepResult> RestoreAsync(Action<string> progress, CancellationToken cancellationToken)
+        => RestoreAsync(Path.GetFileName(project.WebSolutionFilter), "NuGet packages", progress, cancellationToken);
+
+    public Task<StepResult> NativeRestoreAsync(Action<string> progress, CancellationToken cancellationToken)
+        => RestoreAsync(Path.GetFileName(project.Solution), "the native apps' NuGet packages", progress, cancellationToken);
+
+    private async Task<StepResult> RestoreAsync(string path, string what, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["restore", project.BuildPath, .. BuildProperties];
+        string[] arguments = ["restore", path, .. BuildProperties];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
-        return StepResult.FromProcess(result, "Restored NuGet packages", "Couldn't restore NuGet packages", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
+        return StepResult.FromProcess(result, $"Restored {what}", $"Couldn't restore {what}", $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
     }
 
     public async Task<StepResult> AndroidDependenciesAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         string[] arguments = ["build", Templates.Platforms.MauiProject(project.Name), "-t:InstallAndroidDependencies", "-f", $"{project.TargetFrameworkVersion}-android", "-p:AcceptAndroidSDKLicenses=True"];
-        var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}";
+        var administrator = cli.Environment.IsWindows && AdministratorNeeds.AndroidSdkNeedsIt(cli.Environment) ? cli.Administrator : null;
+        var result = administrator is null
+            ? await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60))
+            : await WithAndroidInstallerAsync(installer => administrator.RunAsync(installer with { OnOutputLine = progress }, cancellationToken));
 
-        return StepResult.FromProcess(result, "Installed the Android SDK and Java", "Couldn't install the Android SDK and Java",
-            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
+        if (result.Succeeded is false && administrator is null && cli.Environment.IsWindows && cli.Environment.IsElevated is false && NeedsElevation(result.Output))
+        {
+            if (cli.AdministratorDeclined)
+                return StepResult.Warning("The Android SDK and Java weren't installed", "administrator permission was declined", followUp);
+
+            if (ToolInstaller.CanRunAsAdministrator(cli) is false)
+                return StepResult.Warning("The Android SDK and Java need administrator rights", "run it in an elevated terminal", followUp);
+
+            var install = new ToolAction
+            {
+                ToolId = "android",
+                Title = "Install the Android SDK and Java",
+                Commands = []
+            };
+
+            var elevated = await WithAndroidInstallerAsync(installer => ToolInstaller.RunAsAdministratorAsync(cli, [install with { Commands = [installer] }], progress, cancellationToken));
+
+            if (elevated.Declined)
+                return StepResult.Warning("The Android SDK and Java weren't installed", "administrator permission was declined", followUp);
+
+            return elevated.ExitCodes.TryGetValue(install.ToolId, out var exitCode) && exitCode == 0
+                ? StepResult.Succeeded("Installed the Android SDK and Java", "as administrator")
+                : StepResult.Failed("Couldn't install the Android SDK and Java", "as administrator", followUp, hint: ToolInstaller.AdministratorOutput(elevated.Log, install.Title));
+        }
+
+        return StepResult.FromProcess(result, "Installed the Android SDK and Java", "Couldn't install the Android SDK and Java", followUp);
     }
 
     public async Task<StepResult> XcodeAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -231,11 +305,19 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             : StepResult.Warning("Xcode doesn't match .NET for iOS", $"{installedVersion} here, {wantedVersion} wanted", hint: $"Get Xcode {wantedVersion} at https://developer.apple.com/download/all", resultCode: "xcode.mismatch");
     }
 
-    public async Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
+    public Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
+        => BuildAsync(Path.GetFileName(project.WebSolutionFilter), "the web app", progress, cancellationToken);
+
+    public Task<StepResult> WorkbenchBuildAsync(Action<string> progress, CancellationToken cancellationToken)
+        => BuildAsync(Templates.Platforms.WorkbenchProject(project.Name), "the Workbench", progress, cancellationToken);
+
+    public Task<StepResult> BuildProjectAsync(string path, Action<string> progress, CancellationToken cancellationToken)
+        => BuildAsync(path, Path.GetFileNameWithoutExtension(path), progress, cancellationToken);
+
+    private async Task<StepResult> BuildAsync(string path, string what, Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["build", project.BuildPath, .. BuildProperties];
+        string[] arguments = ["build", path, .. BuildProperties];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
-        var what = project.BuildsSolution ? "the solution" : "the web app";
         string? detail = null;
 
         if (result is { Succeeded: false, NotFound: false, TimedOut: false } && DiagnosticCodes.Extract(result.Output, int.MaxValue).Any(c => c.StartsWith("RZ", StringComparison.Ordinal)))
@@ -251,7 +333,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> FormatAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["format", Path.GetFileName(project.WebSolutionFilter), "--exclude-diagnostics", "BL0016"];
+        string[] arguments = ["format", Path.GetFileName(project.Solution), "--no-restore", "--exclude-diagnostics", "BL0016"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments)}";
 
@@ -261,6 +343,12 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return StepResult.Succeeded("Formatted the code", await CommitAllAsync("Format the code with dotnet format", cancellationToken));
     }
 
+    private string MigrationsDirectory => Path.Combine(project.ServerApiDirectory, "Infrastructure", "Data", "Migrations");
+
+    private bool HasMigrations => System.IO.Directory.Exists(MigrationsDirectory) && System.IO.Directory.EnumerateFiles(MigrationsDirectory, "*.cs").Any();
+
+    public bool LacksInitialMigration => project.Database is not "Other" && System.IO.Directory.Exists(project.ServerApiDirectory) && HasMigrations is false;
+
     public async Task<StepResult> MigrationAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         if (project.Database is "Other")
@@ -269,37 +357,34 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (System.IO.Directory.Exists(project.ServerApiDirectory) is false)
             return StepResult.Skipped("Skipped the initial migration", "the project has no Server.Api folder");
 
-        var migrations = Path.Combine(project.ServerApiDirectory, "Infrastructure", "Data", "Migrations");
+        var migrations = MigrationsDirectory;
 
-        if (System.IO.Directory.Exists(migrations) && System.IO.Directory.EnumerateFiles(migrations, "*.cs").Any())
+        if (HasMigrations)
             return StepResult.Skipped("Skipped the initial migration", "the project already has migrations");
 
-        var version = project.PackageVersion("Microsoft.EntityFrameworkCore.Design") ?? project.PackageVersion("Microsoft.EntityFrameworkCore");
-        var tool = version is null ? "dotnet-ef" : $"dotnet-ef@{version}";
-        string[] arguments = ["dnx", tool, "--", "migrations", "add", "Initial", "--output-dir", "Infrastructure/Data/Migrations"];
-        var followUp = $"cd {ProcessSpec.Quote(project.ServerApiDirectory)} && dotnet {string.Join(' ', arguments)}";
-
-        var result = await Runner.RunAsync(new ProcessSpec
-        {
-            FileName = "dotnet",
-            Arguments = arguments,
-            WorkingDirectory = project.ServerApiDirectory,
-            OnOutputLine = progress,
-            Timeout = TimeSpan.FromMinutes(30)
-        }, cancellationToken);
+        var efTool = new ProjectMigrations(cli, project);
+        var before = efTool.MigrationFiles(offline: false);
+        string[] arguments = ["migrations", "add", "Initial", "--output-dir", ProjectMigrations.MigrationsFolder];
+        var result = await efTool.RunAsync(project.ServerApiDirectory, arguments, progress, cancellationToken);
 
         if (result.Succeeded is false)
-            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", followUp);
+            return StepResult.FromProcess(result, "", "Couldn't add the initial migration", efTool.FollowUp(project.ServerApiDirectory, arguments)) with { Attempt = efTool.Attempt(project.ServerApiDirectory, arguments) };
 
+        migrationAdded = true;
+        var formatted = await efTool.FormatAsync(offline: false, before, progress, cancellationToken);
         var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
-        return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
+        var detail = $"{project.Database}{(committed is null ? "" : ", committed")}";
+
+        return formatted.Status is StepStatus.Warning
+            ? formatted with { Title = "Added the Initial migration, but couldn't format it", Detail = detail }
+            : StepResult.Succeeded("Added the Initial migration", detail);
     }
 
     public RunningProject? Running { get; private set; }
 
     public Func<Uri, CancellationToken, Task<bool>> AliveProbe { get; init; } = IsAliveAsync;
 
-    private string ServerWebDirectory => Path.Combine(project.Directory, "src", "Server", $"{project.Name}.Server.Web");
+    private string ServerWebDirectory => project.ServerWebDirectory;
 
     public Task<StepResult> AspireStartAsync(Action<string> progress, CancellationToken cancellationToken) => AspireStartAsync(keepRunning: false, progress, cancellationToken);
 
@@ -327,13 +412,22 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             ? new Dictionary<string, string?> { ["ASPIRE_CLI_START_TIMEOUT"] = "1200" }
             : null;
 
+        var runningBefore = await AppHostMayBeRunningAsync(cancellationToken);
         var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive", "--format", "Json"], progress, TimeSpan.FromMinutes(30), cancellationToken, startTimeout);
+        var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
 
         if (start.Succeeded is false)
-            return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+        {
+            if (runningBefore is false)
+            {
+                await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+            }
 
-        var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
+            return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+        }
+
         var keep = false;
+        ProcessResult? stopped = null;
 
         try
         {
@@ -344,7 +438,13 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             }
 
             if (keepRunning is false)
-                return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
+            {
+                stopped = await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+                var result = StepResult.FromProcess(stopped, "Started and stopped the project with Aspire", "Started the project with Aspire, but couldn't stop it",
+                    $"cd {ProcessSpec.Quote(project.Directory)} && aspire stop", "its images and builds are ready, so the IDE starts it fast");
+
+                return stopped.Succeeded ? result : result with { Status = StepStatus.Warning };
+            }
 
             Running = new RunningProject
             {
@@ -367,7 +467,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
         finally
         {
-            if (keep is false)
+            if (keep is false && stopped is null)
             {
                 await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
             }
@@ -398,14 +498,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             var run = RunUntilStoppedAsync(new ProcessSpec
             {
                 FileName = "dotnet",
-                Arguments = ["run", "--project", server, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+                Arguments = ["run", "--project", server, .. migrationAdded ? Array.Empty<string>() : ["--no-build"], .. project.BuildProperties.Select(p => $"--property:{p}")],
                 WorkingDirectory = project.Directory,
                 Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
             }, running.Token);
 
             runs.Add(run);
 
-            if (await WaitUntilAliveAsync(new Uri(url), run, progress, cancellationToken) is { } reason)
+            if (await WaitUntilAliveAsync(new Uri(url), new Uri(new Uri(url), "alive"), run, progress, cancellationToken) is { } reason)
             {
                 await StopAsync();
                 running.Dispose();
@@ -415,6 +515,41 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         Running = new RunningProject { AppUrl = ReadLaunchUrl(ServerWebDirectory), StopAsync = _ => StopAsync(), Exited = Task.WhenAny(runs) };
         return StepResult.Succeeded("Started the project", Running.AppUrl);
+    }
+
+    public RunningProject? Workbench { get; private set; }
+
+    public async Task<StepResult> WorkbenchRunAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, project.WorkbenchDirectory))}";
+
+        if (ReadLaunchUrl(project.WorkbenchDirectory) is not { } url)
+            return StepResult.Skipped("Didn't start the Workbench", "it has no URL in its launchSettings.json");
+
+        var running = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var run = RunUntilStoppedAsync(new ProcessSpec
+        {
+            FileName = "dotnet",
+            Arguments = ["run", "--project", project.WorkbenchDirectory, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+            WorkingDirectory = project.Directory,
+            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
+        }, running.Token);
+
+        async Task StopAsync()
+        {
+            await running.CancelAsync();
+            await Task.WhenAny(run, Task.Delay(TimeSpan.FromSeconds(3), CancellationToken.None));
+        }
+
+        if (await WaitUntilAliveAsync(new Uri(url), new Uri(url), run, progress, cancellationToken) is { } reason)
+        {
+            await StopAsync();
+            running.Dispose();
+            return StepResult.Warning("Couldn't start the Workbench", reason, followUp);
+        }
+
+        Workbench = new RunningProject { AppUrl = url, StopAsync = _ => StopAsync(), Exited = run };
+        return StepResult.Succeeded("Started the Workbench", url);
     }
 
     private async Task<ProcessResult?> RunUntilStoppedAsync(ProcessSpec spec, CancellationToken cancellationToken)
@@ -429,9 +564,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         }
     }
 
-    private async Task<string?> WaitUntilAliveAsync(Uri url, Task<ProcessResult?> run, Action<string> progress, CancellationToken cancellationToken)
+    private async Task<string?> WaitUntilAliveAsync(Uri url, Uri alive, Task<ProcessResult?> run, Action<string> progress, CancellationToken cancellationToken)
     {
-        var alive = new Uri(url, "alive");
         var deadline = DateTime.UtcNow.AddMinutes(10);
 
         progress($"Waiting for {url}");
@@ -627,6 +761,32 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return Runner.RunAsync(AspireSpec(arguments, progress, timeout, environment), cancellationToken);
     }
 
+    private async Task<bool> AppHostMayBeRunningAsync(CancellationToken cancellationToken)
+    {
+        var ps = await Runner.RunAsync(AspireSpec(["ps", "--format", "Json", "--non-interactive"], _ => { }, TimeSpan.FromMinutes(1)), cancellationToken);
+
+        if (ps.Succeeded is false)
+            return true;
+
+        try
+        {
+            using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(ps.Output) ? "[]" : ps.Output);
+            return Strings(document.RootElement).Any(value => value.StartsWith(project.AppHostDirectory, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
+
+        static IEnumerable<string> Strings(JsonElement element) => element.ValueKind switch
+        {
+            JsonValueKind.String => [element.GetString()!],
+            JsonValueKind.Array => element.EnumerateArray().SelectMany(Strings),
+            JsonValueKind.Object => element.EnumerateObject().SelectMany(property => Strings(property.Value)),
+            _ => []
+        };
+    }
+
     private ProcessSpec AspireSpec(string[] arguments, Action<string> progress, TimeSpan timeout, IReadOnlyDictionary<string, string?>? environment = null)
     {
         return new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, Environment = environment, OnOutputLine = progress, Timeout = timeout };
@@ -676,6 +836,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (cli.Environment.IsLinux is false)
             return StepResult.Succeeded(title, detail);
 
+        if (Runner.FindExecutable("apt-get") is null)
+            return StepResult.Succeeded(title, detail, "Playwright installs the browsers' system libraries only with apt-get; if the UI tests can't start a browser, install them with your package manager.");
+
         var dependencies = install with { Arguments = [driver.Cli, "install-deps", .. browsers], OnOutputLine = progress };
         var followUp = "sudo " + dependencies.CommandLine;
 
@@ -684,7 +847,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             if (Runner.FindExecutable("sudo") is null || (await Runner.RunAsync(new ProcessSpec { FileName = "sudo", Arguments = ["-n", "true"], Timeout = TimeSpan.FromSeconds(10) }, cancellationToken)).Succeeded is false)
                 return StepResult.Warning(title, "its system libraries need sudo", followUp);
 
-            dependencies = dependencies with { FileName = "sudo", Arguments = ["-n", driver.Node, .. dependencies.Arguments] };
+            dependencies = dependencies.WithSudo(Runner);
         }
 
         var installed = await Runner.RunAsync(dependencies, cancellationToken);
@@ -717,7 +880,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> VsCodeExtensionsAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var recommended = ExtensionsToInstall(ReadRecommendedExtensions(project.Directory));
+        var recommended = ReadRecommendedExtensions(project.Directory);
 
         if (recommended.Count == 0)
             return StepResult.Skipped("Skipped VS Code extensions", "the project recommends none");
@@ -765,20 +928,6 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private static string ExtensionNames(IReadOnlyList<string> extensions)
         => string.Join(", ", extensions.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (extensions.Count > 3 ? $" and {extensions.Count - 3} more" : "");
-
-    private static readonly string[] visualStudioLicensedExtensions = ["ms-dotnettools.csdevkit", "ms-dotnettools.dotnet-maui"];
-
-    public static IReadOnlyList<string> ExtensionsToInstall(IReadOnlyList<string> recommended)
-    {
-        List<string> extensions = [.. recommended.Where(id => visualStudioLicensedExtensions.Contains(id, StringComparer.OrdinalIgnoreCase) is false)];
-
-        if (extensions.Count < recommended.Count && extensions.Contains("ms-dotnettools.csharp", StringComparer.OrdinalIgnoreCase) is false)
-        {
-            extensions.Insert(0, "ms-dotnettools.csharp");
-        }
-
-        return extensions;
-    }
 
     public static IReadOnlyList<string> ReadRecommendedExtensions(string projectDirectory)
     {
@@ -878,7 +1027,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var login = Runner.RunAsync(new ProcessSpec
         {
             FileName = "gh",
-            Arguments = ["auth", "login", "--web", "--git-protocol", "https", "--hostname", "github.com"],
+            Arguments = ["auth", "login", "--web", "--clipboard", "--git-protocol", "https", "--hostname", "github.com"],
             WorkingDirectory = project.Directory,
             Timeout = TimeSpan.FromMinutes(15),
             OnOutputLine = line =>
@@ -886,7 +1035,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
                 if (OneTimeCodeRegex().Match(line) is not { Success: true } code || Interlocked.Exchange(ref codeShown, 1) is 1)
                     return;
 
-                cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/] [grey](copied to the clipboard)[/] at {GitHubDevicePage}, which opens in your browser.");
+                var copied = line.Contains("copied to clipboard", StringComparison.OrdinalIgnoreCase) ? " [grey](copied to the clipboard)[/]" : "";
+                cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/]{copied} at {GitHubDevicePage}, which opens in your browser.");
                 cli.Console.Out.MarkupLine("    [grey]Press Esc to skip signing in; bit goes on without the GitHub repo.[/]");
                 ProjectRun.OpenInBrowser(cli, GitHubDevicePage);
             }
@@ -931,7 +1081,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> GitHubRepositoryAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         const string title = "Couldn't create the GitHub repo";
-        var push = "git push -u origin develop main && gh repo edit --default-branch develop";
+        var push = "git push -u origin develop && git push -u origin main && gh repo edit --default-branch develop";
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && gh repo create {ProcessSpec.Quote(project.Name)} --private --source . --remote origin && gh auth setup-git && {push}";
 
         if (project.GitReady is false)
@@ -949,15 +1099,25 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return StepResult.FromProcess(create, "", title, followUp);
 
         await Gh(["auth", "setup-git"], cancellationToken);
-        var pushed = await Git(["push", "-u", "origin", "develop", "main"], cancellationToken);
+        var pushed = await Git(["push", "-u", "origin", "develop"], cancellationToken);
+
+        if (pushed.Succeeded)
+        {
+            pushed = await Git(["push", "-u", "origin", "main"], cancellationToken);
+        }
 
         if (pushed.Succeeded is false)
             return StepResult.FromProcess(pushed, "", "Couldn't push to the GitHub repo", $"cd {ProcessSpec.Quote(project.Directory)} && {push}");
 
-        await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        var defaultBranch = await Gh(["repo", "edit", "--default-branch", "develop"], cancellationToken);
+        await Git(["remote", "set-head", "origin", "develop"], cancellationToken);
         var url = await Gh(["repo", "view", "--json", "url", "--jq", ".url"], cancellationToken);
+        var detail = url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed";
 
-        return StepResult.Succeeded("Created a private GitHub repo", url.Succeeded && url.Output.Trim().Length > 0 ? url.Output.Trim().Replace("https://", "", StringComparison.Ordinal) : "develop and main pushed");
+        if (defaultBranch.Succeeded is false && (await Gh(["repo", "view", "--json", "defaultBranchRef", "--jq", ".defaultBranchRef.name"], cancellationToken)).Output.Trim() is not "develop")
+            return StepResult.Warning("Created a private GitHub repo, but develop isn't its default branch", detail, $"cd {ProcessSpec.Quote(project.Directory)} && gh repo edit --default-branch develop", resultCode: "github.default-branch");
+
+        return StepResult.Succeeded("Created a private GitHub repo", detail);
     }
 
     private async Task<string?> CommitPathAsync(string path, string message, CancellationToken cancellationToken)
@@ -980,17 +1140,59 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = arguments, WorkingDirectory = workingDirectory ?? project.Directory, Environment = GitWithoutAutoMaintenance, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
     }
 
-    private Task<ProcessResult> Dotnet(string[] arguments, CancellationToken cancellationToken, Action<string>? progress, TimeSpan timeout)
+    private Task<ProcessResult> Dotnet(string[] arguments, CancellationToken cancellationToken, Action<string>? progress, TimeSpan timeout, AdministratorSession? administrator = null)
     {
-        return Runner.RunAsync(new ProcessSpec
+        var spec = new ProcessSpec
         {
             FileName = "dotnet",
             Arguments = arguments,
             WorkingDirectory = project.Directory,
             OnOutputLine = progress,
             Timeout = timeout,
-            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off" }
-        }, cancellationToken);
+            Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off", ["DOTNET_CLI_UI_LANGUAGE"] = "en" }
+        };
+
+        return administrator is null ? Runner.RunAsync(spec, cancellationToken) : administrator.RunAsync(spec, cancellationToken);
+    }
+
+    private async Task<T> WithAndroidInstallerAsync<T>(Func<ProcessSpec, Task<T>> run)
+    {
+        var folder = System.IO.Directory.CreateTempSubdirectory("bit-android-").FullName;
+
+        try
+        {
+            File.WriteAllText(Path.Combine(folder, "android.csproj"), $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>{project.TargetFrameworkVersion}-android</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+
+            if (TemplateRequirements.FromProject(project.Directory, project.Name).Sdk is { } sdk)
+            {
+                File.WriteAllText(Path.Combine(folder, "global.json"), sdk.GlobalJson);
+            }
+
+            return await run(new ProcessSpec
+            {
+                FileName = "dotnet",
+                Arguments = ["build", "android.csproj", "-t:InstallAndroidDependencies", "-p:AcceptAndroidSDKLicenses=True", "-noAutoResponse", "-p:ImportDirectoryBuildProps=false", "-p:ImportDirectoryBuildTargets=false", "-p:ImportDirectoryPackagesProps=false"],
+                WorkingDirectory = folder,
+                Timeout = TimeSpan.FromMinutes(60),
+                Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off", ["DOTNET_CLI_UI_LANGUAGE"] = "en" }
+            });
+        }
+        finally
+        {
+            try
+            {
+                System.IO.Directory.Delete(folder, recursive: true);
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
     }
 
     private static bool NeedsElevation(string output)

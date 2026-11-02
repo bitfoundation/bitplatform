@@ -551,7 +551,9 @@ public class BitToggleButtonE2ETests : E2ETestBase
 
         var on = await Token("fg-pri");
 
-        await Expect(Btn("fxc-notfixed")).ToHaveCSSAsync("color", await Token("bg-ter"));
+        // A background role's main is the page itself, so an unfilled label already reads the role's text color - the
+        // on-color it is paired with (role-text) - and FixedColor keeps that one under the pointer too.
+        await Expect(Btn("fxc-notfixed")).ToHaveCSSAsync("color", await Token(E2EColors.TextToken("tbg")));
         await Expect(Btn("fxc-fixed")).ToHaveClassAsync(HasClass("bit-tgb-fxc"));
         await Expect(Btn("fxc-fixed")).ToHaveCSSAsync("color", on);
         await Expect(Btn("fxc-fixed-text")).ToHaveCSSAsync("color", on);

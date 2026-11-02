@@ -45,8 +45,7 @@ public static partial class DecodeCommand
 
                 if (map is null)
                 {
-                    cli.Console.Fail("No bit-minifier.map found under obj/ here. Pass the map's path: bit decode <map> [<trace>]");
-                    return CliApp.ExitUsage;
+                    return cli.UsageError("map-not-found", "No bit-minifier.map found under obj/ here. Pass the map's path: bit decode <map> [<trace>]");
                 }
 
                 cli.Console.Error.MarkupLine($"[grey]Using {Markup.Escape(Path.GetRelativePath(cli.Environment.CurrentDirectory, map))}[/]");
@@ -57,17 +56,15 @@ public static partial class DecodeCommand
 
             if (File.Exists(map) is false)
             {
-                cli.Console.Fail($"No map at {map}.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("map-missing", $"No map at {map}.");
             }
 
             if (ReadMinifierVersion(map) is not { } version)
             {
-                cli.Console.Fail($"{map} doesn't name the Bit.Minifier that wrote it: its first line should be \"# Bit.Minifier <version>\".");
-                return CliApp.ExitUsage;
+                return cli.UsageError("map-not-minifier", $"{map} doesn't name the Bit.Minifier that wrote it: its first line should be \"# Bit.Minifier <version>\".");
             }
 
-            if ((FindMinifier(cli.Environment, version) ?? await RestoreMinifierAsync(cli, version, cancellationToken)) is not { } minifier)
+            if ((FindMinifier(cli.Environment, version) ?? await RestoreMinifierAsync(cli, version, trace is null ? [map] : [map, trace], cancellationToken)) is not { } minifier)
                 return CliApp.ExitFailed;
 
             var result = await cli.Runner.RunAsync(new ProcessSpec
@@ -121,10 +118,10 @@ public static partial class DecodeCommand
         return File.Exists(dll) ? dll : null;
     }
 
-    private static async Task<string?> RestoreMinifierAsync(CliServices cli, string version, CancellationToken cancellationToken)
+    private static async Task<string?> RestoreMinifierAsync(CliServices cli, string version, string[] files, CancellationToken cancellationToken)
     {
         cli.Console.Error.MarkupLine($"[grey]Restoring Bit.Minifier {Markup.Escape(version)}[/]");
-        var folder = Directory.CreateTempSubdirectory("bit-decode-").FullName;
+        var folder = Directory.CreateDirectory(Path.Combine(cli.Environment.BitDirectory, "decode", Guid.NewGuid().ToString("N"))).FullName;
 
         try
         {
@@ -150,7 +147,9 @@ public static partial class DecodeCommand
             if (result.Succeeded && RestoredMinifier(folder, version) is { } dll)
                 return dll;
 
-            cli.Console.Fail($"Couldn't restore Bit.Minifier {version} from this machine's NuGet sources.");
+            cli.Console.Fail($"Couldn't restore Bit.Minifier {version} from this machine's NuGet sources.",
+                $"bit decodes with the Bit.Minifier that wrote the map, so it was downloading the Bit.Minifier {version} package to run: dotnet <the package>/tools/Bit.Minifier.dll --decode {string.Join(' ', files.Select(ProcessSpec.Quote))}. "
+                + $"The package is at https://www.nuget.org/packages/Bit.Minifier/{version}; a .nupkg is a zip file.");
 
             foreach (var line in result.OutputLines.Where(l => l.Contains("error", StringComparison.OrdinalIgnoreCase)))
             {

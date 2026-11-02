@@ -1,0 +1,66 @@
+﻿@page "/e2e/aivoiceinput"
+
+<PageTitle>BitAiVoiceInput E2E</PageTitle>
+
+<h1>BitAiVoiceInput</h1>
+
+@* The button renders only where the browser can transcribe; the tests stand a scripted recognizer in for the speech API
+   where they drive the dictation, so every engine runs the same flow. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <div id="vi-basic-host">
+        <BitAiVoiceInput Id="vi-basic"
+                         OnTranscript="t => _transcripts.Add(t)"
+                         OnInterim="i => _interim = i"
+                         OnListeningChanged="l => _listening.Add(l)"
+                         OnError="e => _errors.Add(e)" />
+    </div>
+    <p>
+        Transcripts: <span id="vi-transcripts">@string.Join("|", _transcripts)</span> |
+        Interim: <span id="vi-interim">@(_interim is { Length: > 0 } ? _interim : "-")</span> |
+        Listening: <span id="vi-listening">@string.Join(",", _listening)</span> |
+        Errors: <span id="vi-errors">@string.Join(",", _errors)</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="language" Title="Language">
+    <BitAiVoiceInput Id="vi-lang" Language="fa-IR" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiVoiceInput Id="vi-dis" Disabled="_disabled" OnListeningChanged="l => _disListening.Add(l)" />
+    <button id="vi-dis-toggle" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+    <p>Disabled: <span id="vi-dis-state">@_disabled</span> | Listening: <span id="vi-dis-listening">@string.Join(",", _disListening)</span></p>
+</E2ESection>
+
+<E2ESection Id="mount" Title="Removed while listening">
+    @if (_mounted)
+    {
+        <BitAiVoiceInput Id="vi-mounted" />
+    }
+    <button id="vi-unmount" @onclick="() => _mounted = !_mounted">Toggle the voice input</button>
+</E2ESection>
+
+<E2ESection Id="style" Title="Styles and Classes">
+    <BitAiVoiceInput Id="vi-style"
+                     Classes="@(new() { Root = "vi-custom-root", Button = new() { Root = "vi-custom-button", Icon = "vi-custom-icon" } })"
+                     Styles="@(new() { Button = new() { Root = "color: rgb(1, 2, 3)" } })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiVoiceInput Id="vi-rtl" Dir="BitDir.Rtl" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<string> _transcripts = [];
+    private readonly List<bool> _listening = [];
+    private readonly List<string> _errors = [];
+    private string _interim = string.Empty;
+
+    private bool _disabled;
+    private readonly List<bool> _disListening = [];
+
+    private bool _mounted = true;
+}

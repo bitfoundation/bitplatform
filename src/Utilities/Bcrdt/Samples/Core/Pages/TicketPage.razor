@@ -1,0 +1,93 @@
+﻿@page "/ticket"
+@inject SampleSession Session
+
+<PageTitle>Ticket - Bcrdt samples</PageTitle>
+
+<h1>Ticket</h1>
+
+<BcrdtCollaborationScope DocumentId="samples-ticket" User="Session.User" Context="document">
+    <LoadingContent>
+        <p class="muted">Opening the document…</p>
+    </LoadingContent>
+    <ErrorContent Context="error">
+        <p class="error">The document could not be opened: @error.Message</p>
+    </ErrorContent>
+    <ChildContent>
+        @{
+            BcrdtMap form = document.GetMap("form");
+
+            // Roots of the document rather than values nested in the form. A root is found by its name, so every
+            // replica that asks for "labels" gets the same set - even one that asked while offline, before it had seen
+            // anybody else's. A nested set or text is a map value like any other: two replicas that each create one
+            // race, and everything written into the losing one goes with it.
+            BcrdtSet labels = document.Set("labels");
+            BcrdtText notes = document.Text("notes");
+        }
+
+        <DocumentStatus />
+
+        @* A disabled fieldset disables every control in it: the server drops what a read-only replica writes. *@
+        <fieldset class="bare" disabled="@document.IsReadOnly">
+            <div class="form">
+                @* Map entries: different keys never conflict; the same key edited at once keeps one value. So each is
+                   written when the field loses focus or Enter is pressed, not on every keystroke, where a peer's
+                   value would replace what is still being typed. *@
+                <label>
+                    Title
+                    <input type="text" value="@(form.Get<string>("title"))"
+                           @onchange="@(args => form.Set("title", args.Value as string ?? string.Empty))" />
+                </label>
+
+                <label>
+                    Owner
+                    <input type="text" value="@(form.Get<string>("owner"))"
+                           @onchange="@(args => form.Set("owner", args.Value as string ?? string.Empty))" />
+                </label>
+
+                <label>
+                    Status
+                    @* Empty until somebody picks one: without the placeholder the browser would show the first status
+                       although nothing is stored, and picking it would raise no change. *@
+                    <select value="@(form.Get<string>("status") ?? "")" @onchange="@(args => form.Set("status", args.Value as string ?? string.Empty))">
+                        <option value="" disabled>Choose a status…</option>
+                        @foreach (string option in Statuses)
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </select>
+                </label>
+
+                @* A set: labels ticked by two people at once are both kept. Add and Remove rather than one write of the
+                   whole selection, because a set merges per member. *@
+                <fieldset>
+                    <legend>Labels</legend>
+                    @foreach (string label in Labels)
+                    {
+                        <label class="row">
+                            <input type="checkbox" checked="@(labels.Contains(label))"
+                                   @onchange="args => ToggleLabel(labels, label, args.Value is true)" />
+                            @label
+                        </label>
+                    }
+                </fieldset>
+
+                @* A text: two people typing here at once both keep their work. *@
+                <label>
+                    Notes
+                    <BcrdtTextArea Text="notes" Presence="document.Presence" Field="notes" Rows="5" />
+                </label>
+            </div>
+        </fieldset>
+    </ChildContent>
+</BcrdtCollaborationScope>
+
+@code {
+    private static readonly string[] Statuses = ["Draft", "In review", "Approved", "Archived"];
+    private static readonly string[] Labels = ["urgent", "customer", "internal", "blocked"];
+
+    private static void ToggleLabel(BcrdtSet labels, string label, bool ticked)
+    {
+        if (ticked) labels.Add(label);
+        else labels.Remove(label);
+    }
+}

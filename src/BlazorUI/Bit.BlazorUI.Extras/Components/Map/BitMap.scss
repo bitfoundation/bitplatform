@@ -11,7 +11,7 @@
 //   --bit-Map-border                 border of the map                                                 (default: none)
 //   --bit-Map-radius                 corner radius of the map, which clips the tiles too               (default: $shp-radius-none)
 //   --bit-Map-focus-color            focus outline of the map canvas                                   (default: $clr-pri-focus)
-//   --bit-Map-disabled-opacity       opacity of the canvas of a disabled map                           (default: $opa-dis)
+//   --bit-Map-disabled-opacity       opacity a disabled map is drawn at                                (default: $opa-dis)
 //   --bit-Map-popup-background       background of the popups and the keyboard instructions            (default: $clr-bg-pri)
 //   --bit-Map-popup-color            text color of the popups and the keyboard instructions            (default: $clr-fg-pri)
 //   --bit-Map-popup-radius           corner radius of the popups and the keyboard instructions         (default: $shp-radius-popup)
@@ -41,6 +41,20 @@ $map-z-overlay: 3; // ChildContent
 $map-z-popup: 4; // the MarkerPopupTemplate anchor and the provider's own popups and tooltips
 $map-z-control: 5; // the provider's controls and attribution (a licence requirement)
 $map-z-help: 6; // the keyboard instructions shown when the canvas takes focus
+
+// The canvas of every provider BitMap ships, each of which keeps its controls and popups apart from the map itself in
+// its DOM - so the canvas sorts them into the stack above rather than drawing them as one layer with the map. A provider
+// of an app's own is none of these, and keeps the canvas whole.
+$map-sorted-canvas: ":is(.leaflet-container, .maplibregl-map, .mapboxgl-map, :has(> .ol-viewport), .esri-view, .atlas-map, :has(> .cesium-viewer))";
+
+// What each of them holds its controls and attribution in, sorted into $map-z-control: Leaflet's corners, MapLibre's
+// and Mapbox's corners, ArcGIS' UI layer (its own popups included) and its attribution, which the view draws outside
+// it, Azure Maps' control layer and attribution, and the bars, buttons and credits Cesium puts around its globe.
+// OpenLayers' is written inline, so it is a rule of its own.
+$map-control-layers: ".leaflet-top, .leaflet-bottom, .maplibregl-ctrl-top-left, .maplibregl-ctrl-top-right, .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right, .mapboxgl-ctrl-top, .mapboxgl-ctrl-top-left, .mapboxgl-ctrl-top-right, .mapboxgl-ctrl-bottom, .mapboxgl-ctrl-bottom-left, .mapboxgl-ctrl-bottom-right, .mapboxgl-ctrl-left, .mapboxgl-ctrl-right, .esri-ui, .esri-attribution, .atlas-control-container, .map-copyright, .cesium-viewer-toolbar, .cesium-viewer-bottom, .cesium-viewer-animationContainer, .cesium-viewer-timelineContainer, .cesium-viewer-fullscreenContainer, .cesium-viewer-vrContainer";
+
+// And their popups, sorted into $map-z-popup. A provider's popups left out (Leaflet's, Azure Maps') stay with the map.
+$map-popup-layers: ".maplibregl-popup, .mapboxgl-popup, .cesium-infoBox";
 
 $map-popup-background: var(--bit-Map-popup-background, #{$clr-bg-pri});
 $map-popup-color: var(--bit-Map-popup-color, #{$clr-fg-pri});
@@ -95,13 +109,20 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     height: 100%;
     isolation: isolate;
 
-    // The providers whose DOM keeps their controls and popups apart from the map itself are sorted
-    // into the stack instead, so the overlay goes between the map and the provider's own chrome.
-    // Leaflet draws its popups and tooltips inside the map pane, which its pan transform makes a
-    // stacking context of its own, so those stay with the map - MarkerPopupTemplate is the popup
-    // that draws above the overlay on every provider.
-    &:is(.leaflet-container, .maplibregl-map, .mapboxgl-map, :has(> .ol-viewport)) {
+    // The providers BitMap ships are sorted into the stack instead, so the overlay goes between the
+    // map and the provider's own chrome. Leaflet draws its popups and tooltips inside the map pane,
+    // which its pan transform makes a stacking context of its own, so those stay with the map -
+    // MarkerPopupTemplate is the popup that draws above the overlay on every provider.
+    &#{$map-sorted-canvas} {
         isolation: auto;
+    }
+
+    // The surface ArcGIS and Cesium draw the map on z-indexes parts of its own (ArcGIS' focus
+    // outline, Cesium's error panel), which would rise above every layer of the stack once the
+    // canvas no longer holds them - so the surface is kept one layer with the map.
+    .esri-view-surface,
+    .cesium-viewer-cesiumWidgetContainer {
+        isolation: isolate;
     }
 
     // Leaflet paints its container a fixed light gray and sets its own font, both of which would
@@ -123,25 +144,11 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
         filter: var(--bit-Map-tile-filter, none);
     }
 
-    .leaflet-top,
-    .leaflet-bottom,
-    .maplibregl-ctrl-top-left,
-    .maplibregl-ctrl-top-right,
-    .maplibregl-ctrl-bottom-left,
-    .maplibregl-ctrl-bottom-right,
-    .mapboxgl-ctrl-top,
-    .mapboxgl-ctrl-top-left,
-    .mapboxgl-ctrl-top-right,
-    .mapboxgl-ctrl-bottom,
-    .mapboxgl-ctrl-bottom-left,
-    .mapboxgl-ctrl-bottom-right,
-    .mapboxgl-ctrl-left,
-    .mapboxgl-ctrl-right {
+    #{$map-control-layers} {
         z-index: $map-z-control;
     }
 
-    .maplibregl-popup,
-    .mapboxgl-popup {
+    #{$map-popup-layers} {
         z-index: $map-z-popup;
     }
 
@@ -309,26 +316,55 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 
 // A disabled map is inert - out of the tab order and away from the pointer - and dimmed like every other disabled
 // element that keeps its own colors, so it does not look like a map that merely failed to respond.
-.bit-map.bit-dis .bit-map-canvas {
+.bit-map.bit-dis .bit-map-canvas:not(#{$map-sorted-canvas}) {
     opacity: var(--bit-Map-disabled-opacity, #{$opa-dis});
+}
+
+// Opacity would make a stacking context of a sorted canvas and take the provider's controls and attribution back under
+// the overlay, so that one is dimmed in two parts instead. What the provider draws on the map goes under a cover of the
+// map's own background - the one a faded canvas would show through, so the two look the same - and each layer sorted
+// above the overlay fades on its own, a stacking context already, whose opacity moves nothing.
+.bit-map.bit-dis .bit-map-canvas#{$map-sorted-canvas} {
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: $map-z-content;
+        pointer-events: none;
+        background: var(--bit-Map-background, #{$clr-bg-sec});
+        opacity: calc(1 - var(--bit-Map-disabled-opacity, #{$opa-dis}));
+    }
+
+    :is(#{$map-control-layers}, #{$map-popup-layers}, .ol-overlaycontainer, .ol-overlaycontainer-stopevent) {
+        opacity: var(--bit-Map-disabled-opacity, #{$opa-dis});
+    }
 }
 
 // Only the overlay's children take the pointer, and a flex column sizes each one to its content
 // from the top-start corner - a plain block child would otherwise span the map's width and swallow
 // the drags and clicks across that whole strip. A child positioned absolutely is placed by its own
 // insets instead.
+// The provider's controls draw above the overlay, and the top-start corner is where most providers
+// draw their zoom buttons, so the children start below whatever controls the provider has in that
+// corner. BitMapChrome measures the room the controls take in each top corner as they come and go
+// (--bit-map-ctl-tl / -tr, on the root), and the overlay reads the one its start side is on.
 .bit-map-overlay {
     position: absolute;
     inset: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    padding-block-start: var(--bit-map-ctl-tl, 0);
     pointer-events: none;
     z-index: $map-z-overlay;
 
     > * {
         pointer-events: auto;
     }
+}
+
+.bit-map-overlay:is(:dir(rtl), .bit-map.bit-rtl > *) {
+    padding-block-start: var(--bit-map-ctl-tr, 0);
 }
 
 // Keyboard instructions and the live region: read by assistive tech, invisible on screen.

@@ -48,12 +48,14 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
 
         int j = i + 2;
         while (j < lines.Count && !BitMarkdownBlockProcessor.IsBlank(lines[j])
-               && lines[j].Contains('|') && !state.StartsBlock(j))
+               && lines[j].Contains('|') && !state.StartsBlock(j)
+               && state.Context.TableCellBudget >= header.Count)
         {
+            state.Context.TableCellBudget -= header.Count;
             var cells = SplitRow(lines[j]);
             var row = new List<List<BitMarkdownNode>>();
             for (int c = 0; c < header.Count; c++)
-                row.Add(state.ParseInlines(c < cells.Count ? cells[c].Trim() : string.Empty));
+                row.Add(c < cells.Count ? state.ParseInlines(cells[c].Trim()) : new List<BitMarkdownNode>());
             table.Rows.Add(row);
             j++;
         }
@@ -77,6 +79,7 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
 
         var cells = new List<string>();
         var sb = new StringBuilder();
+        Dictionary<int, int>? lastRuns = null;
         int backtickRun = 0; // length of the backtick run that opened the current code span; 0 when outside.
         for (int i = 0; i < s.Length; i++)
         {
@@ -101,7 +104,8 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
                 // later pipes must still be treated as cell delimiters rather than content.
                 if (backtickRun == 0)
                 {
-                    if (HasMatchingBacktickRun(s, i + 1, runLength)) backtickRun = runLength;
+                    lastRuns ??= LastBacktickRuns(s);
+                    if (HasMatchingBacktickRun(lastRuns, i + 1, runLength)) backtickRun = runLength;
                 }
                 else if (runLength == backtickRun) backtickRun = 0;
                 sb.Append(s, runStart, runLength);
@@ -116,16 +120,20 @@ public sealed partial class BitMarkdownPipeTableBlockParser : BitMarkdownBlockPa
     // Scans from startIndex for a backtick run of exactly the given length, used to
     // decide whether an opening backtick run has a valid closing run (a code span's
     // closing run must contain the same number of backticks as the opening run).
-    private static bool HasMatchingBacktickRun(string s, int startIndex, int runLength)
+    private static bool HasMatchingBacktickRun(Dictionary<int, int> lastRuns, int startIndex, int runLength)
+        => lastRuns.TryGetValue(runLength, out int lastStart) && lastStart >= startIndex;
+
+    private static Dictionary<int, int> LastBacktickRuns(string s)
     {
-        for (int i = startIndex; i < s.Length; i++)
+        var runs = new Dictionary<int, int>();
+        for (int i = 0; i < s.Length; i++)
         {
             if (s[i] != '`') continue;
             int runStart = i;
             while (i + 1 < s.Length && s[i + 1] == '`') i++;
-            if (i - runStart + 1 == runLength) return true;
+            runs[i - runStart + 1] = runStart;
         }
-        return false;
+        return runs;
     }
 
     // Determines whether the final '|' of a row is backslash-escaped by counting

@@ -1,0 +1,167 @@
+﻿@page "/components/ai/emptystate"
+
+<PageOutlet Url="components/ai/emptystate"
+            Title="AiEmptyState"
+            Description="BitAiEmptyState is what an empty AI conversation shows: a glyph, a heading, a line under it, and starter prompts the user can begin from with one tap." />
+
+<DemoPage Name="AiEmptyState"
+          Description="BitAiEmptyState is what an empty conversation shows: a glyph, a heading, a supporting line, and example prompts the user can start from with one tap. The suggestions matter more than the heading - an empty box is the hardest part of a chat product, and three concrete examples solve it. BitAiChat renders one until the first message; render it yourself in the EmptyTemplate of a BitAiMessageList."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="EmptyState/BitAiEmptyState.razor"
+          GitHubDemoUrl="AI/EmptyState/BitAiEmptyStateDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            It needs no session: <b>OnSuggestion</b> hands the chosen prompt to the page, which submits it (a BitAiChat submits
+            its own suggestions to its session). The heading and the line default to the EmptyTitle and EmptyBody strings of the
+            <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force, so a localized string table
+            changes them everywhere. The glyph is decorative and hidden from assistive technologies; the suggestions are
+            buttons, reachable with the keyboard. See the <BitLink Href="/ai/scenarios/basic">basic chat</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                With nothing set, it greets with the words of the string table under a sparkle.
+            </div>
+            <br />
+            <BitAiEmptyState />
+        </DemoExample>
+
+        <DemoExample Title="Title & body" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Title</b> and <b>Body</b> replace the words of the string table; <b>ChildContent</b> takes the place of the
+                line with markup of your own.
+            </div>
+            <br />
+            <BitAiEmptyState Title="Ask the docs assistant" Body="It knows every component of bit BlazorUI." />
+            <br />
+            <BitAiEmptyState Title="Start a new thread">
+                Questions are answered from the <BitLink Href="/components">component gallery</BitLink> and nothing else.
+            </BitAiEmptyState>
+        </DemoExample>
+
+        <DemoExample Title="Suggestions" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Suggestions</b> are offered as one-tap starters, and <b>OnSuggestion</b> hands the chosen one over - submit it
+                to a session, as a BitAiChat does.
+            </div>
+            <br />
+            <div class="example-surface">
+                <BitAiEmptyState Title="What can I help with?" Suggestions="suggestions" OnSuggestion="HandleSuggestion" />
+            </div>
+            <br />
+            <div>Chosen: <b>@(chosenSuggestion ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                <b>IconName</b> picks another glyph of the built-in Fluent UI icons, and <b>IconTemplate</b> takes any markup in
+                its place - a logo, an avatar, an emoji. The robot is not one of the two dozen glyphs the core package embeds, so
+                an app showing it adds the Bit.BlazorUI.Icons package (see <BitLink Href="/iconography">Iconography</BitLink>);
+                markup of an IconTemplate that only decorates is the app's to hide with <b>aria-hidden</b>.
+            </div>
+            <br />
+            <BitAiEmptyState IconName="@BitIconName.Robot" Title="Hi, I am Bit" />
+            <br />
+            <BitAiEmptyState Title="Welcome back">
+                <IconTemplate>
+                    <span style="font-size:2.5rem">👋</span>
+                </IconTemplate>
+            </BitAiEmptyState>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A disabled empty state disables its suggestions - while the chat around it cannot take a message, for instance.
+            </div>
+            <br />
+            <div class="example-surface">
+                <BitAiEmptyState Disabled Title="The assistant is offline" Suggestions="suggestions" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>BitParams</b> with a <b>BitAiEmptyStateParams</b> sets the words, the glyph, the classes and the styles every
+                empty state inside it greets with; an empty state's own value wins (the second keeps its own title). The
+                suggestions, the templates and the callback are not cascaded. The glyph reaches the empty state of each
+                BitAiChat in it too, while its words come from the chat's <b>EmptyTitle</b> and <b>EmptyBody</b> and its look
+                from the chat's <b>Styles</b> / <b>Classes</b> - cascade those through a
+                <BitLink Href="/components/ai/chat">BitAiChatParams</BitLink>.
+            </div>
+            <br />
+            <BitParams Parameters="emptyStateParams">
+                <BitAiEmptyState />
+                <br />
+                <BitAiEmptyState Title="Its own title wins" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>Icon</b> takes any CSS-class icon library (raw classes or <b>BitIconInfo.Css</b> / <b>Fa</b> / <b>Bi</b>) and
+                wins over <b>IconName</b>. Reference the library's stylesheet in your app. See the
+                <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> table for the rest of what it describes.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+            <BitAiEmptyState Icon="@BitIconInfo.Fa("solid wand-magic-sparkles")" Title="FontAwesome" />
+            <br />
+            <BitAiEmptyState Icon="@BitIconInfo.Bi("chat-dots")" Title="Bootstrap Icons" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> each part (the icon, the title, the
+                body, the suggestions and each suggestion button, with the class-styles of BitButton). The public
+                <b>--bit-AiEmptyState-*</b> variables (see the CSS variables table) re-skin it from <b>:root</b>, an ancestor
+                or <b>Style</b>.
+            </div>
+            <br />
+            <div>
+                <div class="example-surface">
+                    <BitAiEmptyState Title="Styled"
+                                     Suggestions="suggestions"
+                                     Style="border-radius:1rem;background:linear-gradient(180deg, var(--bit-clr-pri-tint), transparent)"
+                                     Styles="@(new() { Title = "font-style:italic", Suggestion = new() { Root = "border-radius:0.25rem" } })" />
+                </div>
+                <br />
+                <BitAiEmptyState Title="Classy"
+                                 Class="custom-empty"
+                                 Classes="@(new() { Icon = "custom-empty-icon", Title = "custom-empty-title" })" />
+                <br />
+                <div class="example-surface">
+                    <BitAiEmptyState Title="CSS variables"
+                                     Suggestions="suggestions"
+                                     Style="--bit-AiEmptyState-gap:0.5rem;--bit-AiEmptyState-padding:1.5rem;--bit-AiEmptyState-color:var(--bit-clr-fg-pri);--bit-AiEmptyState-icon-color:var(--bit-clr-suc);--bit-AiEmptyState-icon-size:4rem;--bit-AiEmptyState-title-color:var(--bit-clr-suc);--bit-AiEmptyState-title-font-size:2rem;--bit-AiEmptyState-title-font-weight:300;--bit-AiEmptyState-suggestions-gap:1rem" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>Use BitAiEmptyState in right-to-left (RTL).</div>
+            <br />
+            <div class="example-surface">
+                <BitAiEmptyState Dir="BitDir.Rtl"
+                                 Title="چطور می‌توانم کمک کنم؟"
+                                 Body="پیامی بنویسید یا یکی از پیشنهادها را انتخاب کنید."
+                                 Suggestions="rtlSuggestions" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

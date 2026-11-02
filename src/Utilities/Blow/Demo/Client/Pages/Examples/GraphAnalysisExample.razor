@@ -1,0 +1,648 @@
+﻿@page "/examples/graph-analysis"
+
+<PageTitle>Graph Analysis · Blow</PageTitle>
+
+<ExampleScaffold Title="Graph Analysis"
+                 Summary="The UI-free graph helpers run over a graph you can edit: BlowGraphAlgorithms for order, cycles, components, reachability and shortest routes, BlowGraphValidator for rules, and search to take you to what you are looking for. Pick an analysis; the answer is marked on the graph and listed beside it, and recomputed after every edit.">
+    <Toolbar>
+        <label>
+            Analysis
+            <select @bind="_mode" @bind:after="Analyze">
+                @foreach (var (mode, name) in Modes)
+                {
+                    <option value="@mode">@name</option>
+                }
+            </select>
+        </label>
+        @if (_mode == Mode.Traverse)
+        {
+            <label>
+                Direction
+                <select @bind="_direction" @bind:after="Analyze">
+                    <option value="@BlowTraversalDirection.Outgoing">Outgoing</option>
+                    <option value="@BlowTraversalDirection.Incoming">Incoming</option>
+                    <option value="@BlowTraversalDirection.Both">Both</option>
+                </select>
+            </label>
+            <label>
+                Depth
+                <select @bind="_depth" @bind:after="Analyze">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="0">no limit</option>
+                </select>
+            </label>
+        }
+        else if (_mode == Mode.Path)
+        {
+            <label>
+                From
+                <select @bind="_from" @bind:after="Analyze">
+                    @foreach (var node in _nodes)
+                    {
+                        <option value="@node.Id">@Name(node)</option>
+                    }
+                </select>
+            </label>
+            <label>
+                To
+                <select @bind="_to" @bind:after="Analyze">
+                    @foreach (var node in _nodes)
+                    {
+                        <option value="@node.Id">@Name(node)</option>
+                    }
+                </select>
+            </label>
+            <label><input type="checkbox" @bind="_weighted" @bind:after="Analyze" /> Weigh edges by length</label>
+        }
+        else if (_mode == Mode.Validation)
+        {
+            <label>
+                Max issues
+                <select @bind="_maxIssues" @bind:after="Analyze">
+                    <option value="1000">1,000 (default)</option>
+                    <option value="3">3</option>
+                </select>
+            </label>
+        }
+        else if (_mode == Mode.Search)
+        {
+            <input type="search" class="ga-search" placeholder="Search nodes and edges" aria-label="Search nodes and edges"
+                   @bind="_query" @bind:event="oninput" @bind:after="Analyze" />
+            <button class="btn btn-secondary" disabled="@(_foundNodes.Count == 0 && _foundEdges.Count == 0)" @onclick="SelectMatches">Select all matches</button>
+        }
+    </Toolbar>
+    <ChildContent>
+        <div class="ga">
+            <div class="ga__canvas">
+                @* Every edit, and every change of selection, runs the analysis again: the helpers read the lists as they
+                   are, so their answers always describe the graph on screen. *@
+                <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                            Validation="@(_mode == Mode.Validation ? _validation : null)"
+                            NodesChanged="@(_ => Analyze())" EdgesChanged="@(_ => Analyze())"
+                            OnSelectionChange="OnSelectionChange">
+                    <NodeTemplate Context="node">
+                        <BlowDefaultNode Node="node" />
+                        @if (_badges.TryGetValue(node.Id, out var badge))
+                        {
+                            <span class="ga-badge" aria-hidden="true">@badge</span>
+                        }
+                    </NodeTemplate>
+                    <ChildContent>
+                        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                        <BlowControls />
+                    </ChildContent>
+                </BlowCanvas>
+            </div>
+            <aside class="ga__results" aria-label="Analysis results">
+                <code class="ga-call">@_call</code>
+                <p class="ga-summary">@_summary</p>
+                @foreach (var section in _sections)
+                {
+                    <h3 class="ga-heading">@section.Title</h3>
+                    <ul class="ga-list">
+                        @foreach (var item in section.Items)
+                        {
+                            <li>
+                                @if (item.NodeId is not null || item.EdgeId is not null)
+                                {
+                                    <button class="ga-item" @onclick="() => Go(item)">@item.Text</button>
+                                }
+                                else
+                                {
+                                    <span class="ga-item">@item.Text</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </aside>
+        </div>
+    </ChildContent>
+    <TryIt>
+        <li><strong>Dependency order</strong> numbers the nodes so each comes after everything with an edge into it. Load, Check and Fix go round in a loop through the <em>retry</em> edge, so they - and everything after them - cannot be ordered; click the retry edge and press <strong>Delete</strong> and the whole graph gets an order.</li>
+        <li><strong>Cycles</strong> says whether there is a loop and marks each one, its edges included; with retry deleted, <strong>drag from</strong> Audit's handle back to Load to make a bigger one. <strong>Strongly connected</strong> groups the nodes that can all reach one another; <strong>Connected pieces</strong> colours the separate parts the graph falls into.</li>
+        <li><strong>Upstream and downstream</strong>: <strong>click</strong> a node to see everything it depends on and everything that depends on it, and whether it is on a cycle. <strong>Neighbourhood</strong> walks out from the selected node, numbering each node by how many edges away it is; pick the <strong>Direction</strong> and the <strong>Depth</strong>.</li>
+        <li><strong>Shortest path</strong> marks the route with the fewest edges between <strong>From</strong> and <strong>To</strong>. Tick <strong>Weigh edges by length</strong> to find the shortest route as drawn instead, then <strong>drag</strong> Check or Fix far away and watch the route switch sides.</li>
+        <li><strong>Roots, leaves and loose ends</strong> marks where flows start and end, the node with no edges, and the steps no input reaches. <strong>Statistics</strong> lists the counts.</li>
+        <li><strong>Validation</strong> checks the graph against rules: Audit's dead end is an error, the loop, the note and Manual entry are warnings, and the list adds an issue for information only. <strong>Drag from</strong> Audit's handle to Save to clear the error. Set <strong>Max issues</strong> to 3 and the report stops after the loop's three warnings, before the rule that finds the error has run.</li>
+        <li><strong>Search</strong>: type <em>rows</em>, <em>cache</em> or <em>retry</em>. Matching nodes and edges are marked and listed best first; <strong>Select all matches</strong> selects them.</li>
+        <li>In every analysis, press an entry in the list to have the view glide to that node or edge, select it and give it keyboard focus.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>Each run builds one <code>BlowGraphIndex(nodes, edges)</code> - the lookups by id and the incoming and outgoing edges - and asks it every question of that analysis. The helpers have no UI, never recurse, and run in time linear in the size of the graph.</li>
+        <li><code>TopologicalSort(graph)</code> returns the <code>Order</code> and the <code>Unordered</code> nodes a cycle blocks, and <code>IsAcyclic</code>. <code>HasCycle(graph)</code> answers yes or no; <code>FindCycles(graph)</code> returns each group of nodes on a cycle.</li>
+        <li><code>StronglyConnectedComponents(graph)</code> returns the groups of mutually reachable nodes, in reverse topological order; <code>ConnectedComponents(graph)</code> the pieces the graph falls into when direction is ignored.</li>
+        <li><code>GetAncestors(graph, id)</code> and <code>GetDescendants(graph, id)</code> list what is upstream and downstream, nearest first. <code>IsReachable(graph, from, to)</code> says whether one node leads to another; a node reaches itself only through a cycle. <code>Traverse(graph, id, direction, maxDepth)</code> is the general walk behind them; the page calls it with growing depths to number each node by its distance.</li>
+        <li><code>ShortestPath(graph, from, to)</code> finds the fewest-edges route, or null when there is none. Given a weight function - here the distance between the two nodes' centres - it finds the cheapest one instead (Dijkstra).</li>
+        <li><code>GetRoots</code>, <code>GetLeaves</code> and <code>GetIsolatedNodes</code> find where flows start and end and what is disconnected; <code>GetUnreachable(graph, startIds)</code>, started from the <code>input</code> nodes, finds what can never run. <code>GetStatistics(graph)</code> counts nodes, edges, roots, leaves, components, self-loops, degrees, dangling edges and whether the graph is acyclic.</li>
+        <li><code>BlowGraphValidator.CreateDefault()</code> holds the <code>Structure</code> and <code>Ports</code> rules; the page adds <code>NoCycles(BlowValidationSeverity.Warning)</code>, <code>NoIsolatedNodes()</code> and <code>AllReachableFrom(n => n.Type == "input")</code> (warnings by default), a rule of its own implementing <code>IBlowValidationRule</code> - a step that ends the flow must be an output, an error - and an information-only issue added as a function. <code>MaxIssues</code> bounds the report and sets <code>IsTruncated</code>.</li>
+        <li>The <code>BlowValidationResult</code> goes to the canvas's <code>Validation</code> parameter, which marks errors and warnings by shape as well as colour; <code>Info</code> issues are not marked. Each <code>BlowValidationIssue</code> carries a <code>Code</code>, a <code>Severity</code>, a <code>Message</code> and the <code>NodeId</code> or <code>EdgeId</code> it concerns, which is how the list takes you there.</li>
+        <li><code>FindNodes(query, text)</code> and <code>FindEdges(query)</code> search what is shown - labels, ids, types, the names of an edge's two nodes, plus the description in each node's <code>Data</code> through the <code>text</code> function - ignoring case and accents, best matches first. <code>SelectAsync(nodes, edges)</code> selects them; <code>FocusNodeAsync</code> and <code>FocusEdgeAsync</code> with <code>select: true</code> take you to one.</li>
+        <li>The marks are the nodes' own <code>Class</code> and <code>Style</code>, the edges' <code>Class</code>, and a badge drawn by the <code>NodeTemplate</code> beside the built-in <code>BlowDefaultNode</code>; each run clears the last one's first.</li>
+    </HowItWorks>
+</ExampleScaffold>
+
+<style>
+    .ga { display:flex; height:100%; }
+    .ga__canvas { flex:1; position:relative; min-width:0; }
+    /* Outside the canvas, so it takes the site's own surfaces rather than the flow's. */
+    .ga__results { width:280px; overflow:auto; padding:10px 12px; font-size:12px; line-height:1.5; color:var(--bb-text);
+                   background:var(--bb-surface-sunken); border-left:1px solid var(--bb-border); }
+    .ga-call { display:block; font-size:11px; color:var(--bb-text-soft); word-break:break-word; }
+    .ga-summary { margin:6px 0 0; }
+    .ga-heading { margin:10px 0 2px; font-size:12px; }
+    .ga-list { list-style:none; margin:0; padding:0; }
+    .ga-item { display:block; width:100%; padding:2px 6px; text-align:start; font:inherit; color:inherit; background:none;
+               border:1px solid transparent; border-radius:4px; }
+    button.ga-item { cursor:pointer; }
+    button.ga-item:hover { border-color:var(--bb-border); background:var(--bb-surface); }
+    .ga-search { width:14rem; }
+
+    /* The marks an analysis leaves on the graph. Colours come from the flow's own properties, so they hold in both modes. */
+    .bit-blow-node.ga-dim { opacity:.4; }
+    .bit-blow-node.ga-subject { outline:2px solid var(--bit-blow-node-selected); outline-offset:3px; }
+    .bit-blow-node.ga-path { border:2px solid var(--bit-blow-node-selected); }
+    .bit-blow-node.ga-match { outline:2px dashed var(--bit-blow-warning); outline-offset:3px; }
+    .bit-blow-edge.ga-path .bit-blow-edge-path { stroke:var(--bit-blow-node-selected); stroke-width:3; }
+    .ga-badge { position:absolute; top:-9px; right:-9px; min-width:18px; padding:0 5px; box-sizing:border-box;
+                font:600 10px/16px sans-serif; text-align:center; color:var(--bit-blow-text); background:var(--bit-blow-surface);
+                border:1px solid var(--bit-blow-border); border-radius:9px; pointer-events:none; }
+
+    /* On a phone a fixed-width list leaves the canvas a sliver: stack it under the canvas instead. */
+    @@media (max-width: 640px) {
+        .ga { flex-direction:column; }
+        .ga__canvas { flex:1 1 60%; }
+        .ga__results { width:auto; flex:1 1 40%; border-left:0; border-top:1px solid var(--bb-border); }
+    }
+</style>
+
+@code {
+    private enum Mode { Order, Cycles, Strong, Connected, Lineage, Traverse, Path, Shape, Statistics, Validation, Search }
+
+    private static readonly (Mode Value, string Name)[] Modes =
+    [
+        (Mode.Order, "Dependency order"),
+        (Mode.Cycles, "Cycles"),
+        (Mode.Strong, "Strongly connected"),
+        (Mode.Connected, "Connected pieces"),
+        (Mode.Lineage, "Upstream and downstream"),
+        (Mode.Traverse, "Neighbourhood"),
+        (Mode.Path, "Shortest path"),
+        (Mode.Shape, "Roots, leaves and loose ends"),
+        (Mode.Statistics, "Statistics"),
+        (Mode.Validation, "Validation"),
+        (Mode.Search, "Search"),
+    ];
+
+    // Group colours, mixed into the node's own fill so they read in the light and the dark colour mode alike.
+    private static readonly string[] Palette = ["#3b82f6", "#22c55e", "#f97316", "#a855f7", "#14b8a6", "#e11d48"];
+
+    private sealed record Item(string Text, string? NodeId = null, string? EdgeId = null);
+
+    private sealed record Section(string Title, List<Item> Items);
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    private Mode _mode = Mode.Order;
+    private BlowTraversalDirection _direction = BlowTraversalDirection.Outgoing;
+    private int _depth = 2;
+    private string _from = "src";
+    private string _to = "save";
+    private bool _weighted;
+    private int _maxIssues = 1000;
+    private string _query = "";
+    private string? _subject;
+
+    private string _call = "";
+    private string _summary = "";
+    private readonly List<Section> _sections = [];
+    private readonly Dictionary<string, string> _badges = [];
+    private BlowValidationResult _validation = BlowValidationResult.Empty;
+    private IReadOnlyList<BlowNode> _foundNodes = [];
+    private IReadOnlyList<BlowEdge> _foundEdges = [];
+
+    protected override void OnInitialized()
+    {
+        BlowNode Step(string id, string label, double x, double y, string description, string type = "default")
+            => new() { Id = id, Type = type, Label = label, Position = new(x, y), Data = description };
+        BlowEdge Link(string source, string target, string? label = null)
+            => new() { Id = $"{source}-{target}", Source = source, Target = target, Label = label };
+
+        _nodes =
+        [
+            Step("src", "Orders", 120, 0, "Reads the day's orders", "input"),
+            Step("load", "Load", 120, 110, "Parses the orders into rows"),
+            Step("check", "Check", -60, 220, "Checks every row against the rules"),
+            Step("fix", "Fix", 300, 220, "Repairs the rows that failed a check"),
+            Step("manual", "Manual entry", 480, 260, "Rows typed in by hand"),
+            Step("merge", "Merge", 120, 340, "Joins the checked and the repaired rows"),
+            Step("save", "Save", 0, 450, "Writes the rows to the warehouse", "output"),
+            Step("audit", "Audit", 240, 450, "Keeps a trail of every change"),
+            Step("cfg", "Settings", 700, 0, "Reads the cache settings", "input"),
+            Step("cache", "Cache", 700, 110, "Builds the lookup cache"),
+            Step("warm", "Warm up", 700, 220, "Primes the cache before the run", "output"),
+            Step("note", "Sticky note", 700, 340, "A note, connected to nothing"),
+        ];
+        // Load, Check and Fix form a cycle through the retry edge; Manual entry is fed by no input; the cache chain is a
+        // piece of its own and the note has no edges at all - something for every analysis to find.
+        _edges =
+        [
+            Link("src", "load"),
+            Link("load", "check"),
+            Link("load", "fix"),
+            Link("check", "fix", "failed"),
+            Link("fix", "load", "retry"),
+            Link("check", "merge", "valid"),
+            Link("fix", "merge", "fixed"),
+            Link("manual", "merge"),
+            Link("merge", "save"),
+            Link("merge", "audit"),
+            Link("cfg", "cache"),
+            Link("cache", "warm"),
+        ];
+
+        Analyze();
+    }
+
+    private void OnSelectionChange(BlowSelectionChange selection)
+    {
+        _subject = selection.Nodes.Count > 0 ? selection.Nodes[0].Id : null;
+        if (_mode is Mode.Lineage or Mode.Traverse) Analyze();
+    }
+
+    /// <summary>Runs the chosen analysis over the graph as it is now, marks the answer on it and lists it.</summary>
+    private void Analyze()
+    {
+        foreach (var node in _nodes)
+        {
+            node.Class = null;
+            node.Style = null;
+        }
+        foreach (var edge in _edges) edge.Class = null;
+        _badges.Clear();
+        _sections.Clear();
+        _validation = BlowValidationResult.Empty;
+        _foundNodes = [];
+        _foundEdges = [];
+
+        // One index per run, asked every question of it.
+        var graph = new BlowGraphIndex(_nodes, _edges);
+        switch (_mode)
+        {
+            case Mode.Order: Order(graph); break;
+            case Mode.Cycles: Cycles(graph); break;
+            case Mode.Strong: Strong(graph); break;
+            case Mode.Connected: Connected(graph); break;
+            case Mode.Lineage: Lineage(graph); break;
+            case Mode.Traverse: Neighbourhood(graph); break;
+            case Mode.Path: Path(graph); break;
+            case Mode.Shape: Shape(graph); break;
+            case Mode.Statistics: Statistics(graph); break;
+            case Mode.Validation: Validate(); break;
+            case Mode.Search: Search(); break;
+        }
+    }
+
+    private void Order(BlowGraphIndex graph)
+    {
+        var sort = BlowGraphAlgorithms.TopologicalSort(graph);
+        _call = "BlowGraphAlgorithms.TopologicalSort(graph)";
+        _summary = sort.IsAcyclic
+            ? "IsAcyclic: every node is ordered, each after all the nodes with an edge into it."
+            : $"IsAcyclic: false. {sort.Unordered.Count} node(s) cannot be ordered: a cycle blocks them and what follows them.";
+
+        var order = sort.Order.Select((node, i) =>
+        {
+            _badges[node.Id] = (i + 1).ToString();
+            return new Item($"{i + 1}. {Name(node)}", node.Id);
+        }).ToList();
+        _sections.Add(new("Order", order));
+
+        if (sort.Unordered.Count == 0) return;
+        foreach (var node in sort.Unordered)
+        {
+            node.Class = "ga-dim";
+            _badges[node.Id] = "–";
+        }
+        _sections.Add(new("Unordered", [.. sort.Unordered.Select(n => new Item(Name(n), n.Id))]));
+    }
+
+    private void Cycles(BlowGraphIndex graph)
+    {
+        var hasCycle = BlowGraphAlgorithms.HasCycle(graph);
+        var cycles = BlowGraphAlgorithms.FindCycles(graph);
+        _call = "HasCycle(graph), FindCycles(graph)";
+        _summary = hasCycle
+            ? $"HasCycle: true. {cycles.Count} cycle(s), each a group of nodes that lead back to one another."
+            : "HasCycle: false - the graph is acyclic. Drag from Save back to Load to make a cycle.";
+
+        DimAll();
+        for (var i = 0; i < cycles.Count; i++)
+        {
+            var members = cycles[i].Select(n => n.Id).ToHashSet();
+            foreach (var node in cycles[i]) Group(node, i, $"cycle {i + 1}");
+            foreach (var edge in _edges.Where(e => members.Contains(e.Source) && members.Contains(e.Target))) edge.Class = "ga-path";
+            _sections.Add(new($"Cycle {i + 1}", [.. cycles[i].Select(n => new Item(Name(n), n.Id))]));
+        }
+    }
+
+    private void Strong(BlowGraphIndex graph)
+    {
+        var components = BlowGraphAlgorithms.StronglyConnectedComponents(graph);
+        _call = "StronglyConnectedComponents(graph)";
+        _summary = $"{components.Count} component(s), in reverse topological order. Nodes share one only when each can reach the others, so only a cycle makes one of more than a node.";
+
+        var items = new List<Item>();
+        var colour = 0;
+        for (var i = 0; i < components.Count; i++)
+        {
+            var members = components[i];
+            foreach (var node in members)
+            {
+                _badges[node.Id] = $"S{i + 1}";
+                // Only the groups of several are coloured: a colour shared by unrelated single nodes would read as a group.
+                if (members.Count > 1) Tint(node, colour);
+            }
+            if (members.Count > 1) colour++;
+            items.Add(new($"S{i + 1}: {string.Join(", ", members.Select(Name))}", members[0].Id));
+        }
+        _sections.Add(new("Components", items));
+    }
+
+    private void Connected(BlowGraphIndex graph)
+    {
+        var pieces = BlowGraphAlgorithms.ConnectedComponents(graph);
+        _call = "ConnectedComponents(graph)";
+        _summary = $"The graph falls into {pieces.Count} piece(s) when edge direction is ignored. Connect two pieces and they merge.";
+
+        var items = new List<Item>();
+        for (var i = 0; i < pieces.Count; i++)
+        {
+            foreach (var node in pieces[i]) Group(node, i, $"C{i + 1}");
+            items.Add(new($"C{i + 1}: {string.Join(", ", pieces[i].Select(Name))}", pieces[i][0].Id));
+        }
+        _sections.Add(new("Pieces", items));
+    }
+
+    private void Lineage(BlowGraphIndex graph)
+    {
+        _call = "GetAncestors(graph, id), GetDescendants(graph, id), IsReachable(graph, from, to)";
+        if (Subject(graph) is not { } subject)
+        {
+            _summary = "Click a node to see what it depends on and what depends on it.";
+            return;
+        }
+
+        var up = BlowGraphAlgorithms.GetAncestors(graph, subject.Id);
+        var down = BlowGraphAlgorithms.GetDescendants(graph, subject.Id);
+        var onCycle = BlowGraphAlgorithms.IsReachable(graph, subject.Id, subject.Id);
+        var fromInput = graph.Nodes.Any(n => n.Type == "input" && BlowGraphAlgorithms.IsReachable(graph, n.Id, subject.Id));
+        _summary = $"{Name(subject)}: {up.Count} node(s) upstream, {down.Count} downstream. "
+            + $"IsReachable from itself: {Yes(onCycle)} - it is {(onCycle ? "on a cycle" : "on no cycle")}. "
+            + $"Reachable from an input: {Yes(fromInput)}.";
+
+        DimAll();
+        subject.Class = "ga-subject";
+        var downIds = down.Select(n => n.Id).ToHashSet();
+        foreach (var node in up) Group(node, downIds.Contains(node.Id) ? 2 : 0, downIds.Contains(node.Id) ? "↕" : "↑");
+        foreach (var node in down.Where(n => !up.Contains(n))) Group(node, 1, "↓");
+
+        _sections.Add(new("Upstream, nearest first", [.. up.Select(n => new Item(Name(n), n.Id))]));
+        _sections.Add(new("Downstream, nearest first", [.. down.Select(n => new Item(Name(n), n.Id))]));
+    }
+
+    private void Neighbourhood(BlowGraphIndex graph)
+    {
+        var depth = _depth == 0 ? "null" : _depth.ToString();
+        _call = $"Traverse(graph, id, BlowTraversalDirection.{_direction}, maxDepth: {depth})";
+        if (Subject(graph) is not { } subject)
+        {
+            _summary = "Click a node to walk out from it.";
+            return;
+        }
+
+        // Traverse lists the nodes within a depth, nearest first, without saying how far each is; asking for each depth
+        // in turn tells them apart. It stops as soon as a depth reaches nothing new.
+        var limit = _depth == 0 ? graph.Nodes.Count : _depth;
+        var distance = new Dictionary<string, int>();
+        for (var d = 1; d <= limit; d++)
+        {
+            var before = distance.Count;
+            foreach (var node in BlowGraphAlgorithms.Traverse(graph, subject.Id, _direction, d)) distance.TryAdd(node.Id, d);
+            if (distance.Count == before) break;
+        }
+
+        var reached = BlowGraphAlgorithms.Traverse(graph, subject.Id, _direction, _depth == 0 ? null : _depth);
+        _summary = $"{reached.Count} node(s) within {(_depth == 0 ? "any number of" : _depth.ToString())} edge(s) of {Name(subject)}, following {_direction.ToString().ToLowerInvariant()} edges. The badge is the distance.";
+
+        DimAll();
+        subject.Class = "ga-subject";
+        foreach (var node in reached) Group(node, distance[node.Id] - 1, distance[node.Id].ToString());
+        _sections.Add(new("Reached, nearest first", [.. reached.Select(n => new Item($"{distance[n.Id]}: {Name(n)}", n.Id))]));
+    }
+
+    private void Path(BlowGraphIndex graph)
+    {
+        Func<BlowEdge, double>? weight = null;
+        if (_weighted) weight = e => Length(graph, e);
+        _call = _weighted ? "ShortestPath(graph, from, to, weight: edge => length)" : "ShortestPath(graph, from, to)";
+
+        var path = BlowGraphAlgorithms.ShortestPath(graph, _from, _to, weight);
+        var from = graph.GetNode(_from);
+        var to = graph.GetNode(_to);
+        if (path is null || from is null || to is null)
+        {
+            _summary = from is null || to is null
+                ? "Pick a From and a To node."
+                : $"No route leads from {Name(from)} to {Name(to)} along the direction of the edges.";
+            return;
+        }
+
+        DimAll();
+        double length = 0;
+        for (var i = 0; i < path.Count; i++)
+        {
+            path[i].Class = "ga-path";
+            _badges[path[i].Id] = (i + 1).ToString();
+            if (i == 0) continue;
+
+            // The edge the route took: of several between the same two nodes, the one the weight made cheapest.
+            var step = _edges.Where(e => e.Source == path[i - 1].Id && e.Target == path[i].Id)
+                .OrderBy(e => weight?.Invoke(e) ?? 1).FirstOrDefault();
+            if (step is null) continue;
+            step.Class = "ga-path";
+            length += Length(graph, step);
+        }
+
+        _summary = $"{path.Count - 1} edge(s) from {Name(from)} to {Name(to)}, {length:0} units long as drawn"
+            + (_weighted ? " - the shortest route by length." : " - the fewest edges.");
+        _sections.Add(new("Route", [.. path.Select((n, i) => new Item($"{i + 1}. {Name(n)}", n.Id))]));
+    }
+
+    private void Shape(BlowGraphIndex graph)
+    {
+        var roots = BlowGraphAlgorithms.GetRoots(graph);
+        var leaves = BlowGraphAlgorithms.GetLeaves(graph);
+        var isolated = BlowGraphAlgorithms.GetIsolatedNodes(graph);
+        var inputs = graph.Nodes.Where(n => n.Type == "input").Select(n => n.Id).ToList();
+        var unreachable = BlowGraphAlgorithms.GetUnreachable(graph, inputs);
+        _call = "GetRoots, GetLeaves, GetIsolatedNodes, GetUnreachable(graph, inputIds)";
+        _summary = "Where flows start (nothing points in) and end (nothing points out), what has no edges at all, and what no input node leads to.";
+
+        // The badge names the most telling role: an isolated node is also a root and a leaf, and so is never just one.
+        foreach (var node in roots) Group(node, 0, "root");
+        foreach (var node in leaves) Group(node, 1, "leaf");
+        foreach (var node in unreachable) Group(node, 2, "unreachable");
+        foreach (var node in isolated) Group(node, 5, "isolated");
+
+        _sections.Add(new("Roots", [.. roots.Select(n => new Item(Name(n), n.Id))]));
+        _sections.Add(new("Leaves", [.. leaves.Select(n => new Item(Name(n), n.Id))]));
+        _sections.Add(new("Isolated", [.. isolated.Select(n => new Item(Name(n), n.Id))]));
+        _sections.Add(new("Unreachable from an input", [.. unreachable.Select(n => new Item(Name(n), n.Id))]));
+    }
+
+    private void Statistics(BlowGraphIndex graph)
+    {
+        var s = BlowGraphAlgorithms.GetStatistics(graph);
+        _call = "GetStatistics(graph)";
+        _summary = "Counts that describe the graph's shape at a glance. Edit the graph and they follow.";
+        _sections.Add(new("Counts",
+        [
+            new($"Nodes: {s.NodeCount}"),
+            new($"Edges: {s.EdgeCount}"),
+            new($"Roots: {s.RootCount}"),
+            new($"Leaves: {s.LeafCount}"),
+            new($"Isolated: {s.IsolatedCount}"),
+            new($"Connected pieces: {s.ComponentCount}"),
+            new($"Self-loops: {s.SelfLoopCount}"),
+            new($"Most incoming edges on a node: {s.MaxInDegree}"),
+            new($"Most outgoing edges on a node: {s.MaxOutDegree}"),
+            new($"Acyclic: {Yes(s.IsAcyclic)}"),
+            new($"Dangling edges: {s.DanglingEdgeCount}"),
+        ]));
+    }
+
+    private void Validate()
+    {
+        var validator = BlowGraphValidator.CreateDefault()
+            .Add(BlowValidationRules.NoCycles(BlowValidationSeverity.Warning))
+            .Add(BlowValidationRules.NoIsolatedNodes())
+            .Add(BlowValidationRules.AllReachableFrom(n => n.Type == "input"))
+            .Add(new EndsAtOutputRule())
+            .Add(context => new[]
+            {
+                new BlowValidationIssue("checked", BlowValidationSeverity.Info,
+                    $"Checked {context.Graph.Nodes.Count} nodes and {context.Graph.Edges.Count} edges."),
+            });
+        validator.MaxIssues = _maxIssues;
+
+        _validation = validator.Validate(_nodes, _edges);
+        _call = "BlowGraphValidator.Validate(nodes, edges)";
+        _summary = $"IsValid: {Yes(_validation.IsValid)}. {Count(BlowValidationSeverity.Error)} error(s), "
+            + $"{Count(BlowValidationSeverity.Warning)} warning(s), {Count(BlowValidationSeverity.Info)} for information."
+            + (_validation.IsTruncated ? $" IsTruncated: the report stopped at MaxIssues ({_maxIssues}), so the later rules were never heard." : "");
+
+        int Count(BlowValidationSeverity severity) => _validation.Issues.Count(i => i.Severity == severity);
+
+        foreach (var severity in new[] { BlowValidationSeverity.Error, BlowValidationSeverity.Warning, BlowValidationSeverity.Info })
+        {
+            var issues = _validation.Issues.Where(i => i.Severity == severity).ToList();
+            if (issues.Count > 0)
+                _sections.Add(new(severity.ToString(), [.. issues.Select(i => new Item($"{i.Code}: {i.Message}", i.NodeId, i.NodeId is null ? i.EdgeId : null))]));
+        }
+    }
+
+    private void Search()
+    {
+        _call = "FindNodes(query, text: n => description), FindEdges(query)";
+        if (string.IsNullOrWhiteSpace(_query))
+        {
+            _summary = "Type in the search box: labels, ids, types, the names of an edge's nodes and each node's description are searched.";
+            return;
+        }
+
+        // The canvas searches what is shown; before it exists the same search runs over the lists.
+        _foundNodes = _flow?.FindNodes(_query, n => n.Data as string)
+            ?? BlowGraphSearch.FindNodes(_nodes, _query, n => n.Data as string);
+        _foundEdges = _flow?.FindEdges(_query)
+            ?? BlowGraphSearch.FindEdges(_edges, _query, id => _nodes.FirstOrDefault(n => n.Id == id)?.Label ?? id);
+        _summary = $"{_foundNodes.Count} node(s) and {_foundEdges.Count} edge(s) match \"{_query.Trim()}\", best first.";
+
+        foreach (var node in _foundNodes) node.Class = "ga-match";
+        foreach (var edge in _foundEdges) edge.Class = "ga-path";
+        _sections.Add(new("Nodes", [.. _foundNodes.Select(n => new Item($"{Name(n)} - {n.Data}", n.Id))]));
+        _sections.Add(new("Edges", [.. _foundEdges.Select(e => new Item(e.Label ?? $"{NameOf(e.Source)} to {NameOf(e.Target)}", EdgeId: e.Id))]));
+    }
+
+    private async Task SelectMatches()
+    {
+        if (_flow is not null) await _flow.SelectAsync(_foundNodes, _foundEdges);
+    }
+
+    private async Task Go(Item item)
+    {
+        if (_flow is null) return;
+        if (item.NodeId is { } node) await _flow.FocusNodeAsync(node, select: true, durationMs: 300);
+        else if (item.EdgeId is { } edge) await _flow.FocusEdgeAsync(edge, select: true, durationMs: 300);
+    }
+
+    // ---- marks ----
+
+    private void DimAll()
+    {
+        foreach (var node in _nodes) node.Class = "ga-dim";
+    }
+
+    private void Group(BlowNode node, int group, string badge)
+    {
+        if (node.Class == "ga-dim") node.Class = null;
+        Tint(node, group);
+        _badges[node.Id] = badge;
+    }
+
+    private static void Tint(BlowNode node, int group)
+    {
+        var color = Palette[group % Palette.Length];
+        node.Style = $"background:color-mix(in srgb, {color} 22%, var(--bit-blow-node-bg));border-color:{color};";
+    }
+
+    // ---- helpers ----
+
+    private BlowNode? Subject(BlowGraphIndex graph) => _subject is { } id ? graph.GetNode(id) : null;
+
+    private static string Name(BlowNode node) => node.Label ?? node.Id;
+
+    private string NameOf(string id) => _nodes.FirstOrDefault(n => n.Id == id) is { } node ? Name(node) : id;
+
+    private static string Yes(bool value) => value ? "yes" : "no";
+
+    // The distance between the centres of an edge's two nodes, as drawn: what "weigh edges by length" minimises.
+    private static double Length(BlowGraphIndex graph, BlowEdge edge)
+    {
+        if (graph.GetNode(edge.Source)?.GetRect() is not { } a || graph.GetNode(edge.Target)?.GetRect() is not { } b) return 0;
+        var dx = (a.X + a.Width / 2) - (b.X + b.Width / 2);
+        var dy = (a.Y + a.Height / 2) - (b.Y + b.Height / 2);
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    /// <summary>
+    /// A rule of this page's own: a step that ends the flow should be an output, or its work goes nowhere. Isolated
+    /// nodes are left to NoIsolatedNodes, which reports them already.
+    /// </summary>
+    private sealed class EndsAtOutputRule : IBlowValidationRule
+    {
+        public IEnumerable<BlowValidationIssue> Validate(BlowValidationContext context)
+        {
+            foreach (var node in BlowGraphAlgorithms.GetLeaves(context.Graph))
+            {
+                if (node.Type == "output" || context.Graph.Incoming(node.Id).Count == 0) continue;
+                yield return new BlowValidationIssue("dead-end", BlowValidationSeverity.Error,
+                    $"{node.Label ?? node.Id} ends the flow without reaching an output.") { NodeId = node.Id };
+            }
+        }
+    }
+}

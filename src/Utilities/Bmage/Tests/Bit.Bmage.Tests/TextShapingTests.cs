@@ -121,6 +121,37 @@ public sealed class TextShapingTests
         Assert.IsTrue(fathaBounds.MinX >= behBounds.MinX - 1 && fathaBounds.MaxX <= behBounds.MaxX + 1, "the fatha is over the beh");
     }
 
+    [TestMethod]
+    public void ALongRunOfMarksHangsOnItsLetterAtOnce()
+    {
+        var codePoints = TextShaper.CodePoints("ب" + new string('\u064E', 60_000));
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var buffer = TextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
+        Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"Shaping took {watch.ElapsedMilliseconds} ms.");
+        Assert.AreEqual(codePoints.Length, buffer.Count);
+        Assert.AreEqual(0, buffer[1].AttachTo);
+
+        var pair = TextShaper.CodePoints("ب" + new string('\u064E', 2));
+        var stacked = TextShaper.ShapeRun(Vazirmatn, pair, 0, pair.Length, UnicodeScript.Arabic, rtl: true)[2].AttachTo == 1;
+        var misplaced = Enumerable.Range(2, buffer.Count - 2).FirstOrDefault(i => buffer[i].AttachTo != (stacked ? i - 1 : 0), -1);
+        Assert.AreEqual(-1, misplaced, $"mark {misplaced} attaches to {(misplaced < 0 ? 0 : buffer[misplaced].AttachTo)}");
+
+        // A hidden code point between the letter and its mark is passed over: the fatha still hangs on the beh.
+        var joined = TextShaper.CodePoints("ب‍َ");
+        Assert.AreEqual(0, TextShaper.ShapeRun(Vazirmatn, joined, 0, joined.Length, UnicodeScript.Arabic, rtl: true)[2].AttachTo);
+    }
+
+    [TestMethod]
+    public void AMarkAfterALigatureHangsOnTheLigature()
+    {
+        // Lam and alef become one glyph in the lam's place, and the fatha after them hangs on it.
+        var codePoints = TextShaper.CodePoints("لاَ");
+        var buffer = TextShaper.ShapeRun(Vazirmatn, codePoints, 0, codePoints.Length, UnicodeScript.Arabic, rtl: true);
+        Assert.AreEqual(2, buffer.Count);
+        Assert.AreEqual(Form(0xFEFB), buffer[0].Glyph);
+        Assert.AreEqual(0, buffer[1].AttachTo);
+    }
+
     private static (float MinX, float MinY, float MaxX, float MaxY) Bounds(PlacedGlyph glyph)
     {
         var builder = new PathBuilder();

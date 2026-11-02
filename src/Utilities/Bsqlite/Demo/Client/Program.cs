@@ -3,6 +3,7 @@
 
 using Bit.Bsqlite.Demo.Client;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -23,4 +24,8 @@ AppDomain.CurrentDomain.UnhandledException += (_, args) =>
 
 // No RootComponents are registered on purpose: the host page drives the app through blazor.web.js
 // render-mode markers (<Routes @rendermode="InteractiveWebAssembly" />).
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+SampleLog.Logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Bit.Bsqlite.Demo");
+
+await host.RunAsync();

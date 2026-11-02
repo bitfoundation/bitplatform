@@ -1,9 +1,0 @@
-description = "Upgrade the project to a newer bit Boilerplate version: bit diff the old and new template, bring every change that still applies into this codebase, add the migrations it needs, update the recorded version, and prove it builds, passes its tests and runs."
-
-prompt = """
-Follow these instructions exactly:
-
-@{.github/agents/upgrade.agent.md}
-
-Target version and notes: {{args}}
-"""

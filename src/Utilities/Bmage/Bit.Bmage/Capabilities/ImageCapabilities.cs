@@ -14,12 +14,20 @@
 /// </example>
 public sealed record ImageCapabilities
 {
-    /// <summary>Capabilities of plain .NET with only the managed codecs: PNG, JPEG, BMP and GIF decoding.</summary>
+    // Declared before Managed, which static initialisation order makes them ready for.
+
+    /// <summary>What the managed decoders read, in any environment.</summary>
+    internal static IReadOnlySet<ImageFormat> ManagedDecodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.Gif, ImageFormat.WebP, ImageFormat.Avif };
+
+    /// <summary>What the managed encoders write, in any environment.</summary>
+    internal static IReadOnlySet<ImageFormat> ManagedEncodableFormats { get; } = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.WebP };
+
+    /// <summary>Capabilities of plain .NET with only the managed codecs: PNG, JPEG, BMP and WebP, and GIF and AVIF decoding.</summary>
     public static ImageCapabilities Managed { get; } = new()
     {
         Environment = ImageEnvironment.Server,
-        DecodableFormats = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp, ImageFormat.Gif },
-        EncodableFormats = new HashSet<ImageFormat> { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.Bmp },
+        DecodableFormats = ManagedDecodableFormats,
+        EncodableFormats = ManagedEncodableFormats,
     };
 
     /// <summary>Where the code is running.</summary>
@@ -28,8 +36,26 @@ public sealed record ImageCapabilities
     /// <summary>Formats that can be decoded here.</summary>
     public IReadOnlySet<ImageFormat> DecodableFormats { get; init; } = new HashSet<ImageFormat>();
 
-    /// <summary>Formats that can be encoded here.</summary>
+    /// <summary>
+    /// Formats that can be encoded here. In Blazor WebAssembly a format only the managed encoders write, such as WebP on
+    /// Safari, is left out: they would run on the UI thread, many times slower than the browser's own encoders. Encoding
+    /// one explicitly still works.
+    /// </summary>
     public IReadOnlySet<ImageFormat> EncodableFormats { get; init; } = new HashSet<ImageFormat>();
+
+    /// <summary>
+    /// The part of <see cref="DecodableFormats"/> the browser's own codecs cover, as probed, or null when no browser was
+    /// asked. The browser codecs are registered for these only, so a format only the managed decoders read never goes
+    /// to a browser that cannot. When it is null in a browser, all of <see cref="DecodableFormats"/> is taken as the
+    /// browser's, so a provider that wraps another, or builds its result from another's, should carry it over.
+    /// </summary>
+    public IReadOnlySet<ImageFormat>? NativeDecodableFormats { get; init; }
+
+    /// <summary>
+    /// The part of <see cref="EncodableFormats"/> the browser's own codecs cover, as probed, or null. As with
+    /// <see cref="NativeDecodableFormats"/>, null in a browser means all of <see cref="EncodableFormats"/>.
+    /// </summary>
+    public IReadOnlySet<ImageFormat>? NativeEncodableFormats { get; init; }
 
     /// <summary><c>OffscreenCanvas</c> is available, so rendering can move off the main thread.</summary>
     public bool SupportsOffscreenCanvas { get; init; }

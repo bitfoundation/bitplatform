@@ -60,7 +60,7 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage 
 
 SignalR connections also benefit from this system because they use the same `HttpMessageHandlerFactory`:
 
-**File**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Extensions/IClientCoreServiceCollectionExtensions.cs)
+**File**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppHubConnection.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppHubConnection.cs)
 
 ```csharp
 var hubConnection = new HubConnectionBuilder()

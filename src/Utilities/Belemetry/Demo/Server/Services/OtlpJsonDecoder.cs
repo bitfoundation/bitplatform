@@ -20,6 +20,12 @@ public static class OtlpJsonDecoder
     /// <summary>The longest attribute value kept; the viewer is for reading, not for archiving.</summary>
     public const int MaxValueLength = 2048;
 
+    private const int MaxAttributes = 128;
+
+    private const int MaxAttributesLength = 8 * 1024;
+
+    private const int MaxEvents = 32;
+
     private static readonly string[] _spanKinds = ["Unspecified", "Internal", "Server", "Client", "Producer", "Consumer"];
 
     private static readonly string[] _spanKindNames =
@@ -62,7 +68,7 @@ public static class OtlpJsonDecoder
                         SessionId = SessionOf(attributes, resource),
                         Attributes = attributes,
                         Resource = resource,
-                        Events = [.. Array(span, "events").Select(e => Text(e, "name") ?? "event")],
+                        Events = [.. Array(span, "events").Take(MaxEvents).Select(e => Text(e, "name") ?? "event")],
                     });
                 }
             }
@@ -88,7 +94,7 @@ public static class OtlpJsonDecoder
                 {
                     var attributes = Attributes(log);
                     var severityNumber = Int(log, "severityNumber");
-                    var body = log.TryGetProperty("body", out var b) ? AnyValue(b) : null;
+                    var body = log.TryGetProperty("body", out var b) ? Truncate(AnyValue(b)) : null;
                     var eventName = Text(log, "eventName") ?? attributes.GetValueOrDefault("event.name");
                     var time = Nanos(log, "timeUnixNano");
                     if (time == 0) time = Nanos(log, "observedTimeUnixNano");
@@ -160,7 +166,7 @@ public static class OtlpJsonDecoder
                     {
                         var pointAttributes = Attributes(dataPoints[i]);
                         var label = pointAttributes.Count == 0 ? "(no attributes)" : string.Join(", ", pointAttributes.Select(a => $"{a.Key}={a.Value}"));
-                        attributes[$"point[{i}]"] = $"{label}: {PointValue(type, dataPoints[i])}";
+                        attributes[$"point[{i}]"] = Truncate($"{label}: {PointValue(type, dataPoints[i])}")!;
                     }
 
                     records.Add(new TelemetryRecord
@@ -318,8 +324,10 @@ public static class OtlpJsonDecoder
     private static string? Text(JsonElement element, string name)
     {
         if (element.ValueKind != JsonValueKind.Object || element.TryGetProperty(name, out var value) is false) return null;
-        return value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+        return value.ValueKind == JsonValueKind.String ? Truncate(value.GetString()) : null;
     }
+
+    private static string? Truncate(string? text) => text?.Length > MaxValueLength ? text[..MaxValueLength] + "..." : text;
 
     /// <summary>
     /// A trace or span id. OTLP/JSON writes them as hex (not base64, unlike the generic protobuf JSON
@@ -356,16 +364,20 @@ public static class OtlpJsonDecoder
     private static Dictionary<string, string> Attributes(JsonElement owner)
     {
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        var length = 0;
 
         foreach (var attribute in Array(owner, "attributes"))
         {
             if (Text(attribute, "key") is not { Length: > 0 } key) continue;
+            if ((result.Count >= MaxAttributes || length >= MaxAttributesLength) && key != "session.id") continue;
             if (attribute.TryGetProperty("value", out var value) is false) continue;
 
-            var text = AnyValue(value);
+            var text = Truncate(AnyValue(value));
             if (text is null) continue;
 
-            result[key] = text.Length > MaxValueLength ? text[..MaxValueLength] + "..." : text;
+            if (result.TryGetValue(key, out var previous)) length -= key.Length + previous.Length;
+            result[key] = text;
+            length += key.Length + text.Length;
         }
 
         return result;

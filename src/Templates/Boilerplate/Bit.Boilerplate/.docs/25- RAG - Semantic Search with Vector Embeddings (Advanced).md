@@ -93,9 +93,15 @@ There is **no local, in-process embedding generator**. `Program.Services.cs` reg
 `IEmbeddingGenerator<string, Embedding<float>>` only when you configure one, in this order:
 
 1. `AI:OpenAI:EmbeddingApiKey` is set → the OpenAI-compatible generator, against `AI:OpenAI:EmbeddingEndpoint`.
+<!--#if (aspire == true)-->
+2. Otherwise `AI:HuggingFace:EmbeddingEndpoint` is set → a Hugging Face Text Embeddings Inference endpoint. The AppHost
+   runs one as its `embedding` resource, with `BAAI/bge-small-en-v1.5`, and points the server at it. It doesn't start
+   on its own: start it from the Aspire dashboard, and nothing answers until you do.
+<!--#else-->
 2. Otherwise `AI:HuggingFace:EmbeddingEndpoint` is set → a Hugging Face Text Embeddings Inference endpoint. The shipped
    default points at `http://localhost:7000`, which is the container the `AI:HuggingFace` comment in `appsettings.json`
    tells you how to run - nothing is listening there until you start it.
+<!--#endif-->
 
 If neither is configured, no generator is registered at all, so anything that injects one fails to activate. Configure
 one **before** enabling embeddings.

@@ -1,4 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Blex.Tests.Generators;
 
@@ -76,6 +79,99 @@ public class DiagnosticTests
             [BlexStoreAttribute] public partial class S { [BlexStateAttribute] private string _name; }
             """);
         Assert.IsTrue(result.HasDiagnostic("BLEX005")); // Name is a BlexStoreBase member
+    }
+
+    [TestMethod]
+    [DataRow("Persist = true, Version = 2", "public override int PersistVersion => 3;", "PersistVersion")]
+    [DataRow("Persist = true", "public override bool Persist => true;", "Persist")]
+    [DataRow("EnforceActions = true", "protected override bool EnforcesActions => true;", "EnforcesActions")]
+    [DataRow("", "public override string Name => \"s\";", "Name")]
+    [DataRow("", "public override System.Text.Json.Nodes.JsonObject SerializeState() => new();", "SerializeState")]
+    [DataRow("", "[BlexStateAttribute(Persist = false)] private int _y; protected override System.Collections.Generic.IReadOnlyCollection<string> TransientStateKeys => [];", "TransientStateKeys")]
+    public void OwnMemberNamedLikeAGeneratedOverride_ReportsBLEX026_OnThatMember(string arguments, string member, string name)
+    {
+        // The generator overrides these too: without BLEX026 the build would fail inside generated code.
+        var source = Usings + $$"""
+            [BlexStoreAttribute({{arguments}})] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                {{member}}
+            }
+            """;
+        var result = GeneratorTestHelper.Run(source);
+
+        var diagnostic = result.GeneratorDiagnostics.Single(d => d.Id == "BLEX026");
+        Assert.AreEqual(name, source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
+        StringAssert.Contains(diagnostic.GetMessage(), $"'{name}'");
+        Assert.IsEmpty(result.GeneratedSources);
+    }
+
+    [TestMethod]
+    public void OwnMemberNamedLikeAnyGeneratedOverride_ReportsBLEX026()
+    {
+        // Every override the generator writes, read off a store that has them all: one Emit starts writing
+        // without listing it in GeneratedOverrides fails here, not in a user's build inside generated code.
+        const string Arguments = "Persist = true, Version = 2, EnforceActions = true, RollbackOnError = true";
+        const string Members = """
+            [BlexStateAttribute] private int _x;
+            [BlexStateAttribute(Persist = false)] private int _y;
+            [BlexComputedAttribute] private int ComputeTwice() => X * 2;
+            [BlexEffectAttribute] private Task OnLoad(CancellationToken ct) => Task.CompletedTask;
+            """;
+
+        var all = GeneratorTestHelper.Run(Usings + $$"""[BlexStoreAttribute({{Arguments}})] public partial class S { {{Members}} }""");
+        var overrides = CSharpSyntaxTree.ParseText(all.SingleGenerated).GetRoot().DescendantNodes()
+            .OfType<MemberDeclarationSyntax>()
+            .Where(member => member.Modifiers.Any(SyntaxKind.OverrideKeyword))
+            .Select(member => member switch
+            {
+                MethodDeclarationSyntax method => (Name: method.Identifier.ValueText, Declaration: $"{method.Modifiers} {method.ReturnType} {method.Identifier}{method.ParameterList} => throw null!;"),
+                PropertyDeclarationSyntax property => (Name: property.Identifier.ValueText, Declaration: $"{property.Modifiers} {property.Type} {property.Identifier} => throw null!;"),
+                _ => throw new InvalidOperationException($"Unexpected generated override: {member}"),
+            })
+            .ToList();
+
+        Assert.HasCount(13, overrides); // InvalidateComputed twice: both overloads
+
+        foreach (var (name, declaration) in overrides)
+        {
+            var result = GeneratorTestHelper.Run(Usings + $$"""[BlexStoreAttribute({{Arguments}})] public partial class S { {{Members}} {{declaration}} }""");
+
+            Assert.IsTrue(result.GeneratorDiagnostics.Any(d => d.Id == "BLEX026" && d.GetMessage().Contains($"'{name}'")), $"A store's own {declaration} is not reported.");
+            Assert.IsEmpty(result.GeneratedSources, $"Code was generated next to a store's own {declaration}.");
+        }
+    }
+
+    [TestMethod]
+    public void OwnOverloadOfAGeneratedOverride_IsFine()
+    {
+        // The generated InvalidateComputed() and InvalidateComputed(string?) leave an overload of the store's own alone.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                [BlexComputedAttribute] private int ComputeTwice() => X * 2;
+                private void InvalidateComputed(int unused) { }
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX026"));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
+    public void OwnPersistVersion_WithoutAStoreVersion_IsFine()
+    {
+        // The generator overrides PersistVersion only for [BlexStore(Version = n)]; a store can still write its own.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(Persist = true)] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                public override int PersistVersion => 3;
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX005"));
+        Assert.IsFalse(result.HasDiagnostic("BLEX026"));
+        Assert.IsEmpty(result.CompileErrors());
     }
 
     [TestMethod]
@@ -402,6 +498,62 @@ public class DiagnosticTests
             }
             """);
         Assert.IsTrue(result.HasDiagnostic("BLEX023"));
+    }
+
+    [TestMethod]
+    public void NegativeStoreVersion_ReportsBLEX024_OnTheVersion()
+    {
+        var source = Usings + """
+            [BlexStoreAttribute(Persist = true, Version = -1)] public partial class S { [BlexStateAttribute] private int _x; }
+            """;
+        var result = GeneratorTestHelper.Run(source);
+
+        var diagnostic = result.GeneratorDiagnostics.Single(d => d.Id == "BLEX024");
+        Assert.AreEqual("Version = -1", source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
+        Assert.DoesNotContain("PersistVersion", result.SingleGenerated);
+    }
+
+    [TestMethod]
+    public void StoreVersionWithoutPersist_ReportsBLEX025_OnTheVersion()
+    {
+        var source = Usings + """
+            [BlexStoreAttribute(Version = 2)] public partial class S { [BlexStateAttribute] private int _x; }
+            """;
+        var result = GeneratorTestHelper.Run(source);
+
+        var diagnostic = result.GeneratorDiagnostics.Single(d => d.Id == "BLEX025");
+        Assert.AreEqual("Version = 2", source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
+    public void StoreVersion_WithAPersistOverrideOfItsOwn_IsFine()
+    {
+        // Persisted without the attribute saying so: the version is written and checked, so nothing to warn about.
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(Version = 2)] public partial class S
+            {
+                [BlexStateAttribute] private int _x;
+                public override bool Persist => true;
+            }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX025"));
+        Assert.Contains("public override int PersistVersion => 2;", result.SingleGenerated);
+        Assert.IsEmpty(result.CompileErrors());
+    }
+
+    [TestMethod]
+    [DataRow("Persist = true, Version = 2")]
+    [DataRow("Persist = true, Version = 0")]
+    [DataRow("Version = 0")]
+    public void StoreVersion_WithPersistOrZero_IsFine(string arguments)
+    {
+        var result = GeneratorTestHelper.Run(Usings + $$"""
+            [BlexStoreAttribute({{arguments}})] public partial class S { [BlexStateAttribute] private int _x; }
+            """);
+        Assert.IsFalse(result.HasDiagnostic("BLEX024"));
+        Assert.IsFalse(result.HasDiagnostic("BLEX025"));
+        Assert.IsEmpty(result.CompileErrors());
     }
 
     [TestMethod]

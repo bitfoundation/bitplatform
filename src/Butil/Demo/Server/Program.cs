@@ -112,11 +112,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (app.Environment.IsDevelopment() is false)
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
@@ -203,7 +199,7 @@ app.MapGet("/llms.txt", (HttpContext context) =>
         > Bit.Butil wraps the browser platform - window, document, storage, crypto, media, sensors,
         > workers - as injectable, strongly-typed, XML-documented C# services for Blazor, so a Blazor
         > app can call the Web APIs without writing JavaScript or hand-rolling IJSRuntime interop.
-        > It works in Blazor WebAssembly, Server and Hybrid, and under prerendering, on .NET 8, 9 and 10.
+        > It works in Blazor WebAssembly, Server and Hybrid, and under prerendering, on .NET 10 and 11.
 
         Install with `dotnet add package Bit.Butil`, add `<script src="_content/Bit.Butil/bit-butil.js">`
         to the host page before the Blazor script, and call `builder.Services.AddBitButilServices()`.

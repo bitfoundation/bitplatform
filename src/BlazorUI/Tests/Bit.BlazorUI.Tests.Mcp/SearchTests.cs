@@ -74,6 +74,46 @@ public class SearchTests : McpTestBase
         Assert.DoesNotContain("has no component called", component, $"A search hit named '{name}', which the component tool cannot resolve.");
     }
 
+    /// <summary>
+    /// A hit on one member is answered with the call that returns that member's rows rather than the whole
+    /// reference around it, which on the largest components is tens of thousands of characters.
+    /// </summary>
+    [TestMethod]
+    public async Task A_member_hit_names_the_call_that_returns_its_rows_alone()
+    {
+        var answer = await CallAsync("SearchBitBlazorUI", new { query = "pan the map to a coordinate", limit = 8 });
+
+        var line = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n')
+            .First(line => line.StartsWith("Public member · ", StringComparison.Ordinal));
+
+        var name = line.Split("name: \"")[1].Split('"')[0];
+        var section = line.Split("section: \"")[1].Split('"')[0];
+
+        var rows = await CallAsync("GetBitBlazorUIComponent", new { name, section });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(rows, "## Public members", $"The call a hit names for {name}.{section} does not answer with its row.");
+        Assert.DoesNotContain("has no section", rows, $"The call a hit names for {name}.{section} does not resolve.");
+    }
+
+    /// <summary>
+    /// A member is found by its name, once, rather than by the parameter names of each of its overloads: as
+    /// title words, a signature's <c>title</c> and <c>body</c> made every one of BitSnackBar's methods a hit.
+    /// </summary>
+    [TestMethod]
+    public async Task A_member_is_titled_by_its_name_alone()
+    {
+        var answer = await CallAsync("SearchBitBlazorUI", new { query = "snackbar title body", limit = 20 });
+
+        var titles = answer.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n').Where(line => line.StartsWith("## ", StringComparison.Ordinal)).ToArray();
+
+        using var scope = Assert.Scope();
+
+        Assert.IsFalse(titles.Any(title => title.Contains('(', StringComparison.Ordinal)), $"A hit is titled by a signature: {string.Join(" / ", titles)}");
+        CollectionAssert.AllItemsAreUnique(titles, "A member is a hit once per overload.");
+    }
+
     [TestMethod]
     public async Task Search_covers_more_than_the_components()
     {

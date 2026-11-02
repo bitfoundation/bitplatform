@@ -20,6 +20,8 @@ public sealed record PackageManagers
 
     public bool HasSudo { get; init; }
 
+    public string? Distribution { get; init; }
+
     public static PackageManagers Detect(CliEnvironment environment, IProcessRunner runner)
     {
         if (environment.IsWindows)
@@ -41,8 +43,21 @@ public sealed record PackageManagers
             Pacman = runner.FindExecutable("pacman"),
             Zypper = runner.FindExecutable("zypper"),
             Snap = runner.FindExecutable("snap"),
-            HasSudo = runner.FindExecutable("sudo") is not null || environment.IsElevated
+            HasSudo = runner.FindExecutable("sudo") is not null || environment.IsElevated,
+            Distribution = ReadDistribution()
         };
+    }
+
+    private static string? ReadDistribution()
+    {
+        try
+        {
+            return File.ReadLines("/etc/os-release").FirstOrDefault(l => l.StartsWith("ID=", StringComparison.Ordinal))?["ID=".Length..].Trim('"', '\'');
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     public ToolAction? WingetInstall(string toolId, string title, string packageId, bool admin = true, string? afterInstall = null, string? version = null, string? installerArguments = null)
@@ -90,7 +105,7 @@ public sealed record PackageManagers
         {
             { Apt: not null } => [Sudo("apt-get", "update"), Sudo("apt-get", ["install", "-y", .. aptPackages.Split(' ')])],
             { Dnf: not null } => [Sudo("dnf", ["install", "-y", .. dnfPackages.Split(' ')])],
-            { Pacman: not null } => [Sudo("pacman", ["-S", "--noconfirm", "--needed", .. pacmanPackages.Split(' ')])],
+            { Pacman: not null } => [Sudo("pacman", ["-Syu", "--noconfirm", "--needed", .. pacmanPackages.Split(' ')])],
             _ => null
         };
 

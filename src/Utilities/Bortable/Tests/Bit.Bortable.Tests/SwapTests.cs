@@ -37,8 +37,8 @@ public class SwapTests : BortableTestContext
         Assert.AreEqual("C", LabelsWithClass(list, Highlight));
         Assert.AreSequenceEqual(["A", "B", "C"], items);
         Assert.AreEqual("A,B,C", Labels(list));
-        // Swap mode never asks for an insertion point, and a highlight is not a position change.
-        Assert.IsEmpty(DropIndexCalls);
+        // Swap mode hit-tests the item under the pointer rather than a gap, and a highlight is not a position change.
+        Assert.IsTrue(SentOptions(list)!.Swap);
         Assert.AreEqual("Start:L1", Sequence(log));
     }
 
@@ -117,6 +117,164 @@ public class SwapTests : BortableTestContext
         Assert.AreEqual("", LabelsWithClass(list, Highlight));
         await DropAsync(list);
         Assert.AreSequenceEqual(["A", "B", "C"], items);
+    }
+
+    [TestMethod]
+    public async Task CanDropRefusesASwapTarget()
+    {
+        List<string> items = ["A", "B", "C"];
+        var list = RenderSwapList(items, extra: p => p.Add(c => c.CanDrop, e => e.NewIndex != 2));
+
+        await DragStartAsync(list, "A");
+        Assert.AreEqual(1, await OverResultAsync(list, 1));
+        Assert.AreEqual(-1, await OverResultAsync(list, 2));
+
+        Assert.AreEqual("", LabelsWithClass(list, Highlight));
+        await DropAsync(list);
+        Assert.AreSequenceEqual(["A", "B", "C"], items);
+    }
+
+    [TestMethod]
+    public async Task ASwapAsksCanDropAboutTheDraggedItemAlone()
+    {
+        IReadOnlyList<string>? asked = null;
+        var list = RenderSwapList(["A", "B", "C"], extra: p =>
+        {
+            p.Add(c => c.MultiDrag, true);
+            p.Add(c => c.CanDrop, e => { asked = e.Items; return true; });
+        });
+        await ClickAsync(list, "A");
+        await ClickAsync(list, "B");
+
+        await DragStartAsync(list, "A");
+        await HoverItemAsync(list, 2);
+
+        Assert.AreSequenceEqual(["A"], asked);
+    }
+
+    [TestMethod]
+    public async Task ACrossListSwapAsksTheSourceListAboutTheItemComingBack()
+    {
+        List<string> left = ["A", "B"], right = ["X", "Y"];
+        BortableEventArgs<string>? asked = null;
+        var l1 = RenderSwapList(left, "L1", extra: p => p.Add(c => c.CanDrop, e => { asked = e; return e.Item != "Y"; }));
+        var l2 = RenderSwapList(right, "L2");
+
+        await DragStartAsync(l1, "B");
+        Assert.AreEqual(-1, await OverResultAsync(l2, 1));
+
+        Assert.AreEqual("", LabelsWithClass(l2, Highlight));
+        Assert.IsNotNull(asked);
+        Assert.AreEqual("Y", asked.Item);
+        Assert.AreEqual("L2", asked.FromId);
+        Assert.AreEqual("L1", asked.ToId);
+        Assert.AreEqual(1, asked.OldIndex);
+        Assert.AreEqual(1, asked.NewIndex);
+
+        Assert.AreEqual(1, await OverResultAsync(l2, 0));
+        await DropAsync(l2);
+        Assert.AreSequenceEqual(["A", "X"], left);
+        Assert.AreSequenceEqual(["B", "Y"], right);
+    }
+
+    [TestMethod]
+    public async Task ASwapOutOfACloneListIsProposedAsTheItemItself()
+    {
+        List<string> left = ["A"], right = ["X"];
+        BortableEventArgs<string>? asked = null;
+        var l1 = RenderSwapList(left, "L1", extra: p => p.Add(c => c.Pull, BortablePull.Clone));
+        var l2 = RenderSwapList(right, "L2", extra: p => p.Add(c => c.CanDrop, e => { asked = e; return true; }));
+
+        await DragStartAsync(l1, "A");
+        await HoverItemAsync(l2, 0);
+        await DropAsync(l2);
+
+        Assert.IsNotNull(asked);
+        Assert.AreEqual("A", asked.Item);
+        Assert.IsFalse(asked.IsClone);
+        Assert.AreSequenceEqual(["X"], left);
+        Assert.AreSequenceEqual(["A"], right);
+    }
+
+    [TestMethod]
+    public async Task AKeyboardSwapRefusesAPartnerTheCarryingListCannotHold()
+    {
+        var source = new List<object> { "a", "b" };
+        var words = new List<string> { "x" };
+        var swap = new List<object> { 42 };
+        var s = RenderList(source, o => o.ToString()!, "S", p => p.Add(c => c.Group, "g"));
+        RenderList(words, w => w, "W", p => p.Add(c => c.Group, "g"));
+        RenderList(swap, o => o.ToString()!, "Z", p =>
+        {
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.Swap, true);
+        });
+
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync(KeyOf(s, "a"), "pick", null, -1));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "W", 0));
+        var over = await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "Z", 0));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "drop", null, -1));
+
+        Assert.IsNull(over.Target);
+        Assert.AreSequenceEqual(["a", "x"], words);
+        CollectionAssert.AreEqual(new object[] { "b" }, source);
+        CollectionAssert.AreEqual(new object[] { 42 }, swap);
+    }
+
+    [TestMethod]
+    public async Task AKeyboardSwapRefusesAPartnerTheCarryingListAlreadyHolds()
+    {
+        // The swap would move Z's "x" into W, which holds an "x" already: a duplicate @key. S, the list the drag
+        // started in, does not hold one, so it is W that has to be asked.
+        List<string> source = ["a", "b"], words = ["x"], swap = ["x"];
+        var s = RenderList(source, "S", p => p.Add(c => c.Group, "g"));
+        RenderList(words, "W", p => p.Add(c => c.Group, "g"));
+        var z = RenderSwapList(swap, "Z");
+
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync(KeyOf(s, "a"), "pick", null, -1));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "W", 0));
+        var over = await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "Z", 0));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "drop", null, -1));
+
+        Assert.IsNull(over.Target);
+        Assert.AreEqual("", LabelsWithClass(z, Highlight));
+        Assert.AreSequenceEqual(["a", "x"], words);
+        Assert.AreSequenceEqual(["b"], source);
+        Assert.AreSequenceEqual(["x"], swap);
+    }
+
+    [TestMethod]
+    public async Task AKeyboardSwapTradesWithTheListTheItemWasCarriedInto()
+    {
+        // The item carried into W trades places with Z's "y", which W does not hold: W gets "y", Z the item.
+        List<string> source = ["a", "b"], words = ["x"], swap = ["y"];
+        var log = new List<Raised<string>>();
+        var s = RenderList(source, "S", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "S", log);
+        });
+        RenderList(words, "W", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "W", log);
+        });
+        var z = RenderSwapList(swap, "Z", log);
+
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync(KeyOf(s, "a"), "pick", null, -1));
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "W", 0));
+        var over = await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "to", "Z", 0));
+        Assert.AreEqual(KeyOf(z, "y"), over.Target);
+        await Renderer.Dispatcher.InvokeAsync(() => Zone(s).KeyAsync("", "drop", null, -1));
+
+        Assert.AreSequenceEqual(["b"], source);
+        Assert.AreSequenceEqual(["y", "x"], words);
+        Assert.AreSequenceEqual(["a"], swap);
+        Assert.AreEqual("", LabelsWithClass(z, Highlight));
+        // W is neither where the drag started nor where the item ended up, but the swap changed it too.
+        Assert.AreEqual(
+            "Start:S Change:W ItemsChanged:S ItemsChanged:W ItemsChanged:Z Remove:S Add:Z Sort:S Sort:Z Sort:W End:S",
+            Sequence(log));
     }
 
     [TestMethod]

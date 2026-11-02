@@ -20,6 +20,7 @@ public class ExtensibilityTests : BunitContext
         {
             o.Enabled = true;
             o.Extensions.Add(new AcmeBevToolsExtension());
+            o.Extensions.Add(new FailingCommandExtension());
         });
         this.UseRenderer("Server");
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -51,6 +52,27 @@ public class ExtensibilityTests : BunitContext
         tab.Click();
 
         Assert.Contains("Acme panel says hello", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A panel an extension contributes from its own assembly is BevTools' own UI, like the built-in ones, although its
+    /// namespace is not BevTools': clicking in it is not an application event, and its parameter updates are not the
+    /// application's lifecycle cost. The framework's activities and meters name only the component type.
+    /// </summary>
+    [TestMethod]
+    public void An_extension_panel_is_never_recorded_as_application_activity()
+    {
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+        cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("Acme", StringComparison.Ordinal)).Click();
+
+        cut.Find("button.acme-refresh").Click();
+        cut.Find("button.acme-refresh").Click();
+
+        Assert.Contains("Refreshed 2 times", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(e => e.Kind == BevToolsEventKind.UiEvent, Session.Timeline.Snapshot());
+        Assert.IsTrue(Session.Components.IsBevToolsOnlyType(typeof(AcmePanel).FullName!));
+        Assert.DoesNotContain(typeof(AcmePanel).FullName!, Session.TypeMetrics.Keys);
     }
 
     [TestMethod]
@@ -116,6 +138,19 @@ public class ExtensibilityTests : BunitContext
 
         Assert.Contains(e => e.Contains("Broken", StringComparison.Ordinal), registry.ExtensionErrors);
         Assert.IsTrue(registry.IsEnabled);
+    }
+
+    [TestMethod]
+    public void A_command_that_throws_is_reported_with_the_credentials_in_its_message_redacted()
+    {
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+
+        cut.Find("[data-bev-palette-opener]").Click();
+        cut.Find(".bev-palette input").Input(">" + FailingCommandExtension.Title);
+        cut.Find(".bev-palette").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
+
+        cut.WaitForAssertion(() => Assert.AreEqual("Command failed: refresh failed for token " + BevRedactor.RedactedValue, cut.Find(".bev-notification").TextContent));
     }
 }
 
@@ -210,12 +245,40 @@ public sealed class BrokenExtension : IBevToolsExtension
     public void Configure(IBevToolsExtensionBuilder builder) => throw new InvalidOperationException("nope");
 }
 
+public sealed class FailingCommandExtension : IBevToolsExtension
+{
+    public const string Title = "Refresh the Acme feed";
+
+    public string Name => "Failing command";
+
+    public void Configure(IBevToolsExtensionBuilder builder) => builder.AddCommand(new FailingCommand());
+
+    private sealed class FailingCommand : IBevToolsCommand
+    {
+        public string Id => "acme.refresh";
+
+        public string Title => FailingCommandExtension.Title;
+
+        public string Category => "Acme";
+
+        public Task ExecuteAsync(IBevToolsCommandContext context, string? argument) =>
+            throw new InvalidOperationException("refresh failed for token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJl");
+    }
+}
+
 public class AcmePanel : ComponentBase
 {
+    private int _refreshes;
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "div");
         builder.AddContent(1, "Acme panel says hello");
+        builder.CloseElement();
+        builder.OpenElement(2, "button");
+        builder.AddAttribute(3, "class", "acme-refresh");
+        builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, () => _refreshes++));
+        builder.AddContent(5, "Refreshed " + _refreshes + " times");
         builder.CloseElement();
     }
 }

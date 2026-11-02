@@ -1,0 +1,13 @@
+﻿{
+    "profiles": {
+        "Bit.Bonboarding.Samples.Lazy": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7594;http://localhost:5594",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

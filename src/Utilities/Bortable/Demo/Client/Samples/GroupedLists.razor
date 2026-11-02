@@ -1,0 +1,29 @@
+﻿@* Two lists of one group, which exchange items; ItemClassSelector styles an item wherever it is. *@
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">List A</div>
+        <Bortable @bind-Items="_left" TItem="string" Group="shared" Id="shared-a"
+                  Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">List B</div>
+        <Bortable @bind-Items="_right" TItem="string" Group="shared" Id="shared-b"
+                  Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>A:</strong> <span id="shared-a-order">@string.Join(", ", _left)</span></p>
+<p class="demo-order"><strong>B:</strong> <span id="shared-b-order">@string.Join(", ", _right)</span></p>
+
+@code {
+    private IList<string> _left = new List<string> { "A1", "A2", "A3", "A4", "A5" };
+    private IList<string> _right = new List<string> { "B1", "B2", "B3", "B4", "B5" };
+
+    // Style follows the item, not the list: "B" items stay tinted after moving.
+    private string? Tint(string item) => item.StartsWith('B') ? "tinted" : null;
+}

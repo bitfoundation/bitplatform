@@ -135,6 +135,92 @@
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventShiftWheel:", e); }
         }
 
+        // Selects the whole text of an input as it takes the focus, so that typing replaces what it holds. It is
+        // done here, at the focus event itself, rather than from .NET in answer to it: a select() sent from there
+        // arrives a round trip late, by when the first keys typed are already in the input (to be selected, and
+        // replaced by the next key) or the user has moved on - and select() focuses the input again in Chromium
+        // and WebKit. The click that gives the input its focus ends with a mouseup that puts the caret where it
+        // landed and drops the selection again, so that one mouseup is swallowed (BitTextField's SelectOnFocus
+        // does the same). An empty input has nothing to select, and its mouseup is left alone.
+        // An input whose text reads otherwise while it is edited (BitNumberField's NumberFormat: "$1,234" is edited
+        // as "1234") names that text in data-bit-focus-value, and it is swapped in here as well, before the
+        // select(), for the same reason: the render .NET makes in answer to the focus would write it a round trip
+        // late, over the keys typed by then. That render carries the text the input held before, which is what it
+        // carried already, so it writes nothing; and the text is put back here as the focus leaves, as long as the
+        // swapped one is still what the input holds - anything typed or stepped since is .NET's to render.
+        // Passing active = false turns it off in place, so no separate unregister call is needed - the listeners
+        // are garbage-collected with the element itself. An element that never turns it on gets no listener.
+        export function registerSelectOnFocus(element: HTMLInputElement, active: boolean) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitSelectOnFocus = active;
+
+                if (active === false) return;
+                if (el.__bitSelectOnFocusRegistered) return;
+                el.__bitSelectOnFocusRegistered = true;
+
+                let justFocused = false;
+                let swappedText: string | null = null;
+                let textBeforeSwap = '';
+
+                const select = () => {
+                    if (!(element as any).__bitSelectOnFocus) return;
+
+                    const focusText = element.getAttribute('data-bit-focus-value');
+                    if (focusText !== null && focusText !== element.value) {
+                        textBeforeSwap = element.value;
+                        swappedText = focusText;
+                        element.value = focusText;
+                    }
+
+                    if (!element.value) return;
+
+                    justFocused = true;
+                    try {
+                        element.select();
+                    } catch {
+                        // Selection APIs are not available on every input type.
+                    }
+                };
+
+                element.addEventListener('focus', select);
+
+                // An auto-focused input is given its focus on the very render this registration follows, so
+                // its focus event is already gone: what already holds the focus is selected right away.
+                if (document.activeElement === element) {
+                    select();
+                }
+
+                // Only the press that brings the focus in has its mouseup swallowed: one on an input that is
+                // already focused places the caret where it lands. The focus of a press is given during the
+                // default action of its mousedown, after this listener runs.
+                element.addEventListener('mousedown', () => {
+                    if (document.activeElement === element) {
+                        justFocused = false;
+                    }
+                });
+
+                element.addEventListener('mouseup', e => {
+                    if (!justFocused) return;
+
+                    justFocused = false;
+                    e.preventDefault();
+                });
+
+                element.addEventListener('blur', () => {
+                    justFocused = false;
+
+                    if (swappedText !== null && element.value === swappedText) {
+                        element.value = textBeforeSwap;
+                    }
+
+                    swappedText = null;
+                });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerSelectOnFocus:", e); }
+        }
+
         // Registers a pointerdown listener on the element that suppresses the browser's default
         // action (dragging an image, selecting text) so the element can be dragged by the pointer
         // instead. A pointerdown on a control inside the element keeps its default action, since

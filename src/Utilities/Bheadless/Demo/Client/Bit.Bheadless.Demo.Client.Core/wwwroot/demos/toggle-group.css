@@ -1,0 +1,113 @@
+﻿/* toggle-group demo styles — plain CSS section. The library ships zero CSS. */
+
+/* ---- BitBhToggle ------------------------------------------------------------ */
+.toggle-btn {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.toggle-btn:hover:enabled { background: var(--color-fill); }
+.toggle-btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* aria-pressed="true" / data-state="on" while pressed */
+.toggle-btn[data-state="on"] {
+    background: var(--color-accent-subtle);
+    border-color: light-dark(#bfdbfe, #1e40af);
+    color: var(--color-accent-text);
+}
+
+.toggle-btn[data-state="on"]:hover:enabled { background: var(--color-accent-muted); }
+
+.toggle-btn[data-disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.toggle-icon { font-size: 1rem; line-height: 1; }
+
+/* ---- BitBhToggleGroup ------------------------------------------------------- */
+.toggle-group {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: var(--color-fill);
+}
+
+/* data-orientation="vertical" when Orientation="BitBhRovingOrientation.Vertical" */
+.toggle-group[data-orientation="vertical"] { flex-direction: column; min-width: 9rem; }
+
+.toggle-group[data-disabled] { opacity: 0.6; }
+
+/* ---- BitBhToggleGroupItem --------------------------------------------------- */
+.toggle-item {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 2.25rem;
+    height: 2rem;
+    padding: 0 0.6rem;
+    border-radius: 0.4rem;
+    color: var(--color-text-tertiary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.toggle-item:hover:enabled:not([data-state="on"]) { background: var(--color-fill-strong); color: var(--color-text); }
+.toggle-item:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+/* data-state="on": aria-checked="true" (Single) or aria-pressed="true" (Multiple) */
+.toggle-item[data-state="on"] {
+    background: var(--color-surface);
+    color: var(--color-primary-text);
+    box-shadow: 0 1px 2px rgba(24, 24, 27, 0.12);
+}
+
+.toggle-item[data-disabled] { opacity: 0.4; cursor: not-allowed; }
+
+.toggle-group[data-orientation="vertical"] .toggle-item { justify-content: flex-start; }
+
+.toggle-check { display: inline-block; width: 1rem; color: var(--color-primary-text); }
+
+/* ---- Demo layout ----------------------------------------------------------- */
+.toggle-demo {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    justify-items: start;
+}
+
+.toggle-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+
+.toggle-output { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
+.toggle-output strong { color: var(--color-text); font-weight: 600; }
+
+.toggle-preview {
+    width: 100%;
+    max-width: 28rem;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    font-size: 0.95rem;
+    color: light-dark(#27272a, #fafafa);
+}

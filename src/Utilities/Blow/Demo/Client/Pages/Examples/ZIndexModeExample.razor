@@ -3,7 +3,7 @@
 <PageTitle>Z-Index Mode · Blow</PageTitle>
 
 <ExampleScaffold Title="Z-Index Mode"
-                 Summary="How much of the stacking order the canvas manages. Auto lifts the selection and keeps a child above the group it sits in; Basic lifts the selection only; Manual leaves everything to the ZIndex you set yourself. The child node is deliberately listed before its group, so only Auto draws it on top.">
+                 Summary="Decide how much of the stacking order the canvas manages. ZIndexMode Auto lifts the selection and keeps a child above its group, Basic only lifts the selection, and Manual leaves everything to the ZIndex you set; ElevateNodesOnSelect and ElevateEdgesOnSelect switch the lifting itself, and BringToFrontAsync and SendToBackAsync reorder the list.">
     <Toolbar>
         @foreach (var mode in Enum.GetValues<BlowZIndexMode>())
         {
@@ -13,14 +13,37 @@
             </button>
         }
         <span class="zi-sep"></span>
+        <label><input type="checkbox" checked="@_elevateNodes" @onchange="@(e => _elevateNodes = (bool)e.Value!)" /> Elevate nodes on select</label>
+        <label><input type="checkbox" checked="@_elevateEdges" @onchange="@(e => _elevateEdges = (bool)e.Value!)" /> Elevate edges on select</label>
+        <span class="zi-sep"></span>
         <button class="btn btn-secondary" @onclick="Swap">Swap explicit z-index</button>
+        <button class="btn btn-secondary" @onclick="BringToFront">Bring to front</button>
+        <button class="btn btn-secondary" @onclick="SendToBack">Send to back</button>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" ZIndexMode="_mode" FitViewOnInit="true">
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    ZIndexMode="_mode"
+                    ElevateNodesOnSelect="_elevateNodes"
+                    ElevateEdgesOnSelect="_elevateEdges">
             <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
             <BlowControls />
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>Switch between <strong>Auto</strong>, <strong>Basic</strong> and <strong>Manual</strong>. The Child node is listed before its Group: only Auto draws it on top, in the others the group covers it.</li>
+        <li><strong>Click</strong> the Under card: in Auto and Basic it rises above the Over card while selected. Untick <strong>Elevate nodes on select</strong>, or pick Manual, and it stays underneath.</li>
+        <li><strong>Drag</strong> the Under card across the Over card: a dragged node is lifted in Auto and Basic even with elevation off, but not in Manual.</li>
+        <li>Select the Under card and press <strong>Bring to front</strong>, then click the background: it now stays on top, because it moved to the end of the node list. <strong>Send to back</strong> moves it back to the start.</li>
+        <li><strong>Swap explicit z-index</strong> trades the Red and Blue cards' <code>ZIndex</code>: an explicit value wins in every mode, so selecting either changes nothing.</li>
+        <li><strong>Click</strong> the red edge where it crosses the green one: it turns the selection colour but stays under the green edge. Tick <strong>Elevate edges on select</strong> and the selected edge is drawn over it.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ZIndexMode</code> is <code>BlowZIndexMode.Auto</code> (the default: selection and dragging lift, children drawn above their group), <code>Basic</code> (selection and dragging lift; nesting order is left to the list) or <code>Manual</code> (nothing is lifted, not even a dragged node).</li>
+        <li><code>ElevateNodesOnSelect</code> (default <code>true</code>) lifts a selected node above its peers; dragging lifts a node whatever it says, except in Manual mode.</li>
+        <li><code>ElevateEdgesOnSelect</code> (default <code>false</code>) draws a selected edge after the others. Edges share one SVG layer under all the nodes, so this, like an edge's <code>ZIndex</code>, orders edges only among themselves.</li>
+        <li>An explicit <code>ZIndex</code> on a node or an edge always wins, in every mode.</li>
+        <li>Without a <code>ZIndex</code>, nodes are drawn in list order. <code>BringToFrontAsync()</code> and <code>SendToBackAsync()</code> - on the selection when no nodes are passed - move nodes, with everything nested in them, to the end or the start of <code>Nodes</code>, as one undo step labelled "order". A child sent to the back goes to the back of its group, just after its parent.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
@@ -28,9 +51,12 @@
 </style>
 
 @code {
+    private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowZIndexMode _mode = BlowZIndexMode.Auto;
+    private bool _elevateNodes = true;
+    private bool _elevateEdges;
     private BlowNode _red = default!;
     private BlowNode _blue = default!;
 
@@ -72,8 +98,21 @@
         };
         Relabel();
 
-        _nodes = [child, group, _red, _blue];
-        _edges = [];
+        // Two more overlapping nodes, with no ZIndex: the list order stacks them, and only selection or dragging
+        // - or a reorder of the list - lifts the one underneath.
+        var under = new BlowNode { Id = "under", Label = "Under", Position = new(640, 60), Width = 140, Height = 90 };
+        var over = new BlowNode { Id = "over", Label = "Over", Position = new(710, 110), Width = 140, Height = 90 };
+
+        // Four small nodes whose two edges cross: thick and coloured, so which one is drawn on top shows where they
+        // meet. The red edge comes first in the list, so the green one covers it until elevation lifts it.
+        BlowNode Dot(string id, double x, double y) => new() { Id = id, Label = id.ToUpperInvariant(), Position = new(x, y), Width = 60, Height = 36 };
+
+        _nodes = [child, group, _red, _blue, under, over, Dot("a", 60, 260), Dot("b", 240, 260), Dot("c", 60, 420), Dot("d", 240, 420)];
+        _edges =
+        [
+            new BlowEdge { Id = "red-edge", Source = "a", Target = "d", Stroke = "#ef4444", StrokeWidth = 8 },
+            new BlowEdge { Id = "green-edge", Source = "b", Target = "c", Stroke = "#22c55e", StrokeWidth = 8 },
+        ];
     }
 
     private void Swap()
@@ -88,4 +127,9 @@
         _red.Label = $"Red (z={_red.ZIndex})";
         _blue.Label = $"Blue (z={_blue.ZIndex})";
     }
+
+    // Both act on the selection, and do nothing when nothing is selected.
+    private Task BringToFront() => _flow?.BringToFrontAsync() ?? Task.CompletedTask;
+
+    private Task SendToBack() => _flow?.SendToBackAsync() ?? Task.CompletedTask;
 }

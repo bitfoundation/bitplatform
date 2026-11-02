@@ -94,4 +94,62 @@ public sealed class NestingTests : BdndTest
             await Expect(levels[n]).ToHaveCSSAsync("background-color", colours[n]);
         }
     }
+
+    [TestMethod]
+    public async Task A_drop_reaches_the_nested_targets_innermost_first_and_the_outermost_result_wins()
+    {
+        var page = await OpenAsync("/nesting/drop-targets");
+        var innermost = page.Locator(".nest-box[data-level=\"3\"]");
+
+        await DragAsync(page, page.Locator(".box", new() { HasText = "Drag me into the nest" }), innermost,
+            () => Expect(innermost).ToHaveCSSAsync("background-color", Shallow));
+
+        // every level's OnDrop ran, the innermost first; each outer one saw the drop taken already, and the result
+        // the outermost set is the one the source's OnEnd read
+        await Expect(page.Locator(".nest-log li")).ToHaveTextAsync(
+        [
+            "OnDrop of level 3: DidDrop() was false; it sets Result to \"level 3\".",
+            "OnDrop of level 2: DidDrop() was true; it sets Result to \"level 2\".",
+            "OnDrop of level 1: DidDrop() was true; it sets Result to \"level 1\".",
+            "OnDrop of level 0: DidDrop() was true; it sets Result to \"level 0\".",
+            "OnEnd of the box: DidDrop is true, DropResult is \"level 0\".",
+        ]);
+    }
+
+    [TestMethod]
+    public async Task Greedy_targets_leave_a_drop_an_inner_one_took_and_the_innermost_result_stands()
+    {
+        var page = await OpenAsync("/nesting/drop-targets");
+        var innermost = page.Locator(".nest-box[data-level=\"3\"]");
+        await page.GetByLabel("Greedy").CheckAsync();
+
+        await DragAsync(page, page.Locator(".box", new() { HasText = "Drag me into the nest" }), innermost,
+            () => Expect(innermost).ToHaveCSSAsync("background-color", Shallow));
+
+        await Expect(page.Locator(".nest-log li")).ToHaveTextAsync(
+        [
+            "OnDrop of level 3: DidDrop() was false; it sets Result to \"level 3\".",
+            "OnDrop of level 2: an inner level took the drop, so it does nothing.",
+            "OnDrop of level 1: an inner level took the drop, so it does nothing.",
+            "OnDrop of level 0: an inner level took the drop, so it does nothing.",
+            "OnEnd of the box: DidDrop is true, DropResult is \"level 3\".",
+        ]);
+    }
+
+    [TestMethod]
+    public async Task A_source_that_may_not_drag_hands_the_press_to_the_source_around_it()
+    {
+        var page = await OpenAsync("/nesting/drag-sources");
+        var inner = page.Locator(".nest-box").Nth(2);
+        var bin = page.Locator(".dustbin");
+
+        await page.GetByLabel("inner").CheckAsync();
+        await Expect(inner).ToContainTextAsync("may not drag");
+        // CanDrag false: not natively draggable, and out of the keyboard's tab order
+        await Expect(inner.Locator("xpath=..")).ToHaveAttributeAsync("draggable", "false");
+        await Expect(inner.Locator("xpath=..")).Not.ToHaveAttributeAsync("tabindex", "0");
+
+        await DragAsync(page, inner, bin, () => Expect(bin).ToHaveCSSAsync("background-color", "rgb(0, 100, 0)"));
+        await Expect(bin).ToHaveTextAsync("You dragged: MIDDLE");
+    }
 }

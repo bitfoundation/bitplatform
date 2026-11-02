@@ -2,12 +2,15 @@
 
 ## Install
 
-One package holds everything: the engine, the browser codecs, loading and export, headless processing on a server, and
-the editor component. It depends only on `Microsoft.AspNetCore.Components.Web`.
+A browser app installs `Bit.Bmage.Blazor`: the browser codecs, loading and export, and the editor component. It brings
+the engine, `Bit.Bmage`, along, and otherwise depends only on `Microsoft.AspNetCore.Components.Web`.
 
 ```bash
-dotnet add package Bit.Bmage
+dotnet add package Bit.Bmage.Blazor
 ```
+
+A server, a console tool or a worker that only processes images installs `Bit.Bmage` alone, which has no dependency on
+Blazor; see [headless processing](headless.md#on-a-server-with-no-browser-at-all).
 
 ## Register the services
 
@@ -67,26 +70,43 @@ scope per circuit, so browser state is never shared between users; in Blazor Hyb
 
 `BmageEditor` also works without the registration, so a WebAssembly app can download Bmage only when someone opens the
 editor. When `ImageLoader` is not registered, the editor builds every service it needs itself, once per browser
-connection, with the `BitBmageOptions` the app registered or the defaults. Mark the assembly as lazy loaded and load it
-before the editor first renders:
+connection, with the `BitBmageOptions` the app registered or the defaults. Mark both assemblies as lazy loaded and load
+them before the editor first renders:
 
 ```xml
 <ItemGroup>
   <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+  <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Blazor.wasm" />
 </ItemGroup>
 ```
 
 ```csharp
 @inject LazyAssemblyLoader LazyAssemblyLoader
 
-await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm", "Bit.Bmage.Blazor.wasm"]);
 ```
 
-Leave `AddBitBmageServices` out of `Program.cs` in that project: calling it references Bmage's types before the assembly
-is there. Code of your own that injects `ImageLoader` or `ImageExporter` needs the registration, so lazy loading suits an
-app whose only use of Bmage is the editor. Do not lazy load in an AOT build: AOT compiles every assembly into
-`dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at
-startup.
+Leave `AddBitBmageServices` out of `Program.cs` in that project: calling it references Bmage's types before the
+assemblies are there. Code of your own that injects `ImageLoader` or `ImageExporter` needs the registration, so lazy
+loading suits an app whose only use of Bmage is the editor. Do not lazy load in an AOT build: AOT compiles every
+assembly into `dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled
+assembly can fail at startup.
+
+In a Blazor Web App only the browser lazy loads. Give `Routes` the `InteractiveWebAssembly` or `InteractiveAuto`
+render mode in `App.razor`, so the router - and its `OnNavigateAsync` - runs in the browser; with per-page render
+modes it renders statically on the server and never loads the assemblies in the browser. The server project loads
+Bmage with the rest of the app and keeps its `AddBitBmageServices()`, and registers `LazyAssemblyLoader`, which the
+router's file injects while it is prerendered there and which loads nothing outside the browser:
+`builder.Services.AddScoped<LazyAssemblyLoader>()`.
+
+The [lazy loading sample](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Lazy/)
+does all of this in a Blazor Web App - its project file leaves both marks out of AOT builds, and sets a switch next to
+them that tells its router whether there is anything to load; its server, which prerenders the editor's page, keeps
+`AddBitBmageServices()` and registers `LazyAssemblyLoader`, which the router injects there too - and the
+[end-to-end suite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/)
+runs its published copy in a browser, trimmed and AOT-compiled: the home page downloads neither assembly, and the
+editor's page - opened from the home page or by a deep link the server prerenders - downloads each once, and its
+editor opens, turns and exports an image with nothing registered in the browser.
 
 ## Add the stylesheet
 
@@ -94,7 +114,7 @@ Only needed for the editor component (`BmageEditor`, `BmageDropZone`). Put it in
 in `wwwroot/index.html` of a standalone WebAssembly or Blazor Hybrid app:
 
 ```html
-<link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+<link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
 ```
 
 The browser bridge script is loaded on demand by the library. You do not add a script tag for it.
@@ -195,7 +215,7 @@ The editor needs a height. It fills its container, and a container with no heigh
 ## Without a browser
 
 The same engine runs on a server or in a console application with no JavaScript at all. Only the managed codecs are
-available there: PNG, JPEG, BMP and GIF for decoding, PNG, JPEG and BMP for encoding.
+available there: PNG, JPEG, BMP, GIF, WebP and AVIF for decoding, PNG, JPEG, BMP and WebP for encoding.
 
 ```csharp
 using Bit.Bmage;
@@ -240,5 +260,6 @@ something sensible and re-detects once interactive.
 
 - [Pipelines](pipelines.md) covers composing and optimising operations.
 - [The editor component](editor.md) covers theming, localisation and replacing parts of the UI.
-- [Formats and capabilities](formats.md) covers WebP, AVIF and what to do when a browser cannot write them.
+- [Formats and capabilities](formats.md) covers what each environment decodes and encodes, and what to do when a
+  browser cannot write a format.
 - [Metadata and privacy](metadata-and-privacy.md) covers EXIF, GPS and the three metadata policies.

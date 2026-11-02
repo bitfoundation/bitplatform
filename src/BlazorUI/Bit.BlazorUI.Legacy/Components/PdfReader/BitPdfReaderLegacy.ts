@@ -40,7 +40,12 @@
                 const pixelRatio = (config.autoScale && window.devicePixelRatio) || 1;
                 const scale = config.scale * pixelRatio;
 
-                const viewport = page.getViewport({ scale: scale });
+                const fullViewport = page.getViewport({ scale: scale });
+                const maxCanvasPixels = 33554432;
+                const area = fullViewport.width * fullViewport.height;
+                const viewport = area > maxCanvasPixels
+                    ? page.getViewport({ scale: scale * Math.sqrt(maxCanvasPixels / area) })
+                    : fullViewport;
 
                 let canvas = document.getElementById(config.id) as HTMLCanvasElement;
                 if (!canvas) {
@@ -53,8 +58,8 @@
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
 
-                canvas.style.width = `${viewport.width / pixelRatio}px`;
-                canvas.style.height = `${viewport.height / pixelRatio}px`;
+                canvas.style.width = `${fullViewport.width / pixelRatio}px`;
+                canvas.style.height = `${fullViewport.height / pixelRatio}px`;
 
                 const renderContext: RenderParameters = {
                     canvasContext: context,

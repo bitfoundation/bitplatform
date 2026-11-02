@@ -402,7 +402,7 @@ self.addEventListener('connect', e => {
                Description="An uncaught failure inside the worker. A cross-origin script is reported as 'Script error.' with no location." />
     <ApiMember Name="ButilMessage"
                Signature="record (bool IsBinary, string? Json, byte[]? Data) { T? Deserialize<T>() }"
-               Description="One message. Binary payloads stay binary; everything else is JSON - always valid JSON, so a plain string arrives quoted." />
+               Description="One message. Binary payloads stay binary; everything else is JSON - always valid JSON, so a plain string arrives quoted. JSON over about 32 MB arrives as just the type name, like &quot;[object Object]&quot;, with a console warning; post that much as binary." />
 </ApiTable>
 
 @code {

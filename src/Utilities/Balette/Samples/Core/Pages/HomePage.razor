@@ -1,0 +1,43 @@
+﻿@page "/"
+@inject IBaletteService Palette
+
+<PageTitle>Balette samples</PageTitle>
+
+<h1>Balette samples</h1>
+
+<p>
+    One set of pages hosted unchanged by three Blazor Web Apps - <strong>Server</strong> (Interactive Server),
+    <strong>Wasm</strong> (Interactive WebAssembly) and <strong>Auto</strong> (Interactive Auto), each prerendering
+    first - and by a <strong>MAUI</strong> Blazor Hybrid app for Android, iOS, macOS and Windows. The palette is the same
+    in each: on Server every query and every chosen command crosses the circuit, on WebAssembly and in the MAUI app they
+    never leave the device.
+</p>
+
+<div class="card">
+    <h2>Where this page is running</h2>
+    <dl>
+        <dt>Renderer</dt>
+        <dd id="renderer">@RendererInfo.Name</dd>
+        <dt>Interactive</dt>
+        <dd id="interactive">@(RendererInfo.IsInteractive ? "yes" : "no, prerendered")</dd>
+    </dl>
+</div>
+
+<div class="row">
+    @* The palette needs an interactive render mode: while prerendering, this button does nothing yet. *@
+    <button type="button" class="btn" id="open-palette" @onclick="() => Palette.OpenAsync()">Open the palette</button>
+    <span>or press <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on macOS) anywhere.</span>
+</div>
+
+<h2>Samples</h2>
+<ul>
+    <li><NavLink href="commands">Commands</NavLink> - commands a page registers and takes away again, a global shortcut, a toggle, a confirmation, disabled and conditional commands</li>
+    <li><NavLink href="flows">Flows</NavLink> - nested pages (static, lazy, searching, returned by a handler), prompts, multi-select, long-running and failing commands</li>
+    <li><NavLink href="sources">Sources</NavLink> - modes registered at runtime and async sources: paged, re-ranked and in-memory</li>
+    <li><NavLink href="inline">Inline</NavLink> - a palette inside the page, listing only what it is given</li>
+</ul>
+
+<p>
+    The app-wide commands - navigation with <kbd>G</kbd> sequences (<kbd>G</kbd> <kbd>C</kbd> opens Commands), the theme
+    and the row density - are registered by the layout, so every page has them.
+</p>

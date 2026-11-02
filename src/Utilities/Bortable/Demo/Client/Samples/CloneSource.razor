@@ -1,0 +1,53 @@
+﻿@* A clone source: what is dragged out of the Source is a copy, made by the Clone factory, and the
+   original stays. *@
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">Source (clone)</div>
+        <Bortable @bind-Items="_left" TItem="CloneDemoItem" Group="clone-shared" Id="clone-source"
+                  Pull="BortablePull.Clone" Clone="Duplicate"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item.Name</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Target</div>
+        <Bortable @bind-Items="_right" TItem="CloneDemoItem" Group="clone-shared" Id="clone-target"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost">
+            <ItemTemplate Context="item">@item.Name</ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Source:</strong> <span id="clone-source-order">@string.Join(", ", _left.Select(i => i.Name))</span></p>
+<p class="demo-order"><strong>Target:</strong> <span id="clone-target-order">@string.Join(", ", _right.Select(i => i.Name))</span></p>
+
+@code {
+    private IList<CloneDemoItem> _left = new List<CloneDemoItem>
+    {
+        new() { Name = "Apple" },
+        new() { Name = "Banana" },
+        new() { Name = "Cherry" },
+        new() { Name = "Date" },
+        new() { Name = "Elderberry" },
+    };
+
+    private IList<CloneDemoItem> _right = new List<CloneDemoItem>
+    {
+        new() { Name = "Item 1" },
+        new() { Name = "Item 2" },
+        new() { Name = "Item 3" },
+        new() { Name = "Item 4" },
+        new() { Name = "Item 5" },
+        new() { Name = "Item 6" },
+    };
+
+    // Produce a distinct object for every clone so each has a unique @key.
+    private CloneDemoItem Duplicate(CloneDemoItem item) => new() { Name = item.Name };
+
+    // Reference type: default (reference) equality keeps every clone's @key unique.
+    public sealed class CloneDemoItem
+    {
+        public required string Name { get; init; }
+    }
+}

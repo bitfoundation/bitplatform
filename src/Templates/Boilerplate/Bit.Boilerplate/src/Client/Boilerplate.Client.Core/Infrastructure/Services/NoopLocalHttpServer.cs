@@ -11,5 +11,7 @@ public partial class NoOpLocalHttpServer : ILocalHttpServer
 
     public int Port => -1;
 
+    public string? CreateExternalSignInNonce() => null;
+
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

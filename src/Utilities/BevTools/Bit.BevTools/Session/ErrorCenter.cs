@@ -41,9 +41,27 @@ internal sealed partial class ErrorCenter
         }
 
         exceptionType ??= exception?.GetType().FullName ?? "Error";
-        message ??= exception?.Message ?? "Unknown error";
+        // Messages are redacted where they are captured, like everything else: "Login failed for Password=…" and
+        // "invalid token eyJ…" are common exception messages, and these are shown, searched and exported.
+        message = BevRedactor.RedactText(message ?? exception?.Message ?? "Unknown error");
         stackTrace ??= exception?.StackTrace;
+        if (stackTrace is not null)
+        {
+            stackTrace = BevRedactor.RedactText(stackTrace);
+        }
         var location = FindSourceLocation(stackTrace);
+        // Without "in file:line" in the text, the frame itself says where, once the symbols do. It is shown, not
+        // grouped on: whether the symbols are there yet must not split one failure into two groups.
+        var throwSite = location is null && exception is not null ? BevThrowSite.Of(exception) : null;
+        if (throwSite is not null && BevSourceLocator.NeedsDownload(throwSite.Method.Module.Assembly))
+        {
+            _session.WantSymbols(throwSite.Method.Module.Assembly);
+        }
+
+        var (anchor, inApplication) = location is null ? BevErrorGroups.StackAnchor(stackTrace) : (location, true);
+        // With no application frame to tell throw sites apart, a quoted name ("service of type 'IOrderApi'") is what
+        // tells one failure from another, so it stays in the template.
+        var template = BevErrorGroups.Template(message, keepQuoted: !inApplication);
         var fingerprint = string.Concat(source, "|", exceptionType, "|", message, "|", location ?? FirstLine(stackTrace), "|", component?.InstanceId);
         var now = DateTimeOffset.UtcNow;
         component?.AddError();
@@ -70,8 +88,11 @@ internal sealed partial class ErrorCenter
                 Source = source,
                 ExceptionType = exceptionType,
                 Message = message,
+                MessageTemplate = template,
+                Group = BevErrorGroups.KeyOf(source, exceptionType, template, anchor),
                 StackTrace = stackTrace,
                 SourceLocation = location,
+                ThrowSite = throwSite,
                 ComponentInstanceId = component?.InstanceId,
                 ComponentName = component?.DisplayName,
                 PrecedingEventId = precedingEventId ?? _session.CurrentTriggerEventId ?? (exception is null ? null : _session.TakeFailedTrigger(exceptionType)),
@@ -110,7 +131,8 @@ internal sealed partial class ErrorCenter
             ComponentInstanceId = record.ComponentInstanceId,
             ComponentName = record.ComponentName,
             ParentEventId = record.PrecedingEventId,
-            Data = new Dictionary<string, object?> { ["errorId"] = record.Id },
+            // The group travels with each occurrence, so error.repeated still counts it once the record left the buffer.
+            Data = new Dictionary<string, object?> { ["errorId"] = record.Id, ["errorGroup"] = record.Group, ["errorTemplate"] = ShortTypeName(record.ExceptionType) + ": " + record.MessageTemplate },
         });
         if (!repeat)
         {
@@ -167,7 +189,7 @@ internal sealed partial class ErrorCenter
             innermost = inner;
         }
 
-        return innermost.GetType().Name + ": " + innermost.Message;
+        return innermost.GetType().Name + ": " + BevRedactor.RedactText(innermost.Message);
     }
 
     private static string? FirstLine(string? text)
@@ -189,4 +211,44 @@ internal sealed partial class ErrorCenter
 
     [GeneratedRegex(@" in (?<file>[^\r\n]+?):line (?<line>\d+)", RegexOptions.CultureInvariant)]
     private static partial Regex LocationRegex();
+}
+
+/// <summary>A method and the IL offset in it an exception passed through: a stack frame without its file and line.</summary>
+internal sealed record BevThrowSite(System.Reflection.MethodBase Method, int ILOffset)
+{
+    /// <summary>
+    /// The first frame of application code: System, Microsoft and BevTools' own frames are passed over, as the grouping
+    /// does (<see cref="BevErrorGroups.StackAnchor"/>). Null when there is none, or its offset is unknown.
+    /// </summary>
+    public static BevThrowSite? Of(Exception exception)
+    {
+        try
+        {
+            foreach (var frame in new System.Diagnostics.StackTrace(exception, fNeedFileInfo: false).GetFrames())
+            {
+                if (frame.GetMethod() is not { } method || method.Module.Assembly == typeof(BevThrowSite).Assembly)
+                {
+                    continue;
+                }
+
+                var ns = method.DeclaringType?.Namespace ?? "";
+                if (ns is "System" or "Microsoft" || ns.StartsWith("System.", StringComparison.Ordinal) || ns.StartsWith("Microsoft.", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var offset = frame.GetILOffset();
+                return offset == System.Diagnostics.StackFrame.OFFSET_UNKNOWN ? null : new BevThrowSite(method, offset);
+            }
+        }
+        catch
+        {
+            // A runtime that cannot walk the exception's frames: no location, as before.
+        }
+
+        return null;
+    }
+
+    /// <summary>"ErrorScenarios.razor:44" once the symbols say where that offset is; null until then.</summary>
+    public string? Resolve() => BevSourceLocator.At(Method, ILOffset, null) is { } at ? at.FileName + ":" + at.Line : null;
 }

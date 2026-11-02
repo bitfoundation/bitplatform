@@ -7,4 +7,7 @@ internal enum BlazeDbPropCategory
     NullableRefScalar,
     ListCollection,
     ArrayCollection,
+
+    /// <summary>A <c>HashSet&lt;T&gt;</c>, or <c>ISet&lt;T&gt;</c> / <c>IReadOnlySet&lt;T&gt;</c>, which are read back as one.</summary>
+    SetCollection,
 }

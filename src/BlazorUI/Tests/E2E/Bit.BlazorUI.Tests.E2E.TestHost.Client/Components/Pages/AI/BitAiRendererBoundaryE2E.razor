@@ -1,0 +1,83 @@
+﻿@page "/e2e/airendererboundary"
+@inject BitAiRendererRegistry Renderers
+
+<PageTitle>BitAiRendererBoundary E2E</PageTitle>
+
+<h1>BitAiRendererBoundary</h1>
+
+@* Content that renders: the boundary adds no element of its own around it. *@
+<E2ESection Id="basic" Title="Basic">
+    <div id="rbd-ok-box">
+        <BitAiRendererBoundary Id="rbd-ok" Class="e2e-rbd-ok" Label="Never shown">
+            <span id="rbd-ok-content">Rendered fine</span>
+        </BitAiRendererBoundary>
+    </div>
+</E2ESection>
+
+@* A component that throws while it renders once the page says so, and renders again once the page says it may: every
+   render of the boundary by the page tries the content again. A sibling beside it stays usable throughout. *@
+<E2ESection Id="throwing" Title="A throwing child">
+    <button id="rbd-throw" @onclick="() => _throwing = !_throwing">@(_throwing ? "Let it render" : "Make it throw")</button>
+    <button id="rbd-sibling" @onclick="() => _siblingClicks++">Sibling clicked @_siblingClicks</button>
+    <div id="rbd-notice-box" style="width:520px">
+        <BitAiRendererBoundary Id="rbd-notice" Class="e2e-rbd-notice" Style="margin-top: 3px" Label="The chart could not be drawn">
+            @(Throwing(_throwing, "The chart's series are missing.", "rbd-notice-content"))
+        </BitAiRendererBoundary>
+    </div>
+</E2ESection>
+
+@* No Label: the notice says the content could not be rendered. *@
+<E2ESection Id="default-label" Title="Default label">
+    <button id="rbd-throw-default" @onclick="() => _throwingDefault = !_throwingDefault">Toggle</button>
+    <BitAiRendererBoundary Id="rbd-default">
+        @(Throwing(_throwingDefault, "Boom without a label.", "rbd-default-content"))
+    </BitAiRendererBoundary>
+</E2ESection>
+
+@* A fragment that throws inline, the way a custom renderer's builder does, rather than a component of its own. *@
+<E2ESection Id="inline" Title="Inline fragment">
+    <button id="rbd-throw-inline" @onclick="() => _throwingInline = !_throwingInline">Toggle</button>
+    <BitAiRendererBoundary Id="rbd-inline" Label="The inline fragment failed">
+        @InlineFragment
+    </BitAiRendererBoundary>
+</E2ESection>
+
+@* A renderer registered for e2e_rbd_tool that throws while the call's arguments are still streaming and draws them once
+   they are whole; the call is completed off the renderer's thread by a button that renders itself alone (Trigger), so
+   what renders the boundary again is the card following its call. *@
+<E2ESection Id="tool" Title="A tool renderer">
+    <button id="rbd-tool-start" @onclick="StartToolCall">Start the call</button>
+    @(Trigger("rbd-tool-complete", "Complete it in the background", CompleteToolCallInBackground))
+    <div style="width:520px">
+        @if (_toolCall is not null)
+        {
+            <BitAiToolCallView @key="_toolCall" Id="rbd-tool-card" Call="_toolCall" />
+        }
+    </div>
+</E2ESection>
+
+@* A renderer registered for the e2e-rbd-part kind that throws on a partial value; the part changes off the renderer's
+   thread, asked for by buttons that render themselves alone, so what renders the boundary again is its part view. *@
+<E2ESection Id="part" Title="A part renderer">
+    @(Trigger("rbd-part-complete", "Complete the value", () => SetPartInBackground(PartComplete)))
+    @(Trigger("rbd-part-break", "Break the value", () => SetPartInBackground(PartPartial)))
+    <div style="width:520px">
+        <BitAiMessagePartView Id="rbd-part-view" Part="_part" Message="_message" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style">
+    <button id="rbd-throw-style" @onclick="() => _throwingStyle = !_throwingStyle">Toggle</button>
+    <div id="rbd-style-box" style="width:520px">
+        <BitAiRendererBoundary Id="rbd-styles" Label="Styled notice"
+                               Styles="@(new() { Root = "padding: 5px" })"
+                               Classes="@(new() { Root = "e2e-rbd-root" })">
+            @(Throwing(_throwingStyle, "Styled boom.", "rbd-styles-content"))
+        </BitAiRendererBoundary>
+        <BitAiRendererBoundary Id="rbd-rtl" Dir="BitDir.Rtl" Label="Right to left">
+            @(Throwing(_throwingStyle, "RTL boom.", "rbd-rtl-content"))
+        </BitAiRendererBoundary>
+    </div>
+</E2ESection>
+
+<E2EStatus />

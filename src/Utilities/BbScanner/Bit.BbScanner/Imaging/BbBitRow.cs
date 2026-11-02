@@ -27,6 +27,9 @@ public sealed class BbBitRow
     /// <summary>Number of bits in the row.</summary>
     public int Size { get; private set; }
 
+    /// <summary>Zeroes every word of the row, the part past the current size included.</summary>
+    internal void Clear() => Array.Clear(_bits);
+
     /// <summary>Clears the row and, if needed, grows it to hold <paramref name="size"/> bits.</summary>
     /// <param name="size">Required number of bits.</param>
     public void Reset(int size)

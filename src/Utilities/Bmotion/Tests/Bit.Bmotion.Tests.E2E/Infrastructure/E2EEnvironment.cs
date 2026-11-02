@@ -14,8 +14,8 @@ public static class E2EEnvironment
     /// </summary>
     public static string Host { get; } = HarnessHostKinds.Validate(Read("BMOTION_E2E_HOST") ?? HarnessHostKinds.WebAssembly);
 
-    /// <summary><c>BMOTION_E2E_FRAMEWORK</c>: the target framework the harness host runs on. Defaults to net10.0.</summary>
-    public static string Framework { get; } = Read("BMOTION_E2E_FRAMEWORK") ?? "net10.0";
+    /// <summary><c>BMOTION_E2E_FRAMEWORK</c>: the target framework the harness host runs on. Defaults to net11.0.</summary>
+    public static string Framework { get; } = Read("BMOTION_E2E_FRAMEWORK") ?? "net11.0";
 
     /// <summary>
     /// <c>BMOTION_E2E_CONFIGURATION</c>: the build configuration of the harness host. Defaults to the configuration
@@ -37,6 +37,12 @@ public static class E2EEnvironment
 
     /// <summary><c>BMOTION_E2E_SKIP_BUILD=1</c>: the harness host was built beforehand (as CI does); do not rebuild it.</summary>
     public static bool SkipBuild { get; } = Read("BMOTION_E2E_SKIP_BUILD") == "1";
+
+    /// <summary>
+    /// <c>CI=true</c>, as GitHub Actions sets it: a build server, where a test that could not run fails rather than
+    /// reporting inconclusive, so a suite that never ran cannot pass.
+    /// </summary>
+    public static bool IsContinuousIntegration { get; } = string.Equals(Read("CI"), "true", StringComparison.OrdinalIgnoreCase);
 
     private static string? Read(string name)
     {

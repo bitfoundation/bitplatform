@@ -3,13 +3,22 @@
 <PageTitle>Use Key Press · Blow</PageTitle>
 
 <ExampleScaffold Title="Use Key Press"
-                 Summary="Click the canvas area to focus it, then use keyboard shortcuts: 'a' adds a node, Delete removes the selection. The last key pressed is shown.">
+                 Summary="Shortcuts of your own: an element round the canvas hears every key pressed on the flow, so the page binds keys with ordinary @@onkeydown and @@onkeyup and acts through the canvas's API - AddNodes, DeleteElementsAsync and MoveSelectionAsync. The keys light up while they are held.">
     <Toolbar>
-        <span class="bb-muted">last key: <strong>@_lastKey</strong></span>
+        <span class="kp-keys" role="group" aria-label="Keys the page listens to">
+            @foreach (var (key, label) in Keys)
+            {
+                <kbd class="kp-key @(IsHeld(key) ? "kp-key--held" : null)">@label</kbd>
+            }
+        </span>
+        <span class="bb-muted">Last key: <strong>@_lastKey</strong></span>
     </Toolbar>
     <ChildContent>
-        <div class="keypress" tabindex="0" @onkeydown="OnKeyDown">
-            @* The page handles Delete itself, so the canvas's own binding for it is switched off -
+        @* Key events bubble out of the canvas - from the pane and from a focused node or edge alike - so a plain element
+           round it hears them all. Focus moving within the canvas fires focusout too, which is harmless: a key still
+           held simply shows released until it is pressed again. *@
+        <div class="kp-frame" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" @onfocusout="@(() => _held.Clear())">
+            @* The page handles Delete and Backspace itself, so the canvas's own binding for them is switched off -
                left on, both would act on the same key press. *@
             <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DeleteKeyEnabled="false">
                 <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
@@ -17,38 +26,104 @@
             </BlowCanvas>
         </div>
     </ChildContent>
+    <TryIt>
+        <li><strong>Click</strong> the canvas (or a node) so the keys reach it: the key chips above light up while you hold a key, and <strong>Last key</strong> names the latest one with its modifiers.</li>
+        <li>Press <strong>a</strong> to add a node at a random spot; the view eases out to fit it in. Holding the key adds only one.</li>
+        <li>Select a node and press <strong>h</strong>, <strong>j</strong>, <strong>k</strong> or <strong>l</strong> to move it left, down, up or right by 20; hold <strong>Shift</strong> for 100, or hold the key to keep it going. Several selected nodes move together.</li>
+        <li>Select nodes or edges and press <strong>Delete</strong> or <strong>Backspace</strong>: the page removes them, along with the edges of a removed node.</li>
+        <li>Press <strong>Ctrl+A</strong> (<strong>Cmd+A</strong> on a Mac): that one is the canvas's own select-all, and the page leaves combinations with Ctrl, Cmd or Alt alone. The arrow keys still nudge the selection too, as they always do.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>@@onkeydown</code> and <code>@@onkeyup</code> on the element round the canvas receive a <code>KeyboardEventArgs</code> for every key pressed while focus is in the flow; <code>Key</code>, <code>ShiftKey</code>, <code>CtrlKey</code>, <code>AltKey</code>, <code>MetaKey</code> and <code>Repeat</code> say which.</li>
+        <li><code>DeleteKeyEnabled="false"</code> switches off the canvas's binding of <code>DeleteKeys</code> (Delete and Backspace) so the page's own handler is the only one acting on them.</li>
+        <li><code>AddNodes(node)</code> appends and measures the new node, then <code>FitViewAsync(300)</code> eases the view to fit everything over 300 ms.</li>
+        <li><code>DeleteElementsAsync(nodes, edges)</code> deletes the selected nodes and edges with the same rules as the Delete key: edges of a removed node go too, <code>Deletable = false</code> is respected, and <code>OnBeforeDelete</code>, <code>OnDelete</code> and <code>NodesChanged</code> run as usual.</li>
+        <li><code>MoveSelectionAsync(dx, dy)</code> moves the selected nodes by a distance in flow units, as the arrow keys do: draggable nodes only, snapped to the grid when <code>SnapToGrid</code> is on, kept inside their extents, announced to a screen reader and recorded as one undo step.</li>
+        <li>The canvas claims only its own keys - the arrows, Escape, Enter and Space on a focused node, <code>PanActivationKey</code> (Space) held, Ctrl/Cmd+A while <code>SelectAllKeyEnabled</code>, <code>DeleteKeys</code>, and <code>ConnectionKey</code> (<strong>c</strong>) on a focused node - so other letters are free for shortcuts like these. See Key Bindings for changing them.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .keypress { height:100%; outline:none; }
+    .kp-frame { height:100%; }
+    .kp-keys { display:inline-flex; flex-wrap:wrap; gap:4px; }
+    .kp-key {
+        min-width:1.75rem; padding:1px 6px; text-align:center; font-family:var(--bb-mono, monospace); font-size:12px;
+        color:var(--bb-text); background:var(--bb-surface); border:1px solid var(--bb-border-strong); border-radius:4px;
+    }
+    .kp-key--held { color:var(--bb-primary-text); background:var(--bb-primary); border-color:var(--bb-primary); }
 </style>
 
 @code {
+    // The chips on the toolbar, by the key name they light up for.
+    private static readonly (string Key, string Label)[] Keys =
+    [
+        ("a", "a"), ("h", "h"), ("j", "j"), ("k", "k"), ("l", "l"), ("Delete", "Delete"), ("Shift", "Shift"),
+    ];
+
     private BlowCanvas? _flow;
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
+    private readonly HashSet<string> _held = new(StringComparer.OrdinalIgnoreCase);
     private string _lastKey = "-";
-    private int _id = 1;
+    private int _id = 2;
 
     protected override void OnInitialized()
     {
-        _nodes = [ new BlowNode { Id = "1", Label = "Press 'a' to add a node", Position = new(160, 120), Width = 200 } ];
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Press 'a' to add a node", Position = new(160, 60), Width = 200 },
+            new BlowNode { Id = "2", Label = "Select me, then h j k l", Position = new(160, 200), Width = 200 },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
     }
+
+    private bool IsHeld(string key) => _held.Contains(key) || (key == "Delete" && _held.Contains("Backspace"));
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
-        _lastKey = e.Key;
-        if (e.Key is "a" or "A")
+        _held.Add(e.Key);
+        _lastKey = Describe(e);
+
+        // Combinations with Ctrl, Cmd or Alt belong to the canvas (Ctrl+A selects all) and to the browser.
+        if (e.CtrlKey || e.MetaKey || e.AltKey || _flow is null) return;
+
+        var step = e.ShiftKey ? 100 : 20;
+        switch (e.Key)
         {
-            _id++;
-            _nodes.Add(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 420), Random.Shared.Next(40, 280)) });
-            _flow?.Refresh(remeasure: true);
+            // A held key repeats; one node per press is what the key means.
+            case "a" or "A" when !e.Repeat:
+                await AddNodeAsync();
+                break;
+            case "Delete" or "Backspace":
+                await _flow.DeleteElementsAsync(_nodes.Where(n => n.Selected).ToList(), _edges.Where(ed => ed.Selected).ToList());
+                break;
+            case "h" or "H": await _flow.MoveSelectionAsync(-step, 0); break;
+            case "j" or "J": await _flow.MoveSelectionAsync(0, step); break;
+            case "k" or "K": await _flow.MoveSelectionAsync(0, -step); break;
+            case "l" or "L": await _flow.MoveSelectionAsync(step, 0); break;
         }
-        else if (e.Key is "Delete" or "Backspace")
-        {
-            var selected = _nodes.Where(n => n.Selected).ToList();
-            if (_flow is not null && selected.Count > 0)
-                await _flow.DeleteElementsAsync(selected);
-        }
+    }
+
+    private void OnKeyUp(KeyboardEventArgs e) => _held.Remove(e.Key);
+
+    private async Task AddNodeAsync()
+    {
+        if (_flow is null) return;
+        _id++;
+        _flow.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 420), Random.Shared.Next(40, 280)) });
+        // A random spot is more often than not off the view the first nodes were fitted to.
+        await _flow.FitViewAsync(300);
+    }
+
+    private static string Describe(KeyboardEventArgs e)
+    {
+        // A modifier pressed on its own is the key itself, not a modifier of it.
+        var parts = new List<string>();
+        if (e.CtrlKey && e.Key != "Control") parts.Add("Ctrl");
+        if (e.MetaKey && e.Key != "Meta") parts.Add("Cmd");
+        if (e.AltKey && e.Key != "Alt") parts.Add("Alt");
+        if (e.ShiftKey && e.Key != "Shift") parts.Add("Shift");
+        parts.Add(e.Key == " " ? "Space" : e.Key);
+        return string.Join("+", parts);
     }
 }

@@ -8,11 +8,16 @@
     {
         <span class="bev-chip bev-warn">disposed @BevFmt.Ago(Record.DisposedAt)</span>
     }
-    @if (Record.Parent is { } parent)
+    @* The parent the tree shows: framework plumbing in between is hidden there unless internals are shown. *@
+    @if ((Host.Ui.ShowHiddenComponents ? Record.Parent : NearestVisibleAncestor(Record)) is { } parent)
     {
         <span class="bev-muted">in</span> <button type="button" class="bev-link" @onclick="() => Host.SelectComponent(parent.InstanceId)">@parent.DisplayName</button>
     }
     <span style="margin-left:auto"></span>
+    @if (!Record.IsDisposed)
+    {
+        <button type="button" title="Scroll the page to this component and outline it" @onclick="() => Host.HighlightAsync(Record.InstanceId, explicitRequest: true)">⌖ Show in page</button>
+    }
     <button type="button" @onclick='() => Host.ShowPanel("timeline", "component:" + Record.InstanceId)'>Events ↗</button>
     <button type="button" @onclick='() => Host.ShowPanel("profiler", Record.DisplayName)'>Profiler ↗</button>
 </div>
@@ -21,15 +26,105 @@
         <dl class="bev-kv">
             <dt>Type</dt><dd class="bev-mono">@Record.TypeName</dd>
             <dt>Assembly</dt><dd class="bev-mono">@Record.Type.Assembly.GetName().Name</dd>
-            <dt>Source</dt><dd class="bev-mono">@BevFmt.ComponentFile(Record.Type) <span class="bev-muted">(inferred from type name)</span></dd>
+            <dt>Source</dt>
+            <dd>
+                @if (_sources.Count > 0)
+                {
+                    @foreach (var source in _sources)
+                    {
+                        <div><BevSourceLink Location="source" /> <span class="bev-muted bev-mono">@source.Path</span></div>
+                    }
+                }
+                else
+                {
+                    <span class="bev-mono">@BevFmt.ComponentFile(Record.Type)</span> <span class="bev-muted">(inferred from the type name: @(_sourceNote ?? "no symbols"))</span>
+                }
+            </dd>
             <dt>Base</dt><dd class="bev-mono">@_baseName</dd>
             <dt>Renderer id</dt><dd>@(Record.ComponentId?.ToString() ?? "unresolved")</dd>
-            <dt>Created</dt><dd>@BevFmt.Time(Record.CreatedAt) (@BevFmt.Ago(Record.CreatedAt))</dd>
+            <dt>Render mode</dt>
+            <dd>
+                @if (Record.RenderModeName is { } mode)
+                {
+                    <span class="bev-chip bev-info">@mode</span> <span class="bev-muted">assigned here: this component starts an interactive subtree</span>
+                }
+                else if (_inheritedRenderMode is { } inherited)
+                {
+                    <span class="bev-chip">@inherited.Mode</span> <span class="bev-muted">from</span> <button type="button" class="bev-link" @onclick="() => Host.SelectComponent(inherited.From.InstanceId)">@inherited.From.DisplayName</button>
+                }
+                else
+                {
+                    <span class="bev-muted">none assigned in this session · renders on @(Session.Platform ?? "an unknown renderer")</span>
+                }
+            </dd>
             @if (!Record.IsInstrumented)
             {
                 <dt>Note</dt><dd class="bev-muted">@Record.InstrumentationNote</dd>
             }
         </dl>
+    </BevInspectorSection>
+    <BevInspectorSection Title="Lifecycle" Collapsed="true">
+        <dl class="bev-kv">
+            <dt>Created</dt><dd>@BevFmt.Time(Record.CreatedAt) (@BevFmt.Ago(Record.CreatedAt)) <span class="bev-muted">by the component activator</span></dd>
+            @if (_initialized is { } initialized)
+            {
+                <dt>Initialized</dt><dd>@(initialized ? "yes: OnInitialized(Async) has started" : "not yet")</dd>
+            }
+            <dt>First render</dt><dd>@(Record.FirstRenderAt is { } first ? BevFmt.Time(first) + " (" + BevFmt.Rel(first, Record.CreatedAt) + " after creation)" : Record.HasRendered ? "before BevTools attached, or while capture was paused" : "not yet")</dd>
+            <dt>Last render</dt><dd>@(Record.LastRenderAt is { } last ? BevFmt.Time(last) + " (" + BevFmt.Ago(last) + ")" : "–")</dd>
+            @if (_afterRender is { } afterRender)
+            {
+                <dt>OnAfterRender</dt><dd>@(afterRender ? "has run" : "not yet")</dd>
+            }
+            @if (_pendingRender is true)
+            {
+                <dt>Queued</dt><dd><span class="bev-chip bev-warn">render queued</span> <span class="bev-muted">StateHasChanged was called and the render has not run yet</span></dd>
+            }
+            <dt>Disposed</dt><dd>@(Record.IsDisposed ? BevFmt.Time(Record.DisposedAt ?? Record.CreatedAt) + " (noticed on refresh; the exact moment is not observable)" : "no")</dd>
+        </dl>
+        @if (_lifecycleMetrics is not null)
+        {
+            <div class="bev-muted">SetParametersAsync for every @Record.DisplayName: @_lifecycleMetrics.ParameterUpdates calls, @BevFmt.Ms(_lifecycleMetrics.ParameterUpdateMs) total (framework metrics, per type).</div>
+        }
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"Event handlers & callbacks ({_wiring.TotalBindings})")" Subtitle="what its latest render bound" Collapsed="@(_wiring.TotalBindings == 0)">
+        @if (_wiring.Unavailable is { } why)
+        {
+            <div class="bev-muted">@why</div>
+        }
+        else if (_wiring.TotalBindings == 0)
+        {
+            <div class="bev-muted">Its latest render bound no event handler and passed no callback to a child.</div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>On</th><th>Event</th><th>Runs</th></tr></thead>
+                <tbody>
+                    @foreach (var binding in _wiring.Bindings)
+                    {
+                        <tr>
+                            <td class="bev-mono">
+                                @if (binding.ChildInstanceId is { } childId)
+                                {
+                                    <button type="button" class="bev-link bev-mono" @onclick="() => Host.SelectComponent(childId)">@binding.Target</button>
+                                }
+                                else
+                                {
+                                    @binding.Target
+                                }
+                            </td>
+                            <td class="bev-mono">@binding.Event @if (binding.Kind == BevEventBindingKind.ChildCallback) { <span class="bev-chip">parameter</span> }</td>
+                            <td class="bev-mono">@binding.Handler @if (binding.HandlerMethod is { } method && BevSourceLocator.Of(method, Session.Options.Ui.EditorUrlTemplate) is { } handlerSource) { <BevSourceLink Location="handlerSource" /> }</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (_wiring.TotalBindings > _wiring.Bindings.Count)
+            {
+                <div class="bev-muted">… and @(_wiring.TotalBindings - _wiring.Bindings.Count) more.</div>
+            }
+        }
     </BevInspectorSection>
     <BevInspectorSection Title="@($"Parameters ({_parameters.Count})")">
         @if (_parameters.Count == 0)
@@ -109,6 +204,12 @@
                     }
                 </tbody>
             </table>
+            @* The instances themselves, through the same inspector as the component's state: what this component sees in
+               its services is often the question, and a member such as a token is redacted here as everywhere else. *@
+            @foreach (var s in _services)
+            {
+                <BevValueTree Root="s.Value" Name="@s.Name" Inspector="Session.Inspector" Member="s.Property" />
+            }
         }
     </BevInspectorSection>
     <BevInspectorSection Title="@($"Rendering ({Record.RenderCount} renders, {BevFmt.Ms(Record.TotalRenderMs)})")">
@@ -214,7 +315,7 @@
 @code {
     private sealed record MemberValue(string Name, object? Value, MemberInfo MemberInfo);
 
-    private sealed record ServiceRow(string Name, string ServiceName, string? Lifetime, string? Implementation);
+    private sealed record ServiceRow(string Name, string ServiceName, string? Lifetime, string? Implementation, object? Value, MemberInfo Property);
 
     private sealed record CauseRow(string Cause, int Count, string Detail);
 
@@ -236,6 +337,14 @@
     private string _baseName = "";
     private int _comparedRenders;
     private int _forcedRenders;
+    private BevComponentWiring _wiring = BevComponentWiring.NotReadable("");
+    private (string Mode, BevComponentRecord From)? _inheritedRenderMode;
+    private bool? _initialized;
+    private bool? _afterRender;
+    private bool? _pendingRender;
+    private BevLifecycleTypeMetrics? _lifecycleMetrics;
+    private IReadOnlyList<BevSourceLocation> _sources = [];
+    private string? _sourceNote;
 
     private static readonly BevRenderCause[] Causes = Enum.GetValues<BevRenderCause>();
 
@@ -244,31 +353,36 @@
         + "method, so a recreated lambda with the same body counts as unchanged. Render fragments compare by instance, and one that reads component state "
         + "as it runs never counts as unchanged, so new child content is never called forced. Blazor only skips such renders for primitive-typed "
         + "parameters; ShouldRender can skip the rest.";
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, (PropertyInfo[] Parameters, PropertyInfo[] Cascading, PropertyInfo[] Injected)> PropertyCache = new();
 
     protected override void OnParametersSet()
     {
         var component = Record.Component;
         _baseName = Record.Type.BaseType is { } b ? TypeNames.Short(b) : "–";
-        var (parameters, cascading, injected) = PropertyCache.GetOrAdd(Record.Type, static t =>
+        _sources = BevSourceLocator.Of(Record.Type, Session.Options.Ui.EditorUrlTemplate);
+        _sourceNote = null;
+        if (_sources.Count == 0)
         {
-            var all = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
-            return (
-                all.Where(p => p.IsDefined(typeof(ParameterAttribute), true)).OrderBy(p => p.Name).ToArray(),
-                all.Where(p => p.IsDefined(typeof(CascadingParameterAttribute), true) || p.IsDefined(typeof(SupplyParameterFromQueryAttribute), true) || p.IsDefined(typeof(SupplyParameterFromFormAttribute), true)).OrderBy(p => p.Name).ToArray(),
-                all.Where(p => p.IsDefined(typeof(InjectAttribute), true)).OrderBy(p => p.Name).ToArray());
-        });
-
-        _parameters = parameters.Select(p => new MemberValue(p.Name, SafeGet(p, component), p)).ToList();
-        _cascading = cascading.Select(p => new MemberValue(p.Name, SafeGet(p, component), p)).ToList();
-        _state = ComponentStateReader.Fields(Record.Type).Select(f => new MemberValue(f.Name, SafeGet(f.Field, component), f.Member)).ToList();
+            if (BevSourceLocator.NeedsDownload(Record.Type.Assembly))
+            {
+                _sourceNote = "loading the app's symbols…";
+                _ = Host.LoadSymbolsAsync(Record.Type.Assembly);
+            }
+            else
+            {
+                _sourceNote = BevSourceLocator.WhyUnavailable(Record.Type.Assembly);
+            }
+        }
+        var (parameters, cascading, injected) = BevComponentMembers.Of(Record.Type);
+        _parameters = parameters.Select(p => new MemberValue(p.Name, BevComponentMembers.SafeGet(p, component), p)).ToList();
+        _cascading = cascading.Select(p => new MemberValue(p.Name, BevComponentMembers.SafeGet(p, component), p)).ToList();
+        _state = ComponentStateReader.Fields(Record.Type).Select(f => new MemberValue(f.Name, BevComponentMembers.SafeGet(f.Field, component), f.Member)).ToList();
         var graph = Host.Graph;
         _services = injected.Select(p =>
         {
             var service = graph?.Services.LastOrDefault(s => s.ServiceType == p.PropertyType && !s.IsKeyed);
-            var value = SafeGet(p, component);
+            var value = BevComponentMembers.SafeGet(p, component);
             var impl = value is BevTrackingJSRuntime tracking ? TypeNames.Short(tracking.Inner.GetType()) + " (tracked by BevTools)" : value is null ? null : TypeNames.Short(value.GetType());
-            return new ServiceRow(p.Name, TypeNames.Short(p.PropertyType), service is null ? null : BevFmt.Lifetime(service.Lifetime), impl ?? service?.ImplementationName);
+            return new ServiceRow(p.Name, TypeNames.Short(p.PropertyType), service is null ? null : BevFmt.Lifetime(service.Lifetime), impl ?? service?.ImplementationName, value, p);
         }).ToList();
 
         var renders = Record.Renders;
@@ -285,6 +399,28 @@
         _children = Session.Components.All.Where(c => !c.IsDisposed && !c.IsHidden && c.Parent is not null && NearestVisibleAncestor(c) == Record).OrderBy(c => c.ComponentId).ToList();
         _errors = Session.Errors.Snapshot().Where(e => e.ComponentInstanceId == Record.InstanceId).Reverse().ToList();
         Session.TypeMetrics.TryGetValue(Record.TypeName, out _typeMetrics);
+        _lifecycleMetrics = _typeMetrics;
+
+        // Children are looked up by the renderer's component id, which is what a component frame carries.
+        var byComponentId = Session.Components.All.Where(c => c.ComponentId is not null && !c.IsDisposed).GroupBy(c => c.ComponentId!.Value).ToDictionary(g => g.Key, g => g.Last());
+        _wiring = BevComponentWiringReader.Read(Record, id => byComponentId.GetValueOrDefault(id));
+
+        _inheritedRenderMode = null;
+        for (var ancestor = Record.Parent; ancestor is not null && Record.RenderModeName is null; ancestor = ancestor.Parent)
+        {
+            if (ancestor.RenderModeName is { } mode)
+            {
+                _inheritedRenderMode = (mode, ancestor);
+                break;
+            }
+        }
+
+        if (component is ComponentBase componentBase)
+        {
+            _initialized = BlazorReflection.GetInitialized?.Invoke(componentBase);
+            _afterRender = BlazorReflection.HasCalledOnAfterRender(componentBase);
+            _pendingRender = BlazorReflection.HasPendingQueuedRenderField?.GetValue(componentBase) as bool?;
+        }
     }
 
     private static BevComponentRecord? NearestVisibleAncestor(BevComponentRecord record)
@@ -296,29 +432,5 @@
         }
 
         return parent;
-    }
-
-    private static object? SafeGet(PropertyInfo property, object? target)
-    {
-        try
-        {
-            return property.GetValue(target);
-        }
-        catch (Exception ex)
-        {
-            return "«threw " + (ex is TargetInvocationException { InnerException: { } i } ? i.GetType().Name : ex.GetType().Name) + "»";
-        }
-    }
-
-    private static object? SafeGet(FieldInfo field, object? target)
-    {
-        try
-        {
-            return field.GetValue(target);
-        }
-        catch (Exception ex)
-        {
-            return "«threw " + ex.GetType().Name + "»";
-        }
     }
 }

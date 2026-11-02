@@ -1,0 +1,21 @@
+@inherits LayoutComponentBase
+
+<CascadingValue Value="currentDir">
+    <div class="wb-shell">
+        @* A page that throws shows an error with a reload button instead of stopping the whole shell *@
+        <PageErrorBoundary>
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent>
+                <LayoutError />
+            </ErrorContent>
+        </PageErrorBoundary>
+    </div>
+    <BitModalContainer />
+    <ReplyNotifier />
+    <AgentNotice />
+    <BonboardingRoot>
+        <GuideCard Model="context" />
+    </BonboardingRoot>
+</CascadingValue>

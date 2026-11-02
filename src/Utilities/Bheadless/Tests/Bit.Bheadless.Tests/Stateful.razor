@@ -1,0 +1,21 @@
+﻿@* A host that owns a value and re-renders its content when it changes — the
+   minimal stand-in for a parent component using @bind in controlled-mode tests. *@
+@typeparam T
+@ChildContent(this)
+
+@code {
+    [Parameter] public T? Initial { get; set; }
+    [Parameter, EditorRequired] public RenderFragment<Stateful<T>> ChildContent { get; set; } = default!;
+
+    public T? Value { get; private set; }
+    public int Changes { get; private set; }
+
+    protected override void OnInitialized() => Value = Initial;
+
+    public void Set(T? value)
+    {
+        Value = value;
+        Changes++;
+        StateHasChanged();
+    }
+}

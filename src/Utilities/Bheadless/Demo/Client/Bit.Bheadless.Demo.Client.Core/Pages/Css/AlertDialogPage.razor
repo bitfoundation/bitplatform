@@ -1,0 +1,190 @@
+﻿@page "/alert-dialog"
+
+<PageTitle>Alert Dialog — bit Bheadless</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Alert Dialog</h1>
+        <p>A modal dialog that interrupts the user with an important message and expects a deliberate response.</p>
+        <SectionSwitcher Slug="alert-dialog" />
+    </header>
+
+    <DemoBlock Title="Basic Alert Dialog"
+               Code="@_basicCode"
+               Css="@_alertCss">
+        <Description>
+            Click the trigger to open. Unlike a Dialog, clicking the overlay does
+            <strong>not</strong> dismiss it — the user must choose <code>Cancel</code> or
+            <code>Action</code>. Focus lands on the Cancel button (the safe choice), is
+            trapped inside, and returns to the trigger on close. Escape closes.
+        </Description>
+        <LiveContent>
+            <BitBhAlertDialog>
+                <BitBhAlertDialogTrigger class="btn btn-danger">
+                    Delete account
+                </BitBhAlertDialogTrigger>
+
+                <BitBhAlertDialogOverlay class="alert-overlay" />
+                <BitBhAlertDialogContent class="alert-content">
+                    <BitBhAlertDialogTitle class="alert-title">Are you absolutely sure?</BitBhAlertDialogTitle>
+                    <BitBhAlertDialogDescription class="alert-description">
+                        This action cannot be undone. This will permanently delete your
+                        account and remove your data from our servers.
+                    </BitBhAlertDialogDescription>
+
+                    <div class="alert-actions">
+                        <BitBhAlertDialogCancel class="btn">Cancel</BitBhAlertDialogCancel>
+                        <BitBhAlertDialogAction class="btn btn-danger" OnClick="HandleDelete">
+                            Yes, delete account
+                        </BitBhAlertDialogAction>
+                    </div>
+                </BitBhAlertDialogContent>
+            </BitBhAlertDialog>
+
+            <span class="demo-output">@basicResult</span>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Controlled state"
+               Code="@_controlledCode"
+               Css="@_alertCss">
+        <Description>
+            Drive the open state yourself with <code>Open</code> + <code>OnOpenChange</code>.
+            Useful when an external event (e.g. an unsaved-changes guard) needs to open the
+            alert.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => discardOpen = true" class="btn">
+                Discard changes
+            </BitBhButton>
+
+            <span class="demo-output">@discardResult</span>
+
+            <BitBhAlertDialog Open="discardOpen" OnOpenChange="v => discardOpen = v">
+                <BitBhAlertDialogOverlay class="alert-overlay" />
+                <BitBhAlertDialogContent class="alert-content">
+                    <BitBhAlertDialogTitle class="alert-title">Discard changes?</BitBhAlertDialogTitle>
+                    <BitBhAlertDialogDescription class="alert-description">
+                        You have unsaved changes. If you leave now, they will be lost.
+                    </BitBhAlertDialogDescription>
+
+                    <div class="alert-actions">
+                        <BitBhAlertDialogCancel class="btn" OnClick='() => discardResult = "Kept editing."'>
+                            Keep editing
+                        </BitBhAlertDialogCancel>
+                        <BitBhAlertDialogAction class="btn btn-danger" OnClick='() => discardResult = "Changes discarded."'>
+                            Discard
+                        </BitBhAlertDialogAction>
+                    </div>
+                </BitBhAlertDialogContent>
+            </BitBhAlertDialog>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool discardOpen;
+    private string? basicResult;
+    private string? discardResult;
+
+    private void HandleDelete() => basicResult = "Account deleted (just kidding).";
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhAlertDialog>
+    <BitBhAlertDialogTrigger class="btn btn-danger">
+        Delete account
+    </BitBhAlertDialogTrigger>
+
+    <BitBhAlertDialogOverlay class="alert-overlay" />
+    <BitBhAlertDialogContent class="alert-content">
+        <BitBhAlertDialogTitle class="alert-title">Are you absolutely sure?</BitBhAlertDialogTitle>
+        <BitBhAlertDialogDescription class="alert-description">
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+        </BitBhAlertDialogDescription>
+
+        <div class="alert-actions">
+            <BitBhAlertDialogCancel class="btn">Cancel</BitBhAlertDialogCancel>
+            <BitBhAlertDialogAction class="btn btn-danger" OnClick="HandleDelete">
+                Yes, delete account
+            </BitBhAlertDialogAction>
+        </div>
+    </BitBhAlertDialogContent>
+</BitBhAlertDialog>
+
+@code {
+    private void HandleDelete() { /* perform the destructive action */ }
+}
+""";
+
+    private const string _controlledCode = """
+<BitBhButton OnClick="() => isOpen = true" class="btn">
+    Discard changes
+</BitBhButton>
+
+<BitBhAlertDialog Open="isOpen" OnOpenChange="v => isOpen = v">
+    <BitBhAlertDialogOverlay class="alert-overlay" />
+    <BitBhAlertDialogContent class="alert-content">
+        <BitBhAlertDialogTitle class="alert-title">Discard changes?</BitBhAlertDialogTitle>
+        <BitBhAlertDialogDescription class="alert-description">
+            You have unsaved changes. If you leave now, they will be lost.
+        </BitBhAlertDialogDescription>
+
+        <div class="alert-actions">
+            <BitBhAlertDialogCancel class="btn">Keep editing</BitBhAlertDialogCancel>
+            <BitBhAlertDialogAction class="btn btn-danger">Discard</BitBhAlertDialogAction>
+        </div>
+    </BitBhAlertDialogContent>
+</BitBhAlertDialog>
+
+@code {
+    private bool isOpen;
+}
+""";
+
+    private const string _alertCss = """
+/* The library applies minimal default positioning (position:fixed inset:0 on the
+   overlay) so consumers can layer the content inside it. Everything else is yours. */
+
+.alert-overlay {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.alert-content {
+    /* The library centres the content in the viewport by default (position:fixed).
+       These rules just give it a surface. */
+    width: calc(100vw - 2rem);
+    max-width: 28rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.alert-title       { font-size: 1.1rem; font-weight: 600; color: #18181b; }
+.alert-description { font-size: 0.9rem; color: #71717a; }
+
+.alert-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.btn-danger {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+""";
+}

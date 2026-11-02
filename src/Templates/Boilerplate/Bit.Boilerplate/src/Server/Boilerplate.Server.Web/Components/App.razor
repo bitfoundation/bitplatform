@@ -2,6 +2,7 @@
 @* [mirror] host page head tags, stylesheet and script list - keep in sync with: *@
 @* - src/Client/Boilerplate.Client.Web/wwwroot/index.html *@
 @* - src/Client/Boilerplate.Client.Maui/wwwroot/index.html *@
+@* - src/Workbench/Components/App.razor *@
 
 @using Microsoft.AspNetCore.Http;
 @using Boilerplate.Client.Web.Components
@@ -137,9 +138,6 @@
         <Script Src="_content/Bit.Bswup/bit-bswup.progress.js"></Script>
         <AppBswupProgressBar />
         <Script Src="_content/Bit.Butil/bit-butil.js"></Script>
-        @*#if (offlineDb == true)*@
-        <Script Src="_content/Bit.Besql/bit-besql.js"></Script>
-        @*#endif*@
         <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
         <Script Src="_content/Boilerplate.Client.Core/scripts/app.js"></Script>
         <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>

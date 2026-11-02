@@ -1,0 +1,15 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// The boundary reads no public CSS variables of its own. Its content is rendered with no element of the boundary's
+// around it, and the notice it renders once that content has failed is a BitTag, restyled through the --bit-Tag-*
+// variables (or Classes.Notice / Styles.Notice).
+
+// The notice stands in a block of its own, where the content it replaces stood, and the tag inside it is as wide as
+// what it says rather than stretched across the line. It is a span, so it is valid inside a paragraph as well; a host
+// that puts a boundary around inline content keeps the notice in the line with a rule of its own.
+.bit-airbd {
+    min-width: 0;
+    display: block;
+    max-width: 100%;
+    box-sizing: border-box;
+}

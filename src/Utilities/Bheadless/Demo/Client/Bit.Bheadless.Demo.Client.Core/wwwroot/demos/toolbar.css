@@ -1,0 +1,126 @@
+﻿/* toolbar demo styles — plain CSS section. The library ships zero CSS.
+   Mirrored in the CSS tab of each demo on Components/Pages/Css/ToolbarPage.razor. */
+
+/* All styles are consumer-authored — the library ships zero CSS */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    max-width: 36rem;
+    padding: 0.3rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* BitBhToggleGroup renders role="group" (multiple) or role="radiogroup" (single) */
+.toolbar-toggle-group { display: flex; gap: 0.125rem; }
+
+.toolbar-toggle,
+.toolbar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.5rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.toolbar-toggle:hover,
+.toolbar-button:hover { background: var(--color-fill); color: var(--color-text); }
+
+/* The toolbar is one tab stop (roving tabindex): make the focused control obvious */
+.toolbar-toggle:focus-visible,
+.toolbar-button:focus-visible,
+.toolbar-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+
+/* Toggle-group items emit data-state="on|off" (plus aria-pressed / aria-checked) */
+.toolbar-toggle[data-state="on"] { background: var(--color-accent-subtle); color: var(--color-accent-text); }
+
+/* Disabled toolbar buttons get aria-disabled (not disabled) so they stay focusable */
+.toolbar-button[aria-disabled="true"],
+.toolbar-button[aria-disabled="true"]:hover { opacity: 0.4; background: transparent; cursor: not-allowed; }
+
+/* A separator's data-orientation is its own: vertical inside a horizontal toolbar */
+.toolbar-separator { align-self: stretch; flex-shrink: 0; background: var(--color-border); }
+.toolbar-separator[data-orientation="vertical"]   { width: 1px; margin: 0.3rem 0.25rem; }
+.toolbar-separator[data-orientation="horizontal"] { height: 1px; margin: 0.25rem 0.3rem; }
+
+.toolbar-link {
+    margin-left: auto;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.toolbar-link:hover { color: var(--color-primary-text); text-decoration: underline; }
+
+.toolbar-button-primary,
+.toolbar-button-primary:hover {
+    padding: 0 0.85rem;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 500;
+}
+
+.toolbar-button-primary:hover { background: var(--color-primary-hover); }
+
+.toolbar-preview {
+    width: 100%;
+    max-width: 36rem;
+    padding: 0.85rem 1rem;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: 0.6rem;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+}
+
+/* aria-orientation / data-orientation="vertical" come from Orientation */
+.toolbar[data-orientation="vertical"] {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    width: auto;
+}
+
+.toolbar[data-orientation="vertical"] .toolbar-toggle-group { flex-direction: column; }
+
+.toolbar-canvas {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 36rem;
+}
+
+.toolbar-stage {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-height: 14rem;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: 0.6rem;
+    background: radial-gradient(var(--color-fill-strong) 1px, transparent 1px) 0 0 / 16px 16px, var(--color-subtle);
+    font-size: 0.8rem;
+    color: var(--color-muted);
+}
+
+.toolbar-stage strong { font-size: 1.1rem; color: var(--color-text); }

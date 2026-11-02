@@ -26,7 +26,7 @@
 // is why Color and Size publish nothing while they are left unset: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
-$acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text, pad-y, min-height, fontsize,
+$acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-dis-text, pad-y, min-height, fontsize,
                          ico-size, padding,
                          // The colors the hover and press states below move, unset at rest so an action button nested
                          // in another one never inherits the outer one's state.
@@ -72,17 +72,20 @@ $acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text
 
     // The states change the variables the button is painted from rather than its colors, so the rule at rest is the
     // only one that paints: an action button the app paints through Class keeps that paint under the pointer and
-    // while pressed, instead of losing it to a state that outranks the app's class.
+    // while pressed, instead of losing it to a state that outranks the app's class. Under an explicit Color the label
+    // of a hovered or pressed button is the role's text color (clr-fg): it is still read on the page, where a
+    // secondary or a warning hover color - picked to fill a surface - falls under the 4.5:1 of body text on white.
+    // The icon moves through the hover and press colors.
     @media (hover: hover) {
         &:hover {
-            --bit-acb-sfg: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
+            --bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
             --bit-acb-ico: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
             --bit-acb-sbg: var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent));
         }
     }
 
     &:active {
-        --bit-acb-sfg: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
+        --bit-acb-sfg: var(--bit-acb-clr-fg, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
         --bit-acb-ico: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
         --bit-acb-sbg: var(--bit-ActionButton-active-background, var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent)));
     }
@@ -227,9 +230,12 @@ $acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an
 // explicit Color; an unset one is the primary role, which the fallbacks above spell out after the public variables.
+// The label of a hovered or pressed button is drawn in the role's text color (role-text), the icon in its main and
+// its hover and press colors.
 @each $role, $tokens in $bit-color-roles {
     .bit-acb-#{$role} {
         --bit-acb-clr-ico: #{role($tokens, main)};
+        --bit-acb-clr-fg: #{role-text($role, $tokens)};
         --bit-acb-clr-hover: #{role($tokens, hover)};
         --bit-acb-clr-active: #{role($tokens, active)};
         --bit-acb-clr-focus: #{role($tokens, focus)};

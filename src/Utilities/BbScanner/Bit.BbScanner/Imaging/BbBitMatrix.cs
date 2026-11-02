@@ -108,7 +108,8 @@ public sealed class BbBitMatrix : IDisposable
         ArgumentOutOfRangeException.ThrowIfNegative(top);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
-        if (top + height > Height || left + width > Width)
+        // Subtracted rather than added: a sum near the largest int wraps round to a small one, which passes.
+        if (top > Height - height || left > Width - width)
         {
             throw new ArgumentOutOfRangeException(nameof(width), "The region lies outside the matrix.");
         }
@@ -250,7 +251,9 @@ public sealed class BbBitMatrix : IDisposable
         _bits = null;
         if (bits is not null)
         {
-            ArrayPool<uint>.Shared.Return(bits);
+            // Cleared on the way back: a thresholded picture of the frame, which the shared pool would otherwise hand
+            // to whatever rents the array next.
+            ArrayPool<uint>.Shared.Return(bits, clearArray: true);
         }
     }
 }

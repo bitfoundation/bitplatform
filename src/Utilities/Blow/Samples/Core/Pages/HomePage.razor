@@ -1,0 +1,156 @@
+﻿@page "/"
+
+<PageTitle>Blow samples</PageTitle>
+
+<h1>Blow samples</h1>
+
+<p>
+    The same pages run in every Blazor hosting model: Server, WebAssembly, Auto and MAUI (Blazor Hybrid). The canvas
+    has every feature on each of them. What differs is where its C# runs - in the browser, on the server at the other
+    end of a circuit, or in the app's own process - and so what sits between a pointer moving and a node following it.
+</p>
+
+<section>
+    <h2>This host</h2>
+    <HostFacts>
+        <dt>Canvas</dt>
+        <dd>@(_ready ? "measured and interactive" : "waiting for its first measurement")</dd>
+    </HostFacts>
+</section>
+
+<section>
+    <h2>An editor</h2>
+    <p>
+        Drag the nodes, drag from a handle to another node to connect them, Shift+drag on the background to select a
+        few, and press Delete to remove the selection. The wheel zooms, dragging the background pans and two fingers
+        pinch; Tab reaches every node and edge. Each completed edit is listed below as <code>OnGraphChanged</code>
+        reports it - once, at the end of a drag, not on every move.
+    </p>
+
+    <div class="flow">
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    OnInit="OnInit"
+                    OnGraphChanged="OnGraphChanged"
+                    OnSelectionChange="OnSelectionChange"
+                    OnError="OnError">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" />
+            <BlowControls />
+            <BlowMiniMap />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <button type="button" @onclick="AddStepAsync">Add step</button>
+            </BlowPanel>
+        </BlowCanvas>
+    </div>
+
+    <p class="muted">Selected: @_selection</p>
+
+    @if (_log.Count == 0)
+    {
+        <p class="muted">No edits yet.</p>
+    }
+    else
+    {
+        <ul class="log">
+            @foreach (var entry in _log)
+            {
+                <li>@entry</li>
+            }
+        </ul>
+    }
+</section>
+
+<section>
+    <h2>What each page checks</h2>
+    <ul class="features">
+        <li>This page - the canvas itself: dragging, connecting, selecting, deleting, the add-ons, and the events an app persists from.</li>
+        <li><NavLink href="dataflow">Dataflow</NavLink> - node templates with their own inputs, typed ports the canvas enforces while connecting, and validation marked on the graph.</li>
+        <li><NavLink href="layout">Layout</NavLink> - the layouts and graph algorithms, plain C# that runs on this host, timed.</li>
+        <li><NavLink href="saving">Saving</NavLink> - undo and redo, copy and paste, the JSON document and the SVG export.</li>
+    </ul>
+</section>
+
+@code {
+    /// <summary>How many edits the log keeps; the oldest are dropped as new ones arrive.</summary>
+    private const int LogCapacity = 12;
+
+    private readonly List<string> _log = [];
+    private BlowCanvas? _flow;
+    private bool _ready;
+    private string _selection = "nothing";
+    private int _next = 5;
+
+    // The canvas edits these lists in place as the user works: they are the graph on screen.
+    private readonly List<BlowNode> _nodes =
+    [
+        new BlowNode { Id = "1", Type = "input", Label = "Order placed", Position = new(0, 0) },
+        new BlowNode { Id = "2", Label = "Payment", Position = new(0, 110) },
+        new BlowNode { Id = "3", Label = "Packing", Position = new(0, 220) },
+        new BlowNode { Id = "4", Type = "output", Label = "Shipped", Position = new(0, 330) },
+    ];
+
+    private readonly List<BlowEdge> _edges =
+    [
+        new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+        new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Label = "paid" },
+        new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Animated = true },
+    ];
+
+    // Raised once the canvas has rendered interactively and measured its nodes: never while prerendering.
+    private void OnInit(BlowCanvas flow) => _ready = true;
+
+    private void OnGraphChanged(BlowGraphChange change)
+    {
+        var touched = change.Nodes.Select(n => n.Label ?? n.Id)
+            .Concat(change.RemovedNodes.Select(n => n.Label ?? n.Id))
+            .Concat(change.Edges.Concat(change.RemovedEdges).Select(e => $"{Name(e.Source)} to {Name(e.Target)}"))
+            .ToList();
+        var what = touched.Count switch
+        {
+            0 => "",
+            <= 3 => ": " + string.Join(", ", touched),
+            _ => $": {string.Join(", ", touched.Take(3))} and {touched.Count - 3} more",
+        };
+
+        Log($"{change.Label ?? change.Kind.ToString()} by {change.Origin}{what}");
+    }
+
+    // A malformed graph is reported here, once per problem, instead of throwing.
+    private void OnError(BlowError error) => Log($"{error.Code}: {error.Message}");
+
+    private void OnSelectionChange(BlowSelectionChange selection)
+    {
+        var count = selection.Nodes.Count + selection.Edges.Count;
+        _selection = count == 0
+            ? "nothing"
+            : string.Join(", ", selection.Nodes.Select(n => n.Label ?? n.Id).Concat(selection.Edges.Select(e => $"{Name(e.Source)} to {Name(e.Target)}")));
+    }
+
+    private async Task AddStepAsync()
+    {
+        if (_flow is null)
+        {
+            return;
+        }
+
+        // Beside the column the nodes started in, one row lower each time, so a new step never lands on another node
+        // and hides its handles. AddNodes reports itself through OnGraphChanged, as an edit from the Api.
+        var id = (_next++).ToString();
+        _flow.AddNodes(new BlowNode { Id = id, Label = $"Step {id}", Position = new(240, (_next - 6) * 110) });
+        await _flow.FitViewAsync(300);
+    }
+
+    // An edge is named by its nodes; one whose node has just been deleted with it falls back to the id.
+    private string Name(string nodeId) => _nodes.Find(n => n.Id == nodeId)?.Label ?? nodeId;
+
+    private void Log(string entry)
+    {
+        _log.Insert(0, entry);
+        if (_log.Count > LogCapacity)
+        {
+            _log.RemoveRange(LogCapacity, _log.Count - LogCapacity);
+        }
+    }
+}

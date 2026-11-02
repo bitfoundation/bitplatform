@@ -1,0 +1,60 @@
+﻿@*
+    Tailwind-styled demo block. Preview / Razor tab layout.
+    Each demo's Razor tab shows the complete source (markup + @code)
+    that produces the demo, including all Tailwind utility classes inline.
+*@
+
+<section class="mb-10 rounded-lg border border-zinc-200 bg-white p-6">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <h2 class="text-xl font-semibold leading-snug text-zinc-900 mb-3">@Title</h2>
+    }
+    @if (Description is not null)
+    {
+        <p class="text-sm leading-relaxed text-zinc-500 mb-8">@Description</p>
+    }
+
+    <BitBhTabGroup class="flex w-full flex-col">
+        <BitBhTabList class="flex border-b border-zinc-200">
+            @if (LiveContent is not null)
+            {
+                <BitBhTab class="@_tabClass">Preview</BitBhTab>
+            }
+            @if (!string.IsNullOrWhiteSpace(Code))
+            {
+                <BitBhTab class="@_tabClass">Razor</BitBhTab>
+            }
+        </BitBhTabList>
+        <BitBhTabPanels class="mt-6">
+            @if (LiveContent is not null)
+            {
+                <BitBhTabPanel class="min-h-0">
+                    <div class="flex flex-wrap items-center gap-3 py-3">
+                        @LiveContent
+                    </div>
+                </BitBhTabPanel>
+            }
+            @if (!string.IsNullOrWhiteSpace(Code))
+            {
+                <BitBhTabPanel class="min-h-0">
+                    <pre class="overflow-x-auto rounded-md bg-(--color-code-bg) p-4 text-xs leading-relaxed text-[#d4d4d8]"><code>@Code.Trim('\r', '\n')</code></pre>
+                </BitBhTabPanel>
+            }
+        </BitBhTabPanels>
+    </BitBhTabGroup>
+</section>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? Description { get; set; }
+    [Parameter] public RenderFragment? LiveContent { get; set; }
+
+    /// <summary>The complete Razor source that reproduces the demo.</summary>
+    [Parameter] public string? Code { get; set; }
+
+    private const string _tabClass =
+        "cursor-pointer border-0 bg-transparent border-b-2 border-transparent px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-zinc-500 outline-none transition-colors box-border " +
+        "hover:text-zinc-900 " +
+        "focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600 " +
+        "data-state-active:border-blue-600 data-state-active:text-blue-600";
+}

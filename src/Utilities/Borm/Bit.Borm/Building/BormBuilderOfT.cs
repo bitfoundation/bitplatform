@@ -13,6 +13,10 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
 
     public new BormBuilder<TModel> Title(string title) { Form.Title = title; return this; }
     public new BormBuilder<TModel> Description(string description) { Form.Description = description; return this; }
+    public new BormBuilder<TModel> Version(string version) { Form.Version = version; return this; }
+
+    /// <inheritdoc cref="BormBuilder.Translate" />
+    public new BormBuilder<TModel> Translate(string culture, IEnumerable<KeyValuePair<string, string>> texts) { base.Translate(culture, texts); return this; }
     public new BormBuilder<TModel> Columns(int columns) { base.Columns(columns); return this; }
 
     /// <inheritdoc cref="BormBuilder.Static" />
@@ -20,6 +24,14 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
         Action<BormFieldBuilder>? configure = null)
     {
         base.Static(name, heading, text, configure);
+        return this;
+    }
+
+    /// <inheritdoc cref="BormBuilder.Review" />
+    public new BormBuilder<TModel> Review(string name, string? heading = null, string? text = null,
+        Action<BormFieldBuilder>? configure = null)
+    {
+        base.Review(name, heading, text, configure);
         return this;
     }
 
@@ -51,6 +63,10 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
         var underlying = Nullable.GetUnderlyingType(valueType) ?? valueType;
         if (underlying.IsEnum)
             builder.OptionsFromEnum(underlying);
+        // A collection of enum members: Resolve() made it a multi-select, and the choices are the element
+        // type's - as the generator gives them. Without them the field rendered a label over nothing.
+        else if (BormFieldTypeResolver.GetEnumElementType(underlying) is { } elementEnum)
+            builder.OptionsFromEnum(elementEnum);
 
         BormDataAnnotationsScanner.Apply(member, def);
         configure?.Invoke(builder);
@@ -164,6 +180,22 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
         });
     }
 
+    /// <summary>
+    /// Adds a field whose value is an expression over the form — <c>{Quantity} * {UnitPrice}</c> on a
+    /// repeater row, <c>sum({Lines[].LineTotal})</c> at the top. Read-only, with its dependencies taken
+    /// from the expression; see <see cref="BormFieldBuilder.Computed(string)"/>.
+    /// </summary>
+    /// <exception cref="BormExpressionException"><paramref name="expression"/> is not a valid expression.</exception>
+    public BormBuilder<TModel> Computed<TValue>(
+        Expression<Func<TModel, TValue>> selector,
+        string expression,
+        Action<BormFieldBuilder>? configure = null)
+        => Field(selector, f =>
+        {
+            f.Computed(expression);
+            configure?.Invoke(f);
+        });
+
     /// <summary>The object <paramref name="levels"/> containers above the computed field.</summary>
     private static object? ModelOf(BormComputedContext ctx, int levels)
     {
@@ -171,6 +203,9 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
         for (var i = 0; i < levels && path.Length > 0; i++) path = BormPath.Parent(path);
         return path.Length == 0 ? ctx.Data.Root : ctx.Data.GetValue(path);
     }
+
+    /// <inheritdoc cref="BormBuilder.StepLayout" />
+    public new BormBuilder<TModel> StepLayout(BormStepLayout layout) { base.StepLayout(layout); return this; }
 
     /// <summary>Adds a wizard step.</summary>
     public new BormBuilder<TModel> Step(string id, Action<BormStepBuilder> configure)
@@ -194,6 +229,13 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
         => Validate(new BormDelegateRule(ctx => ctx.Data.Root is not TModel model || predicate(model)
             ? BormRuleResult.Success()
             : fieldPath is null ? BormRuleResult.Fail(message) : BormRuleResult.FailFor(fieldPath, message)));
+
+    /// <inheritdoc cref="BormBuilder.MustAll(string, string, string?)" />
+    public new BormBuilder<TModel> MustAll(string expression, string message, string? fieldPath = null)
+    {
+        base.MustAll(expression, message, fieldPath);
+        return this;
+    }
 
     /// <summary>The path of a member, for use in conditions and step definitions: <c>Path(x =&gt; x.Address.City)</c>.</summary>
     public static string Path<TValue>(Expression<Func<TModel, TValue>> selector)

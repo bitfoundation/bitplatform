@@ -253,6 +253,20 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMarkdownViewerShouldBlockRemoteImagesWithoutSlashesInSameOriginMode()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "![leak](https:attacker.com/leak.png) ![tab](<https:&#9;//attacker.com/leak.png>)");
+            parameters.Add(p => p.ImageRendering, BitMarkdownViewerImageRendering.SameOrigin);
+        });
+
+        var imgs = component.FindAll(".bit-mdv img");
+        Assert.AreEqual(2, imgs.Count);
+        Assert.IsTrue(imgs.All(img => string.IsNullOrEmpty(img.GetAttribute("src"))));
+    }
+
+    [TestMethod]
     public void BitMarkdownViewerShouldKeepRelativeImagesInSameOriginMode()
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
@@ -429,6 +443,23 @@ public class BitMarkdownViewerTests : BunitTestContext
         });
 
         Assert.DoesNotContain("\u202E", component.Markup);
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldStripBidiControlCharactersAnAbbreviationTitleDecodesTo()
+    {
+        var pipeline = new BitMarkdownPipelineBuilder().UseAbbreviations().Build();
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "*[HTML]: Hyper&#x202E;Text Markup Language\n\nThe HTML spec.");
+            parameters.Add(p => p.Pipeline, pipeline);
+            parameters.Add(p => p.StripBidiControlCharacters, true);
+        });
+
+        var abbreviation = component.Find(".bit-mdv abbr");
+        Assert.AreEqual("HTML", abbreviation.TextContent);
+        Assert.AreEqual("HyperText Markup Language", abbreviation.GetAttribute("title"));
     }
 
     [TestMethod,

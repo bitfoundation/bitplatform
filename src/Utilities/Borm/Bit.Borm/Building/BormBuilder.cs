@@ -17,6 +17,24 @@ public class BormBuilder
     public BormBuilder Title(string title) { Form.Title = title; return this; }
     public BormBuilder Description(string description) { Form.Description = description; return this; }
 
+    /// <summary>Records which version of the form this is, so drafts saved against an older one can be recognised. See <see cref="BormDefinition.Version"/>.</summary>
+    public BormBuilder Version(string version) { Form.Version = version; return this; }
+
+    /// <summary>
+    /// Adds translations of the schema's own text for <paramref name="culture"/> (<c>de</c>, <c>pt-BR</c>), keyed as
+    /// <see cref="IBormSchemaLocalizer"/> documents: <c>Name.label</c>, <c>steps.contact.title</c>, <c>form.title</c>.
+    /// They travel with the schema (<c>x-translations</c>). Called again for the same culture, it adds to what is there.
+    /// </summary>
+    public BormBuilder Translate(string culture, IEnumerable<KeyValuePair<string, string>> texts)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(culture);
+        ArgumentNullException.ThrowIfNull(texts);
+        if (!Form.Translations.TryGetValue(culture, out var known))
+            Form.Translations[culture] = known = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, text) in texts) known[key] = text;
+        return this;
+    }
+
     /// <summary>Lays the form out in <paramref name="columns"/> responsive columns.</summary>
     public BormBuilder Columns(int columns) { Form.Columns = Math.Max(1, columns); return this; }
 
@@ -69,6 +87,19 @@ public class BormBuilder
             configure?.Invoke(f);
         });
 
+    /// <summary>
+    /// Adds a "check your answers" summary: every answer the form holds, step by step and in words —
+    /// option labels, Yes or No, dates as the reader's culture writes them — each step with a button
+    /// back to it. Put it on a wizard's last step to review before submitting. Sensitive answers are
+    /// never shown. It binds to no value; see <see cref="BormReview"/> to place one yourself.
+    /// </summary>
+    public BormBuilder Review(string name, string? heading = null, string? text = null, Action<BormFieldBuilder>? configure = null)
+        => Static(name, heading, text, f =>
+        {
+            f.Attr("review", true);
+            configure?.Invoke(f);
+        });
+
     /// <summary>Adds an object (nested group) field.</summary>
     public BormBuilder Object(string name, Action<BormBuilder> children, Action<BormFieldBuilder>? configure = null)
     {
@@ -93,6 +124,12 @@ public class BormBuilder
         Add(BuildScalarArray(name, itemType, configure, configureItem));
         return this;
     }
+
+    /// <summary>
+    /// Shows the form's steps as tabs, an accordion or titled sections the user moves between freely,
+    /// instead of a wizard walked in order. See <see cref="BormStepLayout"/>.
+    /// </summary>
+    public BormBuilder StepLayout(BormStepLayout layout) { Form.StepLayout = layout; return this; }
 
     /// <summary>Defines a wizard step.</summary>
     public BormBuilder Step(string id, Action<BormStepBuilder> configure)
@@ -121,6 +158,16 @@ public class BormBuilder
         => Validate(new BormDelegateRule(ctx => predicate(ctx.Data)
             ? BormRuleResult.Success()
             : fieldPath is null ? BormRuleResult.Fail(message) : BormRuleResult.FailFor(fieldPath, message)));
+
+    /// <summary>
+    /// Adds a cross-field rule over the whole form, written as an expression that must hold —
+    /// <c>sum({Shares[].Percent}) = 100</c>. <paramref name="fieldPath"/> chooses which field the message
+    /// appears under; leave it null for a form-level message. Exported to JSON Schema as the root's
+    /// <c>x-rules</c>.
+    /// </summary>
+    /// <exception cref="BormExpressionException"><paramref name="expression"/> is not a valid expression.</exception>
+    public BormBuilder MustAll(string expression, string message, string? fieldPath = null)
+        => Validate(new BormExpressionRule(expression, message, fieldPath: fieldPath));
 
     public BormDefinition Build() => Form;
 

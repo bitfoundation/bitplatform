@@ -1,0 +1,11 @@
+﻿::deep {
+    .custom-table {
+        border: none;
+        border-radius: 0;
+        box-shadow: 0 0.25rem 1rem #0003;
+    }
+
+    .custom-table-row:nth-child(even) {
+        background-color: #8a2be21a;
+    }
+}

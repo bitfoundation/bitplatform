@@ -1,0 +1,13 @@
+﻿{
+    "profiles": {
+        "Bit.Blow.Samples.Wasm": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7261;http://localhost:5261",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

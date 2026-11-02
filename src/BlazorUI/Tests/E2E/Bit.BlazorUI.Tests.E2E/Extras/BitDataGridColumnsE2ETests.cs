@@ -149,6 +149,30 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
         Assert.IsFalse(await text.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The fitted column still clips its text.");
     }
 
+    // The column's title is far wider than its values, so its header sets the width a fit gives it: that width holds the
+    // hidden sort hint, which is the room of the arrow a sort puts in its place, so neither is clipped.
+    [TestMethod]
+    public async Task Resize_AFittedColumn_LeavesItsHeaderTheRoomOfTheSortArrow()
+    {
+        await OpenAsync(Url);
+
+        const string id = "grid-fit-header";
+        var header = HeaderCell(id, 1);
+        var label = header.Locator(".bit-dtg-htext");
+        await Expect(header).Not.ToHaveAttributeAsync("aria-sort", new Regex(".*"));
+
+        Assert.AreEqual(200, await WidthAsync(id, 1), 1);
+        await Resizer(id, 1).DblClickAsync();
+        await UntilAsync(async () => await WidthAsync(id, 1) < 190, "The double-click did not shrink the column to its header.");
+        var title = await BoxAsync(label.Locator(".bit-dtg-htitle"));
+        Assert.IsTrue(await WidthAsync(id, 1) < title.Width + 50, "The fitted column is not as narrow as its header.");
+        Assert.IsFalse(await label.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The fitted column clips its sort hint.");
+
+        await label.ClickAsync();
+        await Expect(header).ToHaveAttributeAsync("aria-sort", "ascending");
+        Assert.IsFalse(await label.EvaluateAsync<bool>("el => el.scrollWidth > el.clientWidth"), "The fitted column clips its sort arrow.");
+    }
+
     [TestMethod]
     public async Task Resize_TheAutoFitApi_FitsAColumnAndEveryColumn()
     {
@@ -308,14 +332,18 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
         await Expect(bannerRow).ToHaveAttributeAsync("aria-rowindex", "1");
         await Expect(HeaderRow(id)).ToHaveAttributeAsync("aria-rowindex", "2");
 
-        var banners = bannerRow.Locator("> [role=columnheader]");
-        await Expect(banners).ToHaveTextAsync(["", "Identity", "Commercials"]);
-        await Expect(banners.Nth(0)).ToHaveClassAsync(HasClass("bit-dtg-group-header-empty"));
-        await Expect(banners.Nth(1)).ToHaveAttributeAsync("aria-colspan", "2");
-        await Expect(banners.Nth(1)).ToHaveAttributeAsync("aria-colindex", "2");
-        await Expect(banners.Nth(2)).ToHaveAttributeAsync("aria-colindex", "4");
+        // Only a named banner heads its columns: the blank one over the ungrouped column is a plain cell.
+        var empty = bannerRow.Locator("> .bit-dtg-group-header-empty");
+        await Expect(empty).ToHaveAttributeAsync("role", "gridcell");
+        await Expect(empty).ToHaveAttributeAsync("aria-colindex", "1");
 
-        var identity = await BoxAsync(banners.Nth(1));
+        var banners = bannerRow.Locator("> [role=columnheader]");
+        await Expect(banners).ToHaveTextAsync(["Identity", "Commercials"]);
+        await Expect(banners.Nth(0)).ToHaveAttributeAsync("aria-colspan", "2");
+        await Expect(banners.Nth(0)).ToHaveAttributeAsync("aria-colindex", "2");
+        await Expect(banners.Nth(1)).ToHaveAttributeAsync("aria-colindex", "4");
+
+        var identity = await BoxAsync(banners.Nth(0));
         Assert.AreEqual((await WidthAsync(id, 2)) + (await WidthAsync(id, 3)), identity.Width, 2);
         Assert.AreEqual((await BoxAsync(HeaderCell(id, 2))).X, identity.X, 1.5);
         await Expect(Table(id)).ToHaveAttributeAsync("aria-rowcount", "7");

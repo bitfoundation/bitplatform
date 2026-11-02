@@ -3,10 +3,11 @@
 namespace Bit.BlazeDb.EntityFrameworkCore.Storage;
 
 /// <summary>
-/// Value comparers for the sequence types a row can hold - <c>T[]</c> (<c>byte[]</c> among them) and
-/// <c>List&lt;T&gt;</c> or an interface it implements. They compare element by element and snapshot
-/// a copy, so the change tracker's original value is not the very object the application then
-/// changes in place, and a changed element is seen as a modification.
+/// Value comparers for the sequence types a row can hold - <c>T[]</c> (<c>byte[]</c> among them),
+/// <c>List&lt;T&gt;</c> or an interface it implements, and <c>HashSet&lt;T&gt;</c> or a set interface it
+/// implements. They compare element by element (as sets, for a set) and snapshot a copy, so the change
+/// tracker's original value is not the very object the application then changes in place, and a
+/// changed element is seen as a modification.
 /// </summary>
 internal static class BlazeDbSequenceComparer
 {
@@ -16,6 +17,13 @@ internal static class BlazeDbSequenceComparer
         if (clrType == typeof(string))
         {
             return null;
+        }
+
+        if (clrType.IsGenericType && clrType.GetGenericArguments() is [var member] &&
+            clrType.IsAssignableFrom(typeof(HashSet<>).MakeGenericType(member)) &&
+            !clrType.IsAssignableFrom(typeof(List<>).MakeGenericType(member)))
+        {
+            return (ValueComparer)Activator.CreateInstance(typeof(SetComparer<,>).MakeGenericType(clrType, member))!;
         }
 
         Type? element;
@@ -73,5 +81,36 @@ internal static class BlazeDbSequenceComparer
                 : sequence is TElement[] array
                     ? (TSequence)(object)array.ToArray()
                     : (TSequence)(object)new List<TElement>(sequence);
+    }
+
+    private sealed class SetComparer<TSet, TElement> : ValueComparer<TSet>
+        where TSet : class, IEnumerable<TElement>
+    {
+        public SetComparer()
+            : base(
+                (left, right) => AreEqual(left, right),
+                set => HashOf(set),
+                set => Copy(set))
+        {
+        }
+
+        private static bool AreEqual(TSet? left, TSet? right) =>
+            ReferenceEquals(left, right) || (left is not null && right is not null && new HashSet<TElement>(left).SetEquals(right));
+
+        // Order-independent, as set equality is.
+        private static int HashOf(TSet? set)
+        {
+            var hash = 0;
+            if (set is not null)
+            {
+                foreach (var element in set)
+                {
+                    hash ^= element?.GetHashCode() ?? 0;
+                }
+            }
+            return hash;
+        }
+
+        private static TSet Copy(TSet? set) => set is null ? null! : (TSet)(object)new HashSet<TElement>(set);
     }
 }

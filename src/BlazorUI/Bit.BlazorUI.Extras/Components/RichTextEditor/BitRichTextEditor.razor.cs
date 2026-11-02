@@ -739,6 +739,7 @@ public partial class BitRichTextEditor : BitComponentBase
 
                 _lastSetupSnapshot = snapshot;
                 _lastPolicySnapshot = policySnapshot;
+                var liveHtml = policyChanged ? await ReadLiveHtmlAsync() : null;
                 await _js.BitRichTextEditorUpdateOptions(_editorRef, options);
 
                 // A changed (e.g. tightened) policy must also clean the content already in the
@@ -747,7 +748,7 @@ public partial class BitRichTextEditor : BitComponentBase
                 // policy and push the cleaned result back through the same sync path as OnValueSet.
                 if (policyChanged)
                 {
-                    await ResanitizeCurrentContentAsync();
+                    await ResanitizeCurrentContentAsync(liveHtml!);
                 }
             }
         }
@@ -897,18 +898,22 @@ public partial class BitRichTextEditor : BitComponentBase
 
 
 
-    // Re-runs the editor's current content through the bridge under the now-active policy and
-    // synchronizes the cleaned result across _currentHtml, the source-view text, the editor DOM,
-    // and the bound Value, mirroring OnValueSet's sync path so a policy change leaves no stale
-    // markup behind. Invoked from OnParametersSetAsync when the policy actually changes.
-    private async Task ResanitizeCurrentContentAsync()
+    private async Task<string> ReadLiveHtmlAsync()
     {
         // Sanitize the live content rather than the cached _currentHtml: read the source-view text
         // when it is driving the visible content, otherwise pull the latest DOM HTML so newer user
         // input is not overwritten by stale cached markup.
-        var html = (_inSourceView
+        return (_inSourceView
             ? _sourceText
             : (_initialized ? await _js.BitRichTextEditorGetHtml(_editorRef) : _currentHtml)) ?? "";
+    }
+
+    // Re-runs the editor's current content through the bridge under the now-active policy and
+    // synchronizes the cleaned result across _currentHtml, the source-view text, the editor DOM,
+    // and the bound Value, mirroring OnValueSet's sync path so a policy change leaves no stale
+    // markup behind. Invoked from OnParametersSetAsync when the policy actually changes.
+    private async Task ResanitizeCurrentContentAsync(string html)
+    {
         if (string.IsNullOrEmpty(html)) return;
 
         var sanitized = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);

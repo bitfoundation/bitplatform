@@ -1,0 +1,142 @@
+﻿@page "/ai/scenarios/tools"
+@inherits AppComponentBase
+
+<PageOutlet Url="ai/scenarios/tools"
+            Title="AI tool calling"
+            Keywords="Blazor AI tool calling, function calling UI, LLM tools, BitAiTool, BitAiToolCallView, trimming safe tools"
+            Description="The model asks for a tool, the session runs it, feeds the result back, and the model answers - tool calling with bit BlazorUI's AI components, with trim-safe tool definitions." />
+
+<DocsArticle Eyebrow="AI scenarios"
+             Title="Tool calling"
+             Lead="The model asks for a tool, the session runs it, feeds the result back, and the model answers."
+             GitHubUrl="AI/Scenarios/Tools/AiToolsScenarioPage.razor">
+
+    <Badges>
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Bit.BlazorUI.AI" />
+        <BitTag Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" Text="Scripted transport" />
+    </Badges>
+
+    <ChildContent>
+        <DocSection Id="demo" Title="Live demo"
+                    Description="Ask about the weather: the model calls get_weather, waits for the result, and answers from it.">
+            <DemoExample Title="A tool call and its answer" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" CodeFiles="@example1CodeFiles" Id="example1">
+                <AiScenarioFrame>
+                    <BitAiChat Session="_session"
+                               EmptyTitle="Ask about the weather"
+                               EmptyBody="The model will call get_weather, wait for the result, and answer from it."
+                               Suggestions="_suggestions" />
+                </AiScenarioFrame>
+            </DemoExample>
+        </DocSection>
+
+        <DocSection Id="how-it-works" Title="How it works">
+            <p>
+                The transport does not run the tool. On the first request it shows a status line while the model decides
+                (<code>BitAiStatusEvent</code>, which the call then replaces), asks for the tool with
+                <code>BitAiToolCallStartedEvent</code>, streams its arguments as <code>BitAiToolCallDeltaEvent</code>s, closes
+                them with <code>BitAiToolCallCompletedEvent</code> and finishes with <code>BitAiFinishReason.ToolCalls</code>.
+                The session then resolves the tool from its registry, checks the approval policy, runs it, records the result
+                on the call (<code>BitAiToolCallPart.Result</code>, a <code>BitAiToolOutcome</code>), and asks the model
+                again. The transport reads the result off the message it is handed on that second request and answers from
+                it, which is what lets an app decide where tools run without the transport knowing. The reply stays one
+                message, busy from the first request to the last.
+            </p>
+            <p>
+                Arguments stream in as raw JSON and are parsed leniently on every delta, so an open card fills in key by key
+                before the closing brace arrives rather than waiting for valid JSON. The cards here start collapsed
+                (<code>BitAiUiOptions.CollapseToolCalls</code>) and these arguments arrive in a fifth of a second; it shows
+                with a model writing a long argument, such as the content of a file.
+            </p>
+        </DocSection>
+
+        <DocSection Id="declaring" Title="Declaring a tool">
+            <p>
+                A tool is an <code>IBitAiTool</code>: a <code>Definition</code> and an
+                <code>InvokeAsync(BitAiToolInvocation, CancellationToken)</code> that returns a <code>BitAiToolOutcome</code>.
+                The <code>BitAiToolDefinition</code> is what the model is told and what the card shows: the <code>Name</code>
+                the model calls, a <code>Description</code> it reads when deciding to, the <code>ParametersSchema</code> of
+                its arguments (a JSON Schema), and for the UI a <code>Title</code>, an <code>Icon</code>, its
+                <code>Risk</code> and whether it <code>RequiresApproval</code>
+                (<BitLink Href="/ai/scenarios/approval">Tool approval</BitLink>). One instance serves every conversation, so
+                a tool keeps no state of its own. A failure is best returned as <code>BitAiToolOutcome.Failure(...)</code>;
+                a tool that throws anyway is logged, and its call gets a failed result whose message is the exception's,
+                retryable, with the exception kept on the error.
+            </p>
+            <p>
+                <code>BitAiTool.Create</code> builds one from a delegate, where it is registered, deriving the schema from
+                the argument type:
+            </p>
+            <ul>
+                <li><code>Create&lt;TArgs, TResult&gt;(name, description, argumentsTypeInfo, resultTypeInfo, (args, token) =&gt; ..., configure)</code> - the handler takes the arguments and returns a result, written back to the model as JSON. This page's <code>get_weather</code>.</li>
+                <li><code>Create&lt;TArgs&gt;(name, description, argumentsTypeInfo, (args, invocation, token) =&gt; ..., configure)</code> - the handler is also handed the <code>BitAiToolInvocation</code> and returns the whole <code>BitAiToolOutcome</code>: its display <code>Text</code>, its <code>Citations</code>, a structured failure (<BitLink Href="/ai/scenarios/custom-tool">Custom tool UI</BitLink>'s <code>search_docs</code>).</li>
+                <li>The same two without the <code>JsonTypeInfo</code>s read the types by reflection, so they are marked as unsafe to trim.</li>
+                <li><code>Create(definition, (invocation, token) =&gt; ...)</code> - nothing derived: the schema is whatever the definition holds, for arguments that are dynamic.</li>
+            </ul>
+            <p>
+                The <code>JsonTypeInfo</code> overloads take the metadata of the app's own <code>JsonSerializerContext</code>,
+                so the schema is derived and the arguments are read without reflection, and a trimmed WebAssembly app - like
+                this site - keeps working. <code>configure</code> adjusts the generated definition
+                (<code>definition =&gt; definition with { Title = ..., Risk = ... }</code>).
+                <code>BitAiTool.CreateSchema</code> derives a schema on its own (<code>CreateSchema(typeInfo)</code>, safe to
+                trim, or <code>CreateSchema&lt;T&gt;()</code> by reflection) for a definition written by hand.
+            </p>
+            <p>
+                A tool that needs services is a class of its own, registered with <code>ai.AddTool&lt;TTool&gt;()</code>, as
+                the <b>WeatherTool.cs</b> tab shows. Each call hands it a <code>BitAiToolInvocation</code>: the
+                <code>ToolCallId</code> and <code>ToolName</code>, the <code>Arguments</code> as JSON
+                (<code>GetArguments(typeInfo)</code> reads them into the argument type, <code>GetArguments&lt;T&gt;()</code> by
+                reflection), the <code>ConversationId</code> and <code>MessageId</code> it belongs to, the scoped
+                <code>Services</code> to resolve dependencies from, <code>Progress</code> to report how far it has got (never
+                null), and the app's own <code>Context</code> values.
+            </p>
+        </DocSection>
+
+        <DocSection Id="registry" Title="The registry and the request">
+            <p>
+                The registered tools live in an <code>IBitAiToolRegistry</code> - a <code>BitAiToolRegistry</code>, a
+                case-insensitive map from a tool's name to the tool, one for the app (its members are listed on
+                <BitLink Href="/components/ai/toolcallview#tool-registry">BitAiToolCallView</BitLink>). It can change at run
+                time (<code>Register(tool)</code>, <code>Unregister(name)</code>), which is how an app offers a capability
+                only to some users or conversations; a session reads it on every request. This page builds its session by
+                hand, over a transport of its own, and hands it the registry
+                (<code>new BitAiChatSession(transport, tools: registry)</code>); a session from
+                <code>BitAiChatSessionFactory</code> gets the registry, the approval policy, the configured session options
+                and the scoped services its tools resolve from without being asked - a session built by hand gets services
+                only through its <code>services</code> argument.
+            </p>
+            <p>
+                Every request carries the definitions of those tools (<code>BitAiRequest.Tools</code>, what
+                <code>BitAiToolRegistry.GetDefinitions()</code> returns), so a transport hands
+                the model what it may call without knowing how the tools were registered, and the session's
+                <code>RequestOptions</code> (<code>BitAiRequestOptions</code>) say how it may call them:
+                <code>ToolChoice</code> is <code>BitAiToolChoice.Auto</code> (the model decides),
+                <code>None</code>, <code>Required</code> (some tool), or <code>Specific("get_weather")</code> (that one). A
+                transport maps the choice onto its provider's API, and is free to ignore what it cannot express.
+            </p>
+            <p>
+                A tool the provider runs itself - a web search on its side - is reported by the transport, not run by the
+                session: <code>BitAiToolCallStartedEvent</code> with the complete <code>Arguments</code>, any number of
+                <code>BitAiToolProgressEvent</code>s while it runs (a <code>BitAiToolProgress</code> with a
+                <code>Fraction</code> and a <code>Message</code>, drawn as the card's progress bar), then
+                <code>BitAiToolResultEvent</code> with its outcome. The session never runs a call that already has a result,
+                so local and provider tools can mix in one reply; a transport whose tools all run on its side turns
+                <code>BitAiChatSessionOptions.ExecuteTools</code> off. The <BitLink Href="/ai/scenarios/agent">Multi-step agent</BitLink>
+                scenario's search is one of these. The <b>Request options</b> tab shows a tool choice, and a provider tool
+                reported with its progress.
+            </p>
+        </DocSection>
+
+        <DocSection Id="components" Title="Components used">
+            <ul>
+                <li><BitLink Href="/components/ai/toolcallview"><code>BitAiToolCallView</code></BitLink> - the card: what is called, its arguments as they stream, its progress and its result.</li>
+                <li><BitLink Href="/components/ai/jsonview"><code>BitAiJsonView</code></BitLink> - the arguments and the result inside it.</li>
+                <li><BitLink Href="/components/ai/thinkingindicator"><code>BitAiThinkingIndicator</code></BitLink> - the status line shown while the model decides.</li>
+                <li><BitLink Href="/components/ai/chat"><code>BitAiChat</code></BitLink> - the chat over the session that runs the tool.</li>
+            </ul>
+        </DocSection>
+    </ChildContent>
+
+    <FooterTemplate>
+        <DocPager Pages="AiScenarioNav.Items" AriaLabel="AI scenarios" />
+    </FooterTemplate>
+</DocsArticle>

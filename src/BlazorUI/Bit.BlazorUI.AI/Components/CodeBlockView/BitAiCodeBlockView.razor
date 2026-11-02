@@ -1,0 +1,31 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (ShowHeader)
+    {
+        <div style="@Styles?.Header" class="bit-aicbv-hdr @Classes?.Header">
+            <span style="@Styles?.Label" class="bit-aicbv-lng @Classes?.Label">@(FileName ?? Language ?? "text")</span>
+            @if (Options.ShowCodeCopy)
+            {
+                <BitAiCopyButton Content="@Code" Disabled="Disabled" Classes="@Classes?.CopyButton" Styles="@Styles?.CopyButton" />
+            }
+        </div>
+    }
+    @* A line longer than the block scrolls it sideways, and a scrolling box holds nothing that takes the focus - so it takes
+       the focus itself while it has something to scroll (data-bit-ai-scroll, see BitAiScrollStops.ts), which is what lets
+       a keyboard scroll it in an engine that does not make a scrolling box focusable on its own (WebKit). A tab stop is
+       announced by its name, so it is a group named for the code it holds. *@
+    <div data-bit-ai-scroll
+         role="group"
+         aria-label="@Strings.CodeBlock(FileName, Language)"
+         style="@Styles?.Body"
+         class="bit-aicbv-bdy @Classes?.Body">
+        <pre style="@Styles?.Pre" class="bit-aicbv-pre @Classes?.Pre"><code style="@Styles?.Code" class="bit-aicbv-cod language-@(Language ?? "text") @Classes?.Code">@_renderCode</code></pre>
+    </div>
+</div>

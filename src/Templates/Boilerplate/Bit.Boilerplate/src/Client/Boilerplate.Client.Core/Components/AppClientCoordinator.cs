@@ -20,7 +20,7 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (signalR == true)
     [AutoInject] private Notification notification = default!;
     [AutoInject] private ThemeService themeService = default!;
-    [AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private AppHubConnection hubConnection = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
     //#endif
     [AutoInject] private CultureService cultureService = default!;
@@ -267,7 +267,7 @@ public partial class AppClientCoordinator : AppComponentBase
             List<Task> propagations = [];
 
             //#if (signalR == true)
-            propagations.Add(EnsureSignalRStarted());
+            _ = WrapHandled(EnsureSignalRStarted)();
             //#endif
 
             //#if (notification == true)
@@ -428,9 +428,8 @@ public partial class AppClientCoordinator : AppComponentBase
     {
         try
         {
-            if (hubConnection.State is not HubConnectionState.Connected)
+            if (hubConnection.IsConnected is false && await hubConnection.StartAsync(CurrentCancellationToken))
             {
-                await hubConnection.StartAsync(CurrentCancellationToken);
                 await HubConnectionConnected(null);
             }
             else
@@ -452,11 +451,14 @@ public partial class AppClientCoordinator : AppComponentBase
 
     private async Task HubConnectionStateChange(Exception? exception)
     {
-        PubSubService.Publish(ClientAppMessages.IS_ONLINE_CHANGED, exception is null && hubConnection!.State is HubConnectionState.Connected);
+        if (exception is not OperationCanceledException)
+        {
+            PubSubService.Publish(ClientAppMessages.IS_ONLINE_CHANGED, exception is null && hubConnection.IsConnected);
+        }
 
         if (exception is null)
         {
-            logger.LogInformation("SignalR state changed to {State}", hubConnection!.State);
+            logger.LogInformation("SignalR state changed. Connected: {IsConnected}", hubConnection.IsConnected);
         }
         else if (exception is OperationCanceledException)
         {
@@ -466,7 +468,7 @@ public partial class AppClientCoordinator : AppComponentBase
         {
             logger.LogWarning(exception, "SignalR connection lost.");
 
-            if (exception is HubException)
+            if (hubConnection.IsHubException(exception))
             {
                 if (exception.Message.EndsWith(nameof(AppStrings.UnauthorizedException)))
                 {

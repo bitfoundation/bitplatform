@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Bink lazy loading sample</title>
+    @* No link to _content/Bit.Bink/bit-bink.css: Bit.Bink's JS initializer adds it to the page as the app starts. It is
+       a static web asset, not part of Bit.Bink.wasm, so it is there before the assembly is downloaded. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bit.Bink.wasm before the whiteboard renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

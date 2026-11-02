@@ -13,7 +13,11 @@
        makes a screen reader announce it twice — once because the region changed and once because
        focus arrived — and some read it more than that. Focus alone already reads the summary out, so
        the role is what has to go; with AutoFocus off, nothing else would say anything, so it stays. *@
-    <div class="bit-borm-summary" role="@(AutoFocus ? null : "alert")" tabindex="-1" @ref="_element">
+    @* autofocus on a form posted with no interactivity, whose page comes back from the server with this summary on
+       it: there is no script to move the focus, and it was left on the page body - nothing announced, and the
+       summary to be found by chance. The browser honours it on any element that can take the focus. *@
+    <div class="bit-borm-summary" role="@(AutoFocus ? null : "alert")" tabindex="-1" @ref="_element"
+         autofocus="@(AutoFocus && State.RendersStatically && State.IsSubmitted)">
         <p class="bit-borm-summary__title">@(Title ?? DefaultTitle)</p>
         <ul class="bit-borm-summary__list">
             @foreach (var message in Messages)
@@ -112,6 +116,11 @@
         _focusedForSubmitCount = State.SubmitCount;
         if (Messages.Count == 0) return;
 
+        // The user went on to another field while an async rule decided the verdict: pulled out of it now, the
+        // keystrokes after the pull went nowhere - and then the summary vanished as they fixed it, leaving the focus
+        // on the page body. The summary is on screen to be read; the focus stays theirs.
+        if (State.FocusMovedSinceSubmit) return;
+
         try
         {
             await _element.FocusAsync();
@@ -145,11 +154,11 @@
     {
         if (!ShowFieldNames) return message.Message;
 
-        var field = State.Definition.FindByPath(message.FieldPath);
+        var field = State.FindField(message.FieldPath);
         // A hand-built schema need not label every field, and "This field is required." on its own
         // names nothing — which is the one thing a summary entry exists to do. The field's name is a
         // worse title than a label and a far better one than no title at all.
-        var label = string.IsNullOrEmpty(field?.Label) ? field?.Name : field.Label;
+        var label = field is null ? null : State.LabelOf(field, message.FieldPath) is { Length: > 0 } translated ? translated : field.Name;
         if (string.IsNullOrEmpty(label)) return message.Message;
 
         // Every row of a repeater shares one field definition, so five identical "Product is required"
@@ -184,7 +193,7 @@
     private string? AnchorFor(string fieldPath)
     {
         if (string.IsNullOrEmpty(fieldPath)) return null;
-        var field = State.Definition.FindByPath(fieldPath);
+        var field = State.FindField(fieldPath);
         if (field is null) return null;
         return PageUri + "#" + new BormFieldContext(State, field, fieldPath).ElementId;
     }

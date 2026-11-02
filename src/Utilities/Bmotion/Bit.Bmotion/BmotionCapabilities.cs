@@ -1,12 +1,13 @@
 namespace Bit.Bmotion;
 
 /// <summary>
-/// Queryable, DI-injected view of what the current Blazor render mode can animate. Use it to make
-/// degradation on Blazor Server explicit instead of silently collapsing to instant state changes:
+/// Queryable, DI-injected view of what the current Blazor render mode can animate. The browser plays almost every
+/// animation on every render mode; use this for the few things that need the per-frame loop, so their absence on
+/// Blazor Server is explicit rather than a silent snap:
 /// <code>
 /// [Inject] BmotionCapabilities Caps { get; set; } = default!;
 ///
-/// @if (!Caps.IsPrerendering &amp;&amp; !Caps.SupportsFrameLoop) { &lt;text&gt;Drag/inertia are disabled on Server.&lt;/text&gt; }
+/// @if (!Caps.IsPrerendering &amp;&amp; !Caps.SupportsFrameLoop) { &lt;text&gt;The shape morph lands at once on Server.&lt;/text&gt; }
 /// </code>
 /// </summary>
 public sealed class BmotionCapabilities
@@ -21,9 +22,11 @@ public sealed class BmotionCapabilities
     }
 
     /// <summary>
-    /// <c>true</c> on Blazor WebAssembly, where the synchronous per-frame rAF loop drives drag,
-    /// inertia, color/dimension interpolation, keyframe arrays and motion values. <c>false</c> on
-    /// Blazor Server, where those features degrade to instant state changes.
+    /// <c>true</c> on Blazor WebAssembly, where the synchronous per-frame loop runs. <c>false</c> on Blazor Server,
+    /// where what only it can play lands on its target at once: per-frame callbacks (<c>OnUpdate</c>, <c>OnFrame</c>)
+    /// and SVG <c>d</c>/<c>points</c> morphs. Everything else - transforms, opacity, colours, sizes, filters,
+    /// keyframes, springs, inertia, arcs - the browser plays on both, and drag follows the pointer a round trip
+    /// behind on Server.
     /// <para>
     /// While <see cref="IsPrerendering"/> this describes the server doing the prerendering - always
     /// <c>false</c> - not the runtime that takes over afterwards, so check that first.
@@ -32,8 +35,8 @@ public sealed class BmotionCapabilities
     public bool SupportsFrameLoop { get; }
 
     /// <summary>
-    /// <c>true</c> everywhere: compositor-eligible tween/spring animations on transform and opacity
-    /// offload to the browser's Web Animations API over async interop, so they play on Server too.
+    /// <c>true</c> everywhere: animations the browser can reproduce exactly are handed to its Web Animations API over
+    /// async interop - as a two-keyframe timeline, or recorded frame by frame - so they play on Server too.
     /// </summary>
     public bool SupportsCompositor => true;
 

@@ -1,0 +1,37 @@
+﻿@page "/"
+
+<PageTitle>BevTools samples</PageTitle>
+
+<h1>BevTools samples</h1>
+
+<p>
+    The same pages in every hosting model: Blazor Server, WebAssembly, Interactive Auto and Blazor Hybrid (MAUI).
+    Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> or click the badge in the corner to open BevTools, then use the
+    pages below and watch the panel named next to each one.
+</p>
+
+<p class="status">
+    Rendered by <strong>@RendererInfo.Name</strong> (@(RendererInfo.IsInteractive ? "interactive" : "prerendering")).
+</p>
+
+<section>
+    <h2>Counter</h2>
+    <p>Every click is a UI event that renders this page: <em>Components → Rendering</em> and <em>Profiler</em> say why.</p>
+    <button @onclick="() => _count++">Clicked @_count times</button>
+</section>
+
+<section>
+    <h2>Pages</h2>
+    <ul class="pages">
+        <li><NavLink href="components">Components</NavLink>: parameters, child events and a timer; <em>Components</em>, <em>Profiler</em>, <em>Timeline</em>.</li>
+        <li><NavLink href="state">State</NavLink>: a state provider, a form and redacted values; <em>State</em>, <em>Forms</em>, <em>Routing</em>.</li>
+        <li><NavLink href="network">Network</NavLink>: requests through <code>IHttpClientFactory</code>; <em>Network</em>, <em>Diagnostics</em>.</li>
+        <li><NavLink href="interop">JS interop</NavLink>: calls in both directions; <em>JS Interop</em>, <em>Diagnostics</em>.</li>
+        <li><NavLink href="errors">Errors</NavLink>: an error a component throws and errors nobody catches; <em>Errors</em>, <em>Diagnostics</em>.</li>
+    </ul>
+    <p>The <em>Services</em>, <em>Runtime</em> and <em>About</em> panels describe the host itself, whatever page is open.</p>
+</section>
+
+@code {
+    private int _count;
+}

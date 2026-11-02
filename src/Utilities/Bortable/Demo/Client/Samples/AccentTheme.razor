@@ -1,0 +1,73 @@
+﻿@* The stylesheet's own drag states, tuned through its custom properties: the accent, the ghost's opacity
+   and the outlines of the lists that take a drag. *@
+@using System.Globalization
+
+<div class="demo-controls">
+    <div class="demo-control">
+        <span id="styling-accent-label"><code>--bit-bortable-accent-rgb</code></span>
+        <div class="bb-segmented" role="group" aria-labelledby="styling-accent-label">
+            @foreach (var (name, rgb) in Accents)
+            {
+                <button type="button" aria-pressed="@(_accent == rgb ? "true" : "false")" @onclick="() => _accent = rgb">@name</button>
+            }
+        </div>
+    </div>
+    <label>
+        <code>--bit-bortable-ghost-opacity</code>: <strong id="styling-opacity-value">@Format(_opacity)</strong>
+        <input id="styling-opacity" type="range" min="0.1" max="1" step="0.05" value="@Format(_opacity)" @oninput="OnOpacityChanged" />
+    </label>
+    <label class="demo-check">
+        <input id="styling-targets" type="checkbox" @bind="_targets" />
+        Outline the lists that take the drag (<code>--bit-bortable-accepts-outline</code>, <code>--bit-bortable-over-outline</code>)
+    </label>
+</div>
+
+<div class="demo-columns" style="@ThemeStyle">
+    <div class="demo-col">
+        <div class="demo-col-title">Fruit</div>
+        <Bortable @bind-Items="_fruit" TItem="string" Group="styling" Id="styling-fruit" AriaLabel="Fruit"
+                  Class="demo-list" ItemClass="styling-item">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">Basket</div>
+        <Bortable @bind-Items="_basket" TItem="string" Group="styling" Id="styling-basket" AriaLabel="Basket"
+                  Class="demo-list" ItemClass="styling-item">
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<pre class="bb-code" id="styling-css">@ThemeCss</pre>
+
+@code {
+    private static readonly (string Name, string Rgb)[] Accents =
+    [
+        ("Blue", "13, 110, 253"),
+        ("Violet", "109, 40, 217"),
+        ("Green", "22, 163, 74"),
+        ("Orange", "234, 88, 12"),
+    ];
+
+    private IList<string> _fruit = new List<string> { "Apple", "Banana", "Cherry", "Date" };
+    private IList<string> _basket = new List<string> { "Fig", "Grape" };
+
+    private string _accent = "13, 110, 253";
+    private double _opacity = 0.4;
+    private bool _targets = true;
+
+    private string ThemeStyle =>
+        $"--bit-bortable-accent-rgb: {_accent}; --bit-bortable-ghost-opacity: {Format(_opacity)};" +
+        (_targets ? $" --bit-bortable-accepts-outline: 2px dashed rgba({_accent}, .5); --bit-bortable-over-outline: 2px solid rgb({_accent});" : "");
+
+    // The same declarations, as they would be written in a stylesheet.
+    private string ThemeCss => ".board {\n    " + ThemeStyle.Replace("; ", ";\n    ", StringComparison.Ordinal) + "\n}";
+
+    private static string Format(double value) => value.ToString("0.00", CultureInfo.InvariantCulture);
+
+    private void OnOpacityChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v)) _opacity = v;
+    }
+}

@@ -1,0 +1,61 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a row of actions inherits down to every row under it:
+//   --bit-AiMessageActions-gap          room between the actions and each piece of metadata  (default: spacing(1.5))
+//   --bit-AiMessageActions-actions-gap  room between two action buttons                      (default: spacing(0.5))
+//   --bit-AiMessageActions-color        text of the metadata (the model, the usage, the time) (default: $clr-fg-ter)
+//   --bit-AiMessageActions-font-size    size of the metadata                                  (default: $tg-fs-xs)
+
+.bit-aimac {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    gap: var(--bit-AiMessageActions-gap, #{spacing(1.5)});
+    color: var(--bit-AiMessageActions-color, #{$clr-fg-ter});
+    font-size: var(--bit-AiMessageActions-font-size, #{$tg-fs-xs});
+}
+
+// The actions are revealed while the message they belong to - the BitAiChatMessage they sit in, or this row on its own
+// - is under the pointer or holds the focus, so the transcript reads without a row of buttons under every reply. A
+// Pinned row keeps them shown, and so does every row where there is no pointer to hover with, or where a preference
+// for more contrast asks for nothing to be faded out. The metadata beside them is always shown.
+.bit-aimac-act {
+    display: flex;
+    align-items: center;
+    gap: var(--bit-AiMessageActions-actions-gap, #{spacing(0.5)});
+    opacity: 0;
+    transition: opacity $mot-duration $mot-easing;
+}
+
+.bit-aimac-pin > .bit-aimac-act,
+.bit-aimac:is(:hover, :focus-within) > .bit-aimac-act,
+.bit-aicms:is(:hover, :focus-within) > .bit-aimac > .bit-aimac-act {
+    opacity: 1;
+}
+
+@media (hover: none), (prefers-contrast: more) {
+    .bit-aimac-act {
+        opacity: 1;
+    }
+}
+
+@include xs {
+    .bit-aimac-act {
+        opacity: 1;
+    }
+}
+
+.bit-aimac-tim {
+    font-variant-numeric: tabular-nums;
+}
+
+// The actions are the interactive part of the row, which a printout has no use for; the metadata is kept.
+@media print {
+    .bit-aimac-act {
+        display: none;
+    }
+}

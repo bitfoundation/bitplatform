@@ -168,6 +168,9 @@
     <data name="UnknownException" xml:space="preserve">
     <value>Unknown error has occurred</value>
   </data>
+    <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Unknown error has occurred during external sign-in</value>
+  </data>
     <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>The record was modified by another user after you got the original data. the operation was canceled.</value>
   </data>
@@ -1101,6 +1104,12 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="DashboardSubtitle" xml:space="preserve">
     <value>Here's your analytic data</value>
+  </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Resize</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Hide</value>
   </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Delete category</value>
@@ -2096,4 +2105,15 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Sign out of all accounts on this device</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kiosk mode</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>This app is locked to the screen: the Windows key, Alt+Tab and closing the window are all blocked. Use the button to leave.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>Exit the app</value>
+  </data>
+  <!--#endif -->
 </root>

@@ -180,8 +180,10 @@ public static partial class BormSetupGuide
            `Data` (a dictionary) instead of `Model` when there is no compiled model. A `BormState` the page builds itself
            is the page's to dispose.
         8. Two forms on one page share DOM ids when their fields share names: give each its own `IdPrefix`.
-        9. Optional: `builder.Services.AddBormMessages<MyMessageProvider>()` replaces the built-in English text (an
-           `IBormMessageProvider`, keys on `BormMessageKeys`) - in every container, like `AddBorm()`.
+        9. Optional: `builder.Services.AddBormTranslations()` has the library speak twelve more languages, following
+           each form's `state.Language` or else the UI culture, and `builder.Services.AddBormMessages<MyMessageProvider>()`
+           replaces the built-in English text (an `IBormMessageProvider`, keys on `BormMessageKeys`) - in every
+           container, like `AddBorm()`.
         """;
 
     private const string ServerFiles = """

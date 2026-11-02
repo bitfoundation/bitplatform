@@ -1,3 +1,5 @@
+using OtpNet;
+
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>
@@ -101,6 +103,61 @@ public class AccountSelfServiceSecurityTests
             "The token was delivered to the new address and quoted back, so that address is proven - it must end up confirmed.");
         Assert.AreNotEqual(stampBefore, stampAfter,
             "Changing the account's recovery address must rotate the security stamp, otherwise the other sessions keep refreshing.");
+    }
+
+    [TestMethod]
+    public async Task ChangeEmail_WithAWrongCode_Should_CountAFailedAttempt()
+    {
+        await using var server = await StartServer();
+        await using var client = server.CreateAppClient();
+        var (email, userId) = await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+
+        var userController = client.GetController<IUserController>();
+
+        await TestAccountUtils.Elevate(client, email, TestContext.CancellationToken);
+
+        var newEmail = MagicLinkSignInUtils.NewTestEmail();
+
+        await userController.SendChangeEmailToken(new() { Email = newEmail }, TestContext.CancellationToken);
+
+        var captured = await server.WaitForCapturedEmail(newEmail, e => e.Kind is CapturedEmailKind.EmailToken, TestContext.CancellationToken);
+        var wrongToken = captured.Token == "000000" ? "111111" : "000000";
+
+        await Assert.ThrowsExactlyAsync<BadRequestException>(
+            () => userController.ChangeEmail(new() { Email = newEmail, Token = wrongToken }, TestContext.CancellationToken));
+
+        await using var scopeApiApp = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scopeApiApp.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var accessFailedCount = await dbContext.Set<User>()
+            .Where(u => u.Id == userId)
+            .Select(u => u.AccessFailedCount)
+            .SingleAsync(TestContext.CancellationToken);
+
+        Assert.AreEqual(1, accessFailedCount, "Without counting wrong codes, the change email code can be guessed until it matches.");
+    }
+
+    [TestMethod]
+    public async Task Elevation_WithAnAuthenticatorCode_WhileTwoFactorIsOff_Should_BeRejected()
+    {
+        await using var server = await StartServer();
+        await using var client = server.CreateAppClient();
+        await TestAccountUtils.CreateAndSignIn(client, TestContext.CancellationToken);
+
+        var userController = client.GetController<IUserController>();
+        var identityController = client.GetController<IIdentityController>();
+
+        var settings = await userController.TwoFactorAuth(new(), TestContext.CancellationToken);
+        Assert.IsFalse(settings.IsTwoFactorEnabled);
+
+        await userController.SendElevatedAccessToken(TestContext.CancellationToken);
+
+        var refreshToken = await client.Services.GetRequiredService<IStorageService>().GetItem("refresh_token");
+        var authenticatorCode = new Totp(Base32Encoding.ToBytes(settings.SharedKey!.Replace(" ", ""))).ComputeTotp();
+
+        await Assert.ThrowsExactlyAsync<BadRequestException>(
+            () => identityController.Refresh(new() { RefreshToken = refreshToken, ElevatedAccessToken = authenticatorCode }, TestContext.CancellationToken),
+            "A session can read the shared key while two factor is off, so a code from it proves nothing.");
     }
 
     /// <summary>

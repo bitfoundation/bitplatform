@@ -15,6 +15,7 @@ public sealed class LazyScriptsTrimmingTests
 {
     private const string Core = "Bit.BlazorUI";
     private const string Extras = "Bit.BlazorUI.Extras";
+    private const string AI = "Bit.BlazorUI.AI";
     private const string Legacy = "Bit.BlazorUI.Legacy";
 
     private static PublishResult LazyServer => Publisher.Publish(Publisher.Fixture, "BitBlazorUILazyScripts=true", "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true");
@@ -27,7 +28,7 @@ public sealed class LazyScriptsTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture);
         publish.AssertSucceeded();
 
-        foreach (var package in new[] { Core, Extras, Legacy })
+        foreach (var package in new[] { Core, Extras, AI, Legacy })
         {
             Assert.AreEqual(0, publish.PublishedModules(package).Count, $"{package} published the modules of the lazy scripts in bundle mode.");
         }
@@ -76,7 +77,7 @@ public sealed class LazyScriptsTrimmingTests
         var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUILazyScripts=true");
         publish.AssertSucceeded();
 
-        foreach (var package in new[] { Core, Extras, Legacy })
+        foreach (var package in new[] { Core, Extras, AI, Legacy })
         {
             var pieces = PublishResult.GetPieces(package);
             CollectionAssert.AreEquivalent(pieces.ScriptModules.Select(m => m.Name).ToList(), publish.PublishedModules(package), $"{package} did not publish every module.");
@@ -96,6 +97,10 @@ public sealed class LazyScriptsTrimmingTests
         Assert.IsTrue(initializers.Any(i => i.StartsWith("_content/Bit.BlazorUI/scripts/Bit.BlazorUI.", StringComparison.Ordinal)), string.Join(", ", initializers));
         Assert.IsTrue(initializers.Any(i => i.StartsWith("_content/Bit.BlazorUI.Extras/scripts/Bit.BlazorUI.Extras.", StringComparison.Ordinal)), string.Join(", ", initializers));
         Assert.IsFalse(initializers.Any(i => i.Contains("Legacy", StringComparison.Ordinal)), string.Join(", ", initializers));
+
+        // The AI package has an initializer exactly when one of its scripts boots.
+        Assert.AreEqual(PublishResult.GetPieces(AI).ScriptBoot is not null,
+                        initializers.Any(i => i.StartsWith("_content/Bit.BlazorUI.AI/scripts/Bit.BlazorUI.AI.", StringComparison.Ordinal)), string.Join(", ", initializers));
     }
 
     [TestMethod]
@@ -114,6 +119,9 @@ public sealed class LazyScriptsTrimmingTests
             CollectionAssert.DoesNotContain(modules, unexpected, $"The trimmed lazy app publishes {unexpected}, which nothing it runs imports.");
         }
         Assert.AreEqual(0, LazyServer.PublishedModules(Legacy).Count);
+
+        // Of the AI package, the copy button's module alone: the one script the one component the app renders of it calls.
+        CollectionAssert.AreEqual(new[] { "BitAiCopyButton" }, LazyServer.PublishedModules(AI));
 
         // The boot module imports the scripts the app starts with that it keeps, in the bundle's order - not the theme's,
         // which nothing of the app needs.
@@ -156,8 +164,10 @@ public sealed class LazyScriptsTrimmingTests
         foreach (var unexpected in new[] { "BitScrollablePane", "BitSplitter", "BitPullToRefresh" }) CollectionAssert.DoesNotContain(modules, unexpected);
         CollectionAssert.Contains(LazyWebAssembly.PublishedModules(Extras), "BitDataGrid");
         CollectionAssert.DoesNotContain(LazyWebAssembly.PublishedModules(Extras), "BitPdfViewer");
+        foreach (var expected in new[] { "BitAiPromptInput", "BitAiMessageList" }) CollectionAssert.Contains(LazyWebAssembly.PublishedModules(AI), expected);
 
         Assert.IsFalse(LazyWebAssembly.HasAsset(Core, "scripts/bit.blazorui.js"));
+        Assert.IsFalse(LazyWebAssembly.HasAsset(AI, "scripts/bit.blazorui.ai.js"));
         Assert.IsTrue(LazyWebAssembly.HasAsset(Core, "scripts/bit.blazorui.boot.js"));
     }
 
@@ -184,9 +194,9 @@ public sealed class LazyScriptsTrimmingTests
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.$bundles === 'undefined'"), "A bundle ran in a lazy app.");
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Utils.claimEscape === 'function'"), "The claim of the Escape key was not booted.");
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Swiper === 'undefined' && typeof BitBlazorUI.SnackBars === 'undefined'"));
-        Assert.IsFalse(requested.Any(r => r.Contains("/bit.blazorui.js", StringComparison.Ordinal) || r.Contains("/bit.blazorui.extras.js", StringComparison.Ordinal)));
+        Assert.IsFalse(requested.Any(r => r.Contains("/bit.blazorui.js", StringComparison.Ordinal) || r.Contains("/bit.blazorui.extras.js", StringComparison.Ordinal) || r.Contains("/bit.blazorui.ai.js", StringComparison.Ordinal)));
 
-        await session.AssertEveryComponentIsStyledAsync(LazyServer, Core, Extras);
+        await session.AssertEveryComponentIsStyledAsync(LazyServer, Core, Extras, AI);
 
         // The dropdown's callout opens and closes on Escape - the callouts' module imported for it.
         await session.OpenAndEscapeCalloutAsync(page.Locator(".bit-drp").First, "BitDropdown");
@@ -200,6 +210,11 @@ public sealed class LazyScriptsTrimmingTests
 
         await page.Locator(".bit-tfl input").First.FillAsync("Ada");
         Assert.AreEqual("Ada", await page.Locator(".bit-tfl input").First.InputValueAsync());
+
+        // The AI package's copy button: its module is imported the first time the button calls into it.
+        Assert.IsFalse(requested.Any(r => r.Contains("/_content/Bit.BlazorUI.AI/scripts/modules/", StringComparison.Ordinal)), "An AI module was imported before anything called it.");
+        await session.AssertAiCopyButtonWorksAsync();
+        Assert.IsTrue(requested.Any(r => r.Contains("/_content/Bit.BlazorUI.AI/scripts/modules/BitAiCopyButton.js", StringComparison.Ordinal)), "The copy button's module was not imported.");
 
         session.AssertNoErrors($"The trimmed lazy server app in {engine}");
     }
@@ -218,7 +233,7 @@ public sealed class LazyScriptsTrimmingTests
         await page.WaitForSelectorAsync(".bit-btn", new() { Timeout = 90_000 });
 
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.$bundles === 'undefined'"), "A bundle ran in a lazy app.");
-        await session.AssertEveryComponentIsStyledAsync(LazyWebAssembly, Core, Extras);
+        await session.AssertEveryComponentIsStyledAsync(LazyWebAssembly, Core, Extras, AI);
 
         // The scripts with the most moving parts, each imported the first time it is called - the synchronous calls of
         // WebAssembly included (FastInvoke), which import their module before they run.
@@ -236,6 +251,10 @@ public sealed class LazyScriptsTrimmingTests
         // The theme switcher (BitTheme.ts, booted for its markup and called from .NET) flips the theme.
         await PressAsync(page.Locator(".bit-ths-lgt").First);
         await session.WaitForAsync("() => document.documentElement.getAttribute('bit-theme') === 'dark'", "BitThemeSwitcher did not turn the page dark");
+
+        // The AI chat: a prompt sent with Enter through the composer's script and answered in the transcript, the AI
+        // modules imported for both.
+        await session.AssertAiChatAnswersAsync();
 
         session.AssertNoErrors($"The trimmed lazy WebAssembly app in {engine}");
     }

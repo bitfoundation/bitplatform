@@ -1,0 +1,255 @@
+﻿@page "/components/ai/messagelist"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/messagelist"
+            Title="AiMessageList"
+            Description="BitAiMessageList is the scrolling transcript of an AI conversation: every message laid out by role, auto-scroll that follows a streaming reply only while the reader is at the bottom, and virtualization for long threads." />
+
+<DemoPage Name="AiMessageList"
+          SecondaryNames="@(["Transcript"])"
+          Description="BitAiMessageList is the scrolling transcript of a BitAiConversation: every message of it, laid out by role through BitAiChatMessage, with auto-scroll that follows new content only while the reader is at the newest message - scrolling up to re-read is never yanked away - and, for long threads, only the newest messages drawn past a threshold, the older ones a page at a time as the reader scrolls up to them. It is the transcript BitAiChat renders, public for a chat assembled by hand."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="MessageList/BitAiMessageList.razor"
+          GitHubDemoUrl="AI/MessageList/BitAiMessageListDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The list renders a <b>Conversation</b> and follows it as messages are added and removed, from whatever thread the
+            stream is on, re-rendering at most once per <b>BitAiUiOptions.RenderInterval</b>. A <b>Session</b> (see
+            <BitLink Href="/components/ai/chat">BitAiChat</BitLink>) is what enables the actions of a message - edit, regenerate,
+            retry, approval. It is the scroll container itself, so give it a box with a height to take: it grows to fill a flex
+            column. Whether it follows new content at all is the <b>AutoScroll</b> of the
+            <BitLink Href="/components/ai/optionsprovider">BitAiUiOptions</BitLink> in force (on by default), and how many
+            messages it draws at once their <b>VirtualizeThreshold</b>.
+        </BitText>
+        <br />
+        <BitText>
+            The list is a polite live region (<b>role="log"</b>, <b>aria-relevant="additions"</b>), named by its
+            <b>AriaLabel</b> or the Transcript string ("Conversation"), so a new message is announced as it arrives without
+            interrupting the one being read. Past <b>BitAiUiOptions.VirtualizeThreshold</b> (60) messages the list draws
+            only that many of the newest - as a prerender does, rather than an empty box - and the older ones half that
+            many at a time as the reader scrolls up to them, keeping what is being read in place as each page comes in
+            above it. Nothing is estimated: every message drawn has its own height, so the scrollbar never jumps. See the
+            <BitLink Href="/ai/scenarios/performance">performance</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Give it a <b>Conversation</b>: user turns are bubbles at the end of the line, replies full-width prose with
+                their actions. Without a session, a reply offers copy and feedback only, and a user message no action at all.
+            </div>
+            <br />
+            <div style="height:360px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="conversation" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Session" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                A <b>Session</b> drives the conversation: with one, a user message can be edited and the newest reply
+                regenerated. Put a <BitLink Href="/components/ai/promptinput">BitAiPromptInput</BitLink> of the same session under
+                it and it is a chat assembled by hand - send something and the list follows the reply.
+            </div>
+            <br />
+            <div style="height:420px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="session.Conversation" Session="session" />
+                <BitAiPromptInput Session="session" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>HeaderTemplate</b> and <b>FooterTemplate</b> scroll with the messages, above the first and below the last.
+                <b>EmptyTemplate</b> is shown while there is no message at all - a
+                <BitLink Href="/components/ai/emptystate">BitAiEmptyState</BitLink> with starter prompts, here.
+            </div>
+            <br />
+            <div style="height:420px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="templatesSession.Conversation" Session="templatesSession">
+                    <HeaderTemplate>
+                        <div style="text-align:center;color:var(--bit-clr-fg-ter)">Today</div>
+                    </HeaderTemplate>
+                    <EmptyTemplate>
+                        <BitAiEmptyState Title="Nothing here yet"
+                                         Suggestions="suggestions"
+                                         OnSuggestion="AskTemplatesSession" />
+                    </EmptyTemplate>
+                    <FooterTemplate>
+                        <div style="text-align:center;color:var(--bit-clr-fg-ter)">Replies are scripted on this page.</div>
+                    </FooterTemplate>
+                </BitAiMessageList>
+                <BitAiPromptInput Session="templatesSession" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Message template" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>MessageTemplate</b> replaces how every message is drawn - a compact, log-like transcript here. It is keyed
+                by the message, so removing one never recreates the ones after it, and it adds no element of its own.
+            </div>
+            <br />
+            <div style="height:240px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="templateConversation">
+                    <MessageTemplate Context="message">
+                        <div style="display:flex;gap:0.5rem">
+                            <b style="min-width:5rem">@(message.Role.IsUser ? "You" : "Assistant")</b>
+                            <span>@message.GetText()</span>
+                        </div>
+                    </MessageTemplate>
+                </BitAiMessageList>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="System messages" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                The system and developer messages - the instructions the model is given, not a turn of the conversation - are
+                hidden by default. Turn <b>HideSystemMessages</b> off to show them as a centered note.
+            </div>
+            <br />
+            <BitToggle @bind-Value="hideSystemMessages" Text="HideSystemMessages" />
+            <div style="height:300px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="systemConversation" HideSystemMessages="hideSystemMessages" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Following the latest" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                The list follows a streaming reply only while the reader is at the bottom. Scroll up and it stops following:
+                <b>OnPinnedChange</b> reports it (and <b>IsPinned</b> holds it), which is what shows the
+                <BitLink Href="/components/ai/scrolltolatest">BitAiScrollToLatest</BitLink> button; <b>ScrollToLatestAsync</b>
+                takes the reader back and follows again. Send something, then scroll up while it answers.
+            </div>
+            <br />
+            <div>
+                Following is the <b>AutoScroll</b> of the <b>BitAiUiOptions</b> in force, set here through a
+                <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink>. Turn it off and the list never
+                follows on its own: a reply grows out of view while the reader stays where they are, and <b>OnPinnedChange</b>
+                reports false as soon as the newest message leaves the view.
+            </div>
+            <br />
+            <BitToggle @bind-Value="autoScroll" Text="AutoScroll" />
+            <div style="height:440px;display:flex;flex-direction:column">
+                <BitAiOptionsProvider UiOptions="@(autoScroll ? null : manualScrollOptions)">
+                    <BitAiMessageList @ref="followList"
+                                      Conversation="followSession.Conversation"
+                                      Session="followSession"
+                                      OnPinnedChange="HandlePinnedChange" />
+                    <div style="position:relative">
+                        <BitAiScrollToLatest Visible="@(isPinned is false)" OnClick="ScrollToLatest" />
+                        <BitAiPromptInput Session="followSession" />
+                    </div>
+                </BitAiOptionsProvider>
+            </div>
+            <br />
+            <div>Following the newest message: <b>@isPinned</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Virtualization" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Four hundred messages of prose, code, tables, tool calls and citations: past
+                <b>BitAiUiOptions.VirtualizeThreshold</b> (60 by default) only the newest that many are drawn. Scroll up and
+                the older ones come in thirty at a time above what you are reading, which stays where it is; scroll back
+                down to the newest message and the list lets them go again.
+            </div>
+            <br />
+            <div style="height:440px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="longConversation" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Citations & feedback" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>OnCitationClick</b> reports a numbered citation chip, <b>OnSourceClick</b> a source card under the reply and
+                <b>OnFeedback</b> a thumbs up or down, with its message - the message's <b>Feedback</b> is already updated, so a
+                host only has to persist it.
+            </div>
+            <br />
+            <div style="height:400px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="citedConversation"
+                                  OnCitationClick="HandleCitationClick"
+                                  OnSourceClick="HandleSourceClick"
+                                  OnFeedback="HandleFeedback" />
+            </div>
+            <br />
+            <div>Last event: <b>@(lastEvent ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                A disabled list stays readable and scrollable; the actions of its messages are disabled with it.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isDisabled" Text="Disabled" />
+            <div style="height:360px;display:flex;flex-direction:column">
+                <BitAiMessageList Disabled="isDisabled" Conversation="disabledSession.Conversation" Session="disabledSession" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>BitParams</b> with a <b>BitAiMessageListParams</b> sets whether the lists inside it show the system messages,
+                and their classes and styles; a list's own value wins (the second keeps hiding them). A BitAiChat sets these on
+                its transcript itself - from its own <b>HideSystemMessages</b> and <b>Styles</b> / <b>Classes</b> - so a chat
+                takes them from a <BitLink Href="/components/ai/chat">BitAiChatParams</BitLink> instead.
+            </div>
+            <br />
+            <BitParams Parameters="listParams">
+                <div style="height:260px;display:flex;flex-direction:column">
+                    <BitAiMessageList Conversation="cascadeConversation" />
+                </div>
+                <br />
+                <div style="height:260px;display:flex;flex-direction:column">
+                    <BitAiMessageList Conversation="cascadeOwnConversation" HideSystemMessages />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>Style</b> / <b>Class</b> reach the root, which is the scroll container, and <b>Styles</b> / <b>Classes</b>
+                its <b>Content</b> column. The public <b>--bit-AiMessageList-*</b> variables (see the CSS variables table)
+                re-skin it from <b>:root</b>, an ancestor or <b>Style</b>.
+            </div>
+            <br />
+            <div style="height:300px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="styleConversation"
+                                  Style="border:1px solid var(--bit-clr-brd-pri);border-radius:1rem"
+                                  Styles="@(new() { Content = "padding:1rem 2rem" })" />
+            </div>
+            <br />
+            <div style="height:300px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="classConversation"
+                                  Class="custom-list"
+                                  Classes="@(new() { Content = "custom-list-content" })" />
+            </div>
+            <br />
+            <div style="height:300px;display:flex;flex-direction:column">
+                <BitAiMessageList Conversation="variablesConversation"
+                                  Style="--bit-AiMessageList-max-width:30rem;--bit-AiMessageList-gap:0.75rem;--bit-AiMessageList-padding:1rem;--bit-AiMessageList-scrollbar-color:var(--bit-clr-pri)" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>Use BitAiMessageList in right-to-left (RTL).</div>
+            <br />
+            <div style="height:300px;display:flex;flex-direction:column">
+                <BitAiMessageList Dir="BitDir.Rtl" Conversation="rtlConversation" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

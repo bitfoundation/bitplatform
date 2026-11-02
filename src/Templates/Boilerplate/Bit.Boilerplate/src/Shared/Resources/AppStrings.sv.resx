@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Ett okänt fel har uppstått</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Ett okänt fel har uppstått vid inloggning med ett externt konto</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>Posten ändrades av en annan användare efter att du hämtade den ursprungliga informationen. Åtgärden avbröts.</value>
   </data>
@@ -1101,6 +1104,12 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Här är dina analysdata</value>
+  </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Ändra storlek</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Dölj</value>
   </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Ta bort kategori</value>
@@ -2096,4 +2105,15 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Logga ut från alla konton på den här enheten</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kioskläge</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Den här appen är låst till skärmen: Windows-tangenten, Alt+Tab och att stänga fönstret är alla blockerade. Använd knappen för att avsluta.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>Avsluta appen</value>
+  </data>
+  <!--#endif -->
 </root>

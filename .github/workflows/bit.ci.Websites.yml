@@ -23,7 +23,7 @@ jobs:
   build-Websites:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Websites
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -32,10 +32,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/Websites/Platform/global.json
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
@@ -48,13 +53,17 @@ jobs:
         project-folder: .
 
     - name: Install wasm
-      run: cd src && dotnet workload install wasm-tools
+      run: |
+        cd src && dotnet workload install wasm-tools
+        cd Websites/Platform && dotnet workload install wasm-tools
 
     - name: Build Careers
       run: dotnet build src/Websites/Careers/Bit.Websites.Careers.slnx
 
     - name: Build Platform
-      run: dotnet build src/Websites/Platform/Bit.Websites.Platform.slnx
+      working-directory: src/Websites/Platform
+      run: dotnet build Bit.Websites.Platform.slnx
 
     - name: Build Sales
-      run: dotnet build src/Websites/Sales/Bit.Websites.Sales.slnx
+      working-directory: src/Websites/Sales
+      run: dotnet build Bit.Websites.Sales.slnx

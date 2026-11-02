@@ -30,6 +30,12 @@ internal interface IBevToolsEntryPoint
 
     /// <summary>Attaches BevTools to the running app in the scope of <paramref name="services"/>, or returns the session registered at startup.</summary>
     IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context);
+
+    /// <summary>
+    /// Marks what runs until it is disposed as BevTools' own work, which no session records: the
+    /// <see cref="BitBevToolsLoaderOptions.Authorize"/> callback's requests, logs and activities are not the app's.
+    /// </summary>
+    IDisposable BeginOwnWork();
 }
 
 /// <summary>A BevTools session as the loader sees it. Disposing it ends a session the attach created, never one DI owns.</summary>

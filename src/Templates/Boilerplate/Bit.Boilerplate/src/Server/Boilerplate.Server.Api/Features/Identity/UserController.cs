@@ -255,6 +255,12 @@ public partial class UserController : AppControllerBase, IUserController
         if (expired)
             throw new BadRequestException(nameof(AppStrings.ExpiredToken));
 
+        if (await userManager.IsLockedOutAsync(user))
+        {
+            var tryAgainIn = (user.LockoutEnd! - TimeProvider.GetUtcNow()).Value;
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn);
+        }
+
         var tokenIsValid = await userManager.VerifyUserTokenAsync(
             user,
             TokenOptions.DefaultPhoneProvider,
@@ -262,7 +268,10 @@ public partial class UserController : AppControllerBase, IUserController
             request.Token!);
 
         if (tokenIsValid is false)
+        {
+            await userManager.AccessFailedAsync(user);
             throw new BadRequestException(nameof(AppStrings.InvalidToken));
+        }
 
         await EnsureIdentifierIsAvailable(new() { Email = request.Email }, user.Id, cancellationToken);
 
@@ -328,6 +337,18 @@ public partial class UserController : AppControllerBase, IUserController
             throw new BadRequestException(nameof(AppStrings.ExpiredToken));
 
         await EnsureIdentifierIsAvailable(new() { PhoneNumber = request.PhoneNumber }, user.Id, cancellationToken);
+
+        if (await userManager.IsLockedOutAsync(user))
+        {
+            var tryAgainIn = (user.LockoutEnd! - TimeProvider.GetUtcNow()).Value;
+            throw new BadRequestException(Localizer[nameof(AppStrings.UserLockedOut), tryAgainIn.Humanize(culture: CultureInfo.CurrentUICulture)]).WithExtensionData("TryAgainIn", tryAgainIn);
+        }
+
+        if (await userManager.VerifyChangePhoneNumberTokenAsync(user, request.Token!, request.PhoneNumber!) is false)
+        {
+            await userManager.AccessFailedAsync(user);
+            throw new BadRequestException(nameof(AppStrings.InvalidToken));
+        }
 
         var result = await userManager.ChangePhoneNumberAsync(user, request.PhoneNumber!, request.Token!);
 
@@ -648,9 +669,15 @@ public partial class UserController : AppControllerBase, IUserController
                 await membershipToLeave.ExecuteUpdateAsync(tu => tu.SetProperty(t => t.AcceptedOn, (DateTimeOffset?)null), cancellationToken);
             }
 
+            var grantedSessionIds = DbContext.OAuthGrants.Select(grant => grant.UserSessionId);
+
+            await DbContext.UserSessions
+                .Where(us => us.UserId == userId && us.TenantId == tenantId && grantedSessionIds.Contains(us.Id))
+                .ExecuteDeleteAsync(cancellationToken);
+
             await DbContext.UserSessions
                 .Where(us => us.UserId == userId && us.TenantId == tenantId)
-                .ExecuteUpdateAsync(us => us.SetProperty(s => s.TenantId, nextTenantId), cancellationToken);
+                .ExecuteUpdateAsync(us => us.SetProperty(s => s.TenantId, nextTenantId).SetProperty(s => s.Privileged, false), cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
         });

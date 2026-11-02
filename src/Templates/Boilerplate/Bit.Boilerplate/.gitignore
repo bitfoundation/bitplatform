@@ -228,10 +228,17 @@ custom.aprof
 
 /src/Client/Boilerplate.Client.Core/Scripts/*.js
 /src/Client/Boilerplate.Client.Core/wwwroot/scripts/app*.js
+/src/Workbench/wwwroot/scripts/workbench*.js
+/src/Workbench/wwwroot/scripts/axe.min.js
+/src/Workbench/wwwroot/images/icons/bit-icon-512.png
 /src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json
 
 .env
+# `aspire publish` and `aspire do` output, which `aspire do prepare-compose` fills with resolved secrets.
+aspire-output/
 .playwright-mcp/
+# Podman on Windows has ssh write its known hosts to NUL, which Git's own ssh makes a real file that git add -A then fails on.
+NUL
 
 *.keystore
 *.jks
@@ -239,3 +246,5 @@ custom.aprof
 *.pfx
 *.mobileprovision
 *.cer
+efbundle
+efbundle.exe

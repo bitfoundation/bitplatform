@@ -1,0 +1,890 @@
+﻿@page "/tw/tree"
+
+<PageTitle>Tree View — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Tree View</h1>
+        <p class="mt-2 text-zinc-500">A hierarchical list with expand / collapse, single, multiple and checkbox selection, lazy loading and typeahead.</p>
+        <TwSectionSwitcher Slug="tree" />
+    </header>
+
+    <TwDemoBlock Title="File explorer" Code="@_explorerCode">
+        <Description>
+            WAI-ARIA Tree View. Up / Down move, Right / Left expand, enter, collapse or go to the parent, Home / End jump,
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">*</code> expands siblings, Enter or double click fires
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnItemActivate</code>, typing jumps by
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Label</code>. Each <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;li&gt;</code>
+            wraps its children, so state is styled on the tree root with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">[&amp;_[aria-selected=true]&gt;div]:</code>
+            — the <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&gt;div</code> keeps a selected folder from tinting its children.
+        </Description>
+        <LiveContent>
+            <div class="flex w-full flex-col items-start gap-3">
+                <BitBhTree TValue="string" aria-label="Project files"
+                        @bind-SelectedValue="selectedFile"
+                        DefaultExpandedValues="@(new[] { "src/", "src/components/" })"
+                        OnItemActivate="v => openedFile = v"
+                        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700 [&_[data-disabled]>div]:cursor-not-allowed [&_[data-disabled]>div]:bg-transparent [&_[data-disabled]>div]:opacity-50">
+                    <BitBhTreeItem TValue="string" Value="@("src/")" Label="src">
+                        <Template Context="srcDir">
+                            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                <span class="w-5 flex-none text-center">@(srcDir.IsExpanded ? "📂" : "📁")</span>
+                                <span>src</span>
+                            </div>
+                            <BitBhTreeGroup TValue="string">
+                                <BitBhTreeItem TValue="string" Value="@("src/components/")" Label="components">
+                                    <Template Context="componentsDir">
+                                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                            <span class="w-5 flex-none text-center">@(componentsDir.IsExpanded ? "📂" : "📁")</span>
+                                            <span>components</span>
+                                        </div>
+                                        <BitBhTreeGroup TValue="string">
+                                            <BitBhTreeItem TValue="string" Value="@("src/components/Button.razor")" Label="Button.razor">
+                                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                                    <span class="w-5 flex-none text-center">📄</span>
+                                                    <span>Button.razor</span>
+                                                </div>
+                                            </BitBhTreeItem>
+                                            <BitBhTreeItem TValue="string" Value="@("src/components/Tree.razor")" Label="Tree.razor">
+                                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                                    <span class="w-5 flex-none text-center">📄</span>
+                                                    <span>Tree.razor</span>
+                                                </div>
+                                            </BitBhTreeItem>
+                                        </BitBhTreeGroup>
+                                    </Template>
+                                </BitBhTreeItem>
+                                <BitBhTreeItem TValue="string" Value="@("src/services/")" Label="services">
+                                    <Template Context="servicesDir">
+                                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                            <span class="w-5 flex-none text-center">@(servicesDir.IsExpanded ? "📂" : "📁")</span>
+                                            <span>services</span>
+                                        </div>
+                                        <BitBhTreeGroup TValue="string">
+                                            <BitBhTreeItem TValue="string" Value="@("src/services/ApiClient.cs")" Label="ApiClient.cs">
+                                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                                    <span class="w-5 flex-none text-center">📄</span>
+                                                    <span>ApiClient.cs</span>
+                                                </div>
+                                            </BitBhTreeItem>
+                                            <BitBhTreeItem TValue="string" Value="@("src/services/AuthService.cs")" Label="AuthService.cs">
+                                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                                    <span class="w-5 flex-none text-center">📄</span>
+                                                    <span>AuthService.cs</span>
+                                                </div>
+                                            </BitBhTreeItem>
+                                        </BitBhTreeGroup>
+                                    </Template>
+                                </BitBhTreeItem>
+                                <BitBhTreeItem TValue="string" Value="@("src/Program.cs")" Label="Program.cs">
+                                    <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                        <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                        <span class="w-5 flex-none text-center">📄</span>
+                                        <span>Program.cs</span>
+                                    </div>
+                                </BitBhTreeItem>
+                            </BitBhTreeGroup>
+                        </Template>
+                    </BitBhTreeItem>
+                    <BitBhTreeItem TValue="string" Value="@("wwwroot/")" Label="wwwroot">
+                        <Template Context="wwwDir">
+                            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                <span class="w-5 flex-none text-center">@(wwwDir.IsExpanded ? "📂" : "📁")</span>
+                                <span>wwwroot</span>
+                            </div>
+                            <BitBhTreeGroup TValue="string">
+                                <BitBhTreeItem TValue="string" Value="@("wwwroot/app.css")" Label="app.css">
+                                    <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                        <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                        <span class="w-5 flex-none text-center">🎨</span>
+                                        <span>app.css</span>
+                                    </div>
+                                </BitBhTreeItem>
+                                <BitBhTreeItem TValue="string" Value="@("wwwroot/favicon.png")" Label="favicon.png">
+                                    <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                        <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                        <span class="w-5 flex-none text-center">🖼️</span>
+                                        <span>favicon.png</span>
+                                    </div>
+                                </BitBhTreeItem>
+                            </BitBhTreeGroup>
+                        </Template>
+                    </BitBhTreeItem>
+                    <BitBhTreeItem TValue="string" Value="@("secrets.json")" Label="secrets.json" Disabled="true">
+                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                            <span class="w-5 flex-none text-center">🔒</span>
+                            <span>secrets.json</span>
+                            <span class="ml-auto text-xs text-zinc-400">locked</span>
+                        </div>
+                    </BitBhTreeItem>
+                    <BitBhTreeItem TValue="string" Value="@("README.md")" Label="README.md">
+                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                            <span class="w-5 flex-none text-center">📄</span>
+                            <span>README.md</span>
+                        </div>
+                    </BitBhTreeItem>
+                </BitBhTree>
+
+                <p class="text-sm text-zinc-500">
+                    Selected: <strong class="font-semibold text-zinc-900">@(selectedFile ?? "(none)")</strong> ·
+                    Last activated: <strong class="font-semibold text-zinc-900">@(openedFile ?? "—")</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Data-driven (recursive)" Code="@_recursiveCode">
+        <Description>
+            A recursive <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">RenderFragment&lt;Node&gt;</code> renders every level;
+            items compute their own depth. <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-ExpandedValues</code> makes
+            expansion controlled.
+        </Description>
+        <LiveContent>
+            <div class="flex w-full flex-col items-start gap-3">
+                <div class="flex gap-2">
+                    <button type="button" @onclick="ExpandAllDocs"
+                            class="cursor-pointer rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Expand all</button>
+                    <button type="button" @onclick="CollapseAllDocs"
+                            class="cursor-pointer rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Collapse all</button>
+                </div>
+
+                <BitBhTree TValue="string" aria-label="Documentation"
+                        @bind-SelectedValue="selectedDoc"
+                        @bind-ExpandedValues="expandedDocs"
+                        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700">
+                    @foreach (var node in docs)
+                    {
+                        @DocItem(node)
+                    }
+                </BitBhTree>
+
+                <p class="text-sm text-zinc-500">
+                    Selected: <strong class="font-semibold text-zinc-900">@(selectedDoc ?? "(none)")</strong> ·
+                    Expanded: <strong class="font-semibold text-zinc-900">@expandedDocs.Count</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Multiple selection" Code="@_multiCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">SelectionMode="BitBhTreeSelectionMode.Multiple"</code> +
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">@@bind-SelectedValues</code>. Ctrl / ⌘ + click toggles, Shift + click
+            selects a range; Space toggles, Shift + Up / Down extends, Ctrl + A selects all.
+        </Description>
+        <LiveContent>
+            <div class="flex w-full flex-col items-start gap-3">
+                <BitBhTree TValue="string" aria-label="Mailboxes"
+                        SelectionMode="BitBhTreeSelectionMode.Multiple"
+                        @bind-SelectedValues="selectedBoxes"
+                        DefaultExpandedValues="@(new[] { "Inbox", "Projects" })"
+                        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700">
+                    @foreach (var (icon, name, children) in mailboxes)
+                    {
+                        <BitBhTreeItem TValue="string" Value="@name" Label="@name">
+                            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                <span class="w-5 flex-none text-center">@icon</span>
+                                <span>@name</span>
+                                <span class="ml-auto min-w-5 rounded-full bg-zinc-100 px-1.5 text-center text-[0.7rem] text-zinc-500">@children.Length</span>
+                            </div>
+                            <BitBhTreeGroup TValue="string">
+                                @foreach (var child in children)
+                                {
+                                    <BitBhTreeItem TValue="string" Value="@($"{name}/{child}")" Label="@child">
+                                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                            <span class="w-5 flex-none text-center">📁</span>
+                                            <span>@child</span>
+                                        </div>
+                                    </BitBhTreeItem>
+                                }
+                            </BitBhTreeGroup>
+                        </BitBhTreeItem>
+                    }
+                </BitBhTree>
+
+                <p class="text-sm text-zinc-500">
+                    @selectedBoxes.Count selected: <strong class="font-semibold text-zinc-900">@(selectedBoxes.Count == 0 ? "—" : string.Join(", ", selectedBoxes))</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Hierarchical checkboxes" Code="@_checkboxCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Checkboxes="true"</code>: checking a parent checks its descendants;
+            partly checked parents are <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-checked="mixed"</code>. The
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Template</code>'s <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Checked</code>
+            (true / false / null = mixed) is mirrored onto the box and styled with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-[checked=mixed]:</code>.
+        </Description>
+        <LiveContent>
+            <div class="flex w-full flex-col items-start gap-3">
+                <BitBhTree TValue="string" aria-label="Features to install"
+                        Checkboxes="true"
+                        @bind-SelectedValues="checkedFeatures"
+                        DefaultExpandedValues="@(new[] { "app", "app-themes" })"
+                        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600">
+                    @foreach (var node in features)
+                    {
+                        @FeatureItem(node)
+                    }
+                </BitBhTree>
+
+                <p class="text-sm text-zinc-500">
+                    Installing: <strong class="font-semibold text-zinc-900">@(InstalledFeatures.Any() ? string.Join(", ", InstalledFeatures) : "nothing")</strong>
+                </p>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Lazy loading" Code="@_lazyCode">
+        <Description>
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">HasChildren="true"</code> +
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">LoadChildren</code> fetch a folder's children the first time it
+            expands. While loading the item is <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-busy="true"</code> and the
+            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Template</code> reports <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">IsLoading</code>.
+        </Description>
+        <LiveContent>
+            <div class="flex w-full flex-col items-start gap-3">
+                <BitBhTree TValue="string" aria-label="Cloud storage"
+                        LoadChildren="LoadChildrenAsync"
+                        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700 [&_[aria-busy=true]>div]:cursor-progress [&_[aria-busy=true]>div]:text-zinc-500">
+                    @foreach (var bucket in buckets)
+                    {
+                        @RemoteItem(bucket)
+                    }
+                </BitBhTree>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    // ── File explorer ────────────────────────────────────────────────────────
+    private string? selectedFile = "src/components/Tree.razor";
+    private string? openedFile;
+
+    // ── Data-driven (recursive) ──────────────────────────────────────────────
+    private sealed record Node(string Id, string Name, Node[] Children);
+
+    private readonly Node[] docs =
+    [
+        new("start", "Getting started",
+        [
+            new("installation", "Installation", []),
+            new("quick-start", "Quick start", []),
+        ]),
+        new("components", "Components",
+        [
+            new("overlays", "Overlays",
+            [
+                new("dialog", "Dialog", []),
+                new("popover", "Popover", []),
+                new("tooltip", "Tooltip", []),
+            ]),
+            new("collections", "Collections",
+            [
+                new("listbox", "Listbox", []),
+                new("tree", "Tree View", []),
+                new("grid", "Grid", []),
+            ]),
+        ]),
+        new("styling", "Styling",
+        [
+            new("plain-css", "Plain CSS", []),
+            new("tailwind", "Tailwind", []),
+        ]),
+    ];
+
+    private string? selectedDoc = "tree";
+    private IReadOnlyCollection<string> expandedDocs = ["components", "collections"];
+
+    private void ExpandAllDocs() => expandedDocs = Branches(docs).ToArray();
+
+    private void CollapseAllDocs() => expandedDocs = [];
+
+    private static IEnumerable<string> Branches(IEnumerable<Node> nodes) =>
+        nodes.Where(n => n.Children.Length > 0).SelectMany(n => Branches(n.Children).Prepend(n.Id));
+
+    private RenderFragment<Node> DocItem => node =>
+        @<BitBhTreeItem TValue="string" Value="@node.Id" Label="@node.Name">
+            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                <span>@node.Name</span>
+                @if (node.Children.Length > 0)
+                {
+                    <span class="ml-auto min-w-5 rounded-full bg-zinc-100 px-1.5 text-center text-[0.7rem] text-zinc-500">@node.Children.Length</span>
+                }
+            </div>
+            @if (node.Children.Length > 0)
+            {
+                <BitBhTreeGroup TValue="string">
+                    @foreach (var child in node.Children)
+                    {
+                        @DocItem(child)
+                    }
+                </BitBhTreeGroup>
+            }
+        </BitBhTreeItem>;
+
+    // ── Multiple selection ───────────────────────────────────────────────────
+    private readonly (string Icon, string Name, string[] Children)[] mailboxes =
+    [
+        ("📥", "Inbox", ["Work", "Personal", "Receipts"]),
+        ("🗂️", "Projects", ["Apollo", "Gemini", "Mercury"]),
+        ("🗄️", "Archive", ["2024", "2025"]),
+    ];
+
+    private IReadOnlyCollection<string> selectedBoxes = [];
+
+    // ── Hierarchical checkboxes ──────────────────────────────────────────────
+    private readonly Node[] features =
+    [
+        new("app", "Desktop app",
+        [
+            new("app-core", "Core runtime", []),
+            new("app-spellcheck", "Spell checker", []),
+            new("app-themes", "Themes",
+            [
+                new("theme-light", "Light", []),
+                new("theme-dark", "Dark", []),
+                new("theme-contrast", "High contrast", []),
+            ]),
+        ]),
+        new("cli", "Command-line tools",
+        [
+            new("cli-core", "CLI", []),
+            new("cli-completions", "Shell completions", []),
+        ]),
+        new("offline-docs", "Offline documentation", []),
+    ];
+
+    private IReadOnlyCollection<string> checkedFeatures = ["app-core", "theme-light", "theme-dark"];
+
+    private IEnumerable<string> InstalledFeatures =>
+        Leaves(features).Where(n => checkedFeatures.Contains(n.Id)).Select(n => n.Name);
+
+    private static IEnumerable<Node> Leaves(IEnumerable<Node> nodes) =>
+        nodes.SelectMany(n => n.Children.Length == 0 ? new[] { n } : Leaves(n.Children));
+
+    private static string CheckedAttr(bool? state) => state switch
+    {
+        true => "true",
+        false => "false",
+        null => "mixed",
+    };
+
+    private RenderFragment<Node> FeatureItem => node =>
+        @<BitBhTreeItem TValue="string" Value="@node.Id" Label="@node.Name">
+            <Template Context="state">
+                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                    <span data-checked="@CheckedAttr(state.Checked)" aria-hidden="true"
+                          class="inline-flex size-4 flex-none items-center justify-center rounded border-[1.5px] border-zinc-400 bg-white text-[0.7rem] font-bold leading-none text-white data-[checked=true]:border-blue-600 data-[checked=true]:bg-blue-600 data-[checked=mixed]:border-blue-600 data-[checked=mixed]:bg-blue-600">@(state.Checked switch { true => "✓", null => "–", _ => "" })</span>
+                    <span>@node.Name</span>
+                </div>
+                @if (node.Children.Length > 0)
+                {
+                    <BitBhTreeGroup TValue="string">
+                        @foreach (var child in node.Children)
+                        {
+                            @FeatureItem(child)
+                        }
+                    </BitBhTreeGroup>
+                }
+            </Template>
+        </BitBhTreeItem>;
+
+    // ── Lazy loading ─────────────────────────────────────────────────────────
+    private sealed record RemoteEntry(string Path, string Name, bool IsFolder);
+
+    private readonly RemoteEntry[] buckets =
+    [
+        new("media", "media-bucket", true),
+        new("logs", "logs-bucket", true),
+        new("backups", "backups-bucket", true),
+    ];
+
+    private readonly Dictionary<string, RemoteEntry[]> loadedChildren = new();
+
+    private async Task LoadChildrenAsync(string path)
+    {
+        await Task.Delay(800); // simulate a network round-trip
+
+        if (path.Contains('/'))
+        {
+            loadedChildren[path] =
+            [
+                new($"{path}/january.csv", "january.csv", false),
+                new($"{path}/february.csv", "february.csv", false),
+            ];
+        }
+        else
+        {
+            loadedChildren[path] =
+            [
+                new($"{path}/2025", "2025", true),
+                new($"{path}/2026", "2026", true),
+                new($"{path}/manifest.json", "manifest.json", false),
+            ];
+        }
+
+        StateHasChanged();
+    }
+
+    private RenderFragment<RemoteEntry> RemoteItem => entry =>
+        @<BitBhTreeItem TValue="string" Value="@entry.Path" Label="@entry.Name" HasChildren="entry.IsFolder">
+            <Template Context="state">
+                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                    <span class="w-5 flex-none text-center">@(entry.IsFolder ? (state.IsExpanded ? "📂" : "📁") : "📄")</span>
+                    <span>@entry.Name</span>
+                    @if (state.IsLoading)
+                    {
+                        <span class="ml-auto text-xs text-zinc-400">Loading…</span>
+                        <span class="size-3.5 flex-none animate-spin rounded-full border-2 border-blue-100 border-t-blue-600" aria-hidden="true"></span>
+                    }
+                </div>
+                @if (loadedChildren.TryGetValue(entry.Path, out var children))
+                {
+                    <BitBhTreeGroup TValue="string">
+                        @foreach (var child in children)
+                        {
+                            @RemoteItem(child)
+                        }
+                    </BitBhTreeGroup>
+                }
+            </Template>
+        </BitBhTreeItem>;
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _explorerCode = """
+<BitBhTree TValue="string" aria-label="Project files"
+        @bind-SelectedValue="selectedFile"
+        DefaultExpandedValues="@(new[] { "src/", "src/components/" })"
+        OnItemActivate="v => openedFile = v"
+        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700 [&_[data-disabled]>div]:cursor-not-allowed [&_[data-disabled]>div]:bg-transparent [&_[data-disabled]>div]:opacity-50">
+    <BitBhTreeItem TValue="string" Value="@("src/")" Label="src">
+        <Template Context="srcDir">
+            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                <span class="w-5 flex-none text-center">@(srcDir.IsExpanded ? "📂" : "📁")</span>
+                <span>src</span>
+            </div>
+            <BitBhTreeGroup TValue="string">
+                <BitBhTreeItem TValue="string" Value="@("src/components/")" Label="components">
+                    <Template Context="componentsDir">
+                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                            <span class="w-5 flex-none text-center">@(componentsDir.IsExpanded ? "📂" : "📁")</span>
+                            <span>components</span>
+                        </div>
+                        <BitBhTreeGroup TValue="string">
+                            <BitBhTreeItem TValue="string" Value="@("src/components/Button.razor")" Label="Button.razor">
+                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                    <span class="w-5 flex-none text-center">📄</span>
+                                    <span>Button.razor</span>
+                                </div>
+                            </BitBhTreeItem>
+                            <BitBhTreeItem TValue="string" Value="@("src/components/Tree.razor")" Label="Tree.razor">
+                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                    <span class="w-5 flex-none text-center">📄</span>
+                                    <span>Tree.razor</span>
+                                </div>
+                            </BitBhTreeItem>
+                        </BitBhTreeGroup>
+                    </Template>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("src/services/")" Label="services">
+                    <Template Context="servicesDir">
+                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                            <span class="w-5 flex-none text-center">@(servicesDir.IsExpanded ? "📂" : "📁")</span>
+                            <span>services</span>
+                        </div>
+                        <BitBhTreeGroup TValue="string">
+                            <BitBhTreeItem TValue="string" Value="@("src/services/ApiClient.cs")" Label="ApiClient.cs">
+                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                    <span class="w-5 flex-none text-center">📄</span>
+                                    <span>ApiClient.cs</span>
+                                </div>
+                            </BitBhTreeItem>
+                            <BitBhTreeItem TValue="string" Value="@("src/services/AuthService.cs")" Label="AuthService.cs">
+                                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                                    <span class="w-5 flex-none text-center">📄</span>
+                                    <span>AuthService.cs</span>
+                                </div>
+                            </BitBhTreeItem>
+                        </BitBhTreeGroup>
+                    </Template>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("src/Program.cs")" Label="Program.cs">
+                    <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                        <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                        <span class="w-5 flex-none text-center">📄</span>
+                        <span>Program.cs</span>
+                    </div>
+                </BitBhTreeItem>
+            </BitBhTreeGroup>
+        </Template>
+    </BitBhTreeItem>
+    <BitBhTreeItem TValue="string" Value="@("wwwroot/")" Label="wwwroot">
+        <Template Context="wwwDir">
+            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                <span class="w-5 flex-none text-center">@(wwwDir.IsExpanded ? "📂" : "📁")</span>
+                <span>wwwroot</span>
+            </div>
+            <BitBhTreeGroup TValue="string">
+                <BitBhTreeItem TValue="string" Value="@("wwwroot/app.css")" Label="app.css">
+                    <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                        <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                        <span class="w-5 flex-none text-center">🎨</span>
+                        <span>app.css</span>
+                    </div>
+                </BitBhTreeItem>
+                <BitBhTreeItem TValue="string" Value="@("wwwroot/favicon.png")" Label="favicon.png">
+                    <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                        <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                        <span class="w-5 flex-none text-center">🖼️</span>
+                        <span>favicon.png</span>
+                    </div>
+                </BitBhTreeItem>
+            </BitBhTreeGroup>
+        </Template>
+    </BitBhTreeItem>
+    <BitBhTreeItem TValue="string" Value="@("secrets.json")" Label="secrets.json" Disabled="true">
+        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+            <span class="w-5 flex-none text-center">🔒</span>
+            <span>secrets.json</span>
+            <span class="ml-auto text-xs text-zinc-400">locked</span>
+        </div>
+    </BitBhTreeItem>
+    <BitBhTreeItem TValue="string" Value="@("README.md")" Label="README.md">
+        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+            <span class="w-5 flex-none text-center">📄</span>
+            <span>README.md</span>
+        </div>
+    </BitBhTreeItem>
+</BitBhTree>
+
+<p class="text-sm text-zinc-500">
+    Selected: <strong class="font-semibold text-zinc-900">@(selectedFile ?? "(none)")</strong> ·
+    Last activated: <strong class="font-semibold text-zinc-900">@(openedFile ?? "—")</strong>
+</p>
+
+@code {
+    private string? selectedFile = "src/components/Tree.razor";
+    private string? openedFile;
+}
+""";
+
+    private const string _recursiveCode = """
+<div class="flex gap-2">
+    <button type="button" @onclick="ExpandAllDocs"
+            class="cursor-pointer rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Expand all</button>
+    <button type="button" @onclick="CollapseAllDocs"
+            class="cursor-pointer rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Collapse all</button>
+</div>
+
+<BitBhTree TValue="string" aria-label="Documentation"
+        @bind-SelectedValue="selectedDoc"
+        @bind-ExpandedValues="expandedDocs"
+        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700">
+    @foreach (var node in docs)
+    {
+        @DocItem(node)
+    }
+</BitBhTree>
+
+<p class="text-sm text-zinc-500">
+    Selected: <strong class="font-semibold text-zinc-900">@(selectedDoc ?? "(none)")</strong> ·
+    Expanded: <strong class="font-semibold text-zinc-900">@expandedDocs.Count</strong>
+</p>
+
+@code {
+    private sealed record Node(string Id, string Name, Node[] Children);
+
+    private readonly Node[] docs =
+    [
+        new("start", "Getting started",
+        [
+            new("installation", "Installation", []),
+            new("quick-start", "Quick start", []),
+        ]),
+        new("components", "Components",
+        [
+            new("overlays", "Overlays",
+            [
+                new("dialog", "Dialog", []),
+                new("popover", "Popover", []),
+                new("tooltip", "Tooltip", []),
+            ]),
+            new("collections", "Collections",
+            [
+                new("listbox", "Listbox", []),
+                new("tree", "Tree View", []),
+                new("grid", "Grid", []),
+            ]),
+        ]),
+        new("styling", "Styling",
+        [
+            new("plain-css", "Plain CSS", []),
+            new("tailwind", "Tailwind", []),
+        ]),
+    ];
+
+    private string? selectedDoc = "tree";
+    private IReadOnlyCollection<string> expandedDocs = ["components", "collections"];
+
+    private void ExpandAllDocs() => expandedDocs = Branches(docs).ToArray();
+
+    private void CollapseAllDocs() => expandedDocs = [];
+
+    private static IEnumerable<string> Branches(IEnumerable<Node> nodes) =>
+        nodes.Where(n => n.Children.Length > 0).SelectMany(n => Branches(n.Children).Prepend(n.Id));
+
+    // One template renders every level — it simply calls itself for the children.
+    private RenderFragment<Node> DocItem => node =>
+        @<BitBhTreeItem TValue="string" Value="@node.Id" Label="@node.Name">
+            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                <span>@node.Name</span>
+                @if (node.Children.Length > 0)
+                {
+                    <span class="ml-auto min-w-5 rounded-full bg-zinc-100 px-1.5 text-center text-[0.7rem] text-zinc-500">@node.Children.Length</span>
+                }
+            </div>
+            @if (node.Children.Length > 0)
+            {
+                <BitBhTreeGroup TValue="string">
+                    @foreach (var child in node.Children)
+                    {
+                        @DocItem(child)
+                    }
+                </BitBhTreeGroup>
+            }
+        </BitBhTreeItem>;
+}
+""";
+
+    private const string _multiCode = """
+<BitBhTree TValue="string" aria-label="Mailboxes"
+        SelectionMode="BitBhTreeSelectionMode.Multiple"
+        @bind-SelectedValues="selectedBoxes"
+        DefaultExpandedValues="@(new[] { "Inbox", "Projects" })"
+        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700">
+    @foreach (var (icon, name, children) in mailboxes)
+    {
+        <BitBhTreeItem TValue="string" Value="@name" Label="@name">
+            <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                <span class="w-5 flex-none text-center">@icon</span>
+                <span>@name</span>
+                <span class="ml-auto min-w-5 rounded-full bg-zinc-100 px-1.5 text-center text-[0.7rem] text-zinc-500">@children.Length</span>
+            </div>
+            <BitBhTreeGroup TValue="string">
+                @foreach (var child in children)
+                {
+                    <BitBhTreeItem TValue="string" Value="@($"{name}/{child}")" Label="@child">
+                        <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                            <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                            <span class="w-5 flex-none text-center">📁</span>
+                            <span>@child</span>
+                        </div>
+                    </BitBhTreeItem>
+                }
+            </BitBhTreeGroup>
+        </BitBhTreeItem>
+    }
+</BitBhTree>
+
+<p class="text-sm text-zinc-500">
+    @selectedBoxes.Count selected: <strong class="font-semibold text-zinc-900">@(selectedBoxes.Count == 0 ? "—" : string.Join(", ", selectedBoxes))</strong>
+</p>
+
+@code {
+    private readonly (string Icon, string Name, string[] Children)[] mailboxes =
+    [
+        ("📥", "Inbox", ["Work", "Personal", "Receipts"]),
+        ("🗂️", "Projects", ["Apollo", "Gemini", "Mercury"]),
+        ("🗄️", "Archive", ["2024", "2025"]),
+    ];
+
+    private IReadOnlyCollection<string> selectedBoxes = [];
+}
+""";
+
+    private const string _checkboxCode = """
+<BitBhTree TValue="string" aria-label="Features to install"
+        Checkboxes="true"
+        @bind-SelectedValues="checkedFeatures"
+        DefaultExpandedValues="@(new[] { "app", "app-themes" })"
+        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600">
+    @foreach (var node in features)
+    {
+        @FeatureItem(node)
+    }
+</BitBhTree>
+
+<p class="text-sm text-zinc-500">
+    Installing: <strong class="font-semibold text-zinc-900">@(InstalledFeatures.Any() ? string.Join(", ", InstalledFeatures) : "nothing")</strong>
+</p>
+
+@code {
+    private sealed record Node(string Id, string Name, Node[] Children);
+
+    private readonly Node[] features =
+    [
+        new("app", "Desktop app",
+        [
+            new("app-core", "Core runtime", []),
+            new("app-spellcheck", "Spell checker", []),
+            new("app-themes", "Themes",
+            [
+                new("theme-light", "Light", []),
+                new("theme-dark", "Dark", []),
+                new("theme-contrast", "High contrast", []),
+            ]),
+        ]),
+        new("cli", "Command-line tools",
+        [
+            new("cli-core", "CLI", []),
+            new("cli-completions", "Shell completions", []),
+        ]),
+        new("offline-docs", "Offline documentation", []),
+    ];
+
+    // Parents are added / removed automatically as their leaves change.
+    private IReadOnlyCollection<string> checkedFeatures = ["app-core", "theme-light", "theme-dark"];
+
+    private IEnumerable<string> InstalledFeatures =>
+        Leaves(features).Where(n => checkedFeatures.Contains(n.Id)).Select(n => n.Name);
+
+    private static IEnumerable<Node> Leaves(IEnumerable<Node> nodes) =>
+        nodes.SelectMany(n => n.Children.Length == 0 ? new[] { n } : Leaves(n.Children));
+
+    // The item itself emits data-checked; the Template's Checked (true / false / null) mirrors it.
+    private static string CheckedAttr(bool? state) => state switch
+    {
+        true => "true",
+        false => "false",
+        null => "mixed",
+    };
+
+    private RenderFragment<Node> FeatureItem => node =>
+        @<BitBhTreeItem TValue="string" Value="@node.Id" Label="@node.Name">
+            <Template Context="state">
+                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                    <span data-checked="@CheckedAttr(state.Checked)" aria-hidden="true"
+                          class="inline-flex size-4 flex-none items-center justify-center rounded border-[1.5px] border-zinc-400 bg-white text-[0.7rem] font-bold leading-none text-white data-[checked=true]:border-blue-600 data-[checked=true]:bg-blue-600 data-[checked=mixed]:border-blue-600 data-[checked=mixed]:bg-blue-600">@(state.Checked switch { true => "✓", null => "–", _ => "" })</span>
+                    <span>@node.Name</span>
+                </div>
+                @if (node.Children.Length > 0)
+                {
+                    <BitBhTreeGroup TValue="string">
+                        @foreach (var child in node.Children)
+                        {
+                            @FeatureItem(child)
+                        }
+                    </BitBhTreeGroup>
+                }
+            </Template>
+        </BitBhTreeItem>;
+}
+""";
+
+    private const string _lazyCode = """
+<BitBhTree TValue="string" aria-label="Cloud storage"
+        LoadChildren="LoadChildrenAsync"
+        class="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-1.5 text-sm text-zinc-900 [&_[role=treeitem]]:outline-none [&_[role=treeitem]:focus-visible>div]:outline-2 [&_[role=treeitem]:focus-visible>div]:-outline-offset-2 [&_[role=treeitem]:focus-visible>div]:outline-blue-600 [&_[aria-selected=true]>div]:bg-blue-50 [&_[aria-selected=true]>div]:font-medium [&_[aria-selected=true]>div]:text-blue-700 [&_[aria-busy=true]>div]:cursor-progress [&_[aria-busy=true]>div]:text-zinc-500">
+    @foreach (var bucket in buckets)
+    {
+        @RemoteItem(bucket)
+    }
+</BitBhTree>
+
+@code {
+    private sealed record RemoteEntry(string Path, string Name, bool IsFolder);
+
+    private readonly RemoteEntry[] buckets =
+    [
+        new("media", "media-bucket", true),
+        new("logs", "logs-bucket", true),
+        new("backups", "backups-bucket", true),
+    ];
+
+    private readonly Dictionary<string, RemoteEntry[]> loadedChildren = new();
+
+    // Called once per folder, the first time it expands.
+    private async Task LoadChildrenAsync(string path)
+    {
+        await Task.Delay(800); // simulate a network round-trip
+
+        if (path.Contains('/'))
+        {
+            loadedChildren[path] =
+            [
+                new($"{path}/january.csv", "january.csv", false),
+                new($"{path}/february.csv", "february.csv", false),
+            ];
+        }
+        else
+        {
+            loadedChildren[path] =
+            [
+                new($"{path}/2025", "2025", true),
+                new($"{path}/2026", "2026", true),
+                new($"{path}/manifest.json", "manifest.json", false),
+            ];
+        }
+
+        StateHasChanged();
+    }
+
+    private RenderFragment<RemoteEntry> RemoteItem => entry =>
+        @<BitBhTreeItem TValue="string" Value="@entry.Path" Label="@entry.Name" HasChildren="entry.IsFolder">
+            <Template Context="state">
+                <div class="flex min-h-8 cursor-pointer select-none items-center gap-1.5 rounded-md py-1 pr-2 pl-[calc((var(--bit-bh-tree-level)_-_1)_*_1.25rem_+_0.375rem)] hover:bg-zinc-100">
+                    <BitBhTreeItemToggle TValue="string" class="inline-flex size-5 flex-none items-center justify-center rounded text-xs text-zinc-400 transition-transform duration-150 hover:bg-zinc-200 hover:text-zinc-900 data-state-open:rotate-90 data-[leaf]:invisible">▸</BitBhTreeItemToggle>
+                    <span class="w-5 flex-none text-center">@(entry.IsFolder ? (state.IsExpanded ? "📂" : "📁") : "📄")</span>
+                    <span>@entry.Name</span>
+                    @if (state.IsLoading)
+                    {
+                        <span class="ml-auto text-xs text-zinc-400">Loading…</span>
+                        <span class="size-3.5 flex-none animate-spin rounded-full border-2 border-blue-100 border-t-blue-600" aria-hidden="true"></span>
+                    }
+                </div>
+                @if (loadedChildren.TryGetValue(entry.Path, out var children))
+                {
+                    <BitBhTreeGroup TValue="string">
+                        @foreach (var child in children)
+                        {
+                            @RemoteItem(child)
+                        }
+                    </BitBhTreeGroup>
+                }
+            </Template>
+        </BitBhTreeItem>;
+}
+""";
+}

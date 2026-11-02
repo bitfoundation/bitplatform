@@ -13,7 +13,7 @@
 /// so lay out one parent's children at a time (or a set of root nodes) rather than mixing depths
 /// in a single call.
 /// </remarks>
-public static class BlowLayout
+public static partial class BlowLayout
 {
     /// <summary>
     /// Arranges a directed graph in layers, the way a flow chart or an org chart is drawn:

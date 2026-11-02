@@ -60,10 +60,22 @@ internal static class BmotionBrowserTiming
         if (config.Type == BmotionTransitionType.Spring) return linearSupported ? BuildLinearEasing(samples) : null;
 
         bool hasKeyword = config.Eases is null && BmEaseFunctions.HasFaithfulCssEasing(config);
-        if (hasKeyword && (preferKeyword || !linearSupported)) return BmEaseFunctions.ToCssString(config);
+        // A staircase can't be sampled: linear() interpolates between the samples, so every jump would
+        // become a ramp one sample wide (tens of milliseconds on screen). steps() is the only exact form.
+        if (hasKeyword && (preferKeyword || !linearSupported || config.StepCount > 0)) return BmEaseFunctions.ToCssString(config);
         // Elastic/bounce have no CSS curve: without linear() the browser can't play them.
         return linearSupported ? BuildLinearEasing(samples) : null;
     }
+
+    /// <summary>Whether the curve leaves 0..1 anywhere: a spring that overshoots its target, or comes back past its start.</summary>
+    internal static bool Overshoots(double[] samples) => Array.Exists(samples, p => p < 0 || p > 1);
+
+    /// <summary>
+    /// The curve held within 0..1, for a colour: the frame loop holds a colour between its two ends while a spring
+    /// overshoots them (it has no colour beyond its target to go to), and a browser handed the spring's own curve would
+    /// carry it past. A new array; the samples given are shared and stay untouched.
+    /// </summary>
+    internal static double[] HeldWithinEnds(double[] samples) => Array.ConvertAll(samples, p => Math.Clamp(p, 0, 1));
 
     internal static double[] SampleTweenProgress(Func<double, double> ease)
     {
@@ -103,7 +115,7 @@ internal static class BmotionBrowserTiming
         try { driver = new BmotionSpringDriver(0, 1, sampling, v => value = v); }
         catch { return null; }
 
-        const double stepMs = 1000.0 / 60;
+        const double stepMs = BmotionFrameRecorder.StepMs;
         const int maxSamples = 20 * 60;
         var samples = new List<double>(128);
         double t = 0;

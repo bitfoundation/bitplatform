@@ -1,0 +1,125 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+@{
+    var answerDisabled = _answering || Disabled;
+    var submitDisabled = answerDisabled || string.IsNullOrWhiteSpace(_draft);
+
+    @* Whether this render shows the question, which is what OnAfterRenderAsync moves the focus by. *@
+    var prompt = Run.Status is BitAiAgentRunStatus.WaitingForInput ? Run.PendingPrompt : null;
+    _promptRendered = prompt is not null;
+}
+
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    <div style="@Styles?.Header" class="bit-aiarv-hdr @Classes?.Header">
+        <BitIcon IconName="Glimmer" Style="@Styles?.HeaderIcon" Class="@($"bit-aiarv-hic bit-icon-ai bit-icon-ai--Glimmer {Classes?.HeaderIcon}")" />
+        <span style="@Styles?.Title" class="bit-aiarv-ttl @Classes?.Title">@(Run.AgentName ?? Strings.Plan)</span>
+        @* The total of the run across every request it made, which no single message shows. It is read off the run on
+           every render, so it follows the Changed notifications of the run as the usage arrives. *@
+        @if (Options.ShowUsage && Run.Usage.IsEmpty is false)
+        {
+            <BitAiTokenUsageView Usage="Run.Usage"
+                                 ShowSpeed="false"
+                                 Disabled="Disabled"
+                                 Styles="@Styles?.Usage"
+                                 Classes="@Classes?.Usage" />
+        }
+        <BitAiAgentStatusBadge Status="Run.Status"
+                               Disabled="Disabled"
+                               Styles="@Styles?.StatusBadge"
+                               Classes="@Classes?.StatusBadge" />
+    </div>
+
+    <div style="@Styles?.Body" class="bit-aiarv-bdy @Classes?.Body">
+        @if (Run.Goal is { Length: > 0 } goal)
+        {
+            <div style="@Styles?.Goal" class="bit-aiarv-gol @Classes?.Goal">@goal</div>
+        }
+
+        @if (Run.Progress is not null && Run.Steps.Count > 0)
+        {
+            var stepsCompleted = Strings.StepsCompleted(Run.CompletedStepCount, Run.Steps.Count);
+
+            @* The clock keeps moving while the run does, so a stalled run looks stalled. It is a timer, which is a live
+               region that stays quiet: a screen reader reads it when asked rather than every second. *@
+            <div style="@Styles?.Progress" class="bit-aiarv-prg @Classes?.Progress">
+                <span style="@Styles?.Count" class="bit-aiarv-cnt @Classes?.Count">@stepsCompleted</span>
+                <BitProgress Value="Run.CompletedStepCount"
+                             Max="Run.Steps.Count"
+                             AriaLabel="@Strings.Plan"
+                             AriaValueText="@stepsCompleted"
+                             Disabled="Disabled"
+                             Class="bit-aiarv-bar"
+                             Styles="@Styles?.ProgressBar"
+                             Classes="@Classes?.ProgressBar" />
+                <span role="timer"
+                      aria-label="@Strings.Elapsed"
+                      style="@Styles?.Elapsed"
+                      class="bit-aiarv-elp @Classes?.Elapsed">@Strings.FormatDuration(Run.Elapsed)</span>
+            </div>
+        }
+
+        @* The list takes the focus once an answer has taken the question away with the control the focus was on (see
+           OnAfterRenderAsync): it is where the run goes on. It is never a stop of the tab order. *@
+        <ol @ref="_steps" tabindex="-1" style="@Styles?.Steps" class="bit-aiarv-stl @Classes?.Steps">
+            @foreach (var step in Run.Steps)
+            {
+                <li @key="step.StepId" style="@Styles?.StepItem" class="bit-aiarv-sti @Classes?.StepItem">
+                    <BitAiAgentStepView Step="step"
+                                        Conversation="Session?.Conversation"
+                                        Disabled="Disabled"
+                                        Styles="@Styles?.Step"
+                                        Classes="@Classes?.Step" />
+                </li>
+            }
+        </ol>
+
+        @if (prompt is not null)
+        {
+            <div style="@Styles?.Prompt" class="bit-aiarv-prm @Classes?.Prompt">
+                <div id="@_promptId" style="@Styles?.Question" class="bit-aiarv-qst @Classes?.Question">@prompt</div>
+
+                @* The suggestions are the neutral answers next to the primary one below, drawn the way a host of the library
+                   draws a button it does not lead with: unset, with the tertiary default class (bit-btn-dft-ter). *@
+                @foreach (var suggestion in Run.PendingSuggestions ?? [])
+                {
+                    <BitButton Variant="BitVariant.Outline"
+                               Disabled="answerDisabled"
+                               OnClick="() => RespondAsync(suggestion)"
+                               Class="bit-btn-dft-ter"
+                               Styles="@Styles?.SuggestionButton"
+                               Classes="@Classes?.SuggestionButton">@suggestion</BitButton>
+                }
+
+                @* Suggestions are shortcuts, not the only way through: the agent asked a question, and the user may have an
+                   answer nobody suggested. The field is named by the question it answers. *@
+                <div style="@Styles?.Answer" class="bit-aiarv-ans @Classes?.Answer">
+                    <BitTextField @bind-Value="_draft"
+                                  Immediate="true"
+                                  Placeholder="@Strings.AnswerPlaceholder"
+                                  Disabled="answerDisabled"
+                                  OnEnter="HandleOnAnswerEnter"
+                                  InputHtmlAttributes="_answerInputAttributes"
+                                  Class="bit-aiarv-fld"
+                                  Styles="@Styles?.AnswerField"
+                                  Classes="@Classes?.AnswerField" />
+                    <BitButton Disabled="submitDisabled"
+                               OnClick="() => RespondAsync(_draft)"
+                               Styles="@Styles?.AnswerButton"
+                               Classes="@Classes?.AnswerButton">@Strings.Answer</BitButton>
+                </div>
+            </div>
+        }
+
+        @if (Run.Error is { } error)
+        {
+            <div style="@Styles?.Error" class="bit-aiarv-err @Classes?.Error">
+                <BitAiErrorView Error="error" Compact="true" />
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "ES2019",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "useDefineForClassFields": true,
+        "lib": [ "DOM", "DOM.Iterable", "ES2019" ],
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": true
+    },
+    "include": [ "Scripts" ],
+    "exclude": [ "node_modules" ]
+}

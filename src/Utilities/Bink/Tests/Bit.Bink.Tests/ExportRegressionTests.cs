@@ -133,4 +133,27 @@ public class ExportRegressionTests
         Assert.ThrowsExactly<ArgumentException>(() => callout with { Text = new string('x', BinkTextElement.MaxLength + 1) });
         Assert.AreEqual("changed", (callout with { Text = "changed" }).Text);
     }
+
+    [TestMethod]
+    public void Svg_export_stops_at_its_length_limit()
+    {
+        byte[] png = TestData.CreatePng(64, 64, (x, y) => new BinkColor((byte)(x * 4), (byte)(y * 4), 90));
+        var source = BinkImageSource.FromBytes(png, "image/png", 64, 64);
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 400, Height = 400 });
+        for (int i = 0; i < 200; i++) document.AddElement(new BinkImageElement(source, new BinkRect(i, i, 10, 10)));
+        string full = BinkSvgExporter.Export(document);
+        Assert.IsGreaterThan(100_000, full.Length);
+
+        var options = new BinkSvgExportOptions { MaxLength = 50_000 };
+        var builder = new System.Text.StringBuilder();
+        using (var writer = new StringWriter(builder, CultureInfo.InvariantCulture))
+        {
+            Assert.ThrowsExactly<InvalidOperationException>(() => BinkSvgExporter.Export(document, writer, options));
+        }
+
+        Assert.AreEqual(full[..50_000], builder.ToString());
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkSvgExporter.Export(document, options));
+        Assert.ThrowsExactly<InvalidOperationException>(() => BinkSvgExporter.ExportToUtf8Bytes(document, options));
+        Assert.AreEqual(full, BinkSvgExporter.Export(document, new BinkSvgExportOptions { MaxLength = full.Length }));
+    }
 }

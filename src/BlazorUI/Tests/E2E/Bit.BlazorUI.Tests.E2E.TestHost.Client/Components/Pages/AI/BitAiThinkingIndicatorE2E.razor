@@ -1,0 +1,79 @@
+﻿@page "/e2e/aithinkingindicator"
+@implements IAsyncDisposable
+
+<PageTitle>BitAiThinkingIndicator E2E</PageTitle>
+
+<h1>BitAiThinkingIndicator</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div><BitAiThinkingIndicator Id="thi-basic" /></div>
+    <div><BitAiThinkingIndicator Id="thi-label" Label="Searching the documentation" /></div>
+    <div><BitAiThinkingIndicator Id="thi-disabled" Disabled /></div>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <div class="bit-fam"><BitAiThinkingIndicator Id="thi-fam" /></div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div><BitAiThinkingIndicator Id="thi-rtl" Dir="BitDir.Rtl" Label="در حال فکر کردن" /></div>
+    <div dir="rtl"><BitAiThinkingIndicator Id="thi-rtl-inherited" Label="در حال فکر کردن" /></div>
+    <div><BitAiThinkingIndicator Id="thi-ltr" /></div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <div style="--bit-AiThinkingIndicator-color: rgb(1, 2, 3); --bit-AiThinkingIndicator-font-size: 24px; --bit-Loading-color: rgb(4, 5, 6)">
+        <BitAiThinkingIndicator Id="thi-vars" />
+    </div>
+    <div>
+        <BitAiThinkingIndicator Id="thi-parts"
+                                Class="e2e-thi-class"
+                                Style="outline: 2px solid rgb(7, 8, 9)"
+                                Classes="@(new() { Root = "e2e-thi-root", Loading = new() { Root = "e2e-thi-loading", Label = "e2e-thi-label" } })"
+                                Styles="@(new() { Root = "padding: 6px", Loading = new() { Label = "letter-spacing: 3px" } })" />
+    </div>
+</E2ESection>
+
+@* Assistant replies paced at 1.2s an event, so the wait for their first token is long enough to be seen: an echo, and
+   the status script (a status line, then the answer). *@
+<E2ESection Id="chat" Title="In a chat message">
+    <button id="thi-send" @onclick="SendAsync">Send</button>
+    <span id="thi-state">@_state</span>
+    <div style="height:320px">
+        <BitAiMessageList Id="thi-list" Conversation="_session.Conversation" Session="_session" />
+    </div>
+    <button id="thi-send-status" @onclick="SendStatusAsync">Send to the status script</button>
+    <span id="thi-status-state">@_statusState</span>
+    <div style="height:320px">
+        <BitAiMessageList Id="thi-status-list" Conversation="_statusSession.Conversation" Session="_statusSession" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitAiChatSession _session = new(E2EAiTransport.For(E2EAiScripts.Echo, 1200));
+    private readonly BitAiChatSession _statusSession = new(E2EAiTransport.For(E2EAiScripts.Status, 1200));
+    private string _state = "Idle";
+    private string _statusState = "Idle";
+
+    private async Task SendAsync()
+    {
+        _state = "Streaming";
+        await _session.SubmitAsync("hello there");
+        _state = "Complete";
+    }
+
+    private async Task SendStatusAsync()
+    {
+        _statusState = "Streaming";
+        await _statusSession.SubmitAsync("find the render modes");
+        _statusState = "Complete";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _session.DisposeAsync();
+        await _statusSession.DisposeAsync();
+    }
+}

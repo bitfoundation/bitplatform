@@ -25,12 +25,14 @@ internal sealed class BevToolsHttpFilter(BitBevToolsOptions options, BevToolsReg
 }
 
 /// <summary>
-/// Resolves the session that issued a request at the outer end of the pipeline and passes it, in the request's
-/// options, to the <see cref="BevToolsHttpMessageHandler"/> at the inner end.
+/// Resolves the session that issued a request, and the component that sent it, at the outer end of the pipeline and
+/// passes both, in the request's options, to the <see cref="BevToolsHttpMessageHandler"/> at the inner end.
 /// </summary>
 internal sealed class BevToolsHttpSessionHandler : DelegatingHandler
 {
     internal static readonly HttpRequestOptionsKey<BevToolsSession> SessionKey = new("Bit.BevTools.Session");
+
+    internal static readonly HttpRequestOptionsKey<BevCallSites.CallSite> CallerKey = new("Bit.BevTools.Caller");
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -43,6 +45,14 @@ internal sealed class BevToolsHttpSessionHandler : DelegatingHandler
         if (!request.Options.TryGetValue(SessionKey, out _) && SessionResolver.Resolve() is { } session)
         {
             request.Options.Set(SessionKey, session);
+
+            // Here, not where the request is recorded: a retry or resilience handler in between awaits before it
+            // sends, and from then on the component is no longer on the stack - retries included. Once per request,
+            // and only for one that will be recorded.
+            if (session.IsEnabled && session.IsCapturing && session.Options.TrackHttp && session.Options.CaptureHttpCallers)
+            {
+                request.Options.Set(CallerKey, BevCallSites.Find(skipFrames: 0));
+            }
         }
     }
 }
@@ -117,7 +127,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             }
             catch (Exception ex)
             {
-                RecordException(session, ex, trigger?.Id);
+                RecordException(session, ex, trigger?.Id, cancellationToken.IsCancellationRequested);
                 throw;
             }
 
@@ -131,6 +141,11 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         }
 
         var url = session.Redactor.RedactUrl(request.RequestUri?.ToString() ?? "");
+        // Noted by the outer handler of a factory pipeline; else (a hand-built client) read now, while the code that sent
+        // the request is still on the stack - the awaits below would lose it.
+        var caller = !options.CaptureHttpCallers ? default
+            : request.Options.TryGetValue(BevToolsHttpSessionHandler.CallerKey, out var noted) ? noted
+            : BevCallSites.Find(skipFrames: 0);
         var record = new BevHttpRecord
         {
             Id = session.Http.NextId(),
@@ -141,6 +156,9 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             RequestHeaders = options.CaptureHttpHeaders ? CollectHeaders(session, request.Headers, request.Content?.Headers) : null,
             TriggerEventId = trigger?.Id,
             TriggerDescription = trigger?.Title,
+            CallerComponent = caller.Component,
+            CallerVia = caller.Via,
+            CallerMissing = caller.Missing,
         };
         record.TimelineEventId = session.Timeline.Record(new BevToolsEvent
         {
@@ -149,7 +167,9 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             Title = record.Method + " " + StripOrigin(url),
             Detail = "pending",
             ParentEventId = trigger?.Id,
-            Data = new Dictionary<string, object?> { ["requestId"] = record.Id, ["url"] = url },
+            Data = record.Caller is { } sender
+                ? new Dictionary<string, object?> { ["requestId"] = record.Id, ["url"] = url, ["caller"] = sender }
+                : new Dictionary<string, object?> { ["requestId"] = record.Id, ["url"] = url },
         });
         session.Http.Add(record);
 
@@ -179,13 +199,25 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             session.Http.Touch();
             return response;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+            record.IsCancelled = true;
+            // BevTools is the innermost handler, so this is one attempt: a resilience pipeline's attempt timeout or a
+            // hedged attempt cancels it the same way the caller does.
+            record.Error = "Cancelled: the request's token was cancelled (by the caller, HttpClient.Timeout, or a handler in the pipeline: a resilience attempt timeout, hedging)";
+            session.Timeline.Complete(record.TimelineEventId, record.DurationMs.Value, $"cancelled after {record.DurationMs.Value:0} ms (by the caller, HttpClient.Timeout or a handler in the pipeline)", BevToolsSeverity.Warning);
+            session.Http.Touch();
+            throw;
+        }
         catch (Exception ex)
         {
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
-            record.Error = ex.GetType().Name + ": " + ex.Message;
+            // A connect timeout is a TaskCanceledException whose inner TimeoutException says what happened.
+            record.Error = BevRedactor.RedactText(ex.GetType().Name + ": " + ex.Message + (ex.InnerException is { } inner && inner.Message != ex.Message ? " (" + inner.GetType().Name + ": " + inner.Message + ")" : ""));
             session.Http.MarkFailed(record);
             session.Timeline.Complete(record.TimelineEventId, record.DurationMs.Value, record.Error, BevToolsSeverity.Error);
-            RecordException(session, ex, trigger?.Id);
+            RecordException(session, ex, trigger?.Id, tokenCancelled: false);
             session.Http.Touch();
             throw;
         }
@@ -194,10 +226,13 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
     private static void RecordStatusError(BevToolsSession session, string method, string redactedUrl, int status, string? reasonPhrase, long? triggerId) =>
         session.Errors.Record(null, "http", $"{method} {StripOrigin(redactedUrl)} returned {status} {reasonPhrase}", precedingEventId: triggerId, exceptionType: "HttpStatus" + status);
 
-    /// <summary>A cancelled request is the caller's decision, not an error.</summary>
-    private static void RecordException(BevToolsSession session, Exception exception, long? triggerId)
+    /// <summary>
+    /// A request cancelled through its own token is the caller's decision, not an error. Any other cancellation - a
+    /// connect timeout, a handler giving up - is a failure like any exception.
+    /// </summary>
+    private static void RecordException(BevToolsSession session, Exception exception, long? triggerId, bool tokenCancelled)
     {
-        if (exception is not OperationCanceledException)
+        if (exception is not OperationCanceledException || !tokenCancelled)
         {
             session.Errors.Record(exception, "http", precedingEventId: triggerId);
         }
@@ -218,9 +253,13 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         {
             foreach (var header in source)
             {
+                // Under ValueAccess None the names alone say what was sent (an Authorization header, a custom tenant
+                // header), and no value is kept; otherwise a value is kept unless its name or its shape is a secret.
                 var value = AlwaysRedactedHeaders.Contains(header.Key) || session.Redactor.IsSensitiveName(header.Key)
                     ? BevRedactor.RedactedValue
-                    : string.Join(", ", header.Value);
+                    : session.ValueAccess == BevValueAccess.None
+                        ? BevRedactor.HiddenValue
+                        : BevRedactor.RedactText(string.Join(", ", header.Value));
                 list.Add(new KeyValuePair<string, string>(header.Key, value));
             }
         }
@@ -236,7 +275,14 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         }
 
         var pathStart = url.IndexOf('/', schemeEnd + 3);
-        return pathStart < 0 ? "/" : url[pathStart..];
+        if (pathStart >= 0)
+        {
+            return url[pathStart..];
+        }
+
+        // No path: "https://host?q=1" is "/?q=1", not "/".
+        var rest = url.IndexOfAny(['?', '#'], schemeEnd + 3);
+        return rest < 0 ? "/" : "/" + url[rest..];
     }
 
     internal static string FormatBytes(long bytes) => bytes switch

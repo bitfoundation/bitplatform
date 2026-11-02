@@ -175,7 +175,8 @@
 
             Callouts.replaceCurrent({
                 dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
-                noScrollDismiss: noDismiss || noScrollDismiss, trapFocus, tabOut: !!tabOutTriggerId, nestedEscape
+                noScrollDismiss: noDismiss || noScrollDismiss, trapFocus, tabOut: !!tabOutTriggerId, nestedEscape,
+                openedMidScroll: performance.now() - Callouts._lastScroll < Callouts.SCROLL_PAUSE
             });
 
             if (nestedEscape) {
@@ -1964,6 +1965,10 @@ namespace BitBlazorUI {
     };
 
     window.addEventListener('scroll', (e: Event) => {
+        const now = performance.now();
+        const sinceLastScroll = now - BitBlazorUI.Callouts._lastScroll;
+        BitBlazorUI.Callouts._lastScroll = now;
+
         const currentCallout = BitBlazorUI.Callouts.current;
         if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
 
@@ -2004,6 +2009,18 @@ namespace BitBlazorUI {
         if (currentCallout.noScrollDismiss) {
             repositionOnNextFrame();
             return;
+        }
+
+        // A callout opened while the page was still scrolling - a focus() bringing its trigger into view smoothly,
+        // which an Enter pressed right after the Tab beats - follows its component through the rest of that scroll
+        // rather than closing a moment after it opened. A scroll started once that one has stopped dismisses it.
+        if (currentCallout.openedMidScroll) {
+            if (sinceLastScroll < BitBlazorUI.Callouts.SCROLL_PAUSE) {
+                repositionOnNextFrame();
+                return;
+            }
+
+            currentCallout.openedMidScroll = false;
         }
 
         BitBlazorUI.Callouts.replaceCurrent();

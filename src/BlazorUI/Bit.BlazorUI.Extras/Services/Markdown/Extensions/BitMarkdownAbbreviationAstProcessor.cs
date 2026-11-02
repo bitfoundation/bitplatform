@@ -30,35 +30,39 @@ public sealed class BitMarkdownAbbreviationAstProcessor : BitMarkdownAstProcesso
                     definitions.TryAdd(definition.Label, definition.Title);
             }
 
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                if (list[i] is BitMarkdownAbbreviationDefinitionNode) list.RemoveAt(i);
-            }
+            BitMarkdownAstHelper.RemoveAll<BitMarkdownAbbreviationDefinitionNode>(list);
         });
 
         if (definitions.Count == 0) return;
 
         // Longest first, so "HTML5" wins over "HTML" where both are defined.
-        var terms = definitions.Keys.OrderByDescending(k => k.Length).ToArray();
+        var terms = definitions.Keys.OrderByDescending(k => k.Length)
+                                    .GroupBy(k => k[0])
+                                    .ToDictionary(g => g.Key, g => g.ToArray());
 
         BitMarkdownAstHelper.VisitChildLists(document, list =>
         {
+            // Rebuilt in one pass once a run is split, so a list of many runs is not shifted once per split.
+            List<BitMarkdownNode>? rebuilt = null;
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i] is not BitMarkdownTextNode text) continue;
+                var replacement = list[i] is BitMarkdownTextNode text ? Split(text.Text, terms, definitions) : null;
+                if (replacement is null)
+                {
+                    rebuilt?.Add(list[i]);
+                    continue;
+                }
 
-                var replacement = Split(text.Text, terms, definitions);
-                if (replacement is null) continue;
-
-                list.RemoveAt(i);
-                foreach (var node in replacement) list.Insert(i++, node);
-                i--;
+                rebuilt ??= new List<BitMarkdownNode>(list.Take(i));
+                rebuilt.AddRange(replacement);
             }
+
+            if (rebuilt is not null) BitMarkdownAstHelper.ReplaceContents(list, rebuilt);
         });
     }
 
     // Splits one run of text around the abbreviations it holds, returning null when it holds none.
-    private static List<BitMarkdownNode>? Split(string text, string[] terms, Dictionary<string, string> definitions)
+    private static List<BitMarkdownNode>? Split(string text, Dictionary<char, string[]> terms, Dictionary<string, string> definitions)
     {
         List<BitMarkdownNode>? result = null;
         int last = 0;
@@ -67,7 +71,8 @@ public sealed class BitMarkdownAbbreviationAstProcessor : BitMarkdownAstProcesso
         while (i < text.Length)
         {
             string? match = null;
-            foreach (var term in terms)
+            var candidates = i > 0 && IsWordCharacter(text[i - 1]) ? null : terms.GetValueOrDefault(text[i]);
+            foreach (var term in candidates ?? [])
             {
                 if (i + term.Length > text.Length) continue;
                 if (string.CompareOrdinal(text, i, term, 0, term.Length) != 0) continue;

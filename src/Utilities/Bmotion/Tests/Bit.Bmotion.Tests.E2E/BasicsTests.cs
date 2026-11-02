@@ -78,19 +78,17 @@ public sealed class BasicsTests : BmotionPageTest
     }
 
     [TestMethod]
-    public async Task ColorTween_InterpolatesOnTheFrameLoop_AndLandsOnTheTargetEverywhere()
+    public async Task ColorTween_InterpolatesOnEveryRuntime_AndLandsOnTheTarget()
     {
         await ClickAsync("play");
         var samples = await SampleAsync("#color", 700);
         await ExpectEventAsync("color:complete");
         await WaitForStateAsync("#color", "s => s.backgroundColor === 'rgb(0, 0, 255)'");
 
+        // The browser plays a colour tween as a Web Animation, so it passes through intermediate colours on Blazor
+        // Server as well as on WebAssembly.
         var intermediate = samples.Select(s => s.BackgroundColor).Where(c => c is not "rgb(255, 0, 0)" and not "rgb(0, 0, 255)").ToArray();
-        if (FrameLoop)
-            Assert.IsTrue(intermediate.Length > 0, "A colour tween should pass through intermediate colours on WebAssembly.");
-        else
-            // Blazor Server has no per-frame loop: a colour change is documented to land at once.
-            Assert.AreEqual(0, intermediate.Length, $"Unexpected intermediate colours on Server: {string.Join(", ", intermediate)}");
+        Assert.IsTrue(intermediate.Length > 0, $"A colour tween should pass through intermediate colours on {RunHost}.");
     }
 
     [TestMethod]
@@ -101,8 +99,21 @@ public sealed class BasicsTests : BmotionPageTest
         await ExpectEventAsync("size:complete");
         await WaitForStateAsync("#size", "s => Math.abs(s.width - 200) < 0.5");
 
-        if (FrameLoop)
-            Assert.IsTrue(samples.Any(s => s.Width is > 61 and < 199), "A width tween should pass through intermediate widths on WebAssembly.");
+        Assert.IsTrue(samples.Any(s => s.Width is > 61 and < 199), $"A width tween should pass through intermediate widths on {RunHost}.");
+    }
+
+    [TestMethod]
+    public async Task ALengthBetweenUnits_PassesThroughTheSizesBetween_AndKeepsTheUnitItWasGiven()
+    {
+        // 100px to 50% of a 400px track: it grows through the widths between instead of jumping to 200px.
+        await ClickAsync("play");
+        var samples = await SampleAsync("#units", 400);
+        await ExpectEventAsync("units:complete");
+        await WaitForStateAsync("#units", "s => Math.abs(s.width - 200) < 0.5");
+
+        Assert.IsTrue(samples.Any(s => s.Width is > 110 and < 190), $"it jumped: {string.Join(" ", samples.Select(s => s.Width.ToString("0")))}");
+        // And it is 50% now, not 200px: it follows its track.
+        Assert.AreEqual("50%", await Page.Locator("#units").EvaluateAsync<string>("el => el.style.width"));
     }
 
     [TestMethod]

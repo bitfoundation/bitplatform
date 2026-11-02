@@ -5,7 +5,8 @@ builder.Configuration.AddClientConfigurations();
 
 Bit.Websites.Platform.Server.Startup.Services.Add(builder.Services, builder.Environment, builder.Configuration);
 
-var app = builder.Build();
+// Disposed once it shuts down - which app.Run() would do itself - so Belemetry sends the telemetry it still holds.
+await using var app = builder.Build();
 
 Bit.Websites.Platform.Server.Startup.Middlewares.Use(app, builder.Environment, builder.Configuration);
 

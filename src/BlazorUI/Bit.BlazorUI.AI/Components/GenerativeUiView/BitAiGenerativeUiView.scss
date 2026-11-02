@@ -1,0 +1,30 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// generative UI view, one set on an ancestor the views inside it, and one set on the Style of a view that view and the
+// views nested in it. The tags are BitTags, restyled through the variables of BitTag:
+//   --bit-AiGenerativeUiView-diagnostics-gap      room between two tags of the binding diagnostics   (default: spacing(1))
+//   --bit-AiGenerativeUiView-diagnostics-margin   room between the component and its diagnostics     (default: spacing(1))
+// The view takes no parameter that sets either of them, so each one restyles every view it reaches.
+
+// The component is laid out by whatever the app registered, so its container only keeps it from widening the
+// conversation around it.
+.bit-aiguv-cnt {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.bit-aiguv-dgn {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bit-AiGenerativeUiView-diagnostics-gap, #{spacing(1)});
+    margin-block-start: var(--bit-AiGenerativeUiView-diagnostics-margin, #{spacing(1)});
+}
+
+// A made-up component name, or a property name, can be as long as the model cares to make it.
+.bit-aiguv-unr,
+.bit-aiguv-err,
+.bit-aiguv-ign {
+    max-width: 100%;
+}

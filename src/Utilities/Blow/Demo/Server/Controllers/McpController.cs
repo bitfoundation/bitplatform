@@ -147,8 +147,8 @@ public class McpController : ControllerBase
     [Description("Renders a flow - its nodes and edges as JSON, in the shape System.Text.Json gives BlowCanvas.ToObject() (a BlowSnapshot) - through the real BlowCanvas and reports what the library makes of it: whether it deserializes, what OnError raises (duplicate node, edge and handle ids, edges to missing nodes, missing parents), node and edge types, bounds from BlowGraphUtils.GetNodesBounds, the sub-flow structure, and what the canvas does not report itself (parent cycles, edges naming a handle the node lacks) - with notes on what to fix. Optionally runs BlowLayout and returns every node's new position. Call it with no json for a sample flow, the quickest way to see the format.")]
     public Task<BlowFlowReportDto> InspectBlowFlow(
         [Description("The flow's JSON: an object with 'nodes' and 'edges' arrays and optionally a 'viewport' (up to 2 MB). camelCase or PascalCase names; enums as names or numbers. A node's 'measured' size and 'handles', as JsonSerializer writes them, are honoured. Omit it to get a sample flow instead.")] string? json = null,
-        [AllowedValues("none", "layered", "layered-left-to-right", "layered-bottom-to-top", "layered-right-to-left", "grid", "circle")]
-        [Description("A BlowLayout to run and report on: 'layered' (top to bottom, or a direction), 'grid' or 'circle'. 'none' (the default) runs none.")] string layout = "none")
+        [AllowedValues("none", "layered", "layered-left-to-right", "layered-bottom-to-top", "layered-right-to-left", "tree", "tree-left-to-right", "radial", "force", "grid", "circle")]
+        [Description("A BlowLayout to run and report on: 'layered' (top to bottom, or a direction), 'tree' (top to bottom or left to right), 'radial', 'force', 'grid' or 'circle'. 'none' (the default) runs none.")] string layout = "none")
     {
         return BlowFlowLab.InspectAsync(json, layout);
     }

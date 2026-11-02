@@ -24,6 +24,14 @@ internal static class BonboardingCss
     /// <summary>Formats an integer.</summary>
     public static string Int(int value) => value.ToString(CultureInfo.InvariantCulture);
 
+    /// <summary>The <c>data-bonboarding-theme</c> value the stylesheet keys its colour schemes on.</summary>
+    public static string Theme(BonboardingTheme? theme) => theme switch
+    {
+        BonboardingTheme.Dark => "dark",
+        BonboardingTheme.Light => "light",
+        _ => "system",
+    };
+
     /// <summary>Joins non-empty class names with a single space.</summary>
     public static string? Classes(params string?[] values)
     {

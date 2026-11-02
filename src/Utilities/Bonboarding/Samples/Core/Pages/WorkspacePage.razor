@@ -1,0 +1,50 @@
+﻿@page "/workspace"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Workspace - Bonboarding samples</PageTitle>
+
+<h1>Workspace</h1>
+
+<p>
+    The workspace tour starts here, crosses to the <a href="workspace/settings">settings page</a> for two steps and
+    comes back for the last one. The navigation is the engine's, not this page's: each step names its route, and the
+    engine goes there and waits for the page to render before it looks for the step's element.
+</p>
+
+<p class="muted">
+    Press the browser's Back button on a settings step and the tour holds its place, with nothing of it left on screen;
+    it picks up again once you return. Reload part way through and start it again: it resumes at the step you were on.
+</p>
+
+<div class="row">
+    <button type="button" @onclick="StartTourAsync" disabled="@(RendererInfo.IsInteractive is false)">Run the workspace tour</button>
+</div>
+
+<section class="panel">
+    <div class="row">
+        <h2>Projects</h2>
+        <button type="button" data-bonboarding-anchor="new-project" @onclick="CreateProjectAsync">New project</button>
+    </div>
+
+    <ul class="list" data-bonboarding-anchor="projects">
+        @foreach (var project in _projects)
+        {
+            <li>@project</li>
+        }
+    </ul>
+</section>
+
+@code {
+    private readonly List<string> _projects = ["Website redesign", "Quarterly report"];
+
+    private Task StartTourAsync() => BonboardingService.StartAsync(SampleTours.WorkspaceId);
+
+    private async Task CreateProjectAsync()
+    {
+        _projects.Insert(0, $"Project {_projects.Count + 1}");
+
+        // The code that knows a project was created says so; the step waiting for it moves on. Raised while no step
+        // waits, it does nothing.
+        await BonboardingService.SignalAsync(SampleTours.ProjectCreatedSignal);
+    }
+}

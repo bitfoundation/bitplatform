@@ -1,7 +1,8 @@
 name: bit platform CI - Bsqlite E2E
 
-# The worker, the engine builds and every VFS in Chromium, plus every page of the demo website. It takes far longer
-# than the build-and-unit pipeline (bit.ci.Bsqlite.yml), so it runs only when started by hand. See
+# The worker, the engine builds and every VFS in Chromium, plus every page of the demo website and the published lazy
+# loading sample - trimmed, and in a job of its own AOT-compiled. It takes far longer than the build-and-unit pipeline
+# (bit.ci.Bsqlite.yml), so it runs only when started by hand. See
 # src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/README.md for what the browser suite proves and how to run it locally.
 
 on:
@@ -20,7 +21,7 @@ jobs:
   # page of the demo website, against the demo published the way it ships.
   e2e:
     name: Bsqlite E2E (Chromium)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
 
     steps:
@@ -30,20 +31,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
 
-    - name: Setup .NET 9.0
+    - name: Setup .NET 10.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
 
     # Node runs the TypeScript build, and the restore of the storage packages runs it to rewrite the imports of
     # the wa-sqlite VFSes they vendor - so it has to be there before the first restore.
@@ -52,7 +48,7 @@ jobs:
         node-version: 24
 
     - name: Install wasm-tools
-      run: cd src && dotnet workload install wasm-tools
+      run: cd src && dotnet workload install wasm-tools wasm-tools-net10
 
     # The tests drive the demo published the way bsqlite.demo.cd.yml publishes it, not a build output: only a publish
     # trims the WebAssembly client, and an interop payload the trimmer breaks - an anonymous type whose constructor
@@ -60,12 +56,19 @@ jobs:
     - name: Publish the demo
       run: dotnet publish src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 
+    # Published rather than built for the same reason: LazyLoadingTests drives what an app that lazy loads Bsqlite and
+    # EF Core ships, trimmed, with the lazy marks a publish writes into its boot configuration. Release, the
+    # configuration the suite is built in below, is where it looks for the publish output. Not AOT-compiled here;
+    # lazy-loading-aot below does that.
+    - name: Publish the lazy loading sample
+      run: dotnet publish src/Utilities/Bsqlite/Samples/Lazy/Bit.Bsqlite.Samples.Lazy/Bit.Bsqlite.Samples.Lazy.csproj -c Release
+
     # Building the E2E suite builds the libraries too (it serves their compiled modules), but not the demo.
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Start the published demo
       run: |
@@ -95,4 +98,60 @@ jobs:
         path: |
           **/bsqlite-e2e.trx
           demo.log
+        if-no-files-found: ignore
+
+  # The lazy loading sample published with AOT, as an app using Bsqlite may be: its project file leaves the lazy marks
+  # out then, as docs/getting-started.md says an AOT build must, and LazyLoadingTests checks that it loads Bsqlite and
+  # EF Core with the app and works all the same. It needs no demo, and so no .NET 10: the tests start the published
+  # sample, a .NET 11 app, themselves.
+  lazy-loading-aot:
+    name: Bsqlite lazy loading (AOT)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    # Before the first restore, as above: the library's restore runs the TypeScript build.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Publish the lazy loading sample with AOT
+      run: dotnet publish src/Utilities/Bsqlite/Samples/Lazy/Bit.Bsqlite.Samples.Lazy/Bit.Bsqlite.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+
+    - name: Build the E2E suite
+      run: dotnet build src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run lazy loading E2E tests
+      env:
+        BSQLITE_E2E_LAZY_AOT: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --filter "FullyQualifiedName~LazyLoadingTests"
+        --report-trx --report-trx-filename bsqlite-e2e-lazy-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bsqlite-e2e-lazy-aot
+        path: '**/bsqlite-e2e-lazy-aot.trx'
         if-no-files-found: ignore

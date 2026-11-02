@@ -22,7 +22,7 @@ namespace Bit.BlazorUI.Tests.Utils.Trimming;
 [TestClass]
 public sealed class BitAssetTrimmingContractTests
 {
-    private static readonly string[] Packages = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy"];
+    private static readonly string[] Packages = ["Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI"];
 
     private static readonly Lazy<List<PackageAssets>> Assets = new(() => Packages.Select(LoadAssets).ToList());
 

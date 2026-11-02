@@ -8,6 +8,8 @@ namespace Bit.Bink;
 /// </summary>
 public sealed class BinkPanTool : BinkToolBase
 {
+    internal const int MaxPointers = 10;
+
     private readonly Dictionary<int, Vector2> _pointers = new();
     private Vector2 _lastCentroid;
     private float _lastSpread;
@@ -38,6 +40,7 @@ public sealed class BinkPanTool : BinkToolBase
     public override bool OnPointerDown(IBinkToolContext context, in BinkInputSample sample)
     {
         ArgumentNullException.ThrowIfNull(context);
+        if (_pointers.Count >= MaxPointers && !_pointers.ContainsKey(sample.PointerId)) return false;
         _pointers[sample.PointerId] = sample.Position;
         UpdateGesture();
         context.CapturePointer(sample.PointerId);
@@ -51,6 +54,7 @@ public sealed class BinkPanTool : BinkToolBase
         ArgumentNullException.ThrowIfNull(context);
         if (!_pointers.ContainsKey(sample.PointerId))
         {
+            if (_pointers.Count >= MaxPointers) return;
             // A contact can join a gesture that is already running, either because a host routed an existing
             // touch here after deciding it was a two-finger gesture, or because the down event was consumed
             // elsewhere. Adopting it silently and re-basing the gesture avoids a jump on the next move.

@@ -16,7 +16,7 @@
             <tbody>
                 @foreach (var p in _visible)
                 {
-                    <ProductRow Product="p" Highlight="@(p.Id % 7 == 0)" OnAdd="Cart.Add" />
+                    <ProductRow Product="p" Highlight="@(p.Id % 7 == 0)" OnAdd="Cart.Add" SkipUnchanged="SkipUnchangedRows" />
                 }
             </tbody>
         </table>
@@ -30,6 +30,8 @@
     private string? _error;
 
     [Parameter] public bool SearchOnType { get; set; }
+
+    [Parameter] public bool SkipUnchangedRows { get; set; }
 
     protected override void OnInitialized()
     {

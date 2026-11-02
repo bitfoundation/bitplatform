@@ -28,15 +28,17 @@ public static class BmageServerInstructions
 
     public static readonly string Text = $"""
         Bit.Bmage is image processing for Blazor, written in C#: load, crop, resize, adjust, filter, mask, layer, draw,
-        annotate, redact and export images on the user's device, or headlessly on a server. One package, Bit.Bmage:
-        the engine (pixels, pipelines, masks, layers, managed PNG/JPEG/BMP/GIF codecs, metadata, drawing, JSON edits),
-        the browser integration (ImageLoader, ImageExporter, the browser's WebP/AVIF codecs in Web Workers, capability
-        probing) and the BmageEditor component (namespace Bit.Bmage.Editor.Components, styled by the opt-in
-        _content/Bit.Bmage/bit-bmage-editor.css).
+        annotate, redact and export images on the user's device, or headlessly on a server. Two packages. Bit.Bmage is
+        the engine (pixels, pipelines, masks, layers, managed PNG/JPEG/BMP/GIF/WebP codecs and AVIF decoder, metadata,
+        drawing, JSON edits) with no dependency on Blazor - all a server, console app or worker installs.
+        Bit.Bmage.Blazor, which brings Bit.Bmage along, is what a browser app installs: the browser integration
+        (ImageLoader, ImageExporter, the browser's codecs in Web Workers, AVIF encoding among them, capability probing)
+        and the BmageEditor component (namespace Bit.Bmage.Editor.Components, styled by the opt-in
+        _content/Bit.Bmage.Blazor/bit-bmage-editor.css). Namespaces do not follow the packages: both use Bit.Bmage.*.
 
-        Every answer here is read out of Bit.Bmage {BmageVersion} as loaded in this server - the XML documentation of the
-        assembly, the README and docs/ guides, the demo's sources - or measured by running its engine. Where what
-        you remember and what these tools say disagree, the tools describe the build in front of you.
+        Every answer here is read out of Bit.Bmage and Bit.Bmage.Blazor {BmageVersion} as loaded in this server - the XML
+        documentation of the assemblies, the README and docs/ guides, the demo's sources - or measured by running its
+        engine. Where what you remember and what these tools say disagree, the tools describe the build in front of you.
 
         Working rules:
 
@@ -53,7 +55,9 @@ public static class BmageServerInstructions
         - Browser features (capabilities, ImageExporter downloads and object URLs, clipboard, paste, remote URLs) run in
           event handlers or `OnAfterRenderAsync`, never `OnInitialized(Async)`: there is no browser during prerendering.
         - Dispose every `ImageBuffer` you are handed (`using var`): they are pooled, and large.
-        - WebP and AVIF are browser codecs: export them with `EncodeWithFallbackAsync`, and never on a server.
+        - AVIF is encoded only by browsers: export it with `EncodeWithFallbackAsync`, and never on a server. WebP, lossy
+          or lossless, encodes everywhere when named; in WebAssembly a fallback list passes it over where the browser
+          cannot write it, as Bmage's own encoder would hold the UI thread.
         - Metadata is removed by default. `MetadataPolicy.Preserve` keeps GPS; use `StripSensitive` to keep camera data.
         - Look up a type with `GetBmageApiDetails` before using it - its types are spread over a dozen namespaces.
         - Choose formats, qualities and size budgets with `RunBmagePipeline`, which measures them on the real engine,

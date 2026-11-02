@@ -29,6 +29,7 @@ public partial class BitFcWeekViewMultiDayEventsRow
 
         _eventRows = new Dictionary<BitFullCalendarEvent, int>();
         var rowUsageByDay = _weekDays.ToDictionary(d => d.Date, _ => new HashSet<int>());
+        var nextFreeRowByDay = _weekDays.ToDictionary(d => d.Date, _ => 0);
 
         foreach (var ev in _weekEvents)
         {
@@ -42,13 +43,18 @@ public partial class BitFcWeekViewMultiDayEventsRow
             if (evDays.Count == 0)
                 continue;
 
-            for (int row = 0; ; row++)
+            for (int row = evDays.Max(d => nextFreeRowByDay[d.Date]); ; row++)
             {
                 if (evDays.All(d => !rowUsageByDay[d.Date].Contains(row)))
                 {
                     _eventRows[ev] = row;
                     foreach (var d in evDays)
-                        rowUsageByDay[d.Date].Add(row);
+                    {
+                        var usedRows = rowUsageByDay[d.Date];
+                        usedRows.Add(row);
+                        while (usedRows.Contains(nextFreeRowByDay[d.Date]))
+                            nextFreeRowByDay[d.Date]++;
+                    }
                     break;
                 }
             }

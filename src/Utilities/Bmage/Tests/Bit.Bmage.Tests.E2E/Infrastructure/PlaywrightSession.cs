@@ -90,7 +90,7 @@ public static class PlaywrightSession
             }
         }
 
-        return (null, "No browser is available. Run 'pwsh bin/Debug/net10.0/playwright.ps1 install chromium', or install Chrome or Edge. "
+        return (null, "No browser is available. Run 'pwsh bin/Debug/net11.0/playwright.ps1 install chromium', or install Chrome or Edge. "
             + string.Join(" | ", failures));
     }
 }

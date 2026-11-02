@@ -31,6 +31,14 @@ public sealed class BbQrFinderPatternFinder
     public const int MaxCandidates = 4;
 
     /// <summary>
+    /// The most distinct centres collected from one image. Choosing the finder patterns tries every triple of them, so
+    /// an image tiled with finder patterns - which no photograph of real symbols is, but a file anyone can pick may be
+    /// - cost the cube of their number: seven and a half minutes for a 3000 pixel one. Genuine symbols, version 40
+    /// included, leave at most five, at any orientation; a frame of several symbols, three each.
+    /// </summary>
+    private const int MaxCenters = 32;
+
+    /// <summary>
     /// The centres of a version 1 symbol are fourteen modules apart along each edge, so no two
     /// finder patterns of one symbol can be closer than that.
     /// </summary>
@@ -53,6 +61,9 @@ public sealed class BbQrFinderPatternFinder
         static (a, b) => a.EstimatedModuleSize.CompareTo(b.EstimatedModuleSize);
 
     private readonly List<BbQrFinderPattern> _possibleCenters = new(8);
+
+    /// <summary>Every finder pattern centre the last search confirmed, triple or not.</summary>
+    internal ReadOnlySpan<BbQrFinderPattern> Centers => System.Runtime.InteropServices.CollectionsMarshal.AsSpan(_possibleCenters);
     private readonly int[] _crossCheckStateCount = new int[5];
     private readonly Triple[] _candidates = new Triple[MaxCandidates];
 
@@ -271,8 +282,10 @@ public sealed class BbQrFinderPatternFinder
             return false;
         }
 
+        // Half a module either way; but a pixel at least, which is what the edges of a two pixel module turned off the rows
+        // move by on every line, and which half of two pixels does not allow.
         var moduleSize = totalModuleSize / 7.0f;
-        var maxVariance = moduleSize / 2.0f;
+        var maxVariance = MathF.Max(moduleSize / 2.0f, 1.01f);
 
         return Math.Abs(moduleSize - stateCount[0]) < maxVariance
             && Math.Abs(moduleSize - stateCount[1]) < maxVariance
@@ -309,7 +322,7 @@ public sealed class BbQrFinderPatternFinder
         }
 
         centerJ = CrossCheckHorizontal((int)centerJ, (int)centerI, stateCount[2], stateCountTotal);
-        if (float.IsNaN(centerJ) || !CrossCheckDiagonal((int)centerI, (int)centerJ))
+        if (float.IsNaN(centerJ) || !CrossCheckDiagonal((int)centerI, (int)centerJ, stateCountTotal))
         {
             return false;
         }
@@ -325,6 +338,11 @@ public sealed class BbQrFinderPatternFinder
             }
         }
 
+        if (_possibleCenters.Count >= MaxCenters)
+        {
+            return false;
+        }
+
         _possibleCenters.Add(new BbQrFinderPattern(centerJ, centerI, estimatedModuleSize));
         return true;
     }
@@ -332,17 +350,22 @@ public sealed class BbQrFinderPatternFinder
     private float CrossCheckVertical(int startI, int centerJ, int maxCount, int originalStateCountTotal)
     {
         var maxI = _image!.Height;
+
+        // A centre run left to reach the edge makes every candidate on a long black column cost the column's height,
+        // and an image of such columns the square of it. Twice the row's total rejects nothing the total check at the
+        // end would not: a run that long already puts the column's total more than 40% off the row's.
+        var maxCenterCount = 2 * originalStateCountTotal;
         var stateCount = _crossCheckStateCount;
         Array.Clear(stateCount);
 
         var i = startI;
-        while (i >= 0 && _image![centerJ, i])
+        while (i >= 0 && _image![centerJ, i] && stateCount[2] <= maxCenterCount)
         {
             stateCount[2]++;
             i--;
         }
 
-        if (i < 0)
+        if (i < 0 || stateCount[2] > maxCenterCount)
         {
             return float.NaN;
         }
@@ -370,13 +393,13 @@ public sealed class BbQrFinderPatternFinder
         }
 
         i = startI + 1;
-        while (i < maxI && _image![centerJ, i])
+        while (i < maxI && _image![centerJ, i] && stateCount[2] <= maxCenterCount)
         {
             stateCount[2]++;
             i++;
         }
 
-        if (i == maxI)
+        if (i == maxI || stateCount[2] > maxCenterCount)
         {
             return float.NaN;
         }
@@ -415,17 +438,20 @@ public sealed class BbQrFinderPatternFinder
     private float CrossCheckHorizontal(int startJ, int centerI, int maxCount, int originalStateCountTotal)
     {
         var maxJ = _image!.Width;
+
+        // Bounded as in CrossCheckVertical, and for the same reason: the total check at the end is tighter still.
+        var maxCenterCount = 2 * originalStateCountTotal;
         var stateCount = _crossCheckStateCount;
         Array.Clear(stateCount);
 
         var j = startJ;
-        while (j >= 0 && _image![j, centerI])
+        while (j >= 0 && _image![j, centerI] && stateCount[2] <= maxCenterCount)
         {
             stateCount[2]++;
             j--;
         }
 
-        if (j < 0)
+        if (j < 0 || stateCount[2] > maxCenterCount)
         {
             return float.NaN;
         }
@@ -453,13 +479,13 @@ public sealed class BbQrFinderPatternFinder
         }
 
         j = startJ + 1;
-        while (j < maxJ && _image![j, centerI])
+        while (j < maxJ && _image![j, centerI] && stateCount[2] <= maxCenterCount)
         {
             stateCount[2]++;
             j++;
         }
 
-        if (j == maxJ)
+        if (j == maxJ || stateCount[2] > maxCenterCount)
         {
             return float.NaN;
         }
@@ -499,69 +525,84 @@ public sealed class BbQrFinderPatternFinder
     /// Confirms a candidate along its main diagonal. This is what rejects the many 1:1:3:1:1
     /// horizontal and vertical coincidences produced by text and packaging artwork.
     /// </summary>
-    private bool CrossCheckDiagonal(int centerI, int centerJ)
+    private bool CrossCheckDiagonal(int centerI, int centerJ, int originalStateCountTotal)
     {
         Span<int> stateCount = stackalloc int[5];
 
+        // A step along the diagonal moves a pixel each way, so it crosses a finder pattern in no more steps than a row
+        // does - as many upright, half as many turned 45 degrees. No run of a real one comes near twice the row's total,
+        // and without a bound each run could go on to the edge of the image.
+        var maxCount = 2 * originalStateCountTotal;
+
         var i = 0;
-        while (centerI >= i && centerJ >= i && _image![centerJ - i, centerI - i])
+        while (centerI >= i && centerJ >= i && _image![centerJ - i, centerI - i] && stateCount[2] <= maxCount)
         {
             stateCount[2]++;
             i++;
         }
 
-        if (centerI < i || centerJ < i)
+        if (centerI < i || centerJ < i || stateCount[2] > maxCount)
         {
             return false;
         }
 
-        while (centerI >= i && centerJ >= i && !_image![centerJ - i, centerI - i] && stateCount[1] <= centerI)
+        while (centerI >= i && centerJ >= i && !_image![centerJ - i, centerI - i] && stateCount[1] <= maxCount)
         {
             stateCount[1]++;
             i++;
         }
 
-        if (centerI < i || centerJ < i || stateCount[1] > centerI)
+        if (centerI < i || centerJ < i || stateCount[1] > maxCount)
         {
             return false;
         }
 
-        while (centerI >= i && centerJ >= i && _image![centerJ - i, centerI - i])
+        while (centerI >= i && centerJ >= i && _image![centerJ - i, centerI - i] && stateCount[0] <= maxCount)
         {
             stateCount[0]++;
             i++;
+        }
+
+        if (stateCount[0] > maxCount)
+        {
+            return false;
         }
 
         var maxI = _image!.Height;
         var maxJ = _image!.Width;
 
         i = 1;
-        while (centerI + i < maxI && centerJ + i < maxJ && _image![centerJ + i, centerI + i])
+        while (centerI + i < maxI && centerJ + i < maxJ && _image![centerJ + i, centerI + i] && stateCount[2] <= maxCount)
         {
             stateCount[2]++;
             i++;
         }
 
-        if (centerI + i >= maxI || centerJ + i >= maxJ)
+        if (centerI + i >= maxI || centerJ + i >= maxJ || stateCount[2] > maxCount)
         {
             return false;
         }
 
-        while (centerI + i < maxI && centerJ + i < maxJ && !_image![centerJ + i, centerI + i])
+        while (centerI + i < maxI && centerJ + i < maxJ && !_image![centerJ + i, centerI + i] && stateCount[3] <= maxCount)
         {
             stateCount[3]++;
             i++;
         }
 
-        if (centerI + i >= maxI || centerJ + i >= maxJ)
+        if (centerI + i >= maxI || centerJ + i >= maxJ || stateCount[3] > maxCount)
         {
             return false;
         }
 
-        while (centerI + i < maxI && centerJ + i < maxJ && _image![centerJ + i, centerI + i])
+        while (centerI + i < maxI && centerJ + i < maxJ && _image![centerJ + i, centerI + i] && stateCount[4] <= maxCount)
         {
             stateCount[4]++;
             i++;
+        }
+
+        if (stateCount[4] > maxCount)
+        {
+            return false;
         }
 
         return FoundPatternCross(stateCount);

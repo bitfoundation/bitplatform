@@ -33,16 +33,8 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, "harness-files"))
 });
 
-#if NET9_0_OR_GREATER
 app.UseAntiforgery();
 app.MapStaticAssets();
-#else
-app.UseStaticFiles();
-// Explicitly after the static files: WebApplication otherwise matches endpoints first, a page route claims
-// the request and UseStaticFiles steps aside for a request that already has an endpoint.
-app.UseRouting();
-app.UseAntiforgery();
-#endif
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

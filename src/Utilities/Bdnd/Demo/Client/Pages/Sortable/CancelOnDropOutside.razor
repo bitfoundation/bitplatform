@@ -8,11 +8,11 @@
         Like the simple sortable, but the order is only committed if you drop <em>on the list</em>.
         Drop a card anywhere else and it snaps back to where it started. This uses
         <code>OnEnd</code> with its <code>DidDrop</code> to detect a drop outside. The list
-        itself is a drop target too, so a drop in the gap between two cards still counts.
+        itself is a drop target too, so a drop in the gap between two cards still counts. A keyboard drag
+        cancelled with <kbd>Escape</kbd> ends the same way, with <code>DidDrop</code> false, and the card goes back
+        too.
     </p>
 </div>
-
-<DemoCode />
 
 <div class="bb-demo">
     <BdndProvider>
@@ -27,6 +27,8 @@
 
     <p class="demo-caption sortable-order">Order: @string.Join(", ", _cards.Select(c => c.Text))</p>
 </div>
+
+<DemoCode />
 
 @code {
     private readonly List<SortableCard.CardModel> _cards =

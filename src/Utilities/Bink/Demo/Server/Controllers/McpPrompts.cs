@@ -81,7 +81,7 @@ public static class McpPrompts
     }
 
     [McpServerPrompt(Name = "debug-bink-canvas", Title = "Debug a canvas or document")]
-    [Description("Diagnoses a Bit.Bink problem - a canvas that does not draw, ink that lags, touch that scrolls, a document that does not load back, an export that is missing something.")]
+    [Description("Diagnoses a Bit.Bink problem - a canvas that does not draw, ink that lags, touch that scrolls, a document that does not load back, an export that is missing something, an app that lazy loads Bit.Bink and fails with Could not load file or assembly 'Bit.Bink'.")]
     public static string DebugBinkCanvas(
         [Description("What goes wrong, with the page, the tool or the document involved if you know them.")] string symptom)
     {
@@ -91,12 +91,15 @@ public static class McpPrompts
             Work in this order:
 
             1. Check the setup against `GetBinkSetupGuide` for this render mode first: the canvas on an interactively
-               rendered page, in the project that runs it, with a height; no invented service registration. Handle
+               rendered page, in the project that runs it, with a height. Bink has no services, so do not invent a
+               registration of its own; the one registration lazy loading adds is the framework's
+               `LazyAssemblyLoader`, on every host but standalone WebAssembly that renders a component injecting it. Handle
                `Unavailable` (or read `BinkCanvas.AttachFailed`) - when the browser layer cannot start, it says why.
             2. Call `SearchBink` with the symptom, and read the guide section it points to - "Hosting models" covers
                Blazor Server latency and wet ink, "Mobile, touch and stylus" covers touch that scrolls
                (`EnableTouchGestures`) and palm rejection, "Serialization" covers documents that do not load,
-               "SVG and PNG export" and "Cropping" cover exports.
+               "SVG and PNG export" and "Cropping" cover exports, and "Lazy loading on WebAssembly" covers an app that
+               cannot load Bit.Bink because it lazy loads it.
             3. For a document problem, pass the document to `InspectBinkDocument`: it runs the library's own serializer
                and exporters, and its notes name unregistered brush kinds, unknown elements, hidden layers, elements
                outside the page and the text and images the server-side PNG path skips.

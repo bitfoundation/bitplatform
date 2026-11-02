@@ -20,7 +20,7 @@
         <div class="bb-hero-copy">
             <span class="bb-hero-eyebrow">
                 <span class="bb-dot bb-dot-success"></span>
-                Open source · MIT · net8.0 / net9.0 / net10.0
+                Open source · MIT · net10.0 / net11.0
             </span>
             <h1>A command palette for Blazor,<br />
                 <span class="bb-hero-accent">every decision in C#.</span></h1>
@@ -100,24 +100,25 @@
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Registering commands</h3>
                 <p class="bb-card-desc">
-                    A fluent builder, declarative <code>BaletteItem</code> markup, and commands that exist only while a
-                    page is on screen - merged into one list.
+                    A fluent builder, declarative <code>BaletteItem</code> markup, commands that exist only while a page is
+                    on screen or only when they apply, and toggles that stay in sync - merged into one list.
                 </p>
                 <a href="commands" class="btn btn-outline">Registering commands →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested pages &amp; flows</h3>
                 <p class="bb-card-desc">
-                    Static, lazy and ad-hoc pages, free-text prompts, multi-select, confirmations, toasts and a Raycast-style
-                    action panel - every step in the same box.
+                    Static, lazy and searching pages, prompts, multi-select, confirmations, long-running and failing
+                    commands, recents, pins and a Raycast-style action panel - every step in the same box.
                 </p>
                 <a href="pages" class="btn btn-outline">Nested pages →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Search &amp; ranking</h3>
                 <p class="bb-card-desc">
-                    An fzf-style fuzzy matcher with <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code> and
-                    <code>!negate</code>, weighted fields, priority and frecency - every score shown live.
+                    An fzf-style fuzzy matcher with <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code>,
+                    <code>!negate</code>, <code>"phrases"</code> and <code>a | b</code>, accents and typos forgiven, weighted
+                    fields, priority and frecency - every score shown live.
                 </p>
                 <a href="search" class="btn btn-outline">Search &amp; ranking →</a>
             </section>
@@ -125,7 +126,7 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Modes &amp; sources</h3>
                 <p class="bb-card-desc">
                     Typed prefixes - <code>&gt;</code> <code>#</code> <code>@@</code> <code>?</code> - that scope the palette,
-                    and async sources that are debounced, cancelled and merged.
+                    and async sources that are debounced, cancelled, paged, timed out and retried.
                 </p>
                 <a href="modes" class="btn btn-outline">Modes &amp; sources →</a>
             </section>
@@ -133,17 +134,41 @@
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Keyboard &amp; shortcuts</h3>
                 <p class="bb-card-desc">
                     Every key inside the palette, global chords such as <kbd>Alt</kbd> <kbd>Z</kbd> and G-then-X sequences,
-                    matched in the browser and shown in the platform's own symbols.
+                    matched in the browser on any keyboard layout and shown in the platform's own symbols.
                 </p>
                 <a href="keyboard" class="btn btn-outline">Keyboard &amp; shortcuts →</a>
             </section>
             <section class="bb-card">
                 <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Theming &amp; templates</h3>
                 <p class="bb-card-desc">
-                    Light and dark, CSS custom properties changed live on this site's palette, the detail pane, eight
-                    templates and a fully unstyled mode.
+                    Light and dark, CSS custom properties and density changed live on this site's palette, the detail pane,
+                    eight templates and a fully unstyled mode - each one running.
                 </p>
                 <a href="theming" class="btn btn-outline">Theming &amp; templates →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Localization &amp; RTL</h3>
+                <p class="bb-card-desc">
+                    Every label and announcement in another language, plural forms, translated commands that keep their
+                    English names, and right-to-left layouts.
+                </p>
+                <a href="localization" class="btn btn-outline">Localization &amp; RTL →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Large registry</h3>
+                <p class="bb-card-desc">
+                    Thousands of commands registered, or served from a static source, and what one keystroke costs -
+                    measured in your browser.
+                </p>
+                <a href="performance" class="btn btn-outline">Large registry →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Options &amp; security</h3>
+                <p class="bb-card-desc">
+                    Every option with this site's value beside the default, the parameters one palette overrides, and what
+                    keeps text, links and history safe - with a refused <code>javascript:</code> link to try.
+                </p>
+                <a href="options" class="btn btn-outline">Options &amp; security →</a>
             </section>
         </div>
     </section>
@@ -164,11 +189,7 @@
                     </p>
                     <a href="commands">Registering commands →</a>
                 </div>
-                <pre class="bb-code"><span class="p">Palette</span>.Register(
-    <span class="k">BaletteCmd</span>.Navigate(<span class="s">"Settings"</span>, <span class="s">"/settings"</span>)
-        .Group(<span class="s">"Navigation"</span>).Shortcut(<span class="s">"G S"</span>).Keywords(<span class="s">"preferences"</span>),
-    <span class="k">BaletteCmd</span>.Action(<span class="s">"Toggle sidebar"</span>, () =&gt; _sidebarOpen = !_sidebarOpen)
-        .Shortcut(<span class="s">"Mod+B"</span>));</pre>
+                <CodeBlock Language="csharp" Code="@RegisterCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -180,16 +201,7 @@
                     </p>
                     <a href="pages">Nested pages &amp; flows →</a>
                 </div>
-                <pre class="bb-code"><span class="k">BaletteCmd</span>.New(<span class="s">"Rename project…"</span>)
-    .Shortcut(<span class="s">"F2"</span>)
-    .Handler(_ =&gt; Task.FromResult(<span class="k">BaletteCommandResult</span>.Prompt(
-        <span class="s">"New project name"</span>,
-        ctx =&gt;
-        {
-            state.Rename(ctx.PromptValue!.Trim());
-            <span class="k">return</span> Task.FromResult(<span class="k">BaletteCommandResult</span>.Toast(<span class="s">"Renamed"</span>));
-        },
-        initialValue: state.ProjectName)))</pre>
+                <CodeBlock Language="csharp" Code="@PromptCode" />
             </div>
             <div class="bb-walkthrough-row">
                 <div class="bb-walkthrough-copy">
@@ -201,19 +213,7 @@
                     </p>
                     <a href="modes">Modes &amp; sources →</a>
                 </div>
-                <pre class="bb-code"><span class="k">public sealed class</span> PeopleSource : <span class="k">IBaletteSource</span>
-{
-    <span class="k">public string</span> Name =&gt; <span class="s">"People"</span>;
-    <span class="k">public bool</span> ApplyMatcher =&gt; <span class="k">true</span>;   <span class="c">// re-rank with the palette's matcher</span>
-
-    <span class="k">public async</span> Task&lt;IReadOnlyList&lt;<span class="k">BaletteCommand</span>&gt;&gt; SearchAsync(
-        <span class="k">string</span> query, <span class="k">BaletteSourceContext</span> context, CancellationToken cancellationToken)
-    {
-        <span class="k">var</span> people = <span class="k">await</span> context.Services.GetRequiredService&lt;PeopleClient&gt;()
-            .SearchAsync(query, cancellationToken);
-        <span class="k">return</span> [.. people.Select(p =&gt; <span class="k">BaletteCmd</span>.New(p.Name).Subtitle(p.Role).Build())];
-    }
-}</pre>
+                <CodeBlock Language="csharp" Code="@SourceCode" />
             </div>
         </div>
     </section>
@@ -285,7 +285,7 @@
             <details>
                 <summary>Which render modes does it work in?</summary>
                 <p>
-                    Any interactive one - WebAssembly, Server, Auto and Hybrid - on .NET 8, 9 and 10. Shortcuts and the
+                    Any interactive one - WebAssembly, Server, Auto and Hybrid - on .NET 10 and 11. Shortcuts and the
                     navigation keys are matched in the browser, so on Blazor Server only the query and the chosen command
                     cross the connection. This site runs on WebAssembly, so the whole search runs next to the list it fills.
                 </p>
@@ -304,6 +304,23 @@
                     Thousands. Only the best <code>MaxResults</code> rows are rendered, <code>Virtualize</code> renders just
                     the visible ones, and on WebAssembly a search that takes longer than a frame lets the keystroke paint
                     first. The <a href="performance">large registry</a> page measures it in your browser.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work in other languages, and right to left?</summary>
+                <p>
+                    Yes. Every label and announcement - the ones only screen readers hear included - is a property of
+                    <code>BaletteStrings</code>, every rule of the stylesheet uses logical properties, and search treats the
+                    Arabic and Persian forms of a letter and Persian digits as one. The <a href="localization">localization</a>
+                    page switches a palette between English, German and Persian as you watch.
+                </p>
+            </details>
+            <details>
+                <summary>What happens when a command or an API fails?</summary>
+                <p>
+                    It is logged and reported in the palette - a generic message, never the exception's text, unless you choose
+                    to show it - and it never ends a Blazor Server circuit. A page that failed to load and a source that threw
+                    or timed out offer a retry, and the rest of the list stays. <a href="pages#failures">Try it</a>.
                 </p>
             </details>
             <details>
@@ -331,7 +348,7 @@
 </div>
 
 @code {
-    // Queries the hero opens the palette with: fuzzy word starts, a nested page, and the three modes.
+    // Queries the hero opens the palette with: fuzzy word starts, a nested page, and the four modes.
     private static readonly (string Query, string Label)[] TryQueries =
     [
         ("rc", "Fuzzy: R and C at two word starts"),
@@ -339,7 +356,46 @@
         (">", "Commands mode"),
         ("#105", "Issues mode: an issue by number"),
         ("@ada", "People mode: an async source"),
+        ("?", "Help mode: the Help group only"),
     ];
+
+    // The walkthrough's snippets, coloured by CodeBlock.
+    private const string RegisterCode = """
+        Palette.Register(
+            BaletteCmd.Navigate("Settings", "/settings")
+                .Group("Navigation").Shortcut("G S").Keywords("preferences"),
+            BaletteCmd.Action("Toggle sidebar", () => _sidebarOpen = !_sidebarOpen)
+                .Shortcut("Mod+B"));
+        """;
+
+    private const string PromptCode = """
+        BaletteCmd.New("Rename project…")
+            .Shortcut("F2")
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+                "New project name",
+                ctx =>
+                {
+                    state.Rename(ctx.PromptValue!.Trim());
+                    return Task.FromResult(BaletteCommandResult.Toast("Renamed"));
+                },
+                initialValue: state.ProjectName)))
+        """;
+
+    private const string SourceCode = """
+        public sealed class PeopleSource : IBaletteSource
+        {
+            public string Name => "People";
+            public bool ApplyMatcher => true;   // re-rank with the palette's matcher
+
+            public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(
+                string query, BaletteSourceContext context, CancellationToken cancellationToken)
+            {
+                var people = await context.Services.GetRequiredService<PeopleClient>()
+                    .SearchAsync(query, cancellationToken);
+                return [.. people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build())];
+            }
+        }
+        """;
 
     protected override void OnInitialized() => State.Changed += Refresh;
 

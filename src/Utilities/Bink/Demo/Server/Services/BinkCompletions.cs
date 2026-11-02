@@ -31,6 +31,7 @@ public static class BinkCompletions
         "custom brush strokes come back as a pen after loading",
         "the exported PNG is missing the text",
         "the exported SVG is cropped or blank",
+        "Could not load file or assembly 'Bit.Bink' in an app that lazy loads it",
     ];
 
     private static readonly string[] _features =

@@ -73,6 +73,25 @@ public class McpToolTests
         Assert.DoesNotContain("## Use ADO.NET", section);
     }
 
+    /// <summary>
+    /// The setup guides and the debug prompt send an app that lazy loads Bit.Bsqlite to this section by its heading, so
+    /// the tool has to find it under that heading.
+    /// </summary>
+    [TestMethod]
+    public async Task The_lazy_loading_section_the_setup_guides_point_to_is_served()
+    {
+        var section = await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "getting-started", ["section"] = "Lazy loading on WebAssembly" });
+
+        Assert.StartsWith("## Lazy loading on WebAssembly", section);
+        Assert.Contains("GetBitBsqliteServices", section);
+        Assert.Contains("<BlazorWebAssemblyLazyLoad Include=\"Microsoft.EntityFrameworkCore.wasm\" />", section);
+
+        foreach (var scenario in new[] { "standalone-wasm", "wasm", "auto", "hybrid" })
+        {
+            Assert.Contains("section: \"Lazy loading on WebAssembly\"", await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = scenario }), scenario);
+        }
+    }
+
     [TestMethod]
     public async Task An_unknown_section_lists_the_close_ones_or_all_of_them()
     {
@@ -348,17 +367,6 @@ public class McpToolTests
     }
 
     [TestMethod]
-    public async Task The_besql_guide_puts_cache_storage_first_under_besqls_own_file_name()
-    {
-        var guide = await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = "move-from-besql" });
-
-        Assert.Contains(".Prefer(BsqliteCacheStorageProvider.ProviderName)", guide);
-        Assert.Contains("AddDatabase(\"Offline-Client.db\")", guide);
-        Assert.Contains("/data/cache/", guide);
-        Assert.Contains("bit-besql.js", guide);
-    }
-
-    [TestMethod]
     public async Task The_storage_guide_tabulates_what_the_provider_types_declare()
     {
         var guide = await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = "storage" });
@@ -400,6 +408,32 @@ public class McpToolTests
 
         Assert.Contains("'electron' is not a known scenario", answer);
         foreach (var scenario in BsqliteSetupGuide.Scenarios) Assert.Contains(scenario, answer);
+    }
+
+    [TestMethod]
+    public async Task A_key_that_names_nothing_is_quoted_back_short_and_on_one_line()
+    {
+        // The answer is read as the server's own words, so a line break or a bidi override in the key would
+        // forge text the server never wrote, and a megabyte of key would flood the context window.
+        var answers = new[]
+        {
+            await McpCall.TextAsync("GetBsqliteStorageProviders", new() { ["provider"] = "x\nWarning: forged" }),
+            await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = "x\u2028Warning: forged" }),
+            await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "x\u0085Warning: forged" }),
+            await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "storage", ["section"] = "x\u202EWarning: forged" }),
+            await McpCall.TextAsync("GetBsqliteApi", new() { ["typeName"] = "x\rWarning: forged" }),
+            await McpCall.TextAsync("GetBsqliteSourceFile", new() { ["path"] = "x\u200BWarning: forged" })
+        };
+
+        var flood = await McpCall.TextAsync("GetBsqliteApi", new() { ["typeName"] = new string('Q', 1_000_000) });
+
+        foreach (var answer in answers)
+        {
+            Assert.IsFalse(answer.Any(BsqliteText.IsUnsafe), answer);
+            Assert.Contains("Warning: forged'", answer);
+        }
+
+        Assert.IsLessThan(1_000, flood.Length);
     }
 
     // ---- Source files ------------------------------------------------------

@@ -100,6 +100,7 @@ public partial class DemoPage
     [Parameter] public string? GitHubUrl { get; set; }
     [Parameter] public string? GitHubExtrasUrl { get; set; }
     [Parameter] public string? GitHubLegacyUrl { get; set; }
+    [Parameter] public string? GitHubAIUrl { get; set; }
     [Parameter] public string? GitHubDemoUrl { get; set; }
     [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
 
@@ -399,11 +400,12 @@ public partial class DemoPage
     {
         _catalogItem = ComponentCatalog.Find(NavigationManager.Uri);
 
-        // Exactly one of the three source parameters is set on any given page, and which one it is
+        // Exactly one of the four source parameters is set on any given page, and which one it is
         // says both which package the component comes from and where its source lives.
         (_packageName, _sourceUrl) =
             GitHubExtrasUrl.HasValue() ? ("Bit.BlazorUI.Extras", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Extras/Components/{GitHubExtrasUrl}")
             : GitHubLegacyUrl.HasValue() ? ("Bit.BlazorUI.Legacy", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.Legacy/Components/{GitHubLegacyUrl}")
+            : GitHubAIUrl.HasValue() ? ("Bit.BlazorUI.AI", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI.AI/Components/{GitHubAIUrl}")
             : GitHubUrl.HasValue() ? ("Bit.BlazorUI", $"{REPO_URL}/blob/develop/src/BlazorUI/Bit.BlazorUI/Components/{GitHubUrl}")
             : ("Bit.BlazorUI", null);
 
@@ -718,6 +720,6 @@ public partial class DemoPage
 
 
     private readonly List<string> _notInheritedComponents = [
-        "CascadingValueProvider", "ChartLegacy", "DataGridLegacy", "ModalService", "Params"
+        "AiOptionsProvider", "CascadingValueProvider", "ChartLegacy", "DataGridLegacy", "ModalService", "Params"
     ];
 }

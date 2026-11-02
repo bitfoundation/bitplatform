@@ -45,8 +45,8 @@ public interface IIdentityController : IAppController
     [HttpPost("{?returnUrl}")]
     Task SendOtp(IdentityRequestDto request, string? returnUrl = null, CancellationToken cancellationToken = default);
 
-    [HttpGet("{?provider,returnUrl,localHttpPort}")]
-    Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, CancellationToken cancellationToken = default);
+    [HttpGet("{?provider,returnUrl,localHttpPort,localHttpNonce}")]
+    Task<string> GetExternalSignInUri(string provider, string? returnUrl = null, int? localHttpPort = null, string? localHttpNonce = null, CancellationToken cancellationToken = default);
 
     [HttpPost]
     Task<JsonElement> GetWebAuthnAssertionOptions(WebAuthnAssertionOptionsRequestDto request, CancellationToken cancellationToken) => default!;

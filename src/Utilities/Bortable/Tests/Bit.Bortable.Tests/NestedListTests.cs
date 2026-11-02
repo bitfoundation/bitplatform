@@ -1,19 +1,13 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Bortable.Tests;
 
 /// <summary>
-/// Lists inside the items of another list, and the app around a list. A <c>dragover</c> or <c>drop</c> stops at
-/// the innermost list only when that list takes the drag in progress: a nested list that refuses it (another
-/// group, another item type, <c>Put="false"</c>) leaves it to the list around it, as SortableJS does, and a drag
-/// that is not a list's at all (a file, selected text) reaches the app's own handlers.
+/// Lists inside the items of another list. When a drag starts, the lists answer which of them take it, and the
+/// browser layer routes the pointer to the innermost of those under it: a nested list that refuses the drag
+/// (another group, another item type, <c>Put="false"</c>) leaves it to the list around it, as SortableJS does.
 /// </summary>
-/// <remarks>
-/// bUnit bubbles an event only through the markup of the component the element was found in, so every element
-/// here is found through the outermost component.
-/// </remarks>
 [TestClass]
 public class NestedListTests : BortableTestContext
 {
@@ -38,68 +32,60 @@ public class NestedListTests : BortableTestContext
             }));
 
     [TestMethod]
-    public async Task ANestedListThatRefusesTheItemLeavesTheDragoverToTheListAroundIt()
+    public async Task ANestedListThatRefusesTheItemIsNotRoutedTo()
     {
         List<string> columns = ["A", "B", "C"];
         var board = RenderBoard(columns, columns.ToDictionary(c => c, c => new List<string> { $"{c}1" }),
             boardGroup: null, cardGroup: "cards");
 
-        // Column A over the card list of column C, which does not take columns: the board sorts the columns.
-        await board.FindAll("#board > [data-bortable-item]")[0].DragStartAsync(ListDragStart());
-        await DragOverAsync(board.Find("#cards-C"), 3);
+        // Column A: the card lists take cards only, so the pointer over them belongs to the board around them.
+        var started = await StartByKeyAsync(board, board.Find("#board > [data-bortable-item]").GetAttribute("data-bortable-key")!);
+        Assert.AreSequenceEqual(["board"], started!.Lists.ToList());
+
+        await DragOverAsync(board, 3);
+        await DropAsync(board);
 
         Assert.AreSequenceEqual(["B", "C", "A"], columns);
         Assert.IsEmpty(board.FindAll("[data-bortable-placeholder]"));
-
-        await board.Find("#cards-C").DropAsync(new DragEventArgs());
-        Assert.AreSequenceEqual(["B", "C", "A"], columns);
         Assert.IsNull(Coordinator.Context);
     }
 
     [TestMethod]
-    public async Task ANestedListThatTakesTheItemKeepsTheDragoverToItself()
+    public async Task ANestedListThatRefusesTheItemCannotBeMadeToTakeIt()
+    {
+        List<string> columns = ["A", "B"];
+        var board = RenderBoard(columns, columns.ToDictionary(c => c, c => new List<string> { $"{c}1" }),
+            boardGroup: null, cardGroup: "cards");
+        var cardsB = ListById<string>(board, "cards-B");
+
+        await StartByKeyAsync(board, board.Find("#board > [data-bortable-item]").GetAttribute("data-bortable-key")!);
+        // A drop position for a list that does not take the drag is ignored, whoever sends it.
+        Assert.IsFalse(await DragOverAsync(cardsB, 0));
+
+        Assert.IsEmpty(board.FindAll("[data-bortable-placeholder]"));
+    }
+
+    [TestMethod]
+    public async Task EveryListThatCanTakeTheItemIsNamedAtTheStart()
     {
         List<string> columns = ["A", "B"];
         var cards = columns.ToDictionary(c => c, c => new List<string> { $"{c}1" });
         var board = RenderBoard(columns, cards, boardGroup: "g", cardGroup: "g");
+        var cardsA = ListById<string>(board, "cards-A");
+        var cardsB = ListById<string>(board, "cards-B");
 
-        // Card A1 over the card list of column B: that list previews it, and the board around it, which could
-        // take the card as well, is not asked.
-        await board.Find("#cards-A > [data-bortable-item]").DragStartAsync(ListDragStart());
-        await DragOverAsync(board.Find("#cards-B"), 1);
+        // Card A1: its own list, the other card list and the board (the same group) all take it.
+        var started = await DragStartAsync(cardsA, "A1");
+        CollectionAssert.AreEquivalent(new[] { "board", "cards-A", "cards-B" }, started!.Lists);
 
+        // The browser layer routes the pointer over B's card list to that list, the innermost one under it.
+        await DragOverAsync(cardsB, 1);
         Assert.ContainsSingle(board.FindAll("#cards-B > [data-bortable-placeholder]"));
         Assert.ContainsSingle(board.FindAll("[data-bortable-placeholder]"));
 
-        await board.Find("#cards-B").DropAsync(new DragEventArgs());
+        await DropAsync(cardsB);
         Assert.AreSequenceEqual(["A", "B"], columns);
         Assert.IsEmpty(cards["A"]);
         Assert.AreSequenceEqual(["B1", "A1"], cards["B"]);
-    }
-
-    [TestMethod]
-    public async Task ADropThatIsNotAListsReachesTheAppAroundTheList()
-    {
-        int dropped = 0;
-        var page = Render(builder =>
-        {
-            // The app's own drop zone (for files, say), with a list inside it.
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "ondrop", EventCallback.Factory.Create<DragEventArgs>(this, () => dropped++));
-            builder.OpenComponent<Bortable<string>>(2);
-            builder.AddComponentParameter(3, nameof(Bortable<string>.Items), new List<string> { "A", "B" });
-            builder.AddComponentParameter(4, nameof(Bortable<string>.ItemTemplate), (RenderFragment<string>)(item => b => b.AddContent(0, item)));
-            builder.CloseComponent();
-            builder.CloseElement();
-        });
-
-        await page.Find("[data-bortable-list]").DropAsync(new DragEventArgs());
-        Assert.AreEqual(1, dropped);
-
-        // A drag of the list's own ends in the list.
-        await page.Find("[data-bortable-item]").DragStartAsync(ListDragStart());
-        await page.Find("[data-bortable-list]").DropAsync(new DragEventArgs());
-        Assert.AreEqual(1, dropped);
-        Assert.IsNull(Coordinator.Context);
     }
 }

@@ -184,24 +184,18 @@ jobs:
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
-    - name: Log in to Azure for code signing
-      if: vars.CODE_SIGNING_ACCOUNT != ''
-      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
-      with:
-        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
-        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
-        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
-
-    # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
-    # VS Code and others before the Azure CLI. On a runner they only cost time or could sign in as someone else, so only
-    # the az login above is left.
     # '\.dll$' signs only the executables: this CD runs often for end-to-end tests, and a demo's dlls gain nothing from a signature.
     - name: Sign the executables with Artifact Signing
       if: vars.CODE_SIGNING_ACCOUNT != ''
-      run: |
-          @{ Endpoint = '${{ vars.CODE_SIGNING_ENDPOINT }}'; CodeSigningAccountName = '${{ vars.CODE_SIGNING_ACCOUNT }}'; CertificateProfileName = '${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}'; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content "$env:RUNNER_TEMP\code-signing.json"
-          "VPK_AZURE_TRUSTED_SIGN_FILE=$env:RUNNER_TEMP\code-signing.json" >> $env:GITHUB_ENV
-          'VPK_SIGN_EXCLUDE=\.dll$' >> $env:GITHUB_ENV
+      uses: ./.github/actions/boilerplate/artifact-signing
+      with:
+        endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
+        account: ${{ vars.CODE_SIGNING_ACCOUNT }}
+        certificate-profile: ${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}
+        client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
+        tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
+        subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
+        exclude: '\.dll$'
 
     - name: Publish
       run: |
@@ -226,7 +220,7 @@ jobs:
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     if: inputs.android
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       actions: read
@@ -270,14 +264,14 @@ jobs:
       run: ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools"
   
     - name: Publish aab
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-android
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="BitBlazorUIDemo.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net11.0-android
   
     - name: Upload artifact
       id: artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: android-bundle
-        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
+        path: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net11.0-android/*-Signed.apk
 
     - name: Attest artifact
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -291,7 +285,7 @@ jobs:
       with:
         serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         packageName: ${{ env.APP_BUNDLE_ID }}
-        releaseFiles: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net10.0-android/*-Signed.aab
+        releaseFiles: src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/Release/net11.0-android/*-Signed.aab
         releaseName: ${{ vars.APP_VERSION }}
         track: internal
         status: completed
@@ -320,7 +314,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
-        xcode-version: '27.1'
+        xcode-version: '27.0'
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
@@ -337,13 +331,13 @@ jobs:
       run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@77ba2a2a8f5cfc8c405ebf3159f767c323e238f9 # v7.1.0
+      uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0
       with:
         p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@230860ab5f632551a5f9a5e1d98a774485463888 # v7.0.0
+      uses: Apple-Actions/download-provisioning-profiles@233aa54e59082c0e8a8cf8b0b02c72dea2422ef9 # v7.1.0
       with:
         bundle-id: ${{ env.APP_BUNDLE_ID }}
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
@@ -351,11 +345,17 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_KEY_PRIVATE_KEY }}
 
     - name: Build ipa
-      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net10.0-ios
+      run: dotnet publish src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/Bit.BlazorUI.Demo.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="Bit Blazor UI Demo" -p:Version="${{ vars.APP_VERSION }}" -p:CompressionEnabled=false -f net11.0-ios
 
     - name: Locate ipa
       id: ipa
-      run: echo "path=$(ls src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net10.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+      run: echo "path=$(ls src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Maui/bin/release/net11.0-ios/ios-arm64/publish/*.ipa | head -n 1)" >> $GITHUB_OUTPUT
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ios-bundle
+        path: ${{ steps.ipa.outputs.path }}
 
     - name: Attest ipa
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
@@ -364,7 +364,7 @@ jobs:
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@acf1166e95edc302069b74b258a788004fe39a08 # v5.7.0
+      uses: apple-actions/upload-testflight-build@665328adbecbc3ad929d3da710696d928b8a7ba9 # v5.9.0
       with:
         app-path: ${{ steps.ipa.outputs.path }}
         app-type: ios

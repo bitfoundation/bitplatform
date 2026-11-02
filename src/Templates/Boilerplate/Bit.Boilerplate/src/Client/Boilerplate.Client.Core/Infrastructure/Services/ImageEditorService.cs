@@ -14,7 +14,7 @@ public partial class ImageEditorService
     {
         if (AppPlatform.IsAot is false)
         {
-            await lazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+            await lazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm", "Bit.Bmage.Blazor.wasm"]);
         }
 
         return await ShowEditor(imageUrl, fileName, cropAspectRatio, minWidth, minHeight);

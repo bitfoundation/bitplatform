@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
@@ -14,12 +14,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MSTest" Version="4.5.1" />
-        <PackageReference Include="bunit" Version="2.12.5" />
+        <PackageReference Include="MSTest" Version="4.5.2" />
+        <PackageReference Include="bunit" Version="2.13.3" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bink\Bit.Bink.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The checks that keep a library lazy loadable, which every utility whose guide says so shares. -->
+        <Compile Include="..\..\..\Shared\Tests\*.cs" LinkBase="Shared" />
     </ItemGroup>
 
     <!-- The visual regression baselines are read from (and, with BINK_UPDATE_GOLDEN=1, written to) the

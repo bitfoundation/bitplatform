@@ -3,24 +3,25 @@
 @implements IBortableZone
 @implements IAsyncDisposable
 
+@* The drag events are bit-bortable.js's: it routes them to the lists that take the drag and calls .NET through
+   BortableBridge only when something changes. The markup names the list, its items and their keys, and gives
+   assistive technology the list's semantics and the keyboard instructions. *@
 @{
-    // The drag events stop at this list only while it takes the drag in progress: an unrelated drag (a file,
-    // selected text), or one this list refuses, bubbles on to the list or the app around it. bit-bortable.js
-    // allows the drop (preventDefault) for every drag of a list, and only for those.
-    _renderedDrag = Service.Context;
-    _handlesDrag = _renderedDrag is { Finished: false } drag && HandlesDrag(drag);
+    var keyboard = KeyboardEnabled;
+    var activeKey = ActiveKey();
+    var messages = EffectiveMessages;
 }
 <div @ref="_listElement"
+     role="list"
+     aria-label="@AriaLabel"
+     @attributes="AdditionalAttributes"
      id="@Id"
      class="@ContainerCssClass"
      style="@Style"
-     data-bortable-list="@Id"
-     @ondragover="OnContainerDragOver"
-     @ondragover:stopPropagation="_handlesDrag"
-     @ondrop="OnDrop"
-     @ondrop:stopPropagation="_handlesDrag">
+     data-bortable-list="@Id">
     @if (Items is not null)
     {
+        PruneKeys();
         for (int i = 0; i < Items.Count; i++)
         {
             TItem current = Items[i];
@@ -31,19 +32,28 @@
             }
 
             bool canDrag = CanDrag(current);
+            string? key = KeyOf(current);
             <div @key="current"
                  class="@ItemCssClass(current)"
+                 role="listitem"
+                 tabindex="@(keyboard ? (key == activeKey ? "0" : "-1") : null)"
+                 aria-roledescription="@(keyboard ? messages.RoleDescription : null)"
+                 aria-describedby="@(keyboard ? InstructionsId : null)"
                  data-bortable-item="true"
+                 data-bortable-key="@key"
                  data-bortable-disabled="@(canDrag ? null : "true")"
                  draggable="@(canDrag && string.IsNullOrEmpty(Handle) ? "true" : "false")"
-                 @onclick="ItemClickCallback(current)"
-                 @ondragstart="e => OnItemDragStart(current, e)"
-                 @ondragstart:stopPropagation="true"
-                 @ondragend="OnItemDragEnd"
-                 @ondragend:stopPropagation="true">
+                 @onclick="ItemClickCallback(current)">
                 @if (ItemTemplate is not null)
                 {
-                    @ItemTemplate(current)
+                    if (IsolateItems)
+                    {
+                        @IsolatedItem(current)
+                    }
+                    else
+                    {
+                        @ItemTemplate(current)
+                    }
                 }
             </div>
         }
@@ -54,15 +64,21 @@
         }
     }
     @ChildContent
+    @if (keyboard)
+    {
+        <div id="@InstructionsId" class="bit-bortable-instructions" hidden>@(MultiDrag ? $"{messages.Instructions} {messages.SelectionInstructions}" : messages.Instructions)</div>
+    }
 </div>
 
 @code {
     // Drop preview shown in a list the dragged item would be moved into. It renders
     // the dragged item's own template, so it looks like the item will once dropped.
+    // Inert, as it is only a picture: the controls the template renders in it can be neither focused nor clicked.
     private RenderFragment Placeholder => @<div class="@PlaceholderCssClass()"
                                                 data-bortable-item="true"
                                                 data-bortable-placeholder="true"
-                                                aria-hidden="true">
+                                                aria-hidden="true"
+                                                inert>
         @if (ItemTemplate is not null && Service.Context?.Item is TItem preview)
         {
             @ItemTemplate(preview)

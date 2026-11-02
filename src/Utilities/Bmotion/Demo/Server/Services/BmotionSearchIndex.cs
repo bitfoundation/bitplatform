@@ -248,10 +248,12 @@ public static class BmotionSearchIndex
         // otherwise match nothing at all.
         entries.Add(new Entry("Tool", "Check whether an animation works on Blazor Server", "Runs the real engine",
             "AnalyzeBmotionAnimation(properties: \"...\", transition: \"...\")",
-            "Reports which playback path the engine chose for an animation: the browser compositor, which plays " +
-            "everywhere including Blazor Server, or the C# per-frame loop, which exists only on WebAssembly and " +
-            "collapses to an instant state change on Server. Explains why, and what to change.",
-            "server compositor degrade snap instant jump render mode waapi frame loop production interactive auto"));
+            "Reports where the engine plays an animation: in the browser as a Web Animation - a two-keyframe " +
+            "timeline, or a recording of the frames the engine draws - which plays everywhere including Blazor " +
+            "Server, or only on the C# per-frame loop, which exists only on WebAssembly and collapses to an instant " +
+            "state change on Server. Explains why, what it costs, and what to change.",
+            "server compositor degrade snap instant jump render mode waapi web animation timeline recorded recording " +
+            "keyframes cost frame loop production interactive auto"));
 
         entries.Add(new Entry("Tool", "Measure what a transition feels like", "Runs the real engine",
             "SimulateBmotionTransition(transition: \"...\")",
@@ -288,7 +290,9 @@ public static class BmotionSearchIndex
         {
             entries.Add(new Entry("Animatable property", property.Name, property.Category,
                 "GetBmotionAnimatableProperties()",
-                $"{property.Notes} Writes {property.Css}. On Blazor Server: {property.OnBlazorServer}.".Trim(),
+                $"{property.Notes} Writes {property.Css}. Played by the browser as: " +
+                $"{property.BrowserPlayback?.ToLowerInvariant() ?? "nothing - the frame loop only"}. " +
+                $"On Blazor Server: {property.OnBlazorServer}.".Trim(),
                 $"{property.Css} {property.Example}"));
         }
 

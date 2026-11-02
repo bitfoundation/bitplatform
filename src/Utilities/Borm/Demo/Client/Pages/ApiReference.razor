@@ -1,0 +1,186 @@
+@page "/api-reference"
+
+<PageTitle>API at a glance · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>API at a glance</h1>
+    <p class="bb-subtitle">
+        The parts of Borm an application touches, on one page: the services it registers, the components it renders,
+        every parameter of <code>BormView</code>, the members of <code>BormState</code> and the types between them. Each
+        row links to the page that shows it working. Every public type is prefixed <code>Borm</code> and lives in the one
+        <code>Bit.Borm</code> namespace.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Services</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Registration</th><th>What it adds</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>AddBorm(registry =&gt; …)</code></td><td>The field renderer registry - required, in every container that renders a form. The callback registers <a href="custom-renderer">custom renderers</a>; calling it again configures the same registry.</td></tr>
+                <tr><td class="bb-table-key"><code>AddBormTranslations()</code></td><td>The library's own words in twelve languages besides English - see <a href="localization">translating a form</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>AddBormMessages&lt;T&gt;()</code></td><td>An <code>IBormMessageProvider</code> of your own for the library's words.</td></tr>
+                <tr><td class="bb-table-key"><code>AddBormSchemaLocalizer&lt;T&gt;()</code></td><td>An <code>IBormSchemaLocalizer</code> for the schema's labels, help and options.</td></tr>
+                <tr><td class="bb-table-key"><code>Bit.Borm.FluentValidation</code></td><td>A separate package: <code>state.UseFluentValidation()</code> - see <a href="fluent-validation">FluentValidation</a>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Components</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Component</th><th>Renders</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>BormView</code></td><td>A whole form: its fields, steps, error summary and buttons. Parameters below.</td></tr>
+                <tr><td class="bb-table-key"><code>BormField</code></td><td>One field of a state, inside a layout of the page's own - <code>State</code>, <code>Name</code>, <code>ThrowIfMissing</code>. See <a href="composition">custom layout</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormErrorSummary</code>, <code>BormValidationMessages</code></td><td>The error summary and a message list, for a layout of your own.</td></tr>
+                <tr><td class="bb-table-key"><code>BormStepsView</code>, <code>BormReview</code></td><td>Steps as tabs, an accordion or sections; and a read-back of every answer. See <a href="tabs-review">tabs &amp; review</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormAutosave</code>, <code>BormUnsavedChangesGuard</code></td><td>A draft saved as the user goes, and a prompt before unsaved changes are left. See <a href="drafts">drafts</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormDesigner</code></td><td>A form designer bound to a <code>BormDefinition</code>. See <a href="designer">the designer</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormInputBase</code></td><td>The base class of every control, and of yours. See <a href="custom-renderer">custom renderer</a>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> <code>BormView</code> parameters</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Definition</code></td><td>The schema to render. Required unless <code>State</code> is given.</td></tr>
+                <tr><td class="bb-table-key"><code>Model</code></td><td>A typed model to bind to.</td></tr>
+                <tr><td class="bb-table-key"><code>Data</code></td><td>A dictionary to bind to when there is no model, edited in place at every level - so don't share one between forms. Keys match without regard to case; JSON-deserialized values are converted as they are reached. See <a href="field-types">every field type</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>State</code></td><td>A <code>BormState</code> the page built - with a validator, an event handler, or read from code. The page disposes it.</td></tr>
+                <tr><td class="bb-table-key"><code>ConfigureState</code></td><td>Runs against the state the view builds from <code>Definition</code> - set a trigger, wire a validator - without taking it over. See <a href="quickstart">from a C# type</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>OnValidSubmit</code>, <code>OnInvalidSubmit</code></td><td>Raised after a submit that passed, or failed, validation.</td></tr>
+                <tr><td class="bb-table-key"><code>OnSubmitError</code></td><td>Raised with the exception when <code>OnValidSubmit</code> throws, which is then handled rather than escaping into the renderer. See <a href="saving">saving</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>OnFieldChanged</code></td><td>Raised with the path of a field whose value changed.</td></tr>
+                <tr><td class="bb-table-key"><code>ReadOnly</code>, <code>Disabled</code></td><td>Every field read-only (still focusable - a review), or disabled (inoperable - a save in flight). See <a href="validation">validation modes</a> and <a href="array">the repeater</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>ShowSubmitButton</code>, <code>SubmitText</code>, <code>SubmittingText</code></td><td>The submit button, its label, and what it says while the form validates or saves.</td></tr>
+                <tr><td class="bb-table-key"><code>ShowResetButton</code>, <code>ResetText</code></td><td>A button that puts back the values the form started with.</td></tr>
+                <tr><td class="bb-table-key"><code>ShowUndo</code></td><td>Undo and Redo buttons, and the history they need. See <a href="undo-long-lists">undo &amp; long lists</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>ShowErrorSummary</code></td><td>Every error above the form, each linking to its field - or its step.</td></tr>
+                <tr><td class="bb-table-key"><code>FocusFirstError</code></td><td>Moves focus to the first invalid field after a failed submit (on by default; the summary takes it when shown).</td></tr>
+                <tr><td class="bb-table-key"><code>AllowStepNavigation</code>, <code>BackText</code>, <code>NextText</code>, <code>StepperLabel</code></td><td>A wizard's clickable stepper, its button labels and the stepper's accessible name. See <a href="wizard">the wizard</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>Header</code>, <code>Footer</code>, <code>ChildContent</code></td><td>Content above the fields, below everything, and inside the form.</td></tr>
+                <tr><td class="bb-table-key"><code>Actions</code></td><td>Replaces the button row - handed the state. See <a href="saving">saving</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>TitleLevel</code></td><td>The heading level of the form's title (default 2), so it fits the page's outline.</td></tr>
+                <tr><td class="bb-table-key"><code>Class</code>, any other attribute</td><td>Extra classes, and anything else - a <code>style</code>, a <code>data-theme</code> - put on the <code>&lt;form&gt;</code>. See <a href="theming">theming</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>IdPrefix</code></td><td>What every DOM id starts with (default <code>borm_</code>) - one each for two forms on a page.</td></tr>
+                <tr><td class="bb-table-key"><code>ProvideEditContext</code></td><td>Cascades a Blazor <code>EditContext</code> mirroring the form. See <a href="blazor-inputs">Blazor's own inputs</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>FormName</code>, <code>PostedModelName</code></td><td>A form that posts with no interactivity. See <a href="static-form">forms without interactivity</a>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        Built from a <code>Definition</code>, the view's state is reachable through <code>@@ref</code>: <code>_view.Form</code>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> <code>BormState</code> at a glance</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Member</th><th>Purpose</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>GetValue</code>, <code>SetValue</code>, <code>SetValueQuietly</code></td><td>Read and write by path; the quiet one does not mark the field touched.</td></tr>
+                <tr><td class="bb-table-key"><code>For&lt;TModel&gt;()</code></td><td>The same state by expression - <code>SetValue(x =&gt; x.Lines[i].Quantity, 3)</code>, <code>GetFieldState(x =&gt; x.Email)</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>SetValues</code>, <code>Batch</code></td><td>Many writes as one change: one re-render, one undo step.</td></tr>
+                <tr><td class="bb-table-key"><code>IsFormDirty</code>, <code>DirtyFields</code>, <code>TouchedFields</code>, <code>ResetField(path)</code></td><td>Change tracking, by comparison with the values the form opened with; one field put back.</td></tr>
+                <tr><td class="bb-table-key"><code>GetFieldState(path)</code></td><td>Touched, dirty, invalid, validating, the first error, every message, and <code>Status</code> in one word.</td></tr>
+                <tr><td class="bb-table-key"><code>ValidateAsync</code>, <code>ValidateStepAsync</code>, <code>ValidateFieldAsync</code>, <code>ValidateDependentsAsync</code></td><td>Validation of the form, a step, a field, or what revalidates on a field.</td></tr>
+                <tr><td class="bb-table-key"><code>ValidationTrigger</code>, <code>RevalidationTrigger</code>, <code>SingleErrorPerField</code>, <code>RunAsyncRulesOnInvalidFields</code></td><td>When rules run and how much is shown. See <a href="validation">validation modes</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>IsValid</code>, <code>HasValidated</code>, <code>IsValidating</code>, <code>IsValidatingField</code></td><td>What validation has found - check <code>HasValidated</code> before treating <code>IsValid</code> as a verdict.</td></tr>
+                <tr><td class="bb-table-key"><code>MessagesFor</code>, <code>AllMessages</code>, <code>OrderedMessages</code>, <code>SetServerError(s)</code>, <code>ClearMessages</code></td><td>The messages, and a server's.</td></tr>
+                <tr><td class="bb-table-key"><code>SubmitAsync</code>, <code>SubmitOutcome</code>, <code>SubmitError</code>, <code>IsSubmitSuccessful</code>, <code>IsSubmitting</code>, <code>SubmitCount</code></td><td>The submit and how it ended. See <a href="saving">saving</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>CancelSubmit()</code>, <code>SubmitCancellationToken</code>, <code>ReadOnlyWhileSubmitting</code></td><td>Stopping a save in flight, and holding the fields still while it runs.</td></tr>
+                <tr><td class="bb-table-key"><code>Reset()</code>, <code>Reset(values)</code>, <code>AcceptChanges()</code>, <code>Snapshot()</code></td><td>Back to the start, onto new values, the current ones as the baseline, and every value by path. See <a href="state-api">editing a record</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>NormalizeField</code>, <code>NormalizeAll</code></td><td>Run the schema's normalizers - <code>Trim()</code>, <code>Normalize(...)</code>, masks.</td></tr>
+                <tr><td class="bb-table-key"><code>AddArrayItem</code>, <code>InsertArrayItem</code>, <code>DuplicateArrayItem</code>, <code>RemoveArrayItem</code>, <code>MoveArrayItem</code>, <code>SwapArrayItems</code>, <code>ClearArrayItems</code></td><td>Repeater rows; their messages and state follow them.</td></tr>
+                <tr><td class="bb-table-key"><code>OptionsFor</code>, <code>InvalidateOptions</code>, <code>OptionsError</code>, <code>OptionsLoadFailed</code>, <code>SearchOptionsAsync</code>, <code>TrackEntryAsync</code></td><td>Loaded choices, a failed load, and a search or a pending entry for a control of your own.</td></tr>
+                <tr><td class="bb-table-key"><code>UploadsFor</code></td><td>Files being uploaded with <code>UploadWith</code>, for a control of your own.</td></tr>
+                <tr><td class="bb-table-key"><code>UndoAsync</code>, <code>RedoAsync</code>, <code>CanUndo</code>, <code>CanRedo</code>, <code>NextUndoPath</code>, <code>HistoryLimit</code></td><td>History.</td></tr>
+                <tr><td class="bb-table-key"><code>NextStepAsync</code>, <code>PreviousStep</code>, <code>GoToStep</code>, <code>VisibleSteps</code>, <code>CurrentStepNumber</code>, <code>FurthestStepIndex</code>, <code>IsStepReachable</code></td><td>Wizard navigation.</td></tr>
+                <tr><td class="bb-table-key"><code>ReadOnly</code>, <code>Disabled</code>, <code>Language</code>, <code>IdPrefix</code></td><td>The whole form read-only or disabled, its language, and its ids.</td></tr>
+                <tr><td class="bb-table-key"><code>FocusAsync(path)</code>, <code>Text(key, args)</code></td><td>Focus a field's control; the library's text for a key, in the form's language.</td></tr>
+                <tr><td class="bb-table-key"><code>NotifyDefinitionChanged()</code></td><td>The schema was changed in place: new fields get defaults, computed values run again.</td></tr>
+                <tr><td class="bb-table-key"><code>StateChanged</code></td><td>Raised after anything the page might render changes - subscribe to render markup of your own from the state.</td></tr>
+                <tr><td class="bb-table-key"><code>UseDataAnnotations()</code>, <code>UseFluentValidation()</code></td><td>A model's <code>IValidatableObject</code>, and a FluentValidation validator, beside the schema's rules.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        A state the page builds is the page's to dispose: <code>BormState</code> is <code>IDisposable</code>, and disposing it
+        cancels a lookup, an async rule, an upload or a save still in flight.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Key types</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Type</th><th>Purpose</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>BormDefinition</code></td><td>The schema: fields, steps, form-level rules. <code>Clone()</code> to tailor a shared one, <code>Validate()</code> to check it, <code>FindField(path)</code>, <code>AllFields()</code>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormFieldDefinition</code>, <code>BormFieldType</code></td><td>One field, and its kind - see <a href="field-types">every field type</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormBuilder</code>, <code>BormBuilder&lt;TModel&gt;</code>, <code>BormSchemaGenerator</code></td><td>Building a schema by name or by expression, or generating one from a type.</td></tr>
+                <tr><td class="bb-table-key"><code>BormJsonSchemaImporter</code>, <code>BormJsonSchemaExporter</code></td><td><a href="json-schema">JSON Schema</a> in and out.</td></tr>
+                <tr><td class="bb-table-key"><code>BormModelDataAccessor</code>, <code>BormDictionaryDataAccessor</code></td><td>What a state reads and writes: a model, or a dictionary.</td></tr>
+                <tr><td class="bb-table-key"><code>BormFieldCondition</code>, <code>BormConditionGroup</code>, <code>BormConditionOperator</code></td><td>A comparison, a group of them, and the operators - see <a href="conditions">conditions</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormExpression</code>, <code>BormExpressionFunctions</code></td><td>The <a href="expressions">expression language</a>, and functions of your own.</td></tr>
+                <tr><td class="bb-table-key"><code>BormValidationMessage</code>, <code>BormValidationSeverity</code>, <code>BormMessageKeys</code></td><td>A message (with its <code>Source</code> and <code>Code</code>), error/warning/info, and the keys of every built-in text.</td></tr>
+                <tr><td class="bb-table-key"><code>BormDraft</code>, <code>BormDraftOptions</code>, <code>BormSnapshotOptions</code></td><td><a href="drafts">Drafts</a>, and what a snapshot leaves out.</td></tr>
+                <tr><td class="bb-table-key"><code>BormMask</code>, <code>BormMarkdown</code>, <code>BormSignature</code>, <code>BormUploadContext</code></td><td>A mask, the safe Markdown renderer (<code>ToHtml</code>, <code>ToPlainText</code>), a signature's image, and an upload in progress - see <a href="rich-fields">rich fields</a>.</td></tr>
+                <tr><td class="bb-table-key"><code>BormValidator</code>, <code>BormEditContextAdapter</code></td><td>Validating a form on its own, as a posted one is on the server; and an <code>EditContext</code> over a state rendered without a view.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Renderer hints</h3>
+    <p class="bb-card-desc">
+        <code>Attr(key, value)</code> on a field - <code>x-attributes</code> in JSON Schema - passes hints to the control that draws it.
+        The built-in controls read these:
+    </p>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead><tr><th>Key</th><th>On</th><th>Effect</th></tr></thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>itemNoun</code></td><td>A repeater</td><td>The word its buttons and announcements use: "Add line", "Remove line 2".</td></tr>
+                <tr><td class="bb-table-key"><code>emptyText</code></td><td>A repeater</td><td>What it says with no rows.</td></tr>
+                <tr><td class="bb-table-key"><code>duplicable</code></td><td>A repeater</td><td><code>true</code> adds a Duplicate button to each row.</td></tr>
+                <tr><td class="bb-table-key"><code>reorderable</code></td><td>A repeater</td><td><code>false</code> takes away the up and down buttons.</td></tr>
+                <tr><td class="bb-table-key"><code>columns</code></td><td>A group</td><td>Lays the group's own fields out in that many columns.</td></tr>
+                <tr><td class="bb-table-key"><code>level</code>, <code>divider</code></td><td>A static field</td><td>The heading level (default 3), and a rule beneath it.</td></tr>
+                <tr><td class="bb-table-key"><code>tagSeparators</code></td><td>Tags</td><td>The characters that commit a tag besides Enter (default a comma).</td></tr>
+                <tr><td class="bb-table-key"><code>preview</code></td><td>Markdown</td><td><code>true</code> opens the preview to begin with.</td></tr>
+                <tr><td class="bb-table-key"><code>emptyColor</code></td><td>A colour</td><td>What an empty picker shows (default black).</td></tr>
+                <tr><td class="bb-table-key"><code>countAnnounceAt</code></td><td>A character count</td><td>How many characters from the limit the count starts being announced (default a tenth of the limit, at least five).</td></tr>
+                <tr><td class="bb-table-key"><code>alwaysRender</code></td><td>A custom control</td><td><code>true</code> for a renderer that reads other fields' values, so it re-renders with them.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="bb-card-desc">
+        <code>InputAttr(name, value)</code> (<code>x-inputAttributes</code>) puts an HTML attribute on the control itself - a
+        <code>data-testid</code>, a <code>title</code>, <code>spellcheck="false"</code>.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Checking a schema</h3>
+    <p class="bb-card-desc">
+        <code>definition.Validate()</code> reports the mistakes that are easy to make and hard to see - duplicate names, a
+        repeater with no item template, steps naming fields that do not exist, conditions and expressions pointing nowhere, a
+        comparison rule that never revalidates, computed values that feed each other in a cycle, settings a control can never
+        honour. It is a development aid, never run for you: a schema being edited has every right to be incomplete. The
+        <a href="json-schema">JSON Schema</a> page runs it on every document you apply.
+    </p>
+    <pre class="bb-code"><span class="k">foreach</span> (<span class="k">var</span> problem <span class="k">in</span> definition.Validate())
+    logger.LogWarning(<span class="s">"{Problem}"</span>, problem);   <span class="c">// [Error] Lines: An array field has no ItemTemplate…</span></pre>
+</div>

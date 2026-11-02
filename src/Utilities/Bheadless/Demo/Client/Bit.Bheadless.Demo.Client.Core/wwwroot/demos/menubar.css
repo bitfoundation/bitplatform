@@ -1,0 +1,173 @@
+﻿/* menubar demo styles — plain CSS section. The library ships zero CSS.
+   Mirrored in the CSS tab of each demo on Components/Pages/Css/MenubarPage.razor. */
+
+/* All styles are consumer-authored — the library ships zero CSS */
+.menubar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Inside a menubar each BitBhMenuButton is a role="menuitem" with a roving tabindex */
+.menubar-trigger {
+    padding: 0.35rem 0.75rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: light-dark(#27272a, #fafafa);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 120ms ease;
+}
+
+.menubar-trigger:hover,
+.menubar-trigger[data-state="open"] { background: var(--color-fill); }
+.menubar-trigger:focus-visible      { background: var(--color-fill); outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.menubar-trigger[data-disabled]     { opacity: 0.4; cursor: not-allowed; background: transparent; }
+
+/* BitBhMenuItems / BitBhMenuSubContent — positioned by the anchor engine */
+.menubar-content {
+    z-index: 50;
+    min-width: 14rem;
+    padding: 0.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.15);
+    outline: none; /* the highlighted item is the visible focus (aria-activedescendant) */
+}
+
+.menubar-content[hidden]             { display: none; }
+.menubar-content[data-state="open"]  { animation: menubar-in 120ms ease-out; }
+
+/* Opacity only: the anchor engine measures the panel, so don't transform it */
+@keyframes menubar-in {
+    from { opacity: 0; }
+}
+
+.menubar-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.35rem;
+    font-size: 0.85rem;
+    color: light-dark(#27272a, #fafafa);
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* data-highlighted (alias: data-active) follows the keyboard / pointer highlight */
+.menubar-item[data-highlighted] { background: var(--color-accent-subtle); color: var(--color-accent-text); }
+.menubar-item[data-disabled]    { opacity: 0.45; cursor: not-allowed; }
+
+/* A submenu trigger stays lit while its submenu is open */
+.menubar-item[data-state="open"]:not([data-highlighted]) { background: var(--color-fill); }
+
+.menubar-shortcut,
+.menubar-chevron {
+    margin-left: auto;
+    padding-left: 1.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--color-faint);
+}
+
+.menubar-item[data-highlighted] .menubar-shortcut,
+.menubar-item[data-highlighted] .menubar-chevron { color: #60a5fa; }
+
+.menubar-separator { height: 1px; margin: 0.25rem -0.25rem; background: var(--color-border); }
+
+/* Room for the check mark / dot of checkbox and radio items */
+.menubar-item-inset { padding-left: 1.75rem; }
+
+/* BitBhMenuItemIndicator only renders while its item is checked */
+.menubar-indicator {
+    position: absolute;
+    left: 0.5rem;
+    display: inline-flex;
+    justify-content: center;
+    width: 1rem;
+    font-size: 0.75rem;
+    color: var(--color-primary-text);
+}
+
+.menubar-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* BitBhMenuLabel names its BitBhMenuGroup (aria-labelledby) */
+.menubar-label {
+    padding: 0.45rem 0.6rem 0.2rem 1.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.menubar-window {
+    width: 100%;
+    max-width: 36rem;
+    overflow: hidden;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* The menubar doubles as the window's title bar */
+.menubar-window .menubar {
+    display: flex;
+    border: 0;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    background: var(--color-subtle);
+    box-shadow: none;
+}
+
+.menubar-editor {
+    font-size: 0.8rem;
+    background: #fff;
+    color: #27272a;
+    transition: background-color 200ms ease, color 200ms ease;
+}
+
+.menubar-editor[data-theme="Dark"]  { background: #18181b; color: #e4e4e7; }
+.menubar-editor[data-theme="Sepia"] { background: #f7f0e1; color: #5b4636; }
+
+.menubar-code {
+    overflow-x: auto;
+    padding: 0.85rem 1rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    line-height: 1.65;
+}
+
+.menubar-line        { display: flex; gap: 0.75rem; }
+.menubar-line-number { width: 1.25rem; flex-shrink: 0; text-align: right; opacity: 0.4; user-select: none; }
+.menubar-line-text   { white-space: pre; }
+
+/* data-wrap is only rendered while Word Wrap is checked */
+.menubar-code[data-wrap] .menubar-line-text { white-space: pre-wrap; }
+
+.menubar-statusbar {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.35rem 1rem;
+    border-top: 1px solid rgba(127, 127, 127, 0.2);
+    font-size: 0.72rem;
+    opacity: 0.75;
+}

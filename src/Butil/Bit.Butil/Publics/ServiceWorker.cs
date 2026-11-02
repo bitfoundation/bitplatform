@@ -293,6 +293,11 @@ public class ServiceWorker(IJSRuntime js) : IAsyncDisposable
     /// Subscribes to messages broadcast from the service worker. The handler receives every
     /// payload as a <see cref="JsonElement"/>.
     /// </summary>
+    /// <remarks>
+    /// The payload's JSON is capped at 32 MB, as described on <see cref="ButilMessage"/>: a larger
+    /// message - or one JSON cannot write, such as a cyclic graph - arrives as a string holding just its
+    /// type name, like <c>"[object Object]"</c>.
+    /// </remarks>
     [DynamicDependency(nameof(InvokeServiceWorkerMessage), typeof(ServiceWorker))]
     public async Task<ButilSubscription> SubscribeMessage(Action<JsonElement> handler)
     {

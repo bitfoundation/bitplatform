@@ -1,0 +1,51 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of the button inherits down to it:
+//   --bit-AiScrollToLatest-offset   room between the button and the edge it floats above  (default: spacing(1))
+//   --bit-AiScrollToLatest-shadow   elevation of the button over the transcript           (default: $box-shadow-popup)
+//   --bit-AiScrollToLatest-z-index  stacking of the button over the transcript            (default: 3)
+
+// The button floats centered above the nearest positioned ancestor - the footer of a BitAiChat - so it sits just above
+// the composer whatever height the composer has. It is centered with physical properties, since a shape centered on a
+// line is the same shape whichever way the page is written, and through translate rather than transform, so the
+// entrance below does not knock it off center. Placed at the middle, an absolutely positioned box would only grow to
+// the half of its container on that side, wrapping a longer label on a phone, so it takes the width of its label, up to
+// the whole container.
+.bit-aistl {
+    left: 50%;
+    position: absolute;
+    translate: -50% 0;
+    width: max-content;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: $shp-radius-full;
+    bottom: calc(100% + var(--bit-AiScrollToLatest-offset, #{spacing(1)}));
+    z-index: var(--bit-AiScrollToLatest-z-index, 3);
+    box-shadow: var(--bit-AiScrollToLatest-shadow, #{$box-shadow-popup});
+    animation-name: bit-aistl-ent;
+    animation-duration: $mot-duration;
+    animation-fill-mode: both;
+    animation-timing-function: $mot-easing-decelerate;
+}
+
+// The duration is a motion token, so the entrance collapses under a reduced-motion preference and comes back under
+// ForceAnimation with nothing written here for either.
+@keyframes bit-aistl-ent {
+    from {
+        opacity: 0;
+        transform: translateY(spacing(0.75));
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+// The button only moves the reader around the screen, which a printout has no use for.
+@media print {
+    .bit-aistl {
+        display: none;
+    }
+}

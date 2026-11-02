@@ -54,6 +54,7 @@ public class McpSurfaceTests
     {
         var info = McpTestHost.Client.ServerInfo;
 
+        Assert.IsNotNull(info);
         Assert.AreEqual("bit-bdnd", info.Name);
         Assert.AreEqual("Bit.Bdnd", info.Title);
         Assert.AreEqual(BdndServerInstructions.BdndVersion, info.Version);
@@ -130,6 +131,14 @@ public class McpSurfaceTests
         // only address a client has and the first server to claim one wins. "Bdnd" in every name is what
         // keeps these from colliding with SearchBlow, GetBitBlazorUIComponent and the rest.
         foreach (var tool in _tools) Assert.Contains("Bdnd", tool.Name, $"'{tool.Name}' would be ambiguous next to the other libraries' tools.");
+    }
+
+    [TestMethod]
+    public void No_tool_shares_a_name_with_the_library_API()
+    {
+        // The prose is checked for tool names with the library's own members left out (GetBdndInterop), so a tool
+        // named like one of them would pass unchecked - and an agent could not tell which of the two it is told to call.
+        foreach (var tool in _tools) Assert.DoesNotContain(tool.Name, ToolNames.LibraryMembers, $"'{tool.Name}' is also a member of Bit.Bdnd.");
     }
 
     [TestMethod]

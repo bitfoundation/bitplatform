@@ -1,0 +1,14 @@
+﻿@* A sortable grid: the list's class lays it out as a CSS grid. *@
+
+<Bortable @bind-Items="_items" TItem="int" Id="grid-list"
+          Class="demo-grid" GhostClass="demo-ghost">
+    <ItemTemplate Context="n">
+        <div class="grid-square">@n</div>
+    </ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="grid-order">@string.Join(", ", _items)</span></p>
+
+@code {
+    private IList<int> _items = Enumerable.Range(1, 16).ToList();
+}

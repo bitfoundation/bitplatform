@@ -58,7 +58,7 @@ public static class PlaywrightSession
         if (browser is null)
         {
             playwright.Dispose();
-            return Session.Fail($"no {E2EEnvironment.Browser} browser could be launched. Run 'pwsh bin/<configuration>/net10.0/playwright.ps1 install {E2EEnvironment.Browser}'"
+            return Session.Fail($"no {E2EEnvironment.Browser} browser could be launched. Run 'pwsh bin/<configuration>/net11.0/playwright.ps1 install {E2EEnvironment.Browser}'"
                 + (E2EEnvironment.Browser == "chromium" ? ", or install Chrome or Edge." : "."));
         }
 

@@ -19,7 +19,8 @@
     --bev-render: #8250df;
     --bev-event: #0969da;
     --bev-http: #1a7f37;
-    --bev-js: #bf8700;
+    /* #bf8700 left white text at 2.9:1 on the event-kind chips; this reaches 4.5:1. */
+    --bev-js: #9a6700;
     --bev-state: #cf222e;
     --bev-nav: #0a7ea4;
     --bev-error: #cf222e;
@@ -116,6 +117,9 @@
 /* Badge (closed state) */
 .bev-badge { position: fixed; right: 12px; bottom: 12px; z-index: 2147483000; background: var(--bev-bg2); color: var(--bev-fg); border: 1px solid var(--bev-border); border-radius: 999px; padding: 4px 10px; font-family: var(--bev-sans); font-size: 12px; display: flex; gap: 8px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.2); cursor: pointer; }
 .bev-badge .bev-pill { padding: 0 6px; border-radius: 999px; font-weight: 600; }
+/* Blazor's own error bar (#blazor-error-ui in every project template, shown with display: block) runs along the bottom
+   with its dismiss button at the right, where the badge sits: the badge moves above it while it shows. */
+body:has(#blazor-error-ui[style*="display: block"]) .bev-badge { bottom: 60px; }
 
 /* Panel shell */
 .bev-panel { position: fixed; z-index: 2147483000; background: var(--bev-bg); color: var(--bev-fg); border: 1px solid var(--bev-border); display: flex; flex-direction: column; box-shadow: 0 -2px 12px rgba(0,0,0,.2); overflow: hidden; }
@@ -128,9 +132,13 @@
 .bev-panel.bev-dock-right.bev-size-medium { width: 580px; }
 .bev-panel.bev-dock-right.bev-size-large { width: 760px; }
 @media (max-width: 800px) { .bev-panel.bev-dock-right { width: 100% !important; } }
+.bev-panel.bev-picking { height: auto !important; bottom: 0; top: auto !important; width: auto !important; left: auto; right: 0; }
+.bev-panel.bev-picking .bev-body, .bev-panel.bev-picking .bev-tabs { display: none; }
 
 .bev-header { display: flex; align-items: center; gap: 4px; padding: 3px 6px; border-bottom: 1px solid var(--bev-border); background: var(--bev-bg2); flex-wrap: wrap; }
 .bev-title { font-weight: 700; margin-right: 6px; white-space: nowrap; }
+.bev-runtimes { display: flex; gap: 2px; align-items: center; margin-right: 6px; white-space: nowrap; }
+.bev-runtimes button.bev-chip { cursor: pointer; }
 .bev-tabs { display: flex; gap: 2px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
 .bev-tab { padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
 .bev-tab.bev-active { background: var(--bev-bg); border-color: var(--bev-border); font-weight: 600; }
@@ -144,8 +152,41 @@
 .bev-changes { margin: 0 0 6px 16px; padding: 0; }
 .bev-changes li { list-style: disc; }
 .bev-search { width: 260px; }
+
+/* A render batch on a time axis: one row per depth, each render where it started. */
+.bev-root .bev-time-axis { position: relative; padding-top: 16px; max-height: 40vh; overflow: auto; }
+.bev-root .bev-time-scale { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: var(--bev-fg2); }
+.bev-root .bev-time-rows { position: relative; min-width: 100%; }
+.bev-root .bev-time-bar { position: absolute; height: 16px; line-height: 16px; padding: 0 3px; box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: clip; font-family: var(--bev-mono); font-size: 10.5px; color: var(--bev-fg); background: var(--bev-accent-bg); border: 1px solid var(--bev-accent); border-radius: 2px; cursor: pointer; }
+.bev-root .bev-time-bar:hover { background: var(--bev-bg3); }
+.bev-root .bev-time-bar.bev-time-narrow { padding: 0; font-size: 0; }
+@media (forced-colors: active) {
+    .bev-root .bev-time-bar { border-color: CanvasText; }
+}
+
+/* Keeps Tab inside a modal: focusing it sends focus back to the dialog's input. */
+.bev-root .bev-focus-sentinel { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+
+/* Two or three buttons that choose one view; the chosen one is pressed. */
+.bev-root .bev-segmented { display: inline-flex; border: 1px solid var(--bev-border); border-radius: 4px; overflow: hidden; }
+.bev-root .bev-segmented button { border-radius: 0; }
+.bev-root .bev-segmented button[aria-pressed="true"] { background: var(--bev-accent-bg); color: var(--bev-accent); font-weight: 600; }
+@media (forced-colors: active) {
+    .bev-root .bev-segmented button[aria-pressed="true"] { outline: 2px solid Highlight; outline-offset: -2px; }
+}
+
+/* Profiler: sortable headers and the file input of Compare… */
+.bev-root .bev-file { position: relative; display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+.bev-root .bev-file:hover { background: var(--bev-bg3); }
+.bev-root .bev-file:focus-within { outline: 2px solid var(--bev-accent); outline-offset: -2px; }
+/* The native input stays focusable and announced; only its own button is hidden behind the label. */
+.bev-root .bev-file input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.bev-root th .bev-sort { font: inherit; font-weight: 600; color: inherit; padding: 0; border: 0; background: none; cursor: pointer; }
+.bev-root th .bev-sort:hover { text-decoration: underline; }
+
 .bev-body { flex: 1 1 auto; min-height: 0; display: flex; overflow: hidden; }
 .bev-notification { position: absolute; left: 50%; transform: translateX(-50%); bottom: 8px; background: var(--bev-fg); color: var(--bev-bg); padding: 4px 10px; border-radius: 4px; z-index: 5; }
+.bev-notification:empty { display: none; }
 
 /* Generic split layouts */
 .bev-split { display: flex; flex: 1 1 auto; min-height: 0; min-width: 0; }
@@ -212,6 +253,9 @@
 .bev-kind-navigation { background: var(--bev-nav); }
 .bev-kind-error, .bev-kind-diagnostic { background: var(--bev-error); }
 .bev-kind-lifecycle, .bev-kind-circuit, .bev-kind-browser, .bev-kind-custom { background: var(--bev-lifecycle); }
+/* The dark theme's kind colours are light: dark text on them, not white. */
+.bev-root[data-theme="dark"] .bev-kind { color: #0d1117; }
+@media (prefers-color-scheme: dark) { .bev-root[data-theme="auto"] .bev-kind { color: #0d1117; } }
 .bev-ev-row { display: flex; gap: 6px; align-items: center; height: 22px; padding: 0 6px; cursor: pointer; white-space: nowrap; }
 .bev-ev-row:hover { background: var(--bev-bg2); }
 .bev-ev-row.bev-selected { background: var(--bev-accent-bg); }
@@ -254,3 +298,32 @@
 .bev-stat .bev-stat-value { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .bev-stat .bev-stat-label { color: var(--bev-fg2); font-size: 11px; }
 .bev-panel-host { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+
+/* The page overlay: component outlines, picking, render flashes. Outside every element the app renders, above it but
+   below the panel and the badge (one step under their z-index), so an outline never covers BevTools' own UI; never in
+   the way of the pointer. Fixed colours: it is drawn over the app, not inside the themed panel. */
+
+.bev-overlay { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 2147482999; pointer-events: none; }
+html:has(> body > .bev-overlay[data-picking]), html:has(> body > .bev-overlay[data-picking]) * { cursor: crosshair !important; }
+.bev-overlay .bev-hl { position: fixed; border: 2px solid #2f81f7; background: rgba(47, 129, 247, .16); border-radius: 2px; }
+.bev-overlay .bev-hl.bev-hl-empty { display: none; }
+.bev-overlay .bev-hl-label { position: absolute; left: -2px; bottom: 100%; margin-bottom: 2px; max-width: 480px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 6px; border-radius: 3px; background: #0b3d91; color: #fff; font: 11px/16px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.bev-overlay .bev-hl-label.bev-hl-label-inside { bottom: auto; top: 0; margin: 0; }
+.bev-overlay .bev-hl-empty .bev-hl-label { display: none; }
+.bev-overlay .bev-hl-note { position: fixed; max-width: 320px; padding: 6px 8px; border-radius: 4px; background: #24292f; color: #fff; font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
+.bev-overlay .bev-flash-box { position: fixed; border: 2px solid; border-radius: 2px; opacity: 1; transition: opacity .7s ease-in; }
+.bev-overlay .bev-flash-box.bev-flash-out { opacity: 0; }
+.bev-overlay .bev-flash-1 { border-color: #2f81f7; }
+.bev-overlay .bev-flash-2 { border-color: #1a7f37; }
+.bev-overlay .bev-flash-3 { border-color: #d29922; }
+.bev-overlay .bev-flash-4 { border-color: #cf222e; background: rgba(207, 34, 46, .08); }
+@media (prefers-reduced-motion: reduce) { .bev-overlay .bev-flash-box { transition: none; } }
+@media (forced-colors: active) { .bev-overlay .bev-hl, .bev-overlay .bev-flash-box { border-color: Highlight; background: transparent; } .bev-overlay .bev-hl-label, .bev-overlay .bev-hl-note { forced-color-adjust: none; } }
+
+/* Windows high contrast and other forced colours: colour alone carries nothing, so chips, counts and the selection get
+   borders and outlines in system colours. */
+@media (forced-colors: active) {
+    .bev-root .bev-chip, .bev-root .bev-kind, .bev-root .bev-count, .bev-root .bev-pill { border: 1px solid CanvasText; }
+    .bev-root .bev-selected, .bev-root .bev-tab.bev-active { outline: 2px solid Highlight; outline-offset: -2px; }
+    .bev-root button:focus-visible, .bev-root [tabindex]:focus-visible, .bev-root input:focus-visible { outline: 2px solid Highlight; }
+}

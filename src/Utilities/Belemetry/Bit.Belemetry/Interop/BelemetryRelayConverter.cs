@@ -5,7 +5,7 @@ namespace Bit.Belemetry;
 /// <summary>Converts relayed browser records into the .NET model.</summary>
 internal static class BelemetryRelayConverter
 {
-    private const int MaxRecordsPerBatch = 5000;
+    internal const int MaxRecordsPerBatch = 5000;
 
     public static IEnumerable<BelemetrySpan> ToSpans(BelemetryRelayBatch batch)
     {

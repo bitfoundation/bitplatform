@@ -1,15 +1,17 @@
 ﻿/*!
  * Bit.Bonboarding default theme.
  *
- * Every value below is a custom property under .bit-bonboarding-root, so an application can restyle the whole
- * library from its own stylesheet without overriding a single selector:
+ * Every value below is a custom property under .bit-bonboarding-root (the tour host) and .bit-bonboarding-themed
+ * (the components that render on the page itself: beacons, checklists, tour lists), so an application can
+ * restyle the whole library from its own stylesheet without overriding a single selector:
  *
- *   .bit-bonboarding-root { --bit-bonboarding-accent: #6d28d9; --bit-bonboarding-radius: 4px; }
+ *   .bit-bonboarding-root, .bit-bonboarding-themed { --bit-bonboarding-accent: #6d28d9; --bit-bonboarding-radius: 4px; }
  *
  * No external CSS framework is used or assumed.
  */
 
-.bit-bonboarding-root {
+.bit-bonboarding-root,
+.bit-bonboarding-themed {
     /* ---- Palette (light) ---- */
     --bit-bonboarding-surface: #ffffff;
     --bit-bonboarding-surface-subtle: #f6f7f9;
@@ -26,6 +28,7 @@
 
     --bit-bonboarding-danger: #dc2626;
     --bit-bonboarding-danger-hover: #b91c1c;
+    --bit-bonboarding-danger-text: #ffffff;
 
     --bit-bonboarding-overlay: 0, 0, 0;
     --bit-bonboarding-overlay-opacity: 0.55;
@@ -54,14 +57,29 @@
     --bit-bonboarding-space: 1rem;
     --bit-bonboarding-arrow: 10px;
 
+    /* ---- Beacons ---- */
+    /* The button is the touch target (WCAG 2.2 asks for 24px); the dot drawn inside it is smaller. */
+    --bit-bonboarding-beacon-size: 24px;
+    --bit-bonboarding-beacon-dot: 10px;
+    --bit-bonboarding-beacon-color: var(--bit-bonboarding-accent);
+
     /* ---- Motion (overridden inline when reduced motion is honoured) ---- */
     --bit-bonboarding-duration: 220ms;
     --bit-bonboarding-ease: cubic-bezier(0.22, 0.9, 0.3, 1);
 
     --bit-bonboarding-z: 9000;
+}
 
+/* The tour host: a fixed layer over the page that lets pointer events through except where it draws. */
+.bit-bonboarding-root {
     position: fixed;
     inset: 0;
+    /*
+     * The safe area of a phone with a notch or rounded corners (non-zero only with viewport-fit=cover). The browser
+     * layer reads it as room the popover keeps clear of; everything inside the host is fixed, so it moves nothing.
+     */
+    box-sizing: border-box;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     z-index: var(--bit-bonboarding-z);
     pointer-events: none;
     font-family: var(--bit-bonboarding-font);
@@ -72,9 +90,24 @@
     text-rendering: optimizeLegibility;
 }
 
-/* ---- Dark theme -------------------------------------------------------- */
+/* ---- Dark theme --------------------------------------------------------
+ *
+ * Applied by BonboardingTheme.Dark, and by BonboardingTheme.System (the default) while the operating system
+ * asks for a dark scheme. The variables of the two rules must stay identical: the MCP tests compare them.
+ *
+ * An explicit theme also sets color-scheme, so native controls a step body renders (inputs, selects,
+ * scrollbars) match the card. The system theme inherits the page's color-scheme instead, because an
+ * application that follows its own theme switch knows better than the operating system which one is on.
+ */
 
-.bit-bonboarding-root[data-bonboarding-theme="dark"] {
+.bit-bonboarding-root[data-bonboarding-theme="light"],
+.bit-bonboarding-themed[data-bonboarding-theme="light"] {
+    color-scheme: light;
+}
+
+.bit-bonboarding-root[data-bonboarding-theme="dark"],
+.bit-bonboarding-themed[data-bonboarding-theme="dark"] {
+    color-scheme: dark;
     --bit-bonboarding-surface: #16181d;
     --bit-bonboarding-surface-subtle: #1e2128;
     --bit-bonboarding-text: #f2f4f7;
@@ -90,6 +123,7 @@
 
     --bit-bonboarding-danger: #f87171;
     --bit-bonboarding-danger-hover: #fca5a5;
+    --bit-bonboarding-danger-text: #0b1220;
 
     --bit-bonboarding-overlay: 0, 0, 0;
     --bit-bonboarding-overlay-opacity: 0.68;
@@ -99,6 +133,42 @@
 
     --bit-bonboarding-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px -10px rgba(0, 0, 0, 0.7);
     --bit-bonboarding-focus-ring: 0 0 0 2px var(--bit-bonboarding-surface), 0 0 0 4px var(--bit-bonboarding-accent);
+}
+
+/*
+ * :where() keeps this rule at the specificity of a plain .bit-bonboarding-root, so an application that
+ * restyles the palette on .bit-bonboarding-root (and loads its stylesheet after this one) keeps its own
+ * colours on a dark system, exactly as before this rule existed.
+ */
+@media (prefers-color-scheme: dark) {
+    .bit-bonboarding-root:where([data-bonboarding-theme="system"]),
+    .bit-bonboarding-themed:where([data-bonboarding-theme="system"]) {
+        --bit-bonboarding-surface: #16181d;
+        --bit-bonboarding-surface-subtle: #1e2128;
+        --bit-bonboarding-text: #f2f4f7;
+        --bit-bonboarding-text-muted: #a2aab8;
+        --bit-bonboarding-border: #2a2e37;
+        --bit-bonboarding-border-strong: #3a404b;
+
+        --bit-bonboarding-accent: #6ea8fe;
+        --bit-bonboarding-accent-hover: #8bbaff;
+        --bit-bonboarding-accent-active: #a8ccff;
+        --bit-bonboarding-accent-text: #0b1220;
+        --bit-bonboarding-accent-soft: rgba(110, 168, 254, 0.16);
+
+        --bit-bonboarding-danger: #f87171;
+        --bit-bonboarding-danger-hover: #fca5a5;
+        --bit-bonboarding-danger-text: #0b1220;
+
+        --bit-bonboarding-overlay: 0, 0, 0;
+        --bit-bonboarding-overlay-opacity: 0.68;
+
+        --bit-bonboarding-spotlight-ring: rgba(255, 255, 255, 0.42);
+        --bit-bonboarding-spotlight-glow: rgba(110, 168, 254, 0.32);
+
+        --bit-bonboarding-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px -10px rgba(0, 0, 0, 0.7);
+        --bit-bonboarding-focus-ring: 0 0 0 2px var(--bit-bonboarding-surface), 0 0 0 4px var(--bit-bonboarding-accent);
+    }
 }
 
 /* ---- Overlay and spotlight --------------------------------------------- */
@@ -268,7 +338,8 @@
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
-    margin: -0.25rem -0.25rem 0 0;
+    margin-block-start: -0.25rem;
+    margin-inline-end: -0.25rem;
     padding: 0;
     border: none;
     border-radius: var(--bit-bonboarding-radius-sm);
@@ -315,6 +386,20 @@
 
 .bit-bonboarding-description {
     margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---- Validation --------------------------------------------------------- */
+
+/* Why the user is held on the step. The text keeps the body's colour (and its contrast); the bar says "attention". */
+.bit-bonboarding-validation {
+    margin: 0.75rem var(--bit-bonboarding-space) 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--bit-bonboarding-radius-sm);
+    border-inline-start: 3px solid var(--bit-bonboarding-danger);
+    background: var(--bit-bonboarding-surface-subtle);
+    color: var(--bit-bonboarding-text);
+    font-size: var(--bit-bonboarding-font-size-sm);
     overflow-wrap: anywhere;
 }
 
@@ -369,6 +454,12 @@
     cursor: not-allowed;
 }
 
+/* A button whose handler is still running: it keeps focus, and a further click is ignored. */
+.bit-bonboarding-button[aria-busy="true"] {
+    opacity: 0.7;
+    cursor: progress;
+}
+
 .bit-bonboarding-button-primary {
     background: var(--bit-bonboarding-accent);
     color: var(--bit-bonboarding-accent-text);
@@ -409,7 +500,7 @@
 
 .bit-bonboarding-button-danger {
     background: var(--bit-bonboarding-danger);
-    color: #fff;
+    color: var(--bit-bonboarding-danger-text);
     border-color: var(--bit-bonboarding-danger);
 }
 
@@ -490,6 +581,262 @@
     animation: bit-bonboarding-spin 700ms linear infinite;
 }
 
+.bit-bonboarding-waiting-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.bit-bonboarding-waiting .bit-bonboarding-close {
+    margin-block: -0.25rem;
+}
+
+/* ---- Beacons -------------------------------------------------------------
+ *
+ * Positioned by the browser layer with a transform; hidden (still laid out, so it can be measured) until it has
+ * been placed on a target that is on screen. One step below the tour layer, so a tour always covers them.
+ */
+
+.bit-bonboarding-beacon {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: calc(var(--bit-bonboarding-z) - 1);
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: var(--bit-bonboarding-beacon-size);
+    height: var(--bit-bonboarding-beacon-size);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bit-bonboarding-beacon:not([data-bonboarding-beacon-state="visible"]) {
+    visibility: hidden;
+}
+
+/* The dot, ringed in the surface colour so it reads on any background. */
+.bit-bonboarding-beacon::before {
+    content: "";
+    width: var(--bit-bonboarding-beacon-dot);
+    height: var(--bit-bonboarding-beacon-dot);
+    border-radius: 50%;
+    background: var(--bit-bonboarding-beacon-color);
+    box-shadow: 0 0 0 2px var(--bit-bonboarding-surface);
+}
+
+/* The pulse that draws the eye to it. */
+.bit-bonboarding-beacon::after {
+    content: "";
+    position: absolute;
+    inset: calc((var(--bit-bonboarding-beacon-size) - var(--bit-bonboarding-beacon-dot)) / 2);
+    border-radius: 50%;
+    background: var(--bit-bonboarding-beacon-color);
+    opacity: 0.45;
+    animation: bit-bonboarding-pulse 1.8s var(--bit-bonboarding-ease) infinite;
+    pointer-events: none;
+}
+
+.bit-bonboarding-beacon:focus-visible {
+    outline: none;
+    box-shadow: var(--bit-bonboarding-focus-ring);
+}
+
+/* While its hint is open the beacon stays (focus returns to it), but stops calling for attention. */
+.bit-bonboarding-beacon[aria-expanded="true"]::after {
+    animation: none;
+    opacity: 0;
+}
+
+@keyframes bit-bonboarding-pulse {
+    0% { transform: scale(1); opacity: 0.45; }
+    70%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* ---- Checklist and tour list ----------------------------------------------
+ *
+ * Rendered in the page's own flow (a dashboard card, a drawer, a help panel), so they size to their container.
+ */
+
+.bit-bonboarding-checklist,
+.bit-bonboarding-tour-list {
+    box-sizing: border-box;
+    padding: var(--bit-bonboarding-space);
+    background: var(--bit-bonboarding-surface);
+    color: var(--bit-bonboarding-text);
+    border: 1px solid var(--bit-bonboarding-border);
+    border-radius: var(--bit-bonboarding-radius);
+    font-family: var(--bit-bonboarding-font);
+    font-size: var(--bit-bonboarding-font-size);
+    line-height: var(--bit-bonboarding-line-height);
+}
+
+.bit-bonboarding-checklist-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.bit-bonboarding-checklist-title,
+.bit-bonboarding-tour-list-title {
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--bit-bonboarding-title-size);
+    font-weight: var(--bit-bonboarding-title-weight);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.bit-bonboarding-checklist-count {
+    flex: 0 0 auto;
+    font-size: var(--bit-bonboarding-font-size-sm);
+    color: var(--bit-bonboarding-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.bit-bonboarding-checklist .bit-bonboarding-close {
+    margin-block: -0.25rem;
+}
+
+.bit-bonboarding-checklist-progress {
+    max-width: none;
+    margin-block: 0.75rem;
+}
+
+.bit-bonboarding-checklist-description {
+    margin: 0 0 0.75rem;
+    color: var(--bit-bonboarding-text-muted);
+}
+
+.bit-bonboarding-checklist-items,
+.bit-bonboarding-tour-list-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.bit-bonboarding-checklist-action {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.5rem;
+    margin: 0;
+    border: 0;
+    border-radius: var(--bit-bonboarding-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+}
+
+button.bit-bonboarding-checklist-action {
+    cursor: pointer;
+}
+
+button.bit-bonboarding-checklist-action:hover {
+    background: var(--bit-bonboarding-surface-subtle);
+}
+
+button.bit-bonboarding-checklist-action:focus-visible {
+    outline: none;
+    box-shadow: var(--bit-bonboarding-focus-ring);
+}
+
+/* The tick box: an empty ring to do, a filled disc with a check once done. */
+.bit-bonboarding-checklist-check {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid var(--bit-bonboarding-border-strong);
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+.bit-bonboarding-checklist-item[data-bonboarding-state="done"] .bit-bonboarding-checklist-check {
+    border-color: var(--bit-bonboarding-accent);
+    background: var(--bit-bonboarding-accent);
+}
+
+.bit-bonboarding-checklist-item[data-bonboarding-state="done"] .bit-bonboarding-checklist-check::after {
+    content: "";
+    width: 0.3rem;
+    height: 0.55rem;
+    margin-top: -0.1rem;
+    border: solid var(--bit-bonboarding-accent-text);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.bit-bonboarding-checklist-item[data-bonboarding-state="done"] .bit-bonboarding-checklist-item-title {
+    color: var(--bit-bonboarding-text-muted);
+    text-decoration: line-through;
+}
+
+.bit-bonboarding-checklist-item-description {
+    margin: 0 0 0.375rem;
+    padding-inline-start: 2.25rem;
+    font-size: var(--bit-bonboarding-font-size-sm);
+    color: var(--bit-bonboarding-text-muted);
+}
+
+.bit-bonboarding-tour-list-title {
+    margin-bottom: 0.75rem;
+}
+
+.bit-bonboarding-tour-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+}
+
+.bit-bonboarding-tour-list-item + .bit-bonboarding-tour-list-item {
+    border-top: 1px solid var(--bit-bonboarding-border);
+}
+
+.bit-bonboarding-tour-list-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+.bit-bonboarding-tour-list-name {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.bit-bonboarding-tour-list-description {
+    font-size: var(--bit-bonboarding-font-size-sm);
+    color: var(--bit-bonboarding-text-muted);
+}
+
+.bit-bonboarding-tour-list-state {
+    flex: 0 0 auto;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--bit-bonboarding-radius-pill);
+    background: var(--bit-bonboarding-surface-subtle);
+    color: var(--bit-bonboarding-text-muted);
+    font-size: var(--bit-bonboarding-font-size-sm);
+}
+
+.bit-bonboarding-tour-list-state[data-bonboarding-progress="in-progress"] {
+    color: var(--bit-bonboarding-text);
+}
+
 /* ---- Utilities ---------------------------------------------------------- */
 
 .bit-bonboarding-sr-only {
@@ -558,6 +905,12 @@
     .bit-bonboarding-root[data-bonboarding-reduced-motion="true"] .bit-bonboarding-spinner {
         animation-duration: 1600ms;
     }
+
+    /* A beacon still marks its spot; it just stops pulsing. */
+    .bit-bonboarding-beacon::after {
+        animation: none;
+        opacity: 0;
+    }
 }
 
 /* ---- High contrast ------------------------------------------------------- */
@@ -574,5 +927,21 @@
 
     .bit-bonboarding-button {
         border: 1px solid ButtonText;
+    }
+
+    .bit-bonboarding-beacon::before {
+        background: Highlight;
+        box-shadow: 0 0 0 2px Canvas;
+        forced-color-adjust: none;
+    }
+
+    /* Forced colors do not paint box-shadow, so every focus ring drawn with one becomes an outline here. */
+    .bit-bonboarding-popover:focus-visible,
+    .bit-bonboarding-button:focus-visible,
+    .bit-bonboarding-close:focus-visible,
+    .bit-bonboarding-beacon:focus-visible,
+    .bit-bonboarding-checklist-action:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
     }
 }

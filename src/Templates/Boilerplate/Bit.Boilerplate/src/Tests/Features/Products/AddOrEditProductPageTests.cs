@@ -14,7 +14,7 @@ namespace Boilerplate.Tests.Features.Products;
 /// <item><b>A validation error on a field with no <c>&lt;ValidationMessage&gt;</c>.</b>
 /// <c>AppDataAnnotationsValidator</c> writes every failure into a <c>ValidationMessageStore</c> and renders nothing
 /// itself; the page has to supply a message component per field. <c>DescriptionHTML</c> had none and the form had no
-/// <c>&lt;ValidationSummary&gt;</c>, so an over-long description made <c>EditContext.Validate()</c> return false,
+/// <c>&lt;ValidationSummary&gt;</c>, so an over-long description made <c>EditContext.ValidateAsync()</c> return false,
 /// <c>OnValidSubmit</c> never fired, <c>Save</c> never ran, and - because <c>isSaving</c> is assigned inside
 /// <c>Save</c> - the button did not even enter its loading state. Clicking Save did nothing whatsoever, forever.</item>
 /// <item><b>A failed load falling through to the form.</b> <c>OnInitAsync</c> had no <c>catch</c>, so a transient

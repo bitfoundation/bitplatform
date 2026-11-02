@@ -26,14 +26,11 @@ internal static class TestHelpers
     }
 
     /// <summary>
-    /// Tells bUnit which interactive renderer the components under test run on. <c>RendererInfo</c> arrived in .NET 9;
-    /// on .NET 8 there is nothing to set, and the panel infers interactivity from its JS runtime instead.
+    /// Tells bUnit which interactive renderer the components under test run on.
     /// </summary>
     public static void UseRenderer(this BunitContext context, string name)
     {
-#if NET9_0_OR_GREATER
         context.SetRendererInfo(new RendererInfo(name, isInteractive: true));
-#endif
     }
 }
 

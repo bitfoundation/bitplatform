@@ -35,7 +35,9 @@
     <p class="bb-card-desc">
         Open the <strong>Timeline</strong> and click <em>Click me</em>: the <em>onclick → Counter.IncrementCount</em>
         event, the one batch it produced and the render of <code>Counter</code> inside it - no layout, header or
-        other page component renders with it. The ten-step button shows ten renders caused by the same event.
+        other page component renders with it. The ten-step button shows ten renders caused by the same event, and
+        <strong>Diagnostics</strong> calls it a <em>slow event handler</em>: a handler's duration spans every
+        <code>await</code> inside it, about 300 ms here.
     </p>
 </div>
 
@@ -44,6 +46,23 @@
     <p class="bb-card-desc">
         In the <strong>Profiler</strong>, press <em>Reset</em>, click once and tick <em>since reset</em>: one row, one
         render. Compare with one keystroke on the <a href="products">Products</a> page.
+    </p>
+    <p class="bb-card-desc">
+        Visit a few pages and come back, then open <em>Renders per page</em> → <em>Show</em>: each page with its visits,
+        renders, render time and the three components that cost the most there. This page sits near the bottom; the
+        dashboard with its clock ticking sits near the top.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Components: where it is written</h3>
+    <p class="bb-card-desc">
+        Select <code>Counter</code> in the <strong>Components</strong> tab. <em>Type &amp; source</em> links
+        <code>Counter.razor</code>, and <em>Event handlers &amp; callbacks</em> lists both buttons -
+        <em>onclick → Counter.IncrementCount</em> and <em>Counter.IncrementTenTimes</em> - each with a link to the line
+        that handler is written on. The links open your editor (VS Code by default; <code>Ui.EditorUrlTemplate</code>
+        changes it) and come from the app's symbols; without them the location is inferred from the type name and
+        labelled so.
     </p>
 </div>
 

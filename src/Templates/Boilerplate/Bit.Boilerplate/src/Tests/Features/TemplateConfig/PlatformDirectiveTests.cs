@@ -21,7 +21,7 @@ public class PlatformDirectiveTests
 
         Assert.IsEmpty(exposed,
             $"These platform directives are read by the template engine, which can drop them from a generated project, " +
-            $"and with them the platform's code. Put each between //-:cnd:noEmit and //+:cnd:noEmit: {string.Join(", ", exposed)}");
+            $"and with them the platform's code. Turn the engine's conditional processing off around each, as the other platform blocks do: {string.Join(", ", exposed)}");
     }
 
     private static IEnumerable<string> ExposedPlatformDirectives(string templateRoot, string path)

@@ -4,7 +4,12 @@
 
 <div class="bb-intro">
     <h1>Fluent builder + conditions</h1>
-    <p class="bb-subtitle">Configure fields with a type-safe fluent API. The company fields below appear only when the account type is <em>Business</em>.</p>
+    <p class="bb-subtitle">
+        <code>BormBuilder.For&lt;T&gt;()</code> configures each field where it is named, with the property's own type:
+        <code>x =&gt; x.Email</code> is checked by the compiler, so renaming the property renames the field. It starts from
+        what the model's attributes already say and changes only what you tell it to. The company fields below appear
+        only when the account type is <em>Business</em>.
+    </p>
 </div>
 
 <div class="bb-demo">
@@ -21,6 +26,62 @@
     <summary class="btn btn-secondary">View source</summary>
     <pre class="bb-code"><code>@Source</code></pre>
 </details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Try it</h3>
+    <p class="bb-card-desc">
+        Submit the empty form: the three required fields say so, and focus goes to the first. Choose <em>Business</em>:
+        the company name and VAT number appear, and the company name is now required. Choose <em>Personal</em> again and
+        they go - with their rules, so they no longer stop the submit. The terms box is a checkbox with
+        <code>Required()</code>, which on a checkbox means "must be ticked".
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Nested members, groups and lists</h3>
+    <p class="bb-card-desc">
+        Every path is an expression. A nested member binds to its dotted path; <code>Object</code> and <code>Array</code>
+        configure a group or a repeater with a builder of their own, typed to the child.
+    </p>
+    <pre class="bb-code">BormBuilder.For&lt;Order&gt;()
+    .Field(x =&gt; x.Customer.Email, f =&gt; f.Required())     <span class="c">// binds to "Customer.Email"</span>
+    .Object(x =&gt; x.ShippingAddress, a =&gt; a
+        .Field(p =&gt; p.Street)
+        .Field(p =&gt; p.City))
+    .Array(x =&gt; x.Lines, line =&gt; line
+        .Field(l =&gt; l.Product, f =&gt; f.Required())
+        .Field(l =&gt; l.Quantity, f =&gt; f.Range(1, 999)))
+    .Build();</pre>
+    <p class="bb-card-desc">
+        A constraint set in the builder <em>replaces</em> the rule the same attribute generated, so restating
+        <code>[Required]</code> - as the full name above does, over the model's own <code>[Required]</code> - produces one
+        error, not two.
+        <code>BormBuilder&lt;T&gt;.Path(x =&gt; x.Customer.Email)</code> gives the path string for a condition or a step.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> With no model at all</h3>
+    <p class="bb-card-desc">
+        <code>BormBuilder.Create()</code> builds the same schema by name, for a form whose shape is not a compiled type. It
+        binds to a dictionary, passed as <code>Data</code>. The <a href="field-types">field types</a> page is built this way.
+    </p>
+    <pre class="bb-code"><span class="k">var</span> definition = BormBuilder.Create()
+    .Title(<span class="s">"Feedback"</span>)
+    .Text(<span class="s">"subject"</span>, f =&gt; f.Required())
+    .TextArea(<span class="s">"body"</span>, f =&gt; f.MaxLength(2000))
+    .Select(<span class="s">"topic"</span>, f =&gt; f.Options((<span class="s">"bug"</span>, <span class="s">"Bug"</span>), (<span class="s">"idea"</span>, <span class="s">"Idea"</span>)))
+    .ArrayOf(<span class="s">"tags"</span>, BormFieldType.Text, f =&gt; f.Items(max: 5).UniqueItems())
+    .Build();
+
+&lt;<span class="k">BormView</span> Definition=<span class="s">"definition"</span> Data=<span class="s">"_data"</span> OnValidSubmit=<span class="s">"Send"</span> /&gt;
+<span class="k">private readonly</span> Dictionary&lt;<span class="k">string</span>, <span class="k">object</span>?&gt; _data = <span class="k">new</span>();</pre>
+    <p class="bb-card-desc">
+        Showing and hiding is one of four conditions - <code>VisibleWhen</code>, <code>RequiredWhen</code>,
+        <code>DisabledWhen</code> and <code>ReadOnlyWhen</code> - each written as a comparison, a group, an expression or
+        C#; <a href="conditions">every kind of condition</a> shows them side by side.
+    </p>
+</div>
 
 @code {
     private const string Source =

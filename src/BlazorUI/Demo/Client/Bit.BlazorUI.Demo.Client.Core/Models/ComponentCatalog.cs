@@ -158,7 +158,7 @@ public static class ComponentCatalog
                 IconName = _icons.GetValueOrDefault(itemName, categoryIcon),
                 Package = package,
                 // Built once here rather than on every keystroke of the gallery's search box: the
-                // catalog is ~110 items and the box filters on every character.
+                // catalog is ~150 items and the box filters on every character.
                 SearchText = $"{itemName} {name} {navItem.Description} {navItem.Data} {summary}".ToLowerInvariant()
             });
         }
@@ -204,12 +204,14 @@ public static class ComponentCatalog
     /// <summary>
     /// Which project a category's components are compiled into. Derived from the category rather
     /// than listed per component, because the split is exactly the nav's own grouping: the Extras
-    /// group and the two theming switchers are the Extras package, the Legacy group is the Legacy
-    /// package, and everything else is the one assembly the core stylesheet styles.
+    /// group and the two theming switchers are the Extras package, the AI group is the AI package,
+    /// the Legacy group is the Legacy package, and everything else is the one assembly the core
+    /// stylesheet styles.
     /// </summary>
     private static string PackageOf(string category) => category switch
     {
         "Extras" or "Theming" => "Bit.BlazorUI.Extras",
+        "AI" => "Bit.BlazorUI.AI",
         "Legacy" => "Bit.BlazorUI.Legacy",
         _ => "Bit.BlazorUI"
     };
@@ -228,6 +230,7 @@ public static class ComponentCatalog
         ["Surfaces"] = (BitIconName.Tiles, "Containers that hold content: cards, dialogs, panels, popovers."),
         ["Utilities"] = (BitIconName.Toolbox, "Small building blocks the other components are made of."),
         ["Extras"] = (BitIconName.Puzzle, "Larger components that ship in the separate Extras package."),
+        ["AI"] = (BitIconName.Robot, "Chat, streaming, tools, agents and generative UI for AI apps, in the AI package."),
         ["Legacy"] = (BitIconName.History, "Previous implementations, kept unchanged for backward compatibility."),
         ["Theming"] = (BitIconName.Color, "Ready-made chrome for switching design system, scheme, and accent."),
     };
@@ -356,6 +359,50 @@ public static class ComponentCatalog
         ["TextShimmer"] = BitIconName.ChatBot,
         ["TimeZonePicker"] = BitIconName.WorldClock,
         ["Virtualize"] = BitIconName.RowsGroup,
+
+        // AI
+        ["AiAgentRunView"] = BitIconName.FlowChart,
+        ["AiAgentStatusBadge"] = BitIconName.StatusCircleCheckmark,
+        ["AiAgentStepView"] = BitIconName.TaskList,
+        ["AiArtifactPartView"] = BitIconName.TextDocument,
+        ["AiArtifactView"] = BitIconName.Document,
+        ["AiAttachmentChip"] = BitIconName.Attach,
+        ["AiChat"] = BitIconName.Chat,
+        ["AiChatMessage"] = BitIconName.CommentActive,
+        ["AiCitationMarker"] = BitIconName.NumberSymbol,
+        ["AiCodeBlockView"] = BitIconName.FileCode,
+        ["AiCollapsible"] = BitIconName.ChevronFold10,
+        ["AiContextMeter"] = BitIconName.SpeedHigh,
+        ["AiConversationList"] = BitIconName.ViewList,
+        ["AiCopyButton"] = BitIconName.Copy,
+        ["AiDataTable"] = BitIconName.TableComputed,
+        ["AiEmptyState"] = BitIconName.Starburst,
+        ["AiErrorView"] = BitIconName.Error,
+        ["AiForm"] = BitIconName.FormLibrary,
+        ["AiGenerativeUiView"] = BitIconName.AutoEnhanceOn,
+        ["AiImagePartView"] = BitIconName.Photo2,
+        ["AiJsonView"] = BitIconName.Variable,
+        ["AiMarkdownView"] = BitIconName.ReadingMode,
+        ["AiMessageActions"] = BitIconName.Like,
+        ["AiMessageList"] = BitIconName.Comment,
+        ["AiMessagePartView"] = BitIconName.AllApps,
+        ["AiModelSelector"] = BitIconName.Processing,
+        ["AiOptionsProvider"] = BitIconName.DeveloperTools,
+        ["AiPromptInput"] = BitIconName.Send,
+        ["AiReasoningPartView"] = BitIconName.Lightbulb,
+        ["AiRendererBoundary"] = BitIconName.Shield,
+        ["AiScrollToLatest"] = BitIconName.Down,
+        ["AiSourceCard"] = BitIconName.Page,
+        ["AiSourceList"] = BitIconName.Library,
+        ["AiStreamingMarkdown"] = BitIconName.Edit,
+        ["AiStructuredDataView"] = BitIconName.Database,
+        ["AiTextPartView"] = BitIconName.PlainText,
+        ["AiThinkingIndicator"] = BitIconName.More,
+        ["AiTokenUsageView"] = BitIconName.Insights,
+        ["AiToolApproval"] = BitIconName.Permissions,
+        ["AiToolCallView"] = BitIconName.Repair,
+        ["AiToolResultView"] = BitIconName.CheckList,
+        ["AiVoiceInput"] = BitIconName.Microphone,
 
         // Legacy - the glyph of the component that replaced it, with the badge telling them apart.
         ["ChartLegacy"] = BitIconName.BarChartVertical,
@@ -490,6 +537,50 @@ public static class ComponentCatalog
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",
         ["TimeZonePicker"] = "A searchable time zone selector with UTC offsets, bound to a TimeZoneInfo or its IANA id.",
         ["Virtualize"] = "Renders only the rows currently in view, for very long lists.",
+
+        // AI
+        ["AiAgentRunView"] = "An agent's run: its goal, its plan, each step's state and timing, and the question it is waiting on.",
+        ["AiAgentStatusBadge"] = "A compact badge for the state of an agent run or one of its steps.",
+        ["AiAgentStepView"] = "One step of an agent's plan, with its state, its timing and its summary or error.",
+        ["AiArtifactPartView"] = "Marks the place in a message where it introduced an artifact.",
+        ["AiArtifactView"] = "The panel an artifact lives in: versions, copy, download and full screen around its body.",
+        ["AiAttachmentChip"] = "One attachment as a chip: a thumbnail or a glyph of its kind, its name, its size or its upload progress.",
+        ["AiChat"] = "A complete chat - transcript, composer, empty state and suggestions - over one session.",
+        ["AiChatMessage"] = "One message of a conversation, with its parts, its metadata and its actions.",
+        ["AiCitationMarker"] = "The numbered marker placed where a claim is made, linking it to its source.",
+        ["AiCodeBlockView"] = "A highlighted code block with a header naming its language or file, and a copy button.",
+        ["AiCollapsible"] = "A header that shows and hides its content, the shell of reasoning and tool panels.",
+        ["AiContextMeter"] = "How much of the model's context window a conversation has used, and when to worry.",
+        ["AiConversationList"] = "A sidebar of conversations grouped by recency, with new, switch and delete.",
+        ["AiCopyButton"] = "Copies a text to the clipboard and confirms that it did.",
+        ["AiDataTable"] = "Renders a JSON array as a table, filling in row by row as it streams.",
+        ["AiEmptyState"] = "What an empty conversation shows: a title, a line of help and starter prompts.",
+        ["AiErrorView"] = "A failure the user can act on: what went wrong, the detail, and a retry when it can help.",
+        ["AiForm"] = "A form built from a JSON Schema the model proposed, validated and confirmed by the user.",
+        ["AiGenerativeUiView"] = "Renders a component the model chose from a registry, bound to the properties it supplied.",
+        ["AiImagePartView"] = "An image a model generated or a tool returned, with its caption.",
+        ["AiJsonView"] = "A collapsible tree for any JSON value.",
+        ["AiMarkdownView"] = "Renders Markdown to HTML in C#: tables, code, math, citations, safe links.",
+        ["AiMessageActions"] = "The row under an answer: copy, regenerate and feedback, with its model, usage and time.",
+        ["AiMessageList"] = "The transcript of a conversation, following new content and virtualized when long.",
+        ["AiMessagePartView"] = "Renders one part of a message with the view, or the custom renderer, of its kind.",
+        ["AiModelSelector"] = "A picker for the model a conversation runs on, grouped by family or provider.",
+        ["AiOptionsProvider"] = "Cascades the AI components' options - strings, render interval, what a message shows.",
+        ["AiPromptInput"] = "The composer: a growing text box with attachments, slash commands, mentions and send.",
+        ["AiReasoningPartView"] = "The model's reasoning in its own collapsed panel, timed and kept out of the answer.",
+        ["AiRendererBoundary"] = "Keeps a custom renderer that throws from taking the conversation down with it.",
+        ["AiScrollToLatest"] = "The button that jumps back to the newest message once the reader has scrolled away.",
+        ["AiSourceCard"] = "One source of a citation: its title, site and link.",
+        ["AiSourceList"] = "The deduplicated, numbered sources under an answer.",
+        ["AiStreamingMarkdown"] = "Markdown that is still arriving, re-parsed only at its tail so it never flickers.",
+        ["AiStructuredDataView"] = "Structured output as it streams: partial JSON repaired into a table, a tree or a renderer.",
+        ["AiTextPartView"] = "A text part of a message, rendered as Markdown with its citations woven in.",
+        ["AiThinkingIndicator"] = "Shows that the model is working before its first token arrives.",
+        ["AiTokenUsageView"] = "A turn's tokens, cost, throughput and latency.",
+        ["AiToolApproval"] = "Stops a risky tool call for a human decision: allow once, allow always, or decline.",
+        ["AiToolCallView"] = "A tool call as a card: its arguments as they stream, its progress, its result.",
+        ["AiToolResultView"] = "A tool result that arrived without its call, as some providers send it.",
+        ["AiVoiceInput"] = "Dictation into the composer through the browser's speech recognition.",
 
         // Legacy
         ["ChartLegacy"] = "The original Chart.js based charting component.",

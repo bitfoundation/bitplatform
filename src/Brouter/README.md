@@ -1,4 +1,4 @@
-﻿# bit Brouter
+# bit Brouter
 A modern, declarative, nestable router for Blazor with async guards, data loaders,
 named routes, programmatic navigation, query string binding, and global navigation hooks.
 
@@ -156,7 +156,7 @@ Mac Catalyst and Windows), where a `BlazorWebView` runs it as a Blazor Hybrid ap
 - Configurable case sensitivity and trailing-slash handling
 - **Scroll management**: optional scroll-to-top, fragment scrolling (`/docs#install` lands on `#install`), and scroll-position restoration on Back/Forward
 - **Focus management** for accessibility: move focus to a selector after navigation so screen readers announce the new page (mirrors Blazor's `FocusOnNavigate`)
-- Multi-target: net8.0, net9.0, net10.0
+- Multi-target: net10.0, net11.0
 
 ## Type-safe parameters
 
@@ -248,7 +248,11 @@ navigation is blocked. There is no address-bar flicker and no torn back/forward 
 implement a genuine "you have unsaved changes" prompt by cancelling from a guard or `OnNavigating`.
 
 A redirect to the URL the navigation is already heading to is treated as "continue", so guards like
-"always send anonymous users to `/login`" can't create redirect loops.
+"always send anonymous users to `/login`" can't create redirect loops. Both URLs are resolved the way
+`NavigationManager.NavigateTo` resolves them, so a different spelling of the same URL (absolute or
+base-relative, percent-encoded or not, host casing, default port) is still "continue", while any change
+to the path, query or hash is honored - including one routing doesn't see, such as `/Admin` to `/admin`
+or `/login` to `/login/` under the default options.
 
 ## Leave guards (unsaved changes)
 
@@ -1302,6 +1306,12 @@ anything else. For types outside that set, use Brouter's opt-in `[BrouterQuery]`
 
 > Discovery reflects over the given assemblies, so - like the built-in Blazor `Router` - keep your routable
 > components preserved when trimming.
+
+> A type that can't be loaded - because it, or one of its attributes, needs an assembly that is missing or isn't
+> loaded yet - is skipped, along with any routes it declares, and Brouter logs a warning saying why. On WebAssembly,
+> don't mark an assembly that a scanned assembly's types need as `BlazorWebAssemblyLazyLoad`: discovery reads every
+> type at startup, and once that assembly has failed to load, the scanned assembly's code can't use it even after
+> it's loaded.
 
 ## Migrating from the built-in Router
 

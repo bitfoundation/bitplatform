@@ -223,7 +223,7 @@ These namespaces are **automatically imported** in every C# file, eliminating th
 
 Instead of this in each `.csproj`:
 ```xml
-<PackageReference Include="Bit.BlazorUI" Version="10.7.0-pre-04" />
+<PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-16" />
 ```
 
 You write this in `.csproj`:
@@ -233,7 +233,7 @@ You write this in `.csproj`:
 
 And the version is defined centrally in `Directory.Packages.props`:
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="10.7.0-pre-04" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-16" />
 ```
 
 **Benefits**:
@@ -244,8 +244,8 @@ And the version is defined centrally in `Directory.Packages.props`:
 **Example packages included**:
 
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="10.7.0-pre-04" />
-<PackageVersion Include="Bit.Butil" Version="10.7.0-pre-04" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-16" />
+<PackageVersion Include="Bit.Butil" Version="11.0.0-pre-16" />
 <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
 <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
@@ -339,7 +339,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ```bash
 # Run the translator anywhere in the project; dnx fetches the bit CLI, nothing is installed
-dnx Bit.Cli --version 10.7.0-pre-04 -- translate
+dnx Bit.Cli --version 11.0.0-pre-16 -- translate
 ```
 
 **To add a new language**:
@@ -436,7 +436,7 @@ dnx Bit.Cli --version 10.7.0-pre-04 -- translate
     "servers": {
         "bitplatform": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp?v=10.7.0"
+            "url": "https://bitplatform.dev/mcp?v=11.0.0"
         }
     }
 }
@@ -503,9 +503,6 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 {
     "recommendations": [
         "ms-dotnettools.csharp",
-        "ms-dotnettools.csdevkit",
-        "ms-dotnettools.dotnet-maui",
-        "ms-azuretools.vscode-docker",
         "ms-vscode-remote.remote-containers",
         "ms-dotnettools.blazorwasm-companion",
         "ms-dotnettools.vscode-dotnet-runtime"
@@ -533,18 +530,16 @@ When you open the project in VS Code, you'll be prompted to install these extens
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj"
-        },
-        {
-            "name": ".NET MAUI",
-            "type": "maui",
-            "request": "launch",
-            "preLaunchTask": "maui: Build"
         }
     ]
 }
 ```
 
 **How to use**: Press `F5` or go to Run and Debug panel → Select a configuration → Start debugging
+
+#### 6.3.5 `.vscode/tasks.json`
+
+**Run the Android app**: runs `bit run android` from *Terminal > Run Task*. See [Running the Native Apps](/.docs/21-%20.NET%20MAUI%20-%20Blazor%20Hybrid.md#running-the-native-apps).
 
 ---
 
@@ -580,7 +575,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Location**: [`/README.md`](/README.md)
 
-**Purpose**: The project's **welcome file** displayed on GitHub/Azure DevOps.
+**Purpose**: The project's **welcome file** displayed on GitHub.
 
 **Contains**:
 - Welcome message
@@ -593,7 +588,7 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Purpose**: Records how the project was created, for the [bit CLI](https://www.nuget.org/packages/Bit.Cli) and for you: the template (`bit-bp`), its version, the project's name, and the value of every template option.
 
-**Who uses it**: `bit diff` and the `upgrade` skill read the version and the options to create the project again with the old and the new template version. An upgrade updates the version in it, and new options arrive through the diff like any other change.
+**Who uses it**: `bit diff` and the `template-diff` skill read the version and the options to create the project again on either side of a change: the old and the new template version, the old and the new .NET version, or one feature switched off and on. The skill updates what changed in it - the version, the framework or the feature's option - and new options arrive through the diff like any other change.
 
 **Keep it**: the bit CLI may keep more of what it needs to know about the project here. Edit an option's value when you change the project in a way that matches another option, such as removing Aspire, so the next upgrade compares the right templates.
 
@@ -628,7 +623,7 @@ editorconfig
 Hangfire
 rendermode
 sqlite
-Besql
+Bsqlite
 appsettings
 Butil
 webauthn
@@ -679,7 +674,7 @@ slnf
 **Note**: The current workflows are configured for client platforms (Android, iOS, Windows, macOS) but are not yet fully Aspire-friendly for backend deployment. Backend CI/CD may need additional configuration.
 
 **Best Practice**: The workflows use a **2-phase deployment**:
-1. **Build Phase**: Build the project and upload artifacts to GitHub/Azure DevOps
+1. **Build Phase**: Build the project and upload artifacts to GitHub
 2. **Deployment Phase**: Download artifacts and deploy to target environment
 
 **Why 2 phases?**: 

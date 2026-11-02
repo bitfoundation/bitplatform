@@ -1,0 +1,50 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (IconTemplate is not null)
+    {
+        <div style="@Styles?.Icon" class="bit-aiems-ico @Classes?.Icon">@IconTemplate</div>
+    }
+    else
+    {
+        @* The glyph only decorates the heading beside it, so it is left to BitIcon to hide it from assistive
+           technologies. *@
+        <BitIcon Icon="@_Icon" Style="@Styles?.Icon" Class="@_IconClass" />
+    }
+
+    <div style="@Styles?.Title" class="bit-aiems-ttl @Classes?.Title">@(Title ?? Strings.EmptyTitle)</div>
+
+    <div style="@Styles?.Body" class="bit-aiems-bdy @Classes?.Body">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            @(Body ?? Strings.EmptyBody)
+        }
+    </div>
+
+    @if (Suggestions is { Count: > 0 })
+    {
+        <div style="@Styles?.Suggestions" class="bit-aiems-sgs @Classes?.Suggestions">
+            @foreach (var suggestion in Suggestions)
+            {
+                <BitButton OnClick="() => HandleOnSuggestion(suggestion)"
+                           Disabled="Disabled"
+                           Rounded="true"
+                           Class="bit-btn-dft-sbg"
+                           Styles="@Styles?.Suggestion"
+                           Classes="@Classes?.Suggestion">
+                    @suggestion
+                </BitButton>
+            }
+        </div>
+    }
+</div>

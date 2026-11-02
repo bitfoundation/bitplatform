@@ -51,7 +51,7 @@ public class BitForcedHiddenBorderStylesheetTests
     [TestMethod]
     public void NoComponentShouldWriteOutAHiddenBorderOfItsOwn()
     {
-        var offenders = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy" }
+        var offenders = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras", "Bit.BlazorUI.Legacy", "Bit.BlazorUI.AI" }
             .Select(project => SourceFiles.GetPath(project, "Components"))
             .Where(Directory.Exists)
             .SelectMany(dir => Directory.EnumerateFiles(dir, "*.scss", SearchOption.AllDirectories))

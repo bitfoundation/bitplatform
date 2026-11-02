@@ -1,0 +1,88 @@
+﻿@page "/e2e/aimarkdownview"
+
+<PageTitle>BitAiMarkdownView E2E</PageTitle>
+
+<h1>BitAiMarkdownView</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div id="mdv-basic-box" style="width:640px">
+        <BitAiMarkdownView Id="mdv-basic" Document="_basic" />
+    </div>
+    @* No document: nothing is rendered, not even the root. *@
+    <div id="mdv-null-box"><BitAiMarkdownView Id="mdv-null" /></div>
+</E2ESection>
+
+@* The same document in two views: every heading id is named after the id of its view. *@
+<E2ESection Id="headings" Title="Heading anchors">
+    <BitAiMarkdownView Id="mdv-head-a" Document="_headings" />
+    <div style="height:1400px"></div>
+    <BitAiMarkdownView Id="mdv-head-b" Document="_headings" />
+    <a id="mdv-head-link" href="/e2e/aimarkdownview#mdv-head-b-bit-ai-h-render-modes">To the heading of the second view</a>
+</E2ESection>
+
+@* A note cited twice and one cited once, with enough text between the references and the notes for following a link
+   to scroll the page; and a second view with a footnote 1 of its own. *@
+<E2ESection Id="footnotes" Title="Footnotes">
+    <BitAiMarkdownView Id="mdv-fn" Document="_footnotes" />
+    <BitAiMarkdownView Id="mdv-fn2" Document="_footnotes2" />
+</E2ESection>
+
+@* What a model can be talked into writing. Not one of these may reach the page as a script. *@
+<E2ESection Id="sanitize" Title="Untrusted content">
+    <BitAiMarkdownView Id="mdv-unsafe" Document="_unsafe" />
+</E2ESection>
+
+@* The same images under each policy; every view asks for its own addresses, so a test tells which view fetched what. *@
+<E2ESection Id="images" Title="Images">
+    <BitAiOptionsProvider UiOptions="_clickToLoad">
+        <BitAiMarkdownView Id="mdv-img-ask" Document="_imagesAsk" />
+    </BitAiOptionsProvider>
+    <BitAiOptionsProvider UiOptions="_blockImages">
+        <BitAiMarkdownView Id="mdv-img-block" Document="_imagesBlock" />
+    </BitAiOptionsProvider>
+    <BitAiOptionsProvider UiOptions="_listedHosts">
+        <BitAiMarkdownView Id="mdv-img-listed" Document="_imagesListed" />
+    </BitAiOptionsProvider>
+    <BitAiMarkdownView Id="mdv-img-allow" Document="_imagesAllow" />
+</E2ESection>
+
+<E2ESection Id="caret" Title="Caret">
+    <BitAiMarkdownView Id="mdv-caret" Document="_open" ShowCaret />
+    <BitAiMarkdownView Id="mdv-caret-closed" Document="_closed" ShowCaret />
+    <BitAiMarkdownView Id="mdv-caret-off" Document="_open" />
+    <BitAiOptionsProvider UiOptions="_noCaret">
+        <BitAiMarkdownView Id="mdv-caret-option" Document="_open" ShowCaret />
+    </BitAiOptionsProvider>
+    <div class="bit-fam">
+        <BitAiMarkdownView Id="mdv-caret-fam" Document="_open" ShowCaret />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl" style="width:480px">
+        <BitAiMarkdownView Id="mdv-rtl" Document="_rtl" />
+    </div>
+    <div style="width:480px">
+        <BitAiMarkdownView Id="mdv-rtl-explicit" Dir="BitDir.Rtl" Document="_rtl" />
+    </div>
+    <div style="width:480px">
+        <BitAiMarkdownView Id="mdv-ltr" Document="_rtl" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <div id="mdv-vars-box" style="--bit-AiMarkdownView-color: rgb(1, 2, 3); --bit-AiMarkdownView-font-size: 18px; --bit-AiMarkdownView-line-height: 2; --bit-AiMarkdownView-block-spacing: 40px; --bit-AiMarkdownView-heading-color: rgb(4, 5, 6); --bit-AiMarkdownView-heading-font-weight: 300; --bit-AiMarkdownView-link-color: rgb(7, 8, 9); --bit-AiMarkdownView-code-color: rgb(10, 11, 12); --bit-AiMarkdownView-code-background: rgb(13, 14, 15); --bit-AiMarkdownView-code-radius: 9px; --bit-AiMarkdownView-code-font-family: serif; --bit-AiMarkdownView-quote-color: rgb(16, 17, 18); --bit-AiMarkdownView-quote-border-color: rgb(19, 20, 21); --bit-AiMarkdownView-rule-color: rgb(22, 23, 24); --bit-AiMarkdownView-table-border-color: rgb(25, 26, 27); --bit-AiMarkdownView-table-header-background: rgb(28, 29, 30); --bit-AiMarkdownView-table-font-size: 11px; --bit-AiMarkdownView-table-radius: 7px; --bit-AiMarkdownView-caret-color: rgb(31, 32, 33); --bit-AiMarkdownView-muted-color: rgb(34, 35, 36)">
+        <BitAiMarkdownView Id="mdv-vars" Document="_variables" ShowCaret />
+    </div>
+    @* A variable set on the Style of one view, which the parts of that view read like any inherited value. *@
+    <BitAiMarkdownView Id="mdv-vars-style" Style="--bit-AiMarkdownView-heading-color: rgb(40, 41, 42)" Document="_variables" />
+    <BitAiMarkdownView Id="mdv-parts"
+                       Document="_variables"
+                       ShowCaret
+                       Class="e2e-mdv-class"
+                       Style="outline: 2px solid rgb(50, 51, 52)"
+                       Classes="@(new() { Root = "e2e-mdv-root", Heading = "e2e-mdv-heading", Paragraph = "e2e-mdv-paragraph", Link = "e2e-mdv-link", InlineCode = "e2e-mdv-code", Quote = "e2e-mdv-quote", Table = "e2e-mdv-table", Caret = "e2e-mdv-caret" })"
+                       Styles="@(new() { Heading = "letter-spacing: 3px", InlineCode = "font-weight: 700", Quote = "padding-top: 5px", Caret = "width: 20px" })" />
+</E2ESection>
+
+<E2EStatus />

@@ -14,8 +14,23 @@ public static class IServiceCollectionExtensions
 {
     public static IServiceCollection AddDemoServices(this IServiceCollection services)
     {
-        // Borm's rendering services, with a custom renderer ("rating") to show the registry is open.
-        services.AddBorm(registry => registry.RegisterCustom<StarRatingInput>("rating"));
+        // Borm's rendering services, with a custom renderer ("rating") to show the registry is open, and
+        // two made of Blazor's own InputText and InputNumber for the edit context demo.
+        services.AddBorm(registry => registry
+            .RegisterCustom<StarRatingInput>("rating")
+            .RegisterCustom<BlazorTextInput>("blazor-text")
+            .RegisterCustom<BlazorNumberInput>("blazor-number"));
+
+        // The library's own words in a form's language - the localization demo's buttons and messages. Every other
+        // page follows the UI culture, which InvariantGlobalization keeps invariant, so they read English.
+        services.AddBormTranslations();
+
+        // A function of the application's own for the expressions demo: callable from any expression - a schema the
+        // server sends included - so it must be safe with any argument, and returns null for one it has no answer to.
+        // Registered at startup, before an expression naming it is parsed; registering it again replaces it.
+        BormExpressionFunctions.Register("vatRate", args => args[0] is string country
+            ? country.ToUpperInvariant() switch { "NL" => 0.21m, "DE" => 0.19m, "FR" or "GB" => 0.20m, _ => null }
+            : null, minArgs: 1, maxArgs: 1);
 
         // The FluentValidation validator the FluentValidation demo resolves.
         services.AddScoped<IValidator<JobApplication>, JobApplicationValidator>();

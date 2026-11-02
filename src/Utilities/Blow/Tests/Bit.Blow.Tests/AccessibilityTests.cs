@@ -44,8 +44,23 @@ public class AccessibilityTests : BunitContext
         // region instead, which is what a screen reader user actually hears.
         Assert.IsNull(rendered[0].GetAttribute("aria-selected"));
 
+        // The nodes an edge joins are named as they are announced, not by their ids.
         var edge = cut.Find(".bit-blow-edge");
-        Assert.AreEqual("Edge from 1 to 2", edge.GetAttribute("aria-label"));
+        Assert.AreEqual("Edge from Start to The end", edge.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void ABlankLabelNamesNothingSoTheIdDoes()
+    {
+        // An empty label is a node drawn without text, not one called nothing: a screen reader would read a blank.
+        var nodes = new List<BlowNode> { new() { Id = "a", Label = "" }, new() { Id = "b", Label = "  ", AriaLabel = "" } };
+        var edges = new List<BlowEdge> { new() { Id = "e", Source = "a", Target = "b", Label = " " } };
+        var cut = Render(nodes, edges);
+
+        var rendered = cut.FindAll(".bit-blow-node");
+        Assert.AreEqual("Node a", rendered[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Node b", rendered[1].GetAttribute("aria-label"));
+        Assert.AreEqual("Edge from a to b", cut.Find(".bit-blow-edge").GetAttribute("aria-label"));
     }
 
     [TestMethod]

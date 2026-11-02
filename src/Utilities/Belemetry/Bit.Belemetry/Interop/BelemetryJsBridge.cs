@@ -21,6 +21,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     private readonly BelemetryConsentState _consent;
     private readonly BelemetryBrowserBridgeRegistry _registry;
     private readonly SemaphoreSlim _startLock = new(1, 1);
+    private readonly BelemetryRelaySource _relaySource;
     private IJSObjectReference? _module;
     private DotNetObjectReference<BelemetryJsCallbacks>? _callbacks;
     private bool _disposed;
@@ -41,12 +42,22 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
         _pipeline = pipeline;
         _consent = consent;
         _registry = registry;
+
+        // On a server the page at the other end of the circuit can be anything that speaks the interop protocol, and
+        // the queue it relays into is shared by every user: it gets the most an honest page sends at once (a full
+        // queue plus the records a consent decision releases) as a burst, and MaxRelayedPerMinute after it - a rate of
+        // its own, since how many records a page holds says nothing about how fast an honest one produces them.
+        _relaySource = new BelemetryRelaySource(settings.IsServer
+            ? new BelemetryRateLimiter(Math.Max(1, settings.Options.Browser.MaxQueueSize) + Math.Max(0, settings.Options.Consent.PendingLimit), settings.Options.Browser.MaxRelayedPerMinute, TimeSpan.FromMinutes(1))
+            : null);
     }
 
     /// <summary>The last context the script reported (per circuit on Blazor Server).</summary>
     public BelemetryJsContext? Context { get; private set; }
 
     public bool IsStarted => _module is not null;
+
+    private bool UnloadDrain => _settings.IsBrowser && _settings.CollectDotnet && _settings.HasExporters;
 
     /// <summary>Raised when the script reports a new context.</summary>
     public event Action<BelemetryJsContext>? ContextChanged;
@@ -67,8 +78,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
             _callbacks = DotNetObjectReference.Create(new BelemetryJsCallbacks(this));
             var relay = _settings.BrowserTransport == BelemetryBrowserTransport.Relay;
-            var unloadDrain = _settings.IsBrowser && _settings.CollectDotnet && _settings.HasExporters;
-            using var attachOptions = JsonDocument.Parse($"{{\"relay\":{(relay ? "true" : "false")},\"unloadDrain\":{(unloadDrain ? "true" : "false")}}}");
+            using var attachOptions = JsonDocument.Parse($"{{\"relay\":{(relay ? "true" : "false")},\"unloadDrain\":{(UnloadDrain ? "true" : "false")}}}");
             await module.InvokeVoidAsync("attachDotNet", _callbacks, attachOptions.RootElement);
 
             _module = module;
@@ -119,6 +129,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
         if (_settings.IsServer is false)
         {
             if (context.Decided) _consent.Update((BelemetryFeatures)context.Consent, decided: true);
+            else if (_consent.IsDecided is false) _consent.Update(_consent.Granted & (BelemetryFeatures)context.Consent, decided: false);
             _consent.SetContext(context.SessionId, context.PseudoId, context.UserId);
         }
 
@@ -174,9 +185,13 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
     internal Task RelayAsync(JsonElement payload)
     {
+        // Only a page told to relay sends batches. The callback object is handed to every page, whatever the transport,
+        // so without this check any client of a server could feed the pipeline directly.
+        if (_settings.BrowserTransport != BelemetryBrowserTransport.Relay) return Task.CompletedTask;
+
         try
         {
-            if (payload.Deserialize(BelemetryJsonContext.Default.BelemetryRelayBatch) is { } batch) _pipeline.Relay(batch);
+            if (payload.Deserialize(BelemetryJsonContext.Default.BelemetryRelayBatch) is { } batch) _pipeline.Relay(batch, _relaySource);
         }
         catch (JsonException ex)
         {
@@ -187,7 +202,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 
     internal JsonElement DrainForUnload()
     {
-        var requests = _pipeline.DrainForUnload();
+        var requests = UnloadDrain ? _pipeline.DrainForUnload() : [];
         return JsonSerializer.SerializeToElement(requests, BelemetryJsonContext.Default.ListBelemetryHttpRequest);
     }
 

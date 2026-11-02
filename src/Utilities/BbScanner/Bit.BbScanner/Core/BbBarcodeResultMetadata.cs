@@ -35,4 +35,11 @@ public sealed class BbBarcodeResultMetadata
 
     /// <summary><see langword="true"/> when the symbol advertises a GS1 application identifier stream.</summary>
     public bool? IsGs1 { get; init; }
+
+    /// <summary>
+    /// The digits of an EAN-2 or EAN-5 add-on printed beside an EAN-13, UPC-A, UPC-E or EAN-8:
+    /// a magazine's issue number, a book's price. <see cref="BbBarcodeResult.Text"/> carries the
+    /// main symbol alone.
+    /// </summary>
+    public string? Extension { get; init; }
 }

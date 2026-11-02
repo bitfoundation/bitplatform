@@ -23,6 +23,11 @@ builder.Services.AddBitBmotionServices();
 </Bmotion>
 ```
 
+A WebAssembly app can skip the registration and lazy load `Bit.Bmotion.wasm` instead, creating the
+services with `IServiceProvider.ConfigureBmotionServices(...)` before its first animated element and
+reaching them through `IServiceProvider.GetBmotionService<T>()`; see
+[lazy loading](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmotion#lazy-loading-on-webassembly).
+
 The `Bm` facade is the entry point for the whole hot path: `Bm.To(...)` builds animation
 targets (single values or keyframe sequences), `Bm.Spring` / `Bm.Tween` / `Bm.Inertia` build
 transitions, `Bm.Stagger` builds multi-element delay generators, `Bm.SnapTo` builds the
@@ -53,11 +58,12 @@ and `BmotionAnimateService` for the complete API surface.
   zero-velocity springs on transform/opacity) are pre-sampled in C# and run on the browser's
   Web Animations API off the main thread; everything else runs on the C# rAF engine over
   synchronous interop.
-- ⚠️ **Blazor Server** - the compositor path works (it needs only async interop), so
-  enter/exit/hover/tap/variant animations on transform + opacity play normally, and drag follows
-  the pointer a round trip behind (one position, and one `OnDrag`, per frame). Features that require the per-frame
-  loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation,
-  keyframe arrays off the compositor - degrade to instant state changes.
+- ✅ **Blazor Server** - the browser plays the same animations: transforms, opacity, colours,
+  sizes, filters, keyframes, springs, inertia and arcs, on enter, exit, gestures and variants
+  alike. What only a timeline can't express is recorded by the engine and played by the browser.
+  Drag stays under the pointer: the browser shows it until .NET catches up, and `OnDrag` runs
+  once per frame, a round trip behind. Only what needs the per-frame loop - `OnUpdate`/`OnFrame`
+  callbacks and SVG `d`/`points` morphs - lands on its target at once.
 - ✅ **Prerendering / static SSR** - by default elements render their `Initial` state and animate
   once interactive. Set `o.Prerender = BmPrerenderMode.Final` to serve them at rest (visible,
   indexable), or `BmPrerenderMode.Animate` to play the enter animation in pure CSS straight from the
@@ -65,9 +71,13 @@ and `BmotionAnimateService` for the complete API surface.
   needs the stylesheet in the page head:
   `<link rel="stylesheet" href="_content/Bit.Bmotion/bit-bmotion.css" />`. In both modes the runtime
   takes each prerendered element over at rest instead of replaying its enter animation.
+- ✅ **Lazy loading on WebAssembly** - the components work without `AddBitBmotionServices` once
+  `ConfigureBmotionServices` has created their services, so the assembly can be downloaded only when
+  a page that animates opens. Lazy loading itself is not for AOT builds, which compile every
+  assembly into the runtime up front.
 
 Inject **`BmotionCapabilities`** to detect the current mode instead of guessing:
-`Caps.SupportsFrameLoop` is `false` on Server (inertia/interpolation degrade to instant),
+`Caps.SupportsFrameLoop` is `false` on Server (per-frame callbacks and SVG path morphs land at once),
 `Caps.SupportsCompositor` is always `true`, and `Caps.IsPrerendering` is `true` while the page is
 being prerendered (when the other flags describe the server, not the runtime that takes over). On
 Server, the first animation that collapses to an instant change also logs a one-time warning so the
@@ -113,13 +123,24 @@ developer-authored values. Do **not** bind untrusted end-user input to them, or 
 injection into the element's `style`.
 
 If you must bind untrusted input, enable **CSS safe mode** to validate those values against a
-conservative injection check (rejecting `;`, `}`, `<`, `javascript:`, `expression(`, comments, …):
+conservative injection check (rejecting `;`, `}`, `<`, `javascript:`, `expression(`, comments, …).
+It also rejects anything that makes the browser fetch a URL (`url(`, `src(`, `image(`,
+`image-set(`) - an SVG reference such as `filter: url(#blur)` included - and, for the free-form
+`css` entries and `cssVars`, any property name that isn't plain letters, digits, `-` and `_`:
 
 ```csharp
 builder.Services.AddBitBmotionServices(o => o.CssSafeMode = BmCssSafeMode.Throw); // or .Warn
 ```
 
 It is `Off` by default (for performance/parity); `Warn` logs and still applies, `Throw` rejects.
+It checks every target an element animates to - its own, the variants it inherits from a parent,
+its gestures - and the targets `BmotionAnimateService` animates (`AnimateAsync`, `RunAsync`), each
+checked as it is handed to the engine, so a target changed while the call is under way plays only
+what was checked. A service created by hand on an engine from the container
+(`new BmotionAnimateService(engine, interop)`) follows the engine's options. `Warn` logs each
+rejected declaration once per element (or per service), however often it is checked, quoting the
+value cut short and with control characters escaped; past 64 of them it says once that it stops
+reporting.
 
 ## Threading
 

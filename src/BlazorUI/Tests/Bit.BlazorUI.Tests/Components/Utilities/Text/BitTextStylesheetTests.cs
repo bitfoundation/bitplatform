@@ -129,5 +129,16 @@ public class BitTextStylesheetTests
 
 
 
+    // A text is read on the page rather than over the role's fill, so a Color paints it in the role's text color: a
+    // secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+    [TestMethod]
+    public void BitTextShouldPaintAColorInTheRoleTextColor()
+    {
+        var roles = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-txt-#{$role} {");
+
+        StringAssert.Contains(roles, "color: role-text($role, $tokens);");
+        Assert.IsFalse(roles.Contains("role($tokens, main)", StringComparison.Ordinal), "A Color paints the text in the role's fill color.");
+    }
+
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Text", "BitText.scss");
 }

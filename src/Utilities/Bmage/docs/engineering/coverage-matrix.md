@@ -12,7 +12,8 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | --- | --- | --- | --- | --- | --- |
 | File picker, drag and drop, paste, bytes, streams, URLs, camera | verified | P1 | `Input/ImageLoader.cs`, `Input/ImageSource.cs`, `Editor/Components/BmageDropZone.razor` | `ScenarioTests`, E2E `EditorTests`, `DemoRegressionTests` (paste) | - |
 | Format sniffing by magic bytes | verified | P0 | `ImageFormat.cs` | `CodecTests` | - |
-| PNG, JPEG, BMP, GIF managed decode | verified | P1 | `Codecs/*` | `CodecTests`, `AdversarialPipelineTests` | GIF/APNG first frame only (by design) |
+| PNG, JPEG, BMP, GIF, WebP managed decode | verified | P1 | `Codecs/*` | `CodecTests`, `WebPCodecTests`, `AdversarialPipelineTests` | GIF/APNG/animated WebP first frame only (by design) |
+| AVIF managed decode | verified | P1 | `Codecs/Avif/*` | `AvifCodecTests` | No colour management; inter-predicted layers and later sequence frames not decoded |
 | WebP, AVIF decode via browser | verified | P1 | `Codecs/BrowserCodecs.cs`, `Scripts/bit-bmage*.ts` | E2E `JsModuleContractTests`, `CapabilityTests` | Depends on browser |
 | SVG | unsupported | - | `FallbackImageDecoder` refuses | `CodecTests` | Untrusted SVG can run script / fetch; by design |
 | EXIF orientation | verified | P1 | `Operations/Transforms/OrientationOperation.cs` | `MetadataTests`, `GeometryTests` | - |
@@ -134,7 +135,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 
 | Feature | Status | Pri | Implementation | Evidence | Limitations / remaining |
 | --- | --- | --- | --- | --- | --- |
-| PNG, JPEG, BMP managed; WebP, AVIF browser | verified | P1 | `Codecs/*`, `Output/ImageExporter.cs` | `CodecTests`, E2E `ProcessingTests` | - |
+| PNG, JPEG, BMP, WebP (lossy, lossless) managed; WebP, AVIF browser | verified | P1 | `Codecs/*`, `Output/ImageExporter.cs` | `CodecTests`, `WebPCodecTests`, E2E `ProcessingTests` | - |
 | Quality, size budget, alpha flattening | verified | P1 | `ImageExportOptions`, `ImageExporter` | `ExportSearchTests` | - |
 | Metadata policies | verified | P1 | `Metadata/Containers.cs` | `MetadataTests` | - |
 | Blob, bytes, stream, download, clipboard | verified | P1 | `ImageExporter` | E2E `EditorTests` | - |

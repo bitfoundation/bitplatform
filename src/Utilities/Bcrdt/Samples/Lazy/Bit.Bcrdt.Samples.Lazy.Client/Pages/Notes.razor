@@ -1,0 +1,74 @@
+﻿@page "/notes"
+@page "/notes/{Room}"
+@layout NotesLayout
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+@inject IServiceProvider Services
+
+<PageTitle>Notes - Bcrdt lazy loading sample</PageTitle>
+
+<h1>Notes</h1>
+
+<p>
+    <code>Bit.Bcrdt.wasm</code> was downloaded as this page opened. Open it in another browser and type in both: the
+    tabs meet through the server's WebSocket relay, with the collaboration service this page's layout configured through
+    <code>GetBcrdtCollaborationService(...)</code>. The app does not register Bcrdt's services.
+</p>
+
+<div class="notes">
+    <BcrdtCollaborationScope DocumentId="@DocumentId" User="_me" Context="document">
+        <LoadingContent>
+            <p id="opening">Opening @DocumentId…</p>
+        </LoadingContent>
+        <ChildContent>
+            <p>
+                You are <strong id="me">@_me.Name</strong>, on <code>@document.Id</code>:
+                <span id="status">@Describe(document.ConnectionStatus)</span>
+            </p>
+            <BcrdtPresenceView Presence="document.Presence" Class="presence" />
+            <BcrdtTextArea Text="@document.Text("body")" Presence="document.Presence" Rows="8" Class="editor"
+                           Placeholder="Type here, then open this page in another browser." />
+        </ChildContent>
+    </BcrdtCollaborationScope>
+
+    <p>
+        <button type="button" @onclick="Count">Count the characters</button>
+        <span id="count">@_count</span>
+    </p>
+</div>
+
+@code {
+    // Who this tab is. A random guest is enough for a sample; an application publishes its signed-in user.
+    private readonly BcrdtCollaboratorInfo _me = CreateGuest();
+    private string? _count;
+
+    /// <summary>The room the tabs share; <c>/notes</c> alone opens the welcome notes.</summary>
+    [Parameter]
+    public string? Room { get; set; }
+
+    private string DocumentId => "notes-" + (Room ?? "welcome");
+
+    // Taken from GetBcrdtCollaborationService() rather than injected: an app that lazy loads Bcrdt cannot register
+    // IBcrdtCollaborationService. It is the one the layout configured, which the scope opened the document through.
+    private void Count()
+    {
+        var document = Services.GetBcrdtCollaborationService().OpenDocuments.FirstOrDefault(d => d.Id == DocumentId);
+        _count = document is null ? "not open" : $"{document.Text("body").Count} characters";
+    }
+
+    private static string Describe(BcrdtConnectionStatus status) => status switch
+    {
+        BcrdtConnectionStatus.Synced => "synced",
+        BcrdtConnectionStatus.Handshaking => "syncing",
+        BcrdtConnectionStatus.Connecting => "connecting",
+        BcrdtConnectionStatus.Reconnecting => "reconnecting",
+        BcrdtConnectionStatus.Faulted => "faulted",
+        _ => "disconnected",
+    };
+
+    private static BcrdtCollaboratorInfo CreateGuest()
+    {
+        string id = Guid.NewGuid().ToString("N");
+        return new BcrdtCollaboratorInfo(id, $"Guest {Random.Shared.Next(100, 1000)}", BcrdtPresenceService.SuggestColor(id));
+    }
+}

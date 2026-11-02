@@ -42,7 +42,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
     public void Start(BelemetryPipeline pipeline, CancellationToken stopping)
     {
         pipeline.RecordAccepted += OnRecord;
-        _loop = RunAsync(stopping);
+        _loop = RunAsync(pipeline, stopping);
     }
 
     private void OnRecord(object record)
@@ -71,7 +71,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
                || span.Attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode) >= threshold;
     }
 
-    private async Task RunAsync(CancellationToken stopping)
+    private async Task RunAsync(BelemetryPipeline pipeline, CancellationToken stopping)
     {
         await Task.Yield();
         var subscribed = false;
@@ -87,6 +87,12 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
             catch (OperationCanceledException)
             {
                 break;
+            }
+
+            if (_settings.IsServer is false && pipeline.CanRecord(BelemetryFeatures.Metrics) is false)
+            {
+                subscribed = false;
+                continue;
             }
 
             try
@@ -177,7 +183,7 @@ internal sealed class AzureMonitorLiveMetrics : IAsyncDisposable
             ? TimeSpan.FromMilliseconds(ms)
             : null;
 
-        if (Header(response, "x-ms-qps-service-endpoint-redirect-v2") is { } redirect && Uri.TryCreate(redirect, UriKind.Absolute, out var uri))
+        if (Header(response, "x-ms-qps-service-endpoint-redirect-v2") is { } redirect && Uri.TryCreate(redirect, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps)
         {
             _endpoint = uri;
         }

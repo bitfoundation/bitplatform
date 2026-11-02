@@ -81,6 +81,20 @@ public class BdndTrimmingTests
         Assert.IsEmpty(unseen, "pass the arguments through a BdndInterop method whose parameters name their types: " + string.Join(", ", unseen));
     }
 
+    [TestMethod]
+    public void TheRootsAreReachedWithoutTheRegistration()
+    {
+        // An app that lazy loads Bit.Bdnd on WebAssembly never calls AddBitBdndServices, so the components have to reach
+        // the roots themselves: through GetBdndInterop, on their way to the interop.
+        var calls = Calls().ToList();
+
+        Assert.IsTrue(calls.Any(c => c.Caller.Name == nameof(BitBdnd.GetBdndInterop) && c.Callee.Name == "PreserveInteropContracts"),
+            "GetBdndInterop calls PreserveInteropContracts");
+        foreach (var component in new[] { typeof(BdndDraggable<>), typeof(BdndDropTarget<>) })
+            Assert.IsTrue(calls.Any(c => Owner(c.Caller) == component && c.Callee.Name == nameof(BitBdnd.GetBdndInterop)),
+                $"{component.Name} takes its interop from GetBdndInterop");
+    }
+
     // What PreserveInteropContracts keeps of each type, whichever DynamicDependency overload names it: the member types,
     // and the members a signature names (a property by its name, a constructor as #ctor(...)).
     private static Dictionary<Type, (DynamicallyAccessedMemberTypes Members, HashSet<string> Signatures)> Roots()

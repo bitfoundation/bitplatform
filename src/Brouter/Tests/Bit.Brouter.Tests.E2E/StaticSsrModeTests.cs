@@ -69,10 +69,7 @@ public class StaticSsrModeTests : HarnessTest
 
         await WaitForNetworkQuietAsync();
         await Expect(Page.Locator("#status")).ToHaveAttributeAsync("data-interactive", "false");
-        if (E2EEnvironment.FrameworkReportsRendererName(Framework))
-        {
-            await Expect(Page.Locator("#status")).ToHaveAttributeAsync("data-renderer", "Static");
-        }
+        await Expect(Page.Locator("#status")).ToHaveAttributeAsync("data-renderer", "Static");
     }
 
     [TestMethod]
@@ -123,16 +120,13 @@ public class StaticSsrModeTests : HarnessTest
 
         var response = await GotoAsync("/nope/deeper");
 
-        Assert.AreEqual(E2EEnvironment.FrameworkHasNotFound(Framework) ? 404 : 200, response!.Status);
+        Assert.AreEqual(404, response!.Status);
         await Expect(Page.Locator("#not-found")).ToHaveAttributeAsync("data-path", "/nope/deeper");
     }
 
     [TestMethod]
     public async Task A_page_calling_NavigationManager_NotFound_is_answered_with_404()
     {
-        if (E2EEnvironment.FrameworkHasNotFound(Framework) is false)
-            Assert.Inconclusive("NavigationManager.NotFound exists from .NET 10 on.");
-
         AllowConsoleError("404");
 
         var response = await GotoAsync("/missing/0");

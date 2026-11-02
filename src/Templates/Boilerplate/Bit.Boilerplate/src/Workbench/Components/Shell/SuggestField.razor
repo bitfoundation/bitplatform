@@ -1,0 +1,26 @@
+@inherits WorkbenchComponentBase
+
+<div class="suggest-field">
+    <BitTextField Value="@Value" ValueChanged="Change" AriaLabel="@AriaLabel" Placeholder="@Placeholder" Disabled="Disabled">
+        <SuffixTemplate>
+            <button type="button" class="toggle" disabled="@Disabled" @onclick="Toggle"
+                    title="@Localizer[nameof(WorkbenchStrings.SuggestShow)]" aria-label="@Localizer[nameof(WorkbenchStrings.SuggestShow)]"
+                    aria-expanded="@(isOpen ? "true" : "false")">
+                <i class="bit-icon bit-icon--@(isOpen ? "ChevronUp" : "ChevronDown")" aria-hidden="true"></i>
+            </button>
+        </SuffixTemplate>
+    </BitTextField>
+
+    @if (isOpen && Disabled is false)
+    {
+        <div class="suggestions" role="listbox" aria-label="@AriaLabel">
+            @foreach (var suggestion in Suggestions)
+            {
+                <button type="button" role="option" class="suggestion @(suggestion == Value ? "selected" : null)"
+                        aria-selected="@(suggestion == Value ? "true" : "false")" @onclick="() => Pick(suggestion)">
+                    @suggestion
+                </button>
+            }
+        </div>
+    }
+</div>

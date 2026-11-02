@@ -7,11 +7,13 @@
     <p class="bb-subtitle">
         The canonical React DnD tutorial. The knight (♘) is a <code>BdndDraggable</code>; every
         square is a <code>BdndDropTarget</code> whose <code>CanDropPredicate</code> only allows legal
-        knight moves. Legal targets are highlighted while dragging.
+        knight moves. While the knight is in the air, every square renders from its collected state:
+        <code>CanDrop</code> alone lights the legal squares before the knight reaches them, and
+        <code>IsOver</code> tells the square under the pointer. With the keyboard, <kbd>Tab</kbd> to the knight
+        and press <kbd>Space</kbd>: the arrow keys visit the legal squares only - each named by its
+        <code>Label</code> - and <kbd>Space</kbd> drops the knight there.
     </p>
 </div>
-
-<DemoCode />
 
 <div class="bb-demo">
     <BdndProvider>
@@ -25,7 +27,7 @@
                     var black = (c + r) % 2 == 1;
                     var hasKnight = _knightCol == c && _knightRow == r;
 
-                    <BdndDropTarget TItem="string" Accept="@ItemTypes.Knight"
+                    <BdndDropTarget TItem="string" Accept="@ItemTypes.Knight" Label="@SquareName(c, r)"
                                     CanDropPredicate="@((_, __) => CanMoveKnight(c, r))"
                                     OnDrop="@(_ => MoveKnight(c, r))"
                                     Context="t" style="display:contents">
@@ -46,7 +48,7 @@
                             @if (hasKnight)
                             {
                                 <BdndDraggable TItem="string" Type="@ItemTypes.Knight"
-                                               Item="@("knight")" Context="d">
+                                               Item="@("knight")" Label="Knight" Context="d">
                                     <div class="knight" style="text-align:center;opacity:@(d.IsDragging ? "0.3" : "1")">♘</div>
                                 </BdndDraggable>
                             }
@@ -60,7 +62,17 @@
     <p class="demo-caption">
         Knight at column @_knightCol, row @_knightRow. Drag it to a highlighted square.
     </p>
+
+    <p class="demo-caption chess-legend">
+        <span class="chess-swatch" style="background:green;"></span> a legal square (<code>CanDrop</code>)
+        <span class="chess-swatch" style="background:yellow;"></span> a legal square under the knight
+        (<code>IsOver</code> and <code>CanDrop</code>)
+        <span class="chess-swatch" style="background:red;"></span> a square the knight cannot go to, under it
+        (<code>IsOver</code> alone)
+    </p>
 </div>
+
+<DemoCode />
 
 @code {
     private int _knightCol = 1;
@@ -78,4 +90,7 @@
         _knightCol = toCol;
         _knightRow = toRow;
     }
+
+    // The square's name in chess notation (a1 is the bottom left), which screen readers hear as the knight moves.
+    private static string SquareName(int col, int row) => $"{(char)('a' + col)}{8 - row}";
 }

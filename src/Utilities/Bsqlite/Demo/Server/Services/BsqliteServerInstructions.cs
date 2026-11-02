@@ -49,7 +49,9 @@ public static class BsqliteServerInstructions
           `UseBitBsqlite` in `Microsoft.EntityFrameworkCore`. `GetBsqliteApi` gives the real names and namespaces.
         - Call `GetBsqliteSetupGuide` before writing wiring. In a Blazor Web App the services are registered in the
           client AND the server project, and a page opens its database only once `RendererInfo.IsInteractive` is true;
-          Interactive Server is not supported.
+          Interactive Server is not supported. A Blazor Hybrid app (MAUI, WPF, Windows Forms) uses the same registration
+          unchanged: its databases are SQLite files on the device, on the `file-system` backend, registered and selected
+          for it automatically.
         - Use the async API throughout (`ToListAsync`, `SaveChangesAsync`, `MigrateAsync`): synchronous members throw
           `BsqliteSynchronousApiNotSupportedException`.
         - Storage selection never substitutes silently: existing data outranks preference, and a non-persistent fallback

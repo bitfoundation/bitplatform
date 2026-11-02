@@ -10,25 +10,48 @@ namespace Bit.BbScanner.Tests.Mcp;
 [TestClass]
 public partial class McpSearchTests
 {
-    /// <summary>Questions phrased the way a developer asks them, and a title that has to rank among the first hits.</summary>
-    private static readonly (string Query, string ExpectedTitle)[] _questions =
+    /// <summary>
+    /// Questions phrased the way a developer asks them, the titles that have to rank among the first
+    /// hits, and the titles that must not: a word the question shares with an unrelated entry - "them"
+    /// with "theme", "light" in "light-on-dark" with the torch - pushes the answer out without
+    /// failing any check that only looks for the answer.
+    /// </summary>
+    private static readonly (string Query, string[] Expected, string[] Unexpected)[] _questions =
     [
-        ("scan a qr code from an uploaded photo", "Scanning still images"),
-        ("turn the torch on", "SetTorchAsync"),
-        ("ean-13", "EAN-13"),
-        ("decode images on the server", "DecodeImage"),
-        ("use the decoder without blazor", "Using the decoder without Blazor"),
-        ("the same barcode is reported again and again", "Duplicate"),
-        ("camera permission denied", "Errors and permissions"),
-        ("not supported on blazor server", "Blazor Server"),
-        ("scan region", "Scan region"),
-        ("reticle color", "--bit-bbscanner-reticle-color"),
-        ("pdf417 status", "PDF417 status"),
-        ("itf lengths", "ItfLengths"),
-        ("result metadata", "BbBarcodeResultMetadata"),
-        ("inspect a decoded symbol", "Inspect a decoded symbol"),
-        ("replace the reticle with an overlay", "Overlay"),
-        ("switch cameras", "SwitchCameraAsync"),
+        ("scan a qr code from an uploaded photo", ["Scanning still images", "QR Code"], []),
+        ("qr", ["QR Code"], []),
+        ("qr code", ["QR Code"], []),
+        ("eci qr", ["BbBarcodeResultMetadata.Eci"], ["BbQrDataBlocks", "BbQrVersion"]),
+        ("qr error correction level", ["BbBarcodeResultMetadata.ErrorCorrectionLevel"], []),
+        ("qr version metadata", ["BbBarcodeResultMetadata.SymbolVersion"], []),
+        ("code 93", ["Code 93"], []),
+        ("ean 8", ["EAN-8"], []),
+        ("upc e", ["UPC-E"], []),
+        ("1d barcodes", ["Supported symbologies", "Code 128"], []),
+        ("2d", ["Supported symbologies"], []),
+        ("scan 2d codes faster", ["QR Code"], ["Code 128", "Codabar"]),
+        ("read a barcode from a photo", ["Scanning still images"], []),
+        ("pick a picture from the gallery", ["OpenFilePickerAsync"], []),
+        ("flashlight", ["SetTorchAsync"], []),
+        ("turn the torch on", ["SetTorchAsync"], []),
+        ("inverted light-on-dark", ["BbBitMatrix.Invert"], ["Torch"]),
+        ("poor lighting", [], ["Torch"]),
+        ("switch between them", ["SwitchCameraAsync"], ["Styling"]),
+        ("source file of the demo page", ["The demo"], ["Scanning still images", "ScanImageAsync"]),
+        ("ean-13", ["EAN-13"], []),
+        ("decode images on the server", ["DecodeImage"], []),
+        ("use the decoder without blazor", ["Using the decoder without Blazor"], []),
+        ("the same barcode is reported again and again", ["Duplicate"], []),
+        ("camera permission denied", ["Errors and permissions"], []),
+        ("not supported on blazor server", ["Blazor Server"], []),
+        ("scan region", ["Scan region"], []),
+        ("reticle color", ["--bit-bbscanner-reticle-color"], []),
+        ("pdf417 status", ["PDF417 status"], []),
+        ("itf lengths", ["ItfLengths"], []),
+        ("result metadata", ["BbBarcodeResultMetadata"], []),
+        ("inspect a decoded symbol", ["Inspect a decoded symbol"], []),
+        ("replace the reticle with an overlay", ["Overlay"], []),
+        ("switch cameras", ["SwitchCameraAsync"], []),
     ];
 
     [TestMethod]
@@ -37,16 +60,42 @@ public partial class McpSearchTests
         // Every question is asked before anything is asserted, so one run reports every miss at once.
         var misses = new List<string>();
 
-        foreach (var (query, expected) in _questions)
+        foreach (var (query, expected, unexpected) in _questions)
         {
             var result = await McpCall.StructuredAsync<BbScannerSearchResultDto>("SearchBbScanner", new() { ["query"] = query, ["limit"] = 6 });
+            var titles = string.Join(" | ", result.Hits.Select(hit => hit.Title));
 
-            if (result.Hits.Any(hit => hit.Title.Contains(expected, StringComparison.OrdinalIgnoreCase))) continue;
-
-            misses.Add($"'{query}' did not find '{expected}' among: {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+            misses.AddRange(expected.Where(title => result.Hits.Any(hit => hit.Title.Contains(title, StringComparison.OrdinalIgnoreCase)) is false)
+                                    .Select(title => $"'{query}' did not find '{title}' among: {titles}"));
+            misses.AddRange(unexpected.Where(title => result.Hits.Any(hit => hit.Title.Contains(title, StringComparison.OrdinalIgnoreCase)))
+                                      .Select(title => $"'{query}' ranked '{title}' among: {titles}"));
         }
 
         Assert.IsEmpty(misses, string.Join(Environment.NewLine, misses));
+    }
+
+    [TestMethod]
+    public async Task A_hit_found_through_a_synonym_shows_the_word_it_was_found_by()
+    {
+        // Nothing in BbScanner says "flashlight": the snippet has to show the torch, or the caller cannot tell why it is a hit.
+        var result = await McpCall.StructuredAsync<BbScannerSearchResultDto>("SearchBbScanner", new() { ["query"] = "flashlight", ["limit"] = 6 });
+
+        Assert.IsNotEmpty(result.Hits);
+
+        foreach (var hit in result.Hits)
+        {
+            Assert.Contains("torch", $"{hit.Title} {hit.Snippet}".ToLowerInvariant(), $"'{hit.Title}' was ranked for 'flashlight' without the torch in it: {hit.Snippet}");
+        }
+    }
+
+    [TestMethod]
+    public async Task A_word_no_title_resembles_suggests_nothing()
+    {
+        // No title word starts "lightweight" or is started by it, so there is no name to offer - only the indexes.
+        var result = await McpCall.StructuredAsync<BbScannerSearchResultDto>("SearchBbScanner", new() { ["query"] = "lightweight" });
+
+        Assert.IsEmpty(result.Hits);
+        Assert.IsNull(result.DidYouMean);
     }
 
     [TestMethod]

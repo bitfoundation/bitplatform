@@ -285,6 +285,15 @@ public static class BlexApiCatalog
             if (method.Name.Contains('<', StringComparison.Ordinal)) continue;
             if (method.DeclaringType == typeof(object)) continue;
             if (IsVisible(type, method) is false) continue;
+            // What the compiler writes for a record - Equals, GetHashCode, ToString, Deconstruct - is the
+            // same on every record and documented nowhere; listing it on each of the library's records
+            // would bury the members someone wrote on purpose.
+            if (method.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), inherit: false)) continue;
+            // An override of what every object has, which the type does not document, says nothing about the
+            // type - and split into words it answers questions it has nothing to do with: to a search,
+            // GetHashCode is "code", and the top hit for anything done from code.
+            var summary = BlexXmlDocs.GetSummary(DocumentationId(method));
+            if (summary is null && method.Name is "Equals" or "GetHashCode" or "ToString") continue;
 
             // A protected override of a framework hook (ComponentBase.OnInitialized) is the framework's member, not
             // Blex's: a subclass overrides it the same way whether or not Blex did. A public one stays - it is
@@ -302,7 +311,7 @@ public static class BlexApiCatalog
                 Kind = MemberKind("Method", method.IsPublic),
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
-                Summary = BlexXmlDocs.GetSummary(DocumentationId(method)),
+                Summary = summary,
                 Remarks = BlexXmlDocs.GetRemarks(DocumentationId(method))
             };
         }

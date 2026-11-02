@@ -41,6 +41,7 @@ public class DvAddress { public string? City { get; set; } }
 public class DvCustomer { public DvAddress Address { get; set; } = new(); }
 public class DvLine { public string? Product { get; set; } }
 public class DvOrder { public List<DvLine> Lines { get; set; } = []; }
+public class DvTags { public List<string> Tags { get; set; } = ["a"]; }
 public class DvOuter
 {
     public DvCustomer Customer { get; set; } = new();
@@ -826,6 +827,71 @@ public class DataValidationRegressionTests
 
         Assert.IsFalse(store.LastWriteFailed);
         Assert.AreSequenceEqual([1, 0, 0, 7], numbers);
+    }
+
+    [TestMethod]
+    public void Writing_far_past_the_end_of_a_list_is_refused_rather_than_padded()
+    {
+        var tags = new List<object?> { "a" };
+        var data = new Dictionary<string, object?> { ["tags"] = tags, ["codes"] = new[] { "a" } };
+        var store = new BormDictionaryDataAccessor(data);
+
+        store.SetValue("tags[100000000]", "x");
+        Assert.IsTrue(store.LastWriteFailed);
+        store.SetValue("codes[100000000]", "x");
+        Assert.IsTrue(store.LastWriteFailed);
+
+        Assert.HasCount(1, tags);
+        Assert.AreEqual("a", tags[0]);
+        var codes = Assert.IsExactInstanceOfType<string[]>(data["codes"]);
+        Assert.HasCount(1, codes);
+        Assert.AreEqual("a", codes[0]);
+    }
+
+    [TestMethod]
+    public void Writing_far_past_the_end_of_a_model_list_is_refused_rather_than_padded()
+    {
+        var model = new DvOrder();
+        var tags = new DvTags();
+
+        var store = new BormModelDataAccessor(tags);
+        store.SetValue("Tags[100000000]", "x");
+        Assert.IsTrue(store.LastWriteFailed);
+        // A row below the end is materialised on the way, so it is refused there too.
+        new BormModelDataAccessor(model).SetValue("Lines[100000000].Product", "x");
+
+        Assert.AreSequenceEqual(["a"], tags.Tags);
+        Assert.IsEmpty(model.Lines);
+        // A short gap is still padded, as it always was.
+        store.SetValue("Tags[3]", "x");
+        Assert.IsFalse(store.LastWriteFailed);
+        Assert.HasCount(4, tags.Tags);
+        Assert.AreEqual("x", tags.Tags[3]);
+
+        // The limit itself: from one item, a gap of exactly MaxPadding is padded and one more is refused.
+        var atLimit = new DvTags();
+        var atLimitStore = new BormModelDataAccessor(atLimit);
+        atLimitStore.SetValue("Tags[1001]", "x");
+        Assert.IsFalse(atLimitStore.LastWriteFailed);
+        Assert.HasCount(1002, atLimit.Tags);
+
+        var pastLimit = new DvTags();
+        var pastLimitStore = new BormModelDataAccessor(pastLimit);
+        pastLimitStore.SetValue("Tags[1002]", "x");
+        Assert.IsTrue(pastLimitStore.LastWriteFailed);
+        Assert.AreSequenceEqual(["a"], pastLimit.Tags);
+    }
+
+    [TestMethod]
+    public void A_matches_rule_whose_pattern_times_out_fails_rather_than_passes()
+    {
+        var value = new string('a', 80) + "!";
+        var rule = new BormExpressionRule("matches({x}, '^(a|aa)+$')", "Letters only.");
+
+        var result = Run(rule, value, data: new BormDictionaryDataAccessor(new Dictionary<string, object?> { ["x"] = value }));
+
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual("This value could not be checked; please simplify it.", result.Message);
     }
 
     [TestMethod]

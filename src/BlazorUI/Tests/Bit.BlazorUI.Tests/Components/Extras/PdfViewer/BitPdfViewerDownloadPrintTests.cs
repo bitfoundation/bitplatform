@@ -35,7 +35,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Download());
 
         Assert.AreEqual("hello.pdf", offered);
-        Assert.AreEqual("renamed.pdf", Context.JSInterop.Invocations[DownloadCall].Single().Arguments[0]);
+        Assert.AreEqual("renamed.pdf", Context.InvocationsOf(DownloadCall).Single().Arguments[0]);
     }
 
     [TestMethod]
@@ -51,7 +51,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.Download());
 
-        Assert.AreEqual("hello.pdf", Context.JSInterop.Invocations[DownloadCall].Single().Arguments[0]);
+        Assert.AreEqual("hello.pdf", Context.InvocationsOf(DownloadCall).Single().Arguments[0]);
     }
 
     [TestMethod]
@@ -70,7 +70,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
         await component.InvokeAsync(() => component.Instance.Download());
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations[DownloadCall].Count);
+        Assert.AreEqual(0, Context.InvocationsOf(DownloadCall).Count);
     }
 
     [TestMethod]
@@ -96,7 +96,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await first;
 
         Assert.AreEqual(1, raised);
-        Assert.AreEqual(1, Context.JSInterop.Invocations[DownloadCall].Count);
+        Assert.AreEqual(1, Context.InvocationsOf(DownloadCall).Count);
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await first;
 
         Assert.AreEqual(1, raised);
-        Assert.AreEqual(1, Context.JSInterop.Invocations[PrintCall].Count);
+        Assert.AreEqual(1, Context.InvocationsOf(PrintCall).Count);
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         Assert.IsNotNull(received);
         Assert.AreEqual(2, received.FromPage);
         Assert.AreEqual(4, received.ToPage);
-        Assert.AreEqual(0, Context.JSInterop.Invocations[PrintCall].Count);
+        Assert.AreEqual(0, Context.InvocationsOf(PrintCall).Count);
         // A cancelled print renders nothing for it and leaves no loading bar behind.
         Assert.AreEqual(0, component.FindAll(".bit-pdv-progress").Count);
     }
@@ -167,7 +167,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
 
         Assert.AreEqual(1, raised);
-        var call = Context.JSInterop.Invocations[PrintCall].Single();
+        var call = Context.InvocationsOf(PrintCall).Single();
         Assert.AreEqual(1, call.Arguments[1]);
         Assert.AreEqual(2, call.Arguments[2]);
     }
@@ -186,15 +186,15 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
 
-        Assert.AreEqual(0, Context.JSInterop.Invocations[PrintCall].Count);
-        Assert.AreEqual(0, Context.JSInterop.Invocations[DownloadCall].Count);
+        Assert.AreEqual(0, Context.InvocationsOf(PrintCall).Count);
+        Assert.AreEqual(0, Context.InvocationsOf(DownloadCall).Count);
 
         // The public API is the host's own call, and stays available.
         await component.InvokeAsync(() => component.Instance.Print());
         await component.InvokeAsync(() => component.Instance.Download());
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations[PrintCall].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations[DownloadCall].Count);
+        Assert.AreEqual(1, Context.InvocationsOf(PrintCall).Count);
+        Assert.AreEqual(1, Context.InvocationsOf(DownloadCall).Count);
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
 
-        Assert.AreEqual(1, Context.JSInterop.Invocations[PrintCall].Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations[DownloadCall].Count);
+        Assert.AreEqual(1, Context.InvocationsOf(PrintCall).Count);
+        Assert.AreEqual(1, Context.InvocationsOf(DownloadCall).Count);
     }
 }

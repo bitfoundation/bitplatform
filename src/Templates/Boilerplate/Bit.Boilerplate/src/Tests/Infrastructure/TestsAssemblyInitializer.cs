@@ -62,18 +62,8 @@ public partial class TestsAssemblyInitializer
             nameof(Aspire.Hosting.ApplicationModel.CloudflareQuickTunnelResource),
             "CloudflareTunnelInstallerResource",
             //#endif
-            //#if (database == 'SqlServer')
+            //#if (database != 'Other' || redis == true)
             nameof(DbGateContainerResource),
-            //#elif (database == 'PostgreSql')
-            nameof(Aspire.Hosting.Postgres.PgAdminContainerResource),
-            //#elif (database == 'MySql')
-            nameof(Aspire.Hosting.MySql.PhpMyAdminContainerResource),
-            //#elif (database == 'Sqlite')
-            nameof(SqliteWebResource),
-            //#endif
-            //#if (redis == true)
-            nameof(Aspire.Hosting.Redis.RedisInsightResource),
-            nameof(Aspire.Hosting.Redis.RedisCommanderResource),
             //#endif
         ];
 

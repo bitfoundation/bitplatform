@@ -1,0 +1,67 @@
+﻿@*
+    Reusable wrapper that renders a section heading, an optional description, and
+    a tabbed view with Preview / Razor / CSS panels. Uses the library's own BitBhTabGroup
+    so the demo app dogfoods the headless tab component.
+*@
+
+<section class="demo-section">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <h2>@Title</h2>
+    }
+    @if (Description is not null)
+    {
+        <p>@Description</p>
+    }
+
+    <BitBhTabGroup class="demo-tabs">
+        <BitBhTabList class="demo-tab-list">
+            @if (LiveContent is not null)
+            {
+                <BitBhTab class="demo-tab">Preview</BitBhTab>
+            }
+            @if (!string.IsNullOrWhiteSpace(Code))
+            {
+                <BitBhTab class="demo-tab">Razor</BitBhTab>
+            }
+            @if (!string.IsNullOrWhiteSpace(Css))
+            {
+                <BitBhTab class="demo-tab">CSS</BitBhTab>
+            }
+        </BitBhTabList>
+        <BitBhTabPanels class="demo-tab-panels">
+            @if (LiveContent is not null)
+            {
+                <BitBhTabPanel class="demo-tab-panel">
+                    <div class="demo-row">
+                        @LiveContent
+                    </div>
+                </BitBhTabPanel>
+            }
+            @if (!string.IsNullOrWhiteSpace(Code))
+            {
+                <BitBhTabPanel class="demo-tab-panel">
+                    <pre class="demo-code"><code>@Code.Trim('\r', '\n')</code></pre>
+                </BitBhTabPanel>
+            }
+            @if (!string.IsNullOrWhiteSpace(Css))
+            {
+                <BitBhTabPanel class="demo-tab-panel">
+                    <pre class="demo-code"><code>@Css.Trim('\r', '\n')</code></pre>
+                </BitBhTabPanel>
+            }
+        </BitBhTabPanels>
+    </BitBhTabGroup>
+</section>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? Description { get; set; }
+    [Parameter] public RenderFragment? LiveContent { get; set; }
+
+    /// <summary>The Razor markup used by the demo.</summary>
+    [Parameter] public string? Code { get; set; }
+
+    /// <summary>The CSS that styles the demo. Optional.</summary>
+    [Parameter] public string? Css { get; set; }
+}

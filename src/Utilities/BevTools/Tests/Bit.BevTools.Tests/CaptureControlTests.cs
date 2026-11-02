@@ -142,7 +142,10 @@ public class CaptureControlTests : BunitContext
         Session.PauseCapture();
         var response = await failing.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/api/items?token=s3cr3t"), CancellationToken.None);
         await Assert.ThrowsExactlyAsync<HttpRequestException>(() => throwing.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/down"), CancellationToken.None));
-        await Assert.ThrowsExactlyAsync<TaskCanceledException>(() => cancelled.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/slow"), CancellationToken.None));
+        // Cancelled by the caller (its token), so not an error; a cancellation nobody asked for would be one.
+        using var caller = new CancellationTokenSource();
+        caller.Cancel();
+        await Assert.ThrowsExactlyAsync<TaskCanceledException>(() => cancelled.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://example.test/slow"), caller.Token));
 
         Assert.AreEqual(HttpStatusCode.InternalServerError, response.StatusCode);
         // The network log and the timeline stay frozen; the error list does not.
@@ -156,7 +159,6 @@ public class CaptureControlTests : BunitContext
         Assert.ContainsSingle(e => e.ExceptionType == typeof(HttpRequestException).FullName, errors);
     }
 
-#if NET10_0_OR_GREATER
     // UI events are observed through the framework's HandleEvent activity, which .NET 10 introduced.
     /// <summary>
     /// The click is not in the timeline while paused, so nothing may point at it. It used to be attached to the
@@ -185,7 +187,6 @@ public class CaptureControlTests : BunitContext
         Assert.AreEqual(click.Id, Session.LastUiEventId);
         Assert.AreEqual(click.Id, error!.PrecedingEventId);
     }
-#endif
 
     /// <summary>Disposal detection must use "has rendered", like cause detection, or a paused-only component lingers for 5 s.</summary>
     [TestMethod]

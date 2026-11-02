@@ -1,0 +1,455 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    private static readonly string[] Fruits = ["Apple", "Apricot", "Banana", "Blueberry", "Cherry"];
+
+    private sealed class Harness
+    {
+        public string Query = string.Empty;
+        public string? Selected;
+        public IEnumerable<string> Filtered => Fruits.Where(f => BitBhFilter.Contains(f, Query));
+    }
+
+    private RenderFragment Combobox(Harness h) =>
+        @<BitBhCombobox TValue="string" @bind-Value="h.Selected" OnQueryChange="q => h.Query = q">
+            <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+            <BitBhComboboxOptions TValue="string">
+                @foreach (var f in h.Filtered)
+                {
+                    <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                }
+                <BitBhComboboxEmpty TValue="string">No fruit</BitBhComboboxEmpty>
+            </BitBhComboboxOptions>
+        </BitBhCombobox>;
+
+    [TestMethod]
+    public void Typing_opens_and_highlights_the_first_match()
+    {
+        var h = new Harness();
+        var cut = Render(Combobox(h));
+        cut.Find("input").Input("ap");
+
+        var input = cut.Find("input");
+        Assert.AreEqual("true", input.GetAttribute("aria-expanded"));
+        Assert.AreEqual(2, cut.FindAll("[role=option]").Count);
+        Assert.AreEqual("Apple", Text(ActiveOf(input)));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Highlight_stays_valid_when_results_change()
+    {
+        // Regression: option indexes were captured at registration, so filtering
+        // made aria-activedescendant point at the wrong (or a missing) option.
+        var h = new Harness();
+        var cut = Render(Combobox(h));
+        cut.Find("input").Input("b");
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("Blueberry", Text(ActiveOf(cut.Find("input"))));
+
+        cut.Find("input").Input("");
+        var input = cut.Find("input");
+        var active = ActiveOf(input);
+        Assert.IsNotNull(active);
+        Assert.AreEqual("Blueberry", Text(active));
+        Assert.AreEqual("true", active!.GetAttribute("data-active") is null ? "false" : "true");
+        // Every id referenced by the input exists exactly once.
+        Assert.ContainsSingle(cut.FindAll($"[id='{input.GetAttribute("aria-activedescendant")}']"));
+    }
+
+    [TestMethod]
+    public void Enter_selects_the_highlighted_option()
+    {
+        var h = new Harness();
+        var cut = Render(Combobox(h));
+        cut.Find("input").Input("ch");
+        cut.Find("input").Press("Enter");
+
+        Assert.AreEqual("Cherry", h.Selected);
+        Assert.AreEqual("false", cut.Find("input").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void Controlled_value_is_shown_in_the_input()
+    {
+        var h = new Harness();
+        var cut = Render(
+            @<Stateful T="string" Context="s">
+                <BitBhCombobox TValue="string" Value="s.Value" ValueChanged="s.Set" Name="fruit" OnQueryChange="q => h.Query = q">
+                    <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                    <BitBhComboboxOptions TValue="string">
+                        @foreach (var f in h.Filtered)
+                        {
+                            <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                        }
+                    </BitBhComboboxOptions>
+                </BitBhCombobox>
+            </Stateful>);
+
+        cut.Find("input").Input("ch");
+        cut.Find("input").Press("Enter");
+
+        Assert.AreEqual("Cherry", cut.Find("input").GetAttribute("value"));
+        Assert.AreEqual("Cherry", cut.Find("input[type=hidden][name=fruit]").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Uncontrolled_value_is_shown_in_the_input()
+    {
+        var cut = Render(
+            @<BitBhCombobox TValue="string" DefaultValue="@("Apple")">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxOptions TValue="string">
+                    @foreach (var f in Fruits)
+                    {
+                        <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                    }
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        Assert.AreEqual("Apple", cut.Find("input").GetAttribute("value"));
+        cut.Find("input").Input("ban");
+        cut.Find("input").PressSequence("ArrowDown", "ArrowDown", "Enter"); // consumer did not filter: Apple, Apricot, Banana
+
+        Assert.AreEqual("Banana", cut.Find("input").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void Escape_closes_and_reverts_the_text()
+    {
+        var h = new Harness { Selected = "Banana" };
+        var cut = Render(Combobox(h));
+        cut.Find("input").Input("xyz");
+        cut.Find("input").Press("Escape");
+
+        Assert.AreEqual("false", cut.Find("input").GetAttribute("aria-expanded"));
+        Assert.AreEqual("Banana", cut.Find("input").GetAttribute("value"));
+        Assert.AreEqual("Banana", h.Selected);
+    }
+
+    [TestMethod]
+    public void Empty_state_renders_when_nothing_matches()
+    {
+        var h = new Harness();
+        var cut = Render(Combobox(h));
+        cut.Find("input").Input("zzz");
+        Assert.IsEmpty(cut.FindAll("[role=option]"));
+        Assert.Contains("No fruit", cut.Markup);
+        Assert.IsNull(cut.Find("input").GetAttribute("aria-activedescendant"));
+    }
+
+    [TestMethod]
+    public void Clicking_an_option_selects_it()
+    {
+        var h = new Harness();
+        var cut = Render(Combobox(h));
+        cut.Find("input").Press("ArrowDown");
+        cut.FindAll("[role=option]")[2].Click();
+        Assert.AreEqual("Banana", h.Selected);
+    }
+
+    [TestMethod]
+    public void Data_driven_options_render_with_setsize_and_posinset()
+    {
+        string? selected = null;
+        var cut = Render(
+            @<BitBhCombobox TValue="string" @bind-Value="selected">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxOptions TValue="string" Items="Fruits" Context="o">
+                    <ItemTemplate>@o.Value</ItemTemplate>
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+        cut.Find("input").Press("ArrowDown");
+
+        var options = cut.FindAll("[role=option]");
+        Assert.AreEqual(5, options.Count);
+        Assert.AreEqual("5", options[0].GetAttribute("aria-setsize"));
+        Assert.AreEqual("3", options[2].GetAttribute("aria-posinset"));
+        Assert.AreEqual("Apple", Text(ActiveOf(cut.Find("input"))));
+
+        cut.Find("input").PressSequence("ArrowDown", "ArrowDown", "Enter");
+        Assert.AreEqual("Banana", selected);
+    }
+
+    [TestMethod]
+    public void Data_driven_highlight_follows_its_item_when_the_results_change()
+    {
+        // Data option ids are positions: the highlight must stay on Blueberry, not on whatever comes second.
+        var h = new Harness();
+        var cut = Render(
+            @<BitBhCombobox TValue="string" @bind-Value="h.Selected" OnQueryChange="q => h.Query = q">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxOptions TValue="string" Items="h.Filtered.ToList()" Context="o">
+                    <ItemTemplate>@o.Value</ItemTemplate>
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        cut.Find("input").Input("b");
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("Blueberry", Text(ActiveOf(cut.Find("input"))));
+
+        cut.Find("input").Input("");
+        Assert.AreEqual("Blueberry", Text(ActiveOf(cut.Find("input"))));
+        cut.Find("input").Press("Enter");
+        Assert.AreEqual("Blueberry", h.Selected);
+    }
+
+    private sealed class Order
+    {
+        [Required(ErrorMessage = "Pick a fruit.")]
+        public string? Fruit { get; set; } = "Apple";
+    }
+
+    private RenderFragment ValidatedCombobox(Order model) =>
+        @<EditForm Model="model">
+            <DataAnnotationsValidator />
+            <BitBhField>
+                <BitBhLabel>Fruit</BitBhLabel>
+                <BitBhCombobox TValue="string" @bind-Value="model.Fruit" Nullable="true">
+                    <BitBhComboboxInput TValue="string" />
+                    <BitBhComboboxOptions TValue="string">
+                        @foreach (var f in Fruits)
+                        {
+                            <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                        }
+                    </BitBhComboboxOptions>
+                </BitBhCombobox>
+                <BitBhErrorMessage />
+            </BitBhField>
+        </EditForm>;
+
+    [TestMethod]
+    public void Clearing_with_Escape_is_validated()
+    {
+        var model = new Order();
+        var cut = Render(ValidatedCombobox(model));
+        Assert.IsNull(cut.Find("input").GetAttribute("aria-invalid"));
+
+        // Closed with a value, Escape clears a nullable combobox: EditForm hears about it.
+        cut.Find("input").Press("Escape");
+        Assert.IsNull(model.Fruit);
+        Assert.AreEqual("true", cut.Find("input").GetAttribute("aria-invalid"));
+        Assert.Contains("Pick a fruit.", cut.Markup);
+    }
+
+    [TestMethod]
+    public void Closing_an_emptied_input_is_validated()
+    {
+        var model = new Order();
+        var cut = Render(ValidatedCombobox(model));
+
+        cut.Find("input").Input("");
+        cut.Find("input").Press("Escape");
+        Assert.IsNull(model.Fruit);
+        Assert.AreEqual("true", cut.Find("input").GetAttribute("aria-invalid"));
+        Assert.Contains("Pick a fruit.", cut.Markup);
+    }
+
+    [TestMethod]
+    public void Chevron_of_an_OpenOnFocus_combobox_opens_it()
+    {
+        // The input's focus event arrives while the chevron's click handler waits for the focus call.
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var focus = module.Setup<bool>("focus.focus", _ => true);
+        var cut = Render(
+            @<BitBhCombobox TValue="string" OpenOnFocus="true">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxButton TValue="string" />
+                <BitBhComboboxOptions TValue="string">
+                    @foreach (var f in Fruits)
+                    {
+                        <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                    }
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        cut.Find("button").Click();
+        cut.Find("input").Focus();
+        focus.SetResult(true);
+
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("input").GetAttribute("aria-expanded")));
+        cut.Find("button").Click();
+        cut.WaitForAssertion(() => Assert.AreEqual("false", cut.Find("input").GetAttribute("aria-expanded")));
+    }
+
+    [TestMethod]
+    public void A_value_type_combobox_has_no_value_until_one_is_chosen_or_after_clearing()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhCombobox TValue="int" Name="fresh">
+                    <BitBhComboboxInput TValue="int" aria-label="Fresh" />
+                    <BitBhComboboxOptions TValue="int">
+                        <BitBhComboboxOption TValue="int" Value="0">0</BitBhComboboxOption>
+                    </BitBhComboboxOptions>
+                </BitBhCombobox>
+                <BitBhCombobox TValue="int" DefaultValue="2" Nullable="true" Name="cleared">
+                    <BitBhComboboxInput TValue="int" aria-label="Cleared" />
+                    <BitBhComboboxOptions TValue="int">
+                        <BitBhComboboxOption TValue="int" Value="2">2</BitBhComboboxOption>
+                    </BitBhComboboxOptions>
+                </BitBhCombobox>
+            </div>);
+
+        // default(int) is a value: only DefaultValue or a choice selects one.
+        Assert.AreEqual("", cut.Find("[aria-label=Fresh]").GetAttribute("value"));
+        Assert.IsEmpty(cut.FindAll("input[type=hidden][name=fresh]"));
+
+        Assert.AreEqual("2", cut.Find("input[type=hidden][name=cleared]").GetAttribute("value"));
+        cut.Find("[aria-label=Cleared]").Press("Escape");
+        Assert.AreEqual("", cut.Find("[aria-label=Cleared]").GetAttribute("value"));
+        Assert.IsEmpty(cut.FindAll("input[type=hidden][name=cleared]"));
+    }
+
+    [TestMethod]
+    public void Hidden_input_posts_culture_invariant_values_and_nothing_while_disabled()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+        try
+        {
+            var cut = Render(
+                @<div>
+                    <BitBhCombobox TValue="double" DefaultValue="1.5" Name="ratio">
+                        <BitBhComboboxInput TValue="double" aria-label="Ratio" />
+                        <BitBhComboboxOptions TValue="double" />
+                    </BitBhCombobox>
+                    <BitBhCombobox TValue="double" DefaultValue="2.5" Name="locked" Disabled="true">
+                        <BitBhComboboxInput TValue="double" aria-label="Locked" />
+                        <BitBhComboboxOptions TValue="double" />
+                    </BitBhCombobox>
+                </div>);
+
+            Assert.AreEqual("1.5", cut.Find("input[type=hidden][name=ratio]").GetAttribute("value"));
+            Assert.IsEmpty(cut.FindAll("input[type=hidden][name=locked]"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [TestMethod]
+    public void Without_results_the_combobox_is_collapsed_and_the_empty_state_is_no_listbox_content()
+    {
+        var h = new Harness();
+        var other = new Harness();
+        var cut = Render(
+            @<div>
+                @Combobox(h)
+                <BitBhCombobox TValue="string" OnQueryChange="q => other.Query = q">
+                    <BitBhComboboxInput TValue="string" aria-label="Hidden when empty" />
+                    <BitBhComboboxOptions TValue="string" ShowWhenEmpty="false">
+                        @foreach (var f in other.Filtered)
+                        {
+                            <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                        }
+                    </BitBhComboboxOptions>
+                </BitBhCombobox>
+            </div>);
+
+        // The panel is hidden: the combobox isn't expanded.
+        cut.Find("[aria-label='Hidden when empty']").Input("zzz");
+        Assert.AreEqual("false", cut.Find("[aria-label='Hidden when empty']").GetAttribute("aria-expanded"));
+
+        // The empty state shows, but a listbox owns options only: the panel is no listbox meanwhile.
+        cut.Find("[aria-label=Fruit]").Input("zzz");
+        Assert.AreEqual("false", cut.Find("[aria-label=Fruit]").GetAttribute("aria-expanded"));
+        var empty = cut.FindAll("[role=status]").Single(e => e.TextContent == "No fruit");
+        Assert.IsNull(empty.Closest("[role=listbox]"));
+        cut.ShouldBeAccessible();
+
+        cut.Find("[aria-label=Fruit]").Input("ap");
+        Assert.AreEqual("true", cut.Find("[aria-label=Fruit]").GetAttribute("aria-expanded"));
+        var panel = cut.Find("[aria-label=Fruit]").GetAttribute("aria-controls");
+        Assert.AreEqual("listbox", cut.Find($"[id='{panel}']").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void Chevron_rendered_as_a_span_is_disabled_without_the_disabled_attribute()
+    {
+        var cut = Render(
+            @<BitBhCombobox TValue="string" Disabled="true">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxButton TValue="string" As="span" />
+                <BitBhComboboxOptions TValue="string" />
+            </BitBhCombobox>);
+
+        var chevron = cut.Find("span[aria-label='Show options']");
+        Assert.IsFalse(chevron.HasAttribute("disabled"));
+        Assert.AreEqual("true", chevron.GetAttribute("aria-disabled"));
+        Assert.AreEqual("button", chevron.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void Anchored_panel_scrolls_to_the_highlight_once_it_is_revealed()
+    {
+        // The open is held in flight: the panel stays hidden until the runtime has opened it.
+        var module = JSInterop.SetupModule(BitBhInterop.ModulePath);
+        var open = module.Setup<int>("floating.open", _ => true);
+        var cut = Render(
+            @<BitBhCombobox TValue="string" DefaultValue="@("Cherry")">
+                <BitBhComboboxInput TValue="string" aria-label="Fruit" />
+                <BitBhComboboxOptions TValue="string" Anchor="@("bottom start")">
+                    @foreach (var f in Fruits)
+                    {
+                        <BitBhComboboxOption TValue="string" Value="@f" @key="f">@f</BitBhComboboxOption>
+                    }
+                </BitBhComboboxOptions>
+            </BitBhCombobox>);
+
+        cut.Find("input").Press("ArrowDown");
+        Assert.AreEqual("Cherry", Text(ActiveOf(cut.Find("input"))));
+        Assert.IsEmpty(JSInterop.Invocations.Where(i => i.Identifier == "dom.scrollIntoView"));
+        open.SetResult(1);
+        cut.WaitForAssertion(() => Assert.ContainsSingle(JSInterop.Invocations.Where(i => i.Identifier == "dom.scrollIntoView")));
+    }
+    [TestMethod]
+    public void Escape_with_nothing_to_clear_reaches_an_enclosing_dialog()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open">
+                <BitBhDialogPanel aria-label="Pick a number">
+                    <BitBhCombobox TValue="int" DefaultValue="2">
+                        <BitBhComboboxInput TValue="int" aria-label="Number" />
+                        <BitBhComboboxOptions TValue="int">
+                            <BitBhComboboxOption TValue="int" Value="2">2</BitBhComboboxOption>
+                        </BitBhComboboxOptions>
+                    </BitBhCombobox>
+                </BitBhDialogPanel>
+            </BitBhDialog>);
+
+        // Not nullable: the closed input keeps its value, so Escape clears nothing and must close the dialog.
+        cut.Find("[aria-label=Number]").Press("Escape");
+        Assert.IsFalse(open);
+    }
+
+    [TestMethod]
+    public void Escape_that_clears_a_nullable_combobox_stays_in_it()
+    {
+        var open = true;
+        var cut = Render(
+            @<BitBhDialog @bind-Open="open">
+                <BitBhDialogPanel aria-label="Pick a number">
+                    <BitBhCombobox TValue="int" DefaultValue="2" Nullable="true">
+                        <BitBhComboboxInput TValue="int" aria-label="Number" />
+                        <BitBhComboboxOptions TValue="int">
+                            <BitBhComboboxOption TValue="int" Value="2">2</BitBhComboboxOption>
+                        </BitBhComboboxOptions>
+                    </BitBhCombobox>
+                </BitBhDialogPanel>
+            </BitBhDialog>);
+
+        cut.Find("[aria-label=Number]").Press("Escape");
+        Assert.IsTrue(open);
+        Assert.AreEqual("", cut.Find("[aria-label=Number]").GetAttribute("value"));
+
+        // Cleared: the next Escape is the dialog's.
+        cut.Find("[aria-label=Number]").Press("Escape");
+        Assert.IsFalse(open);
+    }
+}

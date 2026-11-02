@@ -1,0 +1,34 @@
+name: Use the app certificate
+description: Writes the AppCertificate.crt and AppCertificate.key a bit Boilerplate server signs and encrypts its tokens with, and the retired pair it still accepts, from the PEM text of each in a secret. A secret openssl can't read fails the step.
+
+inputs:
+  certificate:
+    description: The certificate and its private key in one PEM, e.g. secrets.APP_CERTIFICATE. When it's empty, no AppCertificate files are written.
+    default: ''
+  retired-certificate:
+    description: The certificate it replaced, in the same form, e.g. secrets.APP_CERTIFICATE_RETIRED. When it's empty, no AppCertificate.retired files are written.
+    default: ''
+  directory:
+    description: The folder of the published server, where the files go.
+    default: '.'
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Write the AppCertificate files
+      shell: bash
+      env:
+        APP_CERTIFICATE: ${{ inputs.certificate }}
+        APP_CERTIFICATE_RETIRED: ${{ inputs.retired-certificate }}
+        APP_CERTIFICATE_DIRECTORY: ${{ inputs.directory }}
+      run: |
+        if [ -n "$APP_CERTIFICATE" ]; then
+          echo "$APP_CERTIFICATE" | openssl x509 -out "$APP_CERTIFICATE_DIRECTORY/AppCertificate.crt"
+          echo "$APP_CERTIFICATE" | openssl pkey -out "$APP_CERTIFICATE_DIRECTORY/AppCertificate.key"
+        fi
+        if [ -n "$APP_CERTIFICATE_RETIRED" ]; then
+          echo "$APP_CERTIFICATE_RETIRED" | openssl x509 -out "$APP_CERTIFICATE_DIRECTORY/AppCertificate.retired.crt"
+          echo "$APP_CERTIFICATE_RETIRED" | openssl pkey -out "$APP_CERTIFICATE_DIRECTORY/AppCertificate.retired.key"
+        fi

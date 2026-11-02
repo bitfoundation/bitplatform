@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+
+@* Every page shares this layout, so it renders before Bit.Balette.wasm is downloaded and may not use Balette's types:
+   the palette is in AdminLayout, which only the admin page uses. data-interactive turns true once the page runs in the
+   browser; the end-to-end tests wait for it. *@
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink href="admin">Admin</NavLink>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+</div>

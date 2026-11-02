@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -49,6 +50,9 @@ public static partial class DevMcpQueryGuards
 
         if (string.IsNullOrWhiteSpace(filter) is false)
         {
+            if (filter.Length > DevMcpLimits.MaxFilterLength)
+                return $"A filter may be at most {DevMcpLimits.MaxFilterLength} characters long.";
+
             foreach (var path in ExtractPaths(filter))
             {
                 var error = DevMcpForbiddenColumns.RejectProperty(entityType, path);
@@ -58,6 +62,67 @@ public static partial class DevMcpQueryGuards
         }
 
         return null;
+    }
+
+    private static readonly HashSet<Type> ValueTypesAFilterMayBuild =
+    [
+        typeof(DateTime), typeof(DateTimeOffset), typeof(DateOnly), typeof(TimeOnly), typeof(TimeSpan), typeof(Guid)
+    ];
+
+    public static string? RejectComputedValues(LambdaExpression predicate)
+    {
+        var finder = new ComputedValueFinder();
+        finder.Visit(predicate.Body);
+        return finder.Error;
+    }
+
+    /// <summary>Finds a call or a new object that doesn't read the row: EF would run it in this process, not in SQL. Building dates, times and Guids is allowed.</summary>
+    private sealed class ComputedValueFinder : ExpressionVisitor
+    {
+        public string? Error { get; private set; }
+
+        public override Expression? Visit(Expression? node)
+        {
+            if (Error is not null || node is null)
+                return node;
+
+            if (IsComputation(node) && IsAllowedComputation(node) is false && ParameterFinder.References(node) is false)
+            {
+                Error = $"The filter builds a {node.Type.Name} value of its own. Compare columns with literals instead.";
+                return node;
+            }
+
+            return base.Visit(node);
+        }
+
+        private static bool IsComputation(Expression node)
+            => node is MethodCallExpression or NewExpression or InvocationExpression or ListInitExpression or MemberInitExpression
+               || node.NodeType is ExpressionType.NewArrayBounds;
+
+        private static bool IsAllowedComputation(Expression node) => node switch
+        {
+            NewExpression newExpression => ValueTypesAFilterMayBuild.Contains(newExpression.Type),
+            MethodCallExpression call => call.Method.DeclaringType is Type declaringType && ValueTypesAFilterMayBuild.Contains(declaringType) && call.Type.IsValueType,
+            _ => false
+        };
+    }
+
+    private sealed class ParameterFinder : ExpressionVisitor
+    {
+        private bool found;
+
+        public static bool References(Expression node)
+        {
+            var finder = new ParameterFinder();
+            finder.Visit(node);
+            return finder.found;
+        }
+
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            found = true;
+            return node;
+        }
     }
 
     public static IEnumerable<string> SplitOrderBy(string orderBy)
@@ -101,7 +166,7 @@ public static partial class DevMcpQueryGuards
         return QuotedLiteral().Replace(expression, " ");
     }
 
-    [GeneratedRegex("""(?<q>["'])(?:\\.|(?!\k<q>).)*\k<q>""", RegexOptions.Singleline)]
+    [GeneratedRegex("""(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')""", RegexOptions.Singleline)]
     private static partial Regex QuotedLiteral();
 
     [GeneratedRegex(@"\b[_A-Za-z][_A-Za-z0-9]*(?:\.[_A-Za-z][_A-Za-z0-9]*)*")]

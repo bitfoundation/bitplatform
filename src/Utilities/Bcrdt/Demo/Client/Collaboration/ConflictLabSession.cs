@@ -34,6 +34,12 @@ public sealed class ConflictLabSession
     /// <summary>The map every key scenario writes.</summary>
     public const string MapKey = "meta";
 
+    /// <summary>The set every tag scenario edits.</summary>
+    public const string SetKey = "tags";
+
+    /// <summary>The tag every replica starts from, so a scenario can remove a member both of them hold.</summary>
+    public const string SeedTag = "seed tag";
+
     private readonly List<string> _log = [];
 
     /// <summary>Creates a session over two replicas of the same document.</summary>
@@ -45,7 +51,7 @@ public sealed class ConflictLabSession
         A = a;
         B = b;
 
-        // Both replicas name all three fields up front, exactly as rendering the page does. A root
+        // Both replicas name all four fields up front, exactly as rendering the page does. A root
         // that one replica has asked for by kind and the other has not would project differently,
         // and the comparison would report a difference that is not in the data.
         foreach (DemoReplica replica in new[] { a, b })
@@ -53,6 +59,7 @@ public sealed class ConflictLabSession
             replica.Document.Text(TextKey);
             replica.Document.Array(ListKey);
             replica.Document.GetMap(MapKey);
+            replica.Document.Set(SetKey);
         }
     }
 
@@ -124,6 +131,30 @@ public sealed class ConflictLabSession
             "neither overwrites the other.",
             replica => replica.Document.Array(ListKey).Insert(0, "inserted by A"),
             replica => replica.Document.Array(ListKey).Insert(0, "inserted by B")),
+
+        new(
+            "Concurrent addition of the same tag",
+            "Both replicas add the tag \"urgent\" to a set, neither aware of the other.",
+            "The set holds \"urgent\" once, not twice. A set's members are keyed by their value, so two " +
+            "additions of an equal value converge on a single member - which is what tags, labels and " +
+            "membership need.",
+            replica => replica.Document.Set(SetKey).Add("urgent"),
+            replica => replica.Document.Set(SetKey).Add("urgent")),
+
+        new(
+            "One replica removes a tag while the other re-adds it",
+            $"Both start with the tag \"{SeedTag}\". A removes it; B removes it and adds it back - a label " +
+            "unticked and ticked again. Neither sees the other.",
+            "The tag stays: an add wins over a concurrent remove. A's removal deleted the member A could " +
+            "see, and B's re-addition is a new member A never saw. Adding a tag the set already holds " +
+            "writes nothing, though, so a plain add racing a remove would let the remove stand.",
+            replica => replica.Document.Set(SetKey).Remove(SeedTag),
+            replica =>
+            {
+                BcrdtSet tags = replica.Document.Set(SetKey);
+                tags.Remove(SeedTag);
+                tags.Add(SeedTag);
+            }),
     ];
 
     /// <summary>
@@ -183,7 +214,7 @@ public sealed class ConflictLabSession
             : "The two replicas still differ - give the exchange another moment.");
     }
 
-    /// <summary>Clears all three fields on both replicas and empties the log.</summary>
+    /// <summary>Clears all four fields on both replicas and empties the log.</summary>
     /// <remarks>
     /// Both replicas clear, not just one. A replica can only delete what it can see, so a reset
     /// issued from A alone would leave behind anything B holds that never reached A. B's pass is
@@ -209,26 +240,29 @@ public sealed class ConflictLabSession
         string text = replica.Document.Text(TextKey).ToString();
         int items = replica.Document.Array(ListKey).Count;
         int keys = replica.Document.GetMap(MapKey).Count;
-        return $"text {Quote(text)}, {items} list item(s), {keys} map key(s)";
+        int tags = replica.Document.Set(SetKey).Count;
+        return $"text {Quote(text)}, {items} list item(s), {keys} map key(s), {tags} tag(s)";
     }
 
     /// <summary>Quotes a value for display, naming the empty string explicitly.</summary>
     public static string Quote(string value) =>
         string.IsNullOrEmpty(value) ? "(empty)" : $"“{value}”";
 
-    /// <summary>Gives the delete and edit-versus-delete scenarios something to act on.</summary>
+    /// <summary>Gives the delete, edit-versus-delete and remove-versus-add scenarios something to act on.</summary>
     /// <returns>Whether anything had to be written.</returns>
     private bool SeedFromA()
     {
         BcrdtArray list = A.Document.Array(ListKey);
         BcrdtText text = A.Document.Text(TextKey);
-        if (list.Count > 0 && text.Count > 0) return false;
+        BcrdtSet tags = A.Document.Set(SetKey);
+        if (list.Count > 0 && text.Count > 0 && tags.Contains(SeedTag)) return false;
 
         // One transaction, so the seed reaches B as a single update.
         A.Document.Transact(_ =>
         {
             if (list.Count == 0) list.Push("seed item");
             if (text.Count == 0) text.Insert(0, "seed text. ");
+            tags.Add(SeedTag);
         });
         return true;
     }
@@ -250,18 +284,20 @@ public sealed class ConflictLabSession
 
     private static void ClearAll(DemoReplica replica)
     {
-        // One transaction, so the reset reaches the peer as a single update rather than three.
+        // One transaction, so the reset reaches the peer as a single update rather than four.
         using BcrdtCollaborativeTransaction transaction = replica.Document.BeginTransaction();
         ClearText(replica);
         BcrdtArray list = replica.Document.Array(ListKey);
         if (list.Count > 0) list.Delete(0, list.Count);
         replica.Document.GetMap(MapKey).Clear();
+        replica.Document.Set(SetKey).Clear();
     }
 
     private static bool IsEmpty(DemoReplica replica) =>
         replica.Document.Text(TextKey).Count == 0 &&
         replica.Document.Array(ListKey).Count == 0 &&
-        replica.Document.GetMap(MapKey).Count == 0;
+        replica.Document.GetMap(MapKey).Count == 0 &&
+        replica.Document.Set(SetKey).Count == 0;
 
     private static async Task<bool> WaitUntilAsync(Func<bool> condition)
     {

@@ -54,6 +54,7 @@ internal static class BitPdfTrueTypeSanitizer
 
         var tables = new List<(uint Tag, byte[] Data)>(numTables);
         var seen = new HashSet<uint>();
+        var copied = new BitPdfBudget(2L * input.Length);
         for (int i = 0; i < numTables; i++)
         {
             int rec = dirOffset + i * 16;
@@ -67,6 +68,10 @@ internal static class BitPdfTrueTypeSanitizer
             if (!seen.Add(tag))
             {
                 continue; // drop duplicate tables
+            }
+            if (!copied.TrySpend(len))
+            {
+                return null;
             }
             var data = new byte[len];
             Array.Copy(input, off, data, 0, len);

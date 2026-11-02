@@ -17,7 +17,7 @@ public static class RepoLayout
         Path.Combine(Path.GetDirectoryName(WebHostProject())!, "bin", configuration, framework, $"{WebHostName}.dll");
 
     public static string HybridHostExecutable(string configuration) =>
-        Path.Combine(Path.GetDirectoryName(HybridHostProject())!, "bin", configuration, "net10.0-windows", $"{HybridHostName}.exe");
+        Path.Combine(Path.GetDirectoryName(HybridHostProject())!, "bin", configuration, "net11.0-windows", $"{HybridHostName}.exe");
 
     private static string FindUpward(string relativePath)
     {

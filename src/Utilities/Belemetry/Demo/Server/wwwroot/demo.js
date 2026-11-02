@@ -13,6 +13,18 @@ window.blDemo = {
         setTimeout(function () { throw new TypeError(message || 'A deliberate error from the demo page'); }, 0);
     },
 
+    // An error loop: the same TypeError from the same line, as a timer or a render loop would throw it. The script
+    // records it once per duplicate window (Errors.DuplicateWindow), not once per throw.
+    throwErrorLoop: function (message, count) {
+        for (let i = 0; i < (count || 20); i++) {
+            setTimeout(function () { throw new TypeError(message || 'A deliberate error loop from the demo page'); }, 0);
+        }
+    },
+
+    stats: function () {
+        return window.BitBelemetry ? window.BitBelemetry.getStats() : null;
+    },
+
     rejectPromise: function (message) {
         Promise.reject(new Error(message || 'A deliberate unhandled rejection from the demo page'));
     },
@@ -27,6 +39,23 @@ window.blDemo = {
             return { status: response.status, body: text.slice(0, 2000), ms: Math.round(performance.now() - started) };
         } catch (e) {
             return { status: 0, body: String(e), ms: Math.round(performance.now() - started) };
+        }
+    },
+
+    // A fetch the page gives up on, as a superseded search or a navigation would: aborted after `afterMs`, before the
+    // slow answer arrives. The span keeps error.type = AbortError but no error status - the app cancelled it, the
+    // dependency did not fail.
+    fetchAbort: async function (url, afterMs) {
+        const started = performance.now();
+        const controller = new AbortController();
+        const timer = setTimeout(function () { controller.abort(); }, afterMs || 300);
+        try {
+            const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+            return { status: response.status, body: await response.text(), ms: Math.round(performance.now() - started) };
+        } catch (e) {
+            return { status: 0, body: (e && e.name) || String(e), ms: Math.round(performance.now() - started) };
+        } finally {
+            clearTimeout(timer);
         }
     },
 
@@ -64,5 +93,37 @@ window.blDemo = {
 
     context: function () {
         return window.BitBelemetry ? window.BitBelemetry.getContext() : null;
+    },
+
+    // A browser-side processor, as an app would add one: it tags every record with the release channel, and drops the
+    // clicks on one deliberately noisy button. addProcessor returns the function that removes it, kept here so the
+    // Processors page can take it out again - the module keeps it across client-side navigation until then.
+    addProcessor: function () {
+        if (!window.BitBelemetry || window.blDemo._removeProcessor) return !!window.blDemo._removeProcessor;
+        window.blDemo._removeProcessor = window.BitBelemetry.addProcessor(function (record) {
+            if (record.eventName === 'browser.user_interaction' && record.attributes['target.name'] === 'demo.processors.noise') return false;
+            record.attributes['app.release.channel'] = 'beta';
+        });
+        return true;
+    },
+
+    removeProcessor: function () {
+        if (window.blDemo._removeProcessor) window.blDemo._removeProcessor();
+        window.blDemo._removeProcessor = null;
+        return false;
+    },
+
+    hasProcessor: function () {
+        return !!window.blDemo._removeProcessor;
+    },
+
+    _removeProcessor: null,
+
+    // The Performance Timeline entry types this browser reports. The script measures a web vital or a long task only
+    // when its entry type is here, so the page can say which of its buttons record nothing in this browser.
+    entryTypes: function () {
+        return typeof PerformanceObserver !== 'undefined' && PerformanceObserver.supportedEntryTypes
+            ? Array.from(PerformanceObserver.supportedEntryTypes)
+            : [];
     },
 };

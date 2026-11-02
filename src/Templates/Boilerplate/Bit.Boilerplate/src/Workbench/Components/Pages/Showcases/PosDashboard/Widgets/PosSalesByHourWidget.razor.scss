@@ -1,0 +1,13 @@
+.chart {
+    flex: 1;
+    height: 240px;
+    min-height: 240px;
+}
+
+.bars-skeleton {
+    gap: 6px;
+    height: 220px;
+    display: grid;
+    align-items: end;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}

@@ -91,7 +91,7 @@ public class BitPdfViewerStreamTests : BunitTestContext
         Assert.AreEqual(0, input.DisposeCount);
         cancel = true;
         await component.InvokeAsync(() => component.Instance.Download());
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.download"].Count);
+        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.download").Count);
     }
 
     [TestMethod]
@@ -170,7 +170,7 @@ public class BitPdfViewerStreamTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Download());
         Assert.AreEqual(2, attempts);
         Assert.AreEqual(0, errors);
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.download"].Count);
+        Assert.AreEqual(0, Context.InvocationsOf("BitBlazorUI.PdfViewer.download").Count);
     }
 
     [TestMethod]
@@ -380,7 +380,7 @@ public class BitPdfViewerStreamTests : BunitTestContext
         Assert.AreEqual(0, readsOnDispatcher);
         Assert.IsTrue(input.ReadCount > 0);
         Assert.AreEqual(0, component.Instance.FailedPages.Count);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Count);
+        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Count);
     }
 
     [TestMethod]

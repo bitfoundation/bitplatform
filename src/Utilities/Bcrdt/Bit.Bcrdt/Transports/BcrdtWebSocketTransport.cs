@@ -201,10 +201,7 @@ public sealed class BcrdtWebSocketTransport : IBcrdtTransport
                 // refusal and a vanished peer into a reported drop.
                 socket.Options.CollectHttpResponseDetails = true;
                 socket.Options.KeepAliveInterval = DefaultKeepAliveInterval;
-#if NET9_0_OR_GREATER
-                // .NET 8 has no keep-alive timeout there: a vanished peer is noticed when a send or receive fails.
                 socket.Options.KeepAliveTimeout = DefaultKeepAliveTimeout;
-#endif
             }
 
             _configure?.Invoke(socket.Options);

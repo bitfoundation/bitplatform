@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Onbekende fout is opgetreden</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Onbekende fout is opgetreden bij het aanmelden met een extern account</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>Het record is gewijzigd door een andere gebruiker nadat u de oorspronkelijke gegevens hebt ontvangen. De bewerking is geannuleerd.</value>
   </data>
@@ -1101,6 +1104,12 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Hier is je analysegegevens</value>
+  </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Formaat wijzigen</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Verbergen</value>
   </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Categorie verwijderen</value>
@@ -2096,4 +2105,15 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Afmelden bij alle accounts op dit apparaat</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Kioskmodus</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Deze app is vergrendeld op het scherm: de Windows-toets, Alt+Tab en het sluiten van het venster zijn allemaal geblokkeerd. Gebruik de knop om af te sluiten.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>App afsluiten</value>
+  </data>
+  <!--#endif -->
 </root>

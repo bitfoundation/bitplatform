@@ -479,11 +479,11 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         component.WaitForPages(2);
         // The script tracks where focus is from the first render on, so a closing panel
         // needs no round trip to ask it.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.registerFocusTracker"].Count);
+        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.registerFocusTracker").Count);
 
         // Opening a panel takes nothing out of the DOM.
         await component.InvokeAsync(() => component.Instance.OnShortcut("sidebar"));
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restorePanelFocus"].Count);
+        Assert.AreEqual(0, Context.InvocationsOf("BitBlazorUI.PdfViewer.restorePanelFocus").Count);
 
         // F4 from a thumbnail takes the panel - and the focus inside it - out of the DOM.
         // Whether focus was in it is the script's to say: focus the reader had elsewhere
@@ -492,7 +492,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
 
         Assert.AreEqual(BitPdfSidebar.None, component.Instance.Sidebar);
         component.WaitForAssertion(() =>
-            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restorePanelFocus"].Count));
+            Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.restorePanelFocus").Count));
     }
 
     [TestMethod]

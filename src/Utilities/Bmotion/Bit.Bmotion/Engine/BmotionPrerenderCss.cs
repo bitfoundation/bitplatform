@@ -328,7 +328,8 @@ internal static class BmotionPrerenderCss
             AddTrack(tracks, BmProps.ToDashCase(key), [key], frames.Select(BmotionCssFormat.Num).ToArray(), fullConfig, reduced);
         }
         foreach (var (key, frames) in stringFrames)
-            AddTrack(tracks, BmProps.ToDashCase(key), [key], frames, fullConfig, reduced);
+            AddTrack(tracks, BmProps.ToDashCase(key), [key], frames, fullConfig, reduced,
+                holdWithinEnds: BmotionElementAnimationState.IsColorProp(key));
 
         return new BmotionPrerenderPlan
         {
@@ -560,6 +561,8 @@ internal static class BmotionPrerenderCss
     /// <summary>
     /// Adds a track for <paramref name="cssProperty"/>, driven by <paramref name="keys"/>. One CSS
     /// animation has one timing, so every key behind it must share its transition.
+    /// <paramref name="holdWithinEnds"/> marks a colour, which a spring doesn't carry past its ends
+    /// (see <see cref="BuildTiming"/>).
     /// </summary>
     private static void AddTrack(
         List<BmotionPrerenderTrack> tracks,
@@ -567,16 +570,17 @@ internal static class BmotionPrerenderCss
         string[] keys,
         string[] frames,
         BmotionTransitionConfig full,
-        BmotionTransitionConfig? reduced)
+        BmotionTransitionConfig? reduced,
+        bool holdWithinEnds = false)
     {
         if (!_animatable.Contains(cssProperty)) return;
         if (frames.Length < 2 || frames.Length > MaxFrames) return;
         if (frames.All(f => f == frames[0])) return;
         if (SharedConfig(full, keys) is not { } fullConfig) return;
 
-        var fullTiming = BuildTiming(fullConfig, frames.Length);
+        var fullTiming = BuildTiming(fullConfig, frames.Length, holdWithinEnds);
         var reducedTiming = reduced is not null && SharedConfig(reduced, keys) is { } reducedConfig
-            ? BuildTiming(reducedConfig, frames.Length)
+            ? BuildTiming(reducedConfig, frames.Length, holdWithinEnds)
             : null;
         if (fullTiming is null && reducedTiming is null) return;
 
@@ -591,8 +595,12 @@ internal static class BmotionPrerenderCss
         return shared;
     }
 
-    /// <summary>The CSS timing for one transition, or <c>null</c> when CSS can't play it faithfully.</summary>
-    internal static BmotionPrerenderTiming? BuildTiming(BmotionTransitionConfig config, int frameCount)
+    /// <summary>
+    /// The CSS timing for one transition, or <c>null</c> when CSS can't play it faithfully.
+    /// <paramref name="holdWithinEnds"/> holds a spring's curve within 0..1, as the frame loop holds a colour between
+    /// its two ends; each property is a CSS animation of its own, so only the colour's curve is held.
+    /// </summary>
+    internal static BmotionPrerenderTiming? BuildTiming(BmotionTransitionConfig config, int frameCount, bool holdWithinEnds = false)
     {
         if (!BmotionBrowserTiming.CanPlay(config)) return null;
 
@@ -611,10 +619,13 @@ internal static class BmotionPrerenderCss
         }
 
         if (BmotionBrowserTiming.SampleProgress(config, ease) is not { } sampled) return null;
+        var samples = holdWithinEnds && config.Type == BmotionTransitionType.Spring
+            ? BmotionBrowserTiming.HeldWithinEnds(sampled.Samples)
+            : sampled.Samples;
         // Nothing can ask the browser about linear() support while prerendering, so it is assumed
         // (springs and curves CSS has no keyword for need it), and an exact keyword is used
         // wherever one exists.
-        var easing = BmotionBrowserTiming.ChooseEasing(config, sampled.Samples, linearSupported: true, preferKeyword: true);
+        var easing = BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported: true, preferKeyword: true);
         if (easing is null) return null;
 
         return new BmotionPrerenderTiming(

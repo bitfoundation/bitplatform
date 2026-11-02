@@ -78,10 +78,14 @@
         <nav id="bb-header-drawer" class="bb-header-drawer" aria-label="Site" tabindex="-1" @ref="_drawer" @onkeydown="OnMenuKeyDown">
             @foreach (var item in SiteInfo.Primary)
             {
-                <a @key="item.Href" href="@item.Href" class="@(IsActive(item) ? "active" : null)">@item.Label</a>
+                <a @key="item.Href" href="@item.Href" class="@(IsActive(item) ? "active" : null)"
+                   aria-current="@(IsActive(item) ? "page" : null)">@item.Label</a>
             }
             <a href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
             <a href="@SiteInfo.NuGetUrl" target="_blank" rel="noopener noreferrer">NuGet ↗</a>
+            @* The drawer covers the page, which is still there and still focusable: Tab past its last link goes back to the
+               button that toggles it, rather than on into the page under the scrim. *@
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _menuButton.FocusAsync()"></span>
         </nav>
     }
 </header>
@@ -150,6 +154,7 @@
         _focusDrawerPending = _menuOpen;
         if (_menuOpen)
             Drawers?.Open(this);
+        LockScroll(_menuOpen);
     }
 
     /// <summary>
@@ -161,6 +166,7 @@
     private void CloseMenu(bool restoreFocus)
     {
         _menuOpen = false;
+        LockScroll(false);
         _focusDrawerPending = false;
         _restorePending = restoreFocus;
     }
@@ -180,6 +186,7 @@
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _path = DocsCatalog.PathOf(Nav);
+        if (_menuOpen) LockScroll(false);
         _menuOpen = false;
         _ = InvokeAsync(StateHasChanged);
     }
@@ -190,6 +197,12 @@
         if (Drawers is not null)
             Drawers.Opened -= OnDrawerOpened;
     }
+
+    /// <summary>
+    /// Holds the page still while the drawer covers it, as the search palette does: a wheel turned over the scrim
+    /// scrolled the page behind it. Not awaited, for the same reason as there.
+    /// </summary>
+    private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
 
     private async Task ToggleTheme()
     {

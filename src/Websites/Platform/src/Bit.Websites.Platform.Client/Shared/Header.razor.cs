@@ -23,7 +23,6 @@ public partial class Header : IDisposable
         new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
         new("Butil", "Blazor utils for browser APIs", Urls.Butil, External: true),
         new("Bswup", "Blazor PWA on steroids", Urls.Bswup, External: true),
-        new("Besql", "Blazor Entity Framework SQLite", Urls.Besql),
         new("Brouter", "Modern declarative Blazor router", Urls.Brouter, External: true),
     ];
 
@@ -46,6 +45,7 @@ public partial class Header : IDisposable
         new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
         new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
         new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
+        new("Bheadless", "Accessible, unstyled Blazor UI primitives", Urls.Bheadless, External: true),
     ];
 
     private static readonly ProductMenuItem[] toolingMenuItems =
@@ -192,7 +192,6 @@ public partial class Header : IDisposable
     private bool IsMenuItemActive(ProductMenuItem item)
     {
         if (item.Url == Urls.Templates) return navMenuService.IsTemplateDocRoute;
-        if (item.Url == Urls.Besql) return navMenuService.IsBesqlDocRoute;
 
         return item.External is false && navMenuService.CurrentUrl == item.Url;
     }

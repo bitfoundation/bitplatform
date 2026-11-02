@@ -27,6 +27,8 @@ The test project is located at [`src/Tests/Boilerplate.Tests.csproj`](/src/Tests
 - **[`AppTestServer.cs`](/src/Tests/Infrastructure/AppTestServer.cs)**: Core test infrastructure that spins up the web application
 - **[`IntegrationTests.cs`](/src/Tests/Features/Identity/IntegrationTests.cs)**: Example of API/backend testing
 - **[`UITests.cs`](/src/Tests/Features/Identity/UITests.cs)**: Example of UI testing with Playwright
+- **[`BunitUITests.cs`](/src/Tests/Features/Identity/BunitUITests.cs)**: Example of UI testing with bUnit, which renders a page in memory without a browser
+- **[`CultureCookieParsingTests.cs`](/src/Tests/Features/Culture/CultureCookieParsingTests.cs)**: Example of a plain unit test, with no server and no database
 - **[`TestData.cs`](/src/Tests/Features/Identity/TestData.cs)**: Shared test data constants
 - **[`.runsettings`](/src/Tests/.runsettings)**: Test configuration (Playwright debug settings, environment variable overrides)
 - **[`MSTestSettings.cs`](/src/Tests/MSTestSettings.cs)**: Assembly-level parallel execution settings
@@ -41,6 +43,7 @@ The test project is located at [`src/Tests/Boilerplate.Tests.csproj`](/src/Tests
     - [`PlaywrightVideoRecordingExtensions.cs`](/src/Tests/Infrastructure/Extensions/PlaywrightVideoRecordingExtensions.cs): Video recording for failed tests
 - **`Features/`**: Feature-specific tests organized by domain
   - **`Identity/`**: Identity/authentication tests
+  - **`Culture/`**: Culture tests
 
 ---
 
@@ -300,6 +303,31 @@ await Expect(Page.GetByRole(AriaRole.Button, new() { Name = userFullName })).ToB
 
 ---
 
+## Unit Testing Example
+
+Code that needs no server, such as a parser, is tested on its own. [`CultureCookieParsingTests.cs`](/src/Tests/Features/Culture/CultureCookieParsingTests.cs) checks how the WebAssembly client reads the UI culture out of the `.AspNetCore.Culture` cookie:
+
+```csharp
+[TestClass, TestCategory("UnitTest"), TestCategory("Culture")]
+public class CultureCookieParsingTests
+{
+    [TestMethod]
+    [DataRow("c=en-US|uic=en-US", "en-US")]
+    [DataRow("c=en-US|uic=fa-IR", "fa-IR")]
+    public void AWellFormedCultureCookie_Should_YieldItsUiCulture(string cookieValue, string expected)
+    {
+        Assert.AreEqual(expected, CultureService.ExtractUiCulture(cookieValue));
+    }
+}
+```
+
+**Key Concepts:**
+- **No `AppTestServer`**: The test calls `CultureService.ExtractUiCulture` directly
+- **`[DataRow]`**: Runs the same test once for each input
+- **Assembly setup still runs**: `TestsAssemblyInitializer` runs once before the first test of any kind, so a run of unit tests alone still starts the test dependencies first
+
+---
+
 ## Test Configuration (.runsettings)
 
 The [`.runsettings`](/src/Tests/.runsettings) file configures test execution:
@@ -347,22 +375,24 @@ dotnet test
 # Run UI tests
 dotnet test --filter "TestCategory=UITest"
 
+# Run unit tests
+dotnet test --filter "TestCategory=UnitTest"
+
 # Run with verbose output
 dotnet test --logger "console;verbosity=detailed"
 ```
 
 ### From VS Code:
-1. Install the **C# Dev Kit** extension
-2. Tests appear in the **Testing** sidebar
-3. Click the play button to run tests
+1. Install the **C#** extension (`ms-dotnettools.csharp`)
+2. Click **Run Test** or **Debug Test** above a test method or class
 
 ### Playwright-Specific Commands:
 ```powershell
 # Install Playwright browsers (first time only)
-pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install
+pwsh src/Tests/bin/Debug/net11.0/playwright.ps1 install
 
 # Update Playwright browsers
-pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --force
+pwsh src/Tests/bin/Debug/net11.0/playwright.ps1 install --force
 ```
 
 ---

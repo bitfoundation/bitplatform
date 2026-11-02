@@ -1,0 +1,72 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (_component is null)
+    {
+        @* A name nothing is registered under is a quiet placeholder rather than an exception: a component the model
+           made up should not take down the response around it. While the props still stream, the name may yet be
+           one the part is not done spelling, so nothing is said until it completes. The reason is its tooltip and,
+           since a tooltip is not read out, its accessible name as well. *@
+        @if (Part.IsStreaming is false)
+        {
+            var reason = Strings.ComponentNotRegistered(Part.ComponentName);
+
+            <BitTag Text="@Part.ComponentName"
+                    Title="@reason"
+                    AriaLabel="@reason"
+                    IconName="Warning"
+                    Color="BitColor.Warning"
+                    Variant="BitVariant.Outline"
+                    Size="BitSize.Small"
+                    Class="bit-aiguv-unr"
+                    Classes="@Classes?.Unregistered"
+                    Styles="@Styles?.Unregistered" />
+        }
+    }
+    else
+    {
+        <div style="@Styles?.Content" class="bit-aiguv-cnt @Classes?.Content">
+            <BitAiRendererBoundary Label="@Strings.ComponentFailed(Part.ComponentName)">
+                @_renderComponent
+            </BitAiRendererBoundary>
+        </div>
+
+        @if (_ShowsBindingErrors)
+        {
+            @* Errors are values that did not bind; ignored properties are names the component does not declare. They
+               are kept apart because only the first means the component is missing something. An error is worded in the
+               language of the page; what the serializer said about it, written for a developer, is the title of the tag
+               rather than its text - the way BitAiRendererBoundary shows the message of an exception. *@
+            <div style="@Styles?.Diagnostics" class="bit-aiguv-dgn @Classes?.Diagnostics">
+                @foreach (var failure in _binding!.Failures)
+                {
+                    <BitTag Text="@FailureText(failure)"
+                            Title="@failure.Detail"
+                            Color="BitColor.Error"
+                            Variant="BitVariant.Outline"
+                            Size="BitSize.Small"
+                            Class="bit-aiguv-err"
+                            Classes="@Classes?.Error"
+                            Styles="@Styles?.Error" />
+                }
+
+                @foreach (var name in _binding.IgnoredProperties)
+                {
+                    <BitTag Text="@Strings.IgnoredProperty(name)"
+                            Title="@Strings.IgnoredPropertyHint"
+                            Color="BitColor.Info"
+                            Variant="BitVariant.Outline"
+                            Size="BitSize.Small"
+                            Class="bit-aiguv-ign"
+                            Classes="@Classes?.Ignored"
+                            Styles="@Styles?.Ignored" />
+                }
+            </div>
+        }
+    }
+</div>

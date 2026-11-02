@@ -40,9 +40,10 @@ public class BitParamsE2ETests : E2ETestBase
         await Expect(cascaded).ToHaveClassAsync(HasClass("bit-btn-lg"));
         await Expect(outside).ToHaveAttributeAsync("class", "bit-btn-fil bit-btn");
 
-        // Outline in the error color, at the large height, against the filled primary default.
-        var error = await ResolveColorAsync("var(--bit-clr-err)");
-        await Expect(cascaded).ToHaveCSSAsync("color", error);
+        // Outline in the error color, at the large height, against the filled primary default. The label of an outlined
+        // button is read on the page, so it is the role's text color.
+        await Expect(cascaded).ToHaveCSSAsync("color", await ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken("err")})"));
+        await Expect(cascaded).ToHaveCSSAsync("border-top-color", await ResolveColorAsync("var(--bit-clr-err)"));
         await Expect(cascaded).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
         await Expect(outside).ToHaveCSSAsync("background-color", await ResolveColorAsync("var(--bit-clr-pri)"));
         Assert.IsTrue((await cascaded.BoundingBoxAsync())!.Height > (await outside.BoundingBoxAsync())!.Height, "The cascaded Large size did not make the button taller.");
@@ -58,7 +59,7 @@ public class BitParamsE2ETests : E2ETestBase
         await Expect(own).ToHaveClassAsync(HasClass("bit-btn-inf"));
         await Expect(own).Not.ToHaveClassAsync(HasClass("bit-btn-err"));
         await Expect(own).ToHaveClassAsync(HasClass("bit-btn-lg"));
-        await Expect(own).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-inf)"));
+        await Expect(own).ToHaveCSSAsync("color", await ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken("inf")})"));
 
         await Expect(Page.Locator("#tag-own")).ToHaveClassAsync(HasClass("bit-tag-lg"));
         await Expect(Page.Locator("#tag-own")).ToHaveClassAsync(HasClass("bit-tag-suc"));
@@ -74,7 +75,7 @@ public class BitParamsE2ETests : E2ETestBase
         await Expect(tag).ToHaveClassAsync(HasClass("bit-tag-suc"));
         await Expect(tag).ToHaveClassAsync(HasClass("bit-tag-sm"));
         await Expect(tag).ToHaveClassAsync(HasClass("bit-tag-txt"));
-        await Expect(tag).ToHaveCSSAsync("color", await ResolveColorAsync("var(--bit-clr-suc)"));
+        await Expect(tag).ToHaveCSSAsync("color", await ResolveColorAsync($"var(--bit-clr-{E2EColors.TextToken("suc")})"));
         await Expect(Page.Locator("#tag-outside")).ToHaveAttributeAsync("class", "bit-tag-fil bit-tag");
 
         var badge = Page.Locator("#badge-cascaded");

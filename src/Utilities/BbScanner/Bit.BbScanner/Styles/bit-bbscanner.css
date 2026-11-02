@@ -47,6 +47,12 @@
     contain: layout paint;
 }
 
+/* An image file dragged over a scanner that takes still images: the whole scanner is the drop target. */
+.bit-bbscanner[data-drop="true"] {
+    outline: 3px dashed var(--bit-bbscanner-accent);
+    outline-offset: -3px;
+}
+
 .bit-bbscanner[data-fill="contain"] {
     aspect-ratio: auto;
     block-size: 100%;
@@ -64,6 +70,16 @@
 
 .bit-bbscanner__video[data-mirrored="true"] {
     transform: scaleX(-1);
+}
+
+/* A native camera (Bit.BbScanner.Maui) draws its preview behind the page, where the video element is: the scanner lets
+   it show through, and the element itself stays only to say where that is. */
+.bit-bbscanner[data-native-preview="true"] {
+    background: transparent;
+}
+
+.bit-bbscanner[data-native-preview="true"] .bit-bbscanner__video {
+    visibility: hidden;
 }
 
 /* The dimmed surround is drawn with a single element and a hole punched by clip-path, which
@@ -303,6 +319,10 @@
 }
 
 @media (forced-colors: active) {
+    .bit-bbscanner[data-drop="true"] {
+        outline-color: Highlight;
+    }
+
     .bit-bbscanner__corner {
         border-color: CanvasText;
     }

@@ -5,40 +5,104 @@
 <div class="bb-intro">
     <h1>Shared lists</h1>
     <p class="bb-subtitle">
-        Both lists use the same <code>Group</code> name, so you can drag items from one into the other. Drop onto
-        an item or into the empty space of a list. The "B" items keep their tint wherever they go: the class comes
-        from <code>ItemClassSelector</code>, which styles the item rather than the list.
+        Lists with the same <code>Group</code> name exchange items: drag an item from one list into the other, onto an
+        item or into the empty space of a list. While it is over the other list a placeholder shows where it will land,
+        and the item moves for good when you drop it.
     </p>
 </div>
 
-<DemoCode />
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Two lists, one group</h3>
+    <p class="bb-card-desc">
+        Both lists have <code>Group="shared"</code>. The "B" items keep their tint wherever they go: the class comes
+        from <code>ItemClassSelector</code>, which computes it from the item rather than from the list it is in - and
+        the drop placeholder wears it too, so the preview looks like the item will.
+    </p>
 
-<div class="bb-demo">
-    <div class="demo-columns">
-        <div class="demo-col">
-            <div class="demo-col-title">List A</div>
-            <Bortable @bind-Items="_left" TItem="string" Group="shared" Id="shared-a"
-                      Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
-                <ItemTemplate Context="item">@item</ItemTemplate>
-            </Bortable>
-        </div>
-        <div class="demo-col">
-            <div class="demo-col-title">List B</div>
-            <Bortable @bind-Items="_right" TItem="string" Group="shared" Id="shared-b"
-                      Class="demo-list" ItemClass="demo-item" ItemClassSelector="Tint" GhostClass="demo-ghost">
-                <ItemTemplate Context="item">@item</ItemTemplate>
-            </Bortable>
-        </div>
+    <div class="bb-demo">
+        <GroupedLists />
     </div>
 
-    <p class="demo-order"><strong>A:</strong> <span id="shared-a-order">@string.Join(", ", _left)</span></p>
-    <p class="demo-order"><strong>B:</strong> <span id="shared-b-order">@string.Join(", ", _right)</span></p>
-</div>
+    <DemoCode For="typeof(GroupedLists)" />
+</section>
 
-@code {
-    private IList<string> _left = new List<string> { "A1", "A2", "A3", "A4", "A5" };
-    private IList<string> _right = new List<string> { "B1", "B2", "B3", "B4", "B5" };
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Into an empty list</h3>
+    <p class="bb-card-desc">
+        A list keeps an area to drop into when it is empty, as long as it has some height: here, the padding and the
+        <code>min-height</code> of its class. <code>ChildContent</code> - whatever you put inside the
+        <code>&lt;Bortable&gt;</code> tag next to <code>ItemTemplate</code> - is rendered after the items, which is
+        where an empty state goes. It is inside the list, so it carries <code>role="listitem"</code> and is read as part
+        of it; this page's stylesheet hides it while the list previews an item.
+    </p>
 
-    // Style follows the item, not the list: "B" items stay tinted after moving.
-    private string? Tint(string item) => item.StartsWith('B') ? "tinted" : null;
-}
+    <div class="bb-demo">
+        <EmptyListState />
+    </div>
+
+    <DemoCode For="typeof(EmptyListState)" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Try it</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Drag <em>A2</em> over List B: a dashed placeholder shows where it will land, and the original disappears from
+            List A. Drop it, and both lines under the lists change - each list's <code>ItemsChanged</code> is raised once.
+        </li>
+        <li>
+            Drag an item over the other list, then back over its own: the preview goes away and the item is back home.
+            Released with the mouse outside every list, an item previewed in another one lands there, as in SortableJS -
+            the <a href="rules">rules</a> page shows <code>RevertOnSpill</code>, which puts it back instead.
+        </li>
+        <li>Move every message out of the Inbox: its empty state shows up, and the Inbox still takes items back.</li>
+        <li>
+            From the keyboard, pick <em>A2</em> up with <kbd>Space</kbd> and press <kbd>→</kbd>: List A has no item to
+            its right, so the item is carried into List B, the nearest list of the group in that direction.
+            <kbd>Space</kbd> drops it there.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> How it works</h3>
+    <ul class="bb-detail-list">
+        <li>
+            Over another list the item is not moved yet: that list renders a placeholder - the item's own template, with
+            the ghost class - where it would land, and the source hides its original (<code>bit-bortable-hidden</code>).
+            The item moves between the lists when the drag ends, because moving a DOM node from one component to another
+            would recreate it and cancel the browser's drag. (A keyboard drag moves the item itself.)
+        </li>
+        <li>
+            Which lists exchange items is decided per list: <code>Pull</code> says how items leave it
+            (<code>Move</code>, the default, <code>Clone</code> or <code>None</code>) and <code>Put</code> whether items
+            of the group may enter it. See <a href="cloning">cloning</a> and <a href="disable-sort">disabling sorting</a>.
+        </li>
+        <li>
+            An item is only offered to lists of its own <code>TItem</code>, and never to a list that already holds an
+            equal item (two lists of strings cannot both hold "A1"). Lists of other item types may share the group; they
+            simply ignore each other's items.
+        </li>
+        <li>
+            Give the lists an <code>Id</code> of your own when your code needs to tell them apart: the events report it as
+            <code>FromId</code> and <code>ToId</code>.
+        </li>
+    </ul>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Parameters on this page</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Parameter</th><th>Here</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="bb-table-key"><code>Group</code></td><td><code>shared</code>, <code>shared-empty</code></td><td>Lists with the same group name exchange items.</td></tr>
+                <tr><td class="bb-table-key"><code>ItemClassSelector</code></td><td><code>Tint</code></td><td>A class computed from the item, added to its wrapper, so it follows the item from list to list.</td></tr>
+                <tr><td class="bb-table-key"><code>ChildContent</code></td><td>the empty states</td><td>Extra content rendered inside the list, after the items.</td></tr>
+                <tr><td class="bb-table-key"><code>AriaLabel</code></td><td><code>Inbox</code>, <code>Archive</code></td><td>The list's accessible name, which announcements name it by: "moved to position 1 of 3 in Archive".</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>

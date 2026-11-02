@@ -1,0 +1,78 @@
+﻿@page "/interop"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<PageTitle>JS interop - BevTools samples</PageTitle>
+
+<h1>JS interop</h1>
+
+<p>
+    The <em>JS Interop</em> panel lists every call with its direction, duration, result and the component that made
+    it, and totals them per identifier. On Blazor Server each one is a round trip to the browser; in WebAssembly and
+    Blazor Hybrid it stays on the device.
+</p>
+
+<section>
+    <button @onclick="ViewportAsync">Read the viewport</button>
+    <button @onclick="SlowAsync">Slow call (300 ms of busy JS)</button>
+    <button @onclick="CallBackAsync">JS calls back into .NET</button>
+    <button @onclick="ThrowAsync">JS function throws</button>
+    <p>The slow call trips a rule (over 250 ms): <em>Diagnostics</em> reports it.</p>
+</section>
+
+@if (_status is not null)
+{
+    <p class="status">@_status</p>
+}
+
+@code {
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<InteropPage>? _self;
+    private string? _status;
+
+    private async Task ViewportAsync() => _status = "Viewport: " + await (await GetModuleAsync()).InvokeAsync<string>("viewport");
+
+    private async Task SlowAsync() => _status = $"The slow call returned after {await (await GetModuleAsync()).InvokeAsync<int>("slowCall", 300)} ms.";
+
+    private async Task CallBackAsync()
+    {
+        _self ??= DotNetObjectReference.Create(this);
+        await (await GetModuleAsync()).InvokeVoidAsync("callBack", _self);
+    }
+
+    [JSInvokable]
+    public void Receive(long timestamp)
+    {
+        _status = $"JS called Receive({timestamp}).";
+        StateHasChanged();
+    }
+
+    private async Task ThrowAsync()
+    {
+        try
+        {
+            await (await GetModuleAsync()).InvokeVoidAsync("throwError");
+        }
+        catch (JSException ex)
+        {
+            _status = "Caught: " + ex.Message;
+        }
+    }
+
+    private async ValueTask<IJSObjectReference> GetModuleAsync() =>
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.BevTools.Samples.Core/samples.js");
+
+    public async ValueTask DisposeAsync()
+    {
+        _self?.Dispose();
+
+        try
+        {
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone; so is the module.
+        }
+    }
+}

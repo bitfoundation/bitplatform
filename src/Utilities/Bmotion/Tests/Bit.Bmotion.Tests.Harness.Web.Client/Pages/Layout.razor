@@ -27,7 +27,8 @@
              OnAnimationStart='_ => Log("armed:grow")'
              Transition="Bm.Tween(0.5, BmEase.Linear)"
              OnLayoutAnimationComplete='() => Log("grow:complete")'>
-        <div id="grow-box" class="box" style="width: @(_wide ? 200 : 60)px"></div>
+        @* The child keeps its own size while the box scales: it is counter-scaled throughout the FLIP. *@
+        <div id="grow-box" class="box" style="width: @(_wide ? 200 : 60)px"><div id="grow-child" style="width: 20px; height: 20px"></div></div>
     </Bmotion>
 </div>
 
@@ -107,7 +108,24 @@
     </BmotionLayoutGroup>
 </div>
 
+<h2>Crossfade</h2>
+@* Two holders of one LayoutId on screen at once: card 1 (30x30 at the left) still leaving as card 2 (60x60, 200px
+   along) takes the id over, over 0.6s. *@
+<div class="xfade-stage" id="xfade-stage">
+    <BmotionPresenceSwitch Item="_card" Mode="BmPresenceMode.Sync" Context="card">
+        <Bmotion LayoutId="xfade"
+                 Animate="Bm.To(opacity: 1)"
+                 Exit="Bm.To(opacity: 0)"
+                 Transition="Bm.Tween(0.6, BmEase.Linear)"
+                 OnAnimationStart='_ => Log($"armed:xfade{card}")'>
+            <div id="xfade-@card" class="xfade-card xfade-card-@card"></div>
+        </Bmotion>
+    </BmotionPresenceSwitch>
+</div>
+<button id="xfade-swap" @onclick="() => Change(() => _card = _card == 1 ? 2 : 1)">Swap</button>
+
 @code {
+    private int _card = 1;
     private bool _end;
     private bool _wide;
     private bool _shift;

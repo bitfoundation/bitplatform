@@ -1,0 +1,112 @@
+﻿@* One participant of the collaborative form: three map entries, a nested set and a nested text, each merging
+   its own way. Each panel of the form page is this component, opened by a different user. *@
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+
+<BcrdtCollaborationScope DocumentId="demo-form" User="_me" OnOpened="Opened" Context="document">
+    @{
+        BcrdtMap form = document.GetMap("form");
+
+        // Read, never created, while rendering: null until the form's structure exists (see Opened).
+        BcrdtSet? labels = form.GetSet("labels");
+        BcrdtText? notes = form.GetText("notes");
+    }
+
+    @* Map entries: different keys never conflict; the same key edited at once keeps one value. *@
+    <label>
+        Title
+        <input type="text" value="@(form.Get<string>("title"))"
+               @oninput="@(args => form.Set("title", args.Value as string ?? string.Empty))" />
+    </label>
+
+    <label>
+        Owner
+        <input type="text" value="@(form.Get<string>("owner"))"
+               @oninput="@(args => form.Set("owner", args.Value as string ?? string.Empty))" />
+    </label>
+
+    <label>
+        Status
+        @* Empty until somebody picks one: without the placeholder the browser would show the first status
+           although nothing is stored, and picking it would raise no change. *@
+        <select value="@(form.Get<string>("status") ?? "")" @onchange="@(args => form.Set("status", args.Value as string ?? string.Empty))">
+            <option value="" disabled>Choose a status…</option>
+            @foreach (string option in Statuses)
+            {
+                <option value="@option">@option</option>
+            }
+        </select>
+    </label>
+
+    @* A nested set: labels ticked by two people at once are both kept. Add and Remove rather than one
+       write of the whole selection, because a set merges per member. *@
+    <fieldset disabled="@(labels is null)">
+        <legend>Labels</legend>
+        @foreach (string label in Labels)
+        {
+            <label>
+                <input type="checkbox" checked="@(labels?.Contains(label) is true)"
+                       @onchange="args => ToggleLabel(labels, label, args.Value is true)" />
+                @label
+            </label>
+        }
+    </fieldset>
+
+    @* A nested text: two people typing here at once both keep their work. *@
+    @if (notes is not null)
+    {
+        <label>
+            Notes
+            <BcrdtTextArea Text="notes" Presence="document.Presence" Field="notes" Rows="5" />
+        </label>
+    }
+</BcrdtCollaborationScope>
+
+@code {
+    private static readonly string[] Statuses = ["Draft", "In review", "Approved", "Archived"];
+    private static readonly string[] Labels = ["urgent", "customer", "internal", "blocked"];
+
+    private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
+
+    // A nested type is a map value like any other: two replicas that each create their own race, and
+    // everything written into the losing one goes with it. So the form's set and text are created once -
+    // not on render, where every replica (a read-only one included) would write - and only after this
+    // replica has caught up with its peers, so it finds a structure somebody already made rather than
+    // making a rival one. A real application goes further and creates a document's structure once,
+    // when the document itself is first made.
+    private static void Opened(BcrdtCollaborativeDocument document)
+    {
+        // No transport: this replica is the whole document.
+        if (document.Sync is not { } sync)
+        {
+            CreateStructure(document);
+            return;
+        }
+
+        sync.Synced += OnSynced;
+        if (sync.IsSynced) OnSynced();
+
+        void OnSynced()
+        {
+            sync.Synced -= OnSynced;
+            CreateStructure(document);
+        }
+    }
+
+    private static void CreateStructure(BcrdtCollaborativeDocument document)
+    {
+        BcrdtMap form = document.GetMap("form");
+        if (document.IsReadOnly || (form.GetSet("labels") is not null && form.GetText("notes") is not null)) return;
+
+        // One transaction, so both reach the others as one update.
+        using BcrdtCollaborativeTransaction transaction = document.BeginTransaction();
+        form.EnsureSet("labels");
+        form.EnsureText("notes");
+    }
+
+    private static void ToggleLabel(BcrdtSet? labels, string label, bool ticked)
+    {
+        if (ticked) labels?.Add(label);
+        else labels?.Remove(label);
+    }
+}

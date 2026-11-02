@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    <title>Bortable samples (Server)</title>
+    @* The library's stylesheet is linked by hand: Bortable does not inject it, and without it a dragged item is not
+       dimmed and the original does not hide while it is previewed in another list. app.css comes after it, so the
+       samples' own rules win. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bortable/bit-bortable.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bortable.Samples.Core/app.css"]" />
+    <link rel="icon" type="image/svg+xml" href="_content/Bit.Bortable.Samples.Core/favicon.svg" />
+    <HeadOutlet @rendermode="PageRenderMode" />
+</head>
+
+<body>
+    <Routes @rendermode="PageRenderMode" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // Interactive everywhere except the error page, which renders statically: an interactive router would start on
+    // the address that failed and render the failing page again in place of the error.
+    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveServer : null;
+}

@@ -1,0 +1,18 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.state {
+    gap: 0.375rem;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.state-name {
+    font-size: 11px;
+    overflow-wrap: anywhere;
+    color: $bit-color-foreground-secondary;
+}
+
+.state-sample {
+    min-width: 0;
+}

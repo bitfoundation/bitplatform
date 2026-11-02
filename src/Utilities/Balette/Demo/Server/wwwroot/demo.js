@@ -4,7 +4,8 @@
       "dark" - on top of theme.js, which knows the light/dark it applied and whether the reader chose it.
    2. A truce between the two palettes on this site. Balette's own (Ctrl+K, plus the demo's global
       shortcuts) listens at the document in the capture phase, so it hears every key first; the site's
-      docs search (the kit's CommandPalette) answers to "/". Whichever of the two is open owns the keys. */
+      docs search (the kit's CommandPalette) answers to "/". Whichever of the two is open owns the keys.
+   3. The clipboard write of the "Copy share link" command, which has to know whether the browser allowed it. */
 (function () {
     'use strict';
 
@@ -82,6 +83,12 @@
 
         /** Applies "auto", "light" or "dark" to the site and answers with the mode in effect. */
         setThemeMode: setThemeMode,
+
+        /** Writes text to the clipboard, and answers whether the browser let it. */
+        copyText: function (text) {
+            if (!navigator.clipboard || !window.isSecureContext) return Promise.resolve(false);
+            return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return false; });
+        },
 
         /** Calls dotNetRef.OnSiteThemeChanged(mode) now and after every change of the site theme. */
         watchTheme: function (dotNetRef) {

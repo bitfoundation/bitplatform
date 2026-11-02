@@ -39,7 +39,7 @@ public static class SiteInfo
         "on the server, in a database that lives in the user's tab - on OPFS, IndexedDB, Cache Storage or memory. " +
         "This site is itself a Blazor WebAssembly app built on it.";
 
-    public static readonly string[] Badges = ["MIT", "net8.0", "net9.0", "net10.0"];
+    public static readonly string[] Badges = ["MIT", "net10.0", "net11.0"];
 
     /// <summary>Words the search palette suggests when a query finds nothing.</summary>
     public static readonly string[] SearchHints = ["live query", "opfs", "migrate", "decimal", "export"];
@@ -91,7 +91,7 @@ public static class DocsCatalog
         [
             new("/getting-started", "Getting started",
                 "Install the package, register a storage preference and a database, and open an EF Core context in the browser.",
-                "install setup nuget package AddBitBsqliteServices AddBitBsqliteDbContext UseBitBsqlite program.cs prerendering render mode quick start",
+                "install setup nuget package AddBitBsqliteServices AddBitBsqliteDbContext UseBitBsqlite program.cs prerendering render mode quick start lazy loading lazyassemblyloader blazorwebassemblylazyload GetBitBsqliteServices aot",
                 typeof(GettingStarted)),
         ]),
         new("Model and data",

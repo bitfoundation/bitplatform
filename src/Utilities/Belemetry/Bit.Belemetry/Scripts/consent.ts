@@ -1,10 +1,21 @@
 ﻿import type { ConsentConfig } from './config';
 import { Features } from './features';
 import type { TelemetryRecord } from './model';
+import { countDropped } from './stats';
 import { readItem, removeItem, StorageKeys, writeItem } from './storage';
 
 /** Called after every consent change with the records held before the decision that the new consent allows. */
 export type ConsentListener = (previous: number, next: number, released: TelemetryRecord[]) => void;
+
+/**
+ * The consent a request was built under (C# `BelemetryConsentMark`): the features its records belong to, and how many
+ * times they had been revoked by then (`ConsentManager.revocations`). Once one of them is revoked again it is withdrawn -
+ * neither sent, retried nor stored - as it may hold the revoked feature's records.
+ */
+export interface ConsentMark {
+    features: number;
+    revocations: number;
+}
 
 /**
  * The consent state machine. Before a decision only `consent.default` is granted and records of the other
@@ -15,6 +26,8 @@ export class ConsentManager {
     private decision: number | null = null;
     private pending: TelemetryRecord[] = [];
     private listeners: ConsentListener[] = [];
+    /** How many times each feature (by bit) was revoked. */
+    private revoked: number[] = [];
 
     /**
      * @param available The configured features (`config.features`). The grant never exceeds them: a grant of a
@@ -25,16 +38,23 @@ export class ConsentManager {
     /** Reads the persisted choice (if `persist`). */
     load(): void {
         if (!this.config.persist) return;
-        const raw = readItem('local', StorageKeys.consent);
-        if (!raw) return;
-        try {
-            const stored = JSON.parse(raw);
-            if (stored && stored.v === 1 && typeof stored.features === 'number') {
-                this.decision = stored.features & Features.All & this.available;
-            }
-        } catch {
-            // A corrupt entry counts as "no decision".
-        }
+        const features = parseChoice(readItem('local', StorageKeys.consent));
+        if (features !== null) this.decision = features & Features.All & this.available;
+    }
+
+    /**
+     * Adopts the choice another tab of the app persisted (the `storage` event's new value): a banner answered there is
+     * answered here, and a feature revoked there stops being collected here as well. A removed or unreadable entry
+     * changes nothing.
+     */
+    adopt(raw: string | null): void {
+        const features = this.config.persist ? parseChoice(raw) : null;
+        if (features === null) return;
+        const decision = features & Features.All & this.available;
+        if (decision === this.decision) return;
+        const previous = this.granted();
+        this.decision = decision;
+        this.changed(previous);
     }
 
     get decided(): boolean {
@@ -62,11 +82,35 @@ export class ConsentManager {
         return (this.granted() & feature) !== 0;
     }
 
+    /**
+     * How many times any of `features` was revoked so far. Counted per feature, so a revoke of another one withdraws
+     * nothing: a request of error logs survives the user turning off interactions, and revoking Persistence or Sessions,
+     * which no record belongs to, withdraws nothing in flight.
+     */
+    revocations(features: number): number {
+        let count = 0;
+        for (let bit = 0; bit < this.revoked.length; bit++) {
+            if (features & (1 << bit)) count += this.revoked[bit] || 0;
+        }
+        return count;
+    }
+
+    /** The mark of a request built now from records of `features`. */
+    mark(features: number): ConsentMark {
+        return { features, revocations: this.revocations(features) };
+    }
+
     /** Holds a record until the decision. The oldest record is dropped when `pendingLimit` is exceeded. */
     hold(record: TelemetryRecord): void {
-        if (this.config.pendingLimit <= 0) return;
+        if (this.config.pendingLimit <= 0) {
+            countDropped('pending_full');
+            return;
+        }
         this.pending.push(record);
-        if (this.pending.length > this.config.pendingLimit) this.pending.shift();
+        if (this.pending.length > this.config.pendingLimit) {
+            this.pending.shift();
+            countDropped('pending_full');
+        }
     }
 
     get pendingCount(): number {
@@ -96,9 +140,14 @@ export class ConsentManager {
 
     private changed(previous: number): void {
         const next = this.granted();
-        purgeStorage(previous & ~next);
+        const revoked = previous & ~next;
+        for (let bit = 0; bit < 31; bit++) {
+            if (revoked & (1 << bit)) this.revoked[bit] = (this.revoked[bit] || 0) + 1;
+        }
+        purgeStorage(revoked);
         // After a decision nothing stays held. Before one (a new default), only what became granted leaves.
         const released = this.pending.filter(r => (next & r.feature) !== 0);
+        if (this.decided) countDropped('not_consented', this.pending.length - released.length);
         this.pending = this.decided ? [] : this.pending.filter(r => (next & r.feature) === 0);
         for (const listener of this.listeners) {
             try {
@@ -110,9 +159,21 @@ export class ConsentManager {
     }
 }
 
+/** The features of a persisted choice (`bit-belemetry-consent`), or null when the entry is not one. */
+function parseChoice(raw: string | null): number | null {
+    if (!raw) return null;
+    try {
+        const stored = JSON.parse(raw);
+        return stored && stored.v === 1 && typeof stored.features === 'number' ? stored.features : null;
+    } catch {
+        // A corrupt entry counts as "no decision".
+        return null;
+    }
+}
+
 /** Clears what is stored on the device for the revoked features. */
 export function purgeStorage(revoked: number): void {
-    if (revoked & Features.Persistence) removeItem('local', StorageKeys.queue);
+    if (revoked) removeItem('local', StorageKeys.queue);
     if (revoked & Features.Sessions) removeItem('session', StorageKeys.session);
     if (revoked & Features.UserTracking) {
         removeItem('local', StorageKeys.pseudoId);

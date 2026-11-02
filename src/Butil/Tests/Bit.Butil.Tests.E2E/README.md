@@ -57,7 +57,7 @@ runsettings under the MTP runner):
 | Variable | Effect |
 | --- | --- |
 | `BUTIL_E2E_HOST` | Which host the run drives - see the table above. A name that is not one of them fails the run. |
-| `BUTIL_E2E_FRAMEWORK` | Target framework of the Web App host: `net10.0` (default), `net9.0`, `net8.0`. |
+| `BUTIL_E2E_FRAMEWORK` | Target framework of the Web App host: `net11.0` (default), `net10.0`. |
 | `BUTIL_E2E_CONFIGURATION` | Build configuration of the harness hosts; defaults to the test assembly's. |
 | `BUTIL_E2E_SKIP_BUILD` | `1`: the harness host was built beforehand (as CI does); do not rebuild it. |
 | `BUTIL_E2E_PUBLISHED_HOST` | A `dotnet publish` output of `Bit.Butil.Tests.Harness.Web` to run instead of the build output (see the publish gate). |
@@ -153,7 +153,7 @@ Two deterministic pages live in `Samples/Core/Pages`:
 
 Both expose stable element ids and funnel results through a single `#status` element so test selectors stay simple.
 `#status` reads `starting` until the page's first interactive render and `ready` from then on; on `/e2e` it also
-carries `data-platform` (`browser` or `dotnet`) and `data-renderer` (`RendererInfo.Name`, .NET 9+), which
+carries `data-platform` (`browser` or `dotnet`) and `data-renderer` (`RendererInfo.Name`), which
 `HostingModeTests` uses to prove a run is exercising the host it asked for.
 
 ## Why a custom harness page?

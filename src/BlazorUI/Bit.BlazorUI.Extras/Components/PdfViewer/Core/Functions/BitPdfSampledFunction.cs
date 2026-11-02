@@ -6,6 +6,8 @@ namespace Bit.BlazorUI;
 /// <summary>Type 0: sampled function with multilinear interpolation (m inputs, n outputs).</summary>
 internal sealed class BitPdfSampledFunction : BitPdfFunction
 {
+    private const int MaxInputs = 8;
+
     private readonly byte[] _samples;
     private readonly int _bps;
     private readonly int[] _size;
@@ -44,6 +46,10 @@ internal sealed class BitPdfSampledFunction : BitPdfFunction
 
         int inCount = domain.Length / 2;
         int outCount = range.Length / 2;
+        if (inCount > MaxInputs)
+        {
+            return null;
+        }
         var size = new int[inCount];
         for (int i = 0; i < inCount; i++)
         {

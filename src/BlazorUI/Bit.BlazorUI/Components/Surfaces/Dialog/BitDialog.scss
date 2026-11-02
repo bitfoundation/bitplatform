@@ -56,7 +56,7 @@ $dlg-private-properties:
     // The color of the action buttons, which the role classes below publish only while Color is set. Left unset,
     // each sends the var() reading it on to the public variables of the button and then to the primary role, which
     // is what lets an explicit Color outrank those variables while an unset one leaves them in charge.
-    clr, clr-txt, clr-hover, clr-active, clr-focus, clr-spn;
+    clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus, clr-spn;
 
 .bit-dlg {
     // What the component writes into an inline style or a role class publishes starts out unset on every root, so
@@ -495,7 +495,7 @@ $dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, va
     --bit-dlg-cnb-clr: initial;
     --bit-dlg-cnb-brd: initial;
     --bit-dlg-cnb-bg: initial;
-    color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr, #{$dlg-cnb-color}));
+    color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr-fg, #{$dlg-cnb-color}));
     border-color: var(--bit-dlg-cnb-brd, var(--bit-dlg-clr, var(--bit-Dialog-cancel-button-border-color, #{$dlg-cnb-color})));
 
     // The transparent background of the outline at rest is the button's recipe rather than the Dialog's color,
@@ -522,10 +522,14 @@ $dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, va
 // the root of the Dialog and only re-point the tokens the two action buttons read, which is what keeps a
 // colored Dialog a Dialog with colored actions rather than a colored surface. They are emitted only for an
 // explicit Color, and come after the reset on the root at the same weight, so they win on the root carrying
-// them and over the public variables of the buttons.
+// them and over the public variables of the buttons. The label of the outlined Cancel button is read on the
+// dialog's surface rather than over the role's fill, so it is drawn in the role's text color (role-text) - a
+// secondary or a warning main is picked to fill a surface and falls under the 4.5:1 of body text on white - while
+// its rule and the fills keep the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-dlg-#{$role} {
         --bit-dlg-clr: #{role($tokens, main)};
+        --bit-dlg-clr-fg: #{role-text($role, $tokens)};
         --bit-dlg-clr-txt: #{role($tokens, on)};
         --bit-dlg-clr-hover: #{role($tokens, hover)};
         --bit-dlg-clr-active: #{role($tokens, active)};

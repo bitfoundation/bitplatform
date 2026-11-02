@@ -945,7 +945,7 @@ public partial class BitTextFieldDemo : IDisposable
         {
             Name = "--bit-TextField-radius",
             DefaultValue = "--bit-shp-radius-control",
-            Description = "Corner radius of the frame, which its focus ring and the clear button follow.",
+            Description = "Corner radius of the frame, which its focus ring follows. The parts at the ends of the frame - the prefix, the suffix, the input (and the cover over an autofilled value) and the clear, reveal and icon buttons - take their corners from the frame itself, so a radius given to it through Styles.FieldGroup or Classes.FieldGroup reshapes them too. A part shaped through its own Classes keeps the shape it was given; an end a PrefixTemplate or SuffixTemplate holds is left to the template.",
         },
         new()
         {

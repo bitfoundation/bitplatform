@@ -48,6 +48,9 @@ public class McpController : ControllerBase
     // land far below the cap; it is there so a pathological answer cannot dominate a client's context window.
     private const int MaxDocumentLength = 40_000;
 
+    // A key that names nothing is quoted back through BsqliteText.Quote, never as sent: over MCP the
+    // AllowedValues below are schema only, so anything - a line break, a megabyte - can arrive in any argument.
+
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBsqlite), Title = "Search everything about Bit.Bsqlite", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
     [Description("Searches everything known about Bit.Bsqlite at once - the README and every guide, every public type and member of its two packages, the storage backends, the setup guides, the two labs and the demo's source files - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first whenever you do not already know which document or type holds the answer, then call the hit's tool verbatim. Example queries: 'live query', 'opfs fallback indexeddb', 'prerendering', 'migrate to another backend', 'unit test without a browser', 'attach'.")]
@@ -60,17 +63,17 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBsqliteSetupGuide), Title = "Setup guide for one scenario", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the complete wiring for one Bit.Bsqlite scenario, with real code: 'standalone-wasm' (Blazor WebAssembly), 'wasm' (Blazor Web App on InteractiveWebAssembly with prerendering - how this demo is built, with its real files), 'auto' (InteractiveAuto), 'server' (InteractiveServer: not supported, and what to do instead), 'storage' (choosing and adding storage backends), 'move-from-besql' (keeping a Bit.Besql app's data), 'testing' (Bit.Bsqlite.Testing: the in-process transport and the conformance kit) or 'custom-provider' (writing a storage backend). Call this before writing setup code: where the services are registered, when a page may open the database, and which backend is first are the mistakes that compile.")]
+    [Description("Gets the complete wiring for one Bit.Bsqlite scenario, with real code: 'standalone-wasm' (Blazor WebAssembly), 'wasm' (Blazor Web App on InteractiveWebAssembly with prerendering - how this demo is built, with its real files), 'auto' (InteractiveAuto), 'server' (InteractiveServer: not supported, and what to do instead), 'hybrid' (Blazor Hybrid on MAUI, WPF or Windows Forms: the same registration, databases on the device), 'storage' (choosing and adding storage backends), 'testing' (Bit.Bsqlite.Testing: the in-process transport and the conformance kit) or 'custom-provider' (writing a storage backend). Call this before writing setup code: where the services are registered, when a page may open the database, and which backend is first are the mistakes that compile.")]
     public string GetBsqliteSetupGuide(
         // Declared rather than merely described: the values then sit in the JSON schema itself, where a
         // model cannot pass another one past them.
-        [AllowedValues("standalone-wasm", "wasm", "auto", "server", "storage", "move-from-besql", "testing", "custom-provider")]
+        [AllowedValues("standalone-wasm", "wasm", "auto", "server", "hybrid", "storage", "testing", "custom-provider")]
         [Description("The scenario.")] string scenario)
     {
         var guide = BsqliteSetupGuide.Get(scenario);
 
         return guide is null
-            ? $"'{scenario}' is not a known scenario. Use one of: {string.Join(", ", BsqliteSetupGuide.Scenarios)}."
+            ? $"'{BsqliteText.Quote(scenario)}' is not a known scenario. Use one of: {string.Join(", ", BsqliteSetupGuide.Scenarios)}."
             : Truncate(guide);
     }
 
@@ -87,7 +90,7 @@ public class McpController : ControllerBase
 
         if (resolved is null)
         {
-            return $"There is no Bit.Bsqlite document called '{name}'. The documents are: " +
+            return $"There is no Bit.Bsqlite document called '{BsqliteText.Quote(name)}'. The documents are: " +
                    $"{string.Join(", ", BsqliteSourceCatalog.Documents.Select(document => $"'{document.Name}'"))}.";
         }
 
@@ -106,8 +109,8 @@ public class McpController : ControllerBase
             .ToArray();
 
         return candidates.Length > 0
-            ? $"The '{resolved}' document has no section called '{section}'. Did you mean: {string.Join(", ", candidates)}?"
-            : $"The '{resolved}' document has no section called '{section}'. Its sections are: {string.Join(", ", sections.Select(s => $"'{s.Key}'"))}.";
+            ? $"The '{resolved}' document has no section called '{BsqliteText.Quote(section)}'. Did you mean: {string.Join(", ", candidates)}?"
+            : $"The '{resolved}' document has no section called '{BsqliteText.Quote(section)}'. Its sections are: {string.Join(", ", sections.Select(s => $"'{s.Key}'"))}.";
     }
 
     [HttpGet]
@@ -129,20 +132,20 @@ public class McpController : ControllerBase
             .ToArray();
 
         return candidates.Length > 0
-            ? $"Bit.Bsqlite has no public type called '{typeName}'. Did you mean: {string.Join(", ", candidates)}?"
-            : $"Bit.Bsqlite has no public type called '{typeName}'. Its public types are prefixed 'Bsqlite' or 'IBsqlite' (e.g. 'BsqliteConnection' rather than 'SqliteConnection', 'IBsqliteDbContextFactory' rather than 'DbContextFactory'), except the DI entry point class 'BitBsqlite'; call GetBsqliteApi with no type name for the index.";
+            ? $"Bit.Bsqlite has no public type called '{BsqliteText.Quote(typeName)}'. Did you mean: {string.Join(", ", candidates)}?"
+            : $"Bit.Bsqlite has no public type called '{BsqliteText.Quote(typeName)}'. Its public types are prefixed 'Bsqlite' or 'IBsqlite' (e.g. 'BsqliteConnection' rather than 'SqliteConnection', 'IBsqliteDbContextFactory' rather than 'DbContextFactory'), except the DI entry point class 'BitBsqlite'; call GetBsqliteApi with no type name for the index.";
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBsqliteStorageProviders), Title = "Storage backends and their capabilities", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the four first-party storage backends - opfs, indexeddb, cache-storage, in-memory - read out of their provider types: each one's package and namespace, the engine build it needs, whether it persists, the rest of its declared capabilities with what each means, its VFS module, and which statements the library's guards refuse on it (WAL, ATTACH, PRAGMA page_size). Omit the provider for the table of all four. Use it to pick backends and their order; PlanBsqliteStorageSelection then predicts which one a database lands on.")]
+    [Description("Gets the five first-party storage backends - opfs, indexeddb, cache-storage and in-memory in the browser, and file-system, the device files a Blazor Hybrid app gets automatically - read out of their provider types: each one's package and namespace, the engine build it needs, whether it persists, the rest of its declared capabilities with what each means, its VFS module, and which statements the library's guards refuse on it (WAL, ATTACH, PRAGMA page_size). Omit the provider for the table of all five. Use it to pick backends and their order; PlanBsqliteStorageSelection then predicts which one a database lands on.")]
     public string GetBsqliteStorageProviders(
         [Description("The backend's name, e.g. 'opfs' or 'indexeddb' (its provider type, e.g. 'BsqliteOpfsStorageProvider', also works). Omit it for the table of every backend.")] string? provider = null)
     {
         if (string.IsNullOrWhiteSpace(provider)) return BsqliteStorageCatalog.RenderIndex();
 
         return BsqliteStorageCatalog.Render(provider)
-            ?? $"No first-party storage backend is called '{provider}'. The backends are: {string.Join(", ", BsqliteStorageCatalog.Providers.Select(p => p.Name))}. A backend of your own implements IBsqliteStorageProvider - see GetBsqliteSetupGuide(scenario: \"custom-provider\").";
+            ?? $"No first-party storage backend is called '{BsqliteText.Quote(provider)}'. The backends are: {string.Join(", ", BsqliteStorageCatalog.Providers.Select(p => p.Name))}. A backend of your own implements IBsqliteStorageProvider - see GetBsqliteSetupGuide(scenario: \"custom-provider\").";
     }
 
     [HttpGet]
@@ -193,8 +196,8 @@ public class McpController : ControllerBase
                 .ToArray();
 
             return candidates.Length > 0
-                ? $"No source file at '{path}'. Did you mean: {string.Join(", ", candidates)}?"
-                : $"No source file at '{path}'. Call GetBsqliteSourceFile with no path for the index of files.";
+                ? $"No source file at '{BsqliteText.Quote(path)}'. Did you mean: {string.Join(", ", candidates)}?"
+                : $"No source file at '{BsqliteText.Quote(path)}'. Call GetBsqliteSourceFile with no path for the index of files.";
         }
 
         return Truncate(content);
@@ -271,10 +274,6 @@ public class McpController : ControllerBase
     {
         if (text.Length <= MaxDocumentLength) return text;
 
-        // Never between the two halves of a surrogate pair: half a pair is not text, and a client that
-        // re-encodes the answer turns it into a replacement character or rejects it outright.
-        var cut = char.IsHighSurrogate(text[MaxDocumentLength - 1]) ? MaxDocumentLength - 1 : MaxDocumentLength;
-
-        return $"{text[..cut]}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
+        return $"{BsqliteText.CutAt(text, MaxDocumentLength)}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
     }
 }

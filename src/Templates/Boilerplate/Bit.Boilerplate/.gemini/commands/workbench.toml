@@ -1,0 +1,9 @@
+description = "Design and review a page in the Workbench before the app builds it: the app's own components and theme on sample data, every device, theme, language and data state, and store screenshots."
+
+prompt = """
+Follow these instructions exactly:
+
+@{.github/agents/workbench.agent.md}
+
+What to design, review or capture: {{args}}
+"""

@@ -232,6 +232,7 @@ public class TemplateConfigurationTests
             "src/Tests/Features/Identity/BunitUITests.cs",
             "src/Tests/Features/Identity/TestData.cs",
             "src/Tests/Features/Identity/SignInPanelUtils.cs", // UITests.cs calls it unconditionally, so it ships wherever that does.
+            "src/Tests/Features/Culture/CultureCookieParsingTests.cs", // The plain unit test sample, next to the integration, Playwright and bUnit ones above.
         ];
 
         var (templateRoot, template) = LoadTemplateJson();

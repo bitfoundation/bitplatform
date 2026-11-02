@@ -63,12 +63,13 @@ public class ConfigCascadeTests
             .Add(p => p.ReduceMotion, true)
             .Add(p => p.ChildContent, Box(Bm.To(x: 100, opacity: 0.2), Bm.Tween(1, ease: BmEase.Linear))));
 
-        Assert.IsNull(OffloadTiming(ctx), "a reduced transition is split per property, which stays on the frame loop");
-        await ctx.RunFramesAsync(0, 96);
-
+        // The move lands at once; the fade keeps its normal transition, played by the browser - on every runtime.
         var state = State(ctx);
         Assert.AreEqual(100, state.Transforms["x"], 1e-9, "transforms snap under reduced motion");
-        Assert.IsTrue(state.NumericValues["opacity"] > 0.2, "opacity keeps its normal (still running) transition");
+        Assert.AreEqual(1000.0, (double)OffloadTiming(ctx)!["duration"]!, "opacity keeps its normal transition");
+        var keyframes = (Dictionary<string, object>[])ctx.Interop.ArgsOf("playWaapiAnimation").Last()[2]!;
+        Assert.IsTrue(keyframes.All(k => !k.ContainsKey("transform")), "the snapped move is not part of the fade");
+        Assert.AreEqual("0.2", keyframes[^1]["opacity"]);
         Assert.IsFalse(ctx.Interop.WasCalled("prefersReducedMotion"), "an explicit override needs no OS probe");
     }
 
@@ -126,6 +127,7 @@ public class ConfigCascadeTests
     private static async Task<string> MidpointColor(BmColorSpace? globalSpace, BmColorSpace? ownSpace = null)
     {
         using var ctx = new BmotionTestContext();
+        ctx.Interop.WebAnimationsSupported = false; // sampled mid-way on the frame loop
         ctx.Render<BmotionConfig>(ps => ps
             .Add(p => p.ColorSpace, globalSpace)
             .Add(p => p.ChildContent, Box(

@@ -181,6 +181,12 @@ public class JavaScriptSourceTests
             "importScripts is a call, not an assignment");
     }
 
+    [TestMethod]
+    public void ReadAssignments_RefusesChainedAssignmentsThatOverlapPastTheLimit()
+    {
+        Assert.ThrowsExactly<ScriptTooComplexException>(() => Read(ServiceWorkerFixtures.ChainedAssignments));
+    }
+
     // -- ReadLiterals ----------------------------------------------------------
 
     [TestMethod]

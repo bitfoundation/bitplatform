@@ -57,7 +57,7 @@ public static class AboutCommand
         }
 
         Row("Runs on", $".NET {Environment.Version} on {OsName(cli.Environment.Os)} {Environment.OSVersion.Version} ({cli.Environment.Architecture.ToString().ToLowerInvariant()})");
-        Row("Installed as", CliTelemetry.InstallMethod() switch { "tool" => ".NET global tool", "dnx" => "dnx (not installed)", _ => "a local build" });
+        Row("Installed as", CliTelemetry.InstallMethod() switch { "tool" => ".NET global tool", "tool-path" => ".NET tool installed with --tool-path", "dnx" => "dnx (not installed)", _ => "a local build" });
 
         var decision = TelemetryDecision.Resolve(cli.Environment, cli.Settings, BuildInfo.TelemetryConnectionString);
         Row("Telemetry", $"{TelemetryDecision.Name(decision.Level)} ({decision.Reason}){(decision.CanSend ? "" : ", this build has no telemetry endpoint")}");

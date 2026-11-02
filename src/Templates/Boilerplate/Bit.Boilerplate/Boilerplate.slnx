@@ -14,28 +14,26 @@
     <File Path="vs-spell.dic" />
     <File Path=".vscode/mcp.json" />
     <File Path="README.md" />
-    <File Path="specs/README.md" />
     <File Path="settings.VisualStudio.json" />
     <File Path="Bit.ResxTranslator.json" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Packages.props" />
   </Folder>
-<!--#if (pipeline == "Azure")-->
-  <Folder Name="/.SolutionItems/.azure-devops/" />
-  <Folder Name="/.SolutionItems/.azure-devops/workflows/">
-    <File Path=".azure-devops/workflows/cd.yml" />
-    <File Path=".azure-devops/workflows/ci.yml" />
-  </Folder>
-<!--#endif-->
   <Folder Name="/.SolutionItems/.github/" />
   <Folder Name="/.SolutionItems/.github/agents/">
     <File Path=".github/agents/ai-dlc.agent.md" />
     <File Path=".github/agents/bitify-ui.agent.md" />
+    <File Path=".github/agents/deploy.agent.md" />
     <File Path=".github/agents/localize-strings.agent.md" />
+    <File Path=".github/agents/port.agent.md" />
     <File Path=".github/agents/rebrand.agent.md" />
     <File Path=".github/agents/review.agent.md" />
+    <File Path=".github/agents/run-app.agent.md" />
     <File Path=".github/agents/scaffold-entity.agent.md" />
-    <File Path=".github/agents/upgrade.agent.md" />
+    <File Path=".github/agents/template-diff.agent.md" />
+    <File Path=".github/agents/troubleshoot.agent.md" />
+    <File Path=".github/agents/workbench.agent.md" />
+    <File Path=".github/agents/write-tests.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
     <File Path=".docs/00- Wiki.md" />
@@ -67,14 +65,12 @@
     <File Path=".docs/25- RAG - Semantic Search with Vector Embeddings (Advanced).md" />
     <!--#endif-->
   </Folder>
-<!--#if (pipeline == "GitHub")-->
   <Folder Name="/.SolutionItems/.github/workflows/">
     <File Path=".github/workflows/cd-production.yml" />
     <File Path=".github/workflows/cd-test.yml" />
     <File Path=".github/workflows/cd-template.yml" />
     <File Path=".github/workflows/ci.yml" />
   </Folder>
-<!--#endif-->
   <Folder Name="/Server/">
     <Project Path="src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
     <Project Path="src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
@@ -86,6 +82,10 @@
   <Folder Name="/.SolutionItems/.grafana/">
     <File Path=".grafana/dashboard.json" />
     <File Path=".grafana/README.md" />
+  </Folder>
+  <Folder Name="/.SolutionItems/specs/">
+    <File Path="specs/README.md" />
+    <File Path="specs/workarounds.md" />
   </Folder>
   <Folder Name="/Client/">
     <Project Path="src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />
@@ -106,6 +106,16 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="src/Tests/Boilerplate.Tests.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+<!--#if (advancedTests == true)-->
+    <Project Path="src/WorkbenchTests/Boilerplate.WorkbenchTests.csproj">
+      <Build Solution="DebugBlazorServer|*" Project="false" />
+    </Project>
+<!--#endif-->
+  </Folder>
+  <Folder Name="/Workbench/">
+    <Project Path="src/Workbench/Boilerplate.Workbench.csproj">
       <Build Solution="DebugBlazorServer|*" Project="false" />
     </Project>
   </Folder>

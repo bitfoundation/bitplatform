@@ -3,21 +3,28 @@
 <PageTitle>Connection Mode · Blow</PageTitle>
 
 <ExampleScaffold Title="Connection Mode"
-                 Summary="Strict mode only allows source→target connections. Loose mode lets any handle connect to any other handle. Toggle the mode and try connecting handles of the same type.">
+                 Summary="ConnectionMode decides which handles may be joined: Strict, the default, only joins a source to a target, while Loose lets any handle connect to any other - a source to a source, a target to a target. Use Loose for undirected diagrams where a handle is just a connection point.">
     <Toolbar>
-        <label>mode:
-            <select @onchange="e => _mode = Enum.Parse<BlowConnectionMode>(e.Value!.ToString()!)">
-                <option value="Strict">Strict</option>
-                <option value="Loose">Loose</option>
+        <label>
+            Mode
+            <select @bind="_mode" @bind:after="ModeChanged">
+                <option value="@BlowConnectionMode.Strict">Strict</option>
+                <option value="@BlowConnectionMode.Loose">Loose</option>
             </select>
         </label>
+        <button class="btn btn-secondary" @onclick="RemoveEdges">Remove edges</button>
+        <span class="bb-muted" aria-live="polite">@_status</span>
     </Toolbar>
     <ChildContent>
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="_mode">
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="_mode"
+                    OnConnect="OnConnect" OnConnectEnd="OnConnectEnd">
             <NodeTemplate Context="node">
-                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="t" />
-                <div class="vnode">@node.Label</div>
-                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="s" />
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="t" Class="cm-target" />
+                <div class="cm-node">
+                    <strong>@node.Label</strong>
+                    <div class="cm-legend"><span>target</span><span>source</span></div>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="s" Class="cm-source" />
             </NodeTemplate>
             <ChildContent>
                 <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
@@ -25,16 +32,34 @@
             </ChildContent>
         </BlowCanvas>
     </ChildContent>
+    <TryIt>
+        <li>In <strong>Strict</strong> mode, <strong>drag</strong> from Node 1's right-hand (source) handle: only the other nodes' left-hand (target) handles turn green. Release on another node's right-hand handle and nothing is connected; the line beside the toolbar says why.</li>
+        <li>Release on a left-hand handle instead to connect. Dragging the other way, from a target to a source, works too: the edge still runs from the source.</li>
+        <li>Switch <strong>Mode</strong> to <strong>Loose</strong> and drag from a right-hand handle again: every handle on the other nodes turns green, and a source dropped on a source connects - so does a target on a target.</li>
+        <li>Switch back to <strong>Strict</strong>: the edges strict mode would not allow are removed, since this page keeps only what its mode permits. <strong>Remove edges</strong> clears the rest.</li>
+    </TryIt>
+    <HowItWorks>
+        <li><code>ConnectionMode</code> on the canvas is <code>BlowConnectionMode.Strict</code> by default: two handles of the same type are refused with the <code>Rejection</code> <code>SameHandleType</code>, reported by <code>OnConnectEnd</code>.</li>
+        <li><code>BlowConnectionMode.Loose</code> drops that rule; the others - no duplicates, no self-connections, your <code>IsValidConnection</code> - still apply.</li>
+        <li>The new edge runs from the handle the drag started at when that is a source, and towards it when it is a target, so a target dropped on a target makes the dropped-on node the edge's <code>Source</code>. <code>OnConnect</code> reports the resulting <code>BlowConnection</code>.</li>
+        <li>In Loose mode an edge can name a source handle as its <code>TargetHandle</code>; the canvas then looks for the handle among both types to anchor the edge. A strict canvas does not, which is why this page removes such edges in <code>ModeChanged</code> when you switch back.</li>
+        <li>The handles' colours come from this page's <code>cm-source</code> and <code>cm-target</code> classes, which set <code>--bit-blow-handle-bg</code>; while a connection is dragged the canvas's green and red take over.</li>
+    </HowItWorks>
 </ExampleScaffold>
 
 <style>
-    .vnode { padding: 6px 14px; font-weight: 600; }
+    .cm-node { padding: 4px 6px; }
+    .cm-legend { display: flex; justify-content: space-between; gap: 12px; font-size: 10px; color: var(--bit-blow-text-muted); }
+    /* Through the handle's own colour token, so the live valid/invalid colours still win while dragging. */
+    .cm-source { --bit-blow-handle-bg: #2563eb; }
+    .cm-target { --bit-blow-handle-bg: #d97706; }
 </style>
 
 @code {
     private List<BlowNode> _nodes = [];
     private List<BlowEdge> _edges = [];
     private BlowConnectionMode _mode = BlowConnectionMode.Strict;
+    private string _status = "Drag between the handles.";
 
     protected override void OnInitialized()
     {
@@ -45,6 +70,45 @@
             new BlowNode { Id = "3", Label = "Node 3", Position = new(80, 200) },
             new BlowNode { Id = "4", Label = "Node 4", Position = new(340, 200) },
         ];
+    }
+
+    private void OnConnect(BlowConnection c) =>
+        _status = $"Connected Node {c.Source} ({c.SourceHandle}) to Node {c.Target} ({c.TargetHandle}).";
+
+    // Raised after OnConnect for a connection that was made, so only the attempts that failed have anything to add.
+    private void OnConnectEnd(BlowConnectEndInfo end)
+    {
+        if (end.IsValid) return;
+
+        _status = end.Rejection switch
+        {
+            BlowConnectionRejection.None => "Nothing connected.",
+            BlowConnectionRejection.SameHandleType => "Refused: Strict mode only joins a source to a target (SameHandleType).",
+            BlowConnectionRejection.Duplicate => "Refused: those two handles are already connected.",
+            BlowConnectionRejection.SelfConnection => "Refused: a node cannot connect to itself.",
+            var other => $"Refused: {other}.",
+        };
+    }
+
+    // An edge made in Loose mode may join a source to a source ("s" as its target end) or a target to a target ("t" as
+    // its source end). Strict mode would not have allowed it, and would not find that handle to anchor it to.
+    private void ModeChanged()
+    {
+        if (_mode != BlowConnectionMode.Strict)
+        {
+            _status = "Loose mode: any handle connects to any other.";
+            return;
+        }
+
+        var removed = _edges.RemoveAll(e => e.SourceHandle == "t" || e.TargetHandle == "s");
+        _status = removed == 0
+            ? "Strict mode: only a source joins a target."
+            : $"Strict mode: removed {removed} edge(s) that joined two handles of the same type.";
+    }
+
+    private void RemoveEdges()
+    {
         _edges = [];
+        _status = "Edges removed.";
     }
 }

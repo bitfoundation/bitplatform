@@ -44,7 +44,8 @@ public static class BlowEdgePath
             borderRadius: options?.BorderRadius ?? 0,
             offset: options?.Offset ?? 20,
             stepPosition: options?.StepPosition ?? 0.5),
-        BlowEdgeType.SmoothStep => SmoothStep(sx, sy, sourcePos, tx, ty, targetPos,
+        // Without the obstacles to route around - which only the caller knows - a routed edge is a smooth step.
+        BlowEdgeType.SmoothStep or BlowEdgeType.Routed => SmoothStep(sx, sy, sourcePos, tx, ty, targetPos,
             borderRadius: options?.BorderRadius ?? 5,
             offset: options?.Offset ?? 20,
             stepPosition: options?.StepPosition ?? 0.5),
@@ -406,6 +407,9 @@ public static class BlowEdgePath
         points.Add(target);
         return points;
     }
+
+    /// <summary>SVG path data through the given corner points, with each corner rounded to <paramref name="radius"/>.</summary>
+    internal static string RoundedPath(IReadOnlyList<BlowXYPosition> points, double radius) => BuildRoundedPath(points, radius);
 
     private static string BuildRoundedPath(IReadOnlyList<BlowXYPosition> points, double radius)
     {

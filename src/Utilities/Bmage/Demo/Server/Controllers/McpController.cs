@@ -76,9 +76,10 @@ public class McpController : ControllerBase
 
             ## Rules of thumb when writing Bmage code
 
-            - **Register for the host.** `AddBitBmageServices` in a browser app - in BOTH the server and the client
-              container of a Blazor Web App, because the prerender pass instantiates every component on the server.
-              `AddBitBmageHeadlessServices` on a server, in a console app or a worker. They register different things.
+            - **Install and register for the host.** `Bit.Bmage.Blazor` and `AddBitBmageServices` in a browser app - in
+              BOTH the server and the client container of a Blazor Web App, because the prerender pass instantiates every
+              component on the server. `Bit.Bmage` alone and `AddBitBmageHeadlessServices` on a server, in a console app
+              or a worker. They register different things.
             - **No `@inject ImageProcessor` in a browser app.** Get it from `ImageProcessorFactory.GetAsync()`, or use
               `ImageLoader` and `ImageExporter`, which do that for you.
             - **Browser work after the first render.** Capabilities, downloads, object URLs, the clipboard and paste
@@ -87,15 +88,17 @@ public class McpController : ControllerBase
             - **Dispose what you are handed.** `LoadAsync`, `ExecuteAsync`, `DecodeAsync`, `Render`, `Snapshot` and
               `Clone` return buffers you own: `using var`. Buffers you read from a property (`Session.Preview`) are not
               yours. `BmageEditor.LoadImageAsync(buffer)` takes ownership.
-            - **WebP and AVIF are browser codecs.** Export them with `EncodeWithFallbackAsync([WebP, Jpeg])`; never on a
-              server, where only PNG, JPEG and BMP encode.
+            - **AVIF is encoded only by browsers.** Export it with `EncodeWithFallbackAsync([Avif, WebP])`; never on a
+              server, where PNG, JPEG, BMP and WebP encode. WebP, lossy or lossless, encodes everywhere when named; in
+              WebAssembly a fallback list passes it over where the browser cannot write it, as Bmage's encoder would
+              hold the UI thread.
             - **Privacy is the default.** Export metadata is `Remove` unless you ask; `StripSensitive` keeps camera data
               without GPS; `Preserve` keeps the location. Redact with `RedactionMode.Solid`.
             - **Cap dimensions first.** `.AutoOrient().MaxSize(...)` before adjustments and filters; group adjustments
               together so the optimiser fuses them into one pass.
             - **AOT the browser project.** `<RunAOTCompilation>true</RunAOTCompilation>`: the interpreter runs the pixel
               loops 10 to 35 times slower.
-            - **The editor** needs `_content/Bit.Bmage/bit-bmage-editor.css` in the page head and a container
+            - **The editor** needs `_content/Bit.Bmage.Blazor/bit-bmage-editor.css` in the page head and a container
               with a height.
             """);
 
@@ -105,9 +108,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBmage), Title = "Search everything about Bit.Bmage",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the package, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
+    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the packages, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
     public BmageSearchHitDto[] SearchBmage(
-        [Description("What you are trying to do or what went wrong, in your own words, e.g. 'crop an avatar to a circle' or 'WebP export fails on Safari'.")] string query,
+        [Description("What you are trying to do or what went wrong, in your own words, e.g. 'crop an avatar to a circle' or 'AVIF export fails on Safari'.")] string query,
         [Description("How many hits to return, 1 to 50. Default 12.")] int limit = 12)
     {
         return BmageSearchIndex.Search(query, limit);
@@ -195,9 +198,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageApiList), Title = "List the public types",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Lists the public types of Bit.Bmage - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, its kind and a one-line summary. Narrow it with 'filter' (a namespace, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
+    [Description("Lists the public types of Bit.Bmage and Bit.Bmage.Blazor - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, the package, its kind and a one-line summary. Narrow it with 'filter' (a namespace, a package, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
     public BmageApiTypeDto[] GetBmageApiList(
-        [Description("Optional. A namespace ('Bit.Bmage.Annotations', or 'Bit.Bmage.Editor' for every editor namespace), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
+        [Description("Optional. A namespace ('Bit.Bmage.Annotations', or 'Bit.Bmage.Editor' for every editor namespace), a package ('Bit.Bmage.Blazor'), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
     {
         var types = BmageApiCatalog.TypeSummaries;
 
@@ -206,10 +209,16 @@ public class McpController : ControllerBase
         var term = filter.Trim();
 
         // A package or a kind is matched exactly: "Bit.Bmage" as a substring is every type there is,
-        // and "Class" would pull in every "...Class..." name as well.
-        var exact = types.Where(type => type.Package.Equals(term, StringComparison.OrdinalIgnoreCase)
-                                     || type.Kind.Equals(term, StringComparison.OrdinalIgnoreCase)
-                                     || type.Namespace.Equals(term, StringComparison.OrdinalIgnoreCase)).ToArray();
+        // and "Class" would pull in every "...Class..." name as well. A package name is tried on its
+        // own first: both packages put types in the Bit.Bmage namespace, so "Bit.Bmage" matched as a
+        // namespace too would mix Bit.Bmage.Blazor's browser registration into the engine's list.
+        var exact = types.Where(type => type.Package.Equals(term, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+        if (exact.Length == 0)
+        {
+            exact = [.. types.Where(type => type.Kind.Equals(term, StringComparison.OrdinalIgnoreCase)
+                                         || type.Namespace.Equals(term, StringComparison.OrdinalIgnoreCase))];
+        }
 
         if (exact.Length > 0) return exact;
 
@@ -359,7 +368,7 @@ public class McpController : ControllerBase
         [Description("The generated input: 'photo' (default - a landscape with sensor grain, compresses like a photograph), 'screenshot' (flat colour, hard edges, text-like runs) or 'graphic' (a logo on a transparent background).")] string source = "photo",
         [Description("Width of the generated input in pixels. Default 2400; at most 4096, and 12 megapixels in all.")] int width = BmagePipelineLab.DefaultWidth,
         [Description("Height of the generated input in pixels. Default 1600.")] int height = BmagePipelineLab.DefaultHeight,
-        [Description("Optional. Formats to encode the output in, comma-separated: jpeg, png, bmp - measured; webp, avif - browser codecs, reported with guidance rather than measured. Default 'jpeg, png'.")] string? formats = null,
+        [Description("Optional. Formats to encode the output in, comma-separated: jpeg, png, bmp, webp - measured; avif - encoded only by browsers, reported with guidance rather than measured. Default 'jpeg, png'.")] string? formats = null,
         [Description("Optional. Qualities for the lossy formats, comma-separated in [0, 1], e.g. '0.6, 0.75, 0.85'. Default '0.7, 0.8, 0.9'.")] string? qualities = null,
         [Description("Optional. A file-size budget in bytes, e.g. 102400: runs ImageExportOptions.MaxFileSize's search for jpeg and png and reports the quality and dimensions it settles on, or why it cannot be met.")] long? maxFileSize = null,
         CancellationToken cancellationToken = default)
@@ -370,9 +379,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(CompareBmageMetadataPolicies), Title = "Compare metadata export policies",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Encodes a camera photo carrying a GPS position, a serial number, the owner's name, camera, lens, ISO, a date and a copyright through the real Bit.Bmage encoder under each MetadataPolicy (Remove, StripSensitive, Preserve), decodes every file again, and reports which fields survived - so a privacy decision rests on what the exported file contains rather than on what a policy name suggests. Pass format 'jpeg' (default), 'png' or 'bmp'.")]
+    [Description("Encodes a camera photo carrying a GPS position, a serial number, the owner's name, camera, lens, ISO, a date and a copyright through the real Bit.Bmage encoder under each MetadataPolicy (Remove, StripSensitive, Preserve), decodes every file again, and reports which fields survived - so a privacy decision rests on what the exported file contains rather than on what a policy name suggests. Pass format 'jpeg' (default), 'png', 'bmp' or 'webp'.")]
     public Task<BmageMetadataComparisonDto> CompareBmageMetadataPolicies(
-        [Description("The export format: 'jpeg' (default), 'png' or 'bmp'. WebP behaves as JPEG does; it is encoded in the browser, which this server does not have.")] string format = "jpeg",
+        [Description("The export format: 'jpeg' (default), 'png', 'bmp' or 'webp'.")] string format = "jpeg",
         CancellationToken cancellationToken = default)
     {
         return BmagePipelineLab.CompareMetadataPoliciesAsync(format, cancellationToken);

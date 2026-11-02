@@ -4,6 +4,7 @@ public static class TelemetryFields
 {
     public const string Command = "bit.command";
     public const string ExitCode = "bit.exit_code";
+    public const string UsageError = "bit.usage_error";
     public const string FirstRun = "bit.first_run";
     public const string CliVersion = "bit.cli.version";
     public const string UpdatedFrom = "bit.cli.updated_from";
@@ -43,7 +44,7 @@ public static class TelemetryFields
 
     private static readonly HashSet<string> allowed =
     [
-        Command, ExitCode, FirstRun, CliVersion, UpdatedFrom, TemplateVersion, InstallMethod, Ci, Interactive, Terminal, CodingAgent,
+        Command, ExitCode, UsageError, FirstRun, CliVersion, UpdatedFrom, TemplateVersion, InstallMethod, Ci, Interactive, Terminal, CodingAgent,
         OsType, OsVersion, Architecture, RuntimeVersion, SdkVersion, Step, StepOutcome, ErrorCode, ResultCode, ProblemId,
         UserId, SessionId, Platforms, Tools, Ide, Hardware, TranslateLanguages, TranslateKeys, TranslateBatches, TranslateInputTokens,
         TranslateOutputTokens, TranslateProvider, HttpStatus

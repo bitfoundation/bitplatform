@@ -1,0 +1,103 @@
+﻿@page "/e2e/aiagentstepview"
+@using System.Text.Json
+
+<PageTitle>BitAiAgentStepView E2E</PageTitle>
+
+<h1>BitAiAgentStepView</h1>
+
+@* One step in each state, as the timeline of a plan: the line runs from each one down to the next, and the last has none. *@
+<E2ESection Id="states" Title="States">
+    <div id="asv-states">
+        <BitAiAgentStepView Id="asv-pending" Step="_pending" />
+        <BitAiAgentStepView Id="asv-running" Step="_running" />
+        <BitAiAgentStepView Id="asv-completed" Step="_completed" />
+        <BitAiAgentStepView Id="asv-blocked" Step="_blocked" />
+        <BitAiAgentStepView Id="asv-failed" Step="_failed" />
+        <BitAiAgentStepView Id="asv-skipped" Step="_skipped" />
+    </div>
+</E2ESection>
+
+@* A step the page moves through its states; the view follows the step's own Changed event, not a parameter. *@
+<E2ESection Id="live" Title="A step changing state">
+    <button id="btn-live-start" @onclick="() => _live.Start()">Start</button>
+    <button id="btn-live-block" @onclick="() => _live.Block()">Block</button>
+    <button id="btn-live-complete" @onclick="@(() => _live.Complete(summary: "Live step done"))">Complete</button>
+    <button id="btn-live-fail" @onclick="@(() => _live.Complete(BitAiAgentStepStatus.Failed, error: new BitAiError("Live step broke")))">Fail</button>
+    <button id="btn-live-reset" @onclick="ResetLive">Reset</button>
+    <div>
+        <BitAiAgentStepView Id="asv-live" Step="_live" />
+    </div>
+</E2ESection>
+
+@* The tool calls a step made: by name and state through the conversation, by id without it. *@
+<E2ESection Id="tools" Title="Tool calls">
+    <button id="btn-tools-finish" @onclick="FinishSearch">Finish the search</button>
+    <div>
+        <BitAiAgentStepView Id="asv-tools" Step="_toolStep" Conversation="_conversation" />
+    </div>
+    <div>
+        <BitAiAgentStepView Id="asv-tools-ids" Step="_toolStep" />
+    </div>
+</E2ESection>
+
+@* The pulse of a running step, which reduced motion stops unless ForceAnimation (bit-fam) asks for it. *@
+<E2ESection Id="motion" Title="Reduced motion">
+    <div>
+        <BitAiAgentStepView Id="asv-motion" Step="_running" />
+    </div>
+    <div class="bit-fam">
+        <BitAiAgentStepView Id="asv-motion-forced" Step="_running" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="vars" Title="Public variables">
+    <div id="asv-vars"
+         style="--bit-AiAgentStepView-gap: 21px;
+                --bit-AiAgentStepView-marker-size: 30px;
+                --bit-AiAgentStepView-marker-color: rgb(1, 2, 3);
+                --bit-AiAgentStepView-running-color: rgb(4, 5, 6);
+                --bit-AiAgentStepView-completed-color: rgb(7, 8, 9);
+                --bit-AiAgentStepView-completed-icon-color: rgb(10, 11, 12);
+                --bit-AiAgentStepView-failed-color: rgb(13, 14, 15);
+                --bit-AiAgentStepView-blocked-color: rgb(16, 17, 18);
+                --bit-AiAgentStepView-line-color: rgb(19, 20, 21);
+                --bit-AiAgentStepView-title-font-size: 23px;
+                --bit-AiAgentStepView-text-color: rgb(22, 23, 24);
+                --bit-AiAgentStepView-error-color: rgb(25, 26, 27);">
+        <BitAiAgentStepView Id="asv-vars-pending" Step="_pending" />
+        <BitAiAgentStepView Id="asv-vars-running" Step="_running" />
+        <BitAiAgentStepView Id="asv-vars-completed" Step="_completed" />
+        <BitAiAgentStepView Id="asv-vars-blocked" Step="_blocked" />
+        <BitAiAgentStepView Id="asv-vars-failed" Step="_failed" />
+    </div>
+    <div>
+        <BitAiAgentStepView Id="asv-styles"
+                            Step="_completed"
+                            Styles="@(new() { Title = "color: rgb(40, 41, 42)", Summary = "font-style: italic" })"
+                            Classes="@(new() { Marker = "e2e-asv-marker" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div>
+        <BitAiAgentStepView Id="asv-rtl" Dir="BitDir.Rtl" Step="_completed" />
+        <BitAiAgentStepView Id="asv-rtl-next" Dir="BitDir.Rtl" Step="_pending" />
+    </div>
+    <div dir="rtl">
+        <BitAiAgentStepView Id="asv-rtl-inherited" Step="_completed" />
+        <BitAiAgentStepView Id="asv-rtl-inherited-next" Step="_pending" />
+    </div>
+    <div>
+        <BitAiAgentStepView Id="asv-ltr" Step="_completed" />
+        <BitAiAgentStepView Id="asv-ltr-next" Step="_pending" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div>
+        <BitAiAgentStepView Id="asv-disabled" Step="_completed" Disabled="true" />
+        <BitAiAgentStepView Id="asv-enabled" Step="_completed" />
+    </div>
+</E2ESection>
+
+<E2EStatus />

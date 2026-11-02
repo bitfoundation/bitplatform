@@ -31,11 +31,15 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     private string? _claimedSessionId;
     private bool _disposed;
 
-    [Inject] private IBonboardingService BonboardingService { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    [Inject] private IBonboardingLocalizer Localizer { get; set; } = default!;
-
-    [Inject] private BonboardingHostRegistry Hosts { get; set; } = default!;
+    // Resolved rather than injected, so the host also works in an app that lazy loads Bit.Bonboarding.
+    private readonly BonboardingRuntime.Handle _runtime = new(typeof(BonboardingRoot),
+        BonboardingRuntime.Needs.Service | BonboardingRuntime.Needs.Localizer | BonboardingRuntime.Needs.Hosts);
+    private BonboardingRuntime Runtime => _runtime.Get(Services);
+    private IBonboardingService BonboardingService => Runtime.Service;
+    private IBonboardingLocalizer Localizer => Runtime.Localizer;
+    private BonboardingHostRegistry Hosts => Runtime.Hosts;
 
     /// <summary>
     /// Render this session instead of whichever one is active. Doing so also claims it, so the
@@ -133,7 +137,10 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     {
         var session = _session;
 
-        if (session is null || !session.IsActive || session.CurrentStep is null || session.CurrentOptions is null)
+        // A session waiting for a route renders nothing at all: the user has to be free to use the page to
+        // get to that route (or has deliberately left it), so nothing may dim it, block it or sit on it.
+        if (session is null || !session.IsActive || session.CurrentStep is null || session.CurrentOptions is null
+            || session.WaitReason == BonboardingWaitReason.Route)
         {
             _step = null;
             _options = null;
@@ -141,8 +148,12 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
             // Empty the live region between tours: a polite region only speaks when its text
             // changes, so a tour that starts again with the same first step would otherwise be silent.
+            // The same holds for a step the user comes back to after leaving its route.
             _announcement = null;
             _announcedKey = null;
+
+            // A popover that comes back is a dialog opening again, and takes focus again.
+            _focusedStepId = null;
             return;
         }
 
@@ -158,6 +169,7 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
             Options = _options,
             Title = Localizer.Localize(_step.Title),
             Description = Localizer.Localize(_step.Description),
+            ValidationMessage = Localizer.Localize(session.ValidationMessage),
         };
 
         var announcedKey = session.Id + "/" + _step.Id;
@@ -196,7 +208,11 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
         _ = InvokeAsync(() =>
         {
-            Snapshot();
+            // Only the measurement moved (a scroll, a resize, a moving target): the step, its options and its text
+            // are what they were, so the render context is kept - no allocation and no localizer lookups per frame -
+            // and the built-in card, which reads no geometry, is not rendered again. Positions read the session live.
+            if (e.Change != BonboardingTourSessionChange.Geometry || _renderContext is null) Snapshot();
+
             StateHasChanged();
         });
     }
@@ -232,6 +248,9 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     private Task HandleOverlayClickAsync()
         => _session is null ? Task.CompletedTask : _session.OnOverlayClickAsync().AsTask();
 
+    private Task HandleCloseAsync()
+        => _session is null ? Task.CompletedTask : _session.DismissAsync();
+
     // ---- Computed presentation --------------------------------------------
 
     /// <summary>
@@ -261,12 +280,7 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
     private string SideAttribute => Placement?.SideName ?? "center";
 
-    private string ThemeAttribute => (Theme ?? _options?.Theme) switch
-    {
-        BonboardingTheme.Dark => "dark",
-        BonboardingTheme.Light => "light",
-        _ => "system",
-    };
+    private string ThemeAttribute => BonboardingCss.Theme(Theme ?? _options?.Theme);
 
     private string DirectionAttribute => _options?.Direction == BonboardingDirection.RightToLeft ? "rtl" : "ltr";
 
@@ -403,6 +417,10 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     {
         if (_disposed) return ValueTask.CompletedTask;
         _disposed = true;
+
+        // Nothing was claimed or subscribed to when the services were never reached - resolving them failed, say.
+        // Closed from here on: nothing is resolved for a component that is gone.
+        if (_runtime.Close() is null) return ValueTask.CompletedTask;
 
         BonboardingService.SessionsChanged -= OnSessionsChanged;
         Hosts.Changed -= OnSessionsChanged;

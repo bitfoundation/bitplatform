@@ -34,7 +34,7 @@
 """)
                  Language="html" />
 
-    <DemoSection Title="Blazor Web App (.NET 8 and later)"
+    <DemoSection Title="Blazor Web App"
                  Description="A Web App mixes static SSR with interactive islands, which is the mode most likely to surprise you: the same component renders once on the server with no browser at all, then again on the client. Butil is safe in both passes (see prerendering below), but your own logic has to be. This documentation site is a Blazor Web App using InteractiveWebAssembly, so everything you are reading was prerendered first."
                  Code=@("""
 <!-- Components/App.razor -->
@@ -78,7 +78,7 @@
                  Language="razor" />
 
     <DemoSection Title="...but a default is not an answer"
-                 Description="Because prerender returns an empty value rather than an error, code that branches on the result silently takes the 'empty' branch on the server. Anything whose answer actually matters belongs in OnAfterRenderAsync, guarded by firstRender - that pass only ever runs in the browser. On .NET 9 and later RendererInfo.IsInteractive lets you say the same thing in the markup, which is what the header of this site uses to show its 'loading' hint while WebAssembly boots."
+                 Description="Because prerender returns an empty value rather than an error, code that branches on the result silently takes the 'empty' branch on the server. Anything whose answer actually matters belongs in OnAfterRenderAsync, guarded by firstRender - that pass only ever runs in the browser. RendererInfo.IsInteractive lets you say the same thing in the markup, which is what the header of this site uses to show its 'loading' hint while WebAssembly boots."
                  Code=@("""
 @inject Bit.Butil.LocalStorage localStorage
 @inject Bit.Butil.UserAgent userAgent

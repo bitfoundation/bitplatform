@@ -14,6 +14,20 @@ public class BitTimePickerStylesheetTests
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TimePicker", "BitTimePicker.scss");
 
     [TestMethod]
+    public void BitTimePickerShouldDrawTheLabelsOfItsActionButtonsInTheRoleTextColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The label of an action button sits on the callout rather than on the role's fill, so it is drawn in the role's
+        // text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white. The
+        // selected meridiem, a fill, keeps the main.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin tpc-color-resolution"), "--bit-tpc-clr-fg: var(--bit-tpc-rl-fg, var(--bit-TimePicker-color, #{$clr-pri}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tpc-abn {"), "color: var(--bit-tpc-clr-fg);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tpc-#{$role} {"), "--bit-tpc-rl-fg: #{role-text($role, $tokens)};");
+        StringAssert.DoesNotMatch(stylesheet, new System.Text.RegularExpressions.Regex(@"\.bit-tpc-abn:disabled \{\s*color: var\(--bit-tpc-clr\);"));
+    }
+
+    [TestMethod]
     public void BitTimePickerShouldLetAParameterWinOverItsPublicVariable()
     {
         var stylesheet = ReadStylesheet();
@@ -58,7 +72,7 @@ public class BitTimePickerStylesheetTests
         // A TimePicker can sit in a template of another one, which must not inherit the outer one's Color or Size: the
         // root and the callout - which inherits nothing of the root - each start the values those classes publish out
         // unset, and the classes, declared further down at the same weight, still win on the element carrying them.
-        foreach (var property in new[] { "--bit-tpc-rl-clr", "--bit-tpc-rl-txt", "--bit-tpc-rl-hover", "--bit-tpc-rl-active", "--bit-tpc-rl-focus",
+        foreach (var property in new[] { "--bit-tpc-rl-clr", "--bit-tpc-rl-fg", "--bit-tpc-rl-txt", "--bit-tpc-rl-hover", "--bit-tpc-rl-active", "--bit-tpc-rl-focus",
                                          "--bit-tpc-inp-h", "--bit-tpc-inp-fs", "--bit-tpc-lbl-fs", "--bit-tpc-des-fs", "--bit-tpc-fld-ico-fs",
                                          "--bit-tpc-cell-size", "--bit-tpc-cell-fs", "--bit-tpc-ico-fs", "--bit-tpc-sep-fs", "--bit-tpc-ampm-fs",
                                          "--bit-tpc-act-fs" })

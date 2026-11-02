@@ -85,8 +85,6 @@ public sealed class ExecutionTests
         AssertSequence.Equal(["Pricey"], await query.Select(p => p.Name).ToListAsync(Ct));
     }
 
-#if NET9_0_OR_GREATER
-    // EF Core translates SUM over a decimal from EF Core 9 on; before that the stock provider refuses it too.
     [TestMethod]
     public async Task DecimalSum_RunsThroughEfSum()
     {
@@ -106,7 +104,6 @@ public sealed class ExecutionTests
         Assert.Contains("ef_sum", query.ToQueryString(), StringComparison.Ordinal);
         Assert.AreEqual(3.30m, await query.SingleAsync(Ct));
     }
-#endif
 
     [TestMethod]
     public async Task WithoutEfFunctions_DecimalQueries_Fail()
@@ -140,6 +137,36 @@ public sealed class ExecutionTests
 
         await using var second = ContextFactory.Create(transport);
         Assert.AreEqual(1, await second.Products.CountAsync(Ct));
+    }
+
+    /// <summary>
+    /// An empty <c>byte[]</c> - a row version the server has not assigned yet, in a NOT NULL column - is an
+    /// empty blob, through the wire format as through the native engine. The browser's half is
+    /// WorkerTests.Value_round_tripping_keeps_an_empty_blob_a_blob.
+    /// </summary>
+    [TestMethod]
+    public async Task AnEmptyByteArray_IsStoredAsAnEmptyBlob()
+    {
+        await using var transport = new WireLoopbackTransport();
+        await using var connection = new BsqliteConnection(transport, "blob.db");
+        await connection.OpenAsync(Ct);
+
+        await using (var create = connection.CreateCommand())
+        {
+            create.CommandText = "CREATE TABLE blobs (b BLOB NOT NULL)";
+            await create.ExecuteNonQueryAsync(Ct);
+        }
+
+        await using (var insert = connection.CreateCommand())
+        {
+            insert.CommandText = "INSERT INTO blobs (b) VALUES (@b)";
+            insert.Parameters.AddWithValue("@b", Array.Empty<byte>());
+            await insert.ExecuteNonQueryAsync(Ct);
+        }
+
+        await using var select = connection.CreateCommand();
+        select.CommandText = "SELECT typeof(b) || ':' || length(b) FROM blobs";
+        Assert.AreEqual("blob:0", await select.ExecuteScalarAsync(Ct));
     }
 
     [TestMethod]

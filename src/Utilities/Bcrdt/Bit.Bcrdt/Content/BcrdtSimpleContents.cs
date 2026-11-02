@@ -35,6 +35,9 @@ public sealed class BcrdtContentDeleted(int length) : IBcrdtContent
     }
 
     /// <inheritdoc/>
+    public bool CanMergeWith(IBcrdtContent right) => right is BcrdtContentDeleted;
+
+    /// <inheritdoc/>
     public bool TryMergeWith(IBcrdtContent right)
     {
         if (right is not BcrdtContentDeleted other) return false;
@@ -91,6 +94,9 @@ public sealed class BcrdtContentBinary(byte[] data) : IBcrdtContent
 
     /// <inheritdoc/>
     public IBcrdtContent Splice(int offset) => throw new InvalidOperationException("Binary content is indivisible.");
+
+    /// <inheritdoc/>
+    public bool CanMergeWith(IBcrdtContent right) => false;
 
     /// <inheritdoc/>
     public bool TryMergeWith(IBcrdtContent right) => false;
@@ -161,6 +167,9 @@ public sealed class BcrdtContentEmbed : IBcrdtContent
     public IBcrdtContent Splice(int offset) => throw new InvalidOperationException("Embedded content is indivisible.");
 
     /// <inheritdoc/>
+    public bool CanMergeWith(IBcrdtContent right) => false;
+
+    /// <inheritdoc/>
     public bool TryMergeWith(IBcrdtContent right) => false;
 
     /// <inheritdoc/>
@@ -224,6 +233,9 @@ public sealed class BcrdtContentFormat(string key, object? value) : IBcrdtConten
 
     /// <inheritdoc/>
     public IBcrdtContent Splice(int offset) => throw new InvalidOperationException("A format marker is indivisible.");
+
+    /// <inheritdoc/>
+    public bool CanMergeWith(IBcrdtContent right) => false;
 
     /// <inheritdoc/>
     public bool TryMergeWith(IBcrdtContent right) => false;

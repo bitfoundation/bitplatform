@@ -16,8 +16,14 @@ new ImageExportOptions { Metadata = MetadataPolicy.Preserve }
 | Policy | Keeps | Removes |
 | --- | --- | --- |
 | `Remove` | nothing | EXIF, XMP, ICC profile, thumbnail |
-| `StripSensitive` | camera, lens, exposure, dates, copyright, description, ICC profile | GPS, serial numbers, owner name, user comments, maker notes, unique IDs, embedded thumbnail, XMP |
+| `StripSensitive` | camera, lens, exposure, dates, copyright, description, ICC profile | GPS, serial numbers, owner and artist names, user comments, maker notes, unique IDs, embedded thumbnail, XMP |
 | `Preserve` | everything the target format can carry | the embedded thumbnail, which would be stale |
+
+Names and comments go only from the fields made for them: the artist, the owner's name, the user comment, and the author
+and comment that Windows Explorer writes into fields of its own. Every sensitive field goes from whichever EXIF directory
+a file put it in, not only the one the standard names. Every other text field stays as it is. The copyright notice stays
+because it is there to be published, and so does the image description, even when it names a person or a place: read it
+yourself, or use `Remove`, if a description may identify someone.
 
 `StripSensitive` drops XMP entirely. XMP can carry location and device identifiers of its own, and there is no reliable
 way to filter it field by field, so it is safer to drop it than to pass through something unexamined.
@@ -119,7 +125,7 @@ invisible until someone uploads an unusual photo.
 | JPEG | yes | yes | yes |
 | PNG | yes (`eXIf`) | yes (`iCCP`) | yes (`iTXt`) |
 | WebP | yes | yes | yes |
-| AVIF | not written by this library | no | no |
+| AVIF | read, not written | read, not written | read, not written |
 | BMP, GIF | no | no | no |
 
 Metadata is attached after encoding, by rewriting the container. The browser's encoders discard metadata, so it is

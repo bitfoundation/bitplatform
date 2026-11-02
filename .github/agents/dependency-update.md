@@ -1,6 +1,6 @@
 ---
 name: dependency-update
-description: Sweep every version-pinned surface in the bitplatform repo (NuGet, npm, GitHub Actions, Azure DevOps tasks, devcontainers, dotnet-tools, global.json, container image tags), update what should move, leave what is deliberately held, and report each change with its release notes and any breaking behaviour. Use when asked to "update dependencies/packages/versions", refresh CI, or before a release.
+description: Sweep every version-pinned surface in the bitplatform repo (NuGet, npm, GitHub Actions, devcontainers, dotnet-tools, global.json, container image tags), update what should move, leave what is deliberately held, and report each change with its release notes and any breaking behaviour. Use when asked to "update dependencies/packages/versions", refresh CI, or before a release.
 ---
 
 # Dependency update sweep
@@ -38,10 +38,9 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 1. NuGet (`*.csproj`, `Directory.Packages.props`)
 2. npm (`package.json`, then `npm install` to refresh `package-lock.json`)
 3. GitHub Actions (`.github/workflows/`, `.github/actions/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`)
-4. Azure DevOps tasks (`src/Templates/Boilerplate/Bit.Boilerplate/.azure-devops/workflows/`)
-5. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
-6. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
-7. Container image tags in the Aspire AppHost
+4. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
+5. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
+6. Container image tags in the Aspire AppHost
 
 ## The hold-back rules
 
@@ -65,25 +64,24 @@ for the oldest supported SDK:
 | `System.Reflection.Metadata` | 1.6.0 | `Bit.BlazorUI.Build` |
 
 **TFM-conditioned floors — only the highest band moves.** A multi-targeted library pins the `.0` of
-each band it supports, because the pin *is* the consumer's minimum runtime. Raising 8.0.0 to 8.0.x
+each band it supports, because the pin *is* the consumer's minimum runtime. Raising 10.0.0 to 10.0.x
 raises that minimum for no gain.
 
 ```xml
-<PackageReference Include="Microsoft.JSInterop" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
+<PackageReference Include="Microsoft.JSInterop" Version="10.0.0" Condition="'$(TargetFramework)' == 'net10.0'" />
 ```
 
-Applies to `Bit.Besql` (JSInterop, Components.WebAssembly, EF Core Sqlite), `Bit.BlazorUI` /
-`.Assets` / `.Extras` / `.Legacy`, `Bit.Bswup` and `Bit.Butil` (Components.Web), and the
-`BlazorEmpty` template.
+Applies to `Bit.BlazorUI` / `.Assets` / `.Extras` / `.Legacy` / `.AI`, `Bit.Bswup` and `Bit.Butil`
+(Components.Web), and the `BlazorEmpty` template.
 
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —
-`Bit.BlazorUI.Tests` on Components.WebView `8.0.x` / `9.0.x` / `10.0.x` — is not a floor: nothing
+`Bit.BlazorUI.Tests` on Components.WebView `10.0.x` — is not a floor: nothing
 consumes a test project, so every band takes the newest patch of its own band. Likewise a lone
 `10.0.0` sitting among `10.0.11` siblings in `Directory.Packages.props` is staleness, not intent.
 
-**Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
+**Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-04`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-16`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -108,13 +106,28 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**A MAUI bump needs one MAUI build.** MAUI's resizetizer bundles an `Svg.Skia`, and from 10.0.101 to
-10.0.110 that `Svg.Skia` called a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG
-with a `<filter>` failed the build with `MAUIR0001` /
-`MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). The app icons of the Boilerplate
-and the BlazorUI demo have one, so before moving MAUI, build a MAUI app with the Boilerplate's
-`appicon.svg` as its icon, for any target.
+**MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 bundle an `Svg.Skia` that
+calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
+the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 fixed it for .NET 10, which a .NET 10
+Boilerplate project uses. For .NET 11, MAUI can't stay behind: a MAUI built for an
+older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
+follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet), which
+can stay on the previous release candidate when a new one ships, together with Android and iOS; then MAUI stays
+too. The app icons of the Boilerplate and the BlazorUI demo carry no drop shadow (their
+`<filter>`) until a .NET 11 MAUI builds an app with the Boilerplate's `appicon.svg` as its icon.
+
+**bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
+the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a
+version in each of the two framework groups at the end of the file: the 11.x one, and a 10.x one that moves within
+10.x. So do the `Microsoft.Extensions.*` packages, although their 11.x builds have `net10.0` assets: they bring
+`Microsoft.Extensions.Logging.Abstractions` 11 into the .NET 10 server projects, whose targets file then overrides
+the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
+on import order, and the build fails with CS0757. Every other package takes one version for both. The few literals that differ per framework are switch
+symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
+runner image), so they move together with the files they replace. A template line written with the .NET 10 value
+of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
+.NET 11 one.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
@@ -122,12 +135,24 @@ graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
 `Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
 the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
 `Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
-`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
+`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0. So do the `Xamarin.AndroidX.Camera.*`
+packages of `Bit.BbScanner.Maui`: 1.6.x's `Camera.View` pulls Fragment 1.9.0, so they stay on the newest 1.5.x.
 
-**Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
-`ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
-10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
-raises the limit to 25.0.99; move the runners together with the .NET 11 move.
+**EF Core in the Boilerplate follows its PostgreSQL provider.** A preview of
+`Npgsql.EntityFrameworkCore.PostgreSQL` asks for one exact EF Core version, and a provider built for another
+one fails at runtime ("Method not found"). So the Boilerplate's EF Core stays on the version the newest Npgsql
+names, together with every package that requires it (`Microsoft.EntityFrameworkCore.*`,
+`Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`,
+`Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`) and its `dnx dotnet-ef` calls, while the
+rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was missed. A shipped library's EF Core
+floor in the band the Boilerplate uses can't go above that version either: one that raises the offline database's
+Sqlite above it fails the project's restore with NU1605.
+
+**Linux runners are on `ubuntu-26.04`** in the GitHub workflows. It
+defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
+RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). .NET for Android 10 accepts up
+to 21, so the jobs that build a .NET 10 Boilerplate project (the Todo CD's Linux jobs) and a .NET 10 project's
+runner image in `template.json` stay on `ubuntu-24.04`.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
@@ -174,7 +199,8 @@ unless the split is a TFM floor.
 
 ### npm
 
-Only four distinct dev dependencies exist: `typescript`, `sass`, `esbuild`, `vitest`. Read latest
+The direct dependencies are `typescript`, `sass`, `esbuild`, `vitest`, `happy-dom`, `@tailwindcss/cli` and
+`@web-alchemy/fonttools`; list them from every `package.json` rather than trusting this line. Read latest
 with `npm view <pkg> version` and `npm view <pkg> dist-tags --json`. After editing a `package.json`,
 run `npm install` in that directory so `package-lock.json` matches — a lock file left behind is the
 most common miss.
@@ -211,6 +237,11 @@ object instead of the commit does not work.
 Where the pin's comment is a moving major (`# v2`), rewrite it to the concrete release the SHA
 belongs to (`# v2.0.0`), so the comment records a version rather than a branch.
 
+**bit platform's own actions in the Boilerplate stay on a tag.** The template's workflows use
+`bitfoundation/bitplatform/.github/actions/boilerplate/<action>@v-<the in-development version>`, with no SHA and
+no comment. The release's commit only exists once its PR is squash merged, so a SHA pin would always be a release
+behind; the version bump moves the tag with every other version string instead. Leave them as they are.
+
 Runner images (`runs-on`) are part of this: no `ubuntu-latest`, pin the concrete image.
 
 **Xcode follows the iOS workload.** The iOS jobs pin a runner image and `setup-xcode`'s `xcode-version`, and both
@@ -219,18 +250,6 @@ must give the Xcode that .NET for iOS asks for: the `RecommendedXcodeVersion` in
 (`Microsoft.NET.Workloads.<band>` on NuGet). A workload set can raise it without any SDK bump, and then every iOS
 build fails with "This version of .NET for iOS requires Xcode ...". When the `macOS-*` image doesn't have that Xcode,
 use GitHub's image that does (`xcode-27` for Xcode 27).
-
-### Azure DevOps
-
-Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major is the highest
-`<Task>V<n>` folder in `gh api repos/microsoft/azure-pipelines-tasks/contents/Tasks --jq '.[].name'`.
-A task can change name across majors while keeping its id: `NodeTool@1` resolves to `UseNodeV1`.
-
-`AzureRmWebAppDeployment@5` passes `DeploymentTypeLinux: 'zipDeploy'` on purpose. For `webAppLinux` @5
-defaults to `oneDeploy` with `CleanDeploymentFlag: true`, which deletes every file the package does not
-carry, the template's `App_Data` (SQLite database, local file storage, Hangfire jobs) included.
-`zipDeploy` keeps them, as @4 did. Keep that input on any later major. The GitHub CD's
-`azure/webapps-deploy` steps pass `clean: false` for the same reason: that action always uses OneDeploy.
 
 ### devcontainers
 
@@ -253,14 +272,16 @@ There are no `.config/dotnet-tools.json` manifests any more: every tool is run w
 <package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
 .*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
 requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
-EF Core package version. Likewise the `npx playwright@<version>` command in the Boilerplate's two
+EF Core package version of the project it runs on: the .NET 11 one in the template's files, the .NET 10 one in
+`template.json`'s `efToolVersion` and in the Todo CD. Likewise the `npx playwright@<version>` command in the Boilerplate's two
 `.runsettings` (`src/Tests` and `src/Internal/Boilerplate.Tests.E2E`) must equal
 `Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
 every test that runs on it fails at connect.
 
-`src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template
-`global.json` files are `10.0.100` + `latestFeature` deliberately — they must accept any 10.0.x on a
-consumer's machine. Do not "update" them.
+`src/global.json` is `rollForward: disable` and tracks the newest SDK. While .NET 11 is a release
+candidate, the two template `global.json` files pin the same RC SDK, also `rollForward: disable`, and
+move with it. Once .NET 11 ships they go back to `11.0.100` + `latestFeature`, so they accept any
+11.0.x on a consumer's machine. A .NET 10 project gets `10.0.100` + `latestFeature` from `template.json`.
 
 ### Container images
 
@@ -305,8 +326,8 @@ expired.
 **4. Missed / drifted** — pins that are behind for no discoverable reason, and the same package at
 different versions across projects. These are the ones worth a maintainer's attention.
 
-**5. Not verified** — anything only a real build or CI run can prove. Deploy-path action bumps
-(`azure/webapps-deploy`), devcontainer feature majors, and analyzer bumps are in this category.
+**5. Not verified** — anything only a real build or CI run can prove. Deploy-path action bumps,
+devcontainer feature majors, and analyzer bumps are in this category.
 
 ## After editing
 

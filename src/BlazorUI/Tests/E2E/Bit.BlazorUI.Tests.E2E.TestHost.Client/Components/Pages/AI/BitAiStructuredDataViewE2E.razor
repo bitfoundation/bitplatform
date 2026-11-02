@@ -1,0 +1,60 @@
+﻿@page "/e2e/aistructureddataview"
+@using System.Text.Json
+
+<PageTitle>BitAiStructuredDataView E2E</PageTitle>
+
+<h1>BitAiStructuredDataView</h1>
+
+<E2ESection Id="object" Title="An object">
+    <BitAiStructuredDataView Id="sdv-object" Part="_flightPart" />
+</E2ESection>
+
+<E2ESection Id="shapes" Title="Other shapes">
+    <BitAiStructuredDataView Id="sdv-rows" Part="_ordersPart" />
+    <BitAiStructuredDataView Id="sdv-scalars" Part="_tagsPart" />
+    <BitAiStructuredDataView Id="sdv-mixed" Part="_mixedPart" />
+    <BitAiStructuredDataView Id="sdv-string" Part="_stringPart" />
+</E2ESection>
+
+<E2ESection Id="stream" Title="Streamed through a session">
+    <button id="btn-sdv-stream" @onclick="StreamAsync">Compare the options</button>
+    <p>State: <span id="sdv-stream-state">@(_streamSession.IsGenerating ? "generating" : "idle")</span></p>
+    <p>Answers: <span id="sdv-stream-answers">@Answers(_streamSession)</span></p>
+    @if (Answer(_streamSession) is { } answer)
+    {
+        <p id="sdv-stream-text">@answer.GetText()</p>
+        @foreach (var part in answer.PartsOf<BitAiStructuredDataPart>())
+        {
+            <BitAiStructuredDataView Id="sdv-stream" Part="part" Message="answer" />
+        }
+    }
+</E2ESection>
+
+<E2ESection Id="partial" Title="Filled in by hand">
+    <button id="btn-sdv-append" @onclick="AppendPartial">Append</button>
+    <span id="sdv-partial-step">@_partialStep</span>
+    <BitAiStructuredDataView Id="sdv-partial" Part="_partialPart" />
+</E2ESection>
+
+<E2ESection Id="schema" Title="A registered schema">
+    <button id="btn-sdv-form" @onclick="FormAsync">Book a table</button>
+    <p>Answers: <span id="sdv-form-answers">@Answers(_formSession)</span></p>
+    @if (Answer(_formSession) is { } formAnswer)
+    {
+        @foreach (var part in formAnswer.PartsOf<BitAiStructuredDataPart>())
+        {
+            <BitAiStructuredDataView Id="sdv-form" Part="part" Message="formAnswer" />
+        }
+    }
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiStructuredDataView Id="sdv-rtl" Dir="BitDir.Rtl" Part="_rtlPart" />
+</E2ESection>
+
+<E2ESection Id="variables" Title="Public variables">
+    <BitAiStructuredDataView Id="sdv-vars" Part="_varsPart"
+                             Style="--bit-AiStructuredDataView-gap: 13px; --bit-AiStructuredDataView-padding: 11px; --bit-AiStructuredDataView-background: rgb(1, 2, 3); --bit-AiStructuredDataView-border-color: rgb(4, 5, 6); --bit-AiStructuredDataView-radius: 7px; --bit-AiStructuredDataView-label-color: rgb(8, 9, 10); --bit-AiStructuredDataView-label-font-size: 19px; --bit-AiStructuredDataView-label-font-weight: 700; --bit-AiStructuredDataView-value-color: rgb(11, 12, 13); --bit-AiStructuredDataView-empty-color: rgb(14, 15, 16)" />
+</E2ESection>
+
+<E2EStatus />

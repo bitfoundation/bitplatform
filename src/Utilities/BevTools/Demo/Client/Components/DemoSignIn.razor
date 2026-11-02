@@ -1,0 +1,16 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@inject DemoAuthenticationStateProvider Authentication
+
+<div class="bb-try">
+    <AuthorizeView>
+        <Authorized>
+            <span>Signed in as <strong>@context.User.Identity?.Name</strong></span>
+            <button type="button" class="btn btn-outline" @onclick="Authentication.SignOut">Sign out</button>
+        </Authorized>
+        <NotAuthorized>
+            <span class="bb-muted">Not signed in.</span>
+            <button type="button" class="btn btn-secondary" @onclick="Authentication.SignIn">Sign in as Ada</button>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>

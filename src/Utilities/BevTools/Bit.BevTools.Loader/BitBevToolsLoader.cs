@@ -60,14 +60,12 @@ public static class BitBevToolsLoader
             context.Deferred(entryPoint, reason);
         }
 
-#if NET10_0_OR_GREATER
         // Both are idempotent, and both are read by a renderer when it is created, which is before any attach.
         if (options.UseFrameworkInstrumentation)
         {
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
         }
-#endif
 
         BevToolsActivatorHook.Register(services);
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, BevToolsHttpHookFilter>());

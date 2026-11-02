@@ -14,6 +14,7 @@ public class PersistenceTests : BlazeDbTest
     public async Task A_todo_added_on_opfs_survives_a_reload()
     {
         var page = await OpenAsync("/todos");
+        await RequireOpfsAsync(page);
 
         Assert.AreEqual("Opfs", await WaitForDatabaseAsync(page), "A fresh context should win the Web Lock and open the database on OPFS.");
 
@@ -43,6 +44,7 @@ public class PersistenceTests : BlazeDbTest
 
         var first = await context.NewPageAsync();
         await GotoAsync(first, "/");
+        await RequireOpfsAsync(first);
         Assert.AreEqual("Opfs", await WaitForDatabaseAsync(first));
 
         var second = await context.NewPageAsync();
@@ -62,6 +64,7 @@ public class PersistenceTests : BlazeDbTest
 
         var first = await context.NewPageAsync();
         await GotoAsync(first, "/");
+        await RequireOpfsAsync(first);
         Assert.AreEqual("Opfs", await WaitForDatabaseAsync(first));
 
         await first.CloseAsync();

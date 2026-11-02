@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-public class BitChoiceGroupItem<TValue>
+public class BitChoiceGroupItem<TValue> : IBitChoiceGroupItem
 {
     /// <summary>
     /// AriaLabel attribute for the BitChoiceGroup item.
@@ -115,4 +115,31 @@ public class BitChoiceGroupItem<TValue>
     /// Determines if the item is selected. This property's value is assigned by the component.
     /// </summary>
     public bool IsSelected { get; internal set; }
+
+
+
+    private BitItemValueType.ValueRead<TValue>? _valueRead;
+
+    int IBitChoiceGroupItem.Index
+    {
+        get => Index;
+        set => Index = value;
+    }
+
+    bool IBitChoiceGroupItem.IsSelected
+    {
+        get => IsSelected;
+        set => IsSelected = value;
+    }
+
+    // A RenderFragment<T> takes nothing but a T, so the template of an item of a type derived from this one (the TItem of
+    // its ChoiceGroup) is handed over as one that takes that type, which is this very item when it renders.
+    RenderFragment<TItem>? IBitChoiceGroupItem.GetTemplate<TItem>()
+    {
+        if (Template is not { } template) return null;
+
+        return template as RenderFragment<TItem> ?? (item => template((BitChoiceGroupItem<TValue>)(object)item!));
+    }
+
+    T? IBitChoiceGroupItem.GetValue<T>() where T : default => BitItemValueType.Read<TValue, T>(Value, ref _valueRead);
 }

@@ -40,15 +40,21 @@ public sealed class BormValidationContext
     /// </summary>
     public CancellationToken CancellationToken { get; init; }
 
+    /// <summary>
+    /// The language the form reads its own text in - its <see cref="BormState.Language"/> - or null to follow the
+    /// current UI culture. <see cref="Message"/> answers in it when the registered provider is an
+    /// <see cref="IBormLocalizedMessageProvider"/>.
+    /// </summary>
+    public string? Language { get; init; }
+
     /// <summary>The field's label, falling back to its path — for messages that need to name the field.</summary>
     public string DisplayName => Field?.Label ?? FieldPath;
 
     /// <summary>
     /// Resolves the text of a built-in message (see <see cref="BormMessageKeys"/>) through the
-    /// <see cref="IBormMessageProvider"/> registered in <see cref="Services"/>, falling back to
-    /// the English defaults when none is registered.
+    /// <see cref="IBormMessageProvider"/> registered in <see cref="Services"/> - in <see cref="Language"/> when it
+    /// is set and the provider can answer in it - falling back to the English defaults when none is registered.
     /// </summary>
     public string Message(string key, params object?[] args)
-        => (Services?.GetService(typeof(IBormMessageProvider)) as IBormMessageProvider
-            ?? BormDefaultMessageProvider.Instance).Get(key, args);
+        => BormMessageText.Get(BormMessageText.Provider(Services), Language, key, args);
 }

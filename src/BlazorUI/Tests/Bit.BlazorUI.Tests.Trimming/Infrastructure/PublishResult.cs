@@ -126,7 +126,7 @@ public sealed class PublishResult(string directory, int exitCode, string output)
     public AssemblyMetadata ReadTrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Directory, "trimmed", package + ".dll"));
 
     /// <summary>A package's assembly as its Release build wrote it - the one a publish of the source tree trims.</summary>
-    public static AssemblyMetadata ReadUntrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Publisher.Root, package, "bin", "Release", "net10.0", package + ".dll"));
+    public static AssemblyMetadata ReadUntrimmedAssembly(string package) => AssemblyMetadata.Read(Path.Combine(Publisher.Root, package, "bin", "Release", "net11.0", package + ".dll"));
 
     /// <summary>
     /// The JavaScript initializers a Blazor Web App's publish lists for Blazor to import as it starts (its modules manifest),
@@ -187,6 +187,8 @@ public sealed class PublishResult(string directory, int exitCode, string output)
         {
             var served = packages is not null && url.StartsWith(packages, StringComparison.Ordinal) ? url[(clientBasePath.Length + 1)..] : url;
             var path = Path.Combine(WebRoot, served.Replace('/', Path.DirectorySeparatorChar));
+            // A .NET 11 Blazor Web App lists blazor.webassembly.js in its service worker manifest but never publishes it.
+            if (File.Exists(path) is false && Path.GetFileName(url).StartsWith("blazor.webassembly.js", StringComparison.Ordinal)) continue;
             if (File.Exists(path) is false) wrong.Add($"{url} is listed but not published");
             else if ($"sha256-{Sha256(path)}" != hash) wrong.Add($"{url} is listed under another file's hash");
         }

@@ -10,7 +10,7 @@ internal static class BrowserModules
 }
 
 /// <summary>
-/// The browser half of the storage backends, driven in Chromium through the very modules the package
+/// The browser half of the storage backends, driven in the browser through the very modules the package
 /// ships - the [JSImport] bindings call exactly these exports. The demo puts the OPFS backend through a
 /// real database (see <see cref="PersistenceTests"/>); these cover what no demo page reaches on its own:
 /// IndexedDB's read-modify-write appends and its no-create open, OPFS appends and the Web Lock election,
@@ -45,7 +45,11 @@ public class BrowserModuleTests : BlazeDbTest
               const reopened = text(await idb.readFile(existing, 'manifest'));
               idb.closeDatabase(existing);
 
-              return [String(missing), manifest, wal, deleted, reopened, String(await idb.isOpfsAvailable())];
+              // isOpfsAvailable has to say exactly what the browser offers: a directory and a way to write to it.
+              const opfs = await navigator.storage.getDirectory().then(
+                () => typeof FileSystemFileHandle.prototype.createWritable === 'function', () => false);
+
+              return [String(missing), manifest, wal, deleted, reopened, String(await idb.isOpfsAvailable() === opfs)];
             }
             """);
 
@@ -56,6 +60,7 @@ public class BrowserModuleTests : BlazeDbTest
     public async Task Opfs_writes_appends_reads_and_deletes_files()
     {
         var page = await OpenAsync("/");
+        await RequireOpfsAsync(page);
 
         var result = await page.EvaluateAsync<string[]>(
             """

@@ -3,14 +3,20 @@
 using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
+//#if (offlineDb == true)
+using Bit.Bsqlite.Storage.Opfs;
+using Bit.Bsqlite.Storage.InMemory;
+using Bit.Bsqlite.Storage.IndexedDb;
+using Bit.Bsqlite.EntityFrameworkCore;
+//#endif
 using Bit.BevTools;
+//#if (module == "Admin")
+using Bit.Bortable;
+//#endif
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-//#if (signalR == true)
-using Microsoft.AspNetCore.Http.Connections;
-//#endif
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -36,6 +42,9 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
             services.AddScoped<SignInModalService>();
             services.AddScoped<ImageEditorService>();
+            //#if (module == "Admin")
+            services.AddBitBortableServices();
+            //#endif
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
             services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
             services.AddScoped<FileSaveService>();
@@ -120,37 +129,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
 
             //#if (offlineDb == true)
-            services.AddBesqlDbContextFactory<AppOfflineDbContext>((sp, optionsBuilder) =>
-            {
-                var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
-                var dirPath = isRunningInsideDocker ? "/container_volume"
-                                                    : AppPlatform.IsBlazorHybrid ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AC87AA5B-4B37-4E52-8468-2D5DF24AF256")
-                                                    : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows) OR Blazor WASM
-
-                dirPath = Path.Combine(dirPath, "App_Data");
-
-                Directory.CreateDirectory(dirPath);
-
-                var dbPath = Path.Combine(dirPath, "AppOffline.db");
-
-                optionsBuilder.UseSqlite($"Data Source={dbPath}", dbOptions =>
-                {
-
-                });
-
-                optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
-                        .EnableDetailedErrors(AppEnvironment.IsDevelopment());
-
-            }
-            , dbContextInitializer: async (_, dbContext) =>
-            {
-                if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dnx dotnet-ef@10.0.13 -- dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
-
-                await Task.Run(async () => await dbContext.Database.MigrateAsync());
-            }
-            , lifetime: ServiceLifetime.Scoped);
-            services.AddScoped<SyncService>();
+            services.AddOfflineDb();
             //#endif
 
             //#if (appInsights == true)
@@ -165,49 +144,67 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             //#if (signalR == true)
             services.AddScoped<IRetryPolicy, SignalRInfiniteRetryPolicy>();
-            services.AddSessioned(sp =>
-            {
-                var authManager = sp.GetRequiredService<AuthManager>();
-                var authTokenProvider = sp.GetRequiredService<IAuthTokenProvider>();
-                var absoluteServerAddressProvider = sp.GetRequiredService<AbsoluteServerAddressProvider>();
-
-                // The X-Origin is already has been set while Client.Web, Client.Maui, Client.Windows and Server.Web
-                var xOrigin = sp.GetRequiredService<HttpClient>().DefaultRequestHeaders.Single(h => h.Key is "X-Origin").Value.Single();
-
-                var hubConnection = new HubConnectionBuilder()
-                    .WithStatefulReconnect()
-                    .AddJsonProtocol(options =>
-                    {
-                        foreach (var chain in sp.GetRequiredService<JsonSerializerOptions>().TypeInfoResolverChain)
-                        {
-                            options.PayloadSerializerOptions.TypeInfoResolverChain.Add(chain);
-                        }
-                    })
-                    .WithAutomaticReconnect(sp.GetRequiredService<IRetryPolicy>())
-                    .WithUrl(new Uri(absoluteServerAddressProvider.GetAddress(), "app-hub?origin=" + Uri.EscapeDataString(xOrigin)), options =>
-                    {
-                        //#if (redis == true)
-                        options.SkipNegotiation = true; // No negotiate request, so no sticky sessions behind the Redis backplane.
-                        //#else
-                        options.SkipNegotiation = false; // Required for Azure SignalR.
-                        //#endif
-                        options.Transports = HttpTransportType.WebSockets;
-                        // Avoid enabling long polling or Server-Sent Events. Focus on resolving the issue with WebSockets instead.
-                        // WebSockets should be enabled on services like IIS or Cloudflare CDN, offering significantly better performance.
-                        options.HttpMessageHandlerFactory = httpClientHandler => sp.GetRequiredService<HttpMessageHandlersChainFactory>().Invoke(httpClientHandler);
-                        options.AccessTokenProvider = async () =>
-                        {
-                            return await authManager.GetFreshAccessToken(requestedBy: nameof(HubConnection),
-                                ignoreTransientException: true); // ignoreTransientException: If the client is disconnected and the access token is expired, this code will execute repeatedly every few seconds, causing an annoying error message to be displayed to the user.
-                        };
-                    })
-                    .Build();
-                return hubConnection;
-            });
+            services.AddSessioned<AppHubConnection>();
             //#endif
 
             return services;
         }
+
+        //#if (offlineDb == true)
+        private void AddOfflineDb()
+        {
+            if (AppPlatform.IsBlazorHybridOrBrowser)
+            {
+                services.AddBitBsqliteServices(sqlite => sqlite
+                    .AddStorageProvider<BsqliteOpfsStorageProvider>()
+                    .AddStorageProvider<BsqliteIndexedDbStorageProvider>()
+                    .AddStorageProvider<BsqliteInMemoryStorageProvider>()
+                    .UseStorage(storage => storage
+                        .Prefer(BsqliteOpfsStorageProvider.ProviderName)
+                        .Fallback(BsqliteIndexedDbStorageProvider.ProviderName)
+                        .Fallback(BsqliteInMemoryStorageProvider.ProviderName)
+                        .AllowNonPersistentFallback())
+                    .BeforeFirstOpen(async (sp, _) =>
+                    {
+                        if (AppPlatform.IsBrowser)
+                        {
+                            await sp.GetRequiredService<LazyAssemblyLoader>().LoadAssembliesAsync(["System.Private.Xml.wasm"]);
+                        }
+                    })
+                    .AddDatabase("AppOffline.db"));
+
+                services.AddBitBsqliteDbContext<AppOfflineDbContext>(options =>
+                {
+                    options.Schema = BsqliteSchemaStrategy.None;
+                    options.Configure = (_, optionsBuilder) => optionsBuilder
+                        .EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+                        .EnableDetailedErrors(AppEnvironment.IsDevelopment());
+                    options.OnFirstUse = (dbContext, cancellationToken) => dbContext.InitializeAsync(cancellationToken);
+                });
+            }
+            else
+            {
+                services.AddDbContextFactory<AppOfflineDbContext, AppOfflineDbContextFactory>(optionsBuilder =>
+                {
+                    var isRunningInsideDocker = Directory.Exists("/container_volume"); // Blazor Server - Docker (It's supposed to be a mounted volume named /container_volume)
+                    var dirPath = isRunningInsideDocker ? "/container_volume"
+                                                        : Directory.GetCurrentDirectory(); // Blazor server (Non docker Linux, macOS or Windows)
+
+                    dirPath = Path.Combine(dirPath, "App_Data");
+
+                    Directory.CreateDirectory(dirPath);
+
+                    var dbPath = Path.Combine(dirPath, "AppOffline.db");
+
+                    optionsBuilder.UseSqlite($"Data Source={dbPath}");
+
+                    optionsBuilder.EnableSensitiveDataLogging(AppEnvironment.IsDevelopment())
+                            .EnableDetailedErrors(AppEnvironment.IsDevelopment());
+                }, ServiceLifetime.Scoped);
+            }
+            services.AddScoped<SyncService>();
+        }
+        //#endif
 
         /// <summary>
         /// Blazor Server creates one scope for each connected user's client app.

@@ -1,0 +1,375 @@
+﻿@page "/components/ai/promptinput"
+@implements IAsyncDisposable
+
+<PageOutlet Url="components/ai/promptinput"
+            Title="AiPromptInput"
+            Description="BitAiPromptInput is the composer of an AI chat: a growing text box, files picked, dragged or pasted in, slash commands and mentions, dictation, and a send button that turns into a stop button while a turn is in flight." />
+
+<DemoPage Name="AiPromptInput"
+          SecondaryNames="@(["Composer", "ChatInput"])"
+          Description="BitAiPromptInput is the composer of an AI chat: a text box that grows with what is typed, where Enter sends and Shift+Enter starts a new line; files picked, dragged or pasted in, all checked against one type filter, one size limit and one count; slash commands and mentions (typed after a / or an at sign) offered from a menu the arrow keys drive; optional dictation; and one button that sends, then stops the turn while it is in flight. Hand it a BitAiChatSession, or handle OnSubmit for a pipeline of your own."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="PromptInput/BitAiPromptInput.razor"
+          GitHubDemoUrl="AI/PromptInput/BitAiPromptInputDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Register the services of the package with <b>builder.Services.AddBitBlazorUIAIServices(ai => ai.UseTransport(...))</b>.
+            The composer sends what is submitted to its <b>Session</b> (a <b>BitAiChatSession</b>, which the
+            <b>BitAiChatSessionFactory</b> service makes with the registered transport), or hands it to <b>OnSubmit</b> instead.
+            Inside a <BitLink Href="/components/ai/chat">BitAiChat</BitLink> it is already wired to the chat's session; see the
+            <BitLink Href="/ai/scenarios/attachments">attachments</BitLink> and
+            <BitLink Href="/ai/scenarios/commands">commands and mentions</BitLink> scenarios for it at work there.
+        </BitText>
+        <br />
+        <BitText>
+            With commands or mentions to offer the text is a combobox (a plain text box otherwise): the menu is driven by the
+            arrow keys while the focus stays in the text, a plain Enter or Tab accepts an option (with a modifier each keeps its
+            own meaning: Shift+Enter breaks the line, Ctrl+Enter sends, Shift+Tab moves back), the menu closes as the focus
+            leaves the text, and Escape closes the menu - or, with no menu open, stops the turn in flight - claiming the key, so
+            a dialog around the composer stays open. The send button is named for what it does next (Send, then Stop), a file
+            turned away is named in an alert, the focus goes back to the text when a staged file is removed, and the character
+            count is announced politely once the limit is close.
+        </BitText>
+        <br />
+        <BitText>
+            The type, size and count of a file are checked in the browser before a byte of it is read, which keeps an oversized
+            paste from costing anything - but it is the browser's word: check what reaches your server again there.
+        </BitText>
+        <br />
+        <BitText>
+            Two of the <BitLink Href="/components/ai/optionsprovider#ui-options">BitAiUiOptions</BitLink> in force shape the
+            composer: <b>SubmitOnEnter</b> (true by default; false leaves Ctrl or Cmd with Enter to send) and
+            <b>MaxComposerRows</b> (12), the most rows the text grows to before it scrolls. Its words come from the strings in
+            force, which a <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes: the
+            placeholder (<b>PromptPlaceholder</b>), the names of the buttons (<b>Send</b>, <b>Stop</b>, <b>AttachFile</b>), the
+            overlay of a drag (<b>DropFiles</b>), the names of the menu (<b>Commands</b>, <b>Mentions</b>), the counter
+            (<b>CharacterCount</b>, <b>CharactersRemaining</b>) and the alert of the files turned away
+            (<b>AttachmentTooLarge</b>, <b>AttachmentTooMany</b>, <b>AttachmentTypeNotAllowed</b>, <b>AttachmentReadFailed</b>,
+            <b>Dismiss</b>).
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Type and press <b>Enter</b> to send, <b>Shift+Enter</b> for a new line; the text grows up to 12 rows, then scrolls.
+                <b>OnSubmit</b> receives a <b>BitAiPromptSubmission</b> - the trimmed text and the files staged with it - and the
+                composer empties itself. <b>Placeholder</b> also names the text for assistive technologies, unless an
+                <b>AriaLabel</b> is given. Enter alone stops sending (leaving Ctrl or Cmd with Enter) under a
+                <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> whose options say
+                <b>SubmitOnEnter = false</b>.
+            </div>
+            <br />
+            <BitAiPromptInput OnSubmit="HandleBasicSubmit" />
+            <br />
+            <BitAiPromptInput Placeholder="Ask anything about your account..." OnSubmit="HandleBasicSubmit" />
+            <br />
+            <div>Sent: <b>@basicSubmission</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Value & MaxLength" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>@@bind-Value</b> keeps the text in your hands: set it to fill the composer in, read it as it is typed.
+                <b>MaxLength</b> caps the text and shows a counter under it, which turns to the warning color as the limit gets close
+                and is then announced politely. <b>FocusAsync</b> puts the caret in the composer.
+            </div>
+            <br />
+            <BitAiPromptInput @ref="valueComposer"
+                              @bind-Value="boundValue"
+                              MaxLength="120"
+                              OnSubmit="HandleValueSubmit" />
+            <br />
+            <div>Value: <b>@boundValue</b></div>
+            <div>Sent: <b>@valueSubmission</b></div>
+            <br />
+            <BitButton OnClick="FillSuggestion">Fill in a suggestion</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="FocusComposerAsync">Focus the composer</BitButton>
+        </DemoExample>
+
+        <DemoExample Title="Session" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Given a <b>Session</b> and no <b>OnSubmit</b>, the composer submits to the session, and the send button becomes a stop
+                button for as long as the session is generating - press it, or Escape, to stop the answer halfway. A
+                <BitLink Href="/components/ai/messagelist">BitAiMessageList</BitLink> of the same session shows the conversation.
+            </div>
+            <br />
+            <div style="height:24rem;display:flex;flex-direction:column;gap:0.5rem">
+                <BitAiMessageList Conversation="session.Conversation" Session="session" />
+                <BitAiPromptInput Session="session" Placeholder="Ask about Blazor render modes..." />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Generating & OnStop" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Without a session, <b>Generating</b> says whether a turn of your own is in flight and <b>OnStop</b> is raised when
+                the user asks to stop it. Set, <b>Generating</b> also wins over the state of a <b>Session</b>.
+            </div>
+            <br />
+            <BitAiPromptInput Generating="isGenerating"
+                              OnSubmit="StartGenerationAsync"
+                              OnStop="StopGeneration" />
+            <br />
+            <div>@generationStatus</div>
+        </DemoExample>
+
+        <DemoExample Title="Attachments" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                Files come in three ways: the paperclip opens the picker, files dragged over the composer are dropped onto it, and a
+                paste attaches what the clipboard holds - which is how a screenshot arrives. Each staged file is a
+                <BitLink Href="/components/ai/attachmentchip">BitAiAttachmentChip</BitLink> with a remove button, an image with a
+                thumbnail made in the browser. The submission carries them in <b>Attachments</b> and owns them from then on.
+                <b>MaxInlineSize</b> (256 KB by default, 64 KB here) is the largest file whose bytes are held in memory: a file within
+                it carries them (<b>Data</b>, and a data URL as its <b>Url</b>), while a larger one stays in the browser and is read
+                through its <b>ContentFactory</b> when something opens it (<b>OpenReadAsync</b>), so a Blazor Server circuit never
+                holds megabytes per attachment - send a small and a large file to see both. <b>AllowAttachments="false"</b> turns
+                all three ways off.
+            </div>
+            <br />
+            <BitAiPromptInput MaxInlineSize="InlineSize" OnSubmit="HandleAttachmentsSubmit" />
+            <br />
+            <BitAiPromptInput AllowAttachments="false" Placeholder="No attachments here" OnSubmit="HandleAttachmentsSubmit" />
+            <br />
+            <div>Sent: <b>@attachmentsSubmission</b></div>
+            <br />
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.5rem">
+                @foreach (var attachment in sentAttachments)
+                {
+                    <div @key="attachment.AttachmentId" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem">
+                        <BitAiAttachmentChip Attachment="attachment" />
+                        <span>@(attachment.HasInlineData ? "held in memory (Data)" : "kept in the browser, read on demand (ContentFactory)")</span>
+                    </div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Limits & rejections" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>Accept</b> filters the picker and is checked for pasted and dropped files too, which the browser does not filter.
+                <b>MaxAttachmentSize</b> (10 MB by default) is checked before a byte is read, and <b>MaxAttachments</b> (20) caps how
+                many are staged at once. A file turned away is never dropped silently: an alert in the composer, above the text, names
+                it and says why, and <b>OnAttachmentRejected</b> hands your app a <b>BitAiAttachmentRejection</b> to log. This one takes
+                images and PDFs, up to 1 MB and three at a time.
+            </div>
+            <br />
+            <BitAiPromptInput Accept="image/*,.pdf"
+                              MaxAttachmentSize="MaxSize"
+                              MaxAttachments="3"
+                              OnAttachmentRejected="HandleRejected"
+                              OnSubmit="HandleLimitsSubmit" />
+            <br />
+            <div>Sent: <b>@limitsSubmission</b></div>
+            <br />
+            <div>Turned away:</div>
+            @if (rejections.Count == 0)
+            {
+                <div>Nothing yet. Try a file over 1 MB, a fourth file, or a .txt file.</div>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var rejection in rejections)
+                    {
+                        <li><b>@rejection.FileName</b> (@rejection.Size bytes): @rejection.Reason</li>
+                    }
+                </ul>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Dictation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>AllowDictation</b> adds a microphone, a <BitLink Href="/components/ai/voiceinput">BitAiVoiceInput</BitLink>:
+                the provisional text shows under the text as you speak, and each finished phrase is added to it.
+                <b>DictationLanguage</b> is the language listened for (the browser's when null). The microphone only appears where
+                the browser has speech recognition (not in Firefox, for one), and the browser does the recognition - some (Chrome,
+                for one) in their vendor's cloud service.
+            </div>
+            <br />
+            <BitAiPromptInput AllowDictation DictationLanguage="en-US" OnSubmit="HandleDictationSubmit" />
+            <br />
+            <div>Sent: <b>@dictationSubmission</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Model & capabilities" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The <b>Model</b> a prompt is for decides what the composer offers: attachments only for a model that takes images,
+                documents or audio, dictation only for one that takes audio, and the file types of the picker from what it takes.
+                <b>Capabilities</b> stands in for a model record, or overrides its capabilities. Pick a model in the
+                <BitLink Href="/components/ai/modelselector">BitAiModelSelector</BitLink>: Demo Large takes images, the other two
+                take no files at all - stage an image, then switch: the files the new model cannot take are taken off and named
+                in the notice, rather than sent to a model that cannot read them.
+            </div>
+            <br />
+            <BitAiModelSelector @bind-ModelId="capabilityModelId" />
+            <br /><br />
+            <BitAiPromptInput Model="FindModel(capabilityModelId)" AllowDictation OnSubmit="HandleCapabilitiesSubmit" />
+            <br />
+            <BitAiPromptInput Capabilities="@(BitAiModelCapabilities.Documents | BitAiModelCapabilities.Audio)"
+                              AllowDictation
+                              Placeholder="Documents and audio, with dictation"
+                              OnSubmit="HandleCapabilitiesSubmit" />
+            <br />
+            <div>Sent: <b>@capabilitiesSubmission</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Slash commands & mentions" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                A forward slash at the start of the text opens the <b>Commands</b>, an at sign anywhere the <b>Mentions</b>; typing
+                on filters them, the arrow keys move through them, a plain Enter or Tab accepts and Escape closes the menu. A
+                <b>BitAiSlashCommand</b> with a <b>Template</b> inserts it as text, one with a <b>Handler</b> runs app code instead
+                (/clear empties the list above, without reaching the model). A <b>BitAiMentionItem</b> inserts its label, which your
+                app resolves by its <b>Id</b>.
+            </div>
+            <br />
+            <div style="min-height:20rem;display:flex;flex-direction:column;justify-content:flex-end;gap:1rem">
+                <ul>
+                    @foreach (var prompt in sentPrompts)
+                    {
+                        <li>@prompt</li>
+                    }
+                </ul>
+                <BitAiPromptInput Commands="commands"
+                                  Mentions="mentions"
+                                  Placeholder="Type / for commands, @@ to mention a file or a person"
+                                  OnSubmit="HandleCommandsSubmit" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Drafts" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                A <b>DraftKey</b> keeps the text in the session storage of the browser, so a reload or a dropped circuit does not lose
+                what was being written: it is restored when the composer first renders empty, saved on every change and cleared on
+                submit. Type something and reload the page. Use a key per conversation, so drafts do not bleed between them.
+            </div>
+            <br />
+            <BitAiPromptInput DraftKey="prompt-input-demo-draft" OnSubmit="HandleDraftSubmit" />
+            <br />
+            <div>Sent: <b>@draftSubmission</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>PrefixTemplate</b> goes before the text - a model picker is the usual thing there - <b>SuffixTemplate</b> between
+                the tools and the send button, and <b>HintTemplate</b> under the composer, beside the counter of a <b>MaxLength</b>.
+            </div>
+            <br />
+            <BitAiPromptInput @bind-Value="templatesValue"
+                              Model="FindModel(templatesModelId)"
+                              OnSubmit="HandleTemplatesSubmit">
+                <PrefixTemplate>
+                    <BitAiModelSelector @bind-ModelId="templatesModelId" />
+                </PrefixTemplate>
+                <SuffixTemplate>
+                    <BitButton IconName="@BitIconName.Lightbulb"
+                               Variant="BitVariant.Text"
+                               Title="Suggest a prompt"
+                               AriaLabel="Suggest a prompt"
+                               OnClick="SuggestPrompt" />
+                </SuffixTemplate>
+                <HintTemplate>
+                    Enter to send, Shift+Enter for a new line. Answers can be wrong - check what matters.
+                </HintTemplate>
+            </BitAiPromptInput>
+            <br />
+            <div>Sent: <b>@templatesSubmission</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>BitParams</b> with a <b>BitAiPromptInputParams</b> sets what the composers of an app, or of one part of it, agree
+                on: the files they take, their limits, their commands and mentions, their placeholder and look - here images only,
+                two at a time, and 200 characters. A parameter of the composer itself still wins. The text, the session, the draft
+                key, the model, the templates and the callbacks are each composer's own and cannot be cascaded.
+            </div>
+            <br />
+            <BitParams Parameters="promptInputParams">
+                <BitAiPromptInput OnSubmit="HandleCascadeSubmit" />
+                <br />
+                <BitAiPromptInput Placeholder="Its own placeholder wins" OnSubmit="HandleCascadeSubmit" />
+            </BitParams>
+            <br />
+            <div>Sent: <b>@cascadeSubmission</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example13RazorCode" Id="example13">
+            <div>
+                A disabled composer takes no text and offers no commands or mentions, refuses a file pasted or dropped onto it (with
+                no overlay and nothing read), and its attach, dictation and send buttons are disabled with it. Disabling it while
+                the microphone is on stops the dictation.
+            </div>
+            <br />
+            <BitAiPromptInput Disabled Value="A disabled composer keeps its text" />
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, the frame of the composer; <b>Styles</b> and <b>Classes</b> each part,
+                down to the buttons (BitButtonClassStyles), the chips of the staged files and the alert of the rejected ones. The
+                public <b>--bit-AiPromptInput-*</b> variables (see the CSS variables table) re-skin it from <b>:root</b>, an ancestor
+                or <b>Style</b>; the buttons and the chips keep their own <b>--bit-Button-*</b> and <b>--bit-Tag-*</b> ones.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiPromptInput Style="max-width:30rem;border-style:dashed"
+                                  Placeholder="A styled composer"
+                                  OnSubmit="HandleStyleSubmit" />
+                <br />
+                <BitAiPromptInput Class="custom-class"
+                                  Placeholder="A classy composer"
+                                  OnSubmit="HandleStyleSubmit" />
+                <br />
+                <BitAiPromptInput Styles="@(new() { Input = "font-family:monospace",
+                                                    SendButton = new() { Root = "border-radius:50%" } })"
+                                  Placeholder="Styles reach every part"
+                                  OnSubmit="HandleStyleSubmit" />
+                <br />
+                <BitAiPromptInput Classes="@(new() { Root = "custom-root", Input = "custom-input", Footer = "custom-footer" })"
+                                  MaxLength="80"
+                                  Placeholder="Classes reach every part"
+                                  OnSubmit="HandleStyleSubmit" />
+                <br />
+                <div style="@cssVariablesStyle">
+                    <BitAiPromptInput Placeholder="Restyled by the variables of its container" OnSubmit="HandleStyleSubmit" />
+                </div>
+            </div>
+            <br />
+            <div>Sent: <b>@styleSubmission</b></div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                In right-to-left text the composer is mirrored - the tools and the send button sit at its left end, the counter
+                under them - and the send arrow points the way the text runs, whether the direction comes from <b>Dir</b> or from a
+                <b>dir</b> attribute around the composer.
+            </div>
+            <br />
+            <BitAiPromptInput Dir="BitDir.Rtl"
+                              MaxLength="100"
+                              Placeholder="پیام خود را بنویسید..."
+                              OnSubmit="HandleRtlSubmit">
+                <HintTemplate>برای ارسال Enter و برای خط جدید Shift+Enter را بزنید.</HintTemplate>
+            </BitAiPromptInput>
+            <br />
+            <div dir="rtl">
+                <BitAiPromptInput Placeholder="پیامی برای دستیار بنویسید..." OnSubmit="HandleRtlSubmit" />
+            </div>
+            <br />
+            <div>Sent: <b>@rtlSubmission</b></div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

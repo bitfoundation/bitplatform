@@ -185,6 +185,12 @@ internal sealed class BmotionTransitionConfig
     /// <summary>Optional upper bound for the inertia target.</summary>
     public double? InertiaMax { get; set; }
 
+    /// <summary>Stiffness of the spring that bounces an inertia off <see cref="InertiaMin"/>/<see cref="InertiaMax"/>; <c>null</c> = 500.</summary>
+    public double? BounceStiffness { get; set; }
+
+    /// <summary>Damping of the spring that bounces an inertia off <see cref="InertiaMin"/>/<see cref="InertiaMax"/>; <c>null</c> = 10.</summary>
+    public double? BounceDamping { get; set; }
+
     /// <summary>
     /// Adjusts the projected resting target before the coast begins (motion.dev's
     /// <c>modifyTarget</c>) - the snap-to-grid / snap-to-page hook. Applied before
@@ -244,6 +250,21 @@ internal sealed class BmotionTransitionConfig
         }
     }
 
+    /// <summary>
+    /// How long the whole transition lasts in seconds - its delay, every repeat and the repeat delays between them,
+    /// and the longest per-property override - with a spring's settling time estimated; infinity when it repeats
+    /// forever.
+    /// </summary>
+    internal double TotalSeconds()
+    {
+        if (IsInfiniteRepeat) return double.PositiveInfinity;
+        double total = Math.Max(0, Delay) + EstimatedDurationSeconds() * (Repeat + 1) + Math.Max(0, RepeatDelay) * Repeat;
+        if (Properties is { } overrides)
+            foreach (var config in overrides.Values)
+                total = Math.Max(total, config.TotalSeconds());
+        return total;
+    }
+
     // ── Per-property overrides ────────────────────────────────────────────────
     /// <summary>
     /// Override transition for specific properties, e.g.
@@ -297,6 +318,8 @@ internal sealed class BmotionTransitionConfig
         InertiaRestDelta = InertiaRestDelta,
         InertiaMin = InertiaMin,
         InertiaMax = InertiaMax,
+        BounceStiffness = BounceStiffness,
+        BounceDamping = BounceDamping,
         ModifyTarget = ModifyTarget,
         StaggerChildren = StaggerChildren,
         DelayChildren = DelayChildren,

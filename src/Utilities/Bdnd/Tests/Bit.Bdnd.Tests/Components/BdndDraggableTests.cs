@@ -121,6 +121,17 @@ public class BdndDraggableTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    [DataRow(BdndAxis.None, null)]
+    [DataRow(BdndAxis.Horizontal, "x")]
+    [DataRow(BdndAxis.Vertical, "y")]
+    public void ThePreviewAxisReachesTheModule(BdndAxis axis, string? expected)
+    {
+        RenderDraggable(p => p.Add(x => x.PreviewAxis, axis));
+
+        Assert.AreEqual(expected, Assert.ContainsSingle(SourceRegistrations).PreviewAxis);
+    }
+
+    [TestMethod]
     public void TheOptionsCarryTheParameters()
     {
         var cut = RenderDraggable(p => p

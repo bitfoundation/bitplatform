@@ -387,6 +387,11 @@ public static class BcrdtApiCatalog
             // same on every record and documented nowhere; listing it on each of the library's many records
             // would bury the members someone wrote on purpose.
             if (method.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), inherit: false)) continue;
+            // An override of what every object has, which the type does not document, says nothing about the
+            // type - and split into words it answers questions it has nothing to do with: to a search,
+            // GetHashCode is "code", and the top hit for anything done from code.
+            var summary = Documentation(method, BcrdtXmlDocs.GetSummary);
+            if (summary is null && method.Name is "Equals" or "GetHashCode" or "ToString") continue;
             // BcrdtTextArea's caret callbacks are public only because JavaScript interop can call nothing
             // else. Listed next to its parameters they read as API, and an agent calling one from C#
             // bypasses the very checks the browser made before calling it.
@@ -404,7 +409,7 @@ public static class BcrdtApiCatalog
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
                 Protected = method.IsPublic is false,
-                Summary = Documentation(method, BcrdtXmlDocs.GetSummary),
+                Summary = summary,
                 Remarks = Documentation(method, BcrdtXmlDocs.GetRemarks)
             };
         }

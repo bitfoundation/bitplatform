@@ -63,20 +63,20 @@ public class DxTests
             .Add(p => p.Id, "box")
             .Add(p => p.ChildContent, Div));
 
-        // Two independent rAF animations on the same element (colors never offload).
+        // Two independent animations on the same element, both played by the browser.
         await cut.InvokeAsync(() => cut.Instance.AnimateAsync(Bm.To(color: "#00ff00"), Bm.Tween(1)).AsTask());
         using var cts = new CancellationTokenSource();
         var cancellable = cut.InvokeAsync(() =>
             cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1), cts.Token).AsTask());
         await cancellable;
         CollectionAssert.AreEquivalent(new[] { "color", "backgroundColor" },
-            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").ActiveProperties.ToArray());
+            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").BrowserProperties.ToArray());
 
         cts.Cancel();
 
         // The cancellation stops just the properties that call animated, not the whole element.
         CollectionAssert.AreEquivalent(new[] { "color" },
-            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").ActiveProperties.ToArray());
+            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").BrowserProperties.ToArray());
     }
 
     [TestMethod]

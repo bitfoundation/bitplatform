@@ -109,7 +109,7 @@ public partial class McpOracleTests
     {
         var random = new Random(20261018);
 
-        foreach (var layout in new[] { "layered", "layered-left-to-right", "grid", "circle" })
+        foreach (var layout in new[] { "layered", "layered-left-to-right", "tree", "tree-left-to-right", "radial", "force", "grid", "circle" })
         {
             var (nodes, edges) = RandomFlow(random);
             var json = JsonSerializer.Serialize(new BlowSnapshot(nodes, edges, BlowViewport.Identity));
@@ -136,6 +136,10 @@ public partial class McpOracleTests
             {
                 case "grid": BlowLayout.Grid(copy); break;
                 case "circle": BlowLayout.Circle(copy); break;
+                case "tree": BlowLayout.Tree(copy, edges); break;
+                case "tree-left-to-right": BlowLayout.Tree(copy, edges, new BlowTreeLayoutOptions { Direction = BlowLayoutDirection.LeftToRight }); break;
+                case "radial": BlowLayout.Radial(copy, edges); break;
+                case "force": BlowLayout.Force(copy, edges); break;
                 case "layered-left-to-right": BlowLayout.Layered(copy, edges, new BlowLayeredLayoutOptions { Direction = BlowLayoutDirection.LeftToRight }); break;
                 default: BlowLayout.Layered(copy, edges); break;
             }
@@ -170,11 +174,11 @@ public partial class McpOracleTests
     }
 
     [TestMethod]
-    public async Task A_parent_cycle_really_does_throw_its_nodes_far_away()
+    public async Task A_parent_cycle_is_reported_and_cut_rather_than_flinging_its_nodes_away()
     {
-        // The note claims the canvas sums the relative positions round the loop; where it puts the two
-        // nodes is the evidence, against the (0, 0) to (100, 100) their own positions describe. They fly
-        // off together, so it is the bounds' corner that moves, not their size.
+        // The canvas cuts the loop where it finds it and lays that node out as a root, so the two nodes stay
+        // where their own positions put them - (100, 0) for the one cut loose, and 100 to the right of and
+        // 100 below it for its child - rather than adding up the offsets round the loop.
         var json = JsonSerializer.Serialize(new BlowSnapshot(
             [new BlowNode { Id = "p", ParentId = "q", Position = new(100, 0) }, new BlowNode { Id = "q", ParentId = "p", Position = new(0, 100) }],
             [],
@@ -182,7 +186,8 @@ public partial class McpOracleTests
 
         var report = await McpFlowLabTests.InspectAsync(json);
 
-        Assert.IsGreaterThan(1000, report.Bounds!.X + report.Bounds.Y);
+        Assert.IsLessThan(300, report.Bounds!.X + report.Bounds.Y);
+        Assert.IsTrue(report.Problems!.Any(problem => problem.Code == BlowErrorCode.ParentCycle));
         Assert.IsTrue(report.Notes.Any(note => note.Contains("parent cycle", StringComparison.Ordinal)));
     }
 
@@ -304,6 +309,23 @@ public partial class McpOracleTests
     }
 
     [TestMethod]
+    public void The_getting_started_page_shows_the_lazy_loading_code_the_guide_shows()
+    {
+        // The page shows a copy, since it cannot quote the README, and neither copy is compiled.
+        var blocks = FencedBlockRegex().Matches(BlowSourceCatalog.Readme.Replace("\r\n", "\n", StringComparison.Ordinal))
+            .Select(match => match.Groups["code"].Value)
+            .ToArray();
+
+        foreach (var name in (string[])["LazyProjectCode", "LazyRouterCode"])
+        {
+            var code = typeof(Bit.Blow.Demo.Client.Pages.GettingStarted).GetField(name, BindingFlags.NonPublic | BindingFlags.Static)?.GetRawConstantValue() as string;
+
+            Assert.IsNotNull(code, $"GettingStarted.{name} has been renamed or removed; there is nothing left to compare.");
+            Assert.Contains(code.Replace("\r\n", "\n", StringComparison.Ordinal), blocks, $"GettingStarted.{name} is no longer a code block of the README's \"Lazy loading on WebAssembly\": copy the README's block over it.");
+        }
+    }
+
+    [TestMethod]
     public void Every_example_of_the_gallery_has_its_page()
     {
         foreach (var example in Bit.Blow.Demo.Client.Examples.ExampleCatalog.All)
@@ -357,6 +379,9 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"\.bit-blow-[a-z0-9-]+")]
     private static partial Regex ClassRegex();
+
+    [GeneratedRegex(@"^```[a-z]*\n(?<code>.*?)\n```$", RegexOptions.Multiline | RegexOptions.Singleline)]
+    private static partial Regex FencedBlockRegex();
 
     [GeneratedRegex(@"^#{2,4} (?<text>.+)$")]
     private static partial Regex HeadingRegex();

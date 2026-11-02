@@ -1,0 +1,9 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_media-queries.scss';
+
+section {
+    width: calc(50% - 0.5rem);
+
+    @include lt-md {
+        width: 100%;
+    }
+}

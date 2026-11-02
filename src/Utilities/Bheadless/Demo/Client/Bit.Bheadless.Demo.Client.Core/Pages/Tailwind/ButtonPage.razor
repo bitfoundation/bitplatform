@@ -1,0 +1,228 @@
+﻿@page "/tw/button"
+
+<PageTitle>Button — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Button</h1>
+        <p class="mt-2 text-zinc-500">A polymorphic, accessible button primitive with loading and disabled states.</p>
+        <TwSectionSwitcher Slug="button" />
+    </header>
+
+    <TwDemoBlock Title="Basic Button" Code="@_basicCode">
+        <Description>
+            Renders a native <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">&lt;button&gt;</code> with no styling. All visuals come from Tailwind utility classes.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="HandleBasicClick"
+                      class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 hover:border-zinc-300 active:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                Click me
+            </BitBhButton>
+            <span class="text-sm text-zinc-500">Clicked @basicClickCount times</span>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Disabled State" Code="@_disabledCode">
+        <Description>
+            Sets the native <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">disabled</code> attribute and emits <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled</code>. The <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> variant styles the disabled look.
+        </Description>
+        <LiveContent>
+            <BitBhButton Disabled="true" OnClick="HandleBasicClick"
+                      class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 hover:border-zinc-300 active:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+                Can't click me
+            </BitBhButton>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Loading State with Context" Code="@_loadingCode">
+        <Description>
+            Uses <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">RenderFragment&lt;BitBhButtonContext&gt;</code> to drive a spinner from the button's own state.
+        </Description>
+        <LiveContent>
+            <BitBhButton Loading="@isLoading" OnClick="HandleLoadingClick"
+                      class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 data-loading:opacity-70 data-loading:cursor-wait">
+                <Template Context="btn">
+                    @if (btn.Loading)
+                    {
+                        <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"></span>
+                        <span>Saving…</span>
+                    }
+                    else
+                    {
+                        <span>Save Changes</span>
+                    }
+                </Template>
+            </BitBhButton>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Polymorphic Rendering" Code="@_polymorphicCode">
+        <Description>
+            Set <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">As="a"</code> to render as an anchor while keeping all button semantics. Non-native elements receive <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">role="button"</code>, <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">tabindex="0"</code>, and Enter/Space handling.
+        </Description>
+        <LiveContent>
+            <BitBhButton As="a" href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank"
+                      class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-blue-600 underline underline-offset-2 transition-colors hover:bg-blue-50 hover:text-blue-700">
+                I'm actually an &lt;a&gt; tag
+            </BitBhButton>
+            <BitBhButton As="span" OnClick="HandleBasicClick"
+                      class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100">
+                I'm a &lt;span&gt; with role="button"
+            </BitBhButton>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Toggle Button" Code="@_toggleCode">
+        <Description>
+            Combine <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">BitBhButton</code> with your own state to build a toggle. Pass <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">aria-pressed</code> via standard HTML attributes — they merge automatically.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="TogglePressed"
+                      class="@(isPressed
+                          ? "inline-flex min-w-16 items-center justify-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                          : "inline-flex min-w-16 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600")"
+                      aria-pressed="@isPressed.ToString().ToLowerInvariant()">
+                @(isPressed ? "ON" : "OFF")
+            </BitBhButton>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Styled via Data Attributes" Code="@_dataAttrCode">
+        <Description>
+            Style entirely via the registered <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-disabled:</code> and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-loading:</code> variants — no component API for visuals.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="HandleBasicClick"
+                      class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white cursor-pointer data-disabled:opacity-40 data-disabled:cursor-not-allowed data-loading:opacity-70 data-loading:cursor-wait">
+                Styled via [data-*]
+            </BitBhButton>
+            <BitBhButton Disabled="true"
+                      class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white cursor-pointer data-disabled:opacity-40 data-disabled:cursor-not-allowed data-loading:opacity-70 data-loading:cursor-wait">
+                Disabled via [data-disabled]
+            </BitBhButton>
+            <BitBhButton Loading="true"
+                      class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white cursor-pointer data-disabled:opacity-40 data-disabled:cursor-not-allowed data-loading:opacity-70 data-loading:cursor-wait">
+                Loading via [data-loading]
+            </BitBhButton>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private int basicClickCount;
+    private bool isLoading;
+    private bool isPressed;
+
+    private void HandleBasicClick() => basicClickCount++;
+
+    private async Task HandleLoadingClick()
+    {
+        isLoading = true;
+        await Task.Delay(2000);
+        isLoading = false;
+    }
+
+    private void TogglePressed() => isPressed = !isPressed;
+
+    private const string _basicCode = """
+<BitBhButton OnClick="HandleBasicClick"
+          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 hover:border-zinc-300 active:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+    Click me
+</BitBhButton>
+<span class="text-sm text-zinc-500">Clicked @basicClickCount times</span>
+
+@code {
+    private int basicClickCount;
+    private void HandleBasicClick() => basicClickCount++;
+}
+""";
+
+    private const string _disabledCode = """
+<BitBhButton Disabled="true"
+          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 hover:border-zinc-300 active:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 data-disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:pointer-events-none">
+    Can't click me
+</BitBhButton>
+""";
+
+    private const string _loadingCode = """
+<BitBhButton Loading="@isLoading" OnClick="HandleLoadingClick"
+          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 data-loading:opacity-70 data-loading:cursor-wait">
+    <Template Context="btn">
+        @if (btn.Loading)
+        {
+            <span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"></span>
+            <span>Saving…</span>
+        }
+        else
+        {
+            <span>Save Changes</span>
+        }
+    </Template>
+</BitBhButton>
+
+@code {
+    private bool isLoading;
+
+    private async Task HandleLoadingClick()
+    {
+        isLoading = true;
+        await Task.Delay(2000);
+        isLoading = false;
+    }
+}
+""";
+
+    private const string _polymorphicCode = """
+<BitBhButton As="a" href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank"
+          class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-blue-600 underline underline-offset-2 transition-colors hover:bg-blue-50 hover:text-blue-700">
+    I'm actually an <a> tag
+</BitBhButton>
+
+<BitBhButton As="span" OnClick="HandleBasicClick"
+          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100">
+    I'm a <span> with role="button"
+</BitBhButton>
+
+@code {
+    private int basicClickCount;
+    private void HandleBasicClick() => basicClickCount++;
+}
+""";
+
+    private const string _toggleCode = """
+<BitBhButton OnClick="TogglePressed"
+          class="@(isPressed
+              ? "inline-flex min-w-16 items-center justify-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-medium text-white cursor-pointer transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              : "inline-flex min-w-16 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 cursor-pointer transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600")"
+          aria-pressed="@isPressed.ToString().ToLowerInvariant()">
+    @(isPressed ? "ON" : "OFF")
+</BitBhButton>
+
+@code {
+    private bool isPressed;
+    private void TogglePressed() => isPressed = !isPressed;
+}
+""";
+
+    private const string _dataAttrCode = """
+<BitBhButton OnClick="HandleBasicClick"
+          class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white cursor-pointer data-disabled:opacity-40 data-disabled:cursor-not-allowed data-loading:opacity-70 data-loading:cursor-wait">
+    Styled via [data-*]
+</BitBhButton>
+
+<BitBhButton Disabled="true"
+          class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white cursor-pointer data-disabled:opacity-40 data-disabled:cursor-not-allowed data-loading:opacity-70 data-loading:cursor-wait">
+    Disabled via [data-disabled]
+</BitBhButton>
+
+<BitBhButton Loading="true"
+          class="inline-flex items-center gap-2 rounded-lg border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white cursor-pointer data-disabled:opacity-40 data-disabled:cursor-not-allowed data-loading:opacity-70 data-loading:cursor-wait">
+    Loading via [data-loading]
+</BitBhButton>
+
+@code {
+    private int basicClickCount;
+    private void HandleBasicClick() => basicClickCount++;
+}
+""";
+}

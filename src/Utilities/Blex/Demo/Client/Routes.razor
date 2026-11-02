@@ -12,7 +12,7 @@
 @inject NavigationManager Nav
 @implements IDisposable
 
-<BlexProvider>
+<BlexProvider EnableDevTools="true">
     <Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFound)">
         <Found Context="routeData">
             <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.DocsLayout)" />

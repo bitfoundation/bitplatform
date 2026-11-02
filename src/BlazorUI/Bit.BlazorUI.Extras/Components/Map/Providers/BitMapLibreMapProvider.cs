@@ -9,7 +9,10 @@ public sealed class BitMapLibreMapProvider : BitMapProviderBase
     /// <summary>Map style URL (JSON). Defaults to the MapLibre public demo tiles.</summary>
     public string StyleUrl { get; set; } = "https://demotiles.maplibre.org/style.json";
 
-    /// <summary>Show the navigation (zoom/compass) control.</summary>
+    /// <summary>
+    /// Show the navigation control: its compass, and its zoom buttons while
+    /// <see cref="BitMapProviderBase.ZoomControl"/> is on.
+    /// </summary>
     public bool ShowNavigationControl { get; set; } = true;
 
     /// <summary>Allow rotating the map by dragging with the right mouse button or two-finger gesture.</summary>

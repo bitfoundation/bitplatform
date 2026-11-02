@@ -1,0 +1,185 @@
+﻿@page "/components/ai/contextmeter"
+@inherits AppComponentBase
+
+<PageOutlet Url="components/ai/contextmeter"
+            Title="AiContextMeter"
+            Description="BitAiContextMeter shows how much of the context window of an AI model a conversation is using, and turns to a warning and then to an error before the model starts forgetting." />
+
+<DemoPage Name="AiContextMeter"
+          SecondaryNames="@(["TokenMeter"])"
+          Description="BitAiContextMeter shows how much of the context window of the model the conversation is using - a label, a meter and a percentage. Running out of context is the failure users understand least: the model simply starts forgetting. So the meter turns to the warning color at the Warn mark and to the error color at the Critical one, and says so once through a polite live region as it crosses each. It reads the tokens and the window off a conversation, takes them directly, or takes the window from a model, and counts what is about to be added (the prompt being typed) on top."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ContextMeter/BitAiContextMeter.razor"
+          GitHubDemoUrl="AI/ContextMeter/BitAiContextMeterDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Nothing is rendered while no window is known. The tokens a conversation uses are those of its latest assistant
+            message - its prompt plus its output, which the next request sends again - and its window the
+            <b>ContextWindow</b> of the <b>BitAiGenerationMetadata</b> a transport reports (see
+            <BitLink Href="/components/ai/tokenusageview">AiTokenUsageView</BitLink>). Accessibility: the bar is a meter
+            (<b>role="meter"</b>, a reading that moves either way rather than a task that finishes), named "Context" and read
+            out as the count of tokens ("1,500 / 10,000 tokens"), which is also its tooltip unless a <b>title</b> attribute is
+            given, and the warnings (<b>BitAiStrings.ContextWarning</b>, <b>ContextCritical</b>) are announced once each. These
+            texts, the label and the count (<b>Context</b>, <b>ContextUsage</b>) included, come from the strings in force, which a
+            <BitLink Href="/components/ai/optionsprovider">BitAiOptionsProvider</BitLink> localizes. See it beside the model
+            picker in the <BitLink Href="/ai/scenarios/usage">Models and usage</BitLink> scenario.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                <b>Used</b> tokens out of a <b>Window</b>: a meter with the share of the window used. The exact count is its
+                tooltip.
+            </div>
+            <br />
+            <BitAiContextMeter Used="42_000" Window="128_000" />
+        </DemoExample>
+
+        <DemoExample Title="Warn & Critical" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Drag the slider across the marks. Past <b>Warn</b> (0.8 of the window by default) the meter and its words turn to
+                the warning color, past <b>Critical</b> (0.95) to the error color, and a polite live region says so once as it
+                crosses each; past the window the bar stays full while the percentage goes on. The second meter has marks of its
+                own.
+            </div>
+            <br />
+            <BitSlider Label="Tokens used" Min="0" Max="140000" Step="1000" @bind-Value="sliderUsed" />
+            <br />
+            <BitAiContextMeter Used="(long)sliderUsed" Window="128_000" />
+            <br />
+            <BitAiContextMeter Used="(long)sliderUsed" Window="128_000" Warn="0.5" Critical="0.75" />
+        </DemoExample>
+
+        <DemoExample Title="Pending tokens" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>PendingTokens</b> counts an estimate of what is about to be added - the prompt being typed, a file about to be
+                attached - on top of what is used, so the warning comes before the request that would overflow the window. Type a
+                few more words, or attach the report.
+            </div>
+            <br />
+            <BitTextField Label="Prompt" Multiline Immediate @bind-Value="prompt" />
+            <br />
+            <BitToggle Label="Attach the 20-page report (about 1,500 tokens)" @bind-Value="attachReport" />
+            <br />
+            <BitAiContextMeter Used="6_375" Window="8_000" PendingTokens="PendingPromptTokens" />
+        </DemoExample>
+
+        <DemoExample Title="Model" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                Without a <b>Window</b> (or a conversation that reports one), the meter takes the <b>ContextWindow</b> of the
+                <b>Model</b>: the same 30,000 tokens fill a little of a large window and nearly all of a small one.
+            </div>
+            <br />
+            @foreach (var model in AiDemoCatalog.Models)
+            {
+                <div class="example-row">
+                    <span class="example-label">@model.Name</span>
+                    <BitAiContextMeter Used="30_000" Model="model" />
+                </div>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Conversation" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                Given a <b>Conversation</b>, the meter reads the tokens and the window off it (<b>Measure</b>): the prompt plus the
+                output of the latest assistant message, which the next request sends again whole - not the sum of every turn,
+                which would count the early turns once per later one. Here a scripted transport of this site answers on a model
+                with a window of 340 tokens - the <b>Model</b> supplies it until the conversation reports one: send a few messages
+                and watch the meter cross its marks.
+            </div>
+            <br />
+            <div class="example-row">
+                <BitButton OnClick="SendToTinyModel" Disabled="isSending">Send a message</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="StartOver" Disabled="isSending">Start over</BitButton>
+            </div>
+            <br />
+            <BitAiContextMeter Conversation="tinySession.Conversation" Model="tinyModel" />
+            <br />
+            <div>Messages: <b>@tinySession.Conversation.Messages.Count</b></div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                A disabled meter steps back - for a composer that cannot send right now: its label and percentage take the
+                disabled color, past the marks too, and its bar is dimmed. It still reads the tokens, names them in its tooltip and
+                announces the marks it crosses.
+            </div>
+            <br />
+            <BitAiContextMeter Disabled Used="42_000" Window="128_000" />
+            <br />
+            <BitAiContextMeter Disabled Used="124_000" Window="128_000" />
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitAiContextMeterParams</b> sets the marks (<b>Warn</b>, <b>Critical</b>) and the look of
+                every meter inside it; the figures - the conversation, the model and the counts - stay each meter's own. A meter's
+                own value still wins: under the cascaded marks of 0.5 and 0.6, 50% is a warning and 70% critical, while the last
+                meter sets its own <b>Critical</b> of 0.95 and is only warned at the same 70%.
+            </div>
+            <br />
+            <BitParams Parameters="meterParams">
+                <BitAiContextMeter Used="64_000" Window="128_000" />
+                <br />
+                <BitAiContextMeter Used="90_000" Window="128_000" />
+                <br />
+                <BitAiContextMeter Used="90_000" Window="128_000" Critical="0.95" />
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> the label, the meter (a
+                <b>BitProgressClassStyles</b>), the percentage and the hidden live region. The public
+                <b>--bit-AiContextMeter-*</b> variables re-skin the words and the layout, the warning and critical colors of the
+                words included; the bar is a BitProgress, which the <b>--bit-Progress-*</b> variables restyle.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep rules of the custom classes to anchor on. *@
+            <div>
+                <BitAiContextMeter Used="42_000" Window="128_000" Style="padding: 0.5rem; border: 1px dashed #0ea5e9; border-radius: 0.5rem" />
+                <br />
+                <BitAiContextMeter Used="42_000"
+                                   Window="128_000"
+                                   Class="custom-class"
+                                   Classes="@(new() { Label = "custom-label" })"
+                                   Styles="@(new() { Percent = "font-weight: bold; color: #0369a1" })" />
+                <br />
+                <BitAiContextMeter Used="110_000"
+                                   Window="128_000"
+                                   Style="--bit-AiContextMeter-font-size: 0.875rem;
+                                          --bit-AiContextMeter-gap: 0.5rem;
+                                          --bit-AiContextMeter-meter-max-width: 100%;
+                                          --bit-AiContextMeter-warning-color: #c2410c" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+            <div>
+                In right-to-left text the label, the meter and the percentage are laid out from right to left, and the bar fills
+                from the right - whether the direction comes from <b>Dir</b> or from a <b>dir</b> attribute around the meter.
+            </div>
+            <br />
+            <BitAiContextMeter Dir="BitDir.Rtl" Used="42_000" Window="128_000" />
+            <br />
+            <div dir="rtl">
+                <BitAiContextMeter Used="110_000" Window="128_000" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

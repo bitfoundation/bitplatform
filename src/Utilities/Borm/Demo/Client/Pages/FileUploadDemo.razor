@@ -6,11 +6,21 @@
 <div class="bb-intro">
     <h1>File upload</h1>
     <p class="bb-subtitle">
-        <code>BormFieldType.File</code> renders Blazor's <code>InputFile</code>, keeps the chosen
-        <code>IBrowserFile</code>s on the model, and lists them back with their sizes. The browser's
-        <code>accept</code> attribute is only a filter in the picker, so size and type are validated again
-        server-side — try picking a large file or the wrong extension.
+        A property typed <code>IBrowserFile</code> - or a list of them - renders a file picker built on Blazor's
+        <code>InputFile</code>, keeps the chosen files on the model and lists them back with their sizes.
+        <code>Accept(...)</code> and <code>MaxFileSize(...)</code> become the picker's own <code>accept</code> filter
+        <em>and</em> rules: the filter is only a suggestion the user can switch off in the dialog, so the field judges
+        every file that actually arrives, and says what is wrong with it.
     </p>
+</div>
+
+<div class="bb-note">
+    Pick a <code>.txt</code> as the CV, then a PDF over 2 MB: each is refused with its own reason. Attach four
+    documents and <code>Items(max: 3)</code> counts them like any other list. The chosen files are listed with their
+    sizes, and <em>Clear selection</em> takes them away. The files stay on the model until the submit, where the handler reads them with
+    <code>OpenReadStream()</code> as it would from <code>InputFile</code>. <code>[FileExtensions]</code> on the model
+    does what <code>Accept</code> does here. To send each file the moment it is chosen - with progress, cancel and
+    retry - and keep what the server returned instead, see <a href="rich-fields">uploads</a>.
 </div>
 
 <div class="bb-demo">
@@ -52,7 +62,8 @@
             .Field(x => x.Attachments, f => f
                 .Accept("image/*,.pdf", multiple: true)
                 .MaxFileSize(5 * 1024 * 1024)
-                .Help("Optional. Images or PDFs, up to 5 MB each."))
+                .Items(max: 3, message: "Attach at most three documents.")
+                .Help("Optional. Up to three images or PDFs, 5 MB each."))
             .Build();
 
         _state = new BormState(schema, new BormModelDataAccessor(_model));
@@ -60,6 +71,16 @@
     }
 
     private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task HandleSubmit(BormState state)
+    {
+        // The files are read here, exactly as from Blazor's InputFile.
+        if (_model.Resume is { } cv)
+        {
+            await using var stream = cv.OpenReadStream(maxAllowedSize: 2 * 1024 * 1024);
+            // ... await storage.SaveAsync(cv.Name, stream) ...
+        }
+    }
 }
 """;
 
@@ -81,7 +102,8 @@
             .Field(x => x.Attachments, f => f
                 .Accept("image/*,.pdf", multiple: true)
                 .MaxFileSize(5 * 1024 * 1024)
-                .Help("Optional. Images or PDFs, up to 5 MB each."))
+                .Items(max: 3, message: "Attach at most three documents.")
+                .Help("Optional. Up to three images or PDFs, 5 MB each."))
             .Build();
 
         _state = new BormState(schema, new BormModelDataAccessor(_model));

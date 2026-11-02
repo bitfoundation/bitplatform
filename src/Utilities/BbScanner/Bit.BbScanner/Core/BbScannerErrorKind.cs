@@ -1,6 +1,6 @@
 ﻿namespace Bit.BbScanner;
 
-/// <summary>Why a scanner could not start.</summary>
+/// <summary>Why the scanner failed: why the camera could not start or was lost, or why an image could not be scanned.</summary>
 public enum BbScannerErrorKind
 {
     /// <summary>The cause could not be classified.</summary>
@@ -20,4 +20,11 @@ public enum BbScannerErrorKind
 
     /// <summary>The browser exposes no camera API, or the page is not in a secure context.</summary>
     NotSupported = 5,
+
+    /// <summary>
+    /// An image handed to the scanner could not be scanned: it is not an image, it is larger
+    /// than <see cref="BbScanner.MaxImageFileSize"/>, it decodes to more pixels than is safe to
+    /// hold, or the browser could not decode it.
+    /// </summary>
+    InvalidImage = 6,
 }

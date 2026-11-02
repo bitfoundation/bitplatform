@@ -89,6 +89,69 @@ public class ScaleTests : BunitContext
     }
 
     [TestMethod]
+    public void The_render_profile_of_five_thousand_components_with_full_sample_rings_builds_quickly()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            var alive = new List<ChildComponent>(5_000);
+            for (var i = 0; i < 5_000; i++)
+            {
+                var component = new ChildComponent();
+                alive.Add(component);
+                var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
+                for (var r = 0; r < session.Options.MaxRendersPerComponent; r++)
+                {
+                    record.AddRender(new BevRenderSample { Sequence = r, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp(), DurationMs = (i * 7 + r) % 13 });
+                }
+            }
+
+            var start = Stopwatch.GetTimestamp();
+            var profile = BevRenderProfile.Of(session);
+            var elapsed = Stopwatch.GetElapsedTime(start);
+
+            var type = Assert.ContainsSingle(profile.Types);
+            Assert.AreEqual(5_000 * session.Options.MaxRendersPerComponent, type.Renders);
+            Assert.AreEqual(5_000 * session.Options.MaxRendersPerComponent, type.RetainedSamples);
+            Assert.AreEqual(12, type.P95RenderMs);
+            Assert.IsTrue(elapsed.TotalMilliseconds < 1000, $"profiling 500k retained samples took {elapsed.TotalMilliseconds:0} ms");
+            Console.WriteLine($"profile of 5,000 components x 100 samples: {elapsed.TotalMilliseconds:0.0} ms");
+            GC.KeepAlive(alive);
+        }
+    }
+
+    [TestMethod]
+    public void The_cost_tree_of_a_batch_that_rendered_a_twenty_thousand_deep_chain_builds_without_recursion()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.MaxTrackedComponents = 30_000);
+        using (scope)
+        {
+            var alive = new List<ChildComponent>(20_000);
+            BevComponentRecord? parent = null;
+            for (var i = 0; i < 20_000; i++)
+            {
+                var component = new ChildComponent();
+                alive.Add(component);
+                var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
+                record.Parent = parent;
+                record.ParentResolved = true;
+                record.AddRender(new BevRenderSample { Sequence = i, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp(), BatchId = 7, DurationMs = 0.5 });
+                parent = record;
+            }
+
+            var tree = BevBatchCostTree.Build(session.Components.All, 7, maxRows: 300);
+
+            Assert.HasCount(300, tree.Rows);
+            Assert.AreEqual(19_700, tree.Omitted);
+            Assert.AreEqual(10_000, tree.TotalMs, 1e-6);
+            Assert.AreEqual(10_000, tree.Rows[0].TotalMs, 1e-6);
+            Assert.AreEqual(0.5, tree.Rows[0].SelfMs, 1e-6);
+            Assert.AreEqual(299, tree.Rows[^1].Depth);
+            GC.KeepAlive(alive);
+        }
+    }
+
+    [TestMethod]
     public void A_render_storm_stays_bounded_and_is_reported_as_a_diagnostic()
     {
         var cut = Render<ParentComponent>();

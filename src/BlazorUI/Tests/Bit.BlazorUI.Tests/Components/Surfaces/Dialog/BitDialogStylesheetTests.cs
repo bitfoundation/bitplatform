@@ -215,7 +215,11 @@ public class BitDialogStylesheetTests
 
         StringAssert.Contains(GetRule(rules, "okb"), "background-color: var(--bit-dlg-okb-bg, var(--bit-dlg-clr, #{$dlg-okb-background}));");
         StringAssert.Contains(rules, "$dlg-okb-background: var(--bit-Dialog-ok-button-background, #{$clr-pri});");
-        StringAssert.Contains(GetRule(rules, "cnb"), "color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr, #{$dlg-cnb-color}));");
+        // The label of the outlined Cancel button is read on the dialog's surface, so under a Color it is the role's text
+        // color rather than its main (role-text); its rule keeps the main.
+        StringAssert.Contains(GetRule(rules, "cnb"), "color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr-fg, #{$dlg-cnb-color}));");
+        StringAssert.Contains(GetRule(rules, "cnb"), "border-color: var(--bit-dlg-cnb-brd, var(--bit-dlg-clr, var(--bit-Dialog-cancel-button-border-color, #{$dlg-cnb-color})));");
+        StringAssert.Contains(rules, "--bit-dlg-clr-fg: #{role-text($role, $tokens)};");
         StringAssert.Contains(rules, "$dlg-cnb-color: var(--bit-Dialog-cancel-button-color, #{$clr-pri});");
 
         // The transparent outline at rest is the Cancel button's recipe rather than the Dialog's color, so its public

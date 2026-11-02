@@ -23,7 +23,8 @@ public static class BortableCompletions
     // in a sentence the tools have nothing to say about.
     private static readonly string[] _symptoms =
     [
-        "the first list throws: no registered service of type BortableService",
+        "the first list throws: Bit.Bortable's services are not registered",
+        "Could not load file or assembly 'Bit.Bortable' in an app that lazy loads it",
         "the items render but nothing can be dragged",
         "an item cannot be dropped into the other list",
         "a cloned item is refused by the target list",

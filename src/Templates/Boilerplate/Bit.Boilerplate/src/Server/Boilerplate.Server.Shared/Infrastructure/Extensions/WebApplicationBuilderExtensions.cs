@@ -129,6 +129,9 @@ public static class WebApplicationBuilderExtensions
             {
                 opts.EnableForHttps = true;
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]).ToArray();
+                //#if (framework == 'net11.0')
+                opts.Providers.Add<ZstandardCompressionProvider>();
+                //#endif
                 opts.Providers.Add<BrotliCompressionProvider>();
                 opts.Providers.Add<GzipCompressionProvider>();
             })

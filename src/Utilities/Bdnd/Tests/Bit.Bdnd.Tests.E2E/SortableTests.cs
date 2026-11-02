@@ -89,4 +89,26 @@ public sealed class SortableTests : BdndTest
 
     private static Task<string[]> CardOrderAsync(IPage page) => page.EvaluateAsync<string[]>(
         "() => [...document.querySelectorAll('.sortable-card')].map(c => c.dataset.card)");
+
+    [TestMethod]
+    public async Task A_native_drag_held_at_the_bottom_of_the_window_scrolls_the_page()
+    {
+        // The browser's own: a native drag scrolls the page near the window's edge (pointer drags do it themselves,
+        // see PointerTests). Firefox's and WebKit's drivers raise no such scrolling.
+        RequireChromium("only Chromium's driver drags through the browser's drag controller, which scrolls");
+        var page = await OpenAsync("/sortable/stress-test");
+        var first = page.Locator("[draggable]").First;
+        var box = await BoxAsync(first);
+        var height = page.ViewportSize!.Height;
+
+        await StartDragAsync(page, first);
+        await EventuallyAsync(async () =>
+        {
+            await MoveAsync(page, new Point(box.Centre.X, height - 3), steps: 1);
+            await MoveAsync(page, new Point(box.Centre.X, height - 4), steps: 1);
+            return await page.EvaluateAsync<double>("() => window.scrollY") > 200;
+        }, "the page scrolled under the drag");
+        await page.Keyboard.PressAsync("Escape");
+        await page.Mouse.UpAsync();
+    }
 }

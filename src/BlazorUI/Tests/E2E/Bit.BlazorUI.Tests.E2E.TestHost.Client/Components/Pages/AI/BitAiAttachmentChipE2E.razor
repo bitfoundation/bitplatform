@@ -1,0 +1,160 @@
+﻿@page "/e2e/aiattachmentchip"
+
+<PageTitle>BitAiAttachmentChip E2E</PageTitle>
+
+<h1>BitAiAttachmentChip</h1>
+
+<E2ESection Id="kinds" Title="Kinds">
+    <BitAiAttachmentChip Id="ach-image" Attachment="_image" />
+    <BitAiAttachmentChip Id="ach-image-url" Attachment="_imageUrl" />
+    <BitAiAttachmentChip Id="ach-file" Attachment="_file" />
+    <BitAiAttachmentChip Id="ach-audio" Attachment="_audio" />
+    <BitAiAttachmentChip Id="ach-video" Attachment="_video" />
+</E2ESection>
+
+<E2ESection Id="upload-status" Title="Status">
+    <BitAiAttachmentChip Id="ach-uploading" Attachment="_uploading" />
+    <BitAiAttachmentChip Id="ach-failed" Attachment="_failed" />
+    <BitAiAttachmentChip Id="ach-failed-default" Attachment="_failedDefault" />
+    <BitAiAttachmentChip Id="ach-progress" Attachment="_progress" />
+    <button id="ach-progress-advance" @onclick="Advance">Advance the upload</button>
+</E2ESection>
+
+<E2ESection Id="remove" Title="OnRemove">
+    <div id="ach-removable">
+        @foreach (var attachment in _removable)
+        {
+            <BitAiAttachmentChip @key="attachment.AttachmentId" Id="@($"ach-rm-{attachment.AttachmentId}")" Attachment="attachment" OnRemove="Remove" />
+        }
+    </div>
+    <p>Removed: <span id="ach-removed">@string.Join(",", _removed)</span></p>
+</E2ESection>
+
+<E2ESection Id="long" Title="A long name">
+    <BitAiAttachmentChip Id="ach-long" Attachment="_long" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitAiAttachmentChip Id="ach-dis" Attachment="_disabledAttachment" Disabled OnRemove="a => _disabledRemoved++" />
+    <p>Removed: <span id="ach-dis-removed">@_disabledRemoved</span></p>
+</E2ESection>
+
+<E2ESection Id="style" Title="Public variables, Styles and Classes">
+    <BitAiAttachmentChip Id="ach-style"
+                         Attachment="_long"
+                         Style="--bit-AiAttachmentChip-max-width: 150px; --bit-AiAttachmentChip-thumbnail-size: 24px; --bit-AiAttachmentChip-thumbnail-radius: 5px; --bit-AiAttachmentChip-thumbnail-background: rgb(1, 2, 3); --bit-AiAttachmentChip-thumbnail-color: rgb(4, 5, 6)" />
+    <div style="--bit-AiAttachmentChip-thumbnail-background: rgb(7, 8, 9)">
+        <BitAiAttachmentChip Id="ach-style-ancestor" Attachment="_file" />
+    </div>
+    <BitAiAttachmentChip Id="ach-style-parts"
+                         Attachment="_file"
+                         Classes="@(new() { Root = "ach-custom-root", Thumbnail = "ach-custom-thumb", Icon = "ach-custom-icon" })"
+                         Styles="@(new() { Thumbnail = "outline: 2px solid rgb(10, 11, 12)", Icon = "color: rgb(13, 14, 15)" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAiAttachmentChip Id="ach-rtl" Dir="BitDir.Rtl" Attachment="_file" OnRemove="a => { }" />
+    <div dir="rtl">
+        <BitAiAttachmentChip Id="ach-rtl-inherited" Attachment="_file" OnRemove="a => { }" />
+    </div>
+    <BitAiAttachmentChip Id="ach-ltr" Attachment="_file" OnRemove="a => { }" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    // A 1x1 PNG, for an image chip drawn from the content of the attachment rather than a thumbnail.
+    private const string TinyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+    private readonly BitAiAttachment _image = new("att-image", "photo.png")
+    {
+        Kind = BitAiAttachmentKind.Image,
+        ContentType = "image/png",
+        Size = 2048,
+        ThumbnailUrl = "samples/image-square.svg",
+        Url = "samples/image-landscape.svg",
+    };
+
+    private readonly BitAiAttachment _imageUrl = new("att-image-url", "pixel.png")
+    {
+        Kind = BitAiAttachmentKind.Image,
+        ContentType = "image/png",
+        Size = 70,
+        Url = $"data:image/png;base64,{TinyPng}",
+    };
+
+    private readonly BitAiAttachment _file = new("att-file", "report.pdf")
+    {
+        ContentType = "application/pdf",
+        Size = 1_572_864,
+    };
+
+    private readonly BitAiAttachment _audio = new("att-audio", "memo.mp3")
+    {
+        Kind = BitAiAttachmentKind.Audio,
+        ContentType = "audio/mpeg",
+        Size = 512,
+    };
+
+    private readonly BitAiAttachment _video = new("att-video", "clip.mp4")
+    {
+        Kind = BitAiAttachmentKind.Video,
+        ContentType = "video/mp4",
+    };
+
+    private readonly BitAiAttachment _uploading = new("att-uploading", "upload.zip")
+    {
+        Status = BitAiAttachmentStatus.Uploading,
+        Progress = 0.4,
+        Size = 4096,
+    };
+
+    private readonly BitAiAttachment _failed = new("att-failed", "broken.docx")
+    {
+        Status = BitAiAttachmentStatus.Failed,
+        Error = "Network lost",
+    };
+
+    private readonly BitAiAttachment _failedDefault = new("att-failed-default", "broken.xlsx")
+    {
+        Status = BitAiAttachmentStatus.Failed,
+    };
+
+    private BitAiAttachment _progress = new("att-progress", "growing.bin")
+    {
+        Status = BitAiAttachmentStatus.Uploading,
+        Progress = 0,
+    };
+
+    private readonly BitAiAttachment _long = new("att-long", "a-really-long-file-name-that-will-never-fit-inside-the-chip-of-an-attachment.pdf")
+    {
+        Size = 1024,
+    };
+
+    private readonly BitAiAttachment _disabledAttachment = new("att-disabled", "locked.pdf") { Size = 100 };
+
+    private readonly List<BitAiAttachment> _removable =
+    [
+        new("one", "one.txt") { Size = 1 },
+        new("two", "two.txt") { Size = 2 },
+        new("three", "three.txt") { Size = 3 },
+    ];
+
+    private readonly List<string> _removed = [];
+    private int _disabledRemoved;
+
+    private void Advance()
+    {
+        var progress = (_progress.Progress ?? 0) + 0.5;
+
+        _progress = progress >= 1
+            ? _progress with { Status = BitAiAttachmentStatus.Ready, Progress = null, Size = 3 * 1024 * 1024 }
+            : _progress with { Progress = progress };
+    }
+
+    private void Remove(BitAiAttachment attachment)
+    {
+        _removable.Remove(attachment);
+        _removed.Add(attachment.Name);
+    }
+}

@@ -1,0 +1,79 @@
+﻿@page "/state"
+@implements IDisposable
+@inject CartState Cart
+@inject SampleSession Session
+
+<PageTitle>State - BevTools samples</PageTitle>
+
+<h1>State</h1>
+
+<p>
+    <code>CartState</code> implements <code>IBevStateProvider</code>: the <em>State</em> panel lists it with every named
+    action and the diff each one made. A product's page is a route with a parameter, which the <em>Routing</em> panel
+    shows with its value.
+</p>
+
+<section>
+    <h2>Products</h2>
+    @foreach (var product in SampleCatalog.Products)
+    {
+        <div class="item">
+            <NavLink href="@($"products/{product.Id}")">@product.Name</NavLink>
+            <span>@product.Price.ToString("0.00")</span>
+            <button @onclick="() => Cart.Add(product)">Add to cart</button>
+        </div>
+    }
+</section>
+
+<section>
+    <h2>Cart</h2>
+    @foreach (var line in Cart.Lines)
+    {
+        <div class="item">
+            <span>@line.Product.Name × @line.Quantity</span>
+            <button @onclick="() => Cart.Remove(line.Product.Id)">Remove</button>
+        </div>
+    }
+    <p>Total: @Cart.Total.ToString("0.00") @(Cart.CouponCode is null ? "" : $"(coupon {Cart.CouponCode})")</p>
+    <button @onclick="Cart.Clear">Clear</button>
+</section>
+
+<section>
+    <h2>Coupon</h2>
+    <p>A form with validation: the <em>Forms</em> panel shows its fields, what changed and what failed validation.</p>
+    <EditForm Model="_coupon" OnValidSubmit="ApplyCoupon">
+        <DataAnnotationsValidator />
+        <InputText @bind-Value="_coupon.Code" placeholder="SAVE10" />
+        <button type="submit">Apply</button>
+        <ValidationMessage For="() => _coupon.Code" />
+    </EditForm>
+</section>
+
+<section>
+    <h2>Redaction</h2>
+    <p>
+        This page injects <code>SampleSession</code>. Select <code>StatePage</code> in the <em>Components</em> panel:
+        <code>AccessToken</code> (by its name) and <code>Nickname</code> (<code>[BevToolsSensitive]</code>) are
+        redacted, and <code>SupportNotes</code> (<code>[BevToolsIgnore]</code>) is not listed at all.
+    </p>
+    <p>Signed in as @Session.UserName.</p>
+</section>
+
+@code {
+    private readonly CouponModel _coupon = new();
+
+    protected override void OnInitialized() => Cart.Changed += OnCartChanged;
+
+    // The cart is scoped, so another page may change it while this one is open.
+    private void OnCartChanged(BevStateChangeInfo change) => InvokeAsync(StateHasChanged);
+
+    private void ApplyCoupon() => Cart.ApplyCoupon(_coupon.Code!);
+
+    public void Dispose() => Cart.Changed -= OnCartChanged;
+
+    private sealed class CouponModel
+    {
+        [Required, StringLength(10, MinimumLength = 4)]
+        public string? Code { get; set; }
+    }
+}

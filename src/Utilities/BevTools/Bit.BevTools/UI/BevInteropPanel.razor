@@ -4,7 +4,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:50%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter JS interop calls" placeholder="Filter identifier, component, result or error" value="@Query" @oninput="OnQuery" />
+            <input type="text" aria-label="Filter JS interop calls" placeholder="Filter identifier, component, result or error" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <span class="bev-muted bev-nowrap">@_calls.Count calls · → .NET→JS, ← JS→.NET</span>
             <button type="button" @onclick="() => Session.Interop.Clear()">Clear</button>
         </div>
@@ -80,9 +80,9 @@
             .ToArray();
     }
 
-    private void OnQuery(ChangeEventArgs e)
+    private void OnQuery(string? value)
     {
-        Ui.SetQuery("interop", e.Value?.ToString());
+        Ui.SetQuery("interop", value);
         OnParametersSet();
     }
 }

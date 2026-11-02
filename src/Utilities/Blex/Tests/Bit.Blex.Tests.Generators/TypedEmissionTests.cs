@@ -238,6 +238,27 @@ public class TypedEmissionTests
     }
 
     [TestMethod]
+    public void A_store_version_overrides_PersistVersion()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(Persist = true, Version = 3)] public partial class S { [BlexStateAttribute] private int _x; }
+            """);
+
+        Assert.IsEmpty(result.CompileErrors());
+        Assert.Contains("public override int PersistVersion => 3;", result.SingleGenerated);
+    }
+
+    [TestMethod]
+    public void A_store_without_a_version_does_not_override_PersistVersion()
+    {
+        var result = GeneratorTestHelper.Run(Usings + """
+            [BlexStoreAttribute(Persist = true)] public partial class S { [BlexStateAttribute] private int _x; }
+            """);
+
+        Assert.DoesNotContain("PersistVersion", result.SingleGenerated);
+    }
+
+    [TestMethod]
     public void A_store_with_nothing_transient_does_not_override_TransientStateKeys()
     {
         var result = GeneratorTestHelper.Run(Usings + """

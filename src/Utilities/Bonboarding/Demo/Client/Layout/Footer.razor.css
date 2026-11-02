@@ -224,8 +224,11 @@
     line-height: 1.6;
 }
 
+/* Underlined: inside a sentence, colour alone does not tell a link from the words around it (WCAG 1.4.1). */
 .bb-copyright a {
     color: var(--bb-text-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .bb-go-to-top {

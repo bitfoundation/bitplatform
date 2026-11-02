@@ -32,6 +32,7 @@ public static class BlowCompletions
         "child nodes are not positioned inside their group",
         "a saved flow loads back without its custom node data",
         "dragging feels laggy under Blazor Server",
+        "Could not load file or assembly 'Bit.Blow' in an app that lazy loads it",
     ];
 
     private static readonly string[] _features =

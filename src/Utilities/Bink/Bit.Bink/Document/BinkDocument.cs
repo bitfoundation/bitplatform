@@ -895,6 +895,13 @@ public sealed partial class BinkDocument
     internal (Guid PreviousLayerId, int PreviousIndex) ReorderElementCore(Guid elementId, Guid targetLayerId, int? index)
     {
         BinkLayer target = RequireLayer(targetLayerId);
+        // An element already where it is sent stays put. Taking it out and putting it back would leave the order as
+        // it is, but the layer would then re-index every element above it on the next lookup.
+        if (_elementLayers.TryGetValue(elementId, out BinkLayer? current) && current == target)
+        {
+            int position = target.IndexOf(elementId);
+            if ((index is null ? target.Count - 1 : Math.Clamp(index.Value, 0, target.Count - 1)) == position) return (target.Id, position);
+        }
         (BinkLayer source, int previousIndex, BinkElement element) = RemoveElementCore(elementId);
         int at = index is null ? target.Count : Math.Clamp(index.Value, 0, target.Count);
         target.InsertAt(at, element);

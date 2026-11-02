@@ -1,0 +1,41 @@
+@inherits PosWidgetBase<PosStaffMember[]>
+
+<PosWidgetFrame Definition="Definition"
+                Layout="Layout"
+                Status="Status"
+                OnRetry="Reload"
+                Subtitle="@Localizer[Dashboard.PeriodKey]"
+                EmptyTitleKey="@nameof(WorkbenchStrings.PosNoShiftsYet)"
+                EmptyDescriptionKey="@nameof(WorkbenchStrings.PosNoShiftsYetDescription)">
+    <Skeleton>
+        @for (var i = 0; i < 4; i++)
+        {
+            <BitShimmer Height="2.5rem" />
+        }
+    </Skeleton>
+    <ChildContent>
+        <ul class="team">
+            @{ var top = Data!.Max(s => s.Sales); var rank = 0; }
+            @foreach (var member in Data!)
+            {
+                rank++;
+                <li>
+                    <BitPersona Size="BitPersonaSize.Size40"
+                                Class="member"
+                                ImageUrl="@WorkbenchPhotos.Find(member.NameKey)"
+                                PrimaryText="@Localizer[member.NameKey]"
+                                SecondaryText="@Localizer[nameof(WorkbenchStrings.PosOrdersCount), PosFormat.Number(member.Orders)]"
+                                Presence="@(rank <= 3 ? BitPersonaPresence.Online : BitPersonaPresence.Away)" />
+                    <span class="sales">
+                        <span class="amount">@PosFormat.Money(member.Sales, 0)</span>
+                        <span class="bar"><span style="width:@PosFormat.BarWidth(member.Sales, top)"></span></span>
+                    </span>
+                    @if (rank == 1)
+                    {
+                        <span class="medal" title="@Localizer[nameof(WorkbenchStrings.PosTopSeller)]">🏆</span>
+                    }
+                </li>
+            }
+        </ul>
+    </ChildContent>
+</PosWidgetFrame>

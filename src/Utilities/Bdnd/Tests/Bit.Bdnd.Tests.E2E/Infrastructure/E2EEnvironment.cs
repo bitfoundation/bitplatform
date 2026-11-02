@@ -39,11 +39,24 @@ public static class E2EEnvironment
     /// </summary>
     public static string? Channel { get; } = Read("BDND_E2E_CHANNEL");
 
+    /// <summary>
+    /// <c>BDND_E2E_BROWSER</c>: <c>chromium</c> (the default), <c>firefox</c> or <c>webkit</c> - the browser engine the
+    /// suite drives, from the browsers Playwright installed (<c>playwright.ps1 install firefox webkit</c>). The tests
+    /// that synthesize touches through the DevTools protocol run on Chromium only.
+    /// </summary>
+    public static string BrowserEngine { get; } = Read("BDND_E2E_BROWSER")?.ToLowerInvariant() ?? "chromium";
+
     /// <summary><c>BDND_E2E_EXECUTABLE</c>: full path to a chromium-family executable.</summary>
     public static string? Executable { get; } = Read("BDND_E2E_EXECUTABLE");
 
     /// <summary><c>BDND_E2E_HEADED=1</c>: show the browser.</summary>
     public static bool Headed { get; } = Read("BDND_E2E_HEADED") == "1";
+
+    /// <summary>
+    /// <c>BDND_E2E_SKIP_BUILD=1</c>: do not build the Blazor Hybrid harness before the run (CI builds it in a step of
+    /// its own).
+    /// </summary>
+    public static bool SkipBuild { get; } = Read("BDND_E2E_SKIP_BUILD") == "1";
 
     /// <summary>
     /// True on a build server (<c>CI=true</c>, which GitHub Actions sets). A missing browser or a demo that

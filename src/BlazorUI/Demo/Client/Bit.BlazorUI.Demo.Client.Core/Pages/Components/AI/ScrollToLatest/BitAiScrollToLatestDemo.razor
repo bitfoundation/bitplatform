@@ -1,0 +1,146 @@
+﻿@page "/components/ai/scrolltolatest"
+
+<PageOutlet Url="components/ai/scrolltolatest"
+            Title="AiScrollToLatest"
+            Description="BitAiScrollToLatest is the button that appears when the reader has scrolled away from the newest message of an AI transcript, and takes them back to it." />
+
+<DemoPage Name="AiScrollToLatest"
+          Description="BitAiScrollToLatest is the floating button that appears when the reader has scrolled away from the newest message of a transcript and takes them back to it. It renders only while Visible - there is somewhere to go - and floats centered above its nearest positioned ancestor, which in a BitAiChat is the footer, so it sits just above the composer whatever height the composer has. Pair it with the OnPinnedChange and ScrollToLatestAsync of a BitAiMessageList."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubAIUrl="ScrollToLatest/BitAiScrollToLatest.razor"
+          GitHubDemoUrl="AI/ScrollToLatest/BitAiScrollToLatestDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The button decides nothing on its own: <b>Visible</b> says whether to show it and <b>OnClick</b> what pressing it
+            does. <BitLink Href="/components/ai/chat">BitAiChat</BitLink> wires both to its transcript for you; a chat assembled
+            by hand wires them to a <BitLink Href="/components/ai/messagelist">BitAiMessageList</BitLink>. It is positioned
+            absolutely, so its container needs <b>position: relative</b> (or any other positioning) and room above it.
+        </BitText>
+        <br />
+        <BitText>
+            The button is a labelled BitButton (the ScrollToLatest string, "Scroll to latest", unless <b>Label</b> says
+            otherwise), so it is reachable with the keyboard and named for a screen reader. Once pressed it goes away, as the
+            view reaches the newest message, and the focus would go with it to the page: BitAiChat moves it to its composer,
+            and a chat assembled by hand does the same in its <b>OnClick</b> (the <b>FocusAsync</b> of a
+            <BitLink Href="/components/ai/promptinput">BitAiPromptInput</BitLink>). Its entrance follows the motion tokens and
+            is skipped under reduced motion, and it is left out of a printout.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Nothing is rendered until <b>Visible</b> is set; then the button floats centered above the box it is in, and
+                <b>OnClick</b> reports a press.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isVisible" Text="Visible" />
+            <div style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri);text-align:center">
+                <BitAiScrollToLatest Visible="isVisible" OnClick="HandleClick" />
+                The positioned box it floats above, such as the footer of a chat.
+            </div>
+            <br />
+            <div>Pressed <b>@clicks</b> times.</div>
+        </DemoExample>
+
+        <DemoExample Title="With a message list" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                What it is for: the <b>OnPinnedChange</b> of a BitAiMessageList shows it when the reader scrolls up, and its
+                <b>ScrollToLatestAsync</b> takes them back. Scroll the transcript up.
+            </div>
+            <br />
+            <div style="height:400px;display:flex;flex-direction:column">
+                <BitAiMessageList @ref="list" Conversation="conversation" OnPinnedChange="HandlePinnedChange" />
+                <div style="position:relative;padding:0.75rem;text-align:center;color:var(--bit-clr-fg-ter)">
+                    <BitAiScrollToLatest Visible="@(isPinned is false)" OnClick="ScrollToLatest" />
+                    The footer of the transcript.
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Label" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>Label</b> words the button in place of the string table's "Scroll to latest" - to say there are new
+                messages, for instance.
+            </div>
+            <br />
+            <div style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                <BitAiScrollToLatest Visible Label="3 new messages" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                A disabled button is shown but takes no press.
+            </div>
+            <br />
+            <div style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                <BitAiScrollToLatest Visible Disabled />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>BitParams</b> with a <b>BitAiScrollToLatestParams</b> sets the label, the classes and the styles of every
+                button inside it; a button's own value wins. Whether it is shown and what pressing it does are not cascaded. The
+                label reaches the button of each BitAiChat in it too, while its classes and styles come from the chat's own
+                <b>Styles</b> / <b>Classes</b> (their <b>ScrollToLatest</b> member).
+            </div>
+            <br />
+            <BitParams Parameters="scrollParams">
+                <div style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                    <BitAiScrollToLatest Visible />
+                </div>
+                <div style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                    <BitAiScrollToLatest Visible Label="Its own label wins" />
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                <b>Style</b> / <b>Class</b> reach the root, <b>Styles</b> / <b>Classes</b> its <b>Button</b> (the class-styles
+                of BitButton). The public <b>--bit-AiScrollToLatest-*</b> variables (see the CSS variables table) move it and
+                lift it from <b>:root</b>, an ancestor or <b>Style</b>.
+            </div>
+            <br />
+            <div>
+                <div style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                    <BitAiScrollToLatest Visible
+                                         Style="box-shadow:none"
+                                         Styles="@(new() { Button = new() { Root = "background:linear-gradient(90deg, #7c3aed, #2563eb);color:#fff;border:none" } })" />
+                </div>
+                <div style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                    <BitAiScrollToLatest Visible
+                                         Class="custom-scroll"
+                                         Classes="@(new() { Button = new() { Root = "custom-scroll-button" } })" />
+                </div>
+                <div style="position:relative;margin-top:5rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                    <BitAiScrollToLatest Visible
+                                         Style="--bit-AiScrollToLatest-offset:1.5rem;--bit-AiScrollToLatest-shadow:0 0 0 0.25rem var(--bit-clr-pri-tint);--bit-AiScrollToLatest-z-index:10" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+            <div>Use BitAiScrollToLatest in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl" style="position:relative;margin-top:4rem;padding:1rem;border:1px dashed var(--bit-clr-brd-pri)">
+                <BitAiScrollToLatest Visible Dir="BitDir.Rtl" Label="رفتن به آخرین پیام" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

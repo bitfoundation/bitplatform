@@ -292,13 +292,15 @@ public static partial class BortableSourceCatalog
     }
 
     /// <summary>
-    /// What a file is for: a page is one of the tours of a feature (or a component one of them
-    /// renders, like the recursive list of the nested demo), the hosting files are the wiring every app
-    /// needs once, a library file is shipped by the package itself, and the rest is what the pages share.
+    /// What a file is for: a page is one of the tours of a feature (or one of the samples it renders, the
+    /// working lists under Samples\, like the recursive list of the nested demo), the hosting files are the
+    /// wiring every app needs once, a library file is shipped by the package itself, and the rest is what the
+    /// pages share.
     /// </summary>
     private static string KindOf(string path)
     {
-        if (path.StartsWith("Demo/Client/Pages/", StringComparison.OrdinalIgnoreCase)) return "Page";
+        if (path.StartsWith("Demo/Client/Pages/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("Demo/Client/Samples/", StringComparison.OrdinalIgnoreCase)) return "Page";
         if (path.StartsWith("Library/", StringComparison.OrdinalIgnoreCase)) return "Library";
         if (path.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("Demo/Client/Extensions/", StringComparison.OrdinalIgnoreCase) ||

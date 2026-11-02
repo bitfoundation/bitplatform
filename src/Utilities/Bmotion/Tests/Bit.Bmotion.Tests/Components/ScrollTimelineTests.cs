@@ -83,6 +83,46 @@ public class ScrollTimelineTests
         Assert.IsFalse(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page(), null));
     }
 
+    [TestMethod]
+    public void Smoothed_LowersItsSpring_ByDefaultMotionDevsRecipe()
+    {
+        Assert.IsNull(BmScrollTimeline.Page().ToJsObject()["smooth"], "an exact timeline has no spring");
+
+        var smooth = (Dictionary<string, object?>)BmScrollTimeline.Page().Smoothed().ToJsObject()["smooth"]!;
+        Assert.AreEqual(100.0, smooth["stiffness"]);
+        Assert.AreEqual(30.0, smooth["damping"]);
+        Assert.AreEqual(1.0, smooth["mass"]);
+
+        var own = (Dictionary<string, object?>)BmScrollTimeline.View(BmScrollAxis.X).Smoothed(new BmSpring { Stiffness = 300, Damping = 12, Mass = 2 }).ToJsObject()["smooth"]!;
+        Assert.AreEqual(300.0, own["stiffness"]);
+        Assert.AreEqual(12.0, own["damping"]);
+        Assert.AreEqual(2.0, own["mass"]);
+    }
+
+    [TestMethod]
+    public void Smoothed_ResolvesABounceAndDurationSpring_AndKeepsTheRestOfTheTimeline()
+    {
+        var timeline = BmScrollTimeline.ViewOf("#hero", BmScrollAxis.X, "cover").Smoothed(new BmSpring { Bounce = 0, Duration = 0.4 });
+        var js = timeline.ToJsObject();
+        var (stiffness, damping) = BmotionTransitionConfig.SpringFromBounce(0.4, 0, 1);
+
+        var smooth = (Dictionary<string, object?>)js["smooth"]!;
+        Assert.AreEqual(stiffness, (double)smooth["stiffness"]!, 1e-9);
+        Assert.AreEqual(damping, (double)smooth["damping"]!, 1e-9);
+        Assert.AreEqual(true, js["view"]);
+        Assert.AreEqual("#hero", js["selector"]);
+        Assert.AreEqual("inline", js["axis"]);
+    }
+
+    [TestMethod]
+    public void Smoothed_TakesPartInEquivalence()
+    {
+        Assert.IsTrue(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page().Smoothed(), BmScrollTimeline.Page().Smoothed()));
+        Assert.IsFalse(BmScrollTimeline.AreEquivalent(BmScrollTimeline.Page(), BmScrollTimeline.Page().Smoothed()));
+        Assert.IsFalse(BmScrollTimeline.AreEquivalent(
+            BmScrollTimeline.Page().Smoothed(), BmScrollTimeline.Page().Smoothed(new BmSpring { Stiffness = 300 })));
+    }
+
     // ── Component wiring ──────────────────────────────────────────────────────
 
     [TestMethod]

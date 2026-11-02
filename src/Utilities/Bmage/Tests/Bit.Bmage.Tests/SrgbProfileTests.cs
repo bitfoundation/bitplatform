@@ -1,6 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 using Bit.Bmage.Input;
+using Bit.Bmage.Metadata;
 
 namespace Bit.Bmage.Tests;
 
@@ -41,6 +42,21 @@ public sealed class SrgbProfileTests
         for (var length = 0; length < whole.Length; length++)
             Assert.IsFalse(ImageProcessorFactory.IsSrgbProfile(whole.AsSpan(0, length)), $"cut at {length} bytes");
         Assert.IsFalse(ImageProcessorFactory.IsSrgbProfile(Encoding.ASCII.GetBytes(new string('x', 40) + "sRGB IEC61966-2.1")), "not a profile");
+    }
+
+    /// <summary>A PNG profile past the size the reader inflates reads as none, but is still no sRGB profile.</summary>
+    [TestMethod]
+    public void APngProfileTooLargeToReadStillGoesToTheBrowser()
+    {
+        using var image = TestImages.Gradient(8, 8);
+        var png = Codecs.Png.PngEncoder.Encode(image).Data;
+        var srgb = PngContainer.WriteMetadata(png, new ImageMetadata(null, Profile("RGB ", Version2Description("sRGB IEC61966-2.1")), default, ImageFormat.Png));
+        var oversized = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+
+        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, png), "no profile");
+        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, srgb), "an sRGB profile");
+        Assert.IsTrue(PngContainer.ReadMetadata(oversized).IccProfile.IsEmpty, "the profile is past the cap");
+        Assert.IsTrue(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, oversized), "a profile too large to read");
     }
 
     /// <summary>A profile holding only its header and the description tag.</summary>

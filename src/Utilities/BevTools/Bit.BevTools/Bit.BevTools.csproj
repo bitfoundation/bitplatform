@@ -3,7 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <RootNamespace>Bit.BevTools</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <PackageDescription>Runtime instrumentation and in-app developer tools for Blazor: component tree, render profiler, event timeline, state, network, JS interop, errors, DI inspector and diagnostics, plus the extension API (panels, state providers, diagnostic rules, commands, timeline events) libraries use to integrate with it.</PackageDescription>
@@ -27,15 +27,12 @@
              their TFM. Pinning to an exact version (e.g. "8.0.0") forced applications onto that
              specific patch even when they wanted a newer servicing release. The upper bound
              prevents accidentally pulling a major-version package that targets a newer TFM. -->
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0,10.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.Http" Version="[8.0.0,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.Http" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Http" Version="[10.0.0,11.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.Hosting.Abstractions" Version="[8.0.0,9.0.0)" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.Hosting.Abstractions" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.Http" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Hosting.Abstractions" Version="[10.0.0,11.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.Extensions.Hosting.Abstractions" Version="[11.0.0-rc.1.26425.128,12.0.0)" />
     </ItemGroup>
 
     <ItemGroup>
@@ -85,8 +82,8 @@
             BeforeTargets="ResolveProjectStaticWebAssets"
             DependsOnTargets="BuildBevToolsJavaScriptOnce">
         <ItemGroup>
-            <Content Remove="wwwroot\bit-bevtools.js" />
-            <Content Include="wwwroot\bit-bevtools.js" />
+            <Content Remove="wwwroot\bit-bevtools.js;wwwroot\bit-bevtools-companion.js" />
+            <Content Include="wwwroot\bit-bevtools.js;wwwroot\bit-bevtools-companion.js" />
         </ItemGroup>
     </Target>
 
@@ -126,7 +123,7 @@
          would see wwwroot/bit-bevtools.js newer than the sources and skip, shipping unminified JS (and
          vice versa). A per-configuration stamp in obj/ makes switching configurations invalidate the
          check; the stale stamp of the other configuration is deleted so switching back rebuilds too. -->
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json" Outputs="wwwroot/bit-bevtools.js;obj/bit-bevtools-$(Configuration).stamp">
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json" Outputs="wwwroot/bit-bevtools.js;wwwroot/bit-bevtools-companion.js;obj/bit-bevtools-$(Configuration).stamp">
         <ItemGroup>
             <_BevToolsStaleJsStamps Include="obj\bit-bevtools-*.stamp" Exclude="obj\bit-bevtools-$(Configuration).stamp" />
         </ItemGroup>
@@ -135,9 +132,12 @@
         <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
              An interrupted in-place minify could leave a half-written file that the Outputs check
              above then treats as up-to-date, requiring a clean to recover. The Move is atomic enough
-             to avoid that. The esbuild "esm" format keeps the exports that the C# side imports as a module. -->
+             to avoid that. The esbuild "esm" format keeps the exports that the C# side imports as a module,
+             and that the browser extension imports from the companion. -->
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bevtools.js --minify --format=esm --outfile=wwwroot/bit-bevtools.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bevtools.min.js" DestinationFiles="wwwroot/bit-bevtools.js" OverwriteReadOnlyFiles="true" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bevtools-companion.js --minify --format=esm --outfile=wwwroot/bit-bevtools-companion.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bevtools-companion.min.js" DestinationFiles="wwwroot/bit-bevtools-companion.js" OverwriteReadOnlyFiles="true" />
         <MakeDir Directories="obj" />
         <Touch Files="obj/bit-bevtools-$(Configuration).stamp" AlwaysCreate="true" />
     </Target>

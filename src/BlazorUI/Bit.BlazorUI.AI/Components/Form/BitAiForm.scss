@@ -1,0 +1,147 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every form, one
+// set on an ancestor the forms inside it, and one set on the Style of an instance that one alone (a form holds no other):
+//   --bit-AiForm-background             background of the form                               (default: $clr-bg-sec)
+//   --bit-AiForm-border-color           border color of the form                             (default: $clr-brd-pri)
+//   --bit-AiForm-border-width           border width of the form                             (default: $shp-border-width)
+//   --bit-AiForm-radius                 corner radius of the form                            (default: $shp-radius-surface)
+//   --bit-AiForm-padding                inset of the form                                    (default: $spa-card-md)
+//   --bit-AiForm-gap                    room between the title, the fields and the actions   (default: spacing(1.5))
+//   --bit-AiForm-title-color            color of the title                                   (default: $clr-fg-pri)
+//   --bit-AiForm-title-font-size        size of the title                                    (default: $tg-fs-md)
+//   --bit-AiForm-title-font-weight      weight of the title                                  (default: $tg-fw-semibold)
+//   --bit-AiForm-description-color      color of the description and of the help text of a
+//                                       group of fields                                      (default: $clr-fg-sec)
+//   --bit-AiForm-description-font-size  size of the description and of the help text         (default: $tg-fs-xs)
+//   --bit-AiForm-group-border-color     border color of a group of fields (a nested object,
+//                                       a list), and of the rule between the entries of a
+//                                       list of objects                                      (default: $clr-brd-pri)
+//   --bit-AiForm-group-radius           corner radius of a group of fields                   (default: $shp-radius-control)
+//   --bit-AiForm-group-padding          inset of a group of fields                           (default: spacing(1.5))
+//   --bit-AiForm-legend-color           color of the legend of a group of fields             (default: $clr-fg-pri)
+//   --bit-AiForm-legend-font-size       size of the legend of a group of fields              (default: $tg-fs-sm)
+//   --bit-AiForm-required-color         color of the marker of a required list               (default: $clr-req)
+//   --bit-AiForm-error-color            color of an invalid list's border and of the error
+//                                       messages the form renders itself                    (default: $clr-err)
+//   --bit-AiForm-error-font-size        size of those error messages                         (default: $tg-fs-2xs)
+//   --bit-AiForm-actions-gap            room between the actions                             (default: spacing(1))
+//   --bit-AiForm-actions-justify        how the actions sit along their row                  (default: flex-end)
+//
+// The fields are core inputs (BitTextField, BitNumberField, BitCheckbox, BitDropdown, BitDatePicker, BitTimePicker)
+// and the actions BitButtons and a BitTag: they are restyled through their own variables.
+
+.bit-aifrm {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 0;
+    gap: var(--bit-AiForm-gap, #{spacing(1.5)});
+    padding: var(--bit-AiForm-padding, #{$spa-card-md});
+    background-color: var(--bit-AiForm-background, #{$clr-bg-sec});
+    border-radius: var(--bit-AiForm-radius, #{$shp-radius-surface});
+    border: var(--bit-AiForm-border-width, #{$shp-border-width}) $shp-border-style var(--bit-AiForm-border-color, #{$clr-brd-pri});
+}
+
+.bit-aifrm-ttl {
+    color: var(--bit-AiForm-title-color, #{$clr-fg-pri});
+    font-size: var(--bit-AiForm-title-font-size, #{$tg-fs-md});
+    font-weight: var(--bit-AiForm-title-font-weight, #{$tg-fw-semibold});
+}
+
+.bit-aifrm-des,
+.bit-aifrm-hnt {
+    color: var(--bit-AiForm-description-color, #{$clr-fg-sec});
+    font-size: var(--bit-AiForm-description-font-size, #{$tg-fs-xs});
+}
+
+.bit-aifrm-fld {
+    min-width: 0;
+}
+
+// A nested object or a list: a fieldset, so its legend names the group of fields in it.
+.bit-aifrm-grp {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-inline-size: 0;
+    gap: var(--bit-AiForm-gap, #{spacing(1.5)});
+    padding: var(--bit-AiForm-group-padding, #{spacing(1.5)});
+    border-radius: var(--bit-AiForm-group-radius, #{$shp-radius-control});
+    border: $shp-border-width $shp-border-style var(--bit-AiForm-group-border-color, #{$clr-brd-pri});
+}
+
+.bit-aifrm-inv {
+    border-color: var(--bit-AiForm-error-color, #{$clr-err});
+}
+
+.bit-aifrm-lgd {
+    padding: 0 spacing(0.5);
+    color: var(--bit-AiForm-legend-color, #{$clr-fg-pri});
+    font-size: var(--bit-AiForm-legend-font-size, #{$tg-fs-sm});
+    font-weight: $tg-field-label-font-weight;
+    letter-spacing: $tg-ctrl-letter-spacing;
+}
+
+.bit-aifrm-req {
+    margin-inline-start: spacing(0.625);
+    color: var(--bit-AiForm-required-color, #{$clr-req});
+}
+
+.bit-aifrm-itm {
+    display: flex;
+    align-items: flex-start;
+    gap: spacing(1);
+}
+
+// The entries of a list of objects are groups of fields alike, so each one after the first is set off from the one
+// before it by a rule in the color of the group around them.
+.bit-aifrm-iob + .bit-aifrm-iob {
+    padding-block-start: var(--bit-AiForm-gap, #{spacing(1.5)});
+    border-block-start: $shp-border-width $shp-border-style var(--bit-AiForm-group-border-color, #{$clr-brd-pri});
+}
+
+.bit-aifrm-ibd {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: spacing(1);
+}
+
+.bit-aifrm-rmv {
+    flex: none;
+}
+
+.bit-aifrm-add {
+    align-self: flex-start;
+}
+
+.bit-aifrm-err {
+    overflow-wrap: break-word;
+    color: var(--bit-AiForm-error-color, #{$clr-err});
+    font-size: var(--bit-AiForm-error-font-size, #{$tg-fs-2xs});
+}
+
+.bit-aifrm-act {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bit-AiForm-actions-gap, #{spacing(1)});
+    justify-content: var(--bit-AiForm-actions-justify, flex-end);
+}
+
+.bit-aifrm-sbm {
+    display: flex;
+    justify-content: var(--bit-AiForm-actions-justify, flex-end);
+}
+
+// The inputs grey out on their own; the text the form draws around them follows.
+.bit-aifrm.bit-dis {
+    .bit-aifrm-ttl,
+    .bit-aifrm-des,
+    .bit-aifrm-hnt,
+    .bit-aifrm-lgd {
+        color: $clr-fg-dis;
+    }
+}

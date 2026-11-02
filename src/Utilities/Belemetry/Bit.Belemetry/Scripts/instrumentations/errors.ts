@@ -32,7 +32,11 @@ export function installErrors(ctx: InstrumentationContext): Uninstall {
     };
     const onError = guard((event: ErrorEvent) => {
         const error = event.error as ErrorLike | null | undefined;
-        const message = event.message || (error && error.message) || '';
+        // The error's own message first: the event's carries a prefix each browser words its own way ("Uncaught
+        // TypeError: ..." in Chromium, "TypeError: ..." elsewhere), which repeats exception.type and splits one error
+        // into one group per browser. A thrown non-error, or a cross-origin "Script error.", has only the event's.
+        const own = error && typeof error === 'object' && typeof error.message === 'string' ? error.message : '';
+        const message = own || event.message || '';
         if (!message && !error) return;
         const stack = (error && error.stack) || (event.filename ? 'at ' + event.filename + ':' + event.lineno + ':' + event.colno : undefined);
         report((error && error.name) || 'Error', String(message), stack);

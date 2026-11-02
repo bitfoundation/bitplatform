@@ -23,14 +23,16 @@ import { installXhr } from './instrumentations/xhr';
 import { onHidden } from './lifecycle';
 import { debug, setDebug } from './log';
 import { Severity, type Attributes, type TelemetryRecord } from './model';
-import { Pipeline } from './pipeline';
+import { Pipeline, type Processor } from './pipeline';
 import { createException, createLog, sanitizeAttributes } from './records';
 import { buildResource } from './resource';
 import { SessionManager } from './session';
+import { countRequest, resetStats, statsSnapshot, type StatsSnapshot } from './stats';
+import { StorageKeys } from './storage';
 import { fromBase64, Transport } from './transport';
 
 export { Features };
-export type { BelemetryConfig };
+export type { BelemetryConfig, Processor, TelemetryRecord };
 
 /** `getContext()` result (C# BelemetryJsContext). */
 export interface BelemetryContext {
@@ -49,6 +51,8 @@ export interface DotNetRequest {
     contentEncoding?: string | null;
     headers?: Record<string, string> | null;
     body: string;
+    /** The features of its records (C# `BelemetryHttpRequest.Features`): given up when the page no longer grants one. */
+    features?: number | null;
 }
 
 export interface AttachOptions {
@@ -92,6 +96,19 @@ const INSTRUMENTATIONS: Installer[] = [
 let state: State | null = null;
 let bridge: Bridge | null = null;
 let lastContext = '';
+
+// Module-level, so a page can register them before the script starts (or before .NET starts it).
+const processors: Processor[] = [];
+const globalAttributes: Attributes = {};
+
+// Consent governs these: they are set through setUser and the session, never as plain attributes.
+const RESERVED_ATTRIBUTES = ['session.id', 'enduser.pseudo.id', 'user.id'];
+
+function recordAttributes(attributes: Attributes | null | undefined): Attributes {
+    const valid = sanitizeAttributes(attributes);
+    for (const key of RESERVED_ATTRIBUTES) delete valid[key];
+    return valid;
+}
 
 function effective(s: State): number {
     return s.config.features & s.consent.granted();
@@ -157,9 +174,9 @@ function updateSink(s: State): void {
         // Without the .NET bridge yet, records wait in the queue.
         s.pipeline.sink = bridge ? (batch => relayBatch((bridge as Bridge).ref, batch)) : null;
     } else {
-        s.pipeline.sink = (batch, unload) => Promise.all(s.exporters.map(exporter => {
+        s.pipeline.sink = (batch, unload, mark) => Promise.all(s.exporters.map(exporter => {
             try {
-                return exporter.export(batch, unload).catch(e => debug('export failed', e));
+                return exporter.export(batch, unload, mark).catch(e => debug('export failed', e));
             } catch (e) {
                 debug('export failed', e);
                 return undefined;
@@ -193,7 +210,7 @@ function onConsentChanged(s: State, previous: number, next: number, released: Te
     syncContext();
 }
 
-function onPageHidden(s: State): void {
+function onPageHidden(s: State, unloading: boolean): void {
     // Everything here must start its requests synchronously: nothing async is guaranteed to run after pagehide.
     s.pipeline.flush(true);
     if (bridge && bridge.unloadDrain) {
@@ -205,6 +222,7 @@ function onPageHidden(s: State): void {
             debug('unload drain unavailable', e);
         }
     }
+    s.transport.pageHidden(unloading);
 }
 
 function init(input: BelemetryConfig | null | undefined): State {
@@ -221,9 +239,12 @@ function init(input: BelemetryConfig | null | undefined): State {
             const exporter = exporterFor(s, url);
             return exporter ? exporter.headers : null;
         },
+        revocations: features => s.consent.revocations(features),
     });
     const exporters = createExporters(config, transport);
     const pipeline = new Pipeline(config, consent, session, buildResource(config));
+    pipeline.processors = processors;
+    pipeline.attributes = globalAttributes;
     s = {
         config,
         consent,
@@ -252,6 +273,10 @@ export function start(config?: BelemetryConfig | null): void {
             updateSink(s);
             s.config.consent = next.consent;
             s.consent.update(next.consent);
+            // A WebAssembly client starting the script a server already started: its .NET pipeline exports through
+            // fetch, to URLs only it knows.
+            const ignore = s.config.dependencies.ignoreUrls;
+            for (const url of next.dependencies.ignoreUrls || []) if (ignore.indexOf(url) < 0) ignore.push(url);
             return;
         }
         const s = state = init(config);
@@ -259,10 +284,16 @@ export function start(config?: BelemetryConfig | null): void {
         updateSink(s);
         s.consent.onChange((previous, next, released) => onConsentChanged(s, previous, next, released));
         s.session.onChange = syncContext;
-        s.disposers.push(onHidden(() => onPageHidden(s), 'last'));
+        s.disposers.push(onHidden(unloading => onPageHidden(s, unloading), 'last'));
         const onOnline = () => s.transport.resendPersisted();
         addEventListener('online', onOnline);
         s.disposers.push(() => removeEventListener('online', onOnline));
+        // A decision made in another tab of the app reaches this one through the stored choice.
+        const onStorage = (event: StorageEvent) => {
+            if (event.key === StorageKeys.consent) s.consent.adopt(event.newValue);
+        };
+        addEventListener('storage', onStorage);
+        s.disposers.push(() => removeEventListener('storage', onStorage));
         // The online event only covers the device's own connection; a backend that was down needs a periodic retry.
         const retryMs = s.config.persistence.retryIntervalMs;
         if (s.config.persistence.enabled && retryMs > 0) {
@@ -307,7 +338,7 @@ export function setUser(id: string | null): void {
 /** A custom event: a log record with `eventName = name`, feature Events. */
 export function trackEvent(name: string, attributes?: Attributes | null): void {
     try {
-        if (state && name) state.pipeline.emit(createLog('bit.belemetry.events', Features.Events, Severity.Info, String(name), String(name), sanitizeAttributes(attributes)));
+        if (state && name) state.pipeline.emit(createLog('bit.belemetry.events', Features.Events, Severity.Info, String(name), String(name), recordAttributes(attributes)));
     } catch (e) {
         debug('trackEvent failed', e);
     }
@@ -316,7 +347,7 @@ export function trackEvent(name: string, attributes?: Attributes | null): void {
 /** A manual page view (the current URL unless `url` is given). */
 export function trackPageView(name?: string | null, url?: string | null, attributes?: Attributes | null): void {
     try {
-        if (state) trackPageViewCore(state.ctx, 'manual', { name, url, attributes: sanitizeAttributes(attributes) });
+        if (state) trackPageViewCore(state.ctx, 'manual', { name, url, attributes: recordAttributes(attributes) });
     } catch (e) {
         debug('trackPageView failed', e);
     }
@@ -325,9 +356,46 @@ export function trackPageView(name?: string | null, url?: string | null, attribu
 /** A manual exception, feature Errors. */
 export function trackException(type: string, message: string, stack?: string | null, attributes?: Attributes | null): void {
     try {
-        if (state) state.pipeline.emit(createException(ERRORS_SCOPE, String(type || 'Error'), String(message || ''), stack, sanitizeAttributes(attributes)));
+        if (state) state.pipeline.emit(createException(ERRORS_SCOPE, String(type || 'Error'), String(message || ''), stack, recordAttributes(attributes)));
     } catch (e) {
         debug('trackException failed', e);
+    }
+}
+
+/**
+ * Adds a processor: a function run on every browser record as it is handed to the exporters (or relayed to .NET),
+ * after consent and privacy. It may change the record in place, and return `false` to drop it; one that throws is
+ * skipped for that record. Returns a function that removes it.
+ */
+export function addProcessor(processor: Processor): () => void {
+    if (typeof processor !== 'function') return () => undefined;
+    processors.push(processor);
+    return () => {
+        const index = processors.indexOf(processor);
+        if (index >= 0) processors.splice(index, 1);
+    };
+}
+
+/**
+ * Sets attributes added to every browser record from now on (the record's own attributes win) - app context such as
+ * a tenant or a feature flag. Merged with the previous ones; a null value removes a key, and `setAttributes(null)`
+ * removes them all. They go through privacy like any attribute. The consent-governed ids (`session.id`,
+ * `enduser.pseudo.id`, `user.id`) cannot be set here - use `setUser`.
+ */
+export function setAttributes(attributes?: Attributes | Record<string, unknown> | null): void {
+    try {
+        if (!attributes) {
+            for (const key of Object.keys(globalAttributes)) delete globalAttributes[key];
+            return;
+        }
+        const valid = sanitizeAttributes(attributes);
+        for (const key of Object.keys(attributes)) {
+            if (RESERVED_ATTRIBUTES.indexOf(key) >= 0) continue;
+            if (key in valid) globalAttributes[key] = valid[key];
+            else if ((attributes as Record<string, unknown>)[key] == null) delete globalAttributes[key];
+        }
+    } catch (e) {
+        debug('setAttributes failed', e);
     }
 }
 
@@ -339,6 +407,20 @@ export function flush(): Promise<void> {
         debug('flush failed', e);
         return Promise.resolve();
     }
+}
+
+/** `getStats()` result: what the script dropped and why, what became of its requests, and what it holds now. */
+export interface BelemetryStats extends StatsSnapshot {
+    /** Records queued for the next export. */
+    queued: number;
+    /** Records held until the user decides on consent. */
+    pending: number;
+}
+
+/** What the script dropped and why, and what became of its requests, since the page loaded - for troubleshooting. */
+export function getStats(): BelemetryStats {
+    const snapshot = statsSnapshot();
+    return { ...snapshot, queued: state ? state.pipeline.size : 0, pending: state ? state.consent.pendingCount : 0 };
 }
 
 export function getContext(): BelemetryContext {
@@ -364,11 +446,23 @@ export function attachDotNet(dotNetRef: DotNetRef, options?: AttachOptions | nul
 
 function sendRequestsCore(requests: DotNetRequest[] | null | undefined, unload: boolean): Promise<void> {
     if (!Array.isArray(requests) || !requests.length) return Promise.resolve();
-    // Before start there is no consent state, so nothing may be persisted.
-    const transport = state ? state.transport : new Transport({ persistence: resolveConfig().persistence, canPersist: () => false });
+    // Before start there is no consent state, so nothing may be persisted. A start while it retries brings one: a revoke
+    // from then on withdraws the request.
+    const transport = state ? state.transport : new Transport({
+        persistence: resolveConfig().persistence,
+        canPersist: () => false,
+        revocations: features => (state ? state.consent.revocations(features) : 0),
+    });
     const sends: Promise<void>[] = [];
     for (const request of requests) {
         try {
+            const features = typeof request.features === 'number' ? request.features : null;
+            // A revoke made in the page (a banner, another tab, Global Privacy Control) reaches .NET only later: a
+            // request it built under a feature the page no longer grants holds that feature's records.
+            if (state && features !== null && (features & ~state.consent.granted())) {
+                countRequest('withdrawn');
+                continue;
+            }
             sends.push(transport.send({
                 exporter: request.exporter,
                 url: request.url,
@@ -376,7 +470,7 @@ function sendRequestsCore(requests: DotNetRequest[] | null | undefined, unload: 
                 contentEncoding: request.contentEncoding || null,
                 headers: request.headers || null,
                 body: fromBase64(request.body || ''),
-            }, unload));
+            }, unload, state && features !== null ? state.consent.mark(features) : undefined));
         } catch (e) {
             debug('invalid request', e);
         }
@@ -410,6 +504,9 @@ export function _reset(): void {
     state = null;
     bridge = null;
     lastContext = '';
+    processors.length = 0;
+    for (const key of Object.keys(globalAttributes)) delete globalAttributes[key];
+    resetStats();
     resetPageViewState();
     resetDocumentLoadState();
     resetWebVitalsState();
@@ -420,7 +517,10 @@ export function _getState(): State | null {
     return state;
 }
 
-const api = { start, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, flush, getContext, attachDotNet, sendRequests, Features };
+const api = {
+    start, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, addProcessor, setAttributes, flush, getContext,
+    getStats, attachDotNet, sendRequests, Features,
+};
 
 if (typeof window !== 'undefined') {
     (window as unknown as { BitBelemetry: typeof api }).BitBelemetry = api;

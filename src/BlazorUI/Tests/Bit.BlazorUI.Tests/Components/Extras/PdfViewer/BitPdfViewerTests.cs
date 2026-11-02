@@ -814,11 +814,11 @@ public class BitPdfViewerTests : BunitTestContext
             && component.Find(".bit-pdv-search-input").GetAttribute("value") == "Hel");
 
         // A query set from code still reaches the box, even one the reader typed into.
-        int sets = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Count;
+        int sets = Context.InvocationsOf("BitBlazorUI.PdfViewer.setValue").Count;
         await component.InvokeAsync(() => component.Instance.Search("world"));
         component.WaitForAssertion(() =>
-            Assert.AreEqual(sets + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Count));
-        Assert.AreEqual("world", Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Last().Arguments[1]);
+            Assert.AreEqual(sets + 1, Context.InvocationsOf("BitBlazorUI.PdfViewer.setValue").Count));
+        Assert.AreEqual("world", Context.InvocationsOf("BitBlazorUI.PdfViewer.setValue").Last().Arguments[1]);
     }
 
     [TestMethod]
@@ -1944,7 +1944,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         // The find options travel to the browser-side highlighter, which is the only
         // thing that can decide what is painted.
-        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.highlight"].Last();
+        var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.highlight").Last();
         Assert.AreEqual("cat", call.Arguments[1]);
         Assert.AreEqual(false, call.Arguments[4]); // matchDiacritics
         Assert.AreEqual(false, call.Arguments[5]); // highlightAll
@@ -2203,21 +2203,21 @@ public class BitPdfViewerTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.Print(2, 3));
 
-        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Last();
         Assert.AreEqual(2, call.Arguments[1]);
         Assert.AreEqual(3, call.Arguments[2]);
 
         // A backwards range is reordered rather than printing nothing.
         await component.InvokeAsync(() => component.Instance.Print(4, 2));
 
-        call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        call = Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Last();
         Assert.AreEqual(2, call.Arguments[1]);
         Assert.AreEqual(4, call.Arguments[2]);
 
         // And an out-of-range one is clamped to the document.
         await component.InvokeAsync(() => component.Instance.Print(0, 99));
 
-        call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        call = Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Last();
         Assert.AreEqual(1, call.Arguments[1]);
         Assert.AreEqual(5, call.Arguments[2]);
     }
@@ -2235,7 +2235,7 @@ public class BitPdfViewerTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.GoToPage(3));
         await component.InvokeAsync(() => component.Instance.PrintCurrentPage());
 
-        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Last();
+        var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Last();
         Assert.AreEqual(3, call.Arguments[1]);
         Assert.AreEqual(3, call.Arguments[2]);
     }
@@ -2302,7 +2302,7 @@ public class BitPdfViewerTests : BunitTestContext
         Assert.AreEqual(2, component.Instance.CurrentPage);
         // A destination carrying a vertical position scrolls into the page rather
         // than stopping at its top edge.
-        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.scrollToPageOffset").Last();
         Assert.AreEqual(2, call.Arguments[1]);
         Assert.IsTrue(Convert.ToDouble(call.Arguments[2]) > 0);
     }
@@ -2385,7 +2385,7 @@ public class BitPdfViewerTests : BunitTestContext
         // reader keeps their focus; the call is what the assertion can see.
         component.WaitForAssertion(() =>
         {
-            var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.setValue"].Last();
+            var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.setValue").Last();
             Assert.AreEqual("1", call.Arguments[1]);
         });
     }
@@ -2452,7 +2452,7 @@ public class BitPdfViewerTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OnLinkNavigate(2, 250));
 
         Assert.AreEqual(2, component.Instance.CurrentPage);
-        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.scrollToPageOffset").Last();
         Assert.AreEqual(2, call.Arguments[1]);
         Assert.IsTrue(Convert.ToDouble(call.Arguments[2]) > 0);
     }
@@ -2640,10 +2640,10 @@ public class BitPdfViewerTests : BunitTestContext
         // keeping a copy - and an empty answer comes back as an empty string, never null.
         string selected = await component.InvokeAsync(() => component.Instance.GetSelectedText());
         Assert.AreEqual(string.Empty, selected);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.getSelectedText"].Count);
+        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.getSelectedText").Count);
 
         await component.InvokeAsync(() => component.Instance.ClearSelection());
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.clearSelection"].Count);
+        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.clearSelection").Count);
     }
 
     [TestMethod]
@@ -2658,13 +2658,13 @@ public class BitPdfViewerTests : BunitTestContext
 
         // The reader is already fullscreen (the browser said so).
         await component.InvokeAsync(() => component.Instance.OnFullscreenChanged(true));
-        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.toggleFullscreen"].Count;
+        int before = Context.InvocationsOf("BitBlazorUI.PdfViewer.toggleFullscreen").Count;
 
         await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
 
         // Toggling would have LEFT fullscreen, which is the opposite of presenting.
         Assert.IsTrue(component.Instance.IsPresenting);
-        Assert.AreEqual(before, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.toggleFullscreen"].Count);
+        Assert.AreEqual(before, Context.InvocationsOf("BitBlazorUI.PdfViewer.toggleFullscreen").Count);
     }
 
     [TestMethod]
@@ -2727,7 +2727,7 @@ public class BitPdfViewerTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-pdv-surface.bit-pdv-nocopy").Count);
 
         await component.InvokeAsync(() => component.Instance.Print());
-        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Count > 0);
+        Assert.IsTrue(Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Count > 0);
     }
 
     [TestMethod]
@@ -2755,8 +2755,8 @@ public class BitPdfViewerTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.Print());
         await component.InvokeAsync(() => component.Instance.Download());
 
-        Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.print"].Count > 0);
-        Assert.IsFalse(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.download"].Count > 0);
+        Assert.IsFalse(Context.InvocationsOf("BitBlazorUI.PdfViewer.print").Count > 0);
+        Assert.IsFalse(Context.InvocationsOf("BitBlazorUI.PdfViewer.download").Count > 0);
     }
 
     [TestMethod]
@@ -2793,7 +2793,7 @@ public class BitPdfViewerTests : BunitTestContext
         Assert.AreEqual("true", dialog.GetAttribute("aria-modal"));
         Assert.AreEqual("-1", dialog.GetAttribute("tabindex"));
         component.WaitForAssertion(() =>
-            Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.trapFocus"].Count > 0));
+            Assert.IsTrue(Context.InvocationsOf("BitBlazorUI.PdfViewer.trapFocus").Count > 0));
     }
 
     [TestMethod]
@@ -2921,7 +2921,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         // A browser renames a download to match the blob's type, so an attachment
         // offered as a pdf would be saved as "notes.pdf".
-        var calls = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.download"];
+        var calls = Context.InvocationsOf("BitBlazorUI.PdfViewer.download");
         Assert.AreEqual("notes.txt", calls[0].Arguments[0]);
         Assert.AreEqual("text/plain", calls[0].Arguments[2]);
         Assert.AreEqual("application/octet-stream", calls[1].Arguments[2]);
@@ -2936,13 +2936,13 @@ public class BitPdfViewerTests : BunitTestContext
         });
 
         component.WaitForPages(2);
-        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count;
+        int before = Context.InvocationsOf("BitBlazorUI.PdfViewer.focus").Count;
 
         // Presenting hides the toolbar, so the button that started it can no longer
         // hold the focus the arrow keys need.
         await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
 
-        Assert.AreEqual(before + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count);
+        Assert.AreEqual(before + 1, Context.InvocationsOf("BitBlazorUI.PdfViewer.focus").Count);
     }
 
     [TestMethod]
@@ -2957,14 +2957,14 @@ public class BitPdfViewerTests : BunitTestContext
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
         component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
-        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count;
+        int before = Context.InvocationsOf("BitBlazorUI.PdfViewer.focus").Count;
 
         component.Find(".bit-pdv-search-input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         component.WaitForAssertion(() =>
         {
             Assert.IsFalse(component.Instance.IsSearchOpen);
-            Assert.AreEqual(before + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count);
+            Assert.AreEqual(before + 1, Context.InvocationsOf("BitBlazorUI.PdfViewer.focus").Count);
         });
     }
 
@@ -2985,7 +2985,7 @@ public class BitPdfViewerTests : BunitTestContext
         object? focusedWhenScrolled = null;
         Context.JSInterop.SetupVoid("BitBlazorUI.PdfViewer.scrollToPage", _ =>
         {
-            var focuses = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focusThumb"];
+            var focuses = Context.InvocationsOf("BitBlazorUI.PdfViewer.focusThumb");
             focusedWhenScrolled = focuses.Count > 0 ? focuses[^1].Arguments[1] : null;
             scrolled = true;
             return true;
@@ -3022,14 +3022,14 @@ public class BitPdfViewerTests : BunitTestContext
         });
 
         component.WaitForPages(5);
-        int before = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPage"].Count;
+        int before = Context.InvocationsOf("BitBlazorUI.PdfViewer.scrollToPage").Count;
 
         // The reader scrolled to page 3: the surface is already there, and scrolling it
         // again (smoothly, from wherever it is mid-fling) would pull it off course.
         await component.InvokeAsync(() => component.Instance.OnPageVisible(3));
 
         Assert.AreEqual(3, component.Instance.CurrentPage);
-        Assert.AreEqual(before, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPage"].Count);
+        Assert.AreEqual(before, Context.InvocationsOf("BitBlazorUI.PdfViewer.scrollToPage").Count);
     }
 
     [TestMethod]
@@ -3071,21 +3071,21 @@ public class BitPdfViewerTests : BunitTestContext
         });
 
         component.WaitForPages(3);
-        int restores = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restoreZoomAnchor"].Count;
+        int restores = Context.InvocationsOf("BitBlazorUI.PdfViewer.restoreZoomAnchor").Count;
 
         await component.InvokeAsync(() => component.Instance.SetZoom(2));
 
         // The spot is taken before the pages re-size and put back after they have.
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.stashViewAnchor"].Count);
+        Assert.AreEqual(1, Context.InvocationsOf("BitBlazorUI.PdfViewer.stashViewAnchor").Count);
         component.WaitForAssertion(() =>
-            Assert.AreEqual(restores + 1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restoreZoomAnchor"].Count));
+            Assert.AreEqual(restores + 1, Context.InvocationsOf("BitBlazorUI.PdfViewer.restoreZoomAnchor").Count));
 
         // A quarter turn changes every page's height just as much.
         await component.InvokeAsync(() => component.Instance.RotateClockwise());
 
-        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.stashViewAnchor"].Count);
+        Assert.AreEqual(2, Context.InvocationsOf("BitBlazorUI.PdfViewer.stashViewAnchor").Count);
         component.WaitForAssertion(() =>
-            Assert.AreEqual(restores + 2, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.restoreZoomAnchor"].Count));
+            Assert.AreEqual(restores + 2, Context.InvocationsOf("BitBlazorUI.PdfViewer.restoreZoomAnchor").Count));
     }
 
     // The viewport record is internal to the library, so its interop result is set up
@@ -3166,10 +3166,10 @@ public class BitPdfViewerTests : BunitTestContext
         // separate focus call before it would also hide the opener from the trap.
         component.WaitForAssertion(() =>
         {
-            var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.trapFocus"].Last();
+            var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.trapFocus").Last();
             Assert.AreEqual(2, call.Arguments.Count);
         });
-        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.focus"].Count);
+        Assert.AreEqual(0, Context.InvocationsOf("BitBlazorUI.PdfViewer.focus").Count);
     }
 
     [TestMethod]
@@ -3187,14 +3187,14 @@ public class BitPdfViewerTests : BunitTestContext
         // (not 50pt above it, as measuring from y=0 would have it).
         await component.InvokeAsync(() => component.Instance.GoToDestination(
             new BitPdfDestination { PageNumber = 2, Left = 0, Top = 450 }));
-        var call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        var call = Context.InvocationsOf("BitBlazorUI.PdfViewer.scrollToPageOffset").Last();
         Assert.AreEqual(2, call.Arguments[1]);
         Assert.AreEqual(50, Convert.ToDouble(call.Arguments[2]), 0.0001);
 
         // Page 3 carries /Rotate 90, so the screen's vertical runs along the PDF's x.
         await component.InvokeAsync(() => component.Instance.GoToDestination(
             new BitPdfDestination { PageNumber = 3, Left = 120, Top = 10 }));
-        call = Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.scrollToPageOffset"].Last();
+        call = Context.InvocationsOf("BitBlazorUI.PdfViewer.scrollToPageOffset").Last();
         Assert.AreEqual(3, call.Arguments[1]);
         Assert.AreEqual(120, Convert.ToDouble(call.Arguments[2]), 0.0001);
     }

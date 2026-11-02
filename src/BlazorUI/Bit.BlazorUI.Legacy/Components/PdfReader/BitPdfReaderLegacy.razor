@@ -9,7 +9,7 @@
      dir="@Dir?.ToString().ToLower()">
     @if (RenderAllPages)
     {
-        for (int i = 0; i < _numberOfPages; i++)
+        for (int i = 0; i < RenderedPageCount; i++)
         {
             <canvas @key="@($"{Config.Id}-{i+1}")" id="@($"{Config.Id}-{i+1}")" style="@CanvasStyle" class="@CanvasClass" />
         }

@@ -33,7 +33,8 @@
 
 @code {
     [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
-    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.Context)] private IBlowContext Flow { get; set; } = default!;
+    [CascadingParameter(Name = BlowCascadingNames.GraphVersion)] private int GraphVersion { get; set; }
 
     /// <summary>Show the controls. When null, controls appear only while the node is selected.</summary>
     [Parameter] public bool? Visible { get; set; }

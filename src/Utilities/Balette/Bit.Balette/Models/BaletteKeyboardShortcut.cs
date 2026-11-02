@@ -65,6 +65,12 @@ public sealed record BaletteKeyboardShortcut
     /// <summary>Human readable text, e.g. <c>Ctrl+K</c> or <c>G then I</c>.</summary>
     public string ToDisplayString(bool isMac) => string.Join(isMac ? " " : " then ", DisplayTokens(isMac).Select(t => string.Join(isMac ? string.Empty : "+", t)));
 
+    /// <summary>
+    /// Human readable text with the chords of a sequence joined by <paramref name="then"/> on every platform, e.g.
+    /// <c>⌘K</c>, <c>Ctrl+K</c> or <c>G dann I</c>: what screen readers are given for a shortcut hint.
+    /// </summary>
+    public string ToDisplayString(bool isMac, string then) => string.Join($" {then} ", DisplayTokens(isMac).Select(t => string.Join(isMac ? string.Empty : "+", t)));
+
     /// <summary>Shortcuts are equal when their normalized forms are: <c>Ctrl+K</c> equals <c>control+k</c>.</summary>
     public bool Equals(BaletteKeyboardShortcut? other) => other is not null && Normalized == other.Normalized;
 

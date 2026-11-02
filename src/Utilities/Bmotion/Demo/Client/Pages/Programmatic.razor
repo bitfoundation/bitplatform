@@ -23,8 +23,9 @@
         element and animates them together, with the optional <strong>stagger</strong> spreading
         their start times. The call returns <strong>BmAnimationControls</strong>: awaitable for
         completion, and holding <code>Pause</code>, <code>Play</code>, <code>SetSpeed</code>,
-        <code>Stop</code> (freeze where it is) and <code>Complete</code> (jump to the end). Start
-        the slow run below and then interfere with it.
+        <code>Stop</code> (freeze where it is) and <code>Complete</code> (jump to the end). It also knows where
+        it is - <code>Duration</code>, <code>Time</code>, <code>Progress</code> and <code>State</code> - and
+        <code>Seek</code> moves it: the slider below scrubs the run. Start the slow run and then interfere with it.
     </p>
 
     <div class="demo-row">
@@ -48,11 +49,50 @@
         <span class="demo-label">@_runState</span>
     </div>
 
+    <div class="bb-toolbar">
+        <label class="demo-label" for="prog-scrub">Scrub</label>
+        <input id="prog-scrub" type="range" min="0" max="1000" value="@_scrub" disabled="@(_controls is null)"
+               @oninput="Scrub" />
+        <span class="demo-label">@_scrubLabel</span>
+    </div>
+
     <CodeSnippet Code="@_selectorCode" />
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Animating a number</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> One element, by id or by reference</h3>
+    <p>
+        A selector can name one element as easily as many. Give a <code>&lt;Bmotion&gt;</code> a stable
+        <strong>Id</strong> and <code>"#id"</code> reaches it from anywhere - from code, from your own CSS, from a
+        test - instead of the generated id it otherwise gets. An element with no Bmotion around it at all is
+        reached through an <strong>ElementReference</strong>: capture it with <code>@@ref</code> and hand it to
+        <code>AnimateAsync</code>, which registers it with the engine on first use. Both return the same
+        controls a selector does.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">&lt;Bmotion Id="promo-card"&gt;</span>
+            <Bmotion Id="promo-card" Animate="Bm.To(scale: 1)">
+                <div class="box box-sm" />
+            </Bmotion>
+        </div>
+        <div class="demo-card stack">
+            <span class="demo-label">a plain &lt;div @@ref&gt;</span>
+            <div class="box box-sm" @ref="_plainBox"></div>
+        </div>
+    </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="NudgeByIdAsync">Animate "#promo-card"</button>
+        <button class="btn btn-secondary" @onclick="SpinReferenceAsync">Animate the reference</button>
+    </div>
+
+    <CodeSnippet Code="@_targetingCode" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Animating a number</h3>
     <p>
         Nothing about the engine requires a DOM element. <code>AnimateAsync(from, to, onUpdate,
         transition)</code> interpolates a bare <code>double</code> and hands you every value on the
@@ -76,7 +116,7 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Sequences</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Sequences</h3>
     <p>
         A <strong>BmSequence</strong> is a timeline: each step names its own target, and
         <code>at</code> places it relative to what came before. <code>"+0.2"</code> and
@@ -117,7 +157,7 @@
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Motion values</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Motion values</h3>
     <p>
         A <strong>motion value</strong> is a number that other things can watch. Bind one with the
         <code>Values</code> parameter and it writes to the DOM every frame without re-rendering the
@@ -154,20 +194,44 @@
                     <span class="demo-label">Transform → 0-360&deg;</span>
                 </div>
             </div>
+
+            <div class="readout">
+                <div>Value @Fmt(_driver.Value) &middot; MapRange(0..100 → 0..1) @Fmt(Bm.MapRange(_driver.Value, [0, 100], [0, 1]), "0.00")</div>
+                <div>Clamp(25, 75) @Fmt(Bm.Clamp(25, 75, _driver.Value)) &middot; Wrap(0, 40) @Fmt(Bm.Wrap(0, 40, _driver.Value)) &middot; Mix(-60, 60, v/100) @Fmt(Bm.Mix(-60, 60, _driver.Value / 100))</div>
+            </div>
         </div>
     </div>
+
+    <div class="bb-toolbar">
+        <button class="btn btn-primary" @onclick="@(() => SpringDriverAsync(100))">AnimateAsync(value, 100)</button>
+        <button class="btn btn-secondary" @onclick="@(() => SpringDriverAsync(0))">AnimateAsync(value, 0)</button>
+        <button class="btn btn-secondary" @onclick="@(() => JumpDriver(50))">Jump(50)</button>
+    </div>
+
+    <p>
+        Read a value back with <code>Value</code>, or <code>Subscribe</code> to every change - the readout above
+        does, throttled to ten renders a second, and the returned handle unsubscribes when disposed.
+        <code>Motion.AnimateAsync(value, to, transition)</code> animates the value itself, and every binding
+        downstream follows; a spring picks up the value's current velocity. <code>Jump</code> teleports it
+        instead, with no velocity for a spring to carry on. The <code>Bm</code> helpers are the small maths
+        motion values are made of: <code>MapRange</code> maps a number from one range onto another - what
+        <code>Transform</code> does continuously - <code>Clamp</code> bounds it, <code>Wrap</code> loops it round
+        a range, which is the infinite-carousel helper, and <code>Mix</code> interpolates between two numbers.
+    </p>
 
     <CodeSnippet Code="@_valuesCode" />
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Driving one element by reference</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Driving one element by reference</h3>
     <p>
         When the element <em>is</em> a <code>&lt;Bmotion&gt;</code>, a <code>@@ref</code> gives you
-        the same controls without a selector. <code>AnimateAsync</code> plays a one-off target,
-        <code>Set</code> applies one instantly with no animation, <code>Pause</code> /
-        <code>Resume</code> / <code>SetPlaybackRate</code> control whatever is currently running,
-        and <code>Stop</code> freezes it where it stands.
+        the same controls without a selector. <code>AnimateAsync</code> plays a one-off target over whatever
+        is running, <code>Set</code> applies one instantly with no animation (<code>SetAsync</code> also writes
+        it to the element before returning), <code>Pause</code> / <code>Resume</code> /
+        <code>SetPlaybackRate</code> control whatever is currently running, and <code>Stop</code> freezes it
+        where it stands - all of it, or only the properties you name. Every async call here and on the service
+        takes a <code>CancellationToken</code>, which stops the animation when cancelled.
     </p>
 
     <div class="demo-row">
@@ -185,26 +249,30 @@
         <button class="btn btn-secondary" @onclick="@(() => _box.Resume())">Resume</button>
         <button class="btn btn-secondary" @onclick="@(() => _box.SetPlaybackRate(4))">4&times; rate</button>
         <button class="btn btn-secondary" @onclick="PulseAsync">Pulse</button>
+        <button class="btn btn-secondary" @onclick="ToggleScale">Set scale</button>
+        <button class="btn btn-secondary" @onclick="@(() => _box.Stop("rotate"))">Stop("rotate")</button>
     </div>
 
     <CodeSnippet Code="@_refCode" />
 </section>
 
 <section class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Global defaults</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Global defaults</h3>
     <p>
         <strong>BmotionConfig</strong> cascades defaults to everything beneath it, which is the
-        cheapest way to change the feel of a whole surface at once. <code>TransitionSpeed</code> is
-        a playback multiplier - <code>0.25</code> is the slow-motion switch every animation
-        developer wants while tuning, and <code>0</code> makes every transition instant.
-        It also carries <code>ReduceMotion</code>, the <em>prefers-reduced-motion</em> policy for
-        its subtree &mdash; covered in full on the <a href="/accessibility">Accessibility</a> page.
+        cheapest way to change the feel of a whole surface at once. <code>Transition</code> is the default
+        for every element under it that doesn't set its own - the right-hand box below has none, so it plays
+        the config's spring. <code>TransitionSpeed</code> is a playback multiplier - <code>0.25</code> is the
+        slow-motion switch every animation developer wants while tuning, and <code>0</code> makes every
+        transition instant. It also carries <code>ColorSpace</code> (see <a href="color">Color</a>) and
+        <code>ReduceMotion</code>, the <em>prefers-reduced-motion</em> policy for its subtree &mdash; covered in
+        full on the <a href="accessibility">Accessibility</a> page.
     </p>
 
-    <BmotionConfig TransitionSpeed="_speed">
+    <BmotionConfig Transition="Bm.Spring(bounce: 0.6, duration: 0.8)" TransitionSpeed="_speed">
         <div class="demo-row">
             <div class="demo-card stack">
-                <span class="demo-label">Both boxes inherit the speed below</span>
+                <span class="demo-label">All three inherit the speed below; the last inherits the config's spring too</span>
                 <div class="value-row">
                     <Bmotion Animate="@(_configOn ? Bm.To(x: 40, rotate: 180) : Bm.To(x: -40, rotate: 0))"
                              Transition="Bm.Spring(stiffness: 180, damping: 16)">
@@ -212,6 +280,9 @@
                     </Bmotion>
                     <Bmotion Animate="@(_configOn ? Bm.To(y: 30, scale: 1.3) : Bm.To(y: -30, scale: 1))"
                              Transition="Bm.Tween(0.8, BmEase.InOut)">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                    <Bmotion Animate="@(_configOn ? Bm.To(y: -30, rotate: -90) : Bm.To(y: 30, rotate: 0))">
                         <div class="box box-sm" />
                     </Bmotion>
                 </div>
@@ -238,6 +309,8 @@
     private BmAnimationControls? _controls;
     private BmAnimationControls? _sequenceControls;
     private string _runState = "idle";
+    private int _scrub;
+    private string _scrubLabel = "";
 
     private double _count;
 
@@ -252,6 +325,14 @@
     private double _speed = 1;
     private readonly double[] _speeds = [0.25, 1, 2];
 
+    private bool _boxBig;
+    private ElementReference _plainBox;
+    private bool _promoNudged;
+    private int _plainTurns;
+
+    private IDisposable? _readoutSubscription;
+    private long _lastReadout;
+
     protected override void OnInitialized()
     {
         // Built once: a dictionary rebuilt per render would re-subscribe the bindings each time.
@@ -263,7 +344,21 @@
         _springValues = new() { ["x"] = _follower.Transform([0, 100], [-60, 60]) };
 
         _rotateValues = new() { ["rotate"] = _driver.Transform([0, 100], [0, 360]) };
+
+        // The readout re-renders on the value's own changes - including the ones AnimateAsync makes,
+        // which no event handler of this page sees - at most ten times a second.
+        _readoutSubscription = _driver.Subscribe(v =>
+        {
+            _slider = (int)Math.Round(v);
+            var now = Environment.TickCount64;
+            if (now - _lastReadout < 100) return;
+            _lastReadout = now;
+            _ = InvokeAsync(StateHasChanged);
+        });
     }
+
+    private static string Fmt(double value, string format = "0")
+        => value.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
 
     private void OnSliderInput(ChangeEventArgs e)
     {
@@ -272,9 +367,39 @@
         _driver.SetSync(value);
     }
 
+    private async Task SpringDriverAsync(double to)
+    {
+        await Motion.AnimateAsync(_driver, to, Bm.Spring(stiffness: 90, damping: 12));
+        _slider = (int)Math.Round(_driver.Value);
+    }
+
+    private void JumpDriver(double to)
+    {
+        _driver.Jump(to);
+        _slider = (int)to;
+    }
+
+    private Task NudgeByIdAsync()
+    {
+        _promoNudged = !_promoNudged;
+        return Motion.AnimateAsync("#promo-card", Bm.To(x: _promoNudged ? 50 : 0, scale: _promoNudged ? 1.2 : 1),
+            Bm.Spring(stiffness: 260, damping: 18)).AsTask();
+    }
+
+    private Task SpinReferenceAsync()
+        => Motion.AnimateAsync(_plainBox, Bm.To(rotate: ++_plainTurns * 180), Bm.Spring(bounce: 0.3, duration: 0.7)).AsTask();
+
+    private void ToggleScale()
+    {
+        _boxBig = !_boxBig;
+        _box.Set(Bm.To(scale: _boxBig ? 1.4 : 1));
+    }
+
     private async Task RunAsync()
     {
         _runState = "running…";
+        _scrub = 0;
+        _scrubLabel = "";
         var controls = await Motion.AnimateAsync(
             ".prog-dot",
             Bm.To(y: [0, -60, 0], scale: [1, 1.25, 1]),
@@ -292,8 +417,21 @@
         StateHasChanged();
     }
 
+    // The slider holds the run where it is put: paused on the first touch, Play carries on from there.
+    private void Scrub(ChangeEventArgs e)
+    {
+        if (_controls is null || int.TryParse(e.Value?.ToString(), out var value) is false) return;
+        _scrub = value;
+        if (_controls.State is BmPlaybackState.Running) _controls.Pause();
+        _controls.Seek(value / 1000.0 * _controls.Duration);
+        _scrubLabel = $"{_controls.Time:0.00} s of {_controls.Duration:0.00} s · {_controls.State}";
+        _runState = "scrubbing";
+    }
+
     private async Task ResetDotsAsync()
     {
+        _scrub = 0;
+        _scrubLabel = "";
         _controls?.Stop();
         _controls = null;
         _runState = "idle";
@@ -337,6 +475,7 @@
     {
         _controls?.Stop();
         _sequenceControls?.Stop();
+        _readoutSubscription?.Dispose();
         _follower?.Dispose();
     }
 
@@ -366,6 +505,14 @@
             void Pause()    => _controls?.Pause();
             void Faster()   => _controls?.SetSpeed(3);
             void JumpToEnd()=> _controls?.Complete();   // Stop() freezes it where it is instead
+
+            // A scrubber: <input type="range" min="0" max="1000" @oninput="Scrub" />
+            void Scrub(ChangeEventArgs e)
+            {
+                if (_controls is null) return;
+                _controls.Pause();
+                _controls.Seek(int.Parse(e.Value!.ToString()!) / 1000.0 * _controls.Duration);
+            }
         }
         """;
 
@@ -430,6 +577,9 @@
     private const string _valuesCode = """
         @using Bit.Bmotion
         @inject BmotionAnimateService Motion
+        @implements IDisposable
+
+        <input type="range" min="0" max="100" @bind:get="_slider" @bind:set="OnSlider" @bind:event="oninput" />
 
         <Bmotion Values="_directValues"><div class="box" /></Bmotion>
         <Bmotion Values="_springValues"><div class="box" /></Bmotion>
@@ -438,6 +588,8 @@
         @code {
             // One source of truth; everything else is derived from it.
             private readonly BmValue<double> _driver = Bm.Value(20.0);
+            private BmValue<double>? _follower;
+            private int _slider = 20;
 
             private Dictionary<string, BmValue<double>> _directValues = default!;
             private Dictionary<string, BmValue<double>> _springValues = default!;
@@ -449,17 +601,62 @@
                 _directValues = new() { ["x"] = _driver.Transform([0, 100], [-60, 60]) };
 
                 // A spring follower lags the source with physics rather than tracking it.
-                var follower = Motion.Spring(_driver, Bm.Spring(stiffness: 120, damping: 14));
-                _springValues = new() { ["x"] = follower.Transform([0, 100], [-60, 60]) };
+                _follower = Motion.Spring(_driver, Bm.Spring(stiffness: 120, damping: 14));
+                _springValues = new() { ["x"] = _follower.Transform([0, 100], [-60, 60]) };
 
                 _rotateValues = new() { ["rotate"] = _driver.Transform([0, 100], [0, 360]) };
             }
 
             // Setting the source flushes every dependent binding to the DOM next frame -
             // with no re-render of this component at all.
-            void OnSlider(int value) => _driver.SetSync(value);
+            void OnSlider(int value)
+            {
+                _slider = value;
+                _driver.SetSync(value);
+            }
 
-            // Or animate the value itself: await Motion.AnimateAsync(_driver, 100, Bm.Spring());
+            // Or animate the value itself - every binding follows, and a spring starts from the
+            // value's own velocity. Jump teleports it with no velocity at all.
+            Task SpringTo(double to) => Motion.AnimateAsync(_driver, to, Bm.Spring(stiffness: 90, damping: 12));
+            void JumpTo(double to) => _driver.Jump(to);
+
+            // Subscribe to read it back; the handle unsubscribes when disposed.
+            //   IDisposable sub = _driver.Subscribe(v => Console.WriteLine(v));
+            //
+            // And the plain maths behind it all, for one-off numbers:
+            //   Bm.MapRange(v, [0, 100], [0, 1])   Bm.Clamp(25, 75, v)
+            //   Bm.Wrap(0, 40, v)                  Bm.Mix(-60, 60, 0.5)
+
+            // The follower runs its spring until it is disposed.
+            public void Dispose() => _follower?.Dispose();
+        }
+        """;
+
+    private const string _targetingCode = """
+        @using Bit.Bmotion
+        @inject BmotionAnimateService Motion
+
+        @* A stable Id replaces the generated one, so "#promo-card" reaches it - from code or CSS. *@
+        <Bmotion Id="promo-card" Animate="Bm.To(scale: 1)">
+            <div class="box" />
+        </Bmotion>
+
+        @* No Bmotion at all: a plain element, captured with @ref. *@
+        <div class="box" @ref="_plain"></div>
+
+        <button @onclick="NudgeAsync">Animate "#promo-card"</button>
+        <button @onclick="SpinAsync">Animate the reference</button>
+
+        @code {
+            private ElementReference _plain;
+            private int _turns;
+
+            // Both return BmAnimationControls, like a selector that matches many.
+            Task NudgeAsync() => Motion.AnimateAsync("#promo-card", Bm.To(x: 50, scale: 1.2),
+                                                     Bm.Spring(stiffness: 260, damping: 18)).AsTask();
+
+            Task SpinAsync() => Motion.AnimateAsync(_plain, Bm.To(rotate: ++_turns * 180),
+                                                    Bm.Spring(bounce: 0.3, duration: 0.7)).AsTask();
         }
         """;
 
@@ -478,8 +675,10 @@
             void Pause()  => _box.Pause();                 // playback rate 0
             void Resume() => _box.Resume();
             void Faster() => _box.SetPlaybackRate(4);
-            void Freeze() => _box.Stop();                  // Stop("x") halts one property
-            void Jump()   => _box.Set(Bm.To(scale: 1.5));  // apply instantly, no animation
+            void Freeze() => _box.Stop();                  // everything it is animating
+            void Halt()   => _box.Stop("rotate");          // only the properties named
+            void Jump()   => _box.Set(Bm.To(scale: 1.4));  // apply instantly, no animation
+            Task JumpNow() => _box.SetAsync(Bm.To(scale: 1.4)).AsTask();   // ...and written before it returns
 
             // A one-off target that plays over whatever is already running.
             Task PulseAsync()

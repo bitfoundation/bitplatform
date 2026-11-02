@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Bit.Cli.Templates;
 
@@ -24,9 +25,23 @@ public sealed partial class ProjectContext
 
     public bool BuildsSolution => Templates.Platforms.BuildsSolution(Platforms);
 
-    public string BuildPath => Templates.Platforms.BuildPath(Name, Platforms);
+    public string WorkbenchDirectory => Path.Combine(Directory, "src", "Workbench");
+
+    public IReadOnlyList<string> ProjectsOutsideWebFilter
+    {
+        get
+        {
+            var built = ReadFilterProjects(WebSolutionFilter).Append(Templates.Platforms.WorkbenchProject(Name)).Select(FullProjectPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            return [.. ReadSolutionProjects(Solution).Where(project => built.Contains(FullProjectPath(project)) is false)];
+        }
+    }
 
     public string ServerApiDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Api");
+
+    public string ServerWebDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Web");
+
+    public string ClientCoreDirectory => Path.Combine(Directory, "src", "Client", $"{Name}.Client.Core");
 
     public string AppHostDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.AppHost");
 
@@ -42,23 +57,22 @@ public sealed partial class ProjectContext
 
     public string? SeedPassword { get; set; }
 
-    public string TargetFrameworkVersion
+    public string TargetFrameworkVersion => ReadTargetFramework(Directory, Name) ?? $"net{Environment.Version.Major}.0";
+
+    public static string? ReadTargetFramework(string directory, string name)
     {
-        get
+        var core = Path.Combine(directory, "src", "Client", $"{name}.Client.Core", $"{name}.Client.Core.csproj");
+
+        try
         {
-            var core = Path.Combine(Directory, "src", "Client", $"{Name}.Client.Core", $"{Name}.Client.Core.csproj");
-
-            try
-            {
-                if (File.Exists(core) && TargetFrameworkRegex().Match(File.ReadAllText(core)) is { Success: true } match)
-                    return match.Groups["tfm"].Value;
-            }
-            catch (IOException)
-            {
-            }
-
-            return $"net{Environment.Version.Major}.0";
+            if (File.Exists(core) && TargetFrameworkRegex().Match(File.ReadAllText(core)) is { Success: true } match)
+                return match.Groups["tfm"].Value;
         }
+        catch (IOException)
+        {
+        }
+
+        return null;
     }
 
     public string? PackageVersion(string packageId)
@@ -90,6 +104,73 @@ public sealed partial class ProjectContext
 
         var solution = System.IO.Directory.EnumerateFiles(directory, "*.slnx").FirstOrDefault();
         return solution is null ? null : Path.GetFileNameWithoutExtension(solution);
+    }
+
+    public static string? FindProjectDirectory(string directory)
+    {
+        for (var folder = new DirectoryInfo(directory); folder is not null; folder = folder.Parent)
+        {
+            try
+            {
+                if (folder.Exists && FindProjectName(folder.FullName) is not null)
+                    return folder.FullName;
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return null;
+    }
+
+    public static string? ReadAppId(string directory, string name)
+    {
+        var maui = Path.Combine(directory, Templates.Platforms.MauiProject(name));
+
+        try
+        {
+            return File.Exists(maui) && AppIdRegex().Match(File.ReadAllText(maui)) is { Success: true } match ? match.Groups["id"].Value.Trim() : null;
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private string FullProjectPath(string project) => Path.GetFullPath(Path.Combine(Directory, project));
+
+    private static IEnumerable<string> ReadSolutionProjects(string solution)
+    {
+        try
+        {
+            return File.Exists(solution)
+                ? [.. XDocument.Load(solution).Descendants().Where(e => e.Name.LocalName == "Project").Select(e => (string?)e.Attribute("Path")).OfType<string>().Select(path => path.Replace('\\', '/'))]
+                : [];
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException or System.Xml.XmlException)
+        {
+            return [];
+        }
+    }
+
+    private static IEnumerable<string> ReadFilterProjects(string filter)
+    {
+        try
+        {
+            if (File.Exists(filter) is false)
+                return [];
+
+            using var document = JsonDocument.Parse(File.ReadAllText(filter), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            return document.RootElement.ValueKind is JsonValueKind.Object && document.RootElement.TryGetProperty("solution", out var solution) && solution.ValueKind is JsonValueKind.Object
+                && solution.TryGetProperty("projects", out var projects) && projects.ValueKind is JsonValueKind.Array
+                ? [.. projects.EnumerateArray().Where(p => p.ValueKind is JsonValueKind.String).Select(p => p.GetString()!.Replace('\\', '/'))]
+                : [];
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return [];
+        }
     }
 
     private string? ReadDatabaseFromProject()
@@ -158,6 +239,9 @@ public sealed partial class ProjectContext
 
     [GeneratedRegex(@"<TargetFramework>(?<tfm>net\d+\.\d+)</TargetFramework>")]
     private static partial Regex TargetFrameworkRegex();
+
+    [GeneratedRegex(@"<ApplicationId>(?<id>[^<]*)</ApplicationId>")]
+    private static partial Regex AppIdRegex();
 
     [GeneratedRegex(@"<WasmBuildNative[^>]*>\s*true\s*</WasmBuildNative>", RegexOptions.IgnoreCase)]
     private static partial Regex NativeWebAssemblyRegex();

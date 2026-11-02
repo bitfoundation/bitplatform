@@ -1,0 +1,184 @@
+﻿@page "/components/ai/optionsprovider"
+
+<PageOutlet Url="components/ai/optionsprovider"
+            Title="AiOptionsProvider"
+            Description="BitAiOptionsProvider cascades the AI options - the localized string table, the render interval, what a message shows - to every AI component inside it, so a page or a region sets its preferences once." />
+
+<DemoPage Name="AiOptionsProvider"
+          Description="BitAiOptionsProvider cascades a BitAiUiOptions - the string table the components speak with, the render interval of streaming updates, what a message shows (usage, model name, timestamps, actions, sources, inline citations), the Markdown and image policies - to every AI component inside it, so a page or a region of one sets its preferences once rather than on every component. It is plumbing: it renders no element of its own, only its content. An inner provider overrides an outer one for its own content. Color scheme, accent, density and direction are not options: they come from the bit theme and the Dir of each component, exactly as for every other component of the library."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubAIUrl="OptionsProvider/BitAiOptionsProvider.cs"
+          GitHubDemoUrl="AI/OptionsProvider/BitAiOptionsProviderDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.AI" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.AI"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Every AI component reads its options from the nearest provider, else from the ones registered with
+            <b>AddBitBlazorUIAIServices(ai => ai.ConfigureUi(...))</b>, else from <b>BitAiUiOptions.Default</b>. The options are
+            an immutable record: hand the provider a new one (<b>options with { ... }</b>) to change them, which is also what
+            re-renders the components that read them. Unlike the other components of the library, the provider derives from
+            <b>ComponentBase</b> rather than BitComponentBase, so it takes no Class, Style or Dir of its own. See one region of a
+            page with its own options and theme in the <BitLink Href="/ai/scenarios/options-theming">Options & theming</BitLink>
+            scenario.
+        </BitText>
+        <br />
+        <BitText>
+            The AI components read the options through the base class they share, <b>BitAiComponentBase</b> (see the tables below):
+            a cascading <b>BitAiUiOptions</b>, which is all the provider hands down - any <b>CascadingValue</b> of one works the same
+            way. They find their custom renderers the same way, in a cascaded <b>BitAiRendererRegistry</b> before the registered one,
+            which is how a region gets renderers of its own (see the Renderers of a region example of
+            <BitLink Href="/components/ai/messagepartview">AiMessagePartView</BitLink>). For one chat alone,
+            <BitLink Href="/components/ai/chat">BitAiChat</BitLink> takes a <b>UiOptions</b> parameter of its own.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Wrap the AI components in a provider and hand it the <b>UiOptions</b>. Here the toggle builds new options with
+                <b>InlineCitations</b> on or off: off, the [n] of the answer stays text instead of becoming citation markers.
+            </div>
+            <br />
+            <BitToggle Label="Inline citations" @bind-Value="inlineCitations" @bind-Value:after="BuildBasicOptions" />
+            <br />
+            <BitAiOptionsProvider UiOptions="basicOptions">
+                <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Localized strings" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                Every word the AI components render comes from the <b>Strings</b> of the options in force, a
+                <b>BitAiStrings</b>. A subclass overrides what it translates - the words, the accessible names, the
+                announcements and the number and duration formats - and keeps the English of the rest; handed down by a provider
+                (or registered with <b>ConfigureUi</b>), it localizes every component inside at once.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="germanOptions">
+                <div class="example-row">
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.WaitingForInput" />
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Completed" />
+                </div>
+                <br />
+                <BitAiTokenUsageView Usage="usage" />
+                <br /><br />
+                <BitAiContextMeter Used="110_000" Window="128_000" />
+                <br />
+                <BitAiSourceList Citations="citations" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Nested providers" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                An inner provider overrides the outer one for its own content. It replaces the options rather than merging into
+                them, so build it from the outer ones to change one setting: below, the first inner region keeps the German strings
+                and turns the inline citations off. A provider with no <b>UiOptions</b> hands on the outer ones: the second inner
+                region is German, with its citations on.
+            </div>
+            <br />
+            <BitAiOptionsProvider UiOptions="germanOptions">
+                <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
+                <BitAiSourceList Citations="citations" />
+                <br />
+                <div class="example-region">
+                    <BitAiOptionsProvider UiOptions="innerOptions">
+                        <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
+                        <BitAiSourceList Citations="citations" />
+                    </BitAiOptionsProvider>
+                </div>
+                <br />
+                <div class="example-region">
+                    <BitAiOptionsProvider>
+                        <BitAiStreamingMarkdown Text="@answer" Citations="citations" />
+                        <BitAiSourceList Citations="citations" />
+                    </BitAiOptionsProvider>
+                </div>
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Registered options" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" CodeFiles="@example4CodeFiles" Id="example4">
+            <div>
+                Outside any provider, a component uses the options registered with <b>ConfigureUi</b> - this site registers
+                <b>ShowUsage</b> on, so the first run view shows the usage of the run in its header. A provider handed
+                <b>BitAiUiOptions.Default</b> brings the defaults back for its content, where <b>ShowUsage</b> is off.
+            </div>
+            <br />
+            <BitAiAgentRunView Run="usageRun" />
+            <br />
+            <BitAiOptionsProvider UiOptions="BitAiUiOptions.Default">
+                <BitAiAgentRunView Run="usageRun" />
+            </BitAiOptionsProvider>
+        </DemoExample>
+
+        <DemoExample Title="Render interval" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>RenderInterval</b> is the least time between two renders of a component following a stream (50ms by default):
+                every change in between is folded into the next render. It is the single most important performance dial -
+                raising it saves circuit traffic on Blazor Server. Both views below follow one run whose usage changes every 50ms;
+                the second, under a provider with a one-second interval, renders once a second. The components render through a
+                <b>BitAiRenderScheduler</b> (see the tables below), which a page following a stream of its own can use too.
+            </div>
+            <br />
+            <BitButton OnClick="StartStreamingRun" Disabled="isStreaming">Start the run</BitButton>
+            <br /><br />
+            @if (streamingRun is not null)
+            {
+                <BitAiOptionsProvider UiOptions="fastOptions">
+                    <BitAiAgentRunView Run="streamingRun" />
+                </BitAiOptionsProvider>
+                <br />
+                <BitAiOptionsProvider UiOptions="slowOptions">
+                    <BitAiAgentRunView Run="streamingRun" />
+                </BitAiOptionsProvider>
+            }
+        </DemoExample>
+
+        <DemoExample Title="Density & scheme" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Density and color scheme are not options of the AI components: they are spaced and colored with the global
+                <b>--bit-*</b> tokens like every other component, so they follow the theme there is. A <b>BitThemeProvider</b>
+                with the <b>BitThemeLayout.<wbr />DensityScale</b> of <b>BitThemeDensityPresets.<wbr />CreateCompactOverlay()</b>
+                (or the spacious one) tightens a region - a chat in a sidebar - and a scoped preset
+                (<b style="white-space: nowrap">bit-theme="fluent-dark"</b>, or the
+                Fluent 2, Material and Cupertino ones of Bit.BlazorUI.Extras) gives it another scheme or design system. See the
+                <BitLink Href="/theming">Theming</BitLink> page.
+            </div>
+            <br />
+            <div class="example-regions">
+                <BitThemeProvider Theme="compactTheme">
+                    <div class="example-region">
+                        <b>Compact</b>
+                        <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+                        <BitAiContextMeter Used="42_000" Window="128_000" />
+                        <BitAiSourceList Citations="citations" />
+                    </div>
+                </BitThemeProvider>
+                <BitThemeProvider Theme="spaciousTheme">
+                    <div class="example-region">
+                        <b>Spacious</b>
+                        <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+                        <BitAiContextMeter Used="42_000" Window="128_000" />
+                        <BitAiSourceList Citations="citations" />
+                    </div>
+                </BitThemeProvider>
+                <div bit-theme="fluent-dark" class="example-region example-dark">
+                    <b>Dark</b>
+                    <BitAiAgentStatusBadge Status="BitAiAgentRunStatus.Running" />
+                    <BitAiContextMeter Used="42_000" Window="128_000" />
+                    <BitAiSourceList Citations="citations" />
+                </div>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

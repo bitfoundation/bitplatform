@@ -1,7 +1,8 @@
 ﻿# Bit.BbScanner
 
-A dependency-free, high performance barcode scanner for Blazor: QR Code, Data Matrix, Code 128, Code 39, EAN-13,
-EAN-8, UPC-A, UPC-E and ITF, from the camera or from still images. The decoding - luminance conversion, binarization,
+A dependency-free, high performance barcode scanner for Blazor: QR Code, Micro QR, Data Matrix, PDF417, Aztec, MaxiCode,
+Code 128, Code 39, Code 93, Codabar, EAN-13, EAN-8, UPC-A, UPC-E (with their add-ons), ITF, GS1 DataBar (with its stacked forms), DataBar
+Limited and DataBar Expanded, from the camera or from still images. The decoding - luminance conversion, binarization,
 detection, Reed-Solomon correction and bit stream parsing - is written in C#. JavaScript only opens the camera and
 copies pixels - there is no barcode SDK or JavaScript scanner library underneath.
 
@@ -35,8 +36,14 @@ No services to register and no stylesheet to reference: the package's Blazor ini
 }
 ```
 
-Camera scanning runs on Blazor WebAssembly - a standalone app, or the WebAssembly pages of a Blazor Web App - and
-needs a secure context (HTTPS or `localhost`). The decoder itself runs anywhere .NET runs:
+Camera scanning runs in every Blazor hosting model - WebAssembly, Server, Auto and Hybrid (MAUI, WPF and Windows
+Forms) - and needs a secure context (HTTPS or `localhost`). On WebAssembly the frames are decoded in the browser;
+under Server the page sends each frame's searched region, as luminance, to the server, and a camera a circuit leaves
+behind is closed by the page. A .NET MAUI app adds [Bit.BbScanner.Maui](https://www.nuget.org/packages/Bit.BbScanner.Maui)
+for the device's own camera - CameraX, AVFoundation, MediaCapture - whose frames go straight to the decoder. On
+WebAssembly, publish the client compiled ahead of time (`<RunAOTCompilation>true</RunAOTCompilation>`): on Blazor's
+default interpreter a 640x480 frame took about 100 ms in Chromium on a desktop, compiled about 1 ms. The decoder
+itself runs anywhere .NET runs:
 
 ```csharp
 using var decoder = new BbBarcodeDecoder(BbScannerOptions.ForStillImages());
@@ -45,16 +52,21 @@ var result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
 
 ## Features
 
-- Nine symbologies read to specification, PDF417 implemented apart from its symbol character table.
-- One copy per frame: frames reach managed memory through a `[JSImport]` memory view, with no JSON or base64.
+- Eighteen symbologies read to specification, checked against symbols written by an independent encoder; PDF417,
+  Aztec, MaxiCode and Micro QR at any orientation.
+- Every hosting model: one component for WebAssembly, Server, Auto and Hybrid.
+- One copy per frame on WebAssembly: frames reach managed memory through a `[JSImport]` memory view, with no JSON or
+  base64; under Server and Hybrid only the searched region's luminance is sent.
 - No garbage per frame: buffers, bit planes and detectors are reused, so an empty frame allocates nothing on the
   linear path.
 - Misreads guarded against: check digits, guard patterns and repeated reads are verified before a value is reported.
 - Camera selection, torch and zoom; still image scanning through a built-in file picker or `DecodeImage`.
 - Scan regions, render fragment overlays and message templates, and theming through CSS custom properties.
-- A labelled, keyboard-operable scanner that announces results, with right-to-left, reduced motion and forced colours
-  support.
-- .NET 8, 9 and 10.
+- A labelled, keyboard-operable scanner that announces results and alerts failures, every text translatable through
+  `BbScannerTexts`, with right-to-left, reduced motion and forced colours support, and an optional vibration or beep.
+- A camera the phone ends when the page goes into the background is reopened when it returns; `ReleaseCameraWhenHidden`
+  closes it whenever the page is hidden.
+- .NET 10 and 11.
 
 ## For AI agents
 

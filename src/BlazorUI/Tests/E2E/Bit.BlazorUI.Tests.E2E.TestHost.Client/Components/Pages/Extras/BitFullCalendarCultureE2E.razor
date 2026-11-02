@@ -19,7 +19,7 @@
 
 <E2ESection Id="ar" Title="Arabic">
     <BitFullCalendar Id="ar-cal"
-                     CultureName="ar-SA"
+                     Culture="_arabic"
                      TimeProvider="Clock"
                      Events="_arEvents" />
 </E2ESection>
@@ -73,6 +73,8 @@
     private string? _faRange;
 
     private readonly System.Globalization.CultureInfo _german = new("de-DE");
+
+    private readonly System.Globalization.CultureInfo _arabic = new("ar-SA") { DateTimeFormat = { Calendar = new System.Globalization.UmAlQuraCalendar() } };
 
     private readonly List<BitFullCalendarResource> _resources =
     [

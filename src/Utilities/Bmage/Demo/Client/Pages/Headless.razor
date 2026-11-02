@@ -97,9 +97,10 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> No browser at all</h3>
     <p>
         The same package works in an ASP.NET Core endpoint or a console app. Register the headless
-        services and you get the managed PNG, JPEG, BMP and GIF codecs with no JavaScript involved -
-        and <code>ImageProcessor</code> directly, because the managed codecs need no probing. Asking
-        for WebP there throws <code>ImageCapabilityException</code> saying so.
+        services and you get the managed PNG, JPEG, BMP, GIF and WebP codecs and the AVIF decoder with
+        no JavaScript involved - and <code>ImageProcessor</code> directly, because the managed codecs
+        need no probing. WebP is written lossy or, with <code>Lossless = true</code>, lossless. Asking
+        to encode AVIF there throws <code>ImageCapabilityException</code> saying so.
     </p>
     <CodeSnippet Code="@ServerSnippet" Language="C#" Expanded="true" />
 </div>

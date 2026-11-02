@@ -40,6 +40,8 @@ public partial class AppAiChatPanel
     /// </summary>
     private string? historyOwner;
 
+    private string? conversationOwner;
+
     /// <summary>
     /// Who is at the device now; signed out counts as an owner. Read from the authentication state rather than the
     /// cascading CurrentUser, which is null until MainLayout has fetched the profile over http - taking that at face
@@ -100,6 +102,8 @@ public partial class AppAiChatPanel
         isRestoringHistory = false;
         StateHasChanged();
 
+        conversationOwner = historyOwner ?? await CurrentHistoryOwner();
+
         await SyncHistoryOwner(); // Picks up a hand over that landed while this was running.
     }
 
@@ -113,25 +117,59 @@ public partial class AppAiChatPanel
     {
         // Also not mid-restore: the owner is read before the messages are, so a hand over in between would clear the
         // store and then let the restore put the previous owner's conversation back on screen.
-        if (historyDb is null || historyOwner is null || isRestoringHistory) return;
+        if (conversationOwner is null || isRestoringHistory) return;
 
         var owner = await CurrentHistoryOwner();
 
-        if (historyOwner == owner) return;
+        if (conversationOwner == owner) return;
 
-        if (historyOwner is AnonymousOwner)
+        var previousOwner = conversationOwner;
+        conversationOwner = owner;
+
+        if (previousOwner is AnonymousOwner)
         {
-            await ClaimHistory();
+            if (historyDb is not null)
+            {
+                await ClaimHistory();
+            }
             return;
         }
 
-        await ClearChat(); // Forgets the stored one too, under the current owner's name.
+        try
+        {
+            // The previous owner's messages leave the screen even if stopping their dictation or call fails.
+            try
+            {
+                await StopDictation();
+                await EndVoiceCall();
+            }
+            finally
+            {
+                await ClearChat(); // Forgets the stored one too, under the current owner's name.
+            }
+        }
+        catch
+        {
+            if (conversationOwner == owner)
+            {
+                conversationOwner = previousOwner;
+            }
+
+            throw;
+        }
     });
 
     /// <summary>Appends one settled message or card. Nothing on screen waits for it.</summary>
     private Task RememberMessage(AiChatItem item) => TryHistory("add to", async () =>
     {
         if (historyDb is null) return;
+
+        // Another tab handed the stored conversation to someone else, so this one must not be written under their name.
+        if (await historyDb.Get<string>(OwnerStore, OwnerKey) != historyOwner)
+        {
+            CloseHistory();
+            return;
+        }
 
         var json = item is AiChatCard card
             ? JsonSerializer.Serialize(card, JsonSerializerOptions.GetTypeInfo<AiChatCard>())

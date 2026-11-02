@@ -73,7 +73,7 @@ dotnet add package Bit.Blex.Maui        # .NET MAUI integration (XAML binding, P
 dotnet add package Bit.Blex.Testing     # optional, for unit tests
 ```
 
-The runtime packages target **net8.0, net9.0 and net10.0**. `Bit.Blex` is all a Blazor app needs:
+The runtime packages target **net10.0 and net11.0**. `Bit.Blex` is all a Blazor app needs:
 
 - **The source generator** that writes the store plumbing ships inside it, under `analyzers/dotnet/cs`, so it
   adds nothing to your app's output and there is no separate generator package to install. NuGet does not
@@ -728,6 +728,28 @@ builder.Services.AddBitBlexLocalStoragePersistence(options =>
 });
 ```
 
+- **A store's own version** - `[BlexStore(Persist = true, Version = 2)]` versions one store's saved
+  state on its own, so a store that changes doesn't take the others' saved state with it. It wins
+  over `options.Version` for that store, and a stored version that differs goes to `options.Migrate`
+  with the store's name, or is discarded when there is none. `Version = 0` (the default) follows
+  `options.Version`; a negative version (`BLEX024`) or one on a store without `Persist = true`
+  (`BLEX025`) is reported. The store's versions are counted apart from the app's, so `Version = 2`
+  next to `options.Version = 2` is no clash: the store saves under an envelope of its own
+  (`{ "__blexStoreVersion": 2, "state": { … } }`), and what it saved before it had a version of its
+  own reaches `Migrate` as version `0`, whatever app version it was saved under. The one `Migrate`
+  now sees both kinds of version, so check the store name first (a scoped instance with a key arrives
+  as `"layout:{key}"`). A hook that hands other stores' state back unchanged keeps this store's too -
+  return `null` for it to drop its old state:
+
+```csharp
+options.Migrate = (storeName, fromVersion, state) => storeName.Split(':')[0] switch
+{
+    "layout" => null,                            // [BlexStore(Version = 2)]: drop layouts saved before v2
+    "settings" when fromVersion < 2 => UpgradeSettings(state),
+    _ => state,
+};
+```
+
 - **Restore write-back** - undo/redo and DevTools time-travel write the restored state back to
   storage, so a reload never resurrects the pre-restore state.
 - **Ordered writes** - saves are serialized in dispatch order; a stale payload can't overwrite a
@@ -1295,12 +1317,15 @@ compiles cleanly and silently generates nothing at all · `BLEX019` negative
 `DebounceMilliseconds` · `BLEX020` a store member already named `Actions`, so the typed action
 descriptors are not generated (warning) · `BLEX021` two actions dispatched under one name ·
 `BLEX022` negative `RetryCount`/`RetryDelayMilliseconds`/`TimeoutMilliseconds` · `BLEX023`
-`TimeoutMilliseconds` on an effect without a `CancellationToken` parameter.
+`TimeoutMilliseconds` on an effect without a `CancellationToken` parameter · `BLEX024` a negative
+store `Version` · `BLEX025` a store `Version` without `Persist = true` (warning) · `BLEX026` a store
+member of its own that the generated code also overrides (`PersistVersion` next to `Version = n`,
+`SerializeState`, …).
 
 ## Time-travel debugging
 
 1. Install the [Redux DevTools](https://github.com/reduxjs/redux-devtools) browser extension.
-2. Run the app and open DevTools - you'll see an instance named after `DevToolsName`.
+2. Turn the bridge on with `<BlexProvider EnableDevTools="true">` (it is off by default), run the app and open DevTools - you'll see an instance named after `DevToolsName`.
 3. Every action streams in with its argument payload and the resulting state tree.
 4. Use the slider / jump buttons to rewind and replay your application state live.
 
@@ -1332,8 +1357,10 @@ while time-travel restores keep working - which is the point. Both are readable 
 moves, since neither is an action a component would re-render on - and disconnecting the bridge clears them, so
 a monitor closed while locked cannot leave the application permanently frozen.
 
-For production, set `<BlexProvider EnableDevTools="false">` to disable the connection entirely, or
-redact sensitive values from the monitor with sanitizers:
+For production, keep `EnableDevTools` off (bind it to the host environment) so there is no connection at all.
+With interactive server rendering this matters beyond the extension: the bridge runs on the server, so any script
+on the page can read the state tree, dispatch any action and replace the state through it. In development, redact
+sensitive values from the monitor with sanitizers:
 
 ```csharp
 builder.Services.AddBitBlexServices(options =>
@@ -1350,16 +1377,16 @@ last - assigning `DevToolsStateSanitizer` afterwards replaces it outright.
 
 ## .NET MAUI
 
-All runtime packages ship plain `net8.0`/`net9.0`/`net10.0` builds that resolve from every MAUI platform
-target (`net8.0-android`, `net8.0-ios`, `net8.0-maccatalyst`, `net8.0-windows`) - no workloads
+All runtime packages ship plain `net10.0`/`net11.0` builds that resolve from every MAUI platform
+target (`net10.0-android`, `net10.0-ios`, `net10.0-maccatalyst`, `net10.0-windows`) - no workloads
 involved on the library side.
 
 ### Blazor Hybrid
 
 MAUI Blazor Hybrid apps use `Bit.Blex` exactly like any Blazor app: `AddBitBlexServices(...)` in
 `MauiProgram.cs` and `<BlexProvider>` wrapping the root component inside the `BlazorWebView`.
-There is no browser extension inside a WebView, so the DevTools bridge detects its absence and
-disables itself; set `<BlexProvider EnableDevTools="false">` to skip loading it entirely.
+There is no browser extension inside a WebView, so leave `EnableDevTools` at its default (`false`) and
+the DevTools bridge is never loaded; turned on, it detects the extension's absence and disables itself.
 `AddBitBlexLocalStoragePersistence()` works (the WebView provides `localStorage`), or add
 `Bit.Blex.Maui` and call `AddBitBlexPreferencesPersistence()` to persist to OS-native app preferences
 instead of the WebView profile.

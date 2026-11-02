@@ -1,0 +1,20 @@
+@import '../../../../../Client/Boilerplate.Client.Core/Styles/abstracts/_bit-css-variables.scss';
+
+.component {
+    gap: 0.625rem;
+    display: flex;
+    flex-direction: column;
+    padding-top: 0.875rem;
+    border-top: 1px solid $bit-color-border-tertiary;
+}
+
+.states {
+    gap: 1rem 0.875rem;
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+}
+
+.states.wide {
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}

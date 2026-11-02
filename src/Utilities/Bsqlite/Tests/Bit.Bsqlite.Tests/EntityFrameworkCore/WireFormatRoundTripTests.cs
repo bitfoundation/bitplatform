@@ -99,8 +99,6 @@ public sealed class WireFormatRoundTripTests
     /// Ordering and comparison go through <c>ef_compare</c> and the <c>EF_DECIMAL</c> collation, so
     /// they have to keep working whatever the stored text looks like.
     /// </summary>
-#if NET10_0_OR_GREATER
-    // EF Core translates ORDER BY a decimal from EF Core 10 on; before that the stock provider refuses it too.
     [TestMethod]
     public async Task DecimalsWrittenThroughTheWire_StillCompareNumerically()
     {
@@ -129,7 +127,6 @@ public sealed class WireFormatRoundTripTests
                 .Select(p => p.Price)
                 .ToListAsync(Ct));
     }
-#endif
 
     /// <summary>
     /// Every other type the binder converts, checked through the same path - a regression in any of

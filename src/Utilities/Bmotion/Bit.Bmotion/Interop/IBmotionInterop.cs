@@ -16,7 +16,8 @@ public interface IBmotionInterop : IAsyncDisposable
     /// <summary>
     /// <c>true</c> when the JS runtime supports synchronous interop (Blazor WebAssembly). The
     /// per-frame rAF engine and drag handlers rely on synchronous JS↔.NET calls; on Server this
-    /// is <c>false</c> and only the async compositor (WAAPI) path is available.
+    /// is <c>false</c>: animations play as Web Animations (timelines or recorded frames) over
+    /// async interop, and what only the frame loop can play lands at once.
     /// </summary>
     bool IsInProcess { get; }
 
@@ -34,6 +35,17 @@ public interface IBmotionInterop : IAsyncDisposable
     /// </summary>
     double? GetPrerenderedAnimationElapsedMs(string elementId) => null;
 
+    /// <summary>
+    /// Where the browser has really got with the offloaded animation <paramref name="token"/> on
+    /// <paramref name="elementId"/>: how far it has played, in ms of animation time (its delay included), as
+    /// of now, and whether its start is final - nothing will move it any more, so the engine can correct its
+    /// own clock once and stop asking. Read synchronously, so <c>null</c> where that isn't possible (only
+    /// WebAssembly has synchronous interop), and when no such animation is playing. The engine's own clock for
+    /// an animation starts when it built it, which the browser can be well behind; see <c>waapiPlayhead</c> in
+    /// the bridge. Defaults to <c>null</c>.
+    /// </summary>
+    (double PlayedMs, bool Final)? GetWaapiPlayhead(string elementId, int token) => null;
+
     // Every generic T below propagates DotNetObjectReference<T>'s trim annotation so trimmed/AOT
     // apps keep T's public ([JSInvokable]) methods for the JS→.NET callbacks.
 
@@ -50,6 +62,36 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask ApplyStylesAsync(string elementId, object styles);
     ValueTask PopLayoutAsync(string elementId, double currentX, double currentY);
     ValueTask UnpopLayoutAsync(string elementId);
+
+    /// <summary>
+    /// Makes an exiting element <c>inert</c> (<paramref name="inert"/> <c>true</c>) or, when its exit is cancelled,
+    /// interactive again - removing only an <c>inert</c> it added. Defaults to a no-op.
+    /// </summary>
+    ValueTask SetInertAsync(string elementId, bool inert) => ValueTask.CompletedTask;
+
+    // ── Keyboard reordering and announcements ─────────────────────────────────
+    /// <summary>
+    /// Lets a keyboard user reorder the item: Space/Enter on it calls <c>OnReorderPickUp</c> / <c>OnReorderDrop</c>
+    /// on <paramref name="dotnetRef"/>, the arrow keys along <paramref name="axis"/> <c>OnReorderMove</c> while it is
+    /// held (<c>x</c>, <c>y</c>, or <c>both</c> for a grid, whose up and down keys call <c>OnReorderMoveRow</c>), and
+    /// Escape <c>OnReorderCancel</c>. Makes the item focusable when it isn't. Attaching again replaces the item's
+    /// listener with one on the new settings. Defaults to a no-op.
+    /// </summary>
+    ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+        string elementId, DotNetObjectReference<T> dotnetRef, string axis, string? handleSelector) where T : class
+        => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Stops the item listening for keyboard reordering (<see cref="AttachReorderKeysAsync{T}"/>), and takes away the
+    /// focusability that gave it. Defaults to a no-op.
+    /// </summary>
+    ValueTask DetachReorderKeysAsync(string elementId) => ValueTask.CompletedTask;
+
+    /// <summary>Moves focus to the element (without scrolling it into view). Defaults to a no-op.</summary>
+    ValueTask FocusAsync(string elementId) => ValueTask.CompletedTask;
+
+    /// <summary>Has screen readers announce <paramref name="text"/> through a polite live region. Defaults to a no-op.</summary>
+    ValueTask AnnounceAsync(string text) => ValueTask.CompletedTask;
 
     // ── Element registration ──────────────────────────────────────────────────
     ValueTask<bool> RegisterElementAsync(string elementId);
@@ -73,6 +115,21 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask<BmotionBoundingRect?> GetBoundingRectAsync(string elementId, BmotionMeasureOptions options = default);
 
     /// <summary>
+    /// <see cref="GetBoundingRectAsync"/> for the snapshot taken before a re-render, which also holds the element
+    /// where it is through that render until its FLIP arrives - or <see cref="ReleaseLayoutHoldAsync"/>. Without
+    /// synchronous interop the FLIP is a round trip behind the render, and the element would show at its new place
+    /// in between. The hold measures the new box the way the FLIP will: with <paramref name="translate"/> and
+    /// <paramref name="scale"/> (the layout mode) about the anchor (<paramref name="anchorX"/>,
+    /// <paramref name="anchorY"/>). Defaults to <see cref="GetBoundingRectAsync"/>, holding nothing.
+    /// </summary>
+    ValueTask<BmotionBoundingRect?> MeasureAndHoldLayoutAsync(string elementId, BmotionMeasureOptions options,
+        bool translate, bool scale, double anchorX, double anchorY)
+        => GetBoundingRectAsync(elementId, options);
+
+    /// <summary>Lets go of a layout hold (see <see cref="MeasureAndHoldLayoutAsync"/>) whose FLIP didn't play. Defaults to doing nothing.</summary>
+    ValueTask ReleaseLayoutHoldAsync(string elementId) => ValueTask.CompletedTask;
+
+    /// <summary>
     /// Plays the FLIP animation. <paramref name="originX"/>/<paramref name="originY"/> are the
     /// projection anchor (0-1 of the element's box) the deltas were measured from, and
     /// <paramref name="dotnetRef"/> - when given - receives <c>OnLayoutAnimationCompleted</c> once
@@ -82,8 +139,46 @@ public interface IBmotionInterop : IAsyncDisposable
         string elementId, double dx, double dy, double sx, double sy, double durationMs, string easingStr,
         string? finalTransform, double originX, double originY, DotNetObjectReference<T>? dotnetRef) where T : class;
 
+    /// <summary>
+    /// Crossfades two holders of a LayoutId as the layout animation plays: <paramref name="leadId"/>, the one taking
+    /// it over, fades in; <paramref name="followId"/>, the one on its way out, fades out while it travels onto the
+    /// lead's box - by (<paramref name="dx"/>, <paramref name="dy"/>) and (<paramref name="sx"/>,
+    /// <paramref name="sy"/>) about the anchor (<paramref name="originX"/>, <paramref name="originY"/>) - and stays
+    /// there until it is removed. Defaults to doing nothing.
+    /// </summary>
+    ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
+        double durationMs, string easingStr, double originX, double originY) => ValueTask.CompletedTask;
+
+    /// <summary>Takes an element that came back off its crossfade out (see <see cref="PlayLayoutCrossfadeAsync"/>). Defaults to doing nothing.</summary>
+    ValueTask CancelLayoutCrossfadeAsync(string elementId) => ValueTask.CompletedTask;
+
+    // ── Reading the page ──────────────────────────────────────────────────────
+    /// <summary>
+    /// Reads, in one call, the computed values of the <paramref name="current"/> properties (the starting values
+    /// the engine has never seen) and what the stylesheet gives the <paramref name="stylesheet"/> properties with
+    /// their inline declarations lifted (the values a gesture hands back to it). Property names are the engine's
+    /// camelCase keys; <c>d</c>/<c>points</c> read the SVG attribute. Defaults to <c>null</c> (nothing read) for
+    /// interop implementations without a browser.
+    /// </summary>
+    ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet)
+        => ValueTask.FromResult<BmotionStyleRead?>(null);
+
+    /// <summary>
+    /// <see cref="ReadStylesAsync(string, string[], string[])"/>, and also the natural size of the <paramref name="auto"/>
+    /// properties (<c>width</c>/<c>height</c>): their computed value with the inline declaration set to <c>auto</c>
+    /// for an instant - what an animation to <c>"auto"</c> plays towards. Defaults to reading without them.
+    /// </summary>
+    ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet, string[] auto)
+        => ReadStylesAsync(elementId, current, stylesheet);
+
     // ── WAAPI compositor offload ──────────────────────────────────────────────
     ValueTask<bool> SupportsLinearEasingAsync();
+
+    /// <summary>
+    /// Whether the browser animates between <c>oklab()</c> colours in OKLab, not just parses them - which lets an
+    /// OKLab colour transition play in the browser. Defaults to <c>false</c>.
+    /// </summary>
+    ValueTask<bool> SupportsOklabColorAsync() => ValueTask.FromResult(false);
     ValueTask<bool> PlayWaapiAnimationAsync(string elementId, int token, object keyframes, object timing);
     ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit);
 
@@ -93,6 +188,12 @@ public interface IBmotionInterop : IAsyncDisposable
     /// Defaults to a no-op for interop implementations without a browser.
     /// </summary>
     ValueTask SetWaapiPlaybackRateAsync(string elementId, double rate) => ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Moves every compositor animation playing on the element to <paramref name="playedMs"/> of its own time (delay
+    /// included) - a seek. Defaults to a no-op for interop implementations without a browser.
+    /// </summary>
+    ValueTask SeekWaapiAnimationsAsync(string elementId, double playedMs) => ValueTask.CompletedTask;
 
     // ── Scroll-driven timelines ───────────────────────────────────────────────
     /// <summary>
@@ -113,6 +214,23 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask<string[]> ResolveOrRegisterBySelectorAsync(string selector);
     ValueTask<string> ResolveOrRegisterByRefAsync(ElementReference elementReference);
 
+    /// <summary>
+    /// Resolves the elements as <see cref="ResolveOrRegisterBySelectorAsync"/> does, and names the ones among them the
+    /// engine has never addressed: an element rendered in place of one that had the same id - the page left and opened
+    /// again - is one of them, and shows nothing of what was animated on the element before it. Without that the
+    /// engine resumes the values it kept for the id, and the new element jumps to them instead of animating there.
+    /// Defaults to naming none, as an implementation that cannot tell does.
+    /// </summary>
+    internal async ValueTask<(string[] Ids, string[] NewIds)> ResolveBySelectorAsync(string selector)
+        => (await ResolveOrRegisterBySelectorAsync(selector), []);
+
+    /// <summary>
+    /// Resolves the element as <see cref="ResolveOrRegisterByRefAsync"/> does, and says whether the engine has never
+    /// addressed it (see <see cref="ResolveBySelectorAsync"/>).
+    /// </summary>
+    internal async ValueTask<(string Id, bool IsNew)> ResolveByRefAsync(ElementReference elementReference)
+        => (await ResolveOrRegisterByRefAsync(elementReference), false);
+
     // ── View Transitions API ───────────────────────────────────────────────────
     /// <summary>
     /// Wraps <c>document.startViewTransition</c> around a C# DOM-update callback (invoked by name
@@ -120,4 +238,12 @@ public interface IBmotionInterop : IAsyncDisposable
     /// transition, <c>false</c> when it isn't supported and the callback ran without one.
     /// </summary>
     ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName) where T : class;
+
+    /// <summary>
+    /// <see cref="StartViewTransitionAsync{T}(DotNetObjectReference{T}, string)"/> with view transition
+    /// <paramref name="types"/> (<c>startViewTransition({ update, types })</c>); a browser without typed transitions
+    /// plays an untyped one. Defaults to ignoring the types.
+    /// </summary>
+    ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName, string[] types) where T : class
+        => StartViewTransitionAsync(dotnetRef, callbackName);
 }

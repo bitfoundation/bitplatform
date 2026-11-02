@@ -82,6 +82,70 @@ public class AppLayerRegressionTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow("hello world", "XXhello world", 13, 0, 0, "XX")]   // a value set by script leaves the caret at the end
+    [DataRow("abcdef", "adef", 3, 1, 2, "")]                    // the deleting half of a drag, caret at the drop
+    [DataRow("teh cat", "the cat", 4, 1, 2, "he")]              // an autocorrection, caret after the space
+    [DataRow("aaa", "aaaa", 0, 0, 0, "a")]                      // still slides as far towards the caret as it can
+    public void The_caret_never_widens_the_diff(
+        string current, string desired, int caret, int index, int deleted, string inserted)
+    {
+        Assert.AreEqual(new BcrdtTextEdit(index, deleted, inserted), BcrdtTextSynchronizer.Diff(current, desired, caret));
+    }
+
+    [TestMethod]
+    public void The_caret_hinted_diff_is_always_correct_and_never_larger_than_the_plain_one()
+    {
+        var random = new Random(14145);
+        for (int run = 0; run < 20_000; run++)
+        {
+            // A small alphabet, so runs of repeated characters - where the caret has a choice - are common.
+            string current = RandomText(random, random.Next(0, 9));
+            string desired = RandomText(random, random.Next(0, 9));
+            int caret = random.Next(-1, desired.Length + 2);
+
+            BcrdtTextEdit hinted = BcrdtTextSynchronizer.Diff(current, desired, caret);
+            BcrdtTextEdit plain = BcrdtTextSynchronizer.Diff(current, desired);
+
+            string applied = string.Concat(current.AsSpan(0, hinted.Index), hinted.Inserted, current.AsSpan(hinted.Index + hinted.DeletedLength));
+            Assert.AreEqual(desired, applied, $"\"{current}\" -> \"{desired}\", caret {caret}: {hinted}");
+            Assert.AreEqual(plain.DeletedLength + plain.Inserted.Length, hinted.DeletedLength + hinted.Inserted.Length,
+                $"\"{current}\" -> \"{desired}\", caret {caret}: {hinted} is larger than {plain}");
+        }
+
+        static string RandomText(Random random, int length)
+        {
+            char[] chars = new char[length];
+            for (int i = 0; i < length; i++) chars[i] = "ab "[random.Next(3)];
+            return new string(chars);
+        }
+    }
+
+    [TestMethod]
+    public void An_edit_away_from_the_caret_keeps_a_concurrent_edit_and_the_collaborators_caret()
+    {
+        using var a = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        using var b = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 2 });
+        BcrdtText text = a.GetText("body");
+        text.Insert(0, "hello world");
+        b.ApplyUpdate(a.EncodeStateAsUpdate());
+
+        // B's caret sits after "hello"; B also inserts a word that A has not seen yet.
+        BcrdtRelativePosition caret = BcrdtRelativePosition.FromIndex(b.GetText("body"), 5);
+        b.GetText("body").Insert(6, "big ");
+
+        // A script (a browser extension, say) prefixes A's value and leaves the caret at the end of it.
+        using var binding = new BcrdtTextInputBinding(text);
+        binding.ApplyInput("XXhello world", 13, 13);
+
+        a.ApplyUpdate(b.EncodeStateAsUpdate(a.GetStateVector()));
+        b.ApplyUpdate(a.EncodeStateAsUpdate(b.GetStateVector()));
+
+        Assert.AreEqual("XXhello big world", b.GetText("body").ToString());
+        Assert.AreEqual(7, caret.Resolve(b)?.Index);
+        BcrdtConvergenceHarness.AssertConverged(a, b);
+    }
+
+    [TestMethod]
     public void Applying_a_value_to_text_with_an_embed_edits_the_right_characters_and_keeps_the_embed()
     {
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });

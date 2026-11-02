@@ -46,6 +46,7 @@ public partial class WebOfflineTodoSyncTests : AppTestBase
         await Expect(page.GetByPlaceholder(AppStrings.TodoAddPlaceholder)).ToBeVisibleAsync();
         // Full offline mode: every asset has to be in the service worker's cache before the network goes away.
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await Expect(page.Locator(".todo-list")).ToBeVisibleAsync();
 
         // ---- Offline: the item lives only in the browser's database ----
         await Context.SetOfflineAsync(offline: true);

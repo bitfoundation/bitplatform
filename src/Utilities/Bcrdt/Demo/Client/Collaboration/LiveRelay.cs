@@ -18,28 +18,38 @@ public enum LiveRelayKind
 /// browser tabs reach each other through the demo server, over whichever relay <see cref="Kind"/> names.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Every other page builds its replicas by hand over the in-memory transport, so they can sit side by side in one
 /// tab. The live page is the only one that goes through <c>AddBitBcrdtServices</c> and
 /// <see cref="BcrdtCollaborationScope"/> - exactly the way an application would - and this is the one piece it
 /// configures. The addresses are resolved when a transport is created rather than at registration, because only
 /// then is the page's base address known.
+/// </para>
+/// <para>
+/// <see cref="ReadOnly"/> only asks, through the <c>access</c> query parameter; the demo server's relays grant
+/// it, and enforce it by dropping every change a read-only connection sends.
+/// </para>
 /// </remarks>
 public sealed class LiveRelay(NavigationManager navigation) : IBcrdtTransportFactory
 {
     /// <summary>The relay transports created from now on connect through.</summary>
     public LiveRelayKind Kind { get; set; } = LiveRelayKind.SignalR;
 
+    /// <summary>Whether transports created from now on ask the relay for read-only access.</summary>
+    public bool ReadOnly { get; set; }
+
     /// <inheritdoc/>
     public IBcrdtTransport Create(string documentId)
     {
         var baseUri = new Uri(navigation.BaseUri);
+        string access = ReadOnly ? "?access=read" : string.Empty;
 
         return Kind switch
         {
-            // An http(s) address is rewritten to ws(s) by the factory.
-            LiveRelayKind.WebSocket => new BcrdtWebSocketTransportFactory(new Uri(baseUri, "ws/bcrdt/" + BcrdtWebSocketTransportFactory.DocumentIdPlaceholder).OriginalString).Create(documentId),
-            // The .NET SignalR client needs an absolute hub address.
-            _ => new BcrdtSignalRTransportFactory(new Uri(baseUri, "hub/bcrdt").ToString()).Create(documentId),
+            // An http(s) address is rewritten to ws(s) by the factory, and the query survives the placeholder.
+            LiveRelayKind.WebSocket => new BcrdtWebSocketTransportFactory(new Uri(baseUri, "ws/bcrdt/" + BcrdtWebSocketTransportFactory.DocumentIdPlaceholder + access).OriginalString).Create(documentId),
+            // The .NET SignalR client needs an absolute hub address; it carries the query to the hub's requests.
+            _ => new BcrdtSignalRTransportFactory(new Uri(baseUri, "hub/bcrdt" + access).ToString()).Create(documentId),
         };
     }
 }

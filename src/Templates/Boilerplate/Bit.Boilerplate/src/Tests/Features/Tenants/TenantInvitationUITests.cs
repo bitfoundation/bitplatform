@@ -5,14 +5,10 @@ namespace Boilerplate.Tests.Features.Tenants;
 [TestClass, TestCategory("UITest"), Retry(2)]
 public partial class TenantInvitationUITests : AppPageTest
 {
-    // The seeded store tenant admin. She's a t-admin (not a global admin), See UserConfiguration.
-    private const string StoreAdminEmail = "store-admin@bitplatform.dev";
-    private const string StoreAdminPassword = "12345678";
-
     /// <summary>
     /// End-to-end multi-tenant invitation journey across two isolated browsers:
     /// <list type="number">
-    /// <item>The tenant admin signs in and creates a brand-new tenant (which needs an elevated access token).</item>
+    /// <item>A brand-new user signs in and creates her own tenant (which needs an elevated access token), which makes her its admin.</item>
     /// <item>The admin invites a brand-new e-mail address; nobody owns it yet, so the invitation itself registers the account as a pending member (See TenantController.InviteUser), and while the invitation is pending she does NOT appear in the tenant's users list.</item>
     /// <item>That freshly-created account follows the mailed link signed out, signs in for the first time with a magic link (OTP), the same way as the identity test - proving a user created by an invitation is a fully functional account - and lands back on the "manage my tenants" page with the invitation waiting, yet with the invitation still pending she can't reach the Dashboard.</item>
     /// <item>She accepts the invitation from the "manage my tenants" page, which lets her reach the Dashboard and makes her show up in the admin's users list.</item>
@@ -27,11 +23,12 @@ public partial class TenantInvitationUITests : AppPageTest
         var serverAddress = server.WebAppAddress;
 
         // ---- Browser 1: the tenant admin (the default Page / Context) ----
-        await SignInWithPassword(Page, serverAddress, StoreAdminEmail, StoreAdminPassword);
+        var adminEmail = MagicLinkSignInUtils.NewTestEmail();
+        await MagicLinkSignInUtils.SignInViaMagicLinkOtp(Page, server, adminEmail, TestContext.CancellationToken);
 
         // She creates a brand-new tenant. Its name must satisfy sub-domain rules; a lowercase Guid qualifies.
         var tenantName = Guid.NewGuid().ToString();
-        await CreateTenant(Page, server, tenantName);
+        await CreateTenant(Page, server, adminEmail, tenantName);
 
         // ---- Browser 1: the admin invites a brand-new e-mail into the new tenant ----
         // Nobody owns this address yet, so the invitation itself registers the account: a pending member with a random
@@ -93,25 +90,13 @@ public partial class TenantInvitationUITests : AppPageTest
         await AssertUserInTenantUsersList(Page, invitedEmail, shouldExist: false);
     }
 
-    private async Task SignInWithPassword(IPage page, Uri serverAddress, string email, string password)
-    {
-        await page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
-            new() { WaitUntil = WaitUntilState.NetworkIdle });
-
-        await SignInPanelUtils.FillCredentials(page, email, password);
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Continue, Exact = true }).ClickAsync();
-
-        await Expect(page).ToHaveURLAsync(serverAddress.ToString());
-    }
-
-    private async Task CreateTenant(IPage page, AppTestServer server, string tenantName)
+    private async Task CreateTenant(IPage page, AppTestServer server, string adminEmail, string tenantName)
     {
         await page.GoToInApp(PageUrls.ManageMyTenants);
 
-        // She already belongs to the seeded store tenant, so the "create" section starts collapsed; expand it.
-        // The page is on screen before the app is listening to it, so a click landing in that window is simply lost.
+        // She belongs to no tenant yet, so the "create" section starts expanded.
+        // The page is on screen before the app is listening to it, so a value filled in that window is simply lost.
         await page.WaitForBlazorInteractive();
-        await page.GetByText(AppStrings.CreateNewTenant).First.ClickAsync();
 
         // The create and the rename forms share the same "tenant name" placeholder; the create one comes first in the DOM.
         // Expanding the create section resets its form (See ManageMyTenantsPage.OnSectionExpand); that async re-render can
@@ -122,7 +107,7 @@ public partial class TenantInvitationUITests : AppPageTest
         // Creating a tenant needs elevated access: an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();
 
-        var captured = await server.WaitForCapturedEmail(StoreAdminEmail, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
+        var captured = await server.WaitForCapturedEmail(adminEmail, capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
         var elevatedToken = captured.Token!;
         await BitOtpInputUtils.FillOtpInputs(page, elevatedToken);
 

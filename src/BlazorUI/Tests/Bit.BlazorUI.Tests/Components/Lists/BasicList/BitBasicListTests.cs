@@ -32,7 +32,7 @@ public class BitBasicListTests : BunitTestContext
 
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        // To ensure a consistent display structure in the Virtualize component across .NET 8, .NET 9, and .NET 10,
+        // To ensure a consistent display structure in the Virtualize component across .NET 10 and .NET 11,
         // we've set the default value of MaxItemCount to 100. This means that even if a higher value is specified,
         // only a maximum of 100 items will be rendered by default.
         AppContext.SetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount", maxItemCount);
@@ -58,9 +58,7 @@ public class BitBasicListTests : BunitTestContext
                 //When virtualize is true, number of rendered items is greater than number of items show in the list + 2 * overScanCount.
                 var overscanItemsCount = 2 * component.Instance.OverscanCount;
 
-#if NET10_0_OR_GREATER
                 maxItemCount += overscanItemsCount;
-#endif
 
                 var expectedRenderedItemCount = Math.Ceiling((decimal)(viewportHeight / component.Instance.ItemSize)) + overscanItemsCount;
                 expectedRenderedItemCount = Math.Min(expectedRenderedItemCount, maxItemCount);

@@ -19,7 +19,7 @@ public enum MetadataPolicy
 
     /// <summary>
     /// Keep descriptive metadata (camera, exposure, dates, copyright, ICC profile) but strip privacy-sensitive fields:
-    /// GPS location, serial numbers, owner name, user comments, maker notes, unique IDs and embedded thumbnails.
+    /// GPS location, serial numbers, owner and artist names, user comments, maker notes, unique IDs and embedded thumbnails.
     /// </summary>
     StripSensitive,
 

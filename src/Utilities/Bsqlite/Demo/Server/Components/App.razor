@@ -16,6 +16,7 @@
     <meta property="og:site_name" content="Bit.Bsqlite" />
     <meta property="og:title" content="Bsqlite - EF Core on SQLite, inside the browser tab" />
     <meta property="og:description" content="SQLite in a Web Worker under the stock EF Core provider: the same entities and migrations as the server, live queries, and a database that lives in OPFS, IndexedDB, Cache Storage or memory." />
+    <meta property="og:image" content="https://bsqlite.bitplatform.dev/icon-512.png" />
     <meta name="twitter:card" content="summary" />
 
     <ResourcePreloader />
@@ -28,7 +29,9 @@
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="@Assets["theme.js"]"></script>
     <ImportMap />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231276C6'/%3E%3Cellipse cx='16' cy='9' rx='9' ry='3.6' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3Cpath d='M7 9v14c0 2 4 3.6 9 3.6s9-1.6 9-3.6V9' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3Cpath d='M7 16c0 2 4 3.6 9 3.6s9-1.6 9-3.6' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3C/svg%3E" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
 
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />

@@ -40,8 +40,29 @@ public abstract class BcrdtComponentBase : ComponentBase, IAsyncDisposable
     private bool _disposed;
 
     /// <summary>The collaboration service for this scope.</summary>
+    /// <remarks>
+    /// The one <c>AddBitBcrdtServices</c> registered or, in an app that lazy loads Bit.Bcrdt on WebAssembly and so
+    /// cannot register it, the one <see cref="BitBcrdt.GetBcrdtCollaborationService"/> configured. On WebAssembly it is
+    /// resolved on first use, so that the page around the component can configure it first; everywhere else it is
+    /// resolved when the component is created, as an injected service is, and a missing registration fails right there -
+    /// while prerendering too.
+    /// </remarks>
+    protected IBcrdtCollaborationService Collaboration
+    {
+        get => field ??= ServiceProvider.GetBcrdtCollaborationService();
+        set;
+    }
+
     [Inject]
-    protected IBcrdtCollaborationService Collaboration { get; set; } = default!;
+    private IServiceProvider ServiceProvider
+    {
+        get;
+        set
+        {
+            field = value;
+            if (BcrdtOwnCollaboration.IsWebAssembly(value) is false) Collaboration = value.GetBcrdtCollaborationService();
+        }
+    } = default!;
 
     /// <summary>
     /// How long to coalesce renders for. Roughly one frame by default.
@@ -92,15 +113,21 @@ public abstract class BcrdtComponentBase : ComponentBase, IAsyncDisposable
         return Register(new Unsubscriber(() => presence.Changed -= Handler));
     }
 
-    /// <summary>Re-renders when the connection state changes.</summary>
+    /// <summary>Re-renders when the connection state or the access the server granted changes.</summary>
     /// <returns>The subscription; disposing it stops the tracking early.</returns>
     protected IDisposable Track(BcrdtSyncProvider sync)
     {
         ArgumentNullException.ThrowIfNull(sync);
 
         void Handler(BcrdtConnectionStatus _) => RequestRender();
+        void AccessHandler(BcrdtDocumentAccess _) => RequestRender();
         sync.StatusChanged += Handler;
-        return Register(new Unsubscriber(() => sync.StatusChanged -= Handler));
+        sync.AccessChanged += AccessHandler;
+        return Register(new Unsubscriber(() =>
+        {
+            sync.StatusChanged -= Handler;
+            sync.AccessChanged -= AccessHandler;
+        }));
     }
 
     /// <summary>Registers a resource to dispose with the component.</summary>

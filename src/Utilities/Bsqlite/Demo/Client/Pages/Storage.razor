@@ -200,12 +200,14 @@
     </Description>
     <ChildContent>
         <div class="bb-toolbar">
-            <button type="button" class="btn btn-secondary" @onclick="RequestPersistenceAsync" disabled="@_busy">
+            @* Its own flag, not _busy: a browser that asks the reader (Firefox) leaves the request open until
+               they answer, and the probe has no reason to wait for that. *@
+            <button type="button" class="btn btn-secondary" @onclick="RequestPersistenceAsync" disabled="@_persisting">
                 Request persistent storage
             </button>
             <span>
                 Currently:
-                <strong>@(_persisted is null ? "not requested yet" : _persisted.Value ? "granted" : "denied")</strong>
+                <strong>@(_persisting ? "waiting for the browser's answer" : _persisted is null ? "not requested yet" : _persisted.Value ? "granted" : "denied")</strong>
             </span>
         </div>
     </ChildContent>
@@ -244,6 +246,7 @@
     private bool? _persisted;
     private string? _error;
     private bool _busy;
+    private bool _persisting;
     private readonly List<(string Name, BsqliteProbeResult Probe)> _probes = [];
 
     private static Task NoopAsync() => Task.CompletedTask;
@@ -266,7 +269,7 @@
 
     private async Task RequestPersistenceAsync()
     {
-        _busy = true;
+        _persisting = true;
         _error = null;
         try
         {
@@ -279,7 +282,7 @@
         }
         finally
         {
-            _busy = false;
+            _persisting = false;
         }
     }
 

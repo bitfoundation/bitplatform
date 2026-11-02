@@ -1,0 +1,59 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a panel inherits down to every reasoning panel under it:
+//   --bit-AiReasoningPartView-color          text color of the reasoning               (default: $clr-fg-sec)
+//   --bit-AiReasoningPartView-font-size      text size of the reasoning                (default: $tg-fs-sm)
+//   --bit-AiReasoningPartView-max-height     height past which the reasoning scrolls   (default: spacing(44))
+//
+// The frame, the header and the toggle are the BitAiCollapsible's, and its own variables restyle them; the reasoning
+// itself is a BitAiMarkdownView, which the --bit-AiMarkdownView-* variables restyle.
+
+.bit-airpv {
+    min-width: 0;
+}
+
+// The icon, the title and the dots of the header, on one line.
+.bit-airpv-hdr {
+    min-width: 0;
+    display: flex;
+    gap: spacing(1);
+    align-items: center;
+}
+
+.bit-airpv-ico {
+    flex: none;
+}
+
+// A long title is cut short rather than wrapping the header onto a second line, and the dots follow it.
+.bit-airpv-ttl {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-medium;
+}
+
+// Reasoning can run long, so it scrolls inside the panel rather than pushing the answer below it off the screen. It takes
+// the focus so a keyboard can scroll it, and shows it with the ring drawn around it: the body has no padding of its own,
+// so a ring drawn inside it would sit on the first and last lines of the text, while the padding of the panel around it
+// (the BitAccordion's content padding, spacing(1.5) unless an app sets --bit-Accordion-content-padding) leaves the
+// ring room inside the box the panel clips its content to.
+.bit-airpv-bdy {
+    overflow-y: auto;
+    color: var(--bit-AiReasoningPartView-color, #{$clr-fg-sec});
+    font-size: var(--bit-AiReasoningPartView-font-size, #{$tg-fs-sm});
+    max-height: var(--bit-AiReasoningPartView-max-height, #{spacing(44)});
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// A printed panel shows all of the reasoning it holds open.
+@media print {
+    .bit-airpv-bdy {
+        max-height: none;
+        overflow: visible;
+    }
+}

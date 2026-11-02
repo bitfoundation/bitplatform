@@ -1,6 +1,7 @@
 ﻿using Bunit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace Bit.Bonboarding.Tests;
 
@@ -60,6 +61,33 @@ public class InteropTests : BunitContext
         await interop.OnKey("s", new BonboardingInterop.KeyPayload("Escape", false));
 
         Assert.AreEqual(3, callbacks.Count);
+    }
+
+    [TestMethod]
+    public async Task A_Storage_Listener_That_Failed_To_Install_Is_Installed_Next_Time()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var module = JSInterop.SetupModule(ModulePath);
+        module.Mode = JSRuntimeMode.Loose;
+        var watch = module.SetupVoid("watchStorage", _ => true);
+
+        var interop = new BonboardingInterop(
+            JSInterop.JSRuntime,
+            Options.Create(new BonboardingOptions()),
+            NullLogger<BonboardingInterop>.Instance);
+
+        // The circuit dropped mid-call: the listener never reached the browser.
+        watch.SetException(new JSDisconnectedException("The circuit is gone."));
+        await Assert.ThrowsExactlyAsync<JSDisconnectedException>(() => interop.WatchStorageAsync("bit-bonboarding:", _ => ValueTask.CompletedTask).AsTask());
+
+        // The store tries again on its next read, and this time it gets there.
+        watch.SetVoidResult();
+        await interop.WatchStorageAsync("bit-bonboarding:", _ => ValueTask.CompletedTask);
+        Assert.HasCount(2, module.Invocations["watchStorage"]);
+
+        // Once in place, one listener serves every watcher.
+        await interop.WatchStorageAsync("other:", _ => ValueTask.CompletedTask);
+        Assert.HasCount(2, module.Invocations["watchStorage"]);
     }
 
     private static BonboardingStepActivation Activation(string sessionId) => new()

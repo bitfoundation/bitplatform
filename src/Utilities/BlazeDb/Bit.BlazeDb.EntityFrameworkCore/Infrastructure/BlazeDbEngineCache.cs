@@ -52,7 +52,7 @@ internal sealed class BlazeDbEngineCache
         while (true)
         {
             var slot = SlotFor(key);
-            if (!slot.Gate.Wait(0))
+            if (!slot.Gate.WaitAsync(0).GetAwaiter().GetResult())
             {
                 // Someone else is opening this store. Where this thread cannot block - the browser's
                 // only thread, or one with a synchronization context - waiting here would wait for a

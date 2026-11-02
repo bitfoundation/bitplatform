@@ -47,6 +47,11 @@ public static class BlazorUIAssemblies
         "AddBitBlazorUIExtrasServices()", "bit.blazorui.extras.css", "bit.blazorui.extras.js", Required: false,
         "The heavier components - chart, data grid, map, PDF viewer, the editors, the pro modal and panel - and the Fluent 2, Material and Cupertino theme presets.");
 
+    public static BlazorUIPackage AI { get; } = new(
+        "Bit.BlazorUI.AI", typeof(BitAiChat).Assembly,
+        "AddBitBlazorUIAIServices(ai => ai.UseTransport<TTransport>())", "bit.blazorui.ai.css", "bit.blazorui.ai.js", Required: false,
+        "The components of AI apps - chat, prompt input, streaming Markdown, tool calls and approvals, agent runs, citations, artifacts, structured output and generative UI - over one transport interface an app implements for its model provider.");
+
     public static BlazorUIPackage Icons { get; } = new(
         "Bit.BlazorUI.Icons", typeof(BitIconName).Assembly,
         null, "bit.blazorui.icons.css", null, Required: false,
@@ -63,7 +68,7 @@ public static class BlazorUIAssemblies
         "The previous implementations of chart, data grid, the editors and the PDF reader, kept under their own namespace so both generations can live in one app.");
 
     /// <summary>Every package, in the order an app adds them.</summary>
-    public static BlazorUIPackage[] Packages { get; } = [Core, Extras, Icons, Assets, Legacy];
+    public static BlazorUIPackage[] Packages { get; } = [Core, Extras, AI, Icons, Assets, Legacy];
 
     /// <summary>The assemblies the type and component catalogs read from.</summary>
     public static Assembly[] All { get; } = [.. Packages.Select(p => p.Assembly).Distinct()];

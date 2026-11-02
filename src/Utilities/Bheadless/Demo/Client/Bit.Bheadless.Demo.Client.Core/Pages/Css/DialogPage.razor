@@ -1,0 +1,377 @@
+﻿@page "/dialog"
+
+<PageTitle>Dialog — bit Bheadless</PageTitle>
+
+<div class="demo-page">
+    <header class="demo-header">
+        <h1>Dialog</h1>
+        <p>An accessible modal with focus trap, scroll lock, and inert background.</p>
+        <SectionSwitcher Slug="dialog" />
+    </header>
+
+    <DemoBlock Title="Basic Dialog"
+               Code="@_basicCode"
+               Css="@_dialogCss">
+        <Description>
+            Click the button to open the dialog. While open, focus is trapped inside the
+            panel, body scroll is locked, the rest of the page is marked <code>inert</code>,
+            and Escape or clicking the backdrop closes it. Focus is returned to the
+            opener button on close.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => basicOpen = true" class="btn btn-primary">
+                Open dialog
+            </BitBhButton>
+
+            <BitBhDialog Open="basicOpen" OnClose="() => basicOpen = false">
+                <BitBhDialogBackdrop class="dialog-backdrop" />
+                <BitBhDialogPanel class="dialog-panel">
+                    <BitBhDialogTitle class="dialog-title">Welcome aboard</BitBhDialogTitle>
+                    <BitBhDialogDescription class="dialog-description">
+                        This is a fully-accessible dialog. Try Tab and Shift+Tab — focus
+                        cycles inside this panel. Press Escape to close.
+                    </BitBhDialogDescription>
+
+                    <div class="dialog-actions">
+                        <BitBhButton OnClick="() => basicOpen = false" class="btn">Cancel</BitBhButton>
+                        <BitBhButton OnClick="() => basicOpen = false" class="btn btn-primary">Got it</BitBhButton>
+                    </div>
+                </BitBhDialogPanel>
+            </BitBhDialog>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="Confirmation (no backdrop dismiss)"
+               Code="@_confirmCode"
+               Css="@_confirmCss">
+        <Description>
+            Set <code>DismissOnClick="false"</code> on the backdrop and
+            <code>DismissOnEscape="false"</code> on the panel to require an explicit
+            choice. Useful for destructive actions.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => confirmOpen = true" class="btn">
+                Delete account
+            </BitBhButton>
+
+            <span class="demo-output">@confirmResult</span>
+
+            <BitBhDialog Open="confirmOpen" OnClose="() => confirmOpen = false">
+                <BitBhDialogBackdrop class="dialog-backdrop" DismissOnClick="false" />
+                <BitBhDialogPanel class="dialog-panel" DismissOnEscape="false">
+                    <BitBhDialogTitle class="dialog-title">Delete account?</BitBhDialogTitle>
+                    <BitBhDialogDescription class="dialog-description">
+                        This will permanently remove your account and all its data.
+                        This cannot be undone.
+                    </BitBhDialogDescription>
+
+                    <div class="dialog-actions">
+                        <BitBhButton OnClick="HandleCancel" class="btn">Cancel</BitBhButton>
+                        <BitBhButton OnClick="HandleDelete" class="btn btn-danger">Yes, delete</BitBhButton>
+                    </div>
+                </BitBhDialogPanel>
+            </BitBhDialog>
+        </LiveContent>
+    </DemoBlock>
+
+    <DemoBlock Title="With form fields"
+               Code="@_formCode"
+               Css="@_formCss">
+        <Description>
+            The dialog also works as a focusable form container. Tab cycles between the
+            inputs and buttons; the focus trap keeps them all reachable while keeping the
+            background untouchable.
+        </Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => formOpen = true" class="btn btn-primary">
+                Edit profile
+            </BitBhButton>
+
+            <span class="demo-output">@formResult</span>
+
+            <BitBhDialog Open="formOpen" OnClose="() => formOpen = false">
+                <BitBhDialogBackdrop class="dialog-backdrop" />
+                <BitBhDialogPanel class="dialog-panel">
+                    <BitBhDialogTitle class="dialog-title">Edit profile</BitBhDialogTitle>
+                    <BitBhDialogDescription class="dialog-description">
+                        Update your display name. Press Escape or click outside to cancel.
+                    </BitBhDialogDescription>
+
+                    <label class="dialog-field">
+                        <span>Display name</span>
+                        <input type="text" @bind="displayName" class="dialog-input" />
+                    </label>
+
+                    <div class="dialog-actions">
+                        <BitBhButton OnClick="() => formOpen = false" class="btn">Cancel</BitBhButton>
+                        <BitBhButton OnClick="HandleSave" class="btn btn-primary">Save</BitBhButton>
+                    </div>
+                </BitBhDialogPanel>
+            </BitBhDialog>
+        </LiveContent>
+    </DemoBlock>
+</div>
+
+@code {
+    private bool basicOpen;
+    private bool confirmOpen;
+    private bool formOpen;
+    private string? confirmResult;
+    private string? formResult;
+    private string displayName = "Alice";
+
+    private void HandleCancel()
+    {
+        confirmOpen = false;
+        confirmResult = "Cancelled.";
+    }
+
+    private void HandleDelete()
+    {
+        confirmOpen = false;
+        confirmResult = "Account deleted (just kidding).";
+    }
+
+    private void HandleSave()
+    {
+        formOpen = false;
+        formResult = $"Saved: {displayName}";
+    }
+
+    // ── Source snippets shown alongside each live demo ─────────────────────────
+
+    private const string _basicCode = """
+<BitBhButton OnClick="() => isOpen = true" class="btn btn-primary">
+    Open dialog
+</BitBhButton>
+
+<BitBhDialog Open="isOpen" OnClose="() => isOpen = false">
+    <BitBhDialogBackdrop class="dialog-backdrop" />
+    <BitBhDialogPanel class="dialog-panel">
+        <BitBhDialogTitle class="dialog-title">Welcome aboard</BitBhDialogTitle>
+        <BitBhDialogDescription class="dialog-description">
+            This is a fully-accessible dialog. Try Tab and Shift+Tab — focus
+            cycles inside this panel. Press Escape to close.
+        </BitBhDialogDescription>
+
+        <div class="dialog-actions">
+            <BitBhButton OnClick="() => isOpen = false" class="btn">Cancel</BitBhButton>
+            <BitBhButton OnClick="() => isOpen = false" class="btn btn-primary">Got it</BitBhButton>
+        </div>
+    </BitBhDialogPanel>
+</BitBhDialog>
+
+@code {
+    private bool isOpen;
+}
+""";
+
+    private const string _confirmCode = """
+<BitBhButton OnClick="() => isOpen = true" class="btn">
+    Delete account
+</BitBhButton>
+
+<span class="demo-output">@confirmResult</span>
+
+<BitBhDialog Open="isOpen" OnClose="() => isOpen = false">
+    <BitBhDialogBackdrop class="dialog-backdrop" DismissOnClick="false" />
+    <BitBhDialogPanel class="dialog-panel" DismissOnEscape="false">
+        <BitBhDialogTitle class="dialog-title">Delete account?</BitBhDialogTitle>
+        <BitBhDialogDescription class="dialog-description">
+            This will permanently remove your account and all its data.
+            This cannot be undone.
+        </BitBhDialogDescription>
+
+        <div class="dialog-actions">
+            <BitBhButton OnClick="HandleCancel" class="btn">Cancel</BitBhButton>
+            <BitBhButton OnClick="HandleDelete" class="btn btn-danger">Yes, delete</BitBhButton>
+        </div>
+    </BitBhDialogPanel>
+</BitBhDialog>
+
+@code {
+    private bool isOpen;
+    private string? confirmResult;
+
+    private void HandleCancel()
+    {
+        isOpen = false;
+        confirmResult = "Cancelled.";
+    }
+
+    private void HandleDelete()
+    {
+        isOpen = false;
+        confirmResult = "Account deleted (just kidding).";
+    }
+}
+""";
+
+    private const string _formCode = """
+<BitBhButton OnClick="() => isOpen = true" class="btn btn-primary">
+    Edit profile
+</BitBhButton>
+
+<span class="demo-output">@formResult</span>
+
+<BitBhDialog Open="isOpen" OnClose="() => isOpen = false">
+    <BitBhDialogBackdrop class="dialog-backdrop" />
+    <BitBhDialogPanel class="dialog-panel">
+        <BitBhDialogTitle class="dialog-title">Edit profile</BitBhDialogTitle>
+        <BitBhDialogDescription class="dialog-description">
+            Update your display name. Press Escape or click outside to cancel.
+        </BitBhDialogDescription>
+
+        <label class="dialog-field">
+            <span>Display name</span>
+            <input type="text" @bind="displayName" class="dialog-input" />
+        </label>
+
+        <div class="dialog-actions">
+            <BitBhButton OnClick="() => isOpen = false" class="btn">Cancel</BitBhButton>
+            <BitBhButton OnClick="HandleSave" class="btn btn-primary">Save</BitBhButton>
+        </div>
+    </BitBhDialogPanel>
+</BitBhDialog>
+
+@code {
+    private bool isOpen;
+    private string? formResult;
+    private string displayName = "Alice";
+
+    private void HandleSave()
+    {
+        isOpen = false;
+        formResult = $"Saved: {displayName}";
+    }
+}
+""";
+
+    private const string _dialogCss = """
+/* The library applies minimal default positioning (position:fixed inset:0)
+   so consumers can layer the backdrop and panel inside it. Everything else is yours. */
+
+.dialog-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.dialog-panel {
+    /* Centre the panel in the viewport */
+    margin: 4rem auto;
+    max-width: 28rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.dialog-title       { font-size: 1.1rem; font-weight: 600; color: #18181b; }
+.dialog-description { font-size: 0.9rem; color: #71717a; }
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+""";
+
+    private const string _confirmCss = """
+/* The library applies minimal default positioning (position:fixed inset:0)
+   so consumers can layer the backdrop and panel inside it. Everything else is yours. */
+
+.dialog-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.dialog-panel {
+    /* Centre the panel in the viewport */
+    margin: 4rem auto;
+    max-width: 28rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.dialog-title       { font-size: 1.1rem; font-weight: 600; color: #18181b; }
+.dialog-description { font-size: 0.9rem; color: #71717a; }
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.btn-danger {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+""";
+
+    private const string _formCss = """
+/* The library applies minimal default positioning (position:fixed inset:0)
+   so consumers can layer the backdrop and panel inside it. Everything else is yours. */
+
+.dialog-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.dialog-panel {
+    /* Centre the panel in the viewport */
+    margin: 4rem auto;
+    max-width: 28rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.dialog-title       { font-size: 1.1rem; font-weight: 600; color: #18181b; }
+.dialog-description { font-size: 0.9rem; color: #71717a; }
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.dialog-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: #18181b;
+}
+
+.dialog-input {
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+.dialog-input:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 1px;
+}
+""";
+}

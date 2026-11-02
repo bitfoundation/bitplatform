@@ -331,6 +331,7 @@
     [
         new("Name", "Display name and slice key. Defaults to the class name. Used in the state tree, DevTools, qualified action names and persistence keys."),
         new("Persist", "When <code>true</code>, the store is rehydrated on startup and saved after every action - provided a persistence provider is registered. Single fields opt out with <code>[BlexState(Persist = false)]</code>. See <a href=\"persistence\">Persistence</a>."),
+        new("Version", "With <code>Persist = true</code>, the version of this store's saved state, used for it instead of <code>options.Version</code>: state saved under another version goes to <code>Migrate</code>, or is dropped. Default <code>0</code> - follow <code>options.Version</code>. See <a href=\"persistence#store-version\">A store's own version</a>."),
         new("EnforceActions", "When <code>true</code>, state changes only through the store's own actions: the generated setters are <code>private</code> (an outside assignment does not compile), and an assignment the store's own code makes outside an action throws once it is registered. See <a href=\"actions\">Actions</a>."),
         new("RollbackOnError", "When <code>true</code>, every synchronous action is a transaction: if it throws, the store's fields go back to what they held when it started, and nothing is notified, recorded, persisted or added to the undo history. See <a href=\"actions#rollback\">When an action throws</a>."),
     ];
@@ -339,6 +340,7 @@
     [
         new("string Name", "The store's slice key."),
         new("bool Persist", "Whether the store opts in to durable persistence."),
+        new("int PersistVersion", "The store's own version of its saved state, <code>0</code> when it follows <code>options.Version</code>. Generated for <code>[BlexStore(Version = n)]</code>."),
         new("event Action? StateChanged", "Raised after state changes so views can re-render. Fires once per action, not once per field."),
         new("event PropertyChangedEventHandler? PropertyChanged", "<code>INotifyPropertyChanged</code>, raised right after <code>StateChanged</code> with an empty property name - \"everything may have changed\" - so a XAML binding refreshes computed and effect-lifecycle properties too. What <a href=\"maui\">.NET MAUI</a> binds to."),
         new("JsonObject SerializeState()", "Captures the current state as JSON. Generated."),

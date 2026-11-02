@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
+using System.IO.Enumeration;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Bit.Cli.Translation;
 
@@ -10,6 +12,8 @@ public sealed record ResxWork(ResxPair Pair, IReadOnlyDictionary<string, string>
 
 public static partial class ResxCatalog
 {
+    private static readonly HashSet<string> skippedFolders = new(StringComparer.OrdinalIgnoreCase) { "bin", "obj", "node_modules" };
+
     public static IReadOnlyList<string> FindBaseFiles(ResxTranslatorSettings settings, Action<string>? warn = null)
     {
         return [.. settings.ResxPaths
@@ -106,22 +110,8 @@ public static partial class ResxCatalog
 
     private static IEnumerable<string> Find(string root, string pattern, Action<string>? warn)
     {
-        var normalized = pattern.TrimStart('/', '\\').Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-        string directory;
-        bool recursive;
-
-        if (normalized.Contains("**", StringComparison.Ordinal))
-        {
-            directory = normalized[..normalized.IndexOf("**", StringComparison.Ordinal)];
-            recursive = true;
-        }
-        else
-        {
-            directory = Path.GetDirectoryName(normalized) ?? "";
-            recursive = false;
-        }
-
-        var fullDirectory = Path.Combine(root, directory);
+        var normalized = pattern.TrimStart('/', '\\').Replace('\\', '/');
+        var fullDirectory = Path.Combine([root, .. normalized.Split('/')[..^1].TakeWhile(segment => segment.Contains('*') is false)]);
 
         if (Directory.Exists(fullDirectory) is false)
         {
@@ -129,16 +119,17 @@ public static partial class ResxCatalog
             return [];
         }
 
-        var filePattern = Path.GetFileName(normalized) is { Length: > 0 } name && name.Contains('*') ? name : "*.resx";
-
-        return Directory.EnumerateFiles(fullDirectory, filePattern, new EnumerationOptions
+        var files = new FileSystemEnumerable<string>(fullDirectory, (ref FileSystemEntry entry) => entry.ToFullPath(), new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true })
         {
-            RecurseSubdirectories = recursive,
-            IgnoreInaccessible = true
-        }).Where(path => path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase)
-            && path.Replace('\\', '/').Contains("/bin/", StringComparison.OrdinalIgnoreCase) is false
-            && path.Replace('\\', '/').Contains("/obj/", StringComparison.OrdinalIgnoreCase) is false
-            && path.Replace('\\', '/').Contains("/node_modules/", StringComparison.OrdinalIgnoreCase) is false);
+            ShouldIncludePredicate = (ref FileSystemEntry entry) => entry.IsDirectory is false && entry.FileName.EndsWith(".resx", StringComparison.OrdinalIgnoreCase),
+            ShouldRecursePredicate = (ref FileSystemEntry entry) => skippedFolders.Contains(entry.FileName.ToString()) is false
+        };
+
+        return new Matcher()
+            .AddInclude(normalized)
+            .Match(root, files)
+            .Files
+            .Select(match => Path.GetFullPath(Path.Combine(root, match.Path)));
     }
 
     public static bool IsCultureSpecific(string path)

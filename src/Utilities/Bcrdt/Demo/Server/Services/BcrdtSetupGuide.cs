@@ -8,7 +8,8 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 /// own sections on that model, and - for the Blazor Web App this demo is - the demo's real hosting files.
 /// <para>
 /// Collaboration fails in ways no compiler catches, and each hosting model has its own: a Blazor Web App
-/// that registers the services in only one of its two containers fails while prerendering; a relative hub
+/// that registers the services in only one of its two containers fails while prerendering when the server's
+/// is missing, and only in the browser, once the page is interactive, when the client's is; a relative hub
 /// URL is rejected when the SignalR connection is built; a bare <c>AddSignalR</c> disconnects every client
 /// once a document outgrows 32 KB; a WebSocket relay mapped without <c>UseWebSockets</c> answers a flat 400;
 /// a Blazor Server page that opens a document while prerendering opens it for a request that is already over;
@@ -115,8 +116,10 @@ public static partial class BcrdtSetupGuide
                 from the first render. A standalone app has no server of its own to map a relay on, so the relay is a
                 separate ASP.NET Core app - with CORS, because the app and the hub are on different origins - and the hub
                 address is absolute. With no transport at all the document is purely local, which is the right way to build
-                a feature first. The in-memory store keeps documents for the tab's lifetime; surviving a reload takes an
-                `IBcrdtDocumentStore` over IndexedDB or OPFS, which is five methods and no CRDT knowledge (see "Writing a store").
+                a feature first. `UseIndexedDbStore()` keeps documents in the browser, so they - and edits made offline -
+                survive a reload; with `UseInMemoryStore()` they last as long as the tab. This is the setup for an app that
+                loads Bit.Bcrdt at startup; one that lazy loads it registers nothing and configures the service in a page
+                instead - a different setup, in `GetBcrdtGuideSection(heading: "Lazy loading on WebAssembly")`.
                 """,
                 UiChecklist,
                 ["Getting started", "Hosting models"],
@@ -134,7 +137,8 @@ public static partial class BcrdtSetupGuide
                 `BcrdtHub` with a SignalR backplane and connect every circuit to it with `BcrdtSignalRTransportFactory` at an
                 absolute address instead. Pages are prerendered first, and a document opened then belongs to a request that
                 is already over: open it once `RendererInfo.IsInteractive`. A circuit outlives its browser tab by the circuit
-                retention period, so a `CircuitHandler` suspends presence the moment the connection drops.
+                retention period, so `AddBitBcrdtCircuitPresence()` from `Bit.Bcrdt.Server` registers a `CircuitHandler`
+                that suspends presence the moment the connection drops.
                 """,
                 UiChecklist,
                 ["Hosting models", "The five-minute version", "Presence"],
@@ -251,12 +255,15 @@ public static partial class BcrdtSetupGuide
            `NavigationManager.BaseUri` where a component or a scoped service can ask.
         4. On the relay: `builder.Services.AddBitBcrdtHub()` - not a bare `AddSignalR`, whose 32 KB receive limit disconnects
            every client once a document outgrows it - and `app.MapHub<BcrdtHub>("/hub/bcrdt")`; or `app.UseWebSockets()`
-           BEFORE `app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")`. Either relay only relays: no document lives on it.
+           BEFORE `app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")`. Either relay only relays; add
+           `builder.Services.AddBitBcrdtDocumentHost(...)` to keep every document on the server as well. The hub picks
+           the host up from the container; the WebSocket mapping does not, so pass it in `options: new() { DocumentHost =
+           app.Services.GetRequiredService<BcrdtDocumentHost>() }`.
         5. Add `@using Bit.Bcrdt` and `@using Bit.Bcrdt.Blazor` to `_Imports.razor`.
         6. Open a document with `<BcrdtCollaborationScope DocumentId="..." User="...">`, which opens it, cascades it and
-           releases it, or with `IBcrdtCollaborationService.OpenAsync` paired with `CloseAsync` - and only once the component
-           is interactive wherever pages are prerendered: `RendererInfo.IsInteractive` on .NET 9 and later,
-           `OnAfterRenderAsync` on .NET 8.
+           releases it - and waits until the page is interactive by itself - or with
+           `IBcrdtCollaborationService.OpenAsync` paired with `CloseAsync`, and then only once the component
+           is interactive wherever pages are prerendered: `RendererInfo.IsInteractive`.
         7. Derive your own collaborative components from `BcrdtComponentBase` and `Track` what they render, so a change from
            anyone re-renders them, coalesced onto a frame. There is no script tag to add: `BcrdtTextArea` imports its small
            caret module from `_content/Bit.Bcrdt/bit-bcrdt.js` itself.
@@ -321,9 +328,10 @@ public static partial class BcrdtSetupGuide
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         // The relay below runs on its own origin, and the .NET SignalR client only takes an absolute address.
+        // IndexedDB keeps documents - and edits made offline - across a reload.
         builder.Services.AddBitBcrdtServices(collaboration => collaboration
             .UseTransport(new BcrdtSignalRTransportFactory("https://collab.example.com/hub/bcrdt"))
-            .UseInMemoryStore());
+            .UseIndexedDbStore());
 
         await builder.Build().RunAsync();
         ```
@@ -331,12 +339,19 @@ public static partial class BcrdtSetupGuide
         ### `Program.cs` of the relay (an ASP.NET Core app with `Bit.Bcrdt.Server`)
 
         ```csharp
+        using Bit.Bcrdt;
         using Bit.Bcrdt.Server;
 
         var builder = WebApplication.CreateBuilder(args);
 
         // AddSignalR with a receive limit sized for sync messages: a bare AddSignalR drops clients at 32 KB.
         builder.Services.AddBitBcrdtHub();
+
+        // A replica of every document on the server, kept in a store, so a document outlives every tab.
+        builder.Services.AddBitBcrdtDocumentHost(_ => new BcrdtDocumentHostOptions
+        {
+            Store = new BcrdtFileSystemDocumentStore(Path.Combine(builder.Environment.ContentRootPath, "documents")),
+        });
 
         // The app is served from another origin, and SignalR's negotiate request is a cross-origin POST.
         builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
@@ -391,7 +406,7 @@ public static partial class BcrdtSetupGuide
 
         ```csharp
         using Bit.Bcrdt;
-        using Microsoft.AspNetCore.Components.Server.Circuits;
+        using Bit.Bcrdt.Server;
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -404,8 +419,10 @@ public static partial class BcrdtSetupGuide
             .UseTransport(documentId => BcrdtInMemoryNetwork.Shared.CreateTransport(documentId))
             .UseStore(new BcrdtFileSystemDocumentStore(Path.Combine(builder.Environment.ContentRootPath, "documents"))));
 
-        // Resolved from each circuit's own scope, so it sees that circuit's documents.
-        builder.Services.AddScoped<CircuitHandler, PresenceCircuitHandler>();
+        // A circuit outlives its tab by the retention period, and would keep the user listed until then. This
+        // registers a CircuitHandler - resolved from each circuit's own scope, so it sees that circuit's documents -
+        // that withdraws them the moment the connection drops, and publishes them again if it comes back.
+        builder.Services.AddBitBcrdtCircuitPresence();
 
         var app = builder.Build();
 
@@ -415,30 +432,6 @@ public static partial class BcrdtSetupGuide
             .AddInteractiveServerRenderMode();
 
         app.Run();
-        ```
-
-        ### `PresenceCircuitHandler.cs`
-
-        ```csharp
-        using Bit.Bcrdt;
-        using Microsoft.AspNetCore.Components.Server.Circuits;
-
-        // A circuit outlives its tab by the retention period, and would keep the user listed until then. This
-        // withdraws them the moment the connection drops, and publishes them again if it comes back.
-        public sealed class PresenceCircuitHandler(IBcrdtCollaborationService collaboration) : CircuitHandler
-        {
-            public override Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken)
-            {
-                foreach (BcrdtCollaborativeDocument document in collaboration.OpenDocuments) document.Presence.Suspend();
-                return Task.CompletedTask;
-            }
-
-            public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
-            {
-                foreach (BcrdtCollaborativeDocument document in collaboration.OpenDocuments) document.Presence.Resume();
-                return Task.CompletedTask;
-            }
-        }
         ```
 
         ### `Components/Pages/Notes.razor`

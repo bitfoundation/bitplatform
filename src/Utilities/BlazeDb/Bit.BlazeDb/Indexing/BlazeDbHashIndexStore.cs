@@ -58,6 +58,19 @@ internal sealed class BlazeDbHashIndexStore<TRow, TIndexKey> : IBlazeDbIndexStor
         _nulls.Clear();
     }
 
+    public int Count
+    {
+        get
+        {
+            var count = _nulls.Count;
+            foreach (var bucket in _buckets.Values)
+            {
+                count += bucket.Count;
+            }
+            return count;
+        }
+    }
+
     public void ValidateUnique(TRow row, long replacedSeq, string tableName)
     {
         if (!_definition.IsUnique)
@@ -101,6 +114,19 @@ internal sealed class BlazeDbHashIndexStore<TRow, TIndexKey> : IBlazeDbIndexStor
     }
 
     public int CountOf(TIndexKey key) => BucketFor(key)?.Count ?? 0;
+
+    // Resolved when enumeration starts, like Lookup.
+    public IEnumerable<KeyValuePair<TIndexKey, int>> Counts()
+    {
+        if (_nulls.Count > 0)
+        {
+            yield return new KeyValuePair<TIndexKey, int>(default!, _nulls.Count);
+        }
+        foreach (var (key, bucket) in _buckets)
+        {
+            yield return new KeyValuePair<TIndexKey, int>(key, bucket.Count);
+        }
+    }
 
     private Bucket? BucketFor(TIndexKey key) =>
         key is null ? _nulls : _buckets.TryGetValue(key, out var bucket) ? bucket : null;

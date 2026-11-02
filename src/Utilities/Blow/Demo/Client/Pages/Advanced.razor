@@ -5,24 +5,33 @@
 <div class="bb-intro">
     <h1>Groups, Resizing, Toolbars &amp; Validation</h1>
     <p class="bb-subtitle">
-        The dashed box is a <strong>group</strong> - drag it and its children move with it.
-        Select the blue node to <strong>resize</strong> it and use its <strong>toolbar</strong>.
-        Connections are <strong>validated</strong>: you can only connect <em>into</em> the "Sink" node.
+        A <code>group</code> node that carries its children (<code>ParentId</code>), a node with a
+        <code>BlowNodeResizer</code> and a <code>BlowNodeToolbar</code>, and an <code>IsValidConnection</code> rule
+        that decides what may connect - the building blocks of a sub-flow editor.
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo blow-demo bb-page-wide">
+    <div class="bb-demo-bar example-toolbar">
+        <label>
+            Children
+            <select @bind="_childMode" @bind:after="ApplyChildMode">
+                <option value="free">Move freely</option>
+                <option value="extent">Stay inside the group (ExtentParent)</option>
+                <option value="expand">Grow the group (ExpandParent)</option>
+            </select>
+        </label>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+    </div>
     <div class="demo-canvas">
-        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" IsValidConnection="ValidateConnection">
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" IsValidConnection="ValidateConnection">
             <NodeTemplate Context="node">
                 @if (node.Type == "resizable")
                 {
                     <BlowNodeResizer MinWidth="100" MinHeight="50" />
                     <BlowNodeToolbar Position="BlowPosition.Top">
                         <button class="btn btn-secondary" @onclick="() => Recolor(node)">🎨 Recolor</button>
-                        <button class="btn btn-secondary" @onclick="() => Remove(node)">🗑 Delete</button>
+                        <button class="btn btn-secondary" @onclick="() => RemoveAsync(node)">🗑 Delete</button>
                     </BlowNodeToolbar>
                     <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
                     <div style="display:flex;align-items:center;justify-content:center;height:100%;font-weight:600;">
@@ -45,11 +54,36 @@
     </div>
 </div>
 
-@code {
-    private List<BlowNode> _nodes = new();
-    private List<BlowEdge> _edges = new();
+<DemoCode />
 
-    protected override void OnInitialized()
+<DemoNotes>
+    <TryIt>
+        <li><strong>Drag</strong> the dashed <em>Group A</em> by an empty part of it: <em>Child 1</em> and <em>Child 2</em> move with it.</li>
+        <li>Choose how the children behave in <strong>Children</strong>, then drag a child against the group's edge: with <em>Move freely</em> it leaves the box but still moves with the group, with <em>Stay inside the group</em> it stops at the border, and with <em>Grow the group</em> the group grows to keep it inside.</li>
+        <li><strong>Click</strong> the blue <em>Resize me</em> node: resize controls appear round it. <strong>Drag</strong> a corner square, or anywhere along a side, to resize it - no smaller than 100 &times; 50. Press <strong>Escape</strong> during the drag to put it back as it was.</li>
+        <li>While <em>Resize me</em> is selected, its toolbar floats above it: <strong>Recolor</strong> gives it a new tint on every click, and <strong>Delete</strong> removes it with its edges. Zoom in and out - the toolbar keeps its size on screen.</li>
+        <li><strong>Drag from a child's bottom handle</strong>: as the drag starts, every handle that would accept the connection turns green and every other one red and faded. Only connections that end at <em>Sink</em> are allowed, so a drop on <em>Resize me</em> does nothing while a drop on <em>Sink</em> connects.</li>
+        <li>Press <strong>Reset</strong> to bring back the starting graph.</li>
+    </TryIt>
+    <HowItWorks>
+        <li>A node with a <code>ParentId</code> is a child: its <code>Position</code> is relative to its parent's top-left corner, it moves with the parent, and it is drawn above it. <code>Type = "group"</code> is the built-in look for a parent - translucent, dashed, with its label in the corner and no handles.</li>
+        <li><code>BlowNode.ExtentParent</code> keeps a child inside its parent's box, and <code>BlowNode.ExpandParent</code> grows the parent instead; <code>ExtentParent</code> wins when both are set. Both are off by default, and the <strong>Children</strong> select sets them on the two children.</li>
+        <li><code>BlowNodeResizer</code>, placed in the node's template, shows its controls while the node is selected (<code>Visible</code> is null by default). <code>MinWidth</code>/<code>MinHeight</code> default to 40 &times; 30 (100 &times; 50 here), and <code>ShowEdgeControls</code> (on by default) lets the four sides be dragged along their whole length. Resizing writes the node's <code>Width</code> and <code>Height</code>, and its <code>Position</code> when the left or top edge moves.</li>
+        <li><code>BlowNodeToolbar</code> anchors its content to the node: <code>Position</code> picks the side (<code>Top</code> by default), <code>Align</code> where along it (<code>Center</code>) and <code>Offset</code> the gap in screen pixels (8). Like the resizer it shows only while the node is selected, and a press inside it neither drags the node nor pans.</li>
+        <li><strong>Recolor</strong> gives the node new <code>Data</code> and a new <code>Style</code>, which the canvas redraws. <strong>Delete</strong> calls <code>DeleteElementsAsync(nodes: [node])</code> on the canvas - the same path as the Delete key, so the node's edges go with it and <code>Deletable</code>, <code>OnBeforeDelete</code> and <code>OnNodesDelete</code> all apply.</li>
+        <li><code>IsValidConnection</code> takes a <code>BlowConnection</code> and returns false to refuse it. It runs on every prospective connection while you drag, and <code>Target</code> is the target-side node whichever end the drag started from.</li>
+    </HowItWorks>
+</DemoNotes>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _childMode = "free";
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
     {
         _nodes =
         [
@@ -62,14 +96,26 @@
             new BlowNode { Id = "r1", Type = "resizable", Label = "Resize me", Position = new(400, 60),
                        Width = 160, Height = 80, Data = new NodeStyle("#3b82f6"), Style = Tint("#3b82f6") },
 
-            // The only valid connection target.
-            new BlowNode { Id = "sink", Type = "output", Label = "Sink", Position = new(440, 280) },
+            // The only valid connection target - under the group, clear of the minimap in the bottom-right corner.
+            new BlowNode { Id = "sink", Type = "output", Label = "Sink", Position = new(95, 280) },
         ];
 
         _edges =
         [
             new BlowEdge { Id = "e-c1-r1", Source = "c1", Target = "r1", Type = BlowEdgeType.SmoothStep },
         ];
+
+        ApplyChildMode();
+    }
+
+    // Both flags live on the child, not the group: each child decides how it treats its own parent.
+    private void ApplyChildMode()
+    {
+        foreach (var child in _nodes.Where(n => n.ParentId == "group1"))
+        {
+            child.ExtentParent = _childMode == "extent";
+            child.ExpandParent = _childMode == "expand";
+        }
     }
 
     public record NodeStyle(string Background);
@@ -84,14 +130,19 @@
     private void Recolor(BlowNode node)
     {
         var colors = new[] { "#3b82f6", "#22c55e", "#ef4444", "#eab308", "#a855f7" };
-        var next = colors[Random.Shared.Next(colors.Length)];
+        // Never the colour it already has, so every click shows a change.
+        var current = (node.Data as NodeStyle)?.Background;
+        var next = current;
+        while (next is null || next == current) next = colors[Random.Shared.Next(colors.Length)];
         node.Data = new NodeStyle(next);
         node.Style = Tint(next);
     }
 
-    private void Remove(BlowNode node)
+    // Through the canvas rather than straight off the lists, so the node's edges, the delete events and any
+    // OnBeforeDelete veto are handled exactly as for the Delete key.
+    private async Task RemoveAsync(BlowNode node)
     {
-        _nodes.Remove(node);
-        _edges.RemoveAll(e => e.Source == node.Id || e.Target == node.Id);
+        if (_flow is null) return;
+        await _flow.DeleteElementsAsync(nodes: [node]);
     }
 }

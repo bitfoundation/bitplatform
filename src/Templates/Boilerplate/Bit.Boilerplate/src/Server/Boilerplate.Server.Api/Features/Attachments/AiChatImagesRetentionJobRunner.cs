@@ -18,6 +18,7 @@ public partial class AiChatImagesRetentionJobRunner
     [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private TimeProvider timeProvider = default!;
     [AutoInject] private ServerApiSettings serverApiSettings = default!;
+    [AutoInject] private ResponseCacheService responseCacheService = default!;
     [AutoInject] private ILogger<AiChatImagesRetentionJobRunner> logger = default!;
 
     public async Task EnforceRetention(CancellationToken cancellationToken)
@@ -98,5 +99,7 @@ public partial class AiChatImagesRetentionJobRunner
         {
             logger.LogInformation("Deleted {DeletedCount} expired AI chat image(s).", deletedCount);
         }
+
+        await responseCacheService.PurgeAttachmentCache([.. deletedIds]);
     }
 }

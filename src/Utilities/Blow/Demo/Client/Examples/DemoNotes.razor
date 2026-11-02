@@ -1,0 +1,33 @@
+﻿@namespace Bit.Blow.Demo.Client.Examples
+
+@* The reading guide under a live sample: "Try it" lists what to do on the canvas, one gesture or control a line, and
+   "How it works" names the parameters, methods and components behind each behaviour. Under the sample rather than
+   over it, so the canvas still opens on screen; each block is a list of <li> items the page writes. *@
+
+@if (TryIt is not null || HowItWorks is not null)
+{
+    <section class="demo-notes" aria-label="About this sample">
+        @if (TryIt is not null)
+        {
+            <div class="demo-notes__block">
+                <h2 class="demo-notes__title">Try it</h2>
+                <ul class="demo-notes__list">@TryIt</ul>
+            </div>
+        }
+        @if (HowItWorks is not null)
+        {
+            <div class="demo-notes__block">
+                <h2 class="demo-notes__title">How it works</h2>
+                <ul class="demo-notes__list">@HowItWorks</ul>
+            </div>
+        }
+    </section>
+}
+
+@code {
+    /// <summary>The steps to take on the sample: <c>&lt;li&gt;</c> items, one gesture or control each.</summary>
+    [Parameter] public RenderFragment? TryIt { get; set; }
+
+    /// <summary>The API behind what the sample does: <c>&lt;li&gt;</c> items naming parameters, methods and components.</summary>
+    [Parameter] public RenderFragment? HowItWorks { get; set; }
+}

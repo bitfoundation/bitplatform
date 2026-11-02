@@ -13,6 +13,41 @@ public class DevMcpQueryTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
+    public async Task QueryEntity_Should_RefuseFiltersThatBuildValuesOrRunLong()
+    {
+        await using var server = new AppTestServer();
+        await server.Build().Start(TestContext.CancellationToken);
+        await using var client = server.CreateAppClient();
+        var (_, grant) = await DevMcpTestUtils.SignInAsGlobalAdmin(client, TestContext.CancellationToken);
+        await using var _ = grant;
+        await using var mcp = await DevMcpTestUtils.Connect(server, await DevMcpTestUtils.AccessToken(client), "dev-mcp", TestContext.CancellationToken);
+
+        var built = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
+        {
+            ["entity"] = "User",
+            ["select"] = new[] { "Id", "Email" },
+            ["filter"] = "Email == string('a', 1000)"
+        }, TestContext.CancellationToken);
+        Assert.Contains("builds", built, StringComparison.OrdinalIgnoreCase);
+
+        var tooLong = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
+        {
+            ["entity"] = "User",
+            ["select"] = new[] { "Id", "Email" },
+            ["filter"] = $"Email == \"{new string('a', 5000)}\""
+        }, TestContext.CancellationToken);
+        Assert.Contains("at most", tooLong, StringComparison.OrdinalIgnoreCase);
+
+        var unterminated = await DevMcpTestUtils.CallText(mcp, "QueryEntity", new()
+        {
+            ["entity"] = "User",
+            ["select"] = new[] { "Id", "Email" },
+            ["filter"] = $"Email == \"{new string('\\', 60)}"
+        }, TestContext.CancellationToken);
+        Assert.Contains("error", unterminated, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
     public async Task QueryEntity_Should_RequireProjection_AndRefuseCredentials()
     {
         await using var server = new AppTestServer();

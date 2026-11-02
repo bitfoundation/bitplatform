@@ -1,6 +1,6 @@
 ﻿# Bit.BlazorUI E2E Tests
 
-End-to-end tests of every non-legacy component of `Bit.BlazorUI` and `Bit.BlazorUI.Extras`, driven in a real browser
+End-to-end tests of every non-legacy component of `Bit.BlazorUI`, `Bit.BlazorUI.Extras` and `Bit.BlazorUI.AI`, driven in a real browser
 with Playwright against a host that renders each component in every configuration its features need - on the server
 (InteractiveServer) or in the browser (InteractiveWebAssembly), whichever mode the run asks for.
 Where the unit tests (`Tests/Bit.BlazorUI.Tests`) pin the markup a component renders, these pin what a user gets: the
@@ -16,6 +16,7 @@ E2E/
 │   └── wwwroot/                            # the host's own stylesheet and the sample files pages serve
 │
 ├── Bit.BlazorUI.Tests.E2E.TestHost.Client/ # WebAssembly project holding the pages, so each runs in either mode
+│   ├── AI/                                 # the AI package's setup: the scripted transport, its scripts and tools
 │   ├── Components/
 │   │   ├── Routes.razor
 │   │   ├── Shared/E2EStatus.razor          # the status line every page carries ("Ready" once interactive)
@@ -32,10 +33,10 @@ E2E/
 ## Running
 
 Build the solution once (`dotnet build src/BlazorUI/Bit.BlazorUI.slnx`), install the Playwright browsers once
-(`pwsh Bit.BlazorUI.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install`), then in `Bit.BlazorUI.Tests.E2E`:
+(`pwsh Bit.BlazorUI.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install`), then in `Bit.BlazorUI.Tests.E2E`:
 
 ```bash
-dotnet test -f net10.0
+dotnet test -f net11.0
 ```
 
 The first test starts the host (`dotnet run` of the TestHost on `http://localhost:5290`) and the run stops it at the
@@ -43,7 +44,7 @@ end. To pay the host's build once across runs, or to debug a page by hand, start
 it:
 
 ```bash
-dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net10.0 --urls http://localhost:5290
+dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net11.0 --urls http://localhost:5290
 ```
 
 | Variable | Meaning |
@@ -53,7 +54,7 @@ dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net10.0 --urls 
 | `HEADED=1` | watch the browser |
 | `E2E_HOST_URL` | the host to drive instead of `http://localhost:5290` |
 
-Filter as usual: `dotnet test -f net10.0 --filter "FullyQualifiedName~BitButtonE2ETests"`. Test classes run four at
+Filter as usual: `dotnet test -f net11.0 --filter "FullyQualifiedName~BitButtonE2ETests"`. Test classes run four at
 a time (`E2ETestRun.cs`); the tests of a class run in order. The whole suite is about 6,800 tests and takes roughly
 a quarter of an hour on Chromium. On a loaded machine a Blazor Server circuit can time out or a fast keystroke can be
 lost; a test that fails only in the full run and passes alone is load, not a regression.
@@ -61,7 +62,7 @@ lost; a test that fails only in the full run and passes alone is load, not a reg
 If `dotnet test` reports that zero tests ran, run the built assembly directly:
 
 ```bash
-E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.E2E.dll --filter "FullyQualifiedName~BitButtonE2ETests"
+E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll --filter "FullyQualifiedName~BitButtonE2ETests"
 ```
 
 ## Writing a page and its tests
@@ -82,6 +83,34 @@ E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Te
 - A category whose tests share helpers keeps them in a file of its own (`ButtonsE2EHelpers.cs`,
   `NotificationsE2EHelpers.cs`, `BitDataGridE2ETestBase.cs`, `BitDropdownE2ETestBase.cs`, `BitDatePickersE2ETestBase.cs`).
 - An engine-specific gap is skipped with `Assert.Inconclusive` behind `IsFirefox` / `IsWebKit`, with the reason.
+
+## AI pages
+
+No model answers the AI components here: both hosts register `Bit.BlazorUI.AI` with `AddBitBlazorUIAIServices(E2EAiSetup.Configure)`
+(`TestHost.Client/AI`), whose transport, `E2EAiTransport`, plays one of the named scripts of `E2EAiScripts` - deterministic
+text, ids and numbers, and no pause between their events unless a page asks for one. Between them they stream Markdown,
+code, reasoning, a status, tool calls (one that runs, one that waits for approval, two at once, one reporting progress,
+one that fails, one the provider ran), agent runs (completed, asking for input, failed), citations, artifacts (and a
+revision), structured data, a form, generative UI (`E2EAiCard`, registered as `e2e_card`, and one nobody registered), an
+image, a file, errors (one that recovers on retry), usage, a long reply, an empty one and one that hangs until stopped.
+The tools the scripts call (`E2EAiTools`) and the models of the catalog (`E2EAiModels`) are registered with them.
+
+A `BitAiChat` with no `Session`, and any session `BitAiChatSessionFactory` creates, answers with the registered transport,
+which picks its script - first match wins - from:
+
+1. the transport itself, for a session the page makes: `new BitAiChatSession(E2EAiTransport.For(E2EAiScripts.Markdown))`;
+2. the first word of the user message that last named a script, so a test can type `tool-approval` (or `agent-input
+   migrate it`) and the turns that follow it - the answer to the agent's question, the revision of an artifact - keep
+   playing that script until another message names one;
+3. the page's choice: `@inject E2EAiScriptSelection AiScript` and `AiScript.Script = E2EAiScripts.Agent;` in
+   `OnInitialized`;
+4. the page address's `?script=`;
+5. `echo` ("You said: ...").
+
+A pace between the events - to see a reply stream in, or press stop while it does - comes from `E2EAiTransport.For(script,
+delayMs)`, `E2EAiScriptSelection.DelayMs` or `?delay=`; the `hang` script streams one sentence and then waits for the stop.
+The `throw` script is a transport throwing, which the session logs as a server error; the `error` scripts end the turn
+with an error event instead, which logs nothing.
 
 ## Render modes
 

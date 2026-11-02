@@ -286,6 +286,24 @@ public class McpToolTests
     }
 
     [TestMethod]
+    public async Task The_webassembly_modes_point_at_the_lazy_loading_section_and_it_is_there()
+    {
+        foreach (var mode in new[] { "wasm", "auto", "standalone-wasm" })
+        {
+            var guide = await McpCall.TextAsync("GetBortableSetupGuide", new() { ["renderMode"] = mode });
+
+            Assert.Contains("GetBortableGuideSection(heading: \"Lazy loading on WebAssembly\")", guide, mode);
+        }
+
+        var section = await McpCall.TextAsync("GetBortableGuideSection", new() { ["heading"] = "Lazy loading on WebAssembly" });
+
+        Assert.Contains("<BlazorWebAssemblyLazyLoad Include=\"Bit.Bortable.wasm\" />", section);
+        // the switch the library reads before it creates a coordinator of its own (BortableService.UnregisteredSwitch)
+        Assert.Contains("<RuntimeHostConfigurationOption Include=\"Bit.Bortable.Unregistered\" Value=\"true\" />", section);
+        Assert.Contains("builder.Services.AddScoped<LazyAssemblyLoader>()", section);
+    }
+
+    [TestMethod]
     public async Task The_server_mode_explains_the_round_trip()
     {
         var guide = await McpCall.TextAsync("GetBortableSetupGuide", new() { ["renderMode"] = "server" });
@@ -338,7 +356,7 @@ public class McpToolTests
         var index = await McpCall.TextAsync("GetBortableSourceFile");
 
         Assert.Contains("Demo/Client/Pages/Shared.razor", index);
-        Assert.Contains("Demo/Client/Pages/NestedList.razor", index);
+        Assert.Contains("Demo/Client/Samples/NestedList.razor", index);
         Assert.Contains(BortableSourceCatalog.ComponentCodePath, index);
         Assert.Contains(BortableSourceCatalog.ComponentMarkupPath, index);
         Assert.Contains(BortableSourceCatalog.StylesheetPath, index);
@@ -351,10 +369,13 @@ public class McpToolTests
     [TestMethod]
     public async Task A_source_file_comes_back_verbatim()
     {
-        var file = await McpCall.TextAsync("GetBortableSourceFile", new() { ["path"] = "Demo/Client/Pages/Shared.razor" });
+        var page = await McpCall.TextAsync("GetBortableSourceFile", new() { ["path"] = "Demo/Client/Pages/Shared.razor" });
+        var sample = await McpCall.TextAsync("GetBortableSourceFile", new() { ["path"] = "Demo/Client/Samples/GroupedLists.razor" });
 
-        Assert.Contains("<Bortable", file);
-        Assert.Contains("@page \"/shared\"", file);
+        // A page renders its samples, and each sample is a working list of its own.
+        Assert.Contains("@page \"/shared\"", page);
+        Assert.Contains("<GroupedLists />", page);
+        Assert.Contains("<Bortable", sample);
     }
 
     [TestMethod]

@@ -1,0 +1,55 @@
+@inherits WorkbenchComponentBase
+
+<section>
+    <BitStack Padding="1px" Gap="1rem">
+
+        @if (askableCategories.Length > 0)
+        {
+            <BitText Typography="BitTypography.H6" Element="h3">@AppLocalizer[nameof(AppStrings.PrivacyChoicesTitle)]</BitText>
+
+            <BitStack Gap="0.5rem">
+                @foreach (var category in askableCategories)
+                {
+                    <BitToggle Inline FullWidth
+                               Value="store.Consents.GetValueOrDefault(category)"
+                               Label="@CategoryLabel(category)"
+                               Description="@CategoryDescription(category)"
+                               OnChange="(bool granted) => store.SetConsent(category, granted)" />
+                }
+            </BitStack>
+
+            <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+                @AppLocalizer[nameof(AppStrings.PrivacyChoicesNote)]
+            </BitText>
+
+            <BitSeparator />
+        }
+
+        <BitText Typography="BitTypography.H6" Element="h3">@AppLocalizer[nameof(AppStrings.ExportPersonalDataTitle)]</BitText>
+
+        <BitText Typography="BitTypography.Body1">
+            @AppLocalizer[nameof(AppStrings.ExportPersonalDataMessage)]
+        </BitText>
+
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            @AppLocalizer[nameof(AppStrings.ExportPersonalDataMetadataNote)]
+        </BitText>
+
+        <div>
+            <BitButton AutoLoading
+                       Variant="BitVariant.Fill"
+                       IconName="@BitIconName.Download"
+                       OnClick="ExportPersonalData">
+                @AppLocalizer[nameof(AppStrings.ExportPersonalDataButton)]
+            </BitButton>
+        </div>
+
+        <BitSeparator />
+
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            @AppLocalizer[nameof(AppStrings.ExportPersonalDataDeleteHint)]
+            <BitLink Underlined OnClick="OpenAccount">@AppLocalizer[nameof(AppStrings.AccountSettingsLink)]</BitLink>.
+        </BitText>
+
+    </BitStack>
+</section>

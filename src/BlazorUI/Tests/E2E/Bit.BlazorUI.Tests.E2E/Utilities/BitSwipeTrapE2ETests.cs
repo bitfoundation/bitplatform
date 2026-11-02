@@ -189,6 +189,7 @@ public class BitSwipeTrapE2ETests : E2ETestBase
 
         await Page.ClickAsync("#btn-fraction");
         await Expect(Page.Locator("#fraction-value")).ToHaveTextAsync("0.9");
+        await Page.WaitForFunctionAsync("() => BitBlazorUI.SwipeTrap._swipeTraps.some(t => t.element.id === 'stp-fraction' && t.trigger === 0.9)");
 
         await DragAsync(x, y, 170, 0);
         await Expect(Page.Locator("#fraction-ends")).ToHaveTextAsync("3");

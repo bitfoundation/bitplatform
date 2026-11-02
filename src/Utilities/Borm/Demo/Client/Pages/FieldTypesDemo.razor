@@ -1,0 +1,229 @@
+@page "/field-types"
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Every field type · Borm</PageTitle>
+
+<div class="bb-intro">
+    <h1>Every field type</h1>
+    <p class="bb-subtitle">
+        Every control Borm draws, in one form - each field's help text is the builder call that asks for it. A field's
+        type is <em>intent</em> (<code>BormFieldType</code>), not a widget: the renderer registry maps each one to a
+        control, and every control is plain, labelled HTML. From a C# model the type is inferred from the property; this
+        form has no model at all, so it is built by name with <code>BormBuilder.Create()</code> and bound to a dictionary.
+    </p>
+</div>
+
+<div class="bb-note">
+    Fill in anything and press <em>Submit</em> to see what each control stores - text, numbers, dates, a list for a
+    multi-select or tags, a nested dictionary for the address, a list of them for the children. The page also holds a
+    <code>Hidden</code> value you cannot see, which arrives with the rest. The search box has its label hidden with
+    <code>HideLabel()</code>, which keeps it as the accessible name.
+</div>
+
+<div class="bb-demo">
+    <div class="bb-demo-bar"><span class="bb-demo-label">Live form</span></div>
+    <BormView Definition="_schema" Data="_data" OnValidSubmit="HandleSubmit" ShowErrorSummary="true" />
+</div>
+
+@if (_submitted)
+{
+    <div class="bb-note bb-note-success demo-result"><strong>Submitted ✓</strong><pre>@_json</pre></div>
+}
+
+<details class="bb-source demo-source">
+    <summary class="btn btn-secondary">View source</summary>
+    <pre class="bb-code"><code>@Source</code></pre>
+</details>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Choosing a type</h3>
+    <ul class="bb-detail-list">
+        <li>
+            <strong>From a model</strong> the type follows the property: <code>string</code> is text, <code>int</code> an integer,
+            <code>decimal</code> a number, <code>bool</code> a checkbox, <code>DateOnly</code>/<code>DateTime</code>/<code>TimeOnly</code>
+            the pickers, an enum a select, a <code>[Flags]</code> enum or <code>List&lt;TEnum&gt;</code> a multi-select,
+            <code>IBrowserFile</code> a file, a class a group and a list of them a repeater. <code>[EmailAddress]</code>, <code>[Url]</code>,
+            <code>[Phone]</code> and <code>[DataType(Password)]</code> narrow a string.
+        </li>
+        <li>
+            <strong>In the builder</strong>, <code>As(BormFieldType.X)</code> or one of its shortcuts - <code>AsTextArea</code>,
+            <code>AsEmail</code>, <code>AsUrl</code>, <code>AsTel</code>, <code>AsSearch</code>, <code>AsPassword</code>,
+            <code>AsRange</code>, <code>AsColor</code>, <code>AsMonth</code>, <code>AsWeek</code>, <code>AsSelect</code>,
+            <code>AsRadio</code>, <code>AsMultiSelect</code>, <code>AsCombobox</code>, <code>AsTags</code>, <code>AsSwitch</code>,
+            <code>AsFile</code>, <code>AsMarkdown</code>, <code>AsSignature</code>, <code>AsHidden</code> - changes it. A type
+            changes the control, not the rules: <code>AsUrl()</code> brings the URL keyboard, <code>Url()</code> the rule.
+        </li>
+        <li>
+            <strong>In JSON Schema</strong>, <code>type</code> and <code>format</code> choose, and <code>x-widget</code> overrides -
+            see <a href="json-schema">JSON Schema</a>.
+        </li>
+        <li>
+            <strong>Your own</strong> - <code>CustomRenderer("key")</code> draws a field with a component you register. The
+            star rating above is one; see <a href="custom-renderer">custom renderer</a>.
+        </li>
+    </ul>
+    <p class="bb-card-desc">
+        The date, time, month, week and colour controls and the <code>&lt;datalist&gt;</code> behind a combobox are the
+        browser's own, so they look like the platform and follow its keyboard and screen-reader support. Desktop Firefox and
+        Safari have no month or week picker and show a text box; what is typed into one is checked rather than stored as it is.
+    </p>
+</div>
+
+@code {
+    private const string Source =
+"""
+@page "/field-types"
+
+<BormView Definition="_schema" Data="_data" OnValidSubmit="HandleSubmit" ShowErrorSummary="true" />
+
+@code {
+    // No model: the form binds to a dictionary, written in place.
+    private readonly Dictionary<string, object?> _data = new();
+
+    private readonly BormDefinition _schema = BormBuilder.Create()
+        .Title("One of everything")
+        .Columns(2)
+
+        .Static("text", "Text", configure: f => f.ColumnSpan(2))
+        .Text("fullName", f => f.Label("Full name").Required().Help("Text(\"fullName\")"))
+        .Email("email", f => f.Label("Email").Help("Email(\"email\") - the type and the rule"))
+        .Text("website", f => f.Label("Website").AsUrl().Url().Help("AsUrl().Url()"))
+        .Text("phone", f => f.Label("Phone").AsTel().Help("AsTel() - the phone keypad"))
+        .Password("password", f => f.Label("Password").Revealable().Help("Password(...).Revealable()"))
+        .Text("search", f => f.Label("Search the catalogue").AsSearch().HideLabel()
+            .Placeholder("Search the catalogue").Help("AsSearch().HideLabel()"))
+        .TextArea("bio", f => f.Label("About you").AsTextArea(3).ColumnSpan(2).Help("TextArea(...) or AsTextArea(rows)"))
+
+        .Static("numbers", "Numbers", configure: f => f.ColumnSpan(2))
+        .Integer("guests", f => f.Label("Guests").Range(1, 12).Help("Integer(...).Range(1, 12)"))
+        .Number("price", f => f.Label("Price").Prefix("€").Step(0.01).Help("Number(...).Prefix(\"€\").Step(0.01)"))
+        .Integer("eggs", f => f.Label("Eggs").MultipleOf(6).Help("MultipleOf(6) - sold by the half dozen"))
+        .Integer("volume", f => f.Label("Volume").AsRange().Range(0, 100).Step(5).Default(50).Help("AsRange() - a slider"))
+
+        .Static("pickers", "Dates, times and colours", configure: f => f.ColumnSpan(2))
+        .Date("arrival", f => f.Label("Arrival").Help("Date(...)"))
+        .Field("meeting", BormFieldType.DateTime, f => f.Label("Meeting").Help("Field(..., BormFieldType.DateTime)"))
+        .Field("checkIn", BormFieldType.Time, f => f.Label("Check-in time").Help("Field(..., BormFieldType.Time)"))
+        .Text("billingMonth", f => f.Label("Billing month").AsMonth().Help("AsMonth() - \"2026-05\""))
+        .Text("deliveryWeek", f => f.Label("Delivery week").AsWeek().Help("AsWeek() - \"2026-W19\""))
+        .Text("brandColour", f => f.Label("Brand colour").AsColor().Help("AsColor() - \"#rrggbb\""))
+
+        .Static("choices", "Choices", configure: f => f.ColumnSpan(2))
+        .Checkbox("newsletter", f => f.Label("Send me the newsletter").Help("Checkbox(...)"))
+        .Checkbox("darkMode", f => f.Label("Dark mode").AsSwitch().Help("AsSwitch() - a checkbox announced as a switch"))
+        .Select("size", f => f.Label("Size").Options(("s", "Small"), ("m", "Medium"), ("l", "Large"))
+            .Help("Select(...).Options(...)"))
+        .Select("weekday", f => f.Label("Delivery day").OptionsFromEnum<DayOfWeek>()
+            .Help("OptionsFromEnum<DayOfWeek>()"))
+        .Radio("delivery", f => f.Label("Delivery").Options(("post", "Post"), ("courier", "Courier"), ("pickup", "Pick-up"))
+            .Help("Radio(...) - one tab stop, arrow keys inside"))
+        .MultiSelect("toppings", f => f.Label("Toppings").Options(("cheese", "Cheese"), ("olives", "Olives"), ("basil", "Basil"))
+            .Help("MultiSelect(...) - a list of values"))
+        .Combobox("country", f => f.Label("Country").Options(("fr", "France"), ("de", "Germany"), ("jp", "Japan"), ("gb", "United Kingdom"))
+            .Help("Combobox(...) - type to filter"))
+        .Tags("labels", f => f.Label("Labels").AsTags(max: 5).Help("Tags(...) - Enter or a comma adds one"))
+
+        .Static("rich", "Files, formatted text and signatures", configure: f => f.ColumnSpan(2))
+        .File("attachment", f => f.Label("Attachment").Accept(".pdf,image/*").ColumnSpan(2).Help("File(...).Accept(\".pdf,image/*\")"))
+        .Text("notes", f => f.Label("Notes").AsMarkdown(3).ColumnSpan(2).Help("AsMarkdown() - Markdown with a safe preview"))
+        .Text("signature", f => f.Label("Signature").AsSignature().ColumnSpan(2).Help("AsSignature() - drawn, or typed instead"))
+        .Field("rating", BormFieldType.Custom, f => f.Label("Rating").CustomRenderer("rating").ColumnSpan(2)
+            .Help("CustomRenderer(\"rating\") - a component of your own"))
+
+        .Static("structure", "Groups and lists", "Static(...) - this heading is a field too.", f => f.ColumnSpan(2))
+        .Object("address", a => a
+                .Text("street", f => f.Label("Street"))
+                .Text("city", f => f.Label("City")),
+            f => f.Label("Address").ColumnSpan(2).Help("Object(...) - a nested dictionary"))
+        .ArrayOf("phones", BormFieldType.Tel, f => f.Label("Other phone numbers").ColumnSpan(2)
+            .Items(max: 3).UniqueItems().Help("ArrayOf(..., BormFieldType.Tel).Items(max: 3).UniqueItems()"))
+        .Array("children", child => child
+                .Text("name", f => f.Label("Name"))
+                .Integer("age", f => f.Label("Age").Range(0, 17)),
+            f => f.Label("Children").ColumnSpan(2).Attr("itemNoun", "child").Help("Array(...) - a list of dictionaries"))
+        .Text("source", f => f.AsHidden().Default("field-types-page"))     // AsHidden(): sent, never shown
+        .Build();
+}
+""";
+
+    private readonly Dictionary<string, object?> _data = new();
+    private bool _submitted;
+    private string _json = "";
+
+    private readonly BormDefinition _schema = BormBuilder.Create()
+        .Title("One of everything")
+        .Columns(2)
+
+        .Static("text", "Text", configure: f => f.ColumnSpan(2))
+        .Text("fullName", f => f.Label("Full name").Required().Help("Text(\"fullName\")"))
+        .Email("email", f => f.Label("Email").Help("Email(\"email\") - the type and the rule"))
+        .Text("website", f => f.Label("Website").AsUrl().Url().Help("AsUrl().Url()"))
+        .Text("phone", f => f.Label("Phone").AsTel().Help("AsTel() - the phone keypad"))
+        .Password("password", f => f.Label("Password").Revealable().Help("Password(...).Revealable()"))
+        .Text("search", f => f.Label("Search the catalogue").AsSearch().HideLabel()
+            .Placeholder("Search the catalogue").Help("AsSearch().HideLabel()"))
+        .TextArea("bio", f => f.Label("About you").AsTextArea(3).ColumnSpan(2).Help("TextArea(...) or AsTextArea(rows)"))
+
+        .Static("numbers", "Numbers", configure: f => f.ColumnSpan(2))
+        .Integer("guests", f => f.Label("Guests").Range(1, 12).Help("Integer(...).Range(1, 12)"))
+        .Number("price", f => f.Label("Price").Prefix("€").Step(0.01).Help("Number(...).Prefix(\"€\").Step(0.01)"))
+        .Integer("eggs", f => f.Label("Eggs").MultipleOf(6).Help("MultipleOf(6) - sold by the half dozen"))
+        .Integer("volume", f => f.Label("Volume").AsRange().Range(0, 100).Step(5).Default(50).Help("AsRange() - a slider"))
+
+        .Static("pickers", "Dates, times and colours", configure: f => f.ColumnSpan(2))
+        .Date("arrival", f => f.Label("Arrival").Help("Date(...)"))
+        .Field("meeting", BormFieldType.DateTime, f => f.Label("Meeting").Help("Field(..., BormFieldType.DateTime)"))
+        .Field("checkIn", BormFieldType.Time, f => f.Label("Check-in time").Help("Field(..., BormFieldType.Time)"))
+        .Text("billingMonth", f => f.Label("Billing month").AsMonth().Help("AsMonth() - \"2026-05\""))
+        .Text("deliveryWeek", f => f.Label("Delivery week").AsWeek().Help("AsWeek() - \"2026-W19\""))
+        .Text("brandColour", f => f.Label("Brand colour").AsColor().Help("AsColor() - \"#rrggbb\""))
+
+        .Static("choices", "Choices", configure: f => f.ColumnSpan(2))
+        .Checkbox("newsletter", f => f.Label("Send me the newsletter").Help("Checkbox(...)"))
+        .Checkbox("darkMode", f => f.Label("Dark mode").AsSwitch().Help("AsSwitch() - a checkbox announced as a switch"))
+        .Select("size", f => f.Label("Size").Options(("s", "Small"), ("m", "Medium"), ("l", "Large"))
+            .Help("Select(...).Options(...)"))
+        .Select("weekday", f => f.Label("Delivery day").OptionsFromEnum<DayOfWeek>()
+            .Help("OptionsFromEnum<DayOfWeek>()"))
+        .Radio("delivery", f => f.Label("Delivery").Options(("post", "Post"), ("courier", "Courier"), ("pickup", "Pick-up"))
+            .Help("Radio(...) - one tab stop, arrow keys inside"))
+        .MultiSelect("toppings", f => f.Label("Toppings").Options(("cheese", "Cheese"), ("olives", "Olives"), ("basil", "Basil"))
+            .Help("MultiSelect(...) - a list of values"))
+        .Combobox("country", f => f.Label("Country").Options(("fr", "France"), ("de", "Germany"), ("jp", "Japan"), ("gb", "United Kingdom"))
+            .Help("Combobox(...) - type to filter"))
+        .Tags("labels", f => f.Label("Labels").AsTags(max: 5).Help("Tags(...) - Enter or a comma adds one"))
+
+        .Static("rich", "Files, formatted text and signatures", configure: f => f.ColumnSpan(2))
+        .File("attachment", f => f.Label("Attachment").Accept(".pdf,image/*").ColumnSpan(2).Help("File(...).Accept(\".pdf,image/*\")"))
+        .Text("notes", f => f.Label("Notes").AsMarkdown(3).ColumnSpan(2).Help("AsMarkdown() - Markdown with a safe preview"))
+        .Text("signature", f => f.Label("Signature").AsSignature().ColumnSpan(2).Help("AsSignature() - drawn, or typed instead"))
+        .Field("rating", BormFieldType.Custom, f => f.Label("Rating").CustomRenderer("rating").ColumnSpan(2)
+            .Help("CustomRenderer(\"rating\") - a component of your own"))
+
+        .Static("structure", "Groups and lists", "Static(...) - this heading is a field too.", f => f.ColumnSpan(2))
+        .Object("address", a => a
+                .Text("street", f => f.Label("Street"))
+                .Text("city", f => f.Label("City")),
+            f => f.Label("Address").ColumnSpan(2).Help("Object(...) - a nested dictionary"))
+        .ArrayOf("phones", BormFieldType.Tel, f => f.Label("Other phone numbers").ColumnSpan(2)
+            .Items(max: 3).UniqueItems().Help("ArrayOf(..., BormFieldType.Tel).Items(max: 3).UniqueItems()"))
+        .Array("children", child => child
+                .Text("name", f => f.Label("Name"))
+                .Integer("age", f => f.Label("Age").Range(0, 17)),
+            f => f.Label("Children").ColumnSpan(2).Attr("itemNoun", "child").Help("Array(...) - a list of dictionaries"))
+        .Text("source", f => f.AsHidden().Default("field-types-page"))
+        .Build();
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        // A browser file is shown by its name, and a signature by its size rather than as a page of base64.
+        var shown = _data.ToDictionary(kv => kv.Key, kv => kv.Value switch
+        {
+            IBrowserFile file => $"{file.Name} ({file.Size:N0} bytes)",
+            string s when BormSignature.IsImage(s) => $"(signature, {s.Length:N0} characters)",
+            var value => value
+        });
+        _json = System.Text.Json.JsonSerializer.Serialize(shown, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

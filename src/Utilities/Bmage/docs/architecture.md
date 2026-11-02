@@ -3,18 +3,19 @@
 ## The layers
 
 ```
-Bit.Bmage   Editor:  components, tools, theming, localisation (Bit.Bmage.Editor.*)
-                │
-            Browser: codecs, capabilities, loading, export, one JS module
-                │
-            Engine:  pixels, geometry, colour, operations, pipelines, drawing,
-                     text, annotations, documents, history, managed codecs
+Bit.Bmage.Blazor   Editor:  components, tools, theming, localisation (Bit.Bmage.Editor.*)
+                       │
+                   Browser: codecs, capabilities, loading, export, one JS module
+                       │
+Bit.Bmage          Engine:  pixels, geometry, colour, operations, pipelines, drawing,
+                            text, annotations, documents, history, managed codecs
 ```
 
-The engine has no dependency on Blazor, ASP.NET Core or JavaScript, and it runs anywhere .NET runs. The browser layer,
-shipped in the same package, adds the codecs only a browser has, capability probing, and the plumbing for files,
-clipboard, camera and downloads; nothing in the engine calls into it. `Editor` is the user interface, and it is optional
-in the strong sense that nothing below it knows it exists.
+The engine, the `Bit.Bmage` package, has no dependency on Blazor, ASP.NET Core or JavaScript, and it runs anywhere .NET
+runs. The browser layer, shipped with the editor in `Bit.Bmage.Blazor`, adds the codecs only a browser has, capability
+probing, and the plumbing for files, clipboard, camera and downloads; nothing in the engine calls into it, and the
+package boundary keeps it that way. `Editor` is the user interface, and it is optional in the strong sense that nothing
+below it knows it exists.
 
 An application that only needs to shrink an upload never pays for the editor: it never links `bit-bmage-editor.css`,
 and a trimmed WebAssembly publish drops the editor's code along with everything else the application does not use.
@@ -209,9 +210,9 @@ Pixel and file bytes never cross as base64. On WebAssembly the module is called 
 memory (`BrowserPixels`), so a 12 megapixel image is copied exactly once in each direction, straight between a .NET
 buffer and a typed array, with no 48 MB array allocated for the call. Over a Blazor Server circuit the browser is in
 another process: a JS call returns a small handle object, .NET reads a tiny JSON descriptor from it and streams the
-payload, then releases it. On Server the managed codecs decode and encode PNG, JPEG, BMP and GIF on the server itself,
-so those pixels never cross the network; the browser is used for WebP and AVIF, and for a file the managed decoder
-rejects.
+payload, then releases it. On Server the managed codecs decode PNG, JPEG, BMP, GIF, WebP and AVIF and encode all but GIF
+and AVIF on the server itself, so those pixels never cross the network; the browser is used to write AVIF, for a photo
+whose colours need its colour management, and for a file the managed decoder rejects.
 
 ## Memory
 

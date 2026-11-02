@@ -40,6 +40,9 @@ public sealed class BcrdtContentType(BcrdtAbstractType type) : IBcrdtContent
     public IBcrdtContent Splice(int offset) => throw new InvalidOperationException("A nested type is indivisible.");
 
     /// <inheritdoc/>
+    public bool CanMergeWith(IBcrdtContent right) => false;
+
+    /// <inheritdoc/>
     public bool TryMergeWith(IBcrdtContent right) => false;
 
     /// <inheritdoc/>

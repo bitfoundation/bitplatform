@@ -38,7 +38,20 @@ public sealed class DemoWorkspace(BcrdtInMemoryNetwork network)
     /// and it fakes it with the library's own shipped in-memory transport.
     /// </para>
     /// </remarks>
-    public async Task<IReadOnlyList<DemoReplica>> OpenReplicasAsync(string documentId, params string[] labels)
+    public Task<IReadOnlyList<DemoReplica>> OpenReplicasAsync(string documentId, params string[] labels) =>
+        OpenReplicasAsync(documentId, keepHistory: false, labels);
+
+    /// <summary>
+    /// Opens one independent replica per label, all of the same document, optionally keeping every
+    /// deleted block so the document's history can be restored from a <see cref="BcrdtSnapshot"/>.
+    /// </summary>
+    /// <param name="documentId">The document every replica is a copy of.</param>
+    /// <param name="keepHistory">
+    /// Whether the replicas are created with garbage collection off. Every replica of a document must
+    /// agree, which is why it is decided here for all of them at once.
+    /// </param>
+    /// <param name="labels">One label per replica.</param>
+    public async Task<IReadOnlyList<DemoReplica>> OpenReplicasAsync(string documentId, bool keepHistory, params string[] labels)
     {
         ArgumentException.ThrowIfNullOrEmpty(documentId);
         ArgumentNullException.ThrowIfNull(labels);
@@ -52,7 +65,7 @@ public sealed class DemoWorkspace(BcrdtInMemoryNetwork network)
             IBcrdtDocumentStore store = GetStore(documentId, label);
 
             replicas.Add(await DemoReplica
-                .OpenAsync(Network, store, documentId, label, user)
+                .OpenAsync(Network, store, documentId, label, user, keepHistory)
                 .ConfigureAwait(false));
         }
 

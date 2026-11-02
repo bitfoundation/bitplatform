@@ -66,7 +66,7 @@ public partial class McpOracleTests
     public void Every_variable_of_the_stylesheet_root_rule_is_in_the_theme_catalog()
     {
         var css = BonboardingSourceCatalog.Stylesheet.Replace("\r\n", "\n", StringComparison.Ordinal);
-        var root = css[css.IndexOf("\n.bit-bonboarding-root {", StringComparison.Ordinal)..];
+        var root = css[css.IndexOf("\n.bit-bonboarding-root,\n.bit-bonboarding-themed {", StringComparison.Ordinal)..];
         root = root[..root.IndexOf("\n}", StringComparison.Ordinal)];
 
         var declared = DeclarationRegex().Matches(root).Select(match => match.Groups[1].Value).ToArray();
@@ -86,6 +86,32 @@ public partial class McpOracleTests
         Assert.AreEqual("#6ea8fe", accent.DarkValue);
         Assert.IsNull(overlay.DarkValue, "The dark rule repeats the light value, which is not an override.");
         Assert.IsNull(font.DarkValue);
+    }
+
+    [TestMethod]
+    public void The_system_theme_applies_exactly_the_dark_palette_when_the_system_is_dark()
+    {
+        var css = BonboardingSourceCatalog.Stylesheet.Replace("\r\n", "\n", StringComparison.Ordinal);
+
+        var dark = RuleBody(css, "\n.bit-bonboarding-root[data-bonboarding-theme=\"dark\"],\n.bit-bonboarding-themed[data-bonboarding-theme=\"dark\"] {");
+        var media = css[css.IndexOf("@media (prefers-color-scheme: dark)", StringComparison.Ordinal)..];
+        var system = RuleBody(media, ".bit-bonboarding-themed:where([data-bonboarding-theme=\"system\"]) {");
+
+        // The variables only: color-scheme differs on purpose (the system theme inherits the page's).
+        var darkDeclarations = VariableDeclarationRegex().Matches(dark).Select(match => $"{match.Groups[1].Value}:{match.Groups[2].Value.Trim()}").ToArray();
+        var systemDeclarations = VariableDeclarationRegex().Matches(system).Select(match => $"{match.Groups[1].Value}:{match.Groups[2].Value.Trim()}").ToArray();
+
+        Assert.IsGreaterThan(10, darkDeclarations.Length);
+        CollectionAssert.AreEqual(darkDeclarations, systemDeclarations, "The dark palette and the one a dark system gets have drifted apart.");
+    }
+
+    private static string RuleBody(string css, string selector)
+    {
+        var start = css.IndexOf(selector, StringComparison.Ordinal);
+        Assert.IsGreaterThanOrEqualTo(0, start, $"The stylesheet has no rule '{selector.Trim()}'.");
+
+        var open = css.IndexOf('{', start);
+        return css[(open + 1)..css.IndexOf('}', open)];
     }
 
     [TestMethod]
@@ -127,4 +153,7 @@ public partial class McpOracleTests
 
     [GeneratedRegex(@"^\s*(--bit-bonboarding-[a-z0-9-]+)\s*:", RegexOptions.Multiline)]
     private static partial Regex DeclarationRegex();
+
+    [GeneratedRegex(@"^\s*(--bit-bonboarding-[a-z0-9-]+)\s*:\s*([^;]+);", RegexOptions.Multiline)]
+    private static partial Regex VariableDeclarationRegex();
 }

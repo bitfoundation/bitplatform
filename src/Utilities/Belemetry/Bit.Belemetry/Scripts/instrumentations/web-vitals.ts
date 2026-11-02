@@ -1,5 +1,6 @@
 ﻿// Web vitals measured from the Performance Timeline, following the logic of Google's web-vitals library in a much
-// smaller form (no attribution, no bfcache restores). Values are reported on hide, when they are final enough.
+// smaller form (no attribution; a back/forward-cache restore starts a new generation, as there). Values are reported
+// on hide, when they are final enough.
 
 import { Features } from '../features';
 import { onHidden } from '../lifecycle';
@@ -119,7 +120,7 @@ export function installWebVitals(ctx: InstrumentationContext): Uninstall {
     const nav = navigationEntry();
     const activationStart = (nav && nav.activationStart) || 0;
     const prerendering = (document as Document & { prerendering?: boolean }).prerendering;
-    const navigationType = prerendering || activationStart > 0 ? 'prerender' : nav ? String(nav.type).replace(/_/g, '-') : 'navigate';
+    let navigationType = prerendering || activationStart > 0 ? 'prerender' : nav ? String(nav.type).replace(/_/g, '-') : 'navigate';
     // Entries after the page was first hidden do not count for LCP and FCP.
     let firstHidden = document.visibilityState === 'hidden' ? 0 : Infinity;
     const observers: PerformanceObserver[] = [];
@@ -176,7 +177,7 @@ export function installWebVitals(ctx: InstrumentationContext): Uninstall {
     for (const type of ['keydown', 'click']) addEventListener(type, finalizeLcp, true);
 
     // CLS.
-    const cls = new ClsAccumulator();
+    let cls = new ClsAccumulator();
     let sawShift = false;
     const onShift = (entries: PerformanceEntry[]) => {
         for (const entry of entries as LayoutShiftEntry[]) {
@@ -189,7 +190,9 @@ export function installWebVitals(ctx: InstrumentationContext): Uninstall {
     const clsObserver = track(observe('layout-shift', onShift));
 
     // INP.
-    const inp = new InpAccumulator();
+    let inp = new InpAccumulator();
+    let interactionBase = 0;
+    const interactionCount = () => (performance as Performance & { interactionCount?: number }).interactionCount;
     const onEvents = (entries: PerformanceEntry[]) => {
         for (const entry of entries as EventTimingEntry[]) inp.add(entry.interactionId || 0, entry.duration);
     };
@@ -203,14 +206,40 @@ export function installWebVitals(ctx: InstrumentationContext): Uninstall {
         // CLS is 0 on a page that rendered and never shifted, which is worth reporting.
         if (clsObserver && (sawShift || reported.FCP !== undefined)) report('CLS', cls.value);
         if (inpObserver) onEvents(inpObserver.takeRecords());
-        const count = (performance as Performance & { interactionCount?: number }).interactionCount;
-        const value = inp.value(count);
+        const count = interactionCount();
+        const value = inp.value(count === undefined ? undefined : count - interactionBase);
         if (value !== null) report('INP', value);
     };
     const removeHidden = onHidden(onHide, 'first');
 
+    // A page restored from the back/forward cache is a new visit to the user, but the browser keeps its timeline: as
+    // Google's web-vitals library does, every vital starts over under new ids, FCP and LCP are the time from the
+    // restore to the next painted frame (no paint entries are recorded for it), and CLS and INP count from zero.
+    const onRestore = guard((event: PageTransitionEvent) => {
+        if (!event.persisted) return;
+        reported = {};
+        ids = {};
+        navigationType = 'back-forward-cache';
+        firstHidden = Infinity;
+        lcpDone = true;
+        cls = new ClsAccumulator();
+        sawShift = false;
+        inp = new InpAccumulator();
+        interactionBase = interactionCount() || 0;
+        const start = event.timeStamp;
+        const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (callback: () => void) => setTimeout(callback, 16);
+        // Two frames: the first callback runs before the restored page is painted, the second after.
+        raf(() => raf(guard(() => {
+            const value = Math.max(0, performance.now() - start);
+            report('FCP', value);
+            report('LCP', value);
+        })));
+    });
+    addEventListener('pageshow', onRestore, true);
+
     return () => {
         removeHidden();
+        removeEventListener('pageshow', onRestore, true);
         for (const observer of observers) observer.disconnect();
         for (const type of ['keydown', 'click']) removeEventListener(type, finalizeLcp, true);
     };

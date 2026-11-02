@@ -34,6 +34,11 @@ public sealed class BormFileRule(
 
     public ValueTask<BormRuleResult> ValidateAsync(BormValidationContext ctx)
     {
+        // A field that uploads files as they are chosen holds what its uploader returned - an id, a URL - and
+        // its files were judged, by this rule, before they were sent.
+        if (ctx.Field?.Uploader is not null && ctx.Value is not IBrowserFile && ctx.Value is not IEnumerable<IBrowserFile>)
+            return new(BormRuleResult.Success());
+
         // A file *name* — what [FileExtensions] checks on a string property — has no size and no media
         // type, so only the extensions in the accept list can be held against it.
         if (ctx.Value is string name)
@@ -93,7 +98,12 @@ public sealed class BormFileRule(
     /// A byte count the way people read one — <c>1.5 MB</c>. Shared with the file input's list of chosen
     /// files, so the size a file is shown at and the limit it is told it broke are written alike.
     /// </summary>
-    internal static string FormatSize(long bytes)
+    /// <param name="bytes">The count.</param>
+    /// <param name="roundUp">
+    /// Rounds up rather than to the nearest tenth - for a file's own size, which is then never shown smaller than it
+    /// is: one byte over a 2 MB limit read "2 MB" next to "must be 2 MB or smaller".
+    /// </param>
+    internal static string FormatSize(long bytes, bool roundUp = false)
     {
         string[] units = ["B", "KB", "MB", "GB"];
         double size = bytes;
@@ -103,6 +113,7 @@ public sealed class BormFileRule(
             size /= 1024;
             unit++;
         }
+        if (roundUp) size = Math.Ceiling(size * 10) / 10;
         return $"{size:0.#} {units[unit]}";
     }
 }

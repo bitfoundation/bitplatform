@@ -249,4 +249,117 @@ public class QrCodeDecoderTests
                 }
         }
     }
+    [TestMethod]
+    public void AnImageTiledWithFinderPatternsIsGivenUpOnQuickly()
+    {
+        // Choosing the finder patterns tries every triple of the centres found, so a picked file tiled with thousands of
+        // them - which no photograph of real symbols is - cost the cube of their number: seven and a half minutes for
+        // this one, about a second once the search keeps a few dozen. The bound only has to tell those apart, and a
+        // shared build machine running every target framework's tests side by side takes ten times as long.
+        const int Period = 8;
+        const int Modules = 1500;
+        using var tiles = new BbBitMatrix(Modules, Modules);
+        for (var y = 0; y < Modules; y++)
+        {
+            for (var x = 0; x < Modules; x++)
+            {
+                var ring = Math.Max(Math.Abs((x % Period) - 3), Math.Abs((y % Period) - 3));
+                tiles[x, y] = ring == 3 || ring <= 1;
+            }
+        }
+
+        using var image = SyntheticImage.FromMatrix(tiles, 2, quietZoneModules: 0);
+        var options = BbScannerOptions.ForStillImages();
+        options.Formats = BbBarcodeFormat.QrCode;
+        using var decoder = new BbBarcodeDecoder(options);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        decoder.Decode(image.View, suppressDuplicates: false);
+        watch.Stop();
+
+        Assert.IsLessThan(TimeSpan.FromSeconds(60), watch.Elapsed, $"Took {watch.Elapsed}.");
+    }
+
+    [TestMethod]
+    public void AnImageOfTallStripedColumnsIsGivenUpOnQuickly()
+    {
+        // Every row of these columns reads 1:1:3:1:1, and the vertical check of each walked the whole black column before
+        // its centre run was bounded: the square of the height. A hundred thousand rows took seven seconds, under the
+        // bound a shared build machine needs; twice that many take thirty-five, and a tenth of a second bounded.
+        using var stripes = new BbBitMatrix(64, 200_000);
+        for (var y = 0; y < stripes.Height; y++)
+        {
+            for (var x = 0; x < stripes.Width; x++)
+            {
+                stripes[x, y] = (x % 8) is 0 or 2 or 3 or 4 or 6;
+            }
+        }
+
+        var finder = new BbQrFinderPatternFinder(stripes);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var found = finder.FindCandidates(tryHarder: true).Length;
+        watch.Stop();
+
+        Assert.AreEqual(0, found);
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
+    }
+
+    [TestMethod]
+    public void FinderPatternColumnsCrossedByLongBlackRowsAreGivenUpOnQuickly()
+    {
+        // Every candidate passes the vertical check and then meets an all black row in the horizontal one, which walked
+        // the width of the image before its centre run was bounded: fourteen seconds or more, and a fifth of one bounded.
+        using var bands = new BbBitMatrix(65_536, 1_024);
+        for (var y = 0; y < bands.Height; y++)
+        {
+            for (var x = 0; x < bands.Width; x++)
+            {
+                bands[x, y] = (y % 8) switch
+                {
+                    2 or 4 => (x % 8) is 0 or 2 or 3 or 4 or 6,
+                    3 => true,
+                    0 or 6 => x % 8 == 3,
+                    _ => false,
+                };
+            }
+        }
+
+        var finder = new BbQrFinderPatternFinder(bands);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var found = finder.FindCandidates(tryHarder: true).Length;
+        watch.Stop();
+
+        Assert.AreEqual(0, found);
+        Assert.IsLessThan(TimeSpan.FromSeconds(10), watch.Elapsed, $"Took {watch.Elapsed}.");
+    }
+
+    [TestMethod]
+    public void ACentreWhoseDiagonalIsFarLongerThanItsWidthIsRejected()
+    {
+        using var proportioned = Corners(stretch: 1);
+        using var stretched = Corners(stretch: 5);
+
+        Assert.AreEqual(1, new BbQrFinderPatternFinder(proportioned).FindCandidates(tryHarder: true).Length);
+        Assert.AreEqual(0, new BbQrFinderPatternFinder(stretched).FindCandidates(tryHarder: true).Length);
+
+        static BbBitMatrix Corners(int stretch)
+        {
+            var matrix = new BbBitMatrix(120, 120);
+            foreach (var (x, y) in new[] { (30, 32), (70, 32), (30, 72) })
+            {
+                for (var t = -3; t <= 3; t++)
+                {
+                    matrix[x + t, y] = Math.Abs(t) != 2;
+                    matrix[x, y + t] = Math.Abs(t) != 2;
+                }
+
+                var half = ((3 * stretch) - 1) / 2;
+                for (var t = -half - (2 * stretch); t <= half + (2 * stretch); t++)
+                {
+                    matrix[x + t, y + t] = Math.Abs(t) <= half || Math.Abs(t) > half + stretch;
+                }
+            }
+
+            return matrix;
+        }
+    }
 }

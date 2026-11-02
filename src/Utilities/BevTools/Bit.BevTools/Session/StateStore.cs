@@ -115,7 +115,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
         {
             lock (entry.SyncRoot)
             {
-                entry.Error = ex.GetType().Name + ": " + ex.Message;
+                entry.Error = ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
             }
         }
 
@@ -176,7 +176,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
         }
         catch (Exception ex)
         {
-            error = ex.GetType().Name + ": " + ex.Message;
+            error = ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
         }
 
         lock (entry.SyncRoot)
@@ -283,7 +283,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                 {
                     if (entry.Generation == generation)
                     {
-                        entry.Error = ex.GetType().Name + ": " + ex.Message;
+                        entry.Error = ex.GetType().Name + ": " + BevRedactor.RedactText(ex.Message);
                     }
                 }
             }

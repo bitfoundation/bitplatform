@@ -110,7 +110,6 @@ public partial class AppDiagnosticModal
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(CurrentCancellationToken);
             await dbContext.Database.EnsureDeletedAsync(CurrentCancellationToken); // Blazor Hybrid stores the db outside webview's storage.
-            await dbContext.Database.ConfigureSqliteJournalMode();
             await dbContext.Database.MigrateAsync(CurrentCancellationToken);
         }
         catch (Exception exp)

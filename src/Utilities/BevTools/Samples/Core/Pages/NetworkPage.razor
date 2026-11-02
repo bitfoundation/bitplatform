@@ -1,0 +1,56 @@
+﻿@page "/network"
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject SampleSettings Settings
+
+<PageTitle>Network - BevTools samples</PageTitle>
+
+<h1>Network</h1>
+
+<p>
+    The requests below go through a client of <code>IHttpClientFactory</code>, so the <em>Network</em> panel records
+    each one with its status, duration, headers (the <code>Authorization</code> one redacted) and the component that
+    sent it. On Blazor Server they leave the server, not the browser: the browser's own DevTools never see them.
+</p>
+
+<section>
+    <h2>Requests to <code>@Settings.HttpUrl</code></h2>
+    <button @onclick="SendAsync">Send a request</button>
+    <button @onclick="SendDuplicatesAsync">Send the same request 5 times at once</button>
+    <p>The second button trips a rule: <em>Diagnostics</em> reports the duplicate requests and who sent them.</p>
+</section>
+
+@if (_status is not null)
+{
+    <p class="status">@_status</p>
+}
+
+@code {
+    private string? _status;
+
+    private async Task SendAsync() => _status = await GetAsync();
+
+    private async Task SendDuplicatesAsync()
+    {
+        var results = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ => GetAsync()));
+        _status = string.Join(" · ", results);
+    }
+
+    private async Task<string> GetAsync()
+    {
+        using var client = HttpClientFactory.CreateClient("samples");
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(Navigation.BaseUri), Settings.HttpUrl));
+        request.Headers.Authorization = new("Bearer", "sample-token-never-shown");
+
+        try
+        {
+            using var response = await client.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
+            return $"{(int)response.StatusCode} {response.ReasonPhrase}, {body.Length} characters";
+        }
+        catch (HttpRequestException ex)
+        {
+            return "Failed: " + ex.Message;
+        }
+    }
+}

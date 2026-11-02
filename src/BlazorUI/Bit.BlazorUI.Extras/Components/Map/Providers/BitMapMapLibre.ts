@@ -45,6 +45,9 @@
         public static syncMarkers(id: string, markerIds: string[], markers: any[]) {
             return BitMapGlBase.syncMarkers(BitMapMapLibre._key, id, markerIds, markers);
         }
+        public static setMarkerDoubleClick(id: string, enabled: boolean) {
+            return BitMapGlBase.setMarkerDoubleClick(BitMapMapLibre._key, id, enabled);
+        }
         public static setMarkerPosition(id: string, markerId: string, lat: number, lng: number) {
             return BitMapGlBase.setMarkerPosition(BitMapMapLibre._key, id, markerId, lat, lng);
         }

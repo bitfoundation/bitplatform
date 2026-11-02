@@ -23,8 +23,7 @@ public static class TrustCommand
 
             if (Directory.Exists(folder) is false)
             {
-                cli.Console.Fail($"{folder} doesn't exist.");
-                return CliApp.ExitUsage;
+                return cli.UsageError("folder-missing", $"{folder} doesn't exist.");
             }
 
             if (parseResult.GetValue(pathArgument) is null)

@@ -1,0 +1,57 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Style of a chat inherits down to every chat under it:
+//   --bit-AiChat-background      background of the chat, which the footer fades into  (default: $clr-bg-pri)
+//   --bit-AiChat-max-width       width the composer stops growing at                  (default: spacing(92))
+//   --bit-AiChat-footer-padding  inset of the footer around the composer              (default: 0 spacing(2) spacing(2),
+//                                                                                     0 spacing(1.5) spacing(1.5) on a phone)
+// The composer is lined up with the column of messages above it, whose width is --bit-AiMessageList-max-width: a
+// chat that changes one changes the other to the same value.
+
+// A column as tall as the room it is given: the HeaderTemplate, then the transcript taking whatever is left, then the
+// footer with the composer.
+.bit-aicht {
+    height: 100%;
+    display: flex;
+    min-height: 0;
+    position: relative;
+    flex-direction: column;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    color: $clr-fg-pri;
+    background-color: var(--bit-AiChat-background, #{$clr-bg-pri});
+}
+
+// The footer fades the last lines of the transcript out behind the composer rather than cutting them off at a hard
+// edge. It is the positioned box the scroll-to-latest button floats above.
+.bit-aicht-ftr {
+    flex: 0 0 auto;
+    position: relative;
+    box-sizing: border-box;
+    padding: var(--bit-AiChat-footer-padding, 0 #{spacing(2)} #{spacing(2)});
+    background: linear-gradient(to top, var(--bit-AiChat-background, #{$clr-bg-pri}) 62%, transparent);
+
+    @include xs {
+        padding: var(--bit-AiChat-footer-padding, 0 #{spacing(1.5)} #{spacing(1.5)});
+    }
+}
+
+.bit-aicht-ftc {
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+    max-width: var(--bit-AiChat-max-width, #{spacing(92)});
+}
+
+// A printed chat is its whole transcript, laid out on the page rather than in a box of the screen's height.
+@media print {
+    .bit-aicht {
+        height: auto;
+    }
+
+    .bit-aicht-ftr {
+        background: none;
+    }
+}

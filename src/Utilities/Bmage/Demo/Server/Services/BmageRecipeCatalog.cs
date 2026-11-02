@@ -236,7 +236,7 @@ public static class BmageRecipeCatalog
                             Format = ImageFormat.Jpeg,
                             Quality = 0.88,
                             // Keeps camera, lens, exposure, dates, copyright and the ICC profile; drops GPS,
-                            // serial numbers, owner name, user comments, maker notes, unique ids, the
+                            // serial numbers, owner and artist names, user comments, maker notes, unique ids, the
                             // embedded thumbnail and all of XMP.
                             Metadata = MetadataPolicy.StripSensitive,
                         });
@@ -450,8 +450,8 @@ public static class BmageRecipeCatalog
                     "against memory, not cores alone. Every item comes back with its own outcome (result.Succeeded, " +
                     "result.Failed); StopOnFirstError is opt-in. Cancelling the token throws BatchCancelledException, an " +
                     "OperationCanceledException that keeps what finished in its Result; the items it never reached are Result.Cancelled. " +
-                    "JPEG is used here because it encodes everywhere - for WebP check the capabilities first, as the batch " +
-                    "options take one fixed format."
+                    "JPEG is used here for the widest compatibility of the files; WebP encodes everywhere too, while AVIF " +
+                    "needs the capabilities checked first, as the batch options take one fixed format."
         },
         new()
         {
@@ -462,7 +462,7 @@ public static class BmageRecipeCatalog
             RunsIn = "Browser",
             SeeAlso = "/editor",
             Code = """
-                @* App.razor / index.html: <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" /> *@
+                @* App.razor / index.html: <link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" /> *@
 
                 <div style="height: 70vh">
                     <BmageEditor @ref="_editor"

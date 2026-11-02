@@ -167,6 +167,27 @@
     </BitDataGrid>
 </E2ESection>
 
+<E2ESection Id="wrap-header" Title="Wrapped header titles">
+    <label>Width of the first two columns <input id="wrap-header-width" type="number" step="any" @bind="_wrapHeaderWidth" @bind:event="oninput" /></label>
+    @* The header of #13963: a template laying a Persian title out beside an icon in a flex row of its own, on a sortable
+       column and on the same column unsortable, so the two differ only by the sort hint of the first. The next two
+       columns hold a one-word title wider than its column, one the grid writes and one a template's element holds, and
+       the last a title of several words, each narrower than its column, that together are wider. *@
+    <BitDataGrid Id="grid-wrap-header" Items="@_wrapHeaderItems" WrapCellText="true" Dir="BitDir.Rtl">
+        <BitDataGridColumn ColumnId="Sortable" Property="p => p.Stock" Width="@WrapHeaderWidth">
+            <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn ColumnId="Unsortable" Property="p => p.Stock" Sortable="false" Width="@WrapHeaderWidth">
+            <HeaderTemplate>@WrapHeaderTemplate</HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn Property="p => p.Name" Title="Unfinished" Sortable="false" Width="60px" />
+        <BitDataGridColumn ColumnId="Word" Property="p => p.Name" Sortable="false" Width="60px">
+            <HeaderTemplate><span class="wrap-header-word">Unfinished</span></HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn ColumnId="Words" Property="p => p.Name" Title="Back in stock soon" Sortable="false" Width="80px" />
+    </BitDataGrid>
+</E2ESection>
+
 <E2ESection Id="cell-events" Title="Row and cell events">
     <BitDataGrid TItem="Product" Id="grid-cell-events" Items="@_basic.Take(4).ToList()"
                  OnRowClick="p => { _rowClicks++; _rowClickArg = p.Name; }"
@@ -184,6 +205,59 @@
         cell-click <span id="cell-click-count">@_cellClicks</span> <span id="cell-click-arg">@_cellClickArg</span> |
         cell-dblclick <span id="cell-dblclick-count">@_cellDoubleClicks</span> <span id="cell-dblclick-arg">@_cellDoubleClickArg</span> |
         cell-contextmenu <span id="cell-contextmenu-count">@_cellContextMenus</span> <span id="cell-contextmenu-arg">@_cellContextMenuArg</span>
+    </p>
+</E2ESection>
+
+@* A click on a control in a cell is the control's: the template's own controls, one marked data-bit-interactive, one
+   in an open shadow root, and a grid in a cell keep their clicks from the outer cell and row, a control marked
+   data-bit-interactive="false" and a bare label do not. The page's double-click handler around the grid hears the
+   double-clicks of the grid's own control cells. *@
+<E2ESection Id="cell-controls" Title="Clicks on a control in a cell">
+    <div id="cell-controls-page" @ondblclick="() => _controlPageDoubleClicks++">
+        <BitDataGrid TItem="Product" Id="grid-cell-controls" Items="@_controlItems" SelectionMode="BitSelectionMode.Single" RowReorderable="true"
+                     SelectedItemsChanged="items => _controlSelection = string.Join(',', items.Select(i => i.Name))"
+                     OnRowClick="_ => _controlRowClicks++"
+                     OnRowDoubleClick="_ => _controlRowDoubleClicks++"
+                     OnCellClick="_ => _controlCellClicks++"
+                     OnCellDoubleClick="_ => _controlCellDoubleClicks++"
+                     OnCellContextMenu="_ => _controlCellContextMenus++">
+            <BitDataGridColumn ColumnId="Text" Title="Text">
+                <Template Context="p"><span class="cc-text">@p.Name</span></Template>
+            </BitDataGridColumn>
+            <BitDataGridColumn ColumnId="Controls" Title="Controls">
+                <Template Context="p">
+                    <button type="button" class="cc-button" @onclick="() => _controlButtonClicks++">Edit</button>
+                    <input class="cc-input" aria-label="Note" />
+                    <a class="cc-anchor" @onclick="() => _controlAnchorClicks++">Open</a>
+                    <i class="cc-icon" data-bit-interactive @onclick="() => _controlIconClicks++">★</i>
+                    <button type="button" class="cc-optout" data-bit-interactive="false" @onclick="() => _controlOptOutClicks++">Pick</button>
+                    <label class="cc-label">@p.Category</label>
+                    <cc-shadow class="cc-shadow"></cc-shadow>
+                </Template>
+            </BitDataGridColumn>
+            <BitDataGridColumn ColumnId="Inner" Title="Inner">
+                <Template Context="p">
+                    <BitDataGrid TItem="Product" Id="@($"grid-cell-inner-{p.Id}")" Items="@_controlInnerItems" ShowHeader="false"
+                                 OnRowClick="_ => _controlInnerRowClicks++">
+                        <BitDataGridColumn Property="x => x.Name" />
+                    </BitDataGrid>
+                </Template>
+            </BitDataGridColumn>
+        </BitDataGrid>
+    </div>
+    <p>
+        row-click <span id="cc-row-click-count">@_controlRowClicks</span> |
+        row-dblclick <span id="cc-row-dblclick-count">@_controlRowDoubleClicks</span> |
+        cell-click <span id="cc-cell-click-count">@_controlCellClicks</span> |
+        cell-dblclick <span id="cc-cell-dblclick-count">@_controlCellDoubleClicks</span> |
+        cell-contextmenu <span id="cc-cell-contextmenu-count">@_controlCellContextMenus</span> |
+        selected <span id="cc-selection">@_controlSelection</span> |
+        button <span id="cc-button-count">@_controlButtonClicks</span> |
+        icon <span id="cc-icon-count">@_controlIconClicks</span> |
+        anchor <span id="cc-anchor-count">@_controlAnchorClicks</span> |
+        opt-out <span id="cc-optout-count">@_controlOptOutClicks</span> |
+        inner-row-click <span id="cc-inner-row-click-count">@_controlInnerRowClicks</span> |
+        page-dblclick <span id="cc-page-dblclick-count">@_controlPageDoubleClicks</span>
     </p>
 </E2ESection>
 
@@ -388,6 +462,8 @@
 
     private readonly List<Product> _basic = Products();
     private readonly List<Product> _emptyItems = [];
+    // Kept, not taken afresh on each render: the grid reloads whenever its Items reference changes.
+    private readonly List<Product> _wrapHeaderItems = Products().Take(2).ToList();
     private readonly List<Product> _many = Enumerable.Range(1, 40).Select(i => new Product { Id = i, Name = $"Item {i:00}" }).ToList();
     private readonly List<Product> _long =
     [
@@ -433,6 +509,7 @@
     private bool _striped = true;
     private bool _hoverable = true;
     private bool _wrap;
+    private double _wrapHeaderWidth = 300;
     private BitVisibility _visibility;
     private bool _disabled = true;
     private int _disabledRowClicks;
@@ -442,6 +519,12 @@
 
     private int _rowClicks, _rowDoubleClicks, _cellClicks, _cellDoubleClicks, _cellContextMenus;
     private string? _rowClickArg, _rowDoubleClickArg, _cellClickArg, _cellDoubleClickArg, _cellContextMenuArg;
+
+    private readonly List<Product> _controlItems = Products().Take(2).ToList();
+    private readonly List<Product> _controlInnerItems = Products().Skip(4).Take(1).ToList();
+    private int _controlRowClicks, _controlRowDoubleClicks, _controlCellClicks, _controlCellDoubleClicks, _controlCellContextMenus;
+    private int _controlButtonClicks, _controlIconClicks, _controlAnchorClicks, _controlOptOutClicks, _controlInnerRowClicks, _controlPageDoubleClicks;
+    private string _controlSelection = "";
 
     public BitDataGridE2E()
     {
@@ -453,6 +536,14 @@
         _basicSortCount++;
         _basicSortLog = string.Join(",", sorts.Select(s => $"{s.ColumnId}:{s.Direction}:{s.Priority}"));
     }
+
+    private string WrapHeaderWidth => FormattableString.Invariant($"{_wrapHeaderWidth}px");
+
+    private static readonly RenderFragment WrapHeaderTemplate =
+        @<span class="wrap-header-tpl" style="display: flex; align-items: center;">
+            <span class="wrap-header-title">انجام‌نشده</span>
+            <span class="wrap-header-icon" style="display: block; flex: none; width: 24px; height: 24px;"></span>
+        </span>;
 
     private static string CellArgs(BitDataGridCellEventArgs<Product> a)
         => $"{a.Item.Name}|{a.ColumnId}|{a.ColumnTitle}|{a.Value}|button={a.Mouse.Button}|title={a.Column.Title}";

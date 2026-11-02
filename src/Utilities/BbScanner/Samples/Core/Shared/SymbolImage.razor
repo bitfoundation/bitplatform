@@ -1,0 +1,76 @@
+﻿@using System.Text
+
+@* Shows the grayscale image a symbol was decoded from, as inline SVG: the dark pixels become one path, so no image
+   encoder is needed and the symbol stays crisp at any size. Always dark on white paper, which is what the decoder
+   reads. *@
+
+<svg class="symbol-image" viewBox="0 0 @Width @Height" style="aspect-ratio:@Width / @Height;"
+     shape-rendering="crispEdges" role="img" aria-label="@Label">
+    <rect width="100%" height="100%" fill="#ffffff" />
+    <path d="@Path" fill="#000000" />
+</svg>
+
+@code {
+    /// <summary>The traced dark pixels, from <see cref="Trace"/>.</summary>
+    [Parameter, EditorRequired]
+    public string Path { get; set; } = string.Empty;
+
+    /// <summary>Image width in pixels.</summary>
+    [Parameter, EditorRequired]
+    public int Width { get; set; }
+
+    /// <summary>Image height in pixels.</summary>
+    [Parameter, EditorRequired]
+    public int Height { get; set; }
+
+    /// <summary>The accessible name of the image.</summary>
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Traces the dark pixels of an image into SVG path data: one rectangle per horizontal run, and identical rows
+    /// merged into one, so a module of a matrix symbol or a whole bar of a linear one is a single rectangle.
+    /// </summary>
+    public static string Trace(BbLuminanceBuffer image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        ReadOnlySpan<byte> pixels = image.Pixels;
+        var width = image.Width;
+        var path = new StringBuilder();
+        var y = 0;
+        while (y < image.Height)
+        {
+            var row = pixels.Slice(y * width, width);
+            var rows = 1;
+            while (y + rows < image.Height && pixels.Slice((y + rows) * width, width).SequenceEqual(row))
+            {
+                rows++;
+            }
+
+            var x = 0;
+            while (x < width)
+            {
+                if (row[x] >= 128)
+                {
+                    x++;
+                    continue;
+                }
+
+                var run = 1;
+                while (x + run < width && row[x + run] < 128)
+                {
+                    run++;
+                }
+
+                path.Append('M').Append(x).Append(' ').Append(y)
+                    .Append('h').Append(run).Append('v').Append(rows).Append("h-").Append(run).Append('z');
+                x += run;
+            }
+
+            y += rows;
+        }
+
+        return path.ToString();
+    }
+}

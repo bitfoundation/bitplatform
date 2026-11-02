@@ -1,0 +1,215 @@
+﻿@page "/tw/hover-card"
+
+<PageTitle>Hover Card — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Hover Card</h1>
+        <p class="mt-2 text-zinc-500">Preview content behind a link on hover or focus, styled with Tailwind utilities.</p>
+        <TwSectionSwitcher Slug="hover-card" />
+    </header>
+
+    <TwDemoBlock Title="Basic" Code="@_basicCode">
+        <Description>
+            Hover or focus the link to open the card after a short delay. The content is
+            hoverable, so moving into it keeps the card open.
+        </Description>
+        <LiveContent>
+            <BitBhHoverCard class="inline-block">
+                <BitBhHoverCardTrigger class="font-semibold text-blue-600 cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                    href="https://github.com/radix-ui" target="_blank" rel="noreferrer">
+                    @@radix-ui
+                </BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                    class="relative z-50 w-80 max-w-[calc(100vw-1rem)] rounded-xl border border-zinc-200 bg-white p-4 shadow-xl">
+                    <div class="flex gap-3.5">
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 font-bold text-white">R</div>
+                        <div>
+                            <div class="font-bold text-zinc-900">Radix</div>
+                            <div class="mb-1.5 text-sm text-zinc-500">@@radix-ui</div>
+                            <p class="mb-2 text-sm leading-relaxed text-zinc-700">Components, icons, colors, and templates for building high-quality, accessible UI.</p>
+                            <div class="flex gap-4 text-xs text-zinc-600">
+                                <span><strong class="text-zinc-900">0</strong> Following</span>
+                                <span><strong class="text-zinc-900">2,900</strong> Followers</span>
+                            </div>
+                        </div>
+                    </div>
+                    <BitBhHoverCardArrow class="@_arrowClass" />
+                </BitBhHoverCardContent>
+            </BitBhHoverCard>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Custom delays" Code="@_delayCode">
+        <Description>
+            Tune <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OpenDelay</code> and <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">CloseDelay</code> (ms). This one opens instantly and lingers a second.
+        </Description>
+        <LiveContent>
+            <BitBhHoverCard OpenDelay="0" CloseDelay="1000" class="inline-block">
+                <BitBhHoverCardTrigger class="font-semibold text-blue-600 cursor-pointer rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                    href="#" @onclick:preventDefault>
+                    Quick open, slow close
+                </BitBhHoverCardTrigger>
+                <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                    class="relative z-50 w-72 max-w-[calc(100vw-1rem)] rounded-xl border border-zinc-200 bg-white p-4 text-sm leading-relaxed text-zinc-700 shadow-xl">
+                    Opens with no delay and stays for a full second after the pointer leaves.
+                    <BitBhHoverCardArrow class="@_arrowClass" />
+                </BitBhHoverCardContent>
+            </BitBhHoverCard>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Placement" Code="@_sidesCode">
+        <Description>The engine flips and shifts to keep the card in view.</Description>
+        <LiveContent>
+            <div class="flex flex-wrap items-center gap-5">
+                <BitBhHoverCard class="inline-block">
+                    <BitBhHoverCardTrigger class="font-semibold text-blue-600 cursor-pointer rounded hover:underline" href="#" @onclick:preventDefault>Top</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 8 })"
+                                        class="relative z-50 w-56 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-xl">
+                        Anchored to the top.
+                        <BitBhHoverCardArrow class="@_arrowClass" /></BitBhHoverCardContent>
+                </BitBhHoverCard>
+
+                <BitBhHoverCard class="inline-block">
+                    <BitBhHoverCardTrigger class="font-semibold text-blue-600 cursor-pointer rounded hover:underline" href="#" @onclick:preventDefault>Right</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "right", Gap = 8 })"
+                                        class="relative z-50 w-56 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-xl">
+                        Anchored to the right.
+                        <BitBhHoverCardArrow class="@_arrowClass" /></BitBhHoverCardContent>
+                </BitBhHoverCard>
+
+                <BitBhHoverCard class="inline-block">
+                    <BitBhHoverCardTrigger class="font-semibold text-blue-600 cursor-pointer rounded hover:underline" href="#" @onclick:preventDefault>Bottom</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                        class="relative z-50 w-56 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-xl">
+                        Anchored to the bottom.
+                        <BitBhHoverCardArrow class="@_arrowClass" /></BitBhHoverCardContent>
+                </BitBhHoverCard>
+
+                <BitBhHoverCard class="inline-block">
+                    <BitBhHoverCardTrigger class="font-semibold text-blue-600 cursor-pointer rounded hover:underline" href="#" @onclick:preventDefault>Left</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "left", Gap = 8 })"
+                                        class="relative z-50 w-56 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-xl">
+                        Anchored to the left.
+                        <BitBhHoverCardArrow class="@_arrowClass" /></BitBhHoverCardContent>
+                </BitBhHoverCard>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Controlled" Code="@_controlledCode">
+        <Description>
+            Drive the open state with <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">Open</code> + <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">OnOpenChange</code>.
+        </Description>
+        <LiveContent>
+            <div class="flex flex-wrap items-center gap-5">
+                <BitBhButton OnClick="() => cardOpen = !cardOpen"
+                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                    @(cardOpen ? "Hide card" : "Show card")
+                </BitBhButton>
+                <BitBhHoverCard Open="cardOpen" OnOpenChange="v => cardOpen = v" class="inline-block">
+                    <BitBhHoverCardTrigger class="font-semibold text-blue-600 cursor-pointer rounded hover:underline" href="#" @onclick:preventDefault>Target</BitBhHoverCardTrigger>
+                    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                                        class="relative z-50 w-64 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-xl">
+                        Driven from outside via the Open parameter.
+                        <BitBhHoverCardArrow class="@_arrowClass" />
+                    </BitBhHoverCardContent>
+                </BitBhHoverCard>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool cardOpen;
+
+    // Universal arrow placement. The floating content element carries the
+    // resolved `data-anchor` attribute; the arrow is a descendant, so it reacts
+    // to its ancestor via the `anchored-*` variants. Exactly one side matches.
+    private const string _arrowClass =
+        "fill-zinc-200 drop-shadow-[0_0_1.5px_#00000040] absolute " +
+        "anchored-top:bottom-[-6px] anchored-top:left-1/2 anchored-top:-translate-x-1/2 " +
+        "anchored-bottom:top-[-6px] anchored-bottom:left-1/2 anchored-bottom:-translate-x-1/2 anchored-bottom:rotate-180 " +
+        "anchored-left:right-[-9px] anchored-left:top-1/2 anchored-left:-translate-y-1/2 anchored-left:rotate-[-90deg] " +
+        "anchored-right:left-[-9px] anchored-right:top-1/2 anchored-right:-translate-y-1/2 anchored-right:rotate-90";
+
+    private const string _basicCode = """
+<BitBhHoverCard class="inline-block">
+    <BitBhHoverCardTrigger class="font-semibold text-blue-600 hover:underline"
+                        href="https://github.com/radix-ui" target="_blank" rel="noreferrer">
+        @@radix-ui
+    </BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                        class="relative z-50 w-80 rounded-xl border border-zinc-200 bg-white p-4 shadow-xl">
+        <div class="flex gap-3.5">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 font-bold text-white">R</div>
+            <div>
+                <div class="font-bold text-zinc-900">Radix</div>
+                <div class="mb-1.5 text-sm text-zinc-500">@@radix-ui</div>
+                <p class="text-sm leading-relaxed text-zinc-700">Components, icons, colors...</p>
+            </div>
+        </div>
+        <BitBhHoverCardArrow class="fill-zinc-200 drop-shadow-[0_0_1.5px_#00000040] absolute
+                                 anchored-top:bottom-[-6px] anchored-top:left-1/2 anchored-top:-translate-x-1/2
+                                 anchored-bottom:top-[-6px] anchored-bottom:left-1/2 anchored-bottom:-translate-x-1/2 anchored-bottom:rotate-180" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+""";
+
+    private const string _delayCode = """
+<BitBhHoverCard OpenDelay="0" CloseDelay="1000" class="inline-block">
+    <BitBhHoverCardTrigger class="font-semibold text-blue-600 hover:underline" href="#">
+        Quick open, slow close
+    </BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                        class="relative z-50 w-72 rounded-xl border border-zinc-200 bg-white p-4 text-sm leading-relaxed text-zinc-700 shadow-xl">
+        Opens with no delay and stays for a full second after the pointer leaves.
+        @* The floating content carries data-anchor; the arrow reacts via anchored-* variants. *@
+        <BitBhHoverCardArrow class="fill-zinc-200 drop-shadow-[0_0_1.5px_#00000040] absolute
+                                 anchored-top:bottom-[-6px] anchored-top:left-1/2 anchored-top:-translate-x-1/2
+                                 anchored-bottom:top-[-6px] anchored-bottom:left-1/2 anchored-bottom:-translate-x-1/2 anchored-bottom:rotate-180" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+""";
+
+    private const string _sidesCode = """
+<BitBhHoverCard class="inline-block">
+    <BitBhHoverCardTrigger class="font-semibold text-blue-600 hover:underline" href="#">Top</BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "top", Gap = 8 })"
+                        class="relative z-50 w-56 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-xl">
+        Anchored to the top.
+        @* One arrow handles every side. The floating content carries data-anchor;
+           the arrow reacts to its ancestor via the anchored-* variants. *@
+        <BitBhHoverCardArrow class="fill-zinc-200 drop-shadow-[0_0_1.5px_#00000040] absolute
+                                 anchored-top:bottom-[-6px] anchored-top:left-1/2 anchored-top:-translate-x-1/2
+                                 anchored-bottom:top-[-6px] anchored-bottom:left-1/2 anchored-bottom:-translate-x-1/2 anchored-bottom:rotate-180
+                                 anchored-left:right-[-9px] anchored-left:top-1/2 anchored-left:-translate-y-1/2 anchored-left:rotate-[-90deg]
+                                 anchored-right:left-[-9px] anchored-right:top-1/2 anchored-right:-translate-y-1/2 anchored-right:rotate-90" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+
+@* ...repeat with To = "right" | "bottom" | "left" *@
+""";
+
+    private const string _controlledCode = """
+<BitBhButton OnClick="() => cardOpen = !cardOpen" class="...">
+    @(cardOpen ? "Hide card" : "Show card")
+</BitBhButton>
+
+<BitBhHoverCard Open="cardOpen" OnOpenChange="v => cardOpen = v" class="inline-block">
+    <BitBhHoverCardTrigger class="font-semibold text-blue-600 hover:underline" href="#">Target</BitBhHoverCardTrigger>
+    <BitBhHoverCardContent Anchor="@(new BitBhAnchorOptions { To = "bottom", Gap = 8 })"
+                        class="relative z-50 w-64 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-xl">
+        Driven from outside via the Open parameter.
+        <BitBhHoverCardArrow class="fill-zinc-200 drop-shadow-[0_0_1.5px_#00000040] absolute
+                                 anchored-top:bottom-[-6px] anchored-top:left-1/2 anchored-top:-translate-x-1/2
+                                 anchored-bottom:top-[-6px] anchored-bottom:left-1/2 anchored-bottom:-translate-x-1/2 anchored-bottom:rotate-180" />
+    </BitBhHoverCardContent>
+</BitBhHoverCard>
+
+@code {
+    private bool cardOpen;
+}
+""";
+}

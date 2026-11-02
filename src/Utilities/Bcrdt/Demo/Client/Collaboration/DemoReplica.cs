@@ -70,7 +70,8 @@ public sealed class DemoReplica : IAsyncDisposable
         IBcrdtDocumentStore store,
         string documentId,
         string label,
-        BcrdtCollaboratorInfo user)
+        BcrdtCollaboratorInfo user,
+        bool keepHistory = false)
     {
         var transports = new DemoTransportFactory(network);
 
@@ -80,6 +81,10 @@ public sealed class DemoReplica : IAsyncDisposable
             // application; in a demo nobody will wait half a minute for a departed replica to fade.
             PresenceTimeout = TimeSpan.FromSeconds(12),
             Sync = new BcrdtSyncProviderOptions { HeartbeatInterval = TimeSpan.FromSeconds(4) },
+
+            // A snapshot names deleted content as well as live content, so restoring one needs every
+            // tombstone the document ever had. Only the version-history page asks for that.
+            GarbageCollect = !keepHistory,
         };
 
         var service = new BcrdtCollaborationService(options, transports, store);

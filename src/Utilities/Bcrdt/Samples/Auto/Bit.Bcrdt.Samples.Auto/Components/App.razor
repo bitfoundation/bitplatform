@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <base href="/" />
+    <title>Bcrdt - Real-time collaboration for Blazor (Auto)</title>
+    <link rel="stylesheet" href="_content/Bit.Bcrdt.Samples.Core/app.css" />
+    <link rel="icon" type="image/svg+xml" href="_content/Bit.Bcrdt.Samples.Core/favicon.svg" />
+    <HeadOutlet @rendermode="PageRenderMode" />
+</head>
+
+<body>
+    <Routes @rendermode="PageRenderMode" />
+    @* No script tag for Bcrdt: BcrdtTextArea imports its one small module itself, on demand. *@
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // Interactive everywhere but on a page marked [ExcludeFromInteractiveRouting] - the error page, which lives in this
+    // assembly rather than the Core one the router searches.
+    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveAuto : null;
+}

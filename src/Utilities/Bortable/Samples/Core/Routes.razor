@@ -1,0 +1,11 @@
+﻿@* The interactive root of every sample. Bortable needs nothing here: no initializer component - each list imports the
+   library's JavaScript module the first time it renders interactively. What it does need comes from the host: the
+   drag coordinator (AddCoreServices registers it) and the stylesheet, which each host page links, as the library does
+   not inject it. *@
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

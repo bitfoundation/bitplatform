@@ -33,7 +33,7 @@ public sealed class SharedOptions
 
     public Option<bool> NoBrowsers { get; } = new("--no-browsers") { Description = "Don't install Playwright's browsers for the UI tests." };
 
-    public Option<bool> NoRun { get; } = new("--no-run") { Description = "Don't start the project at the end, or open it in the browser." };
+    public Option<bool> NoRun { get; } = new("--no-run") { Description = "Don't start the project or its Workbench, or open them in the browser." };
 
     public Option<string[]> Properties { get; } = new("--property", "-p")
     {

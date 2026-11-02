@@ -40,10 +40,21 @@
     public IEnumerable<(BormFieldDefinition Field, string Path)> Items { get; set; } = [];
 
     private IReadOnlyList<FieldRun> _runs = [];
+    private object? _runsFrom;
+    private int _runsCount;
 
     private IReadOnlyList<FieldRun> Runs => _runs;
 
-    protected override void OnParametersSet() => _runs = BuildRuns();
+    // The same list handed back again — the view keeps one per schema — is the same runs; only a new
+    // list, or one whose length changed under it, is grouped again.
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_runsFrom, Items) && Items is IReadOnlyCollection<(BormFieldDefinition, string)> same && same.Count == _runsCount)
+            return;
+        _runs = BuildRuns();
+        _runsFrom = Items;
+        _runsCount = _runs.Sum(r => r.Items.Count);
+    }
 
     /// <summary>
     /// Splits the fields into consecutive runs sharing a <see cref="BormFieldDefinition.Group"/>.

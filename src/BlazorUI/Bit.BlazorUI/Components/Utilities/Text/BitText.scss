@@ -173,17 +173,21 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). A text is read on the
+// page rather than over the role's fill, so it is drawn in the role's text color (role-text): a secondary or a warning
+// main is picked to fill a surface and falls under the 4.5:1 of body text on white, and a background role's main is
+// the page itself, so it writes in the text color it is paired with.
 @each $role, $tokens in $bit-color-roles {
     .bit-txt-#{$role} {
-        color: role($tokens, main);
+        color: role-text($role, $tokens);
     }
 }
 
 // The background roles are the page's own colors, which a forced-colors palette maps to Canvas - and Chromium draws
-// a Canvas backplate behind every line of text there, so a text colored with one would be Canvas on Canvas and
-// vanish (Firefox draws no backplate, but the page behind it is Canvas as well). CanvasText is what such a text
-// reads in both. A single class, so the disabled rule below still outranks it with its GrayText.
+// a Canvas backplate behind every line of text there, so a text that ended up in one would be Canvas on Canvas and
+// vanish (Firefox draws no backplate, but the page behind it is Canvas as well). Their text color is the paired
+// foreground already; it is pinned to CanvasText here too, so the text never depends on the palette mapping that one.
+// A single class, so the disabled rule below still outranks it with its GrayText.
 @media (forced-colors: active) {
     @each $role in $bit-background-color-roles {
         .bit-txt-#{$role} {

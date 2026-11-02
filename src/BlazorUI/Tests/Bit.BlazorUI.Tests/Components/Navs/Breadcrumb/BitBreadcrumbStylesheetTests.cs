@@ -25,17 +25,34 @@ public class BitBreadcrumbStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-brc-ofi-fs: var(--bit-brc-sz-ofi-fs, var(--bit-Breadcrumb-overflow-font-size, #{$tg-fs-sm}));");
 
         // So does an explicit Color, for every color of the trail it paints; an unset one is the neutral trail.
-        StringAssert.Contains(stylesheet, "--bit-brc-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-color, #{$clr-fg-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-sel-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-selected-color, ");
+        StringAssert.Contains(stylesheet, "--bit-brc-clr: var(--bit-brc-role-fg, var(--bit-Breadcrumb-color, #{$clr-fg-pri}));");
+        StringAssert.Contains(stylesheet, "--bit-brc-sel-clr: var(--bit-brc-role-fg, var(--bit-Breadcrumb-selected-color, ");
         StringAssert.Contains(stylesheet, "--bit-brc-div-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-divider-color, #{$clr-fg-sec}));");
         StringAssert.Contains(stylesheet, "--bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color));");
         // (The hover sets the state color the rule at rest reads, rather than painting the color itself.)
+        StringAssert.Contains(stylesheet, "--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, ");
         StringAssert.Contains(stylesheet, "--bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, ");
         StringAssert.Contains(stylesheet, "color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));");
 
         // The hover color still falls back to the color the item has at rest (--bit-brc-itm-clr, --bit-brc-div-clr),
         // which is no parameter's own value, so only the size and role values are banned behind a public variable.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Breadcrumb-[a-z-]+, var\(--bit-brc-(sz|role)-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldDrawItsItemsInTheRoleTextColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The items are text read on the page, so a Color draws them in the role's text color - a secondary or a warning
+        // main is picked to fill a surface and is under 3:1 as text on white - at rest, current and hovered alike, in the
+        // trail and in the overflow menu.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-brc-#{$role} {"), "--bit-brc-role-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-itm {"), "--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-brc-ofi {"), "--bit-brc-sfg: var(--bit-brc-role-fg, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));");
+
+        // A forced-colors palette maps a background role to Canvas, so its text color is taken back there with its main.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {\n    @each $role in $bit-background-color-roles {"), "--bit-brc-role-fg: initial;");
     }
 
     [TestMethod]
@@ -48,7 +65,7 @@ public class BitBreadcrumbStylesheetTests
         // the callout - both include brc-vars - start the values they publish out unset, and the classes, declared
         // further down at the same weight, still win on the element that carries them.
         foreach (var property in new[] { "--bit-brc-sz-fs", "--bit-brc-sz-h", "--bit-brc-sz-div", "--bit-brc-sz-obt", "--bit-brc-sz-ofi-h",
-                                         "--bit-brc-sz-ofi-fs", "--bit-brc-sz-ofi-lh", "--bit-brc-role-main", "--bit-brc-role-focus",
+                                         "--bit-brc-sz-ofi-fs", "--bit-brc-sz-ofi-lh", "--bit-brc-role-main", "--bit-brc-role-fg", "--bit-brc-role-focus",
                                          "--bit-brc-itm-max-width" })
         {
             StringAssert.Contains(vars, $"{property}: initial;");

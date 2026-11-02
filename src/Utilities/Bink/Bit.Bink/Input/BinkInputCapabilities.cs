@@ -34,7 +34,10 @@ public sealed record BinkInputCapabilities
     /// <summary>The host supports <c>OffscreenCanvas</c>.</summary>
     public bool OffscreenCanvas { get; init; }
 
-    /// <summary>The canvas was created with the low-latency (<c>desynchronized</c>) hint honored.</summary>
+    /// <summary>
+    /// The canvas asked for the low-latency (<c>desynchronized</c>) hint with <see cref="BinkCanvas.LowLatency"/> and the
+    /// browser honored it. Always false when the canvas did not ask.
+    /// </summary>
     public bool LowLatencyCanvas { get; init; }
 
     /// <summary>The engine has seen a pen pointer.</summary>

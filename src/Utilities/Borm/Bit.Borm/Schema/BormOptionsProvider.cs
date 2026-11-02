@@ -34,6 +34,16 @@ public sealed class BormOptionsContext(
     /// <summary>Cancelled when a newer load supersedes this one, or the form is disposed.</summary>
     public CancellationToken CancellationToken { get; } = cancellationToken;
 
+    /// <summary>
+    /// For a field that searches its options (<see cref="BormFieldDefinition.SearchMinLength"/>): what
+    /// the user has typed so far, trimmed. Null when the field opens with a value and the provider is
+    /// asked only for the option behind <see cref="CurrentValue"/>, so the box can show its label.
+    /// </summary>
+    public string? SearchText { get; init; }
+
+    /// <summary>The value the field holds while its options are loaded.</summary>
+    public object? CurrentValue { get; init; }
+
     /// <summary>Reads a dependency value, e.g. the selected country for a cities lookup.</summary>
     public object? Value(string path) => Data.GetValue(path);
 }

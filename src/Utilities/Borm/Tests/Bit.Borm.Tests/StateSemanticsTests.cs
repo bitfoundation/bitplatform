@@ -147,6 +147,78 @@ public class SeedMinItemsTests
         Assert.ContainsSingle(model.Lines);
         Assert.AreEqual("Widget", model.Lines[0].Product);
     }
+
+    [TestMethod]
+    public void An_imported_minimum_of_millions_seeds_no_more_rows_than_a_draft_may_restore()
+    {
+        const string json = """
+            {"type":"object","properties":{
+              "rows":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}},
+              "more":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}}}}
+            """;
+        Assert.IsTrue(BormJsonSchemaImporter.TryImport(json, out var form, out var error), error);
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var state = new BormState(form, new BormDictionaryDataAccessor());
+
+        // The lists share the limit rather than each taking it.
+        Assert.AreEqual(BormDraft.MaxRows, state.ArrayCount("rows") + state.ArrayCount("more"));
+        Assert.IsFalse(state.IsFormDirty);
+        Assert.IsTrue(clock.Elapsed < TimeSpan.FromSeconds(5), $"took {clock.Elapsed}");
+    }
+
+    [TestMethod]
+    public void Seeding_again_after_a_definition_change_tops_the_lists_up_rather_than_adding_as_many_rows_again()
+    {
+        const string json = """{"type":"object","properties":{"rows":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}}}}""";
+        Assert.IsTrue(BormJsonSchemaImporter.TryImport(json, out var form, out var error), error);
+        var state = new BormState(form, new BormDictionaryDataAccessor());
+
+        state.NotifyDefinitionChanged();
+        state.NotifyDefinitionChanged();
+
+        Assert.AreEqual(BormDraft.MaxRows, state.ArrayCount("rows"));
+    }
+
+    [TestMethod]
+    public void Rows_a_sweep_clears_as_soon_as_they_are_seeded_still_count_against_the_seeding_budget()
+    {
+        // The first list hides, and so clears, itself once it has rows. Counted by what survived, it cost
+        // nothing and the next list was seeded as many rows again — five thousand such lists, fifty million.
+        const string json = """
+            {"type":"object","properties":{
+              "a":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"x-clearOnHide":true,"x-visibleWhen":{"field":"a","op":"IsEmpty"},"items":{"type":"string"}},
+              "b":{"type":"array","minItems":100000000,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}}}}
+            """;
+        Assert.IsTrue(BormJsonSchemaImporter.TryImport(json, out var form, out var error), error);
+
+        var state = new BormState(form, new BormDictionaryDataAccessor());
+
+        Assert.AreEqual(0, state.ArrayCount("a"));
+        Assert.AreEqual(0, state.ArrayCount("b"));
+    }
+
+    [TestMethod]
+    public void A_list_that_takes_no_seeded_row_announces_no_change()
+    {
+        const string json = """{"type":"object","properties":{"Tags":{"type":"array","minItems":1,"x-attributes":{"seedMinItems":true},"items":{"type":"string"}}}}""";
+        Assert.IsTrue(BormJsonSchemaImporter.TryImport(json, out var form, out var error), error);
+        var model = new SeedFixedModel();
+        var state = new BormState(form, new BormModelDataAccessor(model));
+        var changed = new List<string>();
+        state.FieldChanged += changed.Add;
+
+        state.NotifyDefinitionChanged();
+
+        Assert.IsEmpty(model.Tags);
+        Assert.DoesNotContain("Tags", changed);
+    }
+}
+
+/// <summary>A list the form cannot add to: the array is fixed in size and the property has no setter.</summary>
+public class SeedFixedModel
+{
+    public string[] Tags { get; } = [];
 }
 
 public sealed class SignupFluentValidator : AbstractValidator<SignupModel>

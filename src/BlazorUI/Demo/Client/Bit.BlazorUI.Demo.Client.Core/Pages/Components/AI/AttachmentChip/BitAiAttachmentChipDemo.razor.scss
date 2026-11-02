@@ -1,0 +1,17 @@
+﻿::deep {
+    .custom-class {
+        padding: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-text {
+        font-weight: bold;
+        color: var(--bit-clr-pri);
+    }
+
+    .custom-thumbnail {
+        outline: 2px solid var(--bit-clr-pri);
+        outline-offset: 1px;
+    }
+}

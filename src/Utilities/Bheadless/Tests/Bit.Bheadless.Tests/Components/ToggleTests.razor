@@ -1,0 +1,216 @@
+﻿@inherits TestBase
+@attribute [TestClass]
+
+@code {
+    [TestMethod]
+    public void Toggle_reports_aria_pressed()
+    {
+        var pressed = new List<bool>();
+        var cut = Render(@<BitBhToggle aria-label="Bold" OnPressedChange="p => pressed.Add(p)">B</BitBhToggle>);
+        var button = cut.Find("button");
+        Assert.AreEqual("false", button.GetAttribute("aria-pressed"));
+        button.Click();
+        Assert.AreEqual("true", cut.Find("button").GetAttribute("aria-pressed"));
+        Assert.AreEqual("on", cut.Find("button").GetAttribute("data-state"));
+        Assert.AreSequenceEqual(new[] { true }, pressed);
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Single_toggle_group_is_a_radio_group_with_roving_focus()
+    {
+        // Radios only when one item always stays on: a radio can't be unchecked.
+        var cut = Render(
+            @<BitBhToggleGroup Type="BitBhToggleGroupType.Single" DefaultValue="center" AllowEmpty="false" aria-label="Alignment">
+                <BitBhToggleGroupItem Value="left" aria-label="Left" />
+                <BitBhToggleGroupItem Value="center" aria-label="Center" />
+                <BitBhToggleGroupItem Value="right" aria-label="Right" />
+            </BitBhToggleGroup>);
+
+        Assert.AreEqual("radiogroup", cut.Find("[aria-label=Alignment]").GetAttribute("role"));
+        var items = cut.FindAll("[role=radio]");
+        Assert.AreEqual("true", items[1].GetAttribute("aria-checked"));
+        // The pressed item is the single tab stop.
+        Assert.AreSequenceEqual(new[] { "-1", "0", "-1" }, items.Select(i => i.GetAttribute("tabindex")));
+
+        items[1].Press("ArrowRight");
+        Assert.AreEqual(cut.FindAll("[role=radio]")[2].Id, this.LastFocusRequest());
+        Assert.AreEqual("0", cut.FindAll("[role=radio]")[2].GetAttribute("tabindex"));
+
+        // Parameterless items still follow the group state.
+        cut.FindAll("[role=radio]")[0].Click();
+        Assert.AreSequenceEqual(new[] { "true", "false", "false" }, cut.FindAll("[role=radio]").Select(i => i.GetAttribute("aria-checked")));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Single_toggle_group_can_forbid_emptying()
+    {
+        var cut = Render(
+            @<BitBhToggleGroup Type="BitBhToggleGroupType.Single" DefaultValue="a" AllowEmpty="false" aria-label="Mode">
+                <BitBhToggleGroupItem Value="a">A</BitBhToggleGroupItem>
+                <BitBhToggleGroupItem Value="b">B</BitBhToggleGroupItem>
+            </BitBhToggleGroup>);
+        cut.FindAll("[role=radio]")[0].Click();
+        Assert.AreEqual("true", cut.FindAll("[role=radio]")[0].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void Single_toggle_group_allows_emptying_by_default_with_pressed_buttons()
+    {
+        // The pressed item can be turned off, which a radio can't be: the items are toggle buttons.
+        // (Previously role="radio" items whose checked radio unchecked itself.)
+        var cut = Render(
+            @<BitBhToggleGroup Type="BitBhToggleGroupType.Single" DefaultValue="a" aria-label="Mode">
+                <BitBhToggleGroupItem Value="a">A</BitBhToggleGroupItem>
+                <BitBhToggleGroupItem Value="b">B</BitBhToggleGroupItem>
+            </BitBhToggleGroup>);
+        Assert.AreEqual("group", cut.Find("[aria-label=Mode]").GetAttribute("role"));
+        Assert.IsEmpty(cut.FindAll("[role=radio]"));
+        Assert.AreEqual("true", cut.FindAll("button")[0].GetAttribute("aria-pressed"));
+
+        cut.FindAll("button")[0].Click();
+        foreach (var b in cut.FindAll("button")) Assert.AreEqual("false", b.GetAttribute("aria-pressed"));
+        // With nothing pressed the first item is the tab stop.
+        Assert.AreEqual("0", cut.FindAll("button")[0].GetAttribute("tabindex"));
+
+        // Toggle buttons don't select on focus.
+        cut.FindAll("button")[0].Press("ArrowRight");
+        foreach (var b in cut.FindAll("button")) Assert.AreEqual("false", b.GetAttribute("aria-pressed"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Multiple_toggle_group_uses_pressed_buttons()
+    {
+        IReadOnlyCollection<string>? values = null;
+        var cut = Render(
+            @<BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" ValuesChanged="v => values = v" aria-label="Style">
+                <BitBhToggleGroupItem Value="bold">B</BitBhToggleGroupItem>
+                <BitBhToggleGroupItem Value="italic">I</BitBhToggleGroupItem>
+            </BitBhToggleGroup>);
+        Assert.AreEqual("group", cut.Find("[aria-label=Style]").GetAttribute("role"));
+        cut.FindAll("button")[0].Click();
+        cut.FindAll("button")[1].Click();
+        Assert.AreSequenceEqual(new[] { "bold", "italic" }, values!.OrderBy(v => v));
+        foreach (var b in cut.FindAll("button")) Assert.AreEqual("true", b.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void Toolbar_is_one_tab_stop_with_arrow_navigation()
+    {
+        var cut = Render(
+            @<BitBhToolbar aria-label="Formatting">
+                <BitBhToolbarButton>Cut</BitBhToolbarButton>
+                <BitBhToolbarButton Disabled="true">Paste</BitBhToolbarButton>
+                <BitBhToolbarSeparator />
+                <BitBhToolbarLink href="/help">Help</BitBhToolbarLink>
+            </BitBhToolbar>);
+
+        var toolbar = cut.Find("[role=toolbar]");
+        Assert.AreEqual("horizontal", toolbar.GetAttribute("aria-orientation"));
+        var stops = cut.TabSequence();
+        Assert.ContainsSingle(stops);
+        Assert.AreEqual("Cut", stops[0].Element.TextContent);
+
+        // Disabled toolbar items stay focusable so they remain discoverable (APG).
+        cut.FindAll("button")[0].Press("ArrowRight");
+        Assert.AreEqual(cut.FindAll("button")[1].Id, this.LastFocusRequest());
+        Assert.AreEqual("true", cut.FindAll("button")[1].GetAttribute("aria-disabled"));
+        cut.FindAll("button")[1].Press("ArrowRight");
+        Assert.AreEqual(cut.Find("a").Id, this.LastFocusRequest());
+        cut.Find("a").Press("ArrowRight"); // wraps
+        Assert.AreEqual(cut.FindAll("button")[0].Id, this.LastFocusRequest());
+        cut.FindAll("button")[0].Press("End");
+        Assert.AreEqual(cut.Find("a").Id, this.LastFocusRequest());
+        Assert.AreEqual("vertical", cut.Find("[role=separator]").GetAttribute("aria-orientation"));
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Toggle_group_inside_a_toolbar_shares_its_tab_stop()
+    {
+        var cut = Render(
+            @<BitBhToolbar aria-label="Formatting">
+                <BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" aria-label="Text style">
+                    <BitBhToggleGroupItem Value="bold">B</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="italic">I</BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+                <BitBhToolbarButton>Share</BitBhToolbarButton>
+            </BitBhToolbar>);
+        // One tab stop for the whole toolbar (document order needs the browser, so not asserted here).
+        Assert.ContainsSingle(cut.TabSequence());
+        cut.ShouldBeAccessible();
+    }
+
+    [TestMethod]
+    public void Single_group_selects_on_arrow_keys_but_not_inside_a_toolbar()
+    {
+        var cut = Render(
+            @<div>
+                <BitBhToggleGroup Type="BitBhToggleGroupType.Single" DefaultValue="left" AllowEmpty="false" aria-label="Standalone">
+                    <BitBhToggleGroupItem Value="left">L</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="right">R</BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+                <BitBhToolbar aria-label="Tools">
+                    <BitBhToggleGroup Type="BitBhToggleGroupType.Single" DefaultValue="left" AllowEmpty="false" aria-label="In toolbar">
+                        <BitBhToggleGroupItem Value="left">L</BitBhToggleGroupItem>
+                        <BitBhToggleGroupItem Value="right">R</BitBhToggleGroupItem>
+                    </BitBhToggleGroup>
+                </BitBhToolbar>
+            </div>);
+
+        // Standalone: a radio group — selection follows focus (APG).
+        cut.Find("[aria-label=Standalone] [role=radio]").Press("ArrowRight");
+        Assert.AreEqual("true", cut.FindAll("[aria-label=Standalone] [role=radio]")[1].GetAttribute("aria-checked"));
+
+        // In a toolbar: arrows only move focus; Space / Enter select (APG toolbar).
+        cut.Find("[aria-label='In toolbar'] [role=radio]").Press("ArrowRight");
+        Assert.AreEqual("true", cut.FindAll("[aria-label='In toolbar'] [role=radio]")[0].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", cut.FindAll("[aria-label='In toolbar'] [role=radio]")[1].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public void Held_keys_do_not_toggle_again()
+    {
+        var pressed = new List<bool>();
+        IReadOnlyCollection<string>? values = null;
+        var cut = Render(
+            @<div>
+                <BitBhToggle As="span" aria-label="Bold" OnPressedChange="p => pressed.Add(p)">B</BitBhToggle>
+                <BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" ValuesChanged="v => values = v" aria-label="Style">
+                    <BitBhToggleGroupItem As="span" Value="italic">I</BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+            </div>);
+
+        var toggle = cut.Find("[aria-label=Bold]");
+        toggle.KeyDown(new KeyboardEventArgs { Key = " ", Type = "keydown" });
+        // Auto-repeat while the key is held must not flip the state back and forth.
+        cut.Find("[aria-label=Bold]").KeyDown(new KeyboardEventArgs { Key = " ", Repeat = true, Type = "keydown" });
+        cut.Find("[aria-label=Bold]").KeyDown(new KeyboardEventArgs { Key = "Enter", Repeat = true, Type = "keydown" });
+        Assert.AreSequenceEqual(new[] { true }, pressed);
+
+        var item = cut.Find("[aria-label=Style] [aria-pressed]");
+        item.KeyDown(new KeyboardEventArgs { Key = " ", Repeat = true, Type = "keydown" });
+        Assert.IsNull(values);
+    }
+
+    [TestMethod]
+    public void Disabled_fieldset_disables_toggles()
+    {
+        var cut = Render(
+            @<BitBhFieldset Disabled="true">
+                <BitBhLegend>Format</BitBhLegend>
+                <BitBhToggle aria-label="Bold">B</BitBhToggle>
+                <BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" aria-label="Style">
+                    <BitBhToggleGroupItem Value="italic">I</BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+            </BitBhFieldset>);
+
+        Assert.IsTrue(cut.Find("[aria-label=Bold]").HasAttribute("disabled"));
+        Assert.IsTrue(cut.Find("[aria-label=Bold]").HasAttribute("data-disabled"));
+        Assert.IsTrue(cut.Find("[aria-label=Style] button").HasAttribute("disabled"));
+        cut.Find("[aria-label=Style] button").Click();
+        Assert.AreEqual("false", cut.Find("[aria-label=Style] button").GetAttribute("aria-pressed"));
+    }
+}

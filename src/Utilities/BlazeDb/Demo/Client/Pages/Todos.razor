@@ -129,7 +129,7 @@
                             <option value="">All categories</option>
                             @foreach (var c in DemoData.Categories)
                             {
-                                <option value="@c">@c (@_todos.CountBy(TodoEntry.Indexes.Category, c))</option>
+                                <option value="@c">@c (@FacetOf(_categoryFacets, c))</option>
                             }
                         </select>
 
@@ -137,7 +137,7 @@
                             <option value="">Any priority</option>
                             @foreach (var p in Enum.GetValues<Priority>())
                             {
-                                <option value="@p">@p (@_todos.CountBy(TodoEntry.Indexes.ByPriority, p))</option>
+                                <option value="@p">@p (@FacetOf(_priorityFacets, p))</option>
                             }
                         </select>
 
@@ -192,13 +192,13 @@
                                                     }
                                                 </select>
                                                 <input class="bb-mono" style="flex: 0 1 90px" type="number" aria-label="Effort" @bind="_editEffort" />
-                                                <button type="button" class="btn btn-primary" @onclick="() => SaveEdit(todo)">
+                                                <button type="button" class="btn btn-primary" @onclick="SaveEdit">
                                                     <Icon Name="check" /> Update
                                                 </button>
                                                 <button type="button" class="btn" @onclick="() => _editing = null">Cancel</button>
                                             </div>
                                             <div class="bd-foot bb-mono">
-                                                table.Update(row) - rewrites the row and every index entry that changed
+                                                table.TryUpdate(edited, comparisonValue: rowAsRead) - writes only if nobody changed the row since the form opened
                                             </div>
                                         </div>
                                     </div>
@@ -269,6 +269,8 @@
                     <dl class="bb-params">
                         <dt>Source</dt>
                         <dd>@_sourceLabel</dd>
+                        <dt>Filter counts</dt>
+                        <dd>CountBy(Category) and CountBy(ByPriority) - every value with its count, one step per value</dd>
                         <dt>IsIndexOrdered</dt>
                         <dd>@_isIndexOrdered.ToString().ToLowerInvariant()</dd>
                         <dt>Matched</dt>
@@ -306,7 +308,7 @@
                             <Icon Name="refresh" /> Upsert a fixed row (idempotent)
                         </button>
                         <button type="button" class="btn btn-secondary" @onclick="DeleteDone">
-                            <Icon Name="trash" /> Delete every done row
+                            <Icon Name="trash" /> DeleteMany - every done row
                         </button>
                         <button type="button" class="btn btn-secondary" @onclick="FlushNow">
                             <Icon Name="download" /> FlushAsync - force durability
@@ -315,7 +317,7 @@
                             <Icon Name="layers" /> CheckpointAsync - snapshot &amp; truncate WAL
                         </button>
                         <button type="button" class="btn bd-btn-danger" @onclick="ClearAll">
-                            <Icon Name="close" /> Delete all rows
+                            <Icon Name="close" /> DeleteAll - every row
                         </button>
                     </div>
                     @if (_maintenance is not null)
@@ -326,8 +328,8 @@
 
                 <Panel Title="View preferences" IconName="database" Sub="a second table, string keys">
                     <p>
-                        The status filter and sort order you pick are written to the
-                        <code>settings</code> table with <code>Upsert</code> and read back with
+                        The status, category and priority filters and the sort order you pick are written to
+                        the <code>settings</code> table with <code>Upsert</code> and read back with
                         <code>Get</code> on load - so they survive a reload alongside your rows.
                     </p>
                     <dl class="bb-params">
@@ -375,8 +377,9 @@
     private bool _showMore;
     private string? _addError;
 
-    // inline edit
+    // inline edit - the row as the form read it is the comparison value for TryUpdate
     private Guid? _editing;
+    private TodoEntry? _editingRow;
     private string _editTitle = "";
     private string _editCategory = "";
     private Priority _editPriority;
@@ -388,6 +391,8 @@
     private int _openCount;
     private int _doneCount;
     private int _uncategorized;
+    private List<KeyValuePair<string?, int>> _categoryFacets = [];
+    private List<KeyValuePair<Priority, int>> _priorityFacets = [];
     private bool _isIndexOrdered;
     private string _queryCode = "";
     private string _sourceLabel = "";
@@ -432,7 +437,11 @@
 
         _openCount = _todos.CountBy(TodoEntry.Indexes.Done, false);
         _doneCount = _todos.CountBy(TodoEntry.Indexes.Done, true);
-        _uncategorized = _todos.Count - DemoData.Categories.Sum(c => _todos.CountBy(TodoEntry.Indexes.Category, c));
+
+        // Facets: every distinct value with its row count, walked from the index's buckets rather than the rows.
+        _categoryFacets = _todos.CountBy(TodoEntry.Indexes.Category).ToList();
+        _priorityFacets = _todos.CountBy(TodoEntry.Indexes.ByPriority).ToList();
+        _uncategorized = _categoryFacets.FirstOrDefault(f => f.Key is null).Value;
 
         var lines = new List<string> { "BlazeDbQuery<Guid, TodoEntry>.From(todos)" };
 
@@ -655,30 +664,35 @@
     private void BeginEdit(TodoEntry todo)
     {
         _editing = todo.Id;
+        _editingRow = todo;
         _editTitle = todo.Title;
         _editCategory = todo.Category ?? "";
         _editPriority = todo.Priority;
         _editEffort = todo.Effort;
     }
 
-    private void SaveEdit(TodoEntry todo)
+    private void SaveEdit()
     {
-        if (_todos is null)
+        if (_todos is null || _editingRow is not { } read)
         {
             return;
         }
 
         var sw = Stopwatch.StartNew();
-        var updated = todo.Clone();
-        updated.Title = string.IsNullOrWhiteSpace(_editTitle) ? todo.Title : _editTitle.Trim();
+        var updated = read.Clone();
+        updated.Title = string.IsNullOrWhiteSpace(_editTitle) ? read.Title : _editTitle.Trim();
         updated.Category = string.IsNullOrEmpty(_editCategory) ? null : _editCategory;
         updated.Priority = _editPriority;
         updated.Effort = _editEffort;
         updated.Duration = TimeSpan.FromMinutes(_editEffort);
 
-        _todos.Update(updated);
-        Track("todos.Update(row)", sw);
+        // Optimistic concurrency: the write lands only while the table still holds the row the form read.
+        Track(_todos.TryUpdate(updated, comparisonValue: read)
+            ? "todos.TryUpdate(edited, comparisonValue: read) → true"
+            : "todos.TryUpdate(edited, comparisonValue: read) → false - the row changed since the form opened; nothing written", sw);
+
         _editing = null;
+        _editingRow = null;
         Refresh();
     }
 
@@ -745,19 +759,13 @@
         }
 
         var sw = Stopwatch.StartNew();
-        var keys = _todos.Lookup(TodoEntry.Indexes.Done, true).Select(t => t.Id).ToList();
 
-        using (var txn = _db.BeginTransaction())
-        {
-            foreach (var key in keys)
-            {
-                _todos.Delete(key);
-            }
-            txn.Commit();
-        }
+        // The keys come straight from an index query over the same table: DeleteMany reads them in full before
+        // the first delete, and removes them atomically - one commit, one log record.
+        var removed = _todos.DeleteMany(_todos.Lookup(TodoEntry.Indexes.Done, true).Select(t => t.Id));
 
-        _maintenance = $"Lookup(Done, true) → {keys.Count} keys\nBeginTransaction → Delete × {keys.Count} → Commit";
-        Track($"{keys.Count} deletes in one transaction", sw);
+        _maintenance = $"todos.DeleteMany(todos.Lookup(Done, true).Select(t => t.Id)) → {removed}\none atomic commit";
+        Track($"{removed} deletes in one commit", sw);
         Refresh();
     }
 
@@ -769,19 +777,10 @@
         }
 
         var sw = Stopwatch.StartNew();
-        var keys = _todos.Scan().Select(t => t.Id).ToList();
+        var removed = _todos.DeleteAll();
 
-        using (var txn = _db.BeginTransaction())
-        {
-            foreach (var key in keys)
-            {
-                _todos.Delete(key);
-            }
-            txn.Commit();
-        }
-
-        _maintenance = $"Scan() → {keys.Count} keys, deleted atomically in one transaction";
-        Track($"cleared {keys.Count} rows", sw);
+        _maintenance = $"todos.DeleteAll() → {removed}, every row in one atomic commit";
+        Track($"cleared {removed} rows", sw);
         Refresh();
     }
 
@@ -890,6 +889,7 @@
         }
 
         _category = Db.GetSetting("todos.category", "");
+        _priorityText = Db.GetSetting("todos.priority", "");
     }
 
     private void SavePreferences()
@@ -897,7 +897,11 @@
         Db.SetSetting("todos.status", _status.ToString());
         Db.SetSetting("todos.sort", _sort.ToString());
         Db.SetSetting("todos.category", _category);
+        Db.SetSetting("todos.priority", _priorityText);
     }
+
+    private static int FacetOf<TValue>(List<KeyValuePair<TValue, int>> facets, TValue value) =>
+        facets.FirstOrDefault(f => EqualityComparer<TValue>.Default.Equals(f.Key, value)).Value;
 
     private void Track(string operation, Stopwatch sw)
     {

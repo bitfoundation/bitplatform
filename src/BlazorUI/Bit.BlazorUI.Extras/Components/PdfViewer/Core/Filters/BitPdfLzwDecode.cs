@@ -85,6 +85,10 @@ internal static class BitPdfLzwDecode
                 break; // corrupt code: bail with the output decoded so far
             }
 
+            if (entry.Length > BitPdfStreamDecoder.MaxDecodedLength - output.Count)
+            {
+                throw new BitPdfFormatException("Decoded stream too large.");
+            }
             output.AddRange(entry);
 
             // The dictionary never exceeds 4096 entries (12-bit codes); stop

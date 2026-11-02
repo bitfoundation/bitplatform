@@ -70,9 +70,9 @@ public partial class BitBadgeStylesheetTests
         // ...and the badge reads them ahead of the colors the variants resolve out of the Color and those variables,
         // so a re-tinted badge that is disabled still reads as disabled, while the rule painting it keeps the weight
         // of a single class a Classes.Badge class can compete with.
-        StringAssert.Contains(stylesheet, "color: var(--bit-bdg-dis-txt, var(--bit-bdg-cnt-clr-txt));");
         // The hover and press of a clickable badge only move a variable read between the two, so a Classes.Badge
         // class painting the badge keeps that paint under the pointer.
+        StringAssert.Contains(stylesheet, "color: var(--bit-bdg-dis-txt, var(--bit-bdg-cnt-sfg, var(--bit-bdg-cnt-clr-txt)));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-sbg, var(--bit-bdg-cnt-clr-bg)));");
         StringAssert.Contains(stylesheet, "border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-sbr, var(--bit-bdg-cnt-clr-brd)));");
         Assert.IsFalse(stylesheet.Contains("\n.bit-bdg.bit-dis .bit-bdg-ctn {"), "The disabled colors are set by a heavier rule of their own.");
@@ -197,6 +197,42 @@ public partial class BitBadgeStylesheetTests
                        $"{selector} reads the variables of another variant.");
     }
 
+    [TestMethod,
+        DataRow(".bit-bdg-otl", "outline"),
+        DataRow(".bit-bdg-txt", "text")]
+    public void BitBadgeShouldDrawTheCountOfAnUnfilledVariantInTheRoleTextColor(string selector, string variant)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The count of an Outline or Text badge sits on the page rather than on the role's fill, so it is drawn in the
+        // role's text color: a secondary or a warning main is picked to fill a surface and is under 3:1 as text on white.
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+        StringAssert.Contains(block, $"--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-fg, var(--bit-Badge-{variant}-color, var(--bit-Badge-color, #{{$clr-pri}})));");
+
+        // A clickable one is hovered and pressed on a wash of the role - its tint, the surface that text color is solved to
+        // be read on - rather than on its light tier, a pastel which in a dark palette is as light as the text.
+        StringAssert.Contains(block, $"--bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-tint, var(--bit-Badge-{variant}-hover-background, ");
+        StringAssert.Contains(block, "#{$clr-pri-tint})))));");
+        StringAssert.Contains(block, $"--bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-tint-active, var(--bit-Badge-{variant}-active-background, ");
+        StringAssert.Contains(block, "#{translucent($clr-pri, 16%)})))))));");
+        StringAssert.DoesNotMatch(block, new Regex("clr-[a-z-]*light"));
+
+        // Over that wash the count is drawn in the role's fg, the primary role's too: its main, which the count keeps at
+        // rest, drops under 4.5:1 on its own tint. Both states hand it over through a variable, never as a paint.
+        StringAssert.Contains(block, $"--bit-bdg-cnt-clr-txt-wash: var(--bit-bdg-clr-wash-fg, var(--bit-Badge-{variant}-color, var(--bit-Badge-color, #{{$clr-pri-fg}})));");
+        var clickable = SourceFiles.GetScssBlock(stylesheet, "\n.bit-bdg-clk {");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(clickable, "&:hover {"), "--bit-bdg-cnt-sfg: var(--bit-bdg-cnt-clr-txt-wash);");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(clickable, "&:active {"), "--bit-bdg-cnt-sfg: var(--bit-bdg-cnt-clr-txt-wash);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bdg-ctn {"), "--bit-bdg-cnt-sfg: initial;");
+        Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n.bit-bdg-fil {").Contains("--bit-bdg-cnt-clr-txt-wash"), "A Fill badge keeps the count it has at rest.");
+
+        var roles = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-bdg-#{$role} {");
+        StringAssert.Contains(roles, "--bit-bdg-clr-fg: #{role-text($role, $tokens)};");
+        StringAssert.Contains(roles, "--bit-bdg-clr-wash-fg: #{role($tokens, fg)};");
+        StringAssert.Contains(roles, "--bit-bdg-clr-tint: #{role-wash($tokens)};");
+        StringAssert.Contains(roles, "--bit-bdg-clr-tint-active: #{role-wash($tokens, 16%)};");
+    }
+
     [TestMethod]
     public void BitBadgeShouldPublishItsColorSizeAndShapeOnlyWhereTheyAreSet()
     {
@@ -205,8 +241,10 @@ public partial class BitBadgeStylesheetTests
         // A badge can sit in the child content of another one, which must not inherit the outer badge's Color, Size or
         // Shape: each root starts the values those classes publish out unset, and the classes - declared further down
         // at the same weight - still win on the root that carries them.
-        foreach (var property in new[] { "--bit-bdg-clr", "--bit-bdg-clr-txt", "--bit-bdg-clr-dis", "--bit-bdg-clr-dis-text", "--bit-bdg-clr-hover",
-                                         "--bit-bdg-clr-active", "--bit-bdg-clr-light", "--bit-bdg-clr-light-hover", "--bit-bdg-clr-fcs",
+        foreach (var property in new[] { "--bit-bdg-clr", "--bit-bdg-clr-fg", "--bit-bdg-clr-wash-fg", "--bit-bdg-clr-txt", "--bit-bdg-clr-dis", "--bit-bdg-clr-dis-text",
+                                         "--bit-bdg-clr-hover", "--bit-bdg-clr-active", "--bit-bdg-clr-tint", "--bit-bdg-clr-tint-active", "--bit-bdg-clr-fcs",
+                                         // Only Outline and Text declare it, so a Fill badge in another one's child content does not inherit it.
+                                         "--bit-bdg-cnt-clr-txt-wash",
                                          "--bit-bdg-height", "--bit-bdg-padding", "--bit-bdg-fontsize", "--bit-bdg-dotsize", "--bit-bdg-radius" })
         {
             StringAssert.Contains(root, $"{property}: initial;");

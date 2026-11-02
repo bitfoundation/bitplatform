@@ -192,14 +192,55 @@ public sealed class AdversarialFilterTests
     {
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(-1f));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BlurFilter(float.PositiveInfinity));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(-1f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(float.PositiveInfinity));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, 0f));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.NaN));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new SharpenFilter(1f, float.PositiveInfinity));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new MedianFilter(0));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new MedianFilter(6));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PosterizeFilter(257));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(0f));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new GammaAdjustment(-1f));
+    }
+
+    [TestMethod]
+    public void AnAbsurdBlurRadiusFinishesAtOnce()
+    {
+        using var src = Noise(600, 400, 5);
+        foreach (var filter in new IImageOperation[] { new BlurFilter(1e7f), new SharpenFilter(0.5f, 1e7f), new HighPassFilter(1e7f), new BlurFilter(5e8f, new Rectangle(10, 10, 3, 300)) })
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            using var result = filter.Apply(src, OperationContext.Default);
+            Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"{filter.Name} took {watch.ElapsedMilliseconds} ms.");
+            Assert.AreEqual(src.Size, result.Size);
+            // A blur that did nothing would leave the sharpen nothing to add.
+            if (filter is SharpenFilter) Assert.IsGreaterThan(0, TestImages.MaxChannelDifference(src, result), "The sharpen changed no pixel.");
+        }
+    }
+
+    [TestMethod]
+    public void ScalingAnAbsurdBlurRadiusUpStaysFinite()
+    {
+        var scaled = (BlurFilter)new BlurFilter(float.MaxValue).ForScale(4);
+        Assert.AreEqual(float.MaxValue, scaled.Radius);
+    }
+
+    /// <summary>Past about a billion pixels the box radii overflowed and the blur did nothing at all.</summary>
+    [TestMethod]
+    public void ABlurRadiusTooWideForTheBoxesStillBlurs()
+    {
+        using var src = Noise(60, 40, 7);
+        using var widest = new BlurFilter(1e8f).Apply(src, OperationContext.Default);
+        Assert.IsGreaterThan(10, TestImages.MaxChannelDifference(src, widest));
+        foreach (var radius in new[] { 2e9f, 1e20f, float.MaxValue })
+        {
+            using var result = new BlurFilter(radius).Apply(src, OperationContext.Default);
+            Assert.AreEqual(0, TestImages.MaxChannelDifference(widest, result), $"radius {radius}");
+        }
     }
 
     /// <summary>A blur must preserve the average colour of a flat region and must not tint it.</summary>

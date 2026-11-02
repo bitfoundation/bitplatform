@@ -3,22 +3,30 @@
 @if (Shortcut is not null)
 {
     var chords = Shortcut.DisplayTokens(IsMac);
-    <span class="bit-balette-shortcut @Class" data-balette="shortcut" aria-label="@Shortcut.ToDisplayString(IsMac)">
-        @for (var c = 0; c < chords.Count; c++)
-        {
-            if (c > 0)
+    var then = Then;
+    @* Key caps read left to right in every language, as on the keys themselves; screen readers get the words instead
+       of the caps (an aria-label on a span is ignored by most of them). *@
+    <span class="bit-balette-shortcut @Class" data-balette="shortcut" dir="ltr">
+        <span class="bit-balette-sr-only">@Shortcut.ToDisplayString(IsMac, then)</span>
+        <span class="bit-balette-shortcut-keys" aria-hidden="true">
+            @for (var c = 0; c < chords.Count; c++)
             {
-                <span class="bit-balette-shortcut-then" aria-hidden="true">then</span>
+                if (c > 0)
+                {
+                    <span class="bit-balette-shortcut-then">@then</span>
+                }
+                foreach (var token in chords[c])
+                {
+                    <kbd class="bit-balette-kbd">@token</kbd>
+                }
             }
-            foreach (var token in chords[c])
-            {
-                <kbd class="bit-balette-kbd">@token</kbd>
-            }
-        }
+        </span>
     </span>
 }
 
 @code {
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
     /// <summary>Shortcut to render. Accepts a <see cref="BaletteKeyboardShortcut"/> (strings convert implicitly).</summary>
     [Parameter, EditorRequired] public BaletteKeyboardShortcut? Shortcut { get; set; }
 
@@ -27,4 +35,9 @@
 
     /// <summary>Extra CSS class on the hint.</summary>
     [Parameter] public string? Class { get; set; }
+
+    /// <summary>The strings to use; by default <see cref="BaletteOptions.Strings"/>.</summary>
+    [Parameter] public BaletteStrings? Strings { get; set; }
+
+    private string Then => (Strings ?? (Services.GetService(typeof(BaletteOptions)) as BaletteOptions)?.Strings)?.ShortcutThen ?? "then";
 }

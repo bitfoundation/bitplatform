@@ -35,6 +35,16 @@ public static class BaletteSearchLab
     /// <summary>The most commands one answer reports on.</summary>
     public const int MaxLimit = 200;
 
+    /// <summary>The longest commands argument one inspection reads: <see cref="MaxCommands"/> commands with their fields fit in far less.</summary>
+    public const int MaxCommandsLength = 64 * 1024;
+
+    /// <summary>
+    /// The longest query argument one inspection reads, spaces and a mode's prefix included. What is searched of it is
+    /// what <see cref="BaletteQuery.Parse"/> searches - at most <see cref="BaletteQuery.MaxLength"/> characters, the spaces
+    /// around them aside - and the lab refuses what Parse refuses.
+    /// </summary>
+    public const int MaxQueryLength = 4 * 1024;
+
     /// <summary>The matchers this tool can run, as the demo's own search lab offers them.</summary>
     public static readonly string[] Matchers = ["fuzzy", "fuzzy-ignore-case", "substring"];
 
@@ -59,7 +69,20 @@ public static class BaletteSearchLab
     {
         query ??= string.Empty;
 
+        // Past a limit the answer says why instead of searching - an exception would reach an agent as a bare
+        // "An error occurred" and the HTTP mirror as a 500, neither of which says what to change.
+        if (query.Length > MaxQueryLength)
+        {
+            return Refused(matcher, $"The query is {query.Length:N0} characters long; the lab reads at most {MaxQueryLength:N0}, so nothing was searched. BaletteQuery.Parse searches at most {BaletteQuery.MaxLength} (BaletteQuery.MaxLength), the spaces around them aside.");
+        }
+
+        if (commands?.Length > MaxCommandsLength)
+        {
+            return Refused(matcher, $"commands is {commands.Length:N0} characters long; the lab reads at most {MaxCommandsLength:N0}, so nothing was searched. A ranking question needs the handful of commands it is about, not a whole registry.");
+        }
+
         var notes = new List<string>();
+        var typed = query;
 
         BaletteOptions options;
         List<BaletteCommand> candidates;
@@ -80,13 +103,22 @@ public static class BaletteSearchLab
             source = $"the {candidates.Count} commands passed in, ranked with the default BaletteOptions";
         }
 
+        // The library's own parser, once for every command as the palette parses once per keystroke - so phrases and
+        // alternatives are described exactly as the palette matches them, and a query is too long exactly where the
+        // palette's is: in a mode, what follows its prefix.
+        var parsed = BaletteQuery.Parse(query);
+        if (parsed.IsTooLong)
+        {
+            return Refused(matcher, $"The query is {query.Trim().Length:N0} characters long without the spaces around it{(query.Length < typed.Length ? " and its mode's prefix" : string.Empty)}; BaletteQuery.Parse searches at most {BaletteQuery.MaxLength} (BaletteQuery.MaxLength) and matches nothing past it, so nothing was searched.");
+        }
+
         var (matcherName, matcherInstance) = ResolveMatcher(matcher, notes);
         var weights = options.Weights;
 
         // What the palette calls a query: the text without surrounding spaces. Only then does it decide
         // whether there is one - a query of spaces is the empty query, ordered by priority alone.
         var hasQuery = query.Trim().Length > 0;
-        var terms = Split(query).Select(raw => DescribeTerm(raw, matcherInstance)).ToArray();
+        var terms = parsed.Terms.Select(term => DescribeTerm(term, matcherInstance)).ToArray();
 
         var hidden = candidates.Where(command => command.IsVisible?.Invoke() == false).ToList();
         var visible = candidates.Where(command => command.IsVisible?.Invoke() != false).ToList();
@@ -96,7 +128,7 @@ public static class BaletteSearchLab
 
         foreach (var command in visible)
         {
-            if (matcherInstance.Match(command, query, weights) is { } match) matches.Add(match);
+            if (matcherInstance.Match(command, parsed, weights) is { } match) matches.Add(match);
             else if (command.AlwaysShow) matches.Add(new BaletteMatch(command, double.NegativeInfinity, [], [], null));
             else unmatched.Add(command);
         }
@@ -349,32 +381,52 @@ public static class BaletteSearchLab
     }
 
     /// <summary>The query's terms, split exactly where the palette splits them: on spaces.</summary>
-    private static string[] Split(string query) => query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     /// <summary>
     /// One term with the operator its first or last character gives it - the syntax the guide documents
     /// (<c>'exact</c>, <c>^prefix</c>, <c>suffix$</c>, <c>!negate</c>; a lone operator character is a
     /// plain term) - and whether it matches case-sensitively.
     /// </summary>
-    private static BaletteQueryTermDto DescribeTerm(string raw, IBaletteMatcher matcher)
+    private static BaletteQueryTermDto DescribeTerm(BaletteQueryTerm term, IBaletteMatcher matcher)
     {
         var plain = matcher is BaletteSubstringMatcher ? "substring" : "fuzzy";
+        var phrase = term.Text.Contains(' ');
 
-        var (term, op) = raw.Length > 1 ? raw[0] switch
+        // The term as it is written: its operator characters put back, a phrase in quotes.
+        var (text, op) = term.Operator switch
         {
-            '!' => (raw[1..], "negate"),
-            '\'' => (raw[1..], "exact"),
-            '^' => (raw[1..], "prefix"),
-            _ when raw[^1] == '$' => (raw[..^1], "suffix"),
-            _ => (raw, plain)
-        } : (raw, plain);
+            BaletteQueryOperator.Negate => (phrase ? $"!\"{term.Text}\"" : "!" + term.Text, "negate"),
+            BaletteQueryOperator.Exact => (phrase ? $"\"{term.Text}\"" : "'" + term.Text, "exact"),
+            BaletteQueryOperator.Prefix => (phrase ? $"^\"{term.Text}\"" : "^" + term.Text, "prefix"),
+            BaletteQueryOperator.Suffix => (phrase ? $"\"{term.Text}\"$" : term.Text + "$", "suffix"),
+            _ => (term.Text, plain),
+        };
 
         return new BaletteQueryTermDto
         {
-            Text = raw,
-            Term = term,
+            Text = text,
+            Term = term.Text,
             Operator = op,
-            CaseSensitive = op == "fuzzy" && matcher is BaletteFuzzyMatcher { IgnoreCase: false } && term.Any(char.IsUpper)
+            CaseSensitive = op == "fuzzy" && matcher is BaletteFuzzyMatcher { IgnoreCase: false } && term.Text.Any(char.IsUpper)
+        };
+    }
+
+    /// <summary>The answer to an inspection past the lab's limits: nothing searched, and why, first among the notes.</summary>
+    private static BaletteSearchInspectionDto Refused(string? matcher, string reason)
+    {
+        List<string> notes = [reason];
+        var (matcherName, _) = ResolveMatcher(matcher, notes);
+
+        return new BaletteSearchInspectionDto
+        {
+            Terms = [],
+            Matcher = matcherName,
+            Commands = "none: the input is past the lab's limits",
+            Ranking = "nothing was ranked",
+            Searched = 0,
+            Matched = 0,
+            Results = [],
+            Notes = [.. notes]
         };
     }
 

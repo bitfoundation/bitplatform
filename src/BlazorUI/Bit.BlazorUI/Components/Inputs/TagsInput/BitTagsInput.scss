@@ -99,7 +99,7 @@
 // label, affix and helper colors - stays the variables'. A state the field is in (disabled, invalid, a refused
 // tag) still paints over all of them, as before.
 
-$tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, iconsize, helperfontsize, tagfontsize,
+$tgi-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-focus, gap, fontsize, iconsize, helperfontsize, tagfontsize,
                          minheight, padding, tagminheight, tagpadding;
 
 .bit-tgi {
@@ -651,38 +651,41 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
     --bit-tgi-tag-bg-hover-dft: #{$clr-pri-hover};
 }
 
-//Outline: the chip is left unfilled and the color is drawn as its rule and its text.
+//Outline: the chip is left unfilled and the color is drawn as its rule and its text. The text is read on the
+//field rather than over the role's fill, so it is the role's text color (clr-fg) - kept under the pointer as a
+//BitTag keeps it, while the rule moves to the hover color.
 .bit-tgi-tgo {
-    --bit-tgi-tag-clr: var(--bit-tgi-clr);
+    --bit-tgi-tag-clr: var(--bit-tgi-clr-fg);
     --bit-tgi-tag-brd: var(--bit-tgi-clr);
     --bit-tgi-tag-bg: initial;
     --bit-tgi-tag-ring: var(--bit-tgi-clr);
-    --bit-tgi-tag-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tag-clr-hover: var(--bit-tgi-clr-fg);
     --bit-tgi-tag-brd-hover: var(--bit-tgi-clr-hover);
     --bit-tgi-tag-bg-hover: initial;
     --bit-tgi-tag-clr-dft: #{$clr-pri};
     --bit-tgi-tag-brd-dft: #{$clr-pri};
     --bit-tgi-tag-bg-dft: transparent;
     --bit-tgi-tag-ring-dft: #{$clr-pri};
-    --bit-tgi-tag-clr-hover-dft: #{$clr-pri-hover};
+    --bit-tgi-tag-clr-hover-dft: #{$clr-pri};
     --bit-tgi-tag-brd-hover-dft: #{$clr-pri-hover};
     --bit-tgi-tag-bg-hover-dft: transparent;
 }
 
-//Text: only the text of the chip is painted, for tags that should not outweigh the field holding them.
+//Text: only the text of the chip is painted, for tags that should not outweigh the field holding them - in the
+//role's text color, at rest and under the pointer alike, as in Outline.
 .bit-tgi-tgt {
-    --bit-tgi-tag-clr: var(--bit-tgi-clr);
+    --bit-tgi-tag-clr: var(--bit-tgi-clr-fg);
     --bit-tgi-tag-brd: initial;
     --bit-tgi-tag-bg: initial;
     --bit-tgi-tag-ring: var(--bit-tgi-clr);
-    --bit-tgi-tag-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tag-clr-hover: var(--bit-tgi-clr-fg);
     --bit-tgi-tag-brd-hover: initial;
     --bit-tgi-tag-bg-hover: initial;
     --bit-tgi-tag-clr-dft: #{$clr-pri};
     --bit-tgi-tag-brd-dft: transparent;
     --bit-tgi-tag-bg-dft: transparent;
     --bit-tgi-tag-ring-dft: #{$clr-pri};
-    --bit-tgi-tag-clr-hover-dft: #{$clr-pri-hover};
+    --bit-tgi-tag-clr-hover-dft: #{$clr-pri};
     --bit-tgi-tag-brd-hover-dft: transparent;
     --bit-tgi-tag-bg-hover-dft: transparent;
 }
@@ -982,10 +985,14 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
 
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only
-// by an explicit Color; an unset one is the primary role, which every read spells out after the variables.
+// by an explicit Color; an unset one is the primary role, which every read spells out after the variables. The
+// text of an Outline or Text chip is read on the field rather than over the role's fill, so it is drawn in the
+// role's text color (role-text) - a secondary or a warning main is picked to fill a surface and falls under the
+// 4.5:1 of body text on white - while the rule and the focus ring keep the main.
 @each $role, $tokens in $bit-color-roles {
     .bit-tgi-#{$role} {
         --bit-tgi-clr: #{role($tokens, main)};
+        --bit-tgi-clr-fg: #{role-text($role, $tokens)};
         --bit-tgi-clr-txt: #{role($tokens, on)};
         --bit-tgi-clr-hover: #{role($tokens, hover)};
         --bit-tgi-clr-focus: #{role($tokens, focus)};

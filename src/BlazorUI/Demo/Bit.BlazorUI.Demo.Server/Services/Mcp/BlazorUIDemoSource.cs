@@ -103,7 +103,7 @@ public static partial class BlazorUIDemoSource
         return new DemoPageSource(
             Description: page is null ? null : Attribute(page, "Description"),
             Notes: page is null ? null : Attribute(page, "Notes") ?? TemplateText(page, "notestemplate"),
-            SourceUrl: page is null ? null : Attribute(page, "GitHubUrl") ?? Attribute(page, "GitHubExtrasUrl") ?? Attribute(page, "GitHubLegacyUrl"),
+            SourceUrl: page is null ? null : Attribute(page, "GitHubUrl") ?? Attribute(page, "GitHubExtrasUrl") ?? Attribute(page, "GitHubLegacyUrl") ?? Attribute(page, "GitHubAIUrl"),
             DemoUrl: page is null ? null : Attribute(page, "GitHubDemoUrl"),
             Examples: examples);
     }
@@ -182,7 +182,8 @@ public static partial class BlazorUIDemoSource
     {
         var value = node.GetAttributeValue(name, null);
 
-        return string.IsNullOrWhiteSpace(value) ? null : Collapse(WebUtility.HtmlDecode(value));
+        // The attribute is read out of the .razor source, where a literal @ is written as the escape @@.
+        return string.IsNullOrWhiteSpace(value) ? null : Collapse(WebUtility.HtmlDecode(value).Replace("@@", "@", StringComparison.Ordinal));
     }
 
     /// <summary>The text of a <c>&lt;NotesTemplate&gt;</c>, for the pages that write their notes as markup.</summary>

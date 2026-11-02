@@ -46,6 +46,21 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return PrerenderedAnimationElapsedMs;
     }
 
+    /// <summary>
+    /// What <see cref="GetWaapiPlayhead"/> answers: where the browser has really got with an offloaded animation, and
+    /// whether its start is final. Null (the default) is "can't tell", which leaves the engine on its own clock.
+    /// </summary>
+    public Func<string, int, (double PlayedMs, bool Final)?>? WaapiPlayhead { get; set; }
+
+    /// <summary>How many times the engine has asked <see cref="GetWaapiPlayhead"/>.</summary>
+    public int WaapiPlayheadReads { get; private set; }
+
+    public (double PlayedMs, bool Final)? GetWaapiPlayhead(string elementId, int token)
+    {
+        WaapiPlayheadReads++;
+        return WaapiPlayhead?.Invoke(elementId, token);
+    }
+
     /// <summary>Value returned by <see cref="PrefersReducedMotionAsync"/>.</summary>
     public bool PrefersReducedMotion { get; set; }
 
@@ -128,8 +143,16 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── rAF loop ──────────────────────────────────────────────────────────────
+    /// <summary>How many of the next loop starts fail, as a bridge that isn't reachable yet makes them.</summary>
+    public int RafLoopStartFailures { get; set; }
+
     public ValueTask StartRafLoopAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef) where T : class
     {
+        if (RafLoopStartFailures > 0)
+        {
+            RafLoopStartFailures--;
+            return ValueTask.FromException(new JSException("the bridge isn't loaded yet"));
+        }
         RafLoopRef = dotnetRef.Value;
         RafLoopReference = dotnetRef;
         Record("startRafLoop");
@@ -187,6 +210,42 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     public ValueTask PopLayoutAsync(string elementId, double currentX, double currentY)
     {
         Record("popLayout", elementId, currentX, currentY);
+        return ValueTask.CompletedTask;
+    }
+
+    /// <summary>What each reorder item's keyboard listener calls back into, by element id.</summary>
+    public readonly Dictionary<string, object> ReorderKeyRefs = new();
+
+    public ValueTask AttachReorderKeysAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+        string elementId, DotNetObjectReference<T> dotnetRef, string axis, string? handleSelector) where T : class
+    {
+        Record("attachReorderKeys", elementId, axis, handleSelector);
+        ReorderKeyRefs[elementId] = dotnetRef.Value;
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask DetachReorderKeysAsync(string elementId)
+    {
+        Record("detachReorderKeys", elementId);
+        ReorderKeyRefs.Remove(elementId);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask FocusAsync(string elementId)
+    {
+        Record("focusElement", elementId);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask AnnounceAsync(string text)
+    {
+        Record("announce", text);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask SetInertAsync(string elementId, bool inert)
+    {
+        Record("setInert", elementId, inert);
         return ValueTask.CompletedTask;
     }
 
@@ -283,6 +342,81 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return ValueTask.CompletedTask;
     }
 
+    public async ValueTask<BmotionBoundingRect?> MeasureAndHoldLayoutAsync(string elementId, BmotionMeasureOptions options,
+        bool translate, bool scale, double anchorX, double anchorY)
+    {
+        Record("measureAndHoldLayout", elementId, options, translate, scale, anchorX, anchorY);
+        if (BoundingRectGate is { } gate) await gate;
+        return BoundingRectProvider?.Invoke(elementId);
+    }
+
+    public ValueTask ReleaseLayoutHoldAsync(string elementId)
+    {
+        Record("releaseLayoutHold", elementId);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask PlayLayoutCrossfadeAsync(string leadId, string followId, double dx, double dy, double sx, double sy,
+        double durationMs, string easingStr, double originX, double originY)
+    {
+        Record("playLayoutCrossfade", leadId, followId, dx, dy, sx, sy, durationMs, easingStr, originX, originY);
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask CancelLayoutCrossfadeAsync(string elementId)
+    {
+        Record("cancelLayoutCrossfade", elementId);
+        return ValueTask.CompletedTask;
+    }
+
+    // ── Reading the page ──────────────────────────────────────────────────────
+    /// <summary>
+    /// The computed style the fake page shows: <c>(elementId, property) → value</c>, or <c>null</c> for a property
+    /// it has no value for. Defaults to nothing read.
+    /// </summary>
+    public Func<string, string, string?>? ComputedStyle { get; set; }
+
+    /// <summary>What the fake stylesheet gives a property with its inline declaration lifted. Defaults to <see cref="ComputedStyle"/>.</summary>
+    public Func<string, string, string?>? StylesheetStyle { get; set; }
+
+    /// <summary>When set, <see cref="ReadStylesAsync"/> waits for it - the round trip a read is on Blazor Server, held open.</summary>
+    public Task? ReadStylesGate { get; set; }
+
+    /// <summary>The natural (<c>auto</c>) size of a property: <c>(elementId, property) → value</c>. Defaults to nothing read.</summary>
+    public Func<string, string, string?>? AutoStyle { get; set; }
+
+    public async ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet)
+    {
+        Record("readStyles", elementId, current, stylesheet);
+        if (ReadStylesGate is { } gate) await gate;
+        return Read(elementId, current, stylesheet, []);
+    }
+
+    public async ValueTask<BmotionStyleRead?> ReadStylesAsync(string elementId, string[] current, string[] stylesheet, string[] auto)
+    {
+        Record("readStyles", elementId, current, stylesheet, auto);
+        if (ReadStylesGate is { } gate) await gate;
+        return Read(elementId, current, stylesheet, auto);
+    }
+
+    private BmotionStyleRead? Read(string elementId, string[] current, string[] stylesheet, string[] auto)
+    {
+        if (ComputedStyle is null && StylesheetStyle is null && AutoStyle is null) return null;
+        Dictionary<string, string> Collect(string[] keys, Func<string, string, string?>? source)
+        {
+            var read = new Dictionary<string, string>();
+            foreach (var key in keys)
+                if (source?.Invoke(elementId, key) is { } value) read[key] = value;
+            return read;
+        }
+        return new BmotionStyleRead
+        {
+            Current = Collect(current, ComputedStyle),
+            Stylesheet = Collect(stylesheet, StylesheetStyle ?? ComputedStyle),
+            Auto = Collect(auto, AutoStyle),
+        };
+    }
+
     // ── WAAPI compositor offload ──────────────────────────────────────────────
     public ValueTask<bool> SupportsLinearEasingAsync()
     {
@@ -290,15 +424,28 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return ValueTask.FromResult(SupportsLinearEasing);
     }
 
+    /// <summary>Value returned by <see cref="SupportsOklabColorAsync"/>.</summary>
+    public bool SupportsOklab { get; set; } = true;
+
+    public ValueTask<bool> SupportsOklabColorAsync() => ValueTask.FromResult(SupportsOklab);
+
     /// <summary>A compositor animation the fake browser is "playing" (default handler only).</summary>
     public sealed record WaapiAnimation(string ElementId, int Token, TaskCompletionSource<bool> Completion);
 
     /// <summary>Every compositor animation started through the default handler, in start order.</summary>
     public List<WaapiAnimation> WaapiAnimations { get; } = new();
 
+    /// <summary>
+    /// <c>false</c> models a browser without the Web Animations API: every animation the engine hands it fails to
+    /// start, and the engine plays it on the frame loop instead - which is how the tests of runtime-independent
+    /// semantics (gesture reverts, playback control, frame output) drive the frame loop by hand.
+    /// </summary>
+    public bool WebAnimationsSupported { get; set; } = true;
+
     public ValueTask<bool> PlayWaapiAnimationAsync(string elementId, int token, object keyframes, object timing)
     {
         Record("playWaapiAnimation", elementId, token, keyframes, timing);
+        if (!WebAnimationsSupported) return ValueTask.FromResult(false);
         if (PlayWaapiHandler is { } handler)
             return new ValueTask<bool>(handler(elementId, token, keyframes, timing));
 
@@ -336,6 +483,12 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
 
     // Implemented (rather than left to the interface's no-op default) so a test can see the rate
     // the engine handed the browser's compositor animations.
+    public ValueTask SeekWaapiAnimationsAsync(string elementId, double playedMs)
+    {
+        Record("seekWaapiAnimations", elementId, playedMs);
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask SetWaapiPlaybackRateAsync(string elementId, double rate)
     {
         Record("setWaapiPlaybackRate", elementId, rate);
@@ -356,14 +509,21 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     }
 
     // ── Scroll ────────────────────────────────────────────────────────────────
-    public ValueTask<string?> ObserveScrollAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class
+    /// <summary>
+    /// When set, <see cref="ObserveScrollAsync"/> waits for it before answering, so a test can hold
+    /// a subscription mid-setup while the tracker is disposed.
+    /// </summary>
+    public Task? ObserveScrollGate { get; set; }
+
+    public async ValueTask<string?> ObserveScrollAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(string? containerId, DotNetObjectReference<T> dotnetRef, object? options = null) where T : class
     {
         var key = "scroll-key-" + (++_scrollKeySeq);
         // Keyed by subscription so a test can fire OnScroll through the exact ref JS would hold.
         ScrollRefs[key] = dotnetRef.Value;
         ScrollReferences[key] = dotnetRef;
         Record("observeScroll", containerId, options, key);
-        return ValueTask.FromResult<string?>(key);
+        if (ObserveScrollGate is { } gate) await gate;
+        return key;
     }
 
     public ValueTask UnobserveScrollAsync(string key)
@@ -385,6 +545,24 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return ValueTask.FromResult(RefResolver(elementReference));
     }
 
+    /// <summary>
+    /// The ids, among those a resolve returns, of elements the page reports the engine has never addressed: an element
+    /// rendered again in place of one that had its id. None by default.
+    /// </summary>
+    public Func<string[], string[]> NewElements { get; set; } = static _ => [];
+
+    async ValueTask<(string[] Ids, string[] NewIds)> IBmotionInterop.ResolveBySelectorAsync(string selector)
+    {
+        var ids = await ResolveOrRegisterBySelectorAsync(selector);
+        return (ids, NewElements(ids));
+    }
+
+    async ValueTask<(string Id, bool IsNew)> IBmotionInterop.ResolveByRefAsync(ElementReference elementReference)
+    {
+        var id = await ResolveOrRegisterByRefAsync(elementReference);
+        return (id, NewElements([id]).Contains(id));
+    }
+
     /// <summary>Simulates native support for the View Transitions API (false = fallback path).</summary>
     public bool SupportsViewTransitions { get; set; }
 
@@ -401,6 +579,15 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
                 $"'{typeof(T).Name}' has no [JSInvokable] method with identifier '{callbackName}'.");
         if (method.Invoke(dotnetRef.Value, null) is Task task) await task;
         return SupportsViewTransitions;
+    }
+
+    /// <summary>The view transition types the last typed <c>startViewTransition</c> was given.</summary>
+    public string[]? ViewTransitionTypes { get; private set; }
+
+    public ValueTask<bool> StartViewTransitionAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(DotNetObjectReference<T> dotnetRef, string callbackName, string[] types) where T : class
+    {
+        ViewTransitionTypes = types;
+        return StartViewTransitionAsync(dotnetRef, callbackName);
     }
 
     private static MethodInfo? FindJsInvokable([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type, string identifier)

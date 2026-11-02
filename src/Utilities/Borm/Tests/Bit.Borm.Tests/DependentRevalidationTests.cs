@@ -45,6 +45,34 @@ public class DependentRevalidationTests
     }
 
     [TestMethod]
+    public async Task Before_the_first_submit_a_form_that_validates_on_submit_judges_no_dependent_either()
+    {
+        // Visited and left in agreement, then the password changed: "OnSubmit" means nothing is said until the
+        // user sends the form, and the dependent's revalidation had said "do not match" all the same.
+        var state = new BormState(Passwords(), new BormDictionaryDataAccessor()) { ValidationTrigger = BormValidationTrigger.OnSubmit };
+        state.SetValue("Password", "hunter2");
+        state.SetValue("Confirm", "hunter2");
+        state.MarkTouched("Confirm");
+
+        state.SetValue("Password", "hunter3");
+        await state.ValidateDependentsAsync("Password");
+
+        Assert.IsEmpty(state.MessagesFor("Confirm"));
+    }
+
+    [TestMethod]
+    public async Task Checking_one_field_from_outside_the_form_shows_what_it_found()
+    {
+        // React Hook Form's trigger(name): asked for, so shown - not recorded for a field the user has not visited.
+        var state = Form(Passwords());
+
+        Assert.IsTrue(await state.ValidateFieldAsync("Password"));
+
+        Assert.IsTrue(state.IsTouched("Password"));
+        Assert.IsTrue(state.GetFieldState("Password").IsInvalid);
+    }
+
+    [TestMethod]
     public async Task Breaking_the_match_from_the_other_side_is_reported()
     {
         var state = Form(Passwords());

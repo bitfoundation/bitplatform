@@ -652,13 +652,31 @@ public class ProductsController : ControllerBase
 {
     private static readonly Random _random = new Random();
 
+    // Bound what a client may ask for: $top (applied by hand below) and the matchesPattern function,
+    // whose regular expression would otherwise run against every row.
+    private static readonly ODataValidationSettings _validationSettings = new()
+    {
+        MaxTop = 1000,
+        AllowedFunctions = AllowedFunctions.AllFunctions & ~AllowedFunctions.MatchesPattern
+    };
+
     private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
         .Select(i => new ProductDto { Id = i, Name = Guid.NewGuid().ToString(""N""), Price = _random.Next(1, 100) })
         .ToArray();
 
     [HttpGet]
-    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
+        // A query past the limits is the client's mistake: a 400 that says why, not a 500.
+        try
+        {
+            odataQuery.Validate(_validationSettings);
+        }
+        catch (Microsoft.OData.ODataException exception)
+        {
+            return BadRequest(exception.Message);
+        }
+
         var query = _products.AsQueryable();
 
         query = (IQueryable<ProductDto>)odataQuery.ApplyTo(query, ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
@@ -670,7 +688,7 @@ public class ProductsController : ControllerBase
 
         query = query.Take(odataQuery.Top?.Value ?? 50);
 
-        return new PagedResult<ProductDto>(query.ToArray(), totalCount);
+        return Ok(new PagedResult<ProductDto>(query.ToArray(), totalCount));
     }
 }
 
@@ -841,13 +859,31 @@ public class ProductsController : ControllerBase
 {
     private static readonly Random _random = new Random();
 
+    // Bound what a client may ask for: $top (applied by hand below) and the matchesPattern function,
+    // whose regular expression would otherwise run against every row.
+    private static readonly ODataValidationSettings _validationSettings = new()
+    {
+        MaxTop = 1000,
+        AllowedFunctions = AllowedFunctions.AllFunctions & ~AllowedFunctions.MatchesPattern
+    };
+
     private static readonly ProductDto[] _products = Enumerable.Range(1, 500_000)
         .Select(i => new ProductDto { Id = i, Name = Guid.NewGuid().ToString(""N""), Price = _random.Next(1, 100) })
         .ToArray();
 
     [HttpGet]
-    public async Task<PagedResult<ProductDto>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
+    public async Task<ActionResult<PagedResult<ProductDto>>> GetProducts(ODataQueryOptions<ProductDto> odataQuery, CancellationToken cancellationToken)
     {
+        // A query past the limits is the client's mistake: a 400 that says why, not a 500.
+        try
+        {
+            odataQuery.Validate(_validationSettings);
+        }
+        catch (Microsoft.OData.ODataException exception)
+        {
+            return BadRequest(exception.Message);
+        }
+
         var query = _products.AsQueryable();
 
         query = (IQueryable<ProductDto>)odataQuery.ApplyTo(query, ignoreQueryOptions: AllowedQueryOptions.Top | AllowedQueryOptions.Skip);
@@ -861,7 +897,7 @@ public class ProductsController : ControllerBase
 
         query = query.Take(odataQuery.Top?.Value ?? 50);
 
-        return new PagedResult<ProductDto>(query.ToArray(), totalCount);
+        return Ok(new PagedResult<ProductDto>(query.ToArray(), totalCount));
     }
 }
 

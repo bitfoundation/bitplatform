@@ -1,0 +1,244 @@
+﻿@page "/tw/focus-trap"
+
+<PageTitle>FocusTrap — bit Bheadless · Tailwind</PageTitle>
+
+<div class="mx-auto w-full max-w-3xl px-6 py-12 pb-24">
+    <header class="mb-12">
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">FocusTrap</h1>
+        <p class="mt-2 text-zinc-500">Traps keyboard focus inside a container. Used by Dialog, but also useful standalone.</p>
+        <TwSectionSwitcher Slug="focus-trap" />
+    </header>
+
+    <TwDemoBlock Title="Basic Focus Trap" Code="@_basicCode">
+        <Description>Toggle the trap. <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">data-state-active:</code> highlights the active container.</Description>
+        <LiveContent>
+            <div class="flex flex-col gap-4 items-start">
+                <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
+                          class="@(basicEnabled
+                              ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                              : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+                    @(basicEnabled ? "Deactivate trap" : "Activate trap")
+                </BitBhButton>
+                <BitBhFocusTrap Enabled="basicEnabled"
+                             class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-5 mt-2 transition-colors data-state-active:border-blue-600 data-state-active:bg-blue-50">
+                    <p class="text-sm text-zinc-500">
+                        Focus is @(basicEnabled ? "trapped" : "free") inside this box.
+                    </p>
+                    <input type="text" placeholder="First input"
+                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    <input type="text" placeholder="Second input"
+                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100"
+                            @onclick="() => basicEnabled = false">Close</button>
+                </BitBhFocusTrap>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Slide-over panel" Code="@_slideOverCode">
+        <Description>A common pattern: a trap that activates with the panel.</Description>
+        <LiveContent>
+            <BitBhButton OnClick="() => panelOpen = true"
+                      class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
+                Open panel
+            </BitBhButton>
+            @if (panelOpen)
+            {
+                <div class="fixed inset-0 z-40 bg-black/30" @onclick="() => panelOpen = false"></div>
+                <BitBhFocusTrap Enabled="panelOpen"
+                             class="fixed top-0 right-0 bottom-0 z-50 w-88 max-w-[90vw] bg-white p-6 shadow-2xl flex flex-col gap-4">
+                    <h3 class="text-lg font-semibold text-zinc-900">Settings</h3>
+                    <p class="text-sm text-zinc-500">Focus is trapped inside this panel. Try Tab and Shift+Tab.</p>
+                    <label class="flex flex-col gap-1.5 text-sm">
+                        <span>Username</span>
+                        <input type="text"
+                               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
+                               value="alice" />
+                    </label>
+                    <label class="flex flex-col gap-1.5 text-sm">
+                        <span>Email</span>
+                        <input type="email"
+                               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
+                               value="alice@example.com" />
+                    </label>
+                    <div class="flex justify-end gap-2 mt-auto">
+                        <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100"
+                                @onclick="() => panelOpen = false">Cancel</button>
+                        <button class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                                @onclick="() => panelOpen = false">Save</button>
+                    </div>
+                </BitBhFocusTrap>
+            }
+        </LiveContent>
+    </TwDemoBlock>
+
+    <TwDemoBlock Title="Multiple focusable regions" Code="@_multiCode">
+        <Description>Only the active trap captures focus.</Description>
+        <LiveContent>
+            <div class="flex gap-2 flex-wrap">
+                <BitBhButton OnClick="ActivateRegionA"
+                          class="@(regionA
+                              ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                              : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+                    Trap Region A
+                </BitBhButton>
+                <BitBhButton OnClick="ActivateRegionB"
+                          class="@(regionB
+                              ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                              : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+                    Trap Region B
+                </BitBhButton>
+                <BitBhButton OnClick="DeactivateAll"
+                          class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+                    Release all
+                </BitBhButton>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-4 w-full">
+                <BitBhFocusTrap Enabled="regionA"
+                             class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-5 mt-2 transition-colors data-state-active:border-blue-600 data-state-active:bg-blue-50">
+                    <strong>Region A</strong>
+                    <input type="text" placeholder="A — Field 1"
+                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    <input type="text" placeholder="A — Field 2"
+                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">A — Action</button>
+                </BitBhFocusTrap>
+                <BitBhFocusTrap Enabled="regionB"
+                             class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-5 mt-2 transition-colors data-state-active:border-blue-600 data-state-active:bg-blue-50">
+                    <strong>Region B</strong>
+                    <input type="text" placeholder="B — Field 1"
+                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    <input type="text" placeholder="B — Field 2"
+                           class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+                    <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">B — Action</button>
+                </BitBhFocusTrap>
+            </div>
+        </LiveContent>
+    </TwDemoBlock>
+</div>
+
+@code {
+    private bool basicEnabled;
+    private bool panelOpen;
+    private bool regionA;
+    private bool regionB;
+
+    private void ActivateRegionA() { regionA = true; regionB = false; }
+    private void ActivateRegionB() { regionA = false; regionB = true; }
+    private void DeactivateAll()   { regionA = false; regionB = false; }
+
+    private const string _basicCode = """
+<div class="flex flex-col gap-4 items-start">
+    <BitBhButton OnClick="() => basicEnabled = !basicEnabled"
+              class="@(basicEnabled
+                  ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                  : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+        @(basicEnabled ? "Deactivate trap" : "Activate trap")
+    </BitBhButton>
+    <BitBhFocusTrap Enabled="basicEnabled"
+                 class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-5 mt-2 transition-colors data-state-active:border-blue-600 data-state-active:bg-blue-50">
+        <p class="text-sm text-zinc-500">
+            Focus is @(basicEnabled ? "trapped" : "free") inside this box.
+        </p>
+        <input type="text" placeholder="First input"
+               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+        <input type="text" placeholder="Second input"
+               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+        <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100"
+                @onclick="() => basicEnabled = false">Close</button>
+    </BitBhFocusTrap>
+</div>
+
+@code {
+    private bool basicEnabled;
+}
+""";
+
+    private const string _slideOverCode = """
+<BitBhButton OnClick="() => panelOpen = true"
+          class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700">
+    Open panel
+</BitBhButton>
+@if (panelOpen)
+{
+    <div class="fixed inset-0 z-40 bg-black/30" @onclick="() => panelOpen = false"></div>
+    <BitBhFocusTrap Enabled="panelOpen"
+                 class="fixed top-0 right-0 bottom-0 z-50 w-88 max-w-[90vw] bg-white p-6 shadow-2xl flex flex-col gap-4">
+        <h3 class="text-lg font-semibold text-zinc-900">Settings</h3>
+        <p class="text-sm text-zinc-500">Focus is trapped inside this panel. Try Tab and Shift+Tab.</p>
+        <label class="flex flex-col gap-1.5 text-sm">
+            <span>Username</span>
+            <input type="text"
+                   class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
+                   value="alice" />
+        </label>
+        <label class="flex flex-col gap-1.5 text-sm">
+            <span>Email</span>
+            <input type="email"
+                   class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
+                   value="alice@example.com" />
+        </label>
+        <div class="flex justify-end gap-2 mt-auto">
+            <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100"
+                    @onclick="() => panelOpen = false">Cancel</button>
+            <button class="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                    @onclick="() => panelOpen = false">Save</button>
+        </div>
+    </BitBhFocusTrap>
+}
+
+@code {
+    private bool panelOpen;
+}
+""";
+
+    private const string _multiCode = """
+<div class="flex gap-2 flex-wrap">
+    <BitBhButton OnClick="ActivateRegionA"
+              class="@(regionA
+                  ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                  : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+        Trap Region A
+    </BitBhButton>
+    <BitBhButton OnClick="ActivateRegionB"
+              class="@(regionB
+                  ? "inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-blue-700"
+                  : "inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100")">
+        Trap Region B
+    </BitBhButton>
+    <BitBhButton OnClick="DeactivateAll"
+              class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">
+        Release all
+    </BitBhButton>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-4 w-full">
+    <BitBhFocusTrap Enabled="regionA"
+                 class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-5 mt-2 transition-colors data-state-active:border-blue-600 data-state-active:bg-blue-50">
+        <strong>Region A</strong>
+        <input type="text" placeholder="A — Field 1"
+               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+        <input type="text" placeholder="A — Field 2"
+               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+        <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">A — Action</button>
+    </BitBhFocusTrap>
+    <BitBhFocusTrap Enabled="regionB"
+                 class="flex flex-col gap-3 rounded-lg border-2 border-dashed border-zinc-300 p-5 mt-2 transition-colors data-state-active:border-blue-600 data-state-active:bg-blue-50">
+        <strong>Region B</strong>
+        <input type="text" placeholder="B — Field 1"
+               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+        <input type="text" placeholder="B — Field 2"
+               class="rounded-md border border-zinc-300 px-2.5 py-2 text-sm outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600" />
+        <button class="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-900 cursor-pointer hover:bg-zinc-100">B — Action</button>
+    </BitBhFocusTrap>
+</div>
+
+@code {
+    private bool regionA;
+    private bool regionB;
+
+    private void ActivateRegionA() { regionA = true; regionB = false; }
+    private void ActivateRegionB() { regionA = false; regionB = true; }
+    private void DeactivateAll()   { regionA = false; regionB = false; }
+}
+""";
+}

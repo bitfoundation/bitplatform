@@ -1418,8 +1418,7 @@ public class BitNavPanelTests : BunitTestContext
         {
             var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
             Assert.AreEqual(1, focused.Count);
-            // Before .NET 10 a re-render drops the reference id from the rendered markup, so the focused
-            // reference is compared against the search box's own input reference instead of the element.
+            // The focused reference is compared against the search box's own input reference.
             var input = component.FindComponent<BitSearchBox>().Instance.InputElement;
             Assert.AreEqual(input.Id, ((ElementReference)focused[0].Arguments[0]!).Id);
         });

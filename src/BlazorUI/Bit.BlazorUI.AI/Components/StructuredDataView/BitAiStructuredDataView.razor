@@ -1,0 +1,72 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitAiComponentBase
+
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (_custom is not null)
+    {
+        <BitAiRendererBoundary Label="@Strings.RendererFailed(Part.SchemaName ?? Part.Kind)">
+            @_custom
+        </BitAiRendererBoundary>
+    }
+    else if (Part.Value is { } value)
+    {
+        @switch (value.ValueKind)
+        {
+            case JsonValueKind.Array when IsTabular(value):
+                <BitAiDataTable Rows="value" />
+                break;
+
+            case JsonValueKind.Object:
+                <dl style="@Styles?.List" class="bit-aisdv-lst @Classes?.List">
+                    @foreach (var property in value.EnumerateObject())
+                    {
+                        <div style="@Styles?.Entry" class="bit-aisdv-ent @Classes?.Entry">
+                            <dt style="@Styles?.Label" class="bit-aisdv-trm @Classes?.Label">@Humanize(property.Name)</dt>
+                            <dd style="@Styles?.Value" class="bit-aisdv-val @Classes?.Value">@RenderScalar(property.Value)</dd>
+                        </div>
+                    }
+                </dl>
+                break;
+
+            default:
+                <BitAiJsonView Value="value" />
+                break;
+        }
+    }
+    else if (Part.IsStreaming)
+    {
+        <BitAiThinkingIndicator />
+    }
+</div>
+
+@code {
+    // A value of an entry of the key and value list: a nested object or array as a tree opened one level deep, a string
+    // as its text, a missing value as a dash, and a number or a boolean as its JSON text (true, never True).
+    private RenderFragment RenderScalar(JsonElement value) => __builder =>
+    {
+        switch (value.ValueKind)
+        {
+            case JsonValueKind.Object:
+            case JsonValueKind.Array:
+                <BitAiJsonView Value="value" DefaultExpandDepth="1" />
+                break;
+
+            case JsonValueKind.String:
+                @value.GetString()
+                break;
+
+            case JsonValueKind.Null:
+            case JsonValueKind.Undefined:
+                <span style="@Styles?.Empty" class="bit-aisdv-emp @Classes?.Empty">-</span>
+                break;
+
+            default:
+                @value.GetRawText()
+                break;
+        }
+    };
+}

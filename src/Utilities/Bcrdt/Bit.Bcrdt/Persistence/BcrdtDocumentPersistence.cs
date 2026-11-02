@@ -72,10 +72,19 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
     // waits through a failure never becomes a record the store will refuse.
     private const int MaxCoalescedBytes = 4 * 1024 * 1024;
 
-    private TaskCompletionSource _idle = CreateCompletedSource();
-    private Exception? _unstored;
-    private int _queued;
+    // Every update taken for writing gets a sequence number; updates are settled - stored, or given up
+    // on - strictly in that order. A flush waits for the number that was current when it was called,
+    // not for the queue to empty, so it completes on a document that never stops changing.
+    private long _enqueued;
+    private long _settled;
+    private readonly List<FlushWaiter> _waiters = [];
+
+    // An update given up on that no flush has reported yet. Kept until the next flush is called, so a
+    // flush called after the loss - even once everything is settled - still says so.
+    private Exception? _unreported;
+
     private int _recordCount;
+    private int _compactionDeferredUntil;
     private bool _disposed;
 
     private BcrdtDocumentPersistence(
@@ -89,6 +98,10 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
         _documentId = documentId;
         _options = options;
         _queue = Channel.CreateUnbounded<byte[]>(new UnboundedChannelOptions { SingleReader = true });
+
+        // Before the load, so a store that forgets idle documents cannot drop this one between handing
+        // it over and receiving the first change made on top of it.
+        (_store as IBcrdtAttachedDocumentTracker)?.OnAttached(_documentId);
         _writerLoop = Task.Run(WriteLoopAsync);
     }
 
@@ -144,19 +157,35 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
     /// </remarks>
     public event Action<Exception>? WriteFailed;
 
-    /// <summary>Waits until every queued change has reached the store.</summary>
+    /// <summary>Waits until every change made before the call has reached the store.</summary>
     /// <remarks>
-    /// While the store is failing transiently this keeps waiting, because the changes are still being
-    /// retried. The returned task faults if a change the store refused outright could not be stored,
-    /// or if the binding is disposed with changes that never reached the store.
+    /// Changes made after the call are not waited for, so a flush completes even while the document
+    /// keeps changing faster than the store can write. While the store is failing transiently this
+    /// keeps waiting, because the changes are still being retried. The returned task faults if one of
+    /// the changes it waits for was refused outright by the store, or if the binding is disposed
+    /// before they reached it. A change refused outright before the call is reported too, by this
+    /// flush, unless an earlier flush called after the refusal already reported it.
     /// </remarks>
     public Task FlushAsync()
     {
         lock (_idleLock)
         {
-            return _idle.Task;
+            Exception? unreported = _unreported;
+            _unreported = null;
+
+            if (_settled >= _enqueued)
+            {
+                return unreported is null ? Task.CompletedTask : Task.FromException(Unstored(unreported));
+            }
+
+            var waiter = new FlushWaiter(_enqueued) { Failure = unreported };
+            _waiters.Add(waiter);
+            return waiter.Completion.Task;
         }
     }
+
+    private IOException Unstored(Exception failure) =>
+        new($"Changes to '{_documentId}' could not be stored.", failure);
 
     private static byte[]? Unpersisted(BcrdtDocument doc, byte[]? stored)
     {
@@ -210,11 +239,7 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
     {
         lock (_idleLock)
         {
-            if (_queued++ == 0)
-            {
-                _idle = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                _unstored = null;
-            }
+            _enqueued++;
         }
 
         if (!_queue.Writer.TryWrite(update))
@@ -278,6 +303,8 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
                         : BcrdtUpdateOperations.Merge([.. pending.Take(take).Select(p => (ReadOnlyMemory<byte>)p)]);
 
                     await _store.AppendUpdateAsync(_documentId, record, token).ConfigureAwait(false);
+                    BcrdtDiagnostics.PersistenceWrites.Add(1);
+                    BcrdtDiagnostics.PersistenceBytes.Add(record.Length);
                 }
                 catch (Exception ex) when (!token.IsCancellationRequested)
                 {
@@ -313,17 +340,24 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
                 Interlocked.Increment(ref _recordCount);
                 Complete(take, failure: null);
 
-                if (Volatile.Read(ref _recordCount) >= _options.CompactionThreshold)
+                int records = Volatile.Read(ref _recordCount);
+                if (records >= _options.CompactionThreshold && records >= _compactionDeferredUntil)
                 {
                     try
                     {
                         await _store.CompactAsync(_documentId, token).ConfigureAwait(false);
                         Volatile.Write(ref _recordCount, 1);
+                        _compactionDeferredUntil = 0;
+                        BcrdtDiagnostics.PersistenceCompactions.Add(1);
                     }
                     catch (Exception ex) when (!token.IsCancellationRequested)
                     {
-                        // Compaction is an optimization; the log is intact. Try again after the next write.
+                        // Compaction is an optimization; the log is intact. Retrying after every write
+                        // would read and merge the whole log each time for as long as the cause lasts -
+                        // a file another process holds open, say - so wait for another threshold's
+                        // worth of records first.
                         ReportFailure(ex);
+                        _compactionDeferredUntil = records + _options.CompactionThreshold;
                     }
                 }
             }
@@ -336,6 +370,8 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
 
     private void ReportFailure(Exception exception)
     {
+        BcrdtDiagnostics.PersistenceFailures.Add(1);
+
         try
         {
             WriteFailed?.Invoke(exception);
@@ -346,29 +382,41 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
         }
     }
 
+    /// <summary>Settles the next <paramref name="count"/> updates in sequence, stored or given up on.</summary>
     private void Complete(int count, Exception? failure)
     {
         lock (_idleLock)
         {
-            if (failure is not null) _unstored ??= failure;
+            _settled += count;
 
-            _queued -= count;
-            if (_queued > 0) return;
-            _queued = 0;
+            // Every flush still waiting answers for the updates just given up on; only with none waiting
+            // is the loss left for the next flush to report.
+            if (failure is not null && _waiters.Count == 0) _unreported ??= failure;
 
-            // Every queued change has been dealt with. The flush succeeds if all of them were stored,
-            // and faults - rather than hanging - if any could not be.
-            if (_unstored is null) _idle.TrySetResult();
-            else _idle.TrySetException(new IOException($"Changes to '{_documentId}' could not be stored.", _unstored));
-            _unstored = null;
+            for (int i = _waiters.Count - 1; i >= 0; i--)
+            {
+                FlushWaiter waiter = _waiters[i];
+
+                // A flush answers for the updates made before it was called, and faults - rather than
+                // hanging - if any of those could not be stored.
+                if (failure is not null) waiter.Failure ??= failure;
+                if (_settled < waiter.Target) continue;
+
+                _waiters.RemoveAt(i);
+                if (waiter.Failure is null) waiter.Completion.TrySetResult();
+                else waiter.Completion.TrySetException(Unstored(waiter.Failure));
+            }
         }
     }
 
-    private static TaskCompletionSource CreateCompletedSource()
+    /// <summary>A caller of <see cref="FlushAsync"/>, waiting for the updates made before it called.</summary>
+    private sealed class FlushWaiter(long target)
     {
-        var source = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        source.SetResult();
-        return source;
+        public long Target { get; } = target;
+
+        public Exception? Failure { get; set; }
+
+        public TaskCompletionSource Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     /// <inheritdoc/>
@@ -393,21 +441,34 @@ public sealed class BcrdtDocumentPersistence : IAsyncDisposable
             {
                 await _writerLoop.ConfigureAwait(false);
             }
-            catch (OperationCanceledException)
+            catch (Exception)
             {
-                // Already shutting down.
+                // Shutting down: a store that reports our cancellation as some other failure is still
+                // being cancelled, and what it failed to write is reported below.
             }
         }
+        catch (Exception)
+        {
+            // The loop itself failed; what it did not write is reported below.
+        }
+
+        // Nothing is written from here on, so the store may forget the document once it is idle.
+        (_store as IBcrdtAttachedDocumentTracker)?.OnDetached(_documentId);
 
         // Anyone still waiting for a flush must not wait forever for writes that will never happen.
+        FlushWaiter[] abandoned;
         lock (_idleLock)
         {
-            if (_queued > 0)
-            {
-                _queued = 0;
-                _idle.TrySetException(new IOException(
-                    $"Changes to '{_documentId}' could not be stored before persistence was shut down."));
-            }
+            abandoned = [.. _waiters];
+            _waiters.Clear();
+            _settled = _enqueued;
+        }
+
+        if (abandoned.Length > 0)
+        {
+            var failure = new IOException($"Changes to '{_documentId}' could not be stored before persistence was shut down.");
+            ReportFailure(failure);
+            foreach (FlushWaiter waiter in abandoned) waiter.Completion.TrySetException(failure);
         }
 
         _shutdown.Dispose();

@@ -15,6 +15,18 @@
     --bit-blow-handle-valid: #22c55e;
     --bit-blow-handle-invalid: #ef4444;
 
+    /* Validation marks (BlowCanvas.Validation). Each reaches 4.5:1 against the node background, and the badge text
+       4.5:1 against both. */
+    --bit-blow-error: #c4320a;
+    --bit-blow-warning: #a15c07;
+    --bit-blow-badge-text: #ffffff;
+
+    /* Run states (BlowCanvas.RunStates). */
+    --bit-blow-run-active: #175cd3;
+    --bit-blow-run-succeeded: #067647;
+    --bit-blow-run-failed: #c4320a;
+    --bit-blow-run-muted: #667085;
+
     /* The add-ons - controls, minimap, toolbars, labels, the attribution badge - are chrome
        drawn over the flow rather than part of the graph, and they all share one palette. Naming
        it here is what lets a colour mode restyle the whole component and not just its canvas. */
@@ -33,6 +45,11 @@
     --bit-blow-background-pattern: #aaaaaa;
     --bit-blow-minimap-node: #e2e2e2;
     --bit-blow-minimap-mask: rgba(120, 120, 120, 0.25);
+
+    /* The smallest a handle's hit area gets on screen, whatever the zoom. A handle is drawn in flow units, so
+       zoomed out to 20% an 8px dot is a pixel and a half across and nobody can grab it; the hit area is held at
+       this size instead, while the dot itself keeps shrinking with the graph. */
+    --bit-blow-handle-hit-size: 12px;
 
     position: relative;
     width: 100%;
@@ -76,6 +93,17 @@
     overflow: visible;
 }
 
+/* The reconnection anchors of the selected edges: in the edge layer's coordinates, above the nodes. */
+.bit-blow-edge-reconnects {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1002; /* above a selected (1000) or dragged (1001) node */
+}
+
 .bit-blow-edges .bit-blow-edge {
     pointer-events: stroke;
     cursor: pointer;
@@ -96,6 +124,20 @@
 
 @keyframes bit-blow-dash {
     to { stroke-dashoffset: -10; }
+}
+
+/* Reduced motion: an animated edge keeps its dash, so it still reads as "flowing" or "active", but stops
+   marching. The canvas sets one of the two classes when the app has overruled the operating system. */
+@media (prefers-reduced-motion: reduce) {
+    .bit-blow:not(.bit-blow-allow-motion) .bit-blow-edge.animated .bit-blow-edge-path,
+    .bit-blow:not(.bit-blow-allow-motion) .bit-blow-node.bit-blow-run-running::before {
+        animation: none;
+    }
+}
+
+.bit-blow.bit-blow-reduce-motion .bit-blow-edge.animated .bit-blow-edge-path,
+.bit-blow.bit-blow-reduce-motion .bit-blow-node.bit-blow-run-running::before {
+    animation: none;
 }
 
 .bit-blow-edge-label-bg {
@@ -137,6 +179,17 @@
     cursor: grabbing;
 }
 
+/* A running node is ringed and a skipped one dashed - by outline and border style, which selection, problems and
+   focus (all later in this file) do not use or override as they should: the run badge says the status either way. */
+.bit-blow-node.bit-blow-run-running {
+    outline: 2px dashed var(--bit-blow-run-active);
+    outline-offset: 3px;
+}
+
+.bit-blow-node.bit-blow-run-skipped {
+    border-style: dashed;
+}
+
 .bit-blow-node.selected {
     border-color: var(--bit-blow-node-selected);
     box-shadow: 0 0 0 2px var(--bit-blow-node-selected);
@@ -168,6 +221,20 @@
 
 .bit-blow-handle.connectable {
     cursor: crosshair;
+}
+
+/* The hit area: never smaller on screen than --bit-blow-handle-hit-size, however far the flow is zoomed out.
+   A pseudo-element is part of its handle for hit testing, so pressing it starts a connection and dropping on it
+   ends one, while the handle's own box - which is what gets measured and what edges anchor to - is unchanged. */
+.bit-blow-handle::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, calc(var(--bit-blow-handle-hit-size) / var(--bit-blow-zoom, 1)));
+    height: max(100%, calc(var(--bit-blow-handle-hit-size) / var(--bit-blow-zoom, 1)));
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
 }
 
 .bit-blow-handle-top    { top: 0;    left: 50%; transform: translate(-50%, -50%); }
@@ -245,6 +312,12 @@
     border-radius: 4px;
 }
 
+/* A minimap that steers the view takes keyboard focus. */
+.bit-blow-minimap:focus-visible {
+    outline: 2px solid var(--bit-blow-node-selected);
+    outline-offset: 2px;
+}
+
 .bit-blow-minimap-top-left      { top: 0; left: 0; }
 .bit-blow-minimap-top-right     { top: 0; right: 0; }
 .bit-blow-minimap-bottom-left   { bottom: 0; left: 0; }
@@ -258,14 +331,9 @@
     pointer-events: none;
 }
 
-.bit-blow-minimap-node {
-    stroke: var(--bit-blow-surface);
-    stroke-width: 1;
-}
-
-.bit-blow-minimap-node.selected {
-    fill: var(--bit-blow-node-selected);
-}
+/* No fill or stroke for .bit-blow-minimap-node here: the minimap paints its nodes through attributes, from its
+   NodeColor and NodeStroke* parameters and their per-node functions, and any rule here would override every one of
+   them - a presentation attribute loses to any style rule at all. */
 
 /* Panels */
 .bit-blow-panel {
@@ -370,10 +438,18 @@
     background: var(--bit-blow-surface-muted-hover);
 }
 
+/* A handle that would accept the connection being dragged. The ring, like the dimming of a rejected handle
+   below, says the same thing as the colour without relying on it: green and red are the pair a colour-blind
+   user is most likely to be unable to tell apart. */
+.bit-blow-handle-valid {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bit-blow-handle-valid) 35%, transparent);
+}
+
 /* A handle that cannot accept the connection currently being dragged. */
 .bit-blow-handle-invalid,
 .bit-blow-handle-invalid:hover {
     background: var(--bit-blow-handle-invalid);
+    opacity: 0.45;
 }
 
 /* The handle the connection is being dragged out of. It is neither a valid target nor a
@@ -403,13 +479,154 @@
     outline-offset: 2px;
 }
 
-.bit-blow-edge:focus-visible {
+/* An edge shows focus on its own path, below. Not :focus-visible alone: Chromium also outlines an SVG group that a
+   click focused, and draws a dark box round the edge's whole bounding box. */
+.bit-blow-edge:focus {
     outline: none;
 }
 
 .bit-blow-edge:focus-visible .bit-blow-edge-path {
     stroke: var(--bit-blow-edge-selected);
     stroke-dasharray: 4 3;
+}
+
+/* Validation (BlowCanvas.Validation). Marked by shape as well as colour, so a problem can be told without telling
+   colours apart: a node gets a ring and a corner badge - a circle for an error, a triangle for a warning - an edge a
+   dashed line, long dashes for an error and short for a warning, and a port a ring. */
+.bit-blow-node.bit-blow-error {
+    border-color: var(--bit-blow-error);
+    box-shadow: 0 0 0 2px var(--bit-blow-error);
+}
+
+.bit-blow-node.bit-blow-warning {
+    border-color: var(--bit-blow-warning);
+    box-shadow: 0 0 0 2px var(--bit-blow-warning);
+}
+
+/* Selected as well: the selection ring goes round the problem's. */
+.bit-blow-node.selected.bit-blow-error {
+    box-shadow: 0 0 0 2px var(--bit-blow-error), 0 0 0 4px var(--bit-blow-node-selected);
+}
+
+.bit-blow-node.selected.bit-blow-warning {
+    box-shadow: 0 0 0 2px var(--bit-blow-warning), 0 0 0 4px var(--bit-blow-node-selected);
+}
+
+.bit-blow-node.bit-blow-error::after,
+.bit-blow-node.bit-blow-warning::after {
+    /* The second declaration gives the badge empty alternative text where supported: the problem is read out from
+       the node's description, and "exclamation mark" adds nothing to it. */
+    content: "!";
+    content: "!" / "";
+    position: absolute;
+    top: -9px;
+    right: -9px;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    font: bold 12px/18px sans-serif;
+    text-align: center;
+    color: var(--bit-blow-badge-text);
+    pointer-events: none;
+}
+
+.bit-blow-node.bit-blow-error::after {
+    border-radius: 50%;
+    background: var(--bit-blow-error);
+}
+
+.bit-blow-node.bit-blow-warning::after {
+    line-height: 22px;
+    background: var(--bit-blow-warning);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.bit-blow-edge.bit-blow-error .bit-blow-edge-path {
+    stroke: var(--bit-blow-error) !important;
+    stroke-dasharray: 8 4;
+}
+
+.bit-blow-edge.bit-blow-warning .bit-blow-edge-path {
+    stroke: var(--bit-blow-warning) !important;
+    stroke-dasharray: 2 4;
+}
+
+/* The problem's colour wins over the selection's and the focus ring's, so a selected edge with a problem is drawn
+   thicker instead, and a focused one thicker still and haloed - focus has to stay visible (WCAG 2.4.7). */
+.bit-blow-edge.selected.bit-blow-error .bit-blow-edge-path,
+.bit-blow-edge.selected.bit-blow-warning .bit-blow-edge-path {
+    stroke-width: 3;
+}
+
+.bit-blow-edge.bit-blow-error:focus-visible .bit-blow-edge-path,
+.bit-blow-edge.bit-blow-warning:focus-visible .bit-blow-edge-path {
+    stroke-width: 4;
+    filter: drop-shadow(0 0 2px var(--bit-blow-edge-selected));
+}
+
+/* Run states (BlowCanvas.RunStates): a badge on the top-left corner whose glyph and shape say the status - a ring
+   for running, a tick, a cross, a dash, an ellipsis - so it reads without colour. Running also rings the node,
+   moving only when motion is welcome. */
+.bit-blow-node.bit-blow-run-queued::before,
+.bit-blow-node.bit-blow-run-running::before,
+.bit-blow-node.bit-blow-run-succeeded::before,
+.bit-blow-node.bit-blow-run-failed::before,
+.bit-blow-node.bit-blow-run-skipped::before {
+    position: absolute;
+    top: -9px;
+    left: -9px;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    font: bold 11px/18px sans-serif;
+    text-align: center;
+    color: var(--bit-blow-badge-text);
+    pointer-events: none;
+}
+
+.bit-blow-node.bit-blow-run-queued::before {
+    content: "\2026";
+    content: "\2026" / "";
+    background: var(--bit-blow-run-muted);
+}
+
+.bit-blow-node.bit-blow-run-running::before {
+    content: "";
+    background: var(--bit-blow-node-bg);
+    border: 3px solid var(--bit-blow-run-active);
+    border-top-color: transparent;
+    animation: bit-blow-spin 0.9s linear infinite;
+}
+
+.bit-blow-node.bit-blow-run-succeeded::before {
+    content: "\2713";
+    content: "\2713" / "";
+    background: var(--bit-blow-run-succeeded);
+}
+
+.bit-blow-node.bit-blow-run-failed::before {
+    content: "\2715";
+    content: "\2715" / "";
+    background: var(--bit-blow-run-failed);
+}
+
+.bit-blow-node.bit-blow-run-skipped::before {
+    content: "\2013";
+    content: "\2013" / "";
+    background: var(--bit-blow-run-muted);
+}
+
+@keyframes bit-blow-spin {
+    to { transform: rotate(360deg); }
+}
+
+.bit-blow-handle.bit-blow-handle-error {
+    box-shadow: 0 0 0 2px var(--bit-blow-error);
+}
+
+.bit-blow-handle.bit-blow-handle-warning {
+    box-shadow: 0 0 0 2px var(--bit-blow-warning);
 }
 
 /* Node interaction state. */
@@ -527,6 +744,13 @@
     --bit-blow-dark-background-pattern: #4a4a4a;
     --bit-blow-dark-minimap-node: #4a4a4a;
     --bit-blow-dark-minimap-mask: rgba(0, 0, 0, 0.45);
+    --bit-blow-dark-error: #f97066;
+    --bit-blow-dark-warning: #fdb022;
+    --bit-blow-dark-badge-text: #1a1a1a;
+    --bit-blow-dark-run-active: #84adff;
+    --bit-blow-dark-run-succeeded: #47cd89;
+    --bit-blow-dark-run-failed: #f97066;
+    --bit-blow-dark-run-muted: #98a2b3;
 }
 
 /* Two classes, so the colour mode outranks a later stylesheet that sets the light palette on
@@ -558,6 +782,13 @@
     --bit-blow-background-pattern: var(--bit-blow-dark-background-pattern);
     --bit-blow-minimap-node: var(--bit-blow-dark-minimap-node);
     --bit-blow-minimap-mask: var(--bit-blow-dark-minimap-mask);
+    --bit-blow-error: var(--bit-blow-dark-error);
+    --bit-blow-warning: var(--bit-blow-dark-warning);
+    --bit-blow-badge-text: var(--bit-blow-dark-badge-text);
+    --bit-blow-run-active: var(--bit-blow-dark-run-active);
+    --bit-blow-run-succeeded: var(--bit-blow-dark-run-succeeded);
+    --bit-blow-run-failed: var(--bit-blow-dark-run-failed);
+    --bit-blow-run-muted: var(--bit-blow-dark-run-muted);
     color: var(--bit-blow-node-color);
     color-scheme: dark;
 }
@@ -590,6 +821,13 @@
         --bit-blow-background-pattern: var(--bit-blow-dark-background-pattern);
         --bit-blow-minimap-node: var(--bit-blow-dark-minimap-node);
         --bit-blow-minimap-mask: var(--bit-blow-dark-minimap-mask);
+        --bit-blow-error: var(--bit-blow-dark-error);
+        --bit-blow-warning: var(--bit-blow-dark-warning);
+        --bit-blow-badge-text: var(--bit-blow-dark-badge-text);
+        --bit-blow-run-active: var(--bit-blow-dark-run-active);
+        --bit-blow-run-succeeded: var(--bit-blow-dark-run-succeeded);
+        --bit-blow-run-failed: var(--bit-blow-dark-run-failed);
+        --bit-blow-run-muted: var(--bit-blow-dark-run-muted);
         color: var(--bit-blow-node-color);
         color-scheme: dark;
     }
@@ -633,4 +871,125 @@
     border: 1px solid var(--bit-blow-border);
     border-radius: 6px;
     box-shadow: 0 1px 3px var(--bit-blow-shadow);
+}
+
+/* Forced colours (Windows high contrast and similar). The browser replaces the colours of HTML for us, but not
+   the strokes and fills of SVG, nor box shadows - which is how edges, handles and selection are drawn - so those
+   are mapped onto the system palette here. Selection and focus become outlines, since shadows are dropped. */
+@media (forced-colors: active) {
+    .bit-blow-edge-path {
+        stroke: CanvasText;
+    }
+
+    .bit-blow-edge.selected .bit-blow-edge-path,
+    .bit-blow-edge:focus-visible .bit-blow-edge-path,
+    .bit-blow-connectionline {
+        stroke: Highlight !important;
+    }
+
+    .bit-blow-edge-label-bg {
+        fill: Canvas;
+        fill-opacity: 1;
+    }
+
+    .bit-blow-edge-label {
+        fill: CanvasText;
+    }
+
+    .bit-blow-edge-reconnect {
+        fill: Canvas;
+        stroke: Highlight;
+    }
+
+    .bit-blow-node {
+        border-color: CanvasText;
+    }
+
+    /* Before selection and focus, which win when they apply. */
+    .bit-blow-node.bit-blow-run-running {
+        outline: 2px dotted Highlight;
+        outline-offset: 2px;
+    }
+
+    .bit-blow-node.selected {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    .bit-blow-node:focus-visible {
+        outline: 3px solid Highlight;
+    }
+
+    .bit-blow-handle {
+        forced-color-adjust: none;
+        background: CanvasText;
+        border-color: Canvas;
+    }
+
+    .bit-blow-handle.connectable:hover,
+    .bit-blow-handle-valid,
+    .bit-blow-handle-connectingfrom {
+        background: Highlight;
+    }
+
+    .bit-blow-handle-invalid,
+    .bit-blow-handle-invalid:hover {
+        background: GrayText;
+    }
+
+    .bit-blow-selection {
+        forced-color-adjust: none;
+        background: transparent;
+        border-color: Highlight;
+    }
+
+    /* Guides take their colour from an inline style (the canvas's GuideColor). */
+    .bit-blow-guide {
+        background: Highlight !important;
+    }
+
+    .bit-blow-minimap-node {
+        fill: CanvasText;
+    }
+
+    .bit-blow-minimap-node.selected {
+        fill: Highlight;
+    }
+
+    /* The marks keep their shapes - badge, dashes - in the system colours. */
+    .bit-blow-node.bit-blow-error,
+    .bit-blow-node.bit-blow-warning {
+        outline: 2px dashed CanvasText;
+        outline-offset: 4px;
+    }
+
+    .bit-blow-node.bit-blow-error::after,
+    .bit-blow-node.bit-blow-warning::after {
+        forced-color-adjust: none;
+        background: CanvasText;
+        color: Canvas;
+    }
+
+    .bit-blow-handle.bit-blow-handle-error,
+    .bit-blow-handle.bit-blow-handle-warning {
+        outline: 2px solid CanvasText;
+        outline-offset: 1px;
+    }
+
+    .bit-blow-node.bit-blow-run-queued::before,
+    .bit-blow-node.bit-blow-run-succeeded::before,
+    .bit-blow-node.bit-blow-run-failed::before,
+    .bit-blow-node.bit-blow-run-skipped::before {
+        forced-color-adjust: none;
+        background: CanvasText;
+        color: Canvas;
+    }
+
+    .bit-blow-node.bit-blow-run-running::before {
+        forced-color-adjust: none;
+        background: Canvas;
+        border-color: Highlight;
+        border-top-color: transparent;
+    }
+
 }

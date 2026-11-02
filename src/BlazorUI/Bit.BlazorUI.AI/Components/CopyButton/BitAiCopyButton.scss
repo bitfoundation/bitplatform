@@ -1,0 +1,18 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// The button is a BitButton of the Text variant in the neutral tertiary role (its host-default class bit-btn-dft-ter):
+// its colors, its size and its shape are restyled through its own --bit-Button-* variables, and the copy button
+// publishes none of its own.
+
+.bit-aicpb {
+    // The containing block of the visually hidden live region inside it, which is absolutely positioned: held here,
+    // its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow of a positioned
+    // ancestor outside it.
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+.bit-aicpb-liv {
+    @include visually-hidden;
+}

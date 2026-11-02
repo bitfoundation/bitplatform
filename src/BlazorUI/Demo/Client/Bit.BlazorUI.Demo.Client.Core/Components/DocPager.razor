@@ -5,17 +5,18 @@
    going back to the panel and finding your place in a list of a hundred entries.
 
    It reads ComponentCatalog, which is derived from the nav itself, so the order here is exactly the
-   order the panel shows. *@
+   order the panel shows. A run of guide pages that is not the catalog (the AI scenarios) hands its
+   nav items in through Pages instead, so it pages through them in the order the panel shows them. *@
 @if (_previous is not null || _next is not null)
 {
-    <nav class="doc-pager" aria-label="Component pages">
-        @if (_previous is not null)
+    <nav class="doc-pager" aria-label="@AriaLabel">
+        @if (_previous is { } previous)
         {
-            <a class="doc-pager-link previous" href="@_previous.Url">
+            <a class="doc-pager-link previous" href="@previous.Url">
                 <BitIcon IconName="@BitIconName.ChevronLeft" Class="doc-pager-chevron" />
                 <span class="doc-pager-text">
                     <span class="doc-pager-label">Previous</span>
-                    <span class="doc-pager-name">@_previous.Name</span>
+                    <span class="doc-pager-name">@previous.Name</span>
                 </span>
             </a>
         }
@@ -24,12 +25,12 @@
             <span></span>
         }
 
-        @if (_next is not null)
+        @if (_next is { } next)
         {
-            <a class="doc-pager-link next" href="@_next.Url">
+            <a class="doc-pager-link next" href="@next.Url">
                 <span class="doc-pager-text">
                     <span class="doc-pager-label">Next</span>
-                    <span class="doc-pager-name">@_next.Name</span>
+                    <span class="doc-pager-name">@next.Name</span>
                 </span>
                 <BitIcon IconName="@BitIconName.ChevronRight" Class="doc-pager-chevron" />
             </a>
@@ -38,8 +39,8 @@
 }
 
 @code {
-    private ComponentCatalogItem? _previous;
-    private ComponentCatalogItem? _next;
+    private (string Name, string Url)? _previous;
+    private (string Name, string Url)? _next;
 
     /// <summary>
     /// The route of the page the pager sits on. Defaults to wherever the browser currently is, which
@@ -47,10 +48,57 @@
     /// </summary>
     [Parameter] public string? CurrentUrl { get; set; }
 
+    /// <summary>
+    /// The pages to page through when they are not the component catalog: the leaf items of a nav
+    /// group, in nav order. Left unset, the pager pages through the catalog.
+    /// </summary>
+    [Parameter] public IReadOnlyList<BitNavItem>? Pages { get; set; }
+
+    /// <summary>The accessible name of the pager.</summary>
+    [Parameter] public string AriaLabel { get; set; } = "Component pages";
+
     protected override Task OnParamsSetAsync()
     {
-        (_previous, _next) = ComponentCatalog.Neighbors(CurrentUrl ?? NavigationManager.Uri);
+        var url = CurrentUrl ?? NavigationManager.Uri;
+
+        if (Pages is null)
+        {
+            var (previous, next) = ComponentCatalog.Neighbors(url);
+            _previous = previous is null ? null : (previous.Name, previous.Url);
+            _next = next is null ? null : (next.Name, next.Url);
+        }
+        else
+        {
+            (_previous, _next) = NeighborsIn(Pages, url);
+        }
 
         return base.OnParamsSetAsync();
+    }
+
+    private static ((string, string)?, (string, string)?) NeighborsIn(IReadOnlyList<BitNavItem> pages, string url)
+    {
+        var path = Path(url);
+
+        for (var i = 0; i < pages.Count; i++)
+        {
+            if (string.Equals(pages[i].Url, path, StringComparison.OrdinalIgnoreCase) is false) continue;
+
+            return (i > 0 ? (pages[i - 1].Text!, pages[i - 1].Url!) : null,
+                    i < pages.Count - 1 ? (pages[i + 1].Text!, pages[i + 1].Url!) : null);
+        }
+
+        return (null, null);
+    }
+
+    // The route alone: a url can arrive with the origin attached (NavigationManager.Uri), with a query, a
+    // fragment or a trailing slash.
+    private static string Path(string url)
+    {
+        var value = Uri.TryCreate(url, UriKind.Absolute, out var absolute) ? absolute.AbsolutePath : url;
+
+        var end = value.IndexOfAny(['?', '#']);
+        if (end >= 0) value = value[..end];
+
+        return value.Length > 1 ? value.TrimEnd('/') : value;
     }
 }

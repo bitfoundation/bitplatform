@@ -7,23 +7,32 @@
     <p class="bb-subtitle">
         Drag sources can be nested. Grabbing an inner box drags <em>that</em> box, not its parent,
         because the inner <code>BdndDraggable</code> stops the <code>dragstart</code> from bubbling.
-        Drop any of them on the bin to see which item was actually dragged.
+        Drop any of them on the bin to see which item was actually dragged. The checkboxes set each box's
+        <code>CanDrag</code>: a box that may not drag renders <code>draggable="false"</code>, leaves the keyboard's tab
+        order, and hands a press to the nearest box around it that may drag - forbid the inner box and grabbing it
+        drags the middle one. (<code>CanDragPredicate</code> is the same switch as a function, asked at render time and
+        again as a drag starts.)
     </p>
 </div>
 
-<DemoCode />
-
 <div class="bb-demo">
+    <div class="bb-toolbar" role="group" aria-label="Forbid dragging">
+        <span>Forbid drag:</span>
+        <label class="bb-check"><input type="checkbox" @bind="_forbidOuter" /> outer</label>
+        <label class="bb-check"><input type="checkbox" @bind="_forbidMiddle" /> middle</label>
+        <label class="bb-check"><input type="checkbox" @bind="_forbidInner" /> inner</label>
+    </div>
+
     <BdndProvider>
-        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("OUTER")" Context="o">
+        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("OUTER")" CanDrag="!_forbidOuter" Context="o">
             <div class="nest-box" style="@($"background:#1565c0;opacity:{(o.IsDragging ? "0.4" : "1")};padding:2rem;")">
-                outer (drag the margin)
-                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("MIDDLE")" Context="m">
+                outer (drag the margin)@(o.CanDrag ? "" : " - may not drag")
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("MIDDLE")" CanDrag="!_forbidMiddle" Context="m">
                     <div class="nest-box" style="@($"background:#2e7d32;opacity:{(m.IsDragging ? "0.4" : "1")};padding:2rem;margin-top:1rem;")">
-                        middle
-                        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("INNER")" Context="i">
+                        middle@(m.CanDrag ? "" : " - may not drag")
+                        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("INNER")" CanDrag="!_forbidInner" Context="i">
                             <div class="nest-box" style="@($"background:#6a1b9a;opacity:{(i.IsDragging ? "0.4" : "1")};margin-top:1rem;")">
-                                inner
+                                inner@(i.CanDrag ? "" : " - may not drag")
                             </div>
                         </BdndDraggable>
                     </div>
@@ -40,6 +49,12 @@
     </BdndProvider>
 </div>
 
+<DemoCode />
+
 @code {
     private string? _last;
+
+    private bool _forbidOuter;
+    private bool _forbidMiddle;
+    private bool _forbidInner;
 }

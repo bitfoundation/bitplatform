@@ -204,12 +204,17 @@ public sealed class CliTelemetry : IDisposable
             : $"{exception.GetType().FullName} at {method.DeclaringType?.FullName}.{method.Name}";
     }
 
-    public static string InstallMethod()
+    public static string InstallMethod() => InstallMethod(AppContext.BaseDirectory);
+
+    public static string InstallMethod(string baseDirectory)
     {
-        var directory = AppContext.BaseDirectory.Replace('\\', '/');
+        var directory = baseDirectory.Replace('\\', '/');
+
+        if (directory.Contains("/.dotnet/tools/.store/", StringComparison.OrdinalIgnoreCase) || directory.Contains("/.bitplatform/cli/", StringComparison.OrdinalIgnoreCase))
+            return "tool";
 
         if (directory.Contains("/.store/", StringComparison.OrdinalIgnoreCase))
-            return "tool";
+            return "tool-path";
 
         if (directory.Contains("/.nuget/packages/", StringComparison.OrdinalIgnoreCase) || directory.Contains("dnx", StringComparison.OrdinalIgnoreCase))
             return "dnx";

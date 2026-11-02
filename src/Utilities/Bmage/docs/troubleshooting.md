@@ -4,7 +4,7 @@
 
 ```
 ImageCapabilityException: Could not load the Bmage browser module from
-'./_content/Bit.Bmage/bit-bmage.js'.
+'./_content/Bit.Bmage.Blazor/bit-bmage.js'.
 ```
 
 Three usual causes:
@@ -12,7 +12,7 @@ Three usual causes:
 1. **Called during prerendering.** There is no browser yet. Move browser work to `OnAfterRenderAsync(firstRender)` or an
    event handler.
 2. **Static web assets are not being served.** Confirm that
-   `/_content/Bit.Bmage/bit-bmage.js` returns JavaScript. A clean rebuild fixes most cases; `dotnet clean`
+   `/_content/Bit.Bmage.Blazor/bit-bmage.js` returns JavaScript. A clean rebuild fixes most cases; `dotnet clean`
    then rebuild if a stale `obj` is involved.
 3. **A hosted deployment with the wrong base path.** Check the `<base href>` in `index.html`.
 
@@ -36,7 +36,7 @@ The editor fills its container, and a container with no height collapses.
 The stylesheet is not referenced:
 
 ```html
-<link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
+<link rel="stylesheet" href="_content/Bit.Bmage.Blazor/bit-bmage-editor.css" />
 ```
 
 ## Photos appear sideways
@@ -210,7 +210,7 @@ the same way under `-p:TrimMode=full`, because full trimming removes members tha
 instantiation needs. That is why `TrimMode=full` is not the Blazor default, and the SDK prints
 *Optimizing assemblies for size may change the behavior of the app* when you enable it.
 
-**Use the default trimming that `dotnet publish -c Release` already applies.** It trims this package well: on a
+**Use the default trimming that `dotnet publish -c Release` already applies.** It trims Bmage well: on a
 minimal application the Bmage code goes from 631 KB to 458 KB, about 155 KB compressed with Brotli, with the
 editor rendering and processing images normally.
 

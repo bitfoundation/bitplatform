@@ -1,0 +1,44 @@
+﻿@page "/"
+@using System.Runtime.InteropServices
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Bonboarding samples</PageTitle>
+
+<h1>Bonboarding samples</h1>
+
+<p>
+    The same tours, hints and checklist, hosted unchanged in every Blazor hosting model: Server, WebAssembly, Auto and
+    MAUI (Blazor Hybrid). Whichever runs these pages, every decision about a tour is made in C#, and the library's one
+    small module measures, observes and routes keys in the page.
+</p>
+
+<h2>This host</h2>
+<dl class="facts">
+    <dt>Renderer</dt>
+    <dd>@RendererInfo.Name (@(RendererInfo.IsInteractive ? "interactive" : "prerendering - interactive in a moment"))</dd>
+    <dt>.NET runs on</dt>
+    <dd>@(OperatingSystem.IsBrowser() ? "the browser (WebAssembly)" : RuntimeInformation.OSDescription)</dd>
+    <dt>Progress is stored in</dt>
+    <dd>the page's <code>localStorage</code>, through JS interop</dd>
+</dl>
+
+<p class="muted">
+    The welcome tour started by itself the first time this app was opened, and not again once it was finished or
+    closed. Reset everything on the <a href="progress">progress page</a> to see it start again.
+</p>
+
+<div class="row">
+    <button type="button" @onclick="StartWelcomeAsync" disabled="@(RendererInfo.IsInteractive is false)">Take the welcome tour</button>
+</div>
+
+<h2>Pages</h2>
+<ul>
+    <li><a href="workspace">Workspace</a> - a tour across two routes, with a step that waits for the page to raise a signal</li>
+    <li><a href="guidance">Guidance</a> - a beacon with a hint, a checklist and a list of tours</li>
+    <li><a href="progress">Progress</a> - the stored records and the live event stream</li>
+</ul>
+
+@code {
+    // Resumes where the user left it, or starts from the top once it was finished.
+    private Task StartWelcomeAsync() => BonboardingService.StartAsync(SampleTours.WelcomeId);
+}

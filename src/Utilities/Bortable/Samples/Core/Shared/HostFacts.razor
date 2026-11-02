@@ -1,0 +1,29 @@
+﻿@* Where this page is running. Bortable does the same on every host: the browser follows and measures the pointer, and
+   .NET decides where the item goes. What the host decides is where that .NET runs, and so what sits between the
+   pointer reaching a new position and the item moving there. *@
+
+<dl class="facts">
+    <dt>Renderer</dt>
+    <dd>@RendererInfo.Name (@(RendererInfo.IsInteractive ? "interactive" : "prerendering"))</dd>
+    <dt>.NET runs on</dt>
+    <dd>@(OperatingSystem.IsBrowser() ? "the browser (WebAssembly)" : RuntimeInformation.OSDescription)</dd>
+    <dt>Runtime</dt>
+    <dd>@RuntimeInformation.FrameworkDescription</dd>
+    <dt>A drop position is decided</dt>
+    <dd>@Positions</dd>
+    @ChildContent
+</dl>
+
+@code {
+    /// <summary>More facts, as dt/dd pairs.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string Positions => RendererInfo.Name switch
+    {
+        "WebAssembly" => "in the browser, in the page's own process: no network hop",
+        "Server" => "on the server: the browser measures the pointer, and each new position crosses the circuit",
+        "WebView" => "in this app's process, behind the BlazorWebView: no network hop",
+        _ => "not yet: a prerendered list shows its items in order, and takes a drag once a renderer takes over",
+    };
+}

@@ -757,6 +757,24 @@ code.bd-case-api {
     }
 }
 
+/* ---------- Generator diagnostics (Schema) ----------
+
+   The FAQ's disclosure rows, stretched to the docs column and carrying a badge and the trigger next to
+   the title, with the rejected and the fixed table type side by side once a row is open. */
+
+.bd-diagnostics {
+    max-width: none;
+}
+
+.bd-diagnostics summary {
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.bd-diagnostics details[open] > :not(summary) + :not(summary) {
+    margin-top: .75rem;
+}
+
 /* ---------- The architecture diagram (Getting started) ---------- */
 
 .bd-diagram {

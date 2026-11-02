@@ -45,7 +45,9 @@ public static class McpPrompts
             4. Declare the tables, then run each one through `InspectBlazeDbTable` and fix every BLZ diagnostic it reports.
                Pin field numbers with [BlazeDbField(n)] before the app stores real data.
             5. Open the database once and share it (a singleton service), and never open a browser backend during
-               prerendering or a server render.
+               prerendering or a server render. A WebAssembly client that lazy loads Bit.BlazeDb keeps that service's
+               fields free of BlazeDb's types (they go in a nested class) - see
+               `GetBlazeDbGuideSection(heading: "Lazy loading on WebAssembly")`.
             6. Build the app and fix what the compiler says.
 
             Show me the diff for each file you change, and say which project the database code lives in and why.
@@ -106,7 +108,8 @@ public static class McpPrompts
             3. Call `SearchBlazeDb` with the symptom and read the guide section it points to - "Rows are live objects" covers
                refused updates and stale rows, "Multiple tabs" covers the writer lock and replicas, "Storage quota" covers
                refused flushes, "Schema evolution" covers rows decoding into the wrong properties, "EF Core" covers
-               concurrency exceptions and what `SaveChanges` does.
+               concurrency exceptions and what `SaveChanges` does, "Lazy loading on WebAssembly" covers `Could not load
+               file or assembly 'Bit.BlazeDb'` and `Could not load type of field` in an app that lazy loads the engine.
             4. Confirm the API you are relying on with `GetBlazeDbApi` before concluding it is a bug - check the actual
                default value of the option involved (the flush interval, for one, decides when data reaches storage).
 

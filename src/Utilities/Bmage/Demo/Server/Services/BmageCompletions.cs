@@ -23,7 +23,7 @@ public static class BmageCompletions
     private static readonly string[] _symptoms =
     [
         "the page throws 'Could not load the Bmage browser module' on first load",
-        "WebP export throws ImageCapabilityException on Safari",
+        "AVIF export throws ImageCapabilityException on Safari",
         "photos from phones appear sideways after export",
         "the editor is invisible or unstyled",
         "the tab crashes on mobile when processing large photos",

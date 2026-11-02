@@ -43,7 +43,7 @@
 // variables say.
 
 $pgn-private-properties:
-    clr-fcs, clr-txt, clr, clr-hover, clr-active, clr-sel, clr-sel-hover, clr-sel-active, clr-dis-bg, clr-dis-text,
+    clr-fcs, clr-txt, clr, clr-fg, clr-hover, clr-active, clr-sel, clr-sel-hover, clr-sel-active, clr-dis-bg, clr-dis-text,
     size-btn, font-size, pad-x,
     // What the component writes into an inline style, which wins over this on the element it is written on.
     justify-content;
@@ -495,7 +495,7 @@ $pgn-private-properties:
 }
 
 .bit-pgn-otl {
-    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr, var(--bit-Pagination-outline-button-color, var(--bit-Pagination-button-color, #{$clr-pri})));
+    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr-fg, var(--bit-Pagination-outline-button-color, var(--bit-Pagination-button-color, #{$clr-pri})));
     --bit-pgn-clr-btn-bg: var(--bit-Pagination-outline-button-background, var(--bit-Pagination-button-background, transparent));
     --bit-pgn-clr-btn-brd: var(--bit-pgn-clr, var(--bit-Pagination-outline-button-border-color, var(--bit-Pagination-button-border-color, #{$clr-pri})));
     --bit-pgn-clr-btn-bg-dis: transparent;
@@ -503,7 +503,7 @@ $pgn-private-properties:
 }
 
 .bit-pgn-txt {
-    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr, var(--bit-Pagination-text-button-color, var(--bit-Pagination-button-color, #{$clr-pri})));
+    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr-fg, var(--bit-Pagination-text-button-color, var(--bit-Pagination-button-color, #{$clr-pri})));
     --bit-pgn-clr-btn-bg: var(--bit-Pagination-text-button-background, var(--bit-Pagination-button-background, transparent));
     --bit-pgn-clr-btn-brd: var(--bit-Pagination-text-button-border-color, var(--bit-Pagination-button-border-color, transparent));
     --bit-pgn-clr-btn-bg-dis: transparent;
@@ -512,12 +512,15 @@ $pgn-private-properties:
 
 // Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss). Published
 // only by an explicit Color; an unset one is the primary role, which the reads above spell out after the public
-// variables.
+// variables. The page numbers of an Outline or Text pagination are read on the page rather than over the role's fill,
+// so they are drawn in the role's text color (role-text) - a secondary or a warning main is picked to fill a surface
+// and falls under the 4.5:1 of body text on white - while the border keeps the main.
 @each $role, $tokens in $bit-semantic-color-roles {
     .bit-pgn-#{$role} {
         --bit-pgn-clr-fcs: #{role($tokens, focus)};
         --bit-pgn-clr-txt: #{role($tokens, on)};
         --bit-pgn-clr: #{role($tokens, main)};
+        --bit-pgn-clr-fg: #{role-text($role, $tokens)};
         --bit-pgn-clr-hover: #{role($tokens, hover)};
         --bit-pgn-clr-active: #{role($tokens, active)};
         --bit-pgn-clr-sel: #{role($tokens, dark)};

@@ -7,11 +7,18 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Loads the page. The token is cancelled when the page tears down - the reader left, or the session is
+    /// closing - before <see cref="OnTearDown"/> runs: a load still under way then fails on the context the
+    /// teardown disposed, and has nobody left to report it to.
+    /// </summary>
     [Parameter]
-    public EventCallback OnReady { get; set; }
+    public EventCallback<CancellationToken> OnReady { get; set; }
 
     [Parameter]
     public EventCallback OnTearDown { get; set; }
+
+    private CancellationTokenSource? _loading;
 
     protected override async Task OnInitializedAsync()
     {
@@ -30,15 +37,27 @@
         if (Database.Database.IsOpen)
         {
             await ReadyAsync();
+            return;
         }
-        else
+
+        try
         {
             await Database.EnsureSessionAsync();
+        }
+        catch (Exception)
+        {
+            // No backend would take it, or the file it found is not a database. Nothing raised
+            // AfterSessionReset, so the page loads anyway: its own open fails the same way and it shows
+            // why where the reader is looking - rather than the whole page, the Database files page and
+            // its delete button included, giving way to the error boundary.
+            await ReadyAsync();
         }
     }
 
     private async Task TearDownAsync()
     {
+        _loading?.Cancel();
+
         if (OnTearDown.HasDelegate)
         {
             await OnTearDown.InvokeAsync();
@@ -47,9 +66,11 @@
 
     private async Task ReadyAsync()
     {
+        var loading = _loading = new CancellationTokenSource();
+
         if (OnReady.HasDelegate)
         {
-            await OnReady.InvokeAsync();
+            await OnReady.InvokeAsync(loading.Token);
         }
     }
 

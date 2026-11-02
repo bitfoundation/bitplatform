@@ -1,3 +1,5 @@
+using Bit.Bmotion.Tests.TestInfra;
+
 namespace Bit.Bmotion.Tests.Models;
 
 /// <summary>
@@ -111,6 +113,130 @@ public class ValueUtilityTests
         now = 200; source.SetSync(10);    // no movement ⇒ zero velocity
         Assert.AreEqual(0, velocity.Value, 1e-6);
     }
+
+    [TestMethod]
+    public void Velocity_SettlesToZero_OnceTheSourceStopsChanging()
+    {
+        // A scroll that stops sends no "zero" event: the last change is the last thing the source reports.
+        // The velocity must not hold that speed forever (a scroll-driven skew would stay leaning).
+        var context = new ManualSynchronizationContext();
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        var velocity = Bm.Velocity(source);
+
+        ChangeUnder(context, () =>
+        {
+            now = 0; source.SetSync(0);
+            now = 16; source.SetSync(40);
+            now = 32; source.SetSync(80);
+        });
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+
+        now = 10_000;   // long still - the settle check that the last change scheduled finds it so
+        var settled = SpinWait.SpinUntil(() => { context.Pump(); return velocity.Value == 0; }, TimeSpan.FromSeconds(2));
+
+        Assert.IsTrue(settled, $"velocity still {velocity.Value} after the source stopped");
+    }
+
+    [TestMethod]
+    public void Velocity_Settles_WhenItsCheckFindsTheSourceNotYetStill()
+    {
+        // The check's timer and the source's clock are different clocks (and a test's clock is a third): one that runs
+        // ahead finds the source not yet still, and must look again later rather than give up with the speed held.
+        var context = new ManualSynchronizationContext();
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        var velocity = Bm.Velocity(source);
+        ChangeUnder(context, () =>
+        {
+            now = 0; source.SetSync(0);
+            now = 16; source.SetSync(40);
+            now = 32; source.SetSync(80);
+        });
+
+        // By the source's clock no time passes: the first check finds it still moving.
+        Assert.IsTrue(SpinWait.SpinUntil(() => context.Posted > 0, TimeSpan.FromSeconds(2)), "the check never came");
+        context.Pump();
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+
+        now = 10_000;
+        var settled = SpinWait.SpinUntil(() => { context.Pump(); return velocity.Value == 0; }, TimeSpan.FromSeconds(2));
+
+        Assert.IsTrue(settled, $"velocity still {velocity.Value} after the source stopped");
+    }
+
+    [TestMethod]
+    public void Velocity_OfASourceAlreadyMoving_SettlesOnceItStops_WithNoFurtherChange()
+    {
+        // A velocity made while its source moves starts at the source's speed; the source can stop before it changes
+        // again, leaving no change to schedule the check that brings the velocity back to zero.
+        var context = new ManualSynchronizationContext();
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        ChangeUnder(context, () =>
+        {
+            now = 0; source.SetSync(0);
+            now = 16; source.SetSync(40);
+            now = 32; source.SetSync(80);
+        });
+
+        var velocity = ManualSynchronizationContext.RunUnder(context, () => Bm.Velocity(source));
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+
+        now = 10_000;
+        var settled = SpinWait.SpinUntil(() => { context.Pump(); return velocity.Value == 0; }, TimeSpan.FromSeconds(2));
+
+        Assert.IsTrue(settled, $"velocity still {velocity.Value} after the source stopped");
+    }
+
+    [TestMethod]
+    public void Velocity_DoesNotSettle_WhileTheSourceKeepsChanging()
+    {
+        var context = new ManualSynchronizationContext();
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        var velocity = Bm.Velocity(source);
+
+        for (int i = 0; i <= 20; i++)
+        {
+            ChangeUnder(context, () => { now = i * 16; source.SetSync(i * 40.0); });
+            context.Pump();
+            Thread.Sleep(5);   // well inside the window a 16 ms pace allows
+        }
+
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+    }
+
+    [TestMethod]
+    public void Velocity_ChangedFromAThreadWithNoWayBack_IsNotSettledFromAnother()
+    {
+        // No synchronization context, off WebAssembly: a check would run on a timer's thread, racing the thread that
+        // changes the source. Nothing is scheduled; the velocity keeps its speed until the source changes again.
+        var source = Bm.Value(0.0);
+        long now = 0;
+        source.TimeSource = () => now;
+        var velocity = Bm.Velocity(source);
+        ChangeUnder(null, () =>
+        {
+            now = 0; source.SetSync(0);
+            now = 16; source.SetSync(40);
+            now = 32; source.SetSync(80);
+        });
+
+        now = 10_000;
+        Thread.Sleep(150);   // three times the window a 16 ms pace allows
+
+        Assert.AreEqual(2500, velocity.Value, 1e-6);
+        Assert.AreEqual(0, source.GetVelocity(), "the source itself reads as still");
+    }
+
+    // Runs the source changes in change with context as the current one: where whatever they schedule runs.
+    private static void ChangeUnder(SynchronizationContext? context, Action change)
+        => ManualSynchronizationContext.RunUnder(context, () => { change(); return 0; });
 
     [TestMethod]
     public void Velocity_RejectsNullSource()

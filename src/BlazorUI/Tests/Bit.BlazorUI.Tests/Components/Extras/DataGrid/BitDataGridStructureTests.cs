@@ -230,12 +230,19 @@ public class BitDataGridStructureTests : BunitTestContext
             Column<Row>("Name", c => c.Add("Group", "Product")),
             Column<Row>("Kind", c => c.Add("Group", "Product")),
             Column<Row>("Price"));
-        var component = RenderGrid(columns, p => p.Add(x => x.SelectionMode, BitSelectionMode.Multiple));
+        var component = RenderGrid(columns, p =>
+        {
+            p.Add(x => x.SelectionMode, BitSelectionMode.Multiple);
+            p.Add(x => x.Editable, true);
+        });
 
-        var banners = component.FindAll(".bit-dtg-group-header-row [role=columnheader]");
-        CollectionAssert.AreEqual(new[] { "1", "2", "3", "5" }, banners.Select(b => b.GetAttribute("aria-colindex")).ToArray());
-        CollectionAssert.AreEqual(new string?[] { null, null, "2", null }, banners.Select(b => b.GetAttribute("aria-colspan")).ToArray());
-        Assert.AreEqual("Product", banners[2].TextContent.Trim());
+        var cells = component.FindAll(".bit-dtg-group-header-row > [aria-colindex]");
+        CollectionAssert.AreEqual(new[] { "1", "2", "3", "5", "6" }, cells.Select(c => c.GetAttribute("aria-colindex")).ToArray());
+        CollectionAssert.AreEqual(new string?[] { null, null, "2", null, null }, cells.Select(c => c.GetAttribute("aria-colspan")).ToArray());
+        CollectionAssert.AreEqual(new[] { "gridcell", "gridcell", "columnheader", "gridcell", "gridcell" },
+            cells.Select(c => c.GetAttribute("role")).ToArray(),
+            "only a named banner heads its columns; the blank cells over the selection, ungrouped and command columns are plain cells");
+        Assert.AreEqual("Product", cells[2].TextContent.Trim());
     }
 
     [TestMethod]
@@ -372,6 +379,73 @@ public class BitDataGridStructureTests : BunitTestContext
         TreeCell(component, "Fruit").FocusIn();
         TreeCell(component, "Fruit").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
         CollectionAssert.AreEqual(new[] { "Fruit", "Apple", "Banana", "Vegetables" }, TreeRows(component));
+    }
+
+    [TestMethod]
+    public void EveryCellOfTheFilterRowIsAPlainCell()
+    {
+        // A frozen column that can't be filtered, a filterable one under a banner, one with an operator dropdown and
+        // one whose FilterTemplate renders nothing, behind every leading column and before the command column.
+        var columns = Columns(
+            Column<Row>("Kind", c => { c.Add("Frozen", true); c.Add("Filterable", false); }),
+            Column<Row>("Name", c => c.Add("Group", "Product")),
+            Column<Row>("Price"),
+            Column<Row>("Id", c => c.Add("FilterTemplate", (RenderFragment<BitDataGridFilterContext>)(_ => _ => { }))));
+        var component = RenderGrid(columns, p =>
+        {
+            p.Add(x => x.Filterable, true);
+            p.Add(x => x.FilterOperators, true);
+            p.Add(x => x.Editable, true);
+            p.Add(x => x.ShowRowNumbers, true);
+            p.Add(x => x.RowReorderable, true);
+            p.Add(x => x.DetailTemplate, (RenderFragment<Row>)(r => b => b.AddContent(0, r.Name)));
+            p.Add(x => x.SelectionMode, BitSelectionMode.Multiple);
+        });
+
+        var cells = component.FindAll(".bit-dtg-filter-row > [aria-colindex]");
+        CollectionAssert.AreEqual(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9" }, cells.Select(c => c.GetAttribute("aria-colindex")).ToArray());
+        Assert.IsTrue(cells.All(c => c.GetAttribute("role") == "gridcell"),
+            "the header row names the columns; a filter-row cell holds a control, or nothing, and heads no column");
+        Assert.IsTrue(cells[4].ClassList.Contains("bit-dtg-sticky"), "the frozen column's cell stays pinned");
+        Assert.IsNotNull(cells[5].QuerySelector(".bit-dtg-filter-input"));
+        Assert.IsNotNull(cells[6].QuerySelector(".bit-dtg-filter-op"));
+        Assert.AreEqual(string.Empty, cells[7].QuerySelector(".bit-dtg-filter-custom")!.TextContent);
+
+        // The banner row above keeps its one named banner as the only header among them.
+        var banners = component.FindAll(".bit-dtg-group-header-row > [role=columnheader]");
+        Assert.AreEqual(1, banners.Count);
+        Assert.AreEqual("Product", banners[0].TextContent.Trim());
+
+        // A value-less operator leaves the cell its dropdown alone; it is still a plain cell. (A filter in place
+        // takes the reorder column away, so the cells are counted again.)
+        component.FindAll(".bit-dtg-filter-row .bit-dtg-filter-op")[0].Change("IsEmpty");
+        cells = component.FindAll(".bit-dtg-filter-row > [aria-colindex]");
+        Assert.AreEqual(8, cells.Count);
+        Assert.IsTrue(cells.All(c => c.GetAttribute("role") == "gridcell"));
+        var nameCell = component.Find(".bit-dtg-filter-row .bit-dtg-filter-op").Closest("[aria-colindex]")!;
+        Assert.AreEqual("5", nameCell.GetAttribute("aria-colindex"));
+        Assert.IsNull(nameCell.QuerySelector(".bit-dtg-filter-input"));
+    }
+
+    [TestMethod]
+    public async Task TheFilterRowsColumnVirtualizationSpacersArePlainCellsToo()
+    {
+        var columns = Columns(Enumerable.Range(0, 12)
+            .Select(i => Column<Row>("Name", c => { c.Add("ColumnId", $"c{i}"); c.Add("Width", "100px"); }))
+            .ToArray());
+        var component = RenderGrid(columns, p =>
+        {
+            p.Add(x => x.Filterable, true);
+            p.Add(x => x.VirtualizeColumns, true);
+        });
+
+        // 400px viewport at scroll 0 (+200px overscan): 7 columns render and one spacer stands in for the rest.
+        await component.InvokeAsync(() => component.Instance.OnHorizontalScrollAsync(0, 400));
+
+        var spacers = component.FindAll(".bit-dtg-filter-row > [aria-hidden]");
+        Assert.AreEqual(1, spacers.Count);
+        Assert.AreEqual("gridcell", spacers[0].GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-filter-row > [role=columnheader]").Count);
     }
 
     [TestMethod]

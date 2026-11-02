@@ -113,6 +113,11 @@ internal static class BitMapJsRuntimeExtensions
         return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.setMarkerPosition", id, markerId, lat, lng);
     }
 
+    public static ValueTask BitMapSetMarkerDoubleClick(this IJSRuntime jsRuntime, string jsObjectName, string id, bool enabled)
+    {
+        return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.setMarkerDoubleClick", id, enabled);
+    }
+
     public static ValueTask BitMapOpenMarkerPopup(this IJSRuntime jsRuntime, string jsObjectName, string id, string markerId)
     {
         return jsRuntime.InvokeVoid($"BitBlazorUI.{jsObjectName}.openMarkerPopup", id, markerId);

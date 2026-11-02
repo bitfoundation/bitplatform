@@ -67,6 +67,30 @@ public sealed class PeopleOnlyContext : DbContext
     public DbSet<Person> People => Set<Person>();
 }
 
+public sealed class FilteredPeopleContext : DbContext
+{
+    public FilteredPeopleContext(DbContextOptions<FilteredPeopleContext> options) : base(options)
+    {
+    }
+
+    public DbSet<Person> People => Set<Person>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<Person>().HasQueryFilter(p => p.Active);
+}
+
+public sealed class NamedFilterPeopleContext : DbContext
+{
+    public NamedFilterPeopleContext(DbContextOptions<NamedFilterPeopleContext> options) : base(options)
+    {
+    }
+
+    public DbSet<Person> People => Set<Person>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<Person>().HasQueryFilter("ActiveOnly", p => p.Active);
+}
+
 public enum TagKind : byte
 {
     Topic,

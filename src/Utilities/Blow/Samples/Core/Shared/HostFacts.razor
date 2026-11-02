@@ -1,0 +1,28 @@
+﻿@* Where this page is running. Blow does the same on every host; what the host decides is where the C# that handles
+   each pointer move runs, and so what sits between a pointer moving and a node following it. *@
+
+<dl class="facts">
+    <dt>Renderer</dt>
+    <dd>@RendererInfo.Name (@(RendererInfo.IsInteractive ? "interactive" : "prerendering"))</dd>
+    <dt>.NET runs on</dt>
+    <dd>@(OperatingSystem.IsBrowser() ? "the browser (WebAssembly)" : RuntimeInformation.OSDescription)</dd>
+    <dt>Runtime</dt>
+    <dd>@RuntimeInformation.FrameworkDescription</dd>
+    <dt>A drag is handled</dt>
+    <dd>@Gestures</dd>
+    @ChildContent
+</dl>
+
+@code {
+    /// <summary>More facts, as dt/dd pairs.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string Gestures => RendererInfo.Name switch
+    {
+        "WebAssembly" => "in the browser, in the page's own process: no network hop",
+        "Server" => "on the server: every pointer move crosses the circuit and comes back as a render",
+        "WebView" => "in this app's process, behind the BlazorWebView: no network hop",
+        _ => "not yet: a prerendered canvas shows its markup, and takes input once a renderer takes over",
+    };
+}

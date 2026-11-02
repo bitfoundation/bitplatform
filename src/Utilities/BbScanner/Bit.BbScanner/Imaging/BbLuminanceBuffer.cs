@@ -67,7 +67,8 @@ public sealed class BbLuminanceBuffer : IDisposable
         {
             if (_pooled)
             {
-                ArrayPool<byte>.Shared.Return(_data);
+                // Cleared on the way back: the shared pool hands the array to whatever rents it next.
+                ArrayPool<byte>.Shared.Return(_data, clearArray: true);
             }
 
             _data = ArrayPool<byte>.Shared.Rent(required);
@@ -108,6 +109,15 @@ public sealed class BbLuminanceBuffer : IDisposable
         }
     }
 
+    /// <summary>Zeroes the whole buffer, the part past the current size included, which an earlier, larger image used.</summary>
+    internal void Clear()
+    {
+        if (_data is not null)
+        {
+            System.Array.Clear(_data);
+        }
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {
@@ -115,7 +125,8 @@ public sealed class BbLuminanceBuffer : IDisposable
         _data = null;
         if (data is not null && _pooled)
         {
-            ArrayPool<byte>.Shared.Return(data);
+            // Cleared on the way back: the shared pool hands the array to whatever rents it next.
+            ArrayPool<byte>.Shared.Return(data, clearArray: true);
         }
     }
 }

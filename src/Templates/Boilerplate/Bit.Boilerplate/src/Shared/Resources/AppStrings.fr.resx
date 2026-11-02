@@ -168,6 +168,9 @@
   <data name="UnknownException" xml:space="preserve">
     <value>Une erreur inconnue s’est produite</value>
   </data>
+  <data name="ExternalSignInUnknownError" xml:space="preserve">
+    <value>Une erreur inconnue s’est produite lors de la connexion avec un compte externe</value>
+  </data>
   <data name="UpdateConcurrencyException" xml:space="preserve">
     <value>L’enregistrement a été modifié par un autre utilisateur après que vous ayez obtenu les données originales. L’opération a été annulée.</value>
   </data>
@@ -1101,6 +1104,12 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
   </data>
   <data name="DashboardSubtitle" xml:space="preserve">
     <value>Voici vos données analytiques</value>
+  </data>
+  <data name="Resize" xml:space="preserve">
+    <value>Redimensionner</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Masquer</value>
   </data>
     <data name="DeleteCategory" xml:space="preserve">
     <value>Supprimer la catégorie</value>
@@ -2096,4 +2105,15 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="SignOutOfAllAccounts" xml:space="preserve">
     <value>Se déconnecter de tous les comptes de cet appareil</value>
   </data>
+  <!--#if (framework == 'net11.0') -->
+    <data name="KioskTitle" xml:space="preserve">
+    <value>Mode kiosque</value>
+  </data>
+    <data name="KioskMessage" xml:space="preserve">
+    <value>Cette application est verrouillée à l'écran : la touche Windows, Alt+Tab et la fermeture de la fenêtre sont tous bloqués. Utilisez le bouton pour quitter.</value>
+  </data>
+    <data name="KioskExitApp" xml:space="preserve">
+    <value>Quitter l'application</value>
+  </data>
+  <!--#endif -->
 </root>

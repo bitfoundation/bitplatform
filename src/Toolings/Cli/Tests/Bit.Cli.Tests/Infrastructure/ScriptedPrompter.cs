@@ -54,6 +54,13 @@ public sealed class ScriptedPrompter : IPrompter
         return AnswerFor(question) is bool answer ? answer : defaultValue;
     }
 
+    public string Secret(string question)
+    {
+        Record(question, [], []);
+
+        return AnswerFor(question) as string ?? "";
+    }
+
     private object? AnswerFor(string question) => answers.LastOrDefault(a => question.Contains(a.Question, StringComparison.Ordinal)).Answer;
 
     private void Record(string question, IEnumerable<string> choices, IEnumerable<string> preselected) => Prompts.Add(new Prompt(question, [.. choices], [.. preselected]));

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The browser half of the lazy loading sample: it downloads Bit.Bcrdt.wasm only when a page that collaborates
+         opens. It does everything the README's "Lazy loading on WebAssembly" section asks of such a project, and the
+         end-to-end suite (Tests/Bit.Bcrdt.Tests.E2E, LazyLoadingTests) publishes it and checks it in a browser. -->
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
+        <ProjectReference Include="..\..\..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+    </ItemGroup>
+
+    <!-- AOT builds load Bit.Bcrdt with the rest of the app. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bcrdt.wasm" />
+        <RuntimeHostConfigurationOption Include="Bit.Bcrdt.Samples.Lazy.LazyLoadsBcrdt" Value="true" Trim="true" />
+    </ItemGroup>
+
+</Project>

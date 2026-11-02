@@ -265,7 +265,7 @@ new("wwwroot/frames/echo.html", """
                Description="Posts a message carrying ports. They are transferred, so the handles passed here stop working." />
     <ApiMember Name="WindowMessage"
                Signature="record (string Origin, bool IsBinary, string? Json, byte[]? Data, MessagePortHandle[] Ports) { T? Deserialize<T>() }"
-               Description="A received message. Origin is set by the browser and cannot be forged - it is the only thing identifying the sender. Ports carries whatever the sender transferred; where several listeners accept the same message, only the first one registered is given them, because a port has one owner." />
+               Description="A received message. Origin is set by the browser and cannot be forged - it is the only thing identifying the sender. Ports carries whatever the sender transferred; where several listeners accept the same message, only the first one registered is given them, because a port has one owner. JSON over about 32 MB arrives as just the type name, like &quot;[object Object]&quot;, with a console warning." />
 </ApiTable>
 
 @code {

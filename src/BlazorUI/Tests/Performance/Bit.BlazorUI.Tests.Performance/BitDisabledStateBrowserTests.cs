@@ -38,6 +38,11 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
         ["accentcolorswitcher"], ["themeswitcher"], ["chart"], ["countrypicker"], ["datagrid"], ["fullcalendar"], ["fullcalendar-week"],
         ["markdowneditor"], ["markdownviewer"], ["pdfviewer-empty"], ["pdfviewer"], ["phoneinput"], ["richtexteditor"], ["timezonepicker"],
         ["richtexteditor-readonly"],
+        ["aijsonview"], ["aicitationmarker"], ["aisourcecard"], ["aisourcelist"], ["aiagentrunview"], ["aiscrolltolatest"],
+        ["aiconversationlist"], ["aitoolapproval"], ["aierrorview"], ["aicopybutton"], ["aiform"], ["aipromptinput"],
+        ["aimodelselector"], ["aivoiceinput"], ["aiattachmentchip"],
+        ["aichat"], ["aimessagelist"], ["aichatmessage"], ["aimessageactions"], ["aiemptystate"], ["aicollapsible"],
+        ["aitoolcallview"], ["aiartifactview"],
     ];
 
     // The parts that render native controls disabled while they are enabled: a bound reached, nothing to act on yet,
@@ -237,6 +242,12 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
         await Page.GotoAsync($"{BaseUrl}/regression/disabled-state?part={part}&disabled={(disabled ? 1 : 0)}");
         await WaitForStatus("Ready");
         await Settle(part);
+
+        // BitAiVoiceInput is rendered only where the browser can transcribe speech, which not every engine can.
+        if (part is "aivoiceinput" && await Page.EvaluateAsync<bool>("() => !(window.SpeechRecognition || window.webkitSpeechRecognition)"))
+        {
+            Assert.Inconclusive("This engine has no speech recognition, so BitAiVoiceInput renders nothing.");
+        }
     }
 
     private async Task Toggle(string status)

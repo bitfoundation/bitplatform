@@ -23,6 +23,8 @@
         respectReducedMotion: boolean;
         /** The direction the map's Dir names (true for right to left), or null to read the one the root is laid out in. */
         explicitRtl: boolean | null;
+        /** Whether the map renders ChildContent, whose overlay is laid out around the provider's controls. */
+        overlay: boolean;
     };
 
     type ChromeState = {
@@ -47,7 +49,27 @@
             /** The auto-pan's settling window: when it ends, the popup size last seen, and for how many frames in a row. */
             panDeadline: number | null, panWidth: number, panHeight: number, panStableFrames: number,
         } | null;
+        /** Watches the provider's controls, whose room in the top corners the overlay is laid out around. */
+        controls: {
+            mutationObserver: MutationObserver | null, resizeObserver: ResizeObserver | null,
+            /** The controls the resize observer watches, kept to the ones on the map at the last measure. */
+            observed: Set<Element>, frame: number | null,
+        } | null;
     };
+
+    /**
+     * The controls and attribution each provider draws in the corners of the map: Leaflet's, MapLibre's, Mapbox's and
+     * OpenLayers' controls, the widgets in ArcGIS' corners and its attribution, Azure Maps' controls, attribution and
+     * logo, and the bars and buttons Cesium puts around its globe.
+     */
+    const mapControls = '.leaflet-control, .maplibregl-ctrl, .mapboxgl-ctrl, .ol-control, .ol-scale-line, '
+        + '.esri-ui-corner > *, .esri-attribution, .azure-maps-control-container, .map-copyright, .map-logo-control, '
+        + '.cesium-viewer-toolbar, .cesium-viewer-bottom, .cesium-viewer-animationContainer, '
+        + '.cesium-viewer-timelineContainer, .cesium-viewer-fullscreenContainer, .cesium-viewer-vrContainer';
+
+    /** What each provider holds those in, where a control coming, going or changing shows as a mutation. */
+    const mapControlScopes = '.leaflet-control-container, .maplibregl-control-container, .mapboxgl-control-container, '
+        + '.ol-overlaycontainer-stopevent, .esri-ui, .esri-attribution, .atlas-control-container, .map-copyright, .cesium-viewer';
 
     /**
      * Visibility observers still waiting for their container to be scrolled to, keyed by the id of
@@ -218,6 +240,7 @@
                 themeFrame: null,
                 themeFingerprint: '',
                 anchor: null,
+                controls: null,
             };
             BitMapChrome._instances[id] = state;
 
@@ -229,6 +252,7 @@
             BitMapChrome._applyContextLossReporting(state);
             BitMapChrome._applyFullscreenReporting(id, state);
             BitMapChrome._applyThemeReporting(id, state);
+            BitMapChrome._applyControlInsets(state);
         }
 
         /**
@@ -324,6 +348,7 @@
             if (s.hintTimer) clearTimeout(s.hintTimer);
             if (s.themeObserver) { try { s.themeObserver.disconnect(); } catch { /* ignore */ } }
             if (s.themeFrame !== null) cancelAnimationFrame(s.themeFrame);
+            BitMapChrome._releaseControlInsets(s);
             for (const l of s.listeners) {
                 try { l.target.removeEventListener(l.type, l.handler, l.capture); } catch { /* ignore */ }
             }
@@ -650,6 +675,117 @@
                 const scheme = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
                 if (scheme) BitMapChrome._listen(s, scheme, 'change', check);
             } catch { /* ignore */ }
+        }
+
+        /**
+         * The overlay lays ChildContent out from its top-start corner, which is where most providers draw their zoom
+         * buttons, and the provider's controls and attribution draw above the overlay - so a child left there would sit
+         * under them. The room the controls take in each top corner is measured here and handed to the stylesheet
+         * (--bit-map-ctl-tl / -tr, on the root), which starts the children below the controls of the corner on their
+         * start side. Measured rather than known: which corner a control takes, and how much of it, differs by provider,
+         * by its options and by the theme, and changes as a control is switched on or off or its attribution grows.
+         */
+        private static _applyControlInsets(s: ChromeState) {
+            if (!s.options.overlay) return;
+
+            const controls: NonNullable<ChromeState['controls']> = { mutationObserver: null, resizeObserver: null, observed: new Set(), frame: null };
+            s.controls = controls;
+
+            const schedule = () => {
+                if (s.controls !== controls || controls.frame !== null) return;
+                controls.frame = requestAnimationFrame(() => {
+                    controls.frame = null;
+                    if (s.controls === controls) BitMapChrome._measureControls(s, controls);
+                });
+            };
+
+            // A control resizing in place (a font landing, an attribution growing) and the map itself resizing - which
+            // moves its controls between halves - show as resizes.
+            if (typeof ResizeObserver === 'function') {
+                controls.resizeObserver = new ResizeObserver(schedule);
+                try { controls.resizeObserver.observe(s.root); } catch { /* ignore */ }
+            }
+
+            // A control added or removed (a sync switching ZoomControl), or one changing state through its classes (an
+            // attribution expanding), shows as a mutation inside the provider's controls - the rest of the canvas churns
+            // with every tile and marker, and is let by. So does a render of Blazor's writing the root's style attribute
+            // again, which drops the measures set on it.
+            try {
+                controls.mutationObserver = new MutationObserver(records => {
+                    for (const r of records) {
+                        if (r.target === s.root) { schedule(); return; }
+                        const el = r.target instanceof Element ? r.target : r.target.parentElement;
+                        if (el?.closest(mapControlScopes)) { schedule(); return; }
+                    }
+                });
+                controls.mutationObserver.observe(s.canvas, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+                controls.mutationObserver.observe(s.root, { attributes: true, attributeFilter: ['style'] });
+            } catch { /* ignore */ }
+
+            BitMapChrome._measureControls(s, controls);
+        }
+
+        /**
+         * The room the visible controls in the top half of the map take below its top edge, on either side of its middle,
+         * written to the root as --bit-map-ctl-tl / -tr (and taken off it while there is none). A control spanning the
+         * middle takes room on both sides.
+         */
+        private static _measureControls(s: ChromeState, controls: NonNullable<ChromeState['controls']>) {
+            const frame = s.canvas.getBoundingClientRect();
+            if (frame.width <= 0 || frame.height <= 0) return;
+
+            const middle = frame.left + frame.width / 2;
+            const found = new Set<Element>();
+            let left = 0, right = 0;
+            s.canvas.querySelectorAll(mapControls).forEach(el => {
+                found.add(el);
+                const box = el.getBoundingClientRect();
+                if (box.width <= 0 || box.height <= 0 || box.top >= frame.top + frame.height / 2) return;
+                // OpenLayers keeps its rotate button in place while the map is not rotated, only hidden.
+                if (getComputedStyle(el).visibility === 'hidden') return;
+                const room = box.bottom - frame.top;
+                if (box.left < middle) left = Math.max(left, room);
+                if (box.right > middle) right = Math.max(right, room);
+            });
+
+            // Each control is watched for a change of size from the first measure it is found in, and let go of once it
+            // is gone; a control watched already is not observed again, which would report it again and measure forever.
+            const resizes = controls.resizeObserver;
+            if (resizes) {
+                for (const el of controls.observed) {
+                    if (found.has(el)) continue;
+                    try { resizes.unobserve(el); } catch { /* ignore */ }
+                    controls.observed.delete(el);
+                }
+                for (const el of found) {
+                    if (controls.observed.has(el)) continue;
+                    try { resizes.observe(el); } catch { /* ignore */ }
+                    controls.observed.add(el);
+                }
+            }
+
+            BitMapChrome._setControlInset(s.root, '--bit-map-ctl-tl', left);
+            BitMapChrome._setControlInset(s.root, '--bit-map-ctl-tr', right);
+        }
+
+        /** Writes a measure only when it changed, since every write of the root's style is a mutation watched above. */
+        private static _setControlInset(root: HTMLElement, name: string, room: number) {
+            const value = room > 0 ? `${Math.ceil(room)}px` : '';
+            if (root.style.getPropertyValue(name) === value) return;
+            if (value) root.style.setProperty(name, value);
+            else root.style.removeProperty(name);
+        }
+
+        private static _releaseControlInsets(s: ChromeState) {
+            const controls = s.controls;
+            if (!controls) return;
+            s.controls = null;
+            if (controls.mutationObserver) { try { controls.mutationObserver.disconnect(); } catch { /* ignore */ } }
+            if (controls.resizeObserver) { try { controls.resizeObserver.disconnect(); } catch { /* ignore */ } }
+            if (controls.frame !== null) cancelAnimationFrame(controls.frame);
+            // The controls measured are the ones of the provider that is going: a new attach measures its own.
+            s.root.style.removeProperty('--bit-map-ctl-tl');
+            s.root.style.removeProperty('--bit-map-ctl-tr');
         }
 
         /**

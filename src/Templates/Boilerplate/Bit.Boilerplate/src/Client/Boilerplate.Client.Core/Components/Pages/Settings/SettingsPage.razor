@@ -1,4 +1,6 @@
 @*+:cnd:noEmit*@
+@* [mirror] settings page and its sections - keep in sync with: *@
+@* - src/Workbench/Components/Pages/AppPages/Settings/ *@
 @attribute [Route(PageUrls.Settings + "/{Section?}")]
 @attribute [Route("{culture?}" + PageUrls.Settings + "/{Section?}")]
 @attribute [Authorize]
@@ -9,7 +11,7 @@
 
 <section>
     <BitStack Class="stack">
-        <BitAccordionList TItem="BitAccordionListOption" @bind-ExpandedKey="expandedSection" LazyContent ScrollIntoViewOnExpand Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
+        <BitAccordionList TItem="BitAccordionListOption" HeadingLevel="2" @bind-ExpandedKey="expandedSection" LazyContent ScrollIntoViewOnExpand Background="BitColorKind.Secondary" Border="BitColorKind.Transparent">
 
             <BitAccordionListOption Key="@PageUrls.SettingsSections.Profile" Title="@Localizer[nameof(AppStrings.ProfileTitle)]" Description="@Localizer[nameof(AppStrings.ProfileSubtitle)]">
                 <ProfileSection />

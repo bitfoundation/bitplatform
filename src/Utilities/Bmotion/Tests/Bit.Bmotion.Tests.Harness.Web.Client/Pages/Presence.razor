@@ -35,6 +35,22 @@
     </div>
 </section>
 
+@* A dialog on its way out can't be focused or pressed again; shown again mid-exit, it is interactive again. *@
+<section class="row">
+    <button id="dialog-toggle" @onclick="() => Change(() => _dialog = !_dialog)">toggle dialog</button>
+    <BmotionAnimatePresence IsPresent="_dialog" OnExitComplete='() => Log("dialog:exited")'>
+        <Bmotion Initial="Bm.To(opacity: 0)"
+                 Animate="Bm.To(opacity: 1)"
+                 Exit="Bm.To(opacity: 0)"
+                 Transition="Bm.Tween(0.8, BmEase.Linear)"
+                 OnAnimationComplete='_ => Log(_dialog ? "dialog:entered" : "dialog:left")'>
+            <div id="dialog" class="small">
+                <button id="dialog-ok" @onclick='() => Log("dialog:ok")'>ok</button>
+            </div>
+        </Bmotion>
+    </BmotionAnimatePresence>
+</section>
+
 <h2>PresenceSwitch</h2>
 <section class="row">
     <button id="switch-next" @onclick="() => Change(() => _page++)">next</button>
@@ -97,6 +113,7 @@
 @code {
     private bool _sync = true;
     private bool _pop = true;
+    private bool _dialog = true;
     private int _page = 1;
     private int _next = 3;
     private int? _removed;
