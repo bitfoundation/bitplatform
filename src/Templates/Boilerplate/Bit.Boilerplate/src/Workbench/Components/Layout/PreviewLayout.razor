@@ -4,14 +4,14 @@
     @* The app's BitParams, so the page's bit components get the same defaults as in the app *@
     <Boilerplate.Client.Core.Components.AppBitParams>
         @* A page that throws shows an error instead, which still tells the shell the view is ready *@
-        <ErrorBoundary @ref="errorBoundary">
+        <PageErrorBoundary>
             <ChildContent>
                 @Body
             </ChildContent>
             <ErrorContent>
                 <LayoutError MarkReady />
             </ErrorContent>
-        </ErrorBoundary>
+        </PageErrorBoundary>
     </Boilerplate.Client.Core.Components.AppBitParams>
     <BitModalContainer />
 </CascadingValue>

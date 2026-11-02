@@ -14,20 +14,20 @@
 }
 else if (isSmallScreen && IsTouring is false)
 {
-    @* On a phone: the selected view's page rendered right here, and the tools in a full-screen panel behind a floating button. *@
+    @* On a phone: the selected view as the whole screen, and the tools in a full-screen panel behind a floating button. *@
     <div class="phone-layout">
-        <div class="inline-surface">
+        <div class="phone-view">
             @if (isRestored)
             {
-                <PreviewSurface @key="store.SelectedPane.Scenario" Page="pageInfo" />
+                <PreviewPane @key="store.SelectedPane.Id" Pane="store.SelectedPane" Page="pageInfo" SnapshotId="@SnapshotOf(store.SelectedPane)" FullScreen />
             }
         </div>
 
-        @if (isPickingInline)
+        @if (store.Mode == WorkbenchModes.Comment)
         {
             <div class="pick-banner" role="status">
                 <span>@Localizer[nameof(WorkbenchStrings.TapToComment)]</span>
-                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="CancelInlinePick">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="() => SetMode(WorkbenchModes.Browse)">@Localizer[nameof(WorkbenchStrings.Cancel)]</BitButton>
             </div>
         }
 
@@ -48,6 +48,8 @@ else if (isSmallScreen && IsTouring is false)
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Help" OnClick="StartTour"
                                Title="@Localizer[nameof(WorkbenchStrings.TourStart)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.TourStart)]" />
                     <SoundToggle />
+                    <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Contrast" OnClick="ToggleShellTheme"
+                               Title="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ToggleWorkbenchTheme)]" />
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Camera" OnClick="() => DownloadScreenshot(store.SelectedPane)"
                                Title="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" AriaLabel="@Localizer[nameof(WorkbenchStrings.ScreenshotThisView)]" />
                     <BitButton IconOnly Variant="BitVariant.Text" IconName="@BitIconName.Cancel" OnClick="() => isToolsOpen = false"
@@ -60,6 +62,7 @@ else if (isSmallScreen && IsTouring is false)
                     <ScenarioInspector Page="pageInfo" Value="store.SelectedPane.Scenario" ValueChanged="store.ChangeScenario" OnReset="Reset" ShowDevice="false" ShowZoom="false" />
                 }
                 <ReviewPanel Page="pageInfo"
+                             Drafts="drafts"
                              PendingAnchor="pendingComment?.Anchor"
                              SelectedThreadId="@selectedThreadId"
                              ReviewerName="@ReviewerName"
@@ -68,8 +71,8 @@ else if (isSmallScreen && IsTouring is false)
                              OnShow="ShowThread"
                              OnSend="SendComment"
                              OnCancel="CancelComment"
-                             OnPin="PinInline" />
-                <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
+                             OnPin="PinOnPage" />
+                <FlowsPanel Draft="flowDraft" PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
                 <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
             </Body>
         </BitPanel>
@@ -229,11 +232,12 @@ else
                 }
                 else if (store.Column == WorkbenchModes.FlowsColumn)
                 {
-                    <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
+                    <FlowsPanel Draft="flowDraft" PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
                 }
                 else if (store.Column == WorkbenchModes.ReviewColumn)
                 {
                     <ReviewPanel Page="pageInfo"
+                                 Drafts="drafts"
                                  PendingAnchor="pendingComment?.Anchor"
                                  SelectedThreadId="@selectedThreadId"
                                  ReviewerName="@ReviewerName"
@@ -257,6 +261,6 @@ else
             </div>
         </aside>
     </div>
-
-    <ChromeSnackBar />
 }
+
+<ChromeSnackBar />

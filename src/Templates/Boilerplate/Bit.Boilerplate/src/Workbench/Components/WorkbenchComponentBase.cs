@@ -49,7 +49,7 @@ public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposabl
     /// </summary>
     protected async Task ShowSignInNote()
     {
-        if (IsInsidePreview && PaneId is null)
+        if (PaneId is null)
         {
             await MessageBoxService.ShowInfo(Localizer[nameof(WorkbenchStrings.SignInNoteTitle)], Localizer[nameof(WorkbenchStrings.SignInNote)]);
             return;
@@ -61,22 +61,12 @@ public partial class WorkbenchComponentBase : BlexComponentBase, IAsyncDisposabl
     /// <summary>The id of the shell's pane this preview is shown in, or null outside a pane.</summary>
     protected string? PaneId => WorkbenchUrls.ReadQuery(NavigationManager.Uri, WorkbenchUrls.PaneQueryKey);
 
-    /// <summary>True inside a /preview page, which runs in an iframe of the shell; false when the shell renders the page inline.</summary>
-    protected bool IsInsidePreview => new Uri(NavigationManager.Uri).AbsolutePath.StartsWith("/preview/", StringComparison.OrdinalIgnoreCase);
-
     /// <summary>
     /// Hands a scenario the page changed by itself (a theme or language picked in the app's chrome) to the shell.
     /// <paramref name="isApplied"/> false asks for a reload with the new scenario instead of updating the address in place.
     /// </summary>
     protected async Task ReportScenario(WorkbenchScenario scenario, bool isApplied = true)
     {
-        // Rendered inline by the shell (the phone layout): the shell's store is right here.
-        if (IsInsidePreview is false)
-        {
-            WorkbenchStore.ChangeScenario(scenario);
-            return;
-        }
-
         ScenarioState.Set(scenario);
 
         var pageKey = new Uri(NavigationManager.Uri).Segments[^1].Trim('/');

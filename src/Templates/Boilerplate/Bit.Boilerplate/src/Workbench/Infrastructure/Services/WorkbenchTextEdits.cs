@@ -103,7 +103,11 @@ public sealed partial class WorkbenchTextEdits
             fileLock.Release();
         }
 
-        edited[(resource, culture, key)] = value;
+        // The languages that share the file, like the default's other regions, show the text as well.
+        foreach (var (_, sharing) in CultureInfoManager.SupportedCultures.Where(supported => ResxFile(folder, resource, supported.Culture.Name) == path))
+        {
+            edited[(resource, sharing.Name, key)] = value;
+        }
 
         return true;
     }
@@ -111,7 +115,7 @@ public sealed partial class WorkbenchTextEdits
     /// <summary>Whether the current request, or the circuit it started, may change the texts.</summary>
     private bool CanChange => httpContextAccessor.HttpContext is { } context && WorkbenchLocalRequests.CanChange(context, configuration);
 
-    /// <summary>The resx of a resource in a culture: the neutral file for the default culture, otherwise the language's file.</summary>
+    /// <summary>The resx of a resource in a culture: the neutral file for the default culture's language, otherwise the language's file.</summary>
     private static string? ResxFile(string projectFolder, string resource, string culture)
     {
         var folder = resource switch
@@ -124,7 +128,7 @@ public sealed partial class WorkbenchTextEdits
         if (folder is null || CultureInfoManager.GetCultureInfo(culture) is not { } info)
             return null;
 
-        return info.Name == CultureInfoManager.DefaultCulture.Name
+        return info.TwoLetterISOLanguageName == CultureInfoManager.DefaultCulture.TwoLetterISOLanguageName
             ? Path.Combine(folder, $"{resource}.resx")
             : Path.Combine(folder, $"{resource}.{info.TwoLetterISOLanguageName}.resx");
     }

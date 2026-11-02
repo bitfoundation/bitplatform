@@ -6,7 +6,7 @@
     <div class="pos-dashboard">
         <div class="dashboard-header">
             <div class="titles">
-                <BitText Typography="BitTypography.H5" Element="@PageHeadingElement" Class="greeting">@Localizer[nameof(WorkbenchStrings.PosGreeting)]</BitText>
+                <BitText Typography="BitTypography.H5" Element="@PageHeadingElement" Class="greeting">@Localizer[nameof(WorkbenchStrings.PosGreeting), Localizer[WorkbenchDemoUsers.Find(Scenario.User).NameKey]]</BitText>
                 <BitText Typography="BitTypography.Body2" Foreground="BitColorKind.Secondary">@DateTimeOffset.Now.ToString("D", CultureInfo.CurrentCulture)</BitText>
             </div>
             <div class="toolbar">

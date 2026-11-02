@@ -583,7 +583,7 @@
         <value>Viel los</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Guten Tag, Yas</value>
+        <value>Guten Tag, {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Filiale</value>

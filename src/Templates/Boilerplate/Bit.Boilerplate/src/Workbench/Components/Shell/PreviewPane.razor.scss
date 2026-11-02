@@ -106,6 +106,32 @@
     }
 }
 
+// A phone's view: the screen is the view, with nothing around it.
+.full-screen {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+}
+
+.fills-screen {
+    .pane-stage {
+        --wb-scale: 1;
+    }
+
+    .pane-scaler {
+        width: 100%;
+        height: 100%;
+
+        // DeviceFrame writes its size on the element and its variables, so these need the !important.
+        ::deep > .device {
+            width: 100% !important;
+            height: 100% !important;
+            --wb-screen-w: 100% !important;
+            --wb-screen-h: 100% !important;
+        }
+    }
+}
+
 .pane-loading {
     inset: 0;
     display: flex;

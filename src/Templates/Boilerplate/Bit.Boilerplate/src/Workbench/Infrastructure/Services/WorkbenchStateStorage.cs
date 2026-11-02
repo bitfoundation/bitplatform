@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 
 namespace Boilerplate.Workbench.Infrastructure.Services;
 
@@ -31,7 +32,7 @@ public sealed partial class WorkbenchStateStorage : IBlexStorage, IAsyncDisposab
 
         try
         {
-            return await database.Get<string>(StoreName, $"{KeyPrefix}{key}").AsTask().WaitAsync(cancellationToken);
+            return await database.Get<string>(StoreName, KeyOf(key)).AsTask().WaitAsync(cancellationToken);
         }
         catch (JsonException exp)
         {
@@ -66,7 +67,7 @@ public sealed partial class WorkbenchStateStorage : IBlexStorage, IAsyncDisposab
 
         try
         {
-            await database.Put(StoreName, value, $"{KeyPrefix}{key}").AsTask().WaitAsync(cancellationToken);
+            await database.Put(StoreName, value, KeyOf(key)).AsTask().WaitAsync(cancellationToken);
         }
         catch (Exception exp) when (IsStorageFailure(exp, cancellationToken))
         {
@@ -82,7 +83,7 @@ public sealed partial class WorkbenchStateStorage : IBlexStorage, IAsyncDisposab
 
         try
         {
-            await database.Delete(StoreName, $"{KeyPrefix}{key}").AsTask().WaitAsync(cancellationToken);
+            await database.Delete(StoreName, KeyOf(key)).AsTask().WaitAsync(cancellationToken);
         }
         catch (Exception exp) when (IsStorageFailure(exp, cancellationToken))
         {
@@ -92,6 +93,14 @@ public sealed partial class WorkbenchStateStorage : IBlexStorage, IAsyncDisposab
 
     /// <summary>pane-{id}/ for a view's preview, shell/ for everything else.</summary>
     private string KeyPrefix => keyPrefix ??= WorkbenchUrls.ReadQuery(navigationManager.Uri, WorkbenchUrls.PaneQueryKey) is { } paneId ? $"pane-{paneId}/" : "shell/";
+
+    /// <summary>A store's key: per view, and per user of the view for what the Settings page holds, as that belongs to the account.</summary>
+    private string KeyOf(string key)
+    {
+        return key.EndsWith(SettingsStore.StoreName, StringComparison.Ordinal)
+            ? $"{KeyPrefix}user-{WorkbenchUrls.ReadQuery(navigationManager.Uri, "user") ?? "0"}/{key}"
+            : $"{KeyPrefix}{key}";
+    }
 
     /// <summary>Whether this preview restores a snapshot for a screenshot.</summary>
     private bool IsCapture => isCapture ??= WorkbenchUrls.ReadQuery(navigationManager.Uri, WorkbenchUrls.SnapshotQueryKey) is not null;

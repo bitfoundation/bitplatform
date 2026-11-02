@@ -51,7 +51,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new Bit.Boilerplate --framework net10.0 --module Admin --sample --multitenant --appInsights --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new Bit.Boilerplate --framework net10.0 --module Admin --multitenant --appInsights --ads --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
     - name: Publish
       working-directory: Bit.Boilerplate

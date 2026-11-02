@@ -55,7 +55,10 @@ infrastructure is `.docs/17- Automated Testing (Unitigration Tests).md`; this is
 <!--#if (advancedTests == true)-->
 - **The Workbench**: its tests are in `src/WorkbenchTests`, built the same way: `WorkbenchTestServer` runs it in-process,
   `WorkbenchPageTest` opens it in a browser and `WorkbenchBunit.Create()` renders its components. A change to
-  `src/Workbench` gets its test there, and `dotnet test` in that folder runs them.
+  `src/Workbench` gets its test there, and `dotnet test` in that folder runs them. A browser test runs on each surface
+  the feature has: a phone or a desktop screen, with an agent or without one. `WorkbenchSurface.cs` has the attributes
+  that do it, so one test body runs four times and an `if` covers only what really differs; it presses with a finger on
+  a phone, and checks the page itself changed, not only its address.
 <!--#endif-->
 - A comment above a test says why it exists when its name can't: the defect it guards against, or why this kind of
   test rather than another.

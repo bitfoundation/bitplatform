@@ -8,13 +8,13 @@ namespace Boilerplate.Workbench.Components.Shell;
 /// </summary>
 public partial class ReviewPanel
 {
-    private string? draft;
-    private string? reply;
     private bool showDone;
     private bool notificationsBlocked;
     private bool isSending;
     // The thread whose delete button was pressed once and now asks to be pressed again.
     private string? confirmingDeleteId;
+    // The selected thread the list last followed, and whether it was done then.
+    private (string Id, bool IsDone)? followedThread;
 
     [AutoInject] private WorkbenchReviewSession session = default!;
     [AutoInject] private WorkbenchStore store = default!;
@@ -23,6 +23,9 @@ public partial class ReviewPanel
     [AutoInject] private Bit.Butil.WebAudio webAudio = default!;
 
     [Parameter] public WorkbenchPageInfo Page { get; set; } = default!;
+
+    /// <summary>What's typed for a comment or a reply, which the page keeps as this panel comes and goes.</summary>
+    [Parameter] public WorkbenchReviewDrafts Drafts { get; set; } = new();
 
     /// <summary>The spot a new comment is being written for; while it is set, the composer shows.</summary>
     [Parameter] public WorkbenchReviewAnchor? PendingAnchor { get; set; }
@@ -79,11 +82,15 @@ public partial class ReviewPanel
 
     protected override void OnParametersSet()
     {
-        // A selected thread that is done is only listed under Done, so switch there.
-        if (SelectedThreadId is not null && PageThreads.FirstOrDefault(t => t.Id == SelectedThreadId) is { Status: WorkbenchReviewStatus.Done })
+        // The list goes where the selected thread is listed when it gets selected or moves; other than that, it's the reviewer's to pick.
+        (string Id, bool IsDone)? thread = PageThreads.FirstOrDefault(t => t.Id == SelectedThreadId) is { } selected ? (selected.Id, selected.Status is WorkbenchReviewStatus.Done) : null;
+
+        if (thread is { } moved && moved != followedThread)
         {
-            showDone = true;
+            showDone = moved.IsDone;
         }
+
+        followedThread = thread;
     }
 
     /// <summary>Names a comment's element by its component and text, or "this spot" when neither is known.</summary>
@@ -111,7 +118,7 @@ public partial class ReviewPanel
 
     private Task Select(WorkbenchReviewThread thread)
     {
-        reply = null;
+        Drafts.Reply = null;
         confirmingDeleteId = null;
 
         return OnSelect.InvokeAsync(thread);
@@ -123,10 +130,10 @@ public partial class ReviewPanel
     /// </summary>
     private async Task Send()
     {
-        if (string.IsNullOrWhiteSpace(draft) || isSending)
+        if (string.IsNullOrWhiteSpace(Drafts.Comment) || isSending)
             return;
 
-        var text = draft;
+        var text = Drafts.Comment;
         isSending = true;
         showDone = false;
 
@@ -134,7 +141,7 @@ public partial class ReviewPanel
         {
             await UnlockAudio();
             await OnSend.InvokeAsync(text);
-            draft = null;
+            Drafts.Comment = null;
         }
         finally
         {
@@ -197,7 +204,7 @@ public partial class ReviewPanel
 
     private Task CancelPending()
     {
-        draft = null;
+        Drafts.Comment = null;
 
         return OnCancel.InvokeAsync();
     }
@@ -212,12 +219,12 @@ public partial class ReviewPanel
 
     private async Task Reply(WorkbenchReviewThread thread)
     {
-        if (string.IsNullOrWhiteSpace(reply))
+        if (string.IsNullOrWhiteSpace(Drafts.Reply))
             return;
 
         await UnlockAudio();
-        session.Reply(thread.Id, ReviewerName, reply);
-        reply = null;
+        session.Reply(thread.Id, ReviewerName, Drafts.Reply);
+        Drafts.Reply = null;
         await AskToNotify();
     }
 

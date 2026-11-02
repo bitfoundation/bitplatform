@@ -6,6 +6,7 @@
         <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
         <TestingPlatformCommandLineArguments>--settings ./.runsettings --report-trx --report-trx-filename TestResults.trx --results-directory ./TestResults</TestingPlatformCommandLineArguments>
         <EnableMSTestRunner>true</EnableMSTestRunner>
+        <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
     </PropertyGroup>
 
     <ItemGroup>
