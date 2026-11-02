@@ -157,12 +157,18 @@ public class WorkbenchPageTest : PageTest
         () => new Promise(resolve => {
             const open = indexedDB.open('bit-workbench');
             open.onerror = () => resolve('');
+            // Looking before the app has made the database doesn't make an empty one in its place.
+            open.onupgradeneeded = () => open.transaction.abort();
             open.onsuccess = () => {
                 const database = open.result;
-                if (database.objectStoreNames.contains('state') === false) return resolve('');
+                const done = value => {
+                    database.close();
+                    resolve(value);
+                };
+                if (database.objectStoreNames.contains('state') === false) return done('');
                 const all = database.transaction('state').objectStore('state').getAll();
-                all.onerror = () => resolve('');
-                all.onsuccess = () => resolve(JSON.stringify(all.result));
+                all.onerror = () => done('');
+                all.onsuccess = () => done(JSON.stringify(all.result));
             };
         })
         """), saved => saved.Contains(text, StringComparison.OrdinalIgnoreCase));

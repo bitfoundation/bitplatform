@@ -142,7 +142,9 @@ public abstract class AppViewPageTest : WorkbenchPageTest
     private Task<string> ReadTheViewsSavedState() => View().Locator("html").EvaluateAsync<string>("""
         () => new Promise((resolve, reject) => {
             const opening = indexedDB.open('bit-workbench');
-            opening.onerror = () => reject(opening.error);
+            opening.onerror = () => resolve('');
+            // Looking before the app has made the database doesn't make an empty one in its place.
+            opening.onupgradeneeded = () => opening.transaction.abort();
             opening.onsuccess = () => {
                 const reading = opening.result.transaction('state').objectStore('state').getAll();
                 reading.onerror = () => reject(reading.error);

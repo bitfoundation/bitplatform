@@ -14,6 +14,8 @@ public abstract class ShowcaseUITest : WorkbenchPageTest
                 const read = () => new Promise(resolve => {
                     const opening = indexedDB.open('bit-workbench');
                     opening.onerror = () => resolve('');
+                    // Looking before the app has made the database doesn't make an empty one in its place.
+                    opening.onupgradeneeded = () => opening.transaction.abort();
                     opening.onsuccess = () => {
                         const database = opening.result;
                         if (database.objectStoreNames.contains('state') === false) { database.close(); resolve(''); return; }
