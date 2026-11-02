@@ -64,8 +64,6 @@ lazy loading also has a lazy loading sample and a browser suite that drives its 
   `GetBcrdtCollaborationService(...)`, ...), with no console error, unhandled exception or failed request. Its E2E
   workflow publishes the sample trimmed next to the rest of the suite, and AOT-compiled in a leg of its own.
 
-Bortable's sample and suite came first and keep their own copy of the harness.
-
 ## The copies
 
 - Blow and Bink: the README's "Lazy loading on WebAssembly" and "Blazor Web App", the Getting Started page's lazy

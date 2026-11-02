@@ -175,8 +175,9 @@ Brotli, for a small app on the demo's model. An app whose database only some pag
 then registers nothing of Bsqlite's, and the pages build the same services the first time one of them asks:
 
 ```csharp
-// Called only from the pages the assemblies are loaded for, once they run in the browser.
-internal static class AppDatabase
+// Called only from the pages the assemblies are loaded for, once they run in the browser - and, to register, from a
+// server that prerenders them or a Blazor Hybrid app that shares them: public for those.
+public static class AppDatabase
 {
     public static void Register(IServiceCollection services)
     {

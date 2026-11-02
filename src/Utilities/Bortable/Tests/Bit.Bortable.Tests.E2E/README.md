@@ -43,7 +43,7 @@ opens.
 | `RulesTests` | The rules page: a column `CanDrop` refuses is marked refused and a release there puts the card back (`RevertOnSpill`); a full column (`MaxItems`) does not take the drag; a drop the server refuses (`ConfirmDrop`) slides back and an approved one stays. The accessibility page's buttons move items without dragging and are announced. |
 | `LargeListTests` | Three hundred rows in a scrolling panel: a pointer drag held at the panel's edge scrolls it and carries the row along; a drag of 60 pointer moves sends one position per row crossed to .NET, with and without `IsolateItems` (the counts and round-trip times go to the test output). |
 | `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, becomes interactive, loads `bit-bortable.js` and applies `bit-bortable.css` when it has lists, shows the code of each of its samples (every file of it, coloured, and nothing of the page around it) in the "View code" panel under that sample and closes it again, without a console error, an unhandled exception, a failed request or the error banner; an unknown address answers 404 with the not-found page; navigating through every demo in the app leaves lists behind that still sort, the drag handle included. |
-| `LazyLoadingTests` | The published lazy loading sample - trimmed, with the `Bit.Bortable.Unregistered` switch and the router's own in its boot configuration - in a browser: its home page never downloads `Bit.Bortable.wasm`; navigating to the board downloads it before the lists render, and a deep link to the board is prerendered by the server (which resolves the router's `LazyAssemblyLoader`) and then downloads it; either way the two lists, which find no registration, hand an item to each other through the coordinator they created themselves, without a console error, an unhandled exception or a failed request. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, with the `Bit.Bortable.Unregistered` switch and the router's own in its boot configuration - in a browser: its home page never downloads `Bit.Bortable.wasm`; navigating to the board downloads it before the lists render, and a deep link to the board is prerendered by the server (which resolves the router's `LazyAssemblyLoader`) and then downloads it; either way the two lists, which find no registration, hand an item to each other through the coordinator they created themselves, without a console error, an unhandled exception or a failed request. Published with AOT (`BORTABLE_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Bortable with the app and nothing on demand. |
 
 Every page is prerendered, so its lists are on screen before anything listens to them. Each test waits until the
 page runs in the browser (`data-interactive="true"` on the layout) and the lists have imported `bit-bortable.js`,
@@ -118,8 +118,18 @@ from the IDE, or a published copy (`dotnet publish` output, started with `dotnet
 http://127.0.0.1:5563`) - point `BORTABLE_E2E_BASE_URL` at it; nothing is then built or booted for the run.
 
 The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
-the Production environment, by the first test that drives it; `BORTABLE_E2E_LAZY_BASE_URL` points those tests at a
-copy that is already running. A sample that has not been published makes them inconclusive - or failed, on a build
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares); `BORTABLE_E2E_LAZY_BASE_URL` points those tests at a copy that is
+already running. The workflow's `lazy-loading-aot` job publishes it AOT-compiled instead and runs them with
+`BORTABLE_E2E_LAZY_AOT=1` (it needs the wasm-tools workload):
+
+```bash
+dotnet publish Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+BORTABLE_E2E_LAZY_AOT=1 dotnet test --project Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release --filter "FullyQualifiedName~LazyLoadingTests"
+```
+
+Publishing the trimmed sample again over an AOT publish reuses part of it: delete the sample's `bin/Release` and
+`obj/Release` folders first. A sample that has not been published makes them inconclusive - or failed, on a build
 server - and leaves the other suites alone.
 
 Each test gets a browser context of its own, 1280 x 1400 so that every demo page fits without scrolling (a drag
@@ -138,6 +148,7 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 | `BORTABLE_E2E_CONFIGURATION` | Build configuration of the demo server to boot; defaults to the test assembly's own. |
 | `BORTABLE_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE, or a published copy) instead of booting one. |
 | `BORTABLE_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BORTABLE_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Bortable comes with the app and nothing is downloaded on demand. |
 | `BORTABLE_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, each the one Playwright installed (`playwright.ps1 install firefox webkit`). The touch and pen tests send their input through the Chrome DevTools Protocol, so they report **Inconclusive** outside Chromium. |
 | `BORTABLE_E2E_CHANNEL` / `BORTABLE_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific browser binary (of the `BORTABLE_E2E_BROWSER` engine). Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
 | `BORTABLE_E2E_HEADED=1` | Show the browser. |

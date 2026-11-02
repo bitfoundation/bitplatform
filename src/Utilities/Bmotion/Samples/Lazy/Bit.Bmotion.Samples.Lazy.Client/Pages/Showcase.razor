@@ -23,8 +23,10 @@
     <div id="card" class="card">Hover me</div>
 </Bmotion>
 
+@* An id of its own, as an app's element would have: left and opened again, the page renders a new element with it, which
+   starts from where it is shown rather than from where the last one was left. *@
 <div class="track">
-    <div class="ball" @ref="_ball"></div>
+    <div id="ball" class="ball" @ref="_ball"></div>
 </div>
 <button id="slide" @onclick="SlideAsync">Slide the ball</button>
 

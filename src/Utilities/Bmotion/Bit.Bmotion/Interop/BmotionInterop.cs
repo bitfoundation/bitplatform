@@ -364,6 +364,20 @@ public sealed class BmotionInterop : IBmotionInterop
     public async ValueTask<string> ResolveOrRegisterByRefAsync(ElementReference elementReference)
         => await (await Module()).InvokeAsync<string>("resolveOrRegisterByRef", elementReference);
 
+    // The ids, then the ids of the elements among them the engine has never addressed: two arrays of strings, which
+    // need nothing kept from the trimmer.
+    async ValueTask<(string[] Ids, string[] NewIds)> IBmotionInterop.ResolveBySelectorAsync(string selector)
+    {
+        var resolved = await (await Module()).InvokeAsync<string[][]>("resolveBySelector", selector);
+        return (resolved[0], resolved[1]);
+    }
+
+    async ValueTask<(string Id, bool IsNew)> IBmotionInterop.ResolveByRefAsync(ElementReference elementReference)
+    {
+        var resolved = await (await Module()).InvokeAsync<string[][]>("resolveByRef", elementReference);
+        return (resolved[0][0], resolved[1].Length > 0);
+    }
+
     // ── View Transitions API ───────────────────────────────────────────────────
 
     /// <summary>Wraps <c>document.startViewTransition</c> around a C# DOM-update callback.</summary>
