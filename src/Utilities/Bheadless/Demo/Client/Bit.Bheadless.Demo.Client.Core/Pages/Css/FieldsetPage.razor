@@ -1,129 +1,127 @@
 ﻿@page "/fieldset"
 
-<PageTitle>Fieldset — bit Bheadless</PageTitle>
+<PageTitle>Fieldset · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Fieldset</h1>
-        <p>
-            Group a set of form controls together with a fully accessible but
-            much easier-to-style version of the native <code>fieldset</code> and
-            <code>legend</code> elements.
-        </p>
-        <SectionSwitcher Slug="fieldset" />
-    </header>
+<div class="bb-intro">
+    <h1>Fieldset</h1>
+    <p class="bb-subtitle">
+        Group a set of form controls together with a fully accessible but
+        much easier-to-style version of the native <code>fieldset</code> and
+        <code>legend</code> elements.
+    </p>
+    <SectionSwitcher Slug="fieldset" />
+</div>
 
-    <DemoBlock Title="Basic example"
-               Code="@_basicCode"
-               Css="@_basicCss">
-        <Description>
-            Use <code>BitBhFieldset</code> and <code>BitBhLegend</code> to group a set of
-            form controls together with a title. The fieldset uses the native
-            <code>&lt;fieldset&gt;</code> element while the legend renders as a
-            <code>&lt;div&gt;</code> (since native <code>&lt;legend&gt;</code> is
-            notoriously hard to style).
-        </Description>
-        <LiveContent>
-            <BitBhFieldset class="fieldset">
-                <div class="fieldset-header">
-                    <BitBhLegend class="fieldset-legend">Shipping details</BitBhLegend>
-                    <p class="fieldset-hint">Where should we deliver your order?</p>
-                </div>
-
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Street address</BitBhLabel>
-                    <BitBhInput name="address" placeholder="123 Main St" class="field-input" />
-                </BitBhField>
-
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Country</BitBhLabel>
-                    <BitBhSelect name="country" class="field-input field-select">
-                        <option>Canada</option>
-                        <option>Mexico</option>
-                        <option>United States</option>
-                    </BitBhSelect>
-                </BitBhField>
-
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Delivery notes</BitBhLabel>
-                    <BitBhTextarea name="notes" rows="3"
-                               placeholder="Leave at front door…"
-                               class="field-input field-textarea" />
-                </BitBhField>
-            </BitBhFieldset>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabling a fieldset"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> on the <code>BitBhFieldset</code> to
-            disable every form control inside. The fieldset, legend, and all
-            nested fields receive <code>data-disabled</code> for CSS hooks, and
-            the native <code>disabled</code> attribute on the fieldset prevents
-            interaction.
-        </Description>
-        <LiveContent>
-            <BitBhFieldset Disabled="true" class="fieldset">
-                <div class="fieldset-header">
-                    <BitBhLegend class="fieldset-legend">Account (locked)</BitBhLegend>
-                    <p class="fieldset-hint">Verify your email to edit these fields.</p>
-                </div>
-
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Username</BitBhLabel>
-                    <BitBhInput type="text" value="alice" class="field-input" />
-                </BitBhField>
-
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Email</BitBhLabel>
-                    <BitBhInput type="email" value="alice@example.com" class="field-input" />
-                </BitBhField>
-            </BitBhFieldset>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Toggling at runtime"
-               Code="@_toggleCode"
-               Css="@_toggleCss">
-        <Description>
-            Bind <code>Disabled</code> to a state value to enable or disable the
-            entire group dynamically. Every nested input reflects the change
-            through both the native <code>disabled</code> attribute and
-            <code>data-disabled</code>.
-        </Description>
-        <LiveContent>
-            <div class="fieldset-toolbar">
-                <span class="fieldset-status" data-active="@(!_disabled)">
-                    <span class="fieldset-status-dot"></span>
-                    @(_disabled ? "Read-only" : "Editing")
-                </span>
-                <BitBhButton class="btn" OnClick="@(() => _disabled = !_disabled)">
-                    @(_disabled ? "Enable" : "Disable")
-                </BitBhButton>
+<DemoBlock Title="Basic example"
+           Code="@_basicCode"
+           Css="@_basicCss">
+    <Description>
+        Use <code>BitBhFieldset</code> and <code>BitBhLegend</code> to group a set of
+        form controls together with a title. The fieldset uses the native
+        <code>&lt;fieldset&gt;</code> element while the legend renders as a
+        <code>&lt;div&gt;</code> (since native <code>&lt;legend&gt;</code> is
+        notoriously hard to style).
+    </Description>
+    <LiveContent>
+        <BitBhFieldset class="fieldset">
+            <div class="fieldset-header">
+                <BitBhLegend class="fieldset-legend">Shipping details</BitBhLegend>
+                <p class="fieldset-hint">Where should we deliver your order?</p>
             </div>
 
-            <BitBhFieldset Disabled="_disabled" class="fieldset">
-                <div class="fieldset-header">
-                    <BitBhLegend class="fieldset-legend">Profile</BitBhLegend>
-                    <p class="fieldset-hint">Shown publicly on your profile page.</p>
-                </div>
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Street address</BitBhLabel>
+                <BitBhInput name="address" placeholder="123 Main St" class="field-input" />
+            </BitBhField>
 
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Display name</BitBhLabel>
-                    <BitBhInput type="text" placeholder="Alice Anderson" class="field-input" />
-                </BitBhField>
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Country</BitBhLabel>
+                <BitBhSelect name="country" class="field-input field-select">
+                    <option>Canada</option>
+                    <option>Mexico</option>
+                    <option>United States</option>
+                </BitBhSelect>
+            </BitBhField>
 
-                <BitBhField class="field">
-                    <BitBhLabel class="field-label">Bio</BitBhLabel>
-                    <BitBhTextarea rows="2" placeholder="Tell us about yourself…"
-                               class="field-input field-textarea" />
-                </BitBhField>
-            </BitBhFieldset>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Delivery notes</BitBhLabel>
+                <BitBhTextarea name="notes" rows="3"
+                           placeholder="Leave at front door…"
+                           class="field-input field-textarea" />
+            </BitBhField>
+        </BitBhFieldset>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabling a fieldset"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> on the <code>BitBhFieldset</code> to
+        disable every form control inside. The fieldset, legend, and all
+        nested fields receive <code>data-disabled</code> for CSS hooks, and
+        the native <code>disabled</code> attribute on the fieldset prevents
+        interaction.
+    </Description>
+    <LiveContent>
+        <BitBhFieldset Disabled="true" class="fieldset">
+            <div class="fieldset-header">
+                <BitBhLegend class="fieldset-legend">Account (locked)</BitBhLegend>
+                <p class="fieldset-hint">Verify your email to edit these fields.</p>
+            </div>
+
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Username</BitBhLabel>
+                <BitBhInput type="text" value="alice" class="field-input" />
+            </BitBhField>
+
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Email</BitBhLabel>
+                <BitBhInput type="email" value="alice@example.com" class="field-input" />
+            </BitBhField>
+        </BitBhFieldset>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Toggling at runtime"
+           Code="@_toggleCode"
+           Css="@_toggleCss">
+    <Description>
+        Bind <code>Disabled</code> to a state value to enable or disable the
+        entire group dynamically. Every nested input reflects the change
+        through both the native <code>disabled</code> attribute and
+        <code>data-disabled</code>.
+    </Description>
+    <LiveContent>
+        <div class="fieldset-toolbar">
+            <span class="fieldset-status" data-active="@(!_disabled)">
+                <span class="fieldset-status-dot"></span>
+                @(_disabled ? "Read-only" : "Editing")
+            </span>
+            <BitBhButton class="btn" OnClick="@(() => _disabled = !_disabled)">
+                @(_disabled ? "Enable" : "Disable")
+            </BitBhButton>
+        </div>
+
+        <BitBhFieldset Disabled="_disabled" class="fieldset">
+            <div class="fieldset-header">
+                <BitBhLegend class="fieldset-legend">Profile</BitBhLegend>
+                <p class="fieldset-hint">Shown publicly on your profile page.</p>
+            </div>
+
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Display name</BitBhLabel>
+                <BitBhInput type="text" placeholder="Alice Anderson" class="field-input" />
+            </BitBhField>
+
+            <BitBhField class="field">
+                <BitBhLabel class="field-label">Bio</BitBhLabel>
+                <BitBhTextarea rows="2" placeholder="Tell us about yourself…"
+                           class="field-input field-textarea" />
+            </BitBhField>
+        </BitBhFieldset>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool _disabled;

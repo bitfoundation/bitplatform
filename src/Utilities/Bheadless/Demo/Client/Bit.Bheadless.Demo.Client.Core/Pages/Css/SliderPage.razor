@@ -1,175 +1,173 @@
 ﻿@page "/slider"
 
-<PageTitle>Slider — bit Bheadless</PageTitle>
+<PageTitle>Slider · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Slider</h1>
-        <p>Pick a value — or a range with several thumbs — within a minimum and maximum, by pointer or keyboard.</p>
-        <SectionSwitcher Slug="slider" />
-    </header>
+<div class="bb-intro">
+    <h1>Slider</h1>
+    <p class="bb-subtitle">Pick a value — or a range with several thumbs — within a minimum and maximum, by pointer or keyboard.</p>
+    <SectionSwitcher Slug="slider" />
+</div>
 
-    <DemoBlock Title="Single value"
-               Code="@_singleCode"
-               Css="@_singleCss">
-        <Description>
-            Follows the WAI-ARIA Slider pattern: each <code>BitBhSliderThumb</code> is a
-            <code>role="slider"</code> with <code>aria-valuenow</code>/<code>min</code>/<code>max</code>.
-            Click or drag anywhere on the track, or focus the thumb and use the arrow keys (± <code>Step</code>),
-            <kbd>PageUp</kbd> / <kbd>PageDown</kbd> or <kbd>Shift</kbd>+arrows (± <code>LargeStep</code>) and
-            <kbd>Home</kbd> / <kbd>End</kbd>.
-        </Description>
-        <LiveContent>
-            <div class="slider-demo">
-                <BitBhSlider @bind-Value="volume" class="slider">
-                    <BitBhSliderTrack class="slider-track">
-                        <BitBhSliderRange class="slider-range" />
-                    </BitBhSliderTrack>
-                    <BitBhSliderThumb class="slider-thumb" aria-label="Volume" />
-                </BitBhSlider>
-                <p class="slider-value">Volume: <strong>@volume</strong></p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<DemoBlock Title="Single value"
+           Code="@_singleCode"
+           Css="@_singleCss">
+    <Description>
+        Follows the WAI-ARIA Slider pattern: each <code>BitBhSliderThumb</code> is a
+        <code>role="slider"</code> with <code>aria-valuenow</code>/<code>min</code>/<code>max</code>.
+        Click or drag anywhere on the track, or focus the thumb and use the arrow keys (± <code>Step</code>),
+        <kbd>PageUp</kbd> / <kbd>PageDown</kbd> or <kbd>Shift</kbd>+arrows (± <code>LargeStep</code>) and
+        <kbd>Home</kbd> / <kbd>End</kbd>.
+    </Description>
+    <LiveContent>
+        <div class="slider-demo">
+            <BitBhSlider @bind-Value="volume" class="slider">
+                <BitBhSliderTrack class="slider-track">
+                    <BitBhSliderRange class="slider-range" />
+                </BitBhSliderTrack>
+                <BitBhSliderThumb class="slider-thumb" aria-label="Volume" />
+            </BitBhSlider>
+            <p class="slider-value">Volume: <strong>@volume</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Range with two thumbs"
-               Code="@_rangeCode"
-               Css="@_rangeCss">
-        <Description>
-            Bind <code>@@bind-Values</code> and render one thumb per value (Multi-Thumb Slider pattern).
-            Thumbs can't cross; <code>MinStepsBetweenThumbs</code> keeps them apart. <code>ValueText</code>
-            formats <code>aria-valuetext</code> so screen readers hear "$200" instead of "200".
-            <code>BitBhSliderRange</code> fills the span between the thumbs.
-        </Description>
-        <LiveContent>
-            <div class="slider-demo">
-                <BitBhSlider @bind-Values="price" Max="1000" Step="10" MinStepsBetweenThumbs="10"
-                          ValueText="@(v => $"${v:N0}")" class="slider">
-                    <BitBhSliderTrack class="slider-track">
-                        <BitBhSliderRange class="slider-range" />
-                    </BitBhSliderTrack>
-                    <BitBhSliderThumb class="slider-thumb" aria-label="Minimum price" />
-                    <BitBhSliderThumb class="slider-thumb" aria-label="Maximum price" />
-                </BitBhSlider>
-                <p class="slider-value">Price: <strong>@($"${price[0]:N0} – ${price[1]:N0}")</strong></p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<DemoBlock Title="Range with two thumbs"
+           Code="@_rangeCode"
+           Css="@_rangeCss">
+    <Description>
+        Bind <code>@@bind-Values</code> and render one thumb per value (Multi-Thumb Slider pattern).
+        Thumbs can't cross; <code>MinStepsBetweenThumbs</code> keeps them apart. <code>ValueText</code>
+        formats <code>aria-valuetext</code> so screen readers hear "$200" instead of "200".
+        <code>BitBhSliderRange</code> fills the span between the thumbs.
+    </Description>
+    <LiveContent>
+        <div class="slider-demo">
+            <BitBhSlider @bind-Values="price" Max="1000" Step="10" MinStepsBetweenThumbs="10"
+                      ValueText="@(v => $"${v:N0}")" class="slider">
+                <BitBhSliderTrack class="slider-track">
+                    <BitBhSliderRange class="slider-range" />
+                </BitBhSliderTrack>
+                <BitBhSliderThumb class="slider-thumb" aria-label="Minimum price" />
+                <BitBhSliderThumb class="slider-thumb" aria-label="Maximum price" />
+            </BitBhSlider>
+            <p class="slider-value">Price: <strong>@($"${price[0]:N0} – ${price[1]:N0}")</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Step, LargeStep and a thumb Template"
-               Code="@_stepCode"
-               Css="@_stepCss">
-        <Description>
-            <code>Step="0.5"</code> snaps values to half degrees; <code>LargeStep="5"</code> sets the
-            <kbd>PageUp</kbd> / <kbd>PageDown</kbd> / <kbd>Shift</kbd>+arrow jump (default: a tenth of the range).
-            <code>BitBhSliderThumb</code>'s <code>Template</code> receives the thumb's value — used here
-            for a value bubble.
-        </Description>
-        <LiveContent>
-            <div class="slider-demo">
-                <BitBhSlider @bind-Value="temperature" Min="10" Max="30" Step="0.5" LargeStep="5"
-                          ValueText="@(v => $"{v:0.0} °C")" class="slider slider-bubbled">
-                    <BitBhSliderTrack class="slider-track">
-                        <BitBhSliderRange class="slider-range" />
-                    </BitBhSliderTrack>
-                    <BitBhSliderThumb class="slider-thumb" aria-label="Thermostat">
-                        <Template Context="current">
-                            <span class="slider-bubble">@current.ToString("0.0")°</span>
-                        </Template>
-                    </BitBhSliderThumb>
-                </BitBhSlider>
-                <p class="slider-value">Target: <strong>@temperature.ToString("0.0") °C</strong></p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<DemoBlock Title="Step, LargeStep and a thumb Template"
+           Code="@_stepCode"
+           Css="@_stepCss">
+    <Description>
+        <code>Step="0.5"</code> snaps values to half degrees; <code>LargeStep="5"</code> sets the
+        <kbd>PageUp</kbd> / <kbd>PageDown</kbd> / <kbd>Shift</kbd>+arrow jump (default: a tenth of the range).
+        <code>BitBhSliderThumb</code>'s <code>Template</code> receives the thumb's value — used here
+        for a value bubble.
+    </Description>
+    <LiveContent>
+        <div class="slider-demo">
+            <BitBhSlider @bind-Value="temperature" Min="10" Max="30" Step="0.5" LargeStep="5"
+                      ValueText="@(v => $"{v:0.0} °C")" class="slider slider-bubbled">
+                <BitBhSliderTrack class="slider-track">
+                    <BitBhSliderRange class="slider-range" />
+                </BitBhSliderTrack>
+                <BitBhSliderThumb class="slider-thumb" aria-label="Thermostat">
+                    <Template Context="current">
+                        <span class="slider-bubble">@current.ToString("0.0")°</span>
+                    </Template>
+                </BitBhSliderThumb>
+            </BitBhSlider>
+            <p class="slider-value">Target: <strong>@temperature.ToString("0.0") °C</strong></p>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Vertical orientation"
-               Code="@_verticalCode"
-               Css="@_verticalCss">
-        <Description>
-            <code>Orientation="BitBhOrientation.Vertical"</code> measures the pointer along the height and sets
-            <code>aria-orientation</code>; <kbd>↑</kbd> / <kbd>→</kbd> increase, <kbd>↓</kbd> / <kbd>←</kbd>
-            decrease. Each band is uncontrolled via <code>DefaultValue</code>, with a negative
-            <code>Min</code>.
-        </Description>
-        <LiveContent>
-            <div class="slider-eq">
-                @foreach (var band in bands)
-                {
-                    <div class="slider-eq-band">
-                        <BitBhSlider Orientation="BitBhOrientation.Vertical" Min="-12" Max="12"
-                                  DefaultValue="band.Gain" ValueText="@(v => $"{v:+0;-0;0} dB")"
-                                  class="slider">
-                            <BitBhSliderTrack class="slider-track">
-                                <BitBhSliderRange class="slider-range" />
-                            </BitBhSliderTrack>
-                            <BitBhSliderThumb class="slider-thumb" aria-label="@band.Name" />
-                        </BitBhSlider>
-                        <span class="slider-eq-label" aria-hidden="true">@band.Name</span>
-                    </div>
-                }
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="In a field, with OnValueCommit"
-               Code="@_fieldCode"
-               Css="@_fieldCss">
-        <Description>
-            Inside a <code>BitBhField</code> the thumb is labelled by <code>BitBhLabel</code>
-            (<code>aria-labelledby</code>) and described by <code>BitBhDescription</code>; clicking the
-            label focuses the thumb. <code>@@bind-Value</code> updates live while dragging, whereas
-            <code>OnValueCommit</code> fires once on pointer up or per key press — the place to save.
-        </Description>
-        <LiveContent>
-            <div class="slider-demo">
-                <BitBhField class="slider-field">
-                    <BitBhLabel class="slider-label">Brightness</BitBhLabel>
-                    <BitBhSlider @bind-Value="brightness" OnValueCommit="v => committed = v[0]"
-                              ValueText="@(v => $"{v}%")" class="slider">
+<DemoBlock Title="Vertical orientation"
+           Code="@_verticalCode"
+           Css="@_verticalCss">
+    <Description>
+        <code>Orientation="BitBhOrientation.Vertical"</code> measures the pointer along the height and sets
+        <code>aria-orientation</code>; <kbd>↑</kbd> / <kbd>→</kbd> increase, <kbd>↓</kbd> / <kbd>←</kbd>
+        decrease. Each band is uncontrolled via <code>DefaultValue</code>, with a negative
+        <code>Min</code>.
+    </Description>
+    <LiveContent>
+        <div class="slider-eq">
+            @foreach (var band in bands)
+            {
+                <div class="slider-eq-band">
+                    <BitBhSlider Orientation="BitBhOrientation.Vertical" Min="-12" Max="12"
+                              DefaultValue="band.Gain" ValueText="@(v => $"{v:+0;-0;0} dB")"
+                              class="slider">
                         <BitBhSliderTrack class="slider-track">
                             <BitBhSliderRange class="slider-range" />
                         </BitBhSliderTrack>
-                        <BitBhSliderThumb class="slider-thumb" />
+                        <BitBhSliderThumb class="slider-thumb" aria-label="@band.Name" />
                     </BitBhSlider>
-                    <BitBhDescription class="slider-description">Saved when you release the thumb or press a key.</BitBhDescription>
-                </BitBhField>
-                <p class="slider-value">
-                    Live: <strong>@brightness%</strong> · Committed: <strong>@committed%</strong>
-                </p>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+                    <span class="slider-eq-label" aria-hidden="true">@band.Name</span>
+                </div>
+            }
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Disabled"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            <code>Disabled="true"</code> ignores pointer and keys, takes the thumbs out of the tab order
-            (<code>tabindex="-1"</code>, <code>aria-disabled="true"</code>) and adds
-            <code>data-disabled</code> to every part. The range below is uncontrolled via
-            <code>DefaultValues</code>.
-        </Description>
-        <LiveContent>
-            <div class="slider-demo">
-                <BitBhSlider DefaultValue="40" Disabled="true" class="slider">
+<DemoBlock Title="In a field, with OnValueCommit"
+           Code="@_fieldCode"
+           Css="@_fieldCss">
+    <Description>
+        Inside a <code>BitBhField</code> the thumb is labelled by <code>BitBhLabel</code>
+        (<code>aria-labelledby</code>) and described by <code>BitBhDescription</code>; clicking the
+        label focuses the thumb. <code>@@bind-Value</code> updates live while dragging, whereas
+        <code>OnValueCommit</code> fires once on pointer up or per key press — the place to save.
+    </Description>
+    <LiveContent>
+        <div class="slider-demo">
+            <BitBhField class="slider-field">
+                <BitBhLabel class="slider-label">Brightness</BitBhLabel>
+                <BitBhSlider @bind-Value="brightness" OnValueCommit="v => committed = v[0]"
+                          ValueText="@(v => $"{v}%")" class="slider">
                     <BitBhSliderTrack class="slider-track">
                         <BitBhSliderRange class="slider-range" />
                     </BitBhSliderTrack>
-                    <BitBhSliderThumb class="slider-thumb" aria-label="Locked volume" />
+                    <BitBhSliderThumb class="slider-thumb" />
                 </BitBhSlider>
+                <BitBhDescription class="slider-description">Saved when you release the thumb or press a key.</BitBhDescription>
+            </BitBhField>
+            <p class="slider-value">
+                Live: <strong>@brightness%</strong> · Committed: <strong>@committed%</strong>
+            </p>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-                <BitBhSlider DefaultValues="@(new double[] { 20, 70 })" Disabled="true" class="slider">
-                    <BitBhSliderTrack class="slider-track">
-                        <BitBhSliderRange class="slider-range" />
-                    </BitBhSliderTrack>
-                    <BitBhSliderThumb class="slider-thumb" aria-label="Locked minimum" />
-                    <BitBhSliderThumb class="slider-thumb" aria-label="Locked maximum" />
-                </BitBhSlider>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+<DemoBlock Title="Disabled"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        <code>Disabled="true"</code> ignores pointer and keys, takes the thumbs out of the tab order
+        (<code>tabindex="-1"</code>, <code>aria-disabled="true"</code>) and adds
+        <code>data-disabled</code> to every part. The range below is uncontrolled via
+        <code>DefaultValues</code>.
+    </Description>
+    <LiveContent>
+        <div class="slider-demo">
+            <BitBhSlider DefaultValue="40" Disabled="true" class="slider">
+                <BitBhSliderTrack class="slider-track">
+                    <BitBhSliderRange class="slider-range" />
+                </BitBhSliderTrack>
+                <BitBhSliderThumb class="slider-thumb" aria-label="Locked volume" />
+            </BitBhSlider>
+
+            <BitBhSlider DefaultValues="@(new double[] { 20, 70 })" Disabled="true" class="slider">
+                <BitBhSliderTrack class="slider-track">
+                    <BitBhSliderRange class="slider-range" />
+                </BitBhSliderTrack>
+                <BitBhSliderThumb class="slider-thumb" aria-label="Locked minimum" />
+                <BitBhSliderThumb class="slider-thumb" aria-label="Locked maximum" />
+            </BitBhSlider>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private double volume = 50;

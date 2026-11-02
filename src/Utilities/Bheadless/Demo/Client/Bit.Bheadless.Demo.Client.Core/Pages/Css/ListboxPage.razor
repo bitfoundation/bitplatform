@@ -1,273 +1,271 @@
 ﻿@page "/listbox"
 
-<PageTitle>Listbox — bit Bheadless</PageTitle>
+<PageTitle>Listbox · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Listbox</h1>
-        <p>An accessible custom select with single/multi-select, full keyboard navigation, and typeahead.</p>
-        <SectionSwitcher Slug="listbox" />
-    </header>
+<div class="bb-intro">
+    <h1>Listbox</h1>
+    <p class="bb-subtitle">An accessible custom select with single/multi-select, full keyboard navigation, and typeahead.</p>
+    <SectionSwitcher Slug="listbox" />
+</div>
 
-    <DemoBlock Title="Basic Listbox"
-               Code="@_basicCode"
-               Css="@_listboxCss">
-        <Description>
-            Click the button or press Space / Enter / arrow keys to open. Use Up / Down to navigate,
-            Home / End to jump, Enter / Space to select, Escape to close, or simply type to jump
-            to an option. ARIA wiring (<code>combobox</code>, <code>listbox</code>,
-            <code>aria-activedescendant</code>) is handled for you.
-        </Description>
-        <LiveContent>
-            <BitBhListbox TValue="string" Value="@favPerson"
-                      OnValueChange="v => favPerson = v"
-                      class="listbox">
-                <BitBhListboxButton aria-label="Person" TValue="string" class="listbox-button">
-                    <Template Context="b">
-                        <span>@(string.IsNullOrEmpty(b.Value) ? "Select a person…" : b.Value)</span>
-                        <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhListboxButton>
-                <BitBhListboxOptions TValue="string" class="listbox-options">
-                    @foreach (var name in people)
-                    {
-                        <BitBhListboxOption TValue="string" Value="@name" class="listbox-option">@name</BitBhListboxOption>
-                    }
-                </BitBhListboxOptions>
-            </BitBhListbox>
+<DemoBlock Title="Basic Listbox"
+           Code="@_basicCode"
+           Css="@_listboxCss">
+    <Description>
+        Click the button or press Space / Enter / arrow keys to open. Use Up / Down to navigate,
+        Home / End to jump, Enter / Space to select, Escape to close, or simply type to jump
+        to an option. ARIA wiring (<code>combobox</code>, <code>listbox</code>,
+        <code>aria-activedescendant</code>) is handled for you.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="string" Value="@favPerson"
+                  OnValueChange="v => favPerson = v"
+                  class="listbox">
+            <BitBhListboxButton aria-label="Person" TValue="string" class="listbox-button">
+                <Template Context="b">
+                    <span>@(string.IsNullOrEmpty(b.Value) ? "Select a person…" : b.Value)</span>
+                    <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhListboxButton>
+            <BitBhListboxOptions TValue="string" class="listbox-options">
+                @foreach (var name in people)
+                {
+                    <BitBhListboxOption TValue="string" Value="@name" class="listbox-option">@name</BitBhListboxOption>
+                }
+            </BitBhListboxOptions>
+        </BitBhListbox>
 
-            <span class="demo-output">Selected: <strong>@(favPerson ?? "(none)")</strong></span>
-        </LiveContent>
-    </DemoBlock>
+        <span class="demo-output">Selected: <strong>@(favPerson ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Multi-select"
-               Code="@_multiCode"
-               Css="@_multiCss">
-        <Description>
-            Set <code>Multiple="true"</code> to allow selecting many values. The panel stays
-            open after each selection. The button label here renders the joined names.
-        </Description>
-        <LiveContent>
-            <BitBhListbox TValue="string" Multiple="true"
-                      Values="@favColors"
-                      OnValuesChange="v => favColors = v"
-                      class="listbox">
-                <BitBhListboxButton aria-label="Colours" TValue="string" class="listbox-button">
-                    <Template Context="b">
-                        <span>
-                            @(b.Values.Count == 0 ? "Pick colours…" : string.Join(", ", b.Values))
-                        </span>
-                        <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhListboxButton>
-                <BitBhListboxOptions TValue="string" class="listbox-options">
-                    @foreach (var c in colors)
-                    {
-                        <BitBhListboxOption TValue="string" Value="@c" class="listbox-option">
-                            <Template Context="o">
-                                <span class="check-mark">@(o.IsSelected ? "✓" : "")</span>
-                                <span>@c</span>
-                            </Template>
-                        </BitBhListboxOption>
-                    }
-                </BitBhListboxOptions>
-            </BitBhListbox>
-
-            <span class="demo-output">Selected: <strong>@string.Join(", ", favColors)</strong></span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled Options"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Mark individual options with <code>Disabled="true"</code>. They render with
-            <code>data-disabled</code> for CSS, are skipped by arrow-key nav, and ignore typeahead matches.
-        </Description>
-        <LiveContent>
-            <BitBhListbox TValue="string" DefaultValue='@("standard")' class="listbox">
-                <BitBhListboxButton aria-label="Plan" TValue="string" class="listbox-button">
-                    <Template Context="b">
-                        <span>@(b.Value ?? "Pick a plan")</span>
-                        <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhListboxButton>
-                <BitBhListboxOptions TValue="string" class="listbox-options">
-                    <BitBhListboxOption TValue="string" Value="@("standard")" class="listbox-option">Standard</BitBhListboxOption>
-                    <BitBhListboxOption TValue="string" Value="@("pro")" class="listbox-option">Pro</BitBhListboxOption>
-                    <BitBhListboxOption TValue="string" Value="@("enterprise")" Disabled="true" class="listbox-option">
-                        Enterprise (coming soon)
+<DemoBlock Title="Multi-select"
+           Code="@_multiCode"
+           Css="@_multiCss">
+    <Description>
+        Set <code>Multiple="true"</code> to allow selecting many values. The panel stays
+        open after each selection. The button label here renders the joined names.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="string" Multiple="true"
+                  Values="@favColors"
+                  OnValuesChange="v => favColors = v"
+                  class="listbox">
+            <BitBhListboxButton aria-label="Colours" TValue="string" class="listbox-button">
+                <Template Context="b">
+                    <span>
+                        @(b.Values.Count == 0 ? "Pick colours…" : string.Join(", ", b.Values))
+                    </span>
+                    <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhListboxButton>
+            <BitBhListboxOptions TValue="string" class="listbox-options">
+                @foreach (var c in colors)
+                {
+                    <BitBhListboxOption TValue="string" Value="@c" class="listbox-option">
+                        <Template Context="o">
+                            <span class="check-mark">@(o.IsSelected ? "✓" : "")</span>
+                            <span>@c</span>
+                        </Template>
                     </BitBhListboxOption>
-                </BitBhListboxOptions>
-            </BitBhListbox>
-        </LiveContent>
-    </DemoBlock>
+                }
+            </BitBhListboxOptions>
+        </BitBhListbox>
 
-    <DemoBlock Title="Custom Option Content"
-               Code="@_customCode"
-               Css="@_customCss">
-        <Description>
-            Options can render any markup. Use the <code>data-active</code> and
-            <code>data-selected</code> hooks to drive the highlighted and selected styles.
-            Provide a <code>Label</code> string when your content is rich so typeahead
-            still matches sensibly.
-        </Description>
-        <LiveContent>
-            <BitBhListbox TValue="string" Value="@country"
-                      OnValueChange="v => country = v"
-                      class="listbox">
-                <BitBhListboxButton aria-label="Country" TValue="string" class="listbox-button">
-                    <Template Context="b">
-                        <span>@(LookupCountry(b.Value)?.Name ?? "Pick a country")</span>
-                        <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                    </Template>
-                </BitBhListboxButton>
-                <BitBhListboxOptions TValue="string" class="listbox-options">
-                    @foreach (var c in countries)
-                    {
-                        <BitBhListboxOption TValue="string" Value="@c.Code" Label="@c.Name" class="listbox-option">
-                            <span class="country-flag">@c.Flag</span>
-                            <span class="country-name">@c.Name</span>
-                            <span class="country-code">@c.Code</span>
-                        </BitBhListboxOption>
-                    }
-                </BitBhListboxOptions>
-            </BitBhListbox>
-        </LiveContent>
-    </DemoBlock>
+        <span class="demo-output">Selected: <strong>@string.Join(", ", favColors)</strong></span>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Anchor Positioning"
-               Code="@_anchorCode"
-               Css="@_anchorCss">
-        <Description>
-            Set <code>Anchor</code> on <code>BitBhListboxOptions</code> to automatically position
-            the dropdown relative to the button using <code>position: fixed</code>. The panel
-            flips to the opposite side when there's not enough space, shifts to stay within
-            the viewport, and auto-updates on scroll/resize. The CSS variable
-            <code>--button-width</code> is exposed so you can match the dropdown width to the trigger.
-            No <code>position: relative</code> on the parent is needed.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-end;">
-                <div>
-                    <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Bottom Start (width matched)</p>
-                    <BitBhListbox TValue="string" Value="@anchorPerson"
-                              OnValueChange="v => anchorPerson = v"
-                              class="listbox-anchored">
-                        <BitBhListboxButton aria-label="Person" TValue="string" class="listbox-button">
-                            <Template Context="b">
-                                <span>@(string.IsNullOrEmpty(b.Value) ? "Select a person…" : b.Value)</span>
-                                <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                            </Template>
-                        </BitBhListboxButton>
-                        <BitBhListboxOptions TValue="string"
-                                         Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
-                                         class="listbox-options-anchored">
-                            @foreach (var name in people)
-                            {
-                                <BitBhListboxOption TValue="string" Value="@name" class="listbox-option">@name</BitBhListboxOption>
-                            }
-                        </BitBhListboxOptions>
-                    </BitBhListbox>
-                </div>
+<DemoBlock Title="Disabled Options"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Mark individual options with <code>Disabled="true"</code>. They render with
+        <code>data-disabled</code> for CSS, are skipped by arrow-key nav, and ignore typeahead matches.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="string" DefaultValue='@("standard")' class="listbox">
+            <BitBhListboxButton aria-label="Plan" TValue="string" class="listbox-button">
+                <Template Context="b">
+                    <span>@(b.Value ?? "Pick a plan")</span>
+                    <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhListboxButton>
+            <BitBhListboxOptions TValue="string" class="listbox-options">
+                <BitBhListboxOption TValue="string" Value="@("standard")" class="listbox-option">Standard</BitBhListboxOption>
+                <BitBhListboxOption TValue="string" Value="@("pro")" class="listbox-option">Pro</BitBhListboxOption>
+                <BitBhListboxOption TValue="string" Value="@("enterprise")" Disabled="true" class="listbox-option">
+                    Enterprise (coming soon)
+                </BitBhListboxOption>
+            </BitBhListboxOptions>
+        </BitBhListbox>
+    </LiveContent>
+</DemoBlock>
 
-                <div>
-                    <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Top Start (flips down if no space)</p>
-                    <BitBhListbox TValue="string" Value="@anchorPerson2"
-                              OnValueChange="v => anchorPerson2 = v"
-                              class="listbox-anchored">
-                        <BitBhListboxButton aria-label="Person" TValue="string" class="listbox-button">
-                            <Template Context="b">
-                                <span>@(string.IsNullOrEmpty(b.Value) ? "Select a person…" : b.Value)</span>
-                                <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                            </Template>
-                        </BitBhListboxButton>
-                        <BitBhListboxOptions TValue="string"
-                                         Anchor="@(new BitBhAnchorOptions { To = "top start", Gap = 4 })"
-                                         class="listbox-options-anchored">
-                            @foreach (var name in people)
-                            {
-                                <BitBhListboxOption TValue="string" Value="@name" class="listbox-option">@name</BitBhListboxOption>
-                            }
-                        </BitBhListboxOptions>
-                    </BitBhListbox>
-                </div>
-            </div>
+<DemoBlock Title="Custom Option Content"
+           Code="@_customCode"
+           Css="@_customCss">
+    <Description>
+        Options can render any markup. Use the <code>data-active</code> and
+        <code>data-selected</code> hooks to drive the highlighted and selected styles.
+        Provide a <code>Label</code> string when your content is rich so typeahead
+        still matches sensibly.
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="string" Value="@country"
+                  OnValueChange="v => country = v"
+                  class="listbox">
+            <BitBhListboxButton aria-label="Country" TValue="string" class="listbox-button">
+                <Template Context="b">
+                    <span>@(LookupCountry(b.Value)?.Name ?? "Pick a country")</span>
+                    <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                </Template>
+            </BitBhListboxButton>
+            <BitBhListboxOptions TValue="string" class="listbox-options">
+                @foreach (var c in countries)
+                {
+                    <BitBhListboxOption TValue="string" Value="@c.Code" Label="@c.Name" class="listbox-option">
+                        <span class="country-flag">@c.Flag</span>
+                        <span class="country-name">@c.Name</span>
+                        <span class="country-code">@c.Code</span>
+                    </BitBhListboxOption>
+                }
+            </BitBhListboxOptions>
+        </BitBhListbox>
+    </LiveContent>
+</DemoBlock>
 
-            <span class="demo-output" style="margin-top:0.75rem;">
-                Selected: <strong>@(anchorPerson ?? anchorPerson2 ?? "(none)")</strong>
-            </span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Form Submission"
-               Code="@_formCode"
-               Css="@_formCss">
-        <Description>
-            Set <code>Name</code> on the listbox and the selection participates in plain HTML
-            form posts. In multi-select mode a separate hidden input is rendered for each value.
-        </Description>
-        <LiveContent>
-            <form @onsubmit="HandleFormSubmit"
-                  @onsubmit:preventDefault="true"
-                  style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-start;">
-                <BitBhListbox TValue="string" Name="role" DefaultValue='@("user")' class="listbox">
-                    <BitBhListboxButton aria-label="Role" TValue="string" class="listbox-button">
+<DemoBlock Title="Anchor Positioning"
+           Code="@_anchorCode"
+           Css="@_anchorCss">
+    <Description>
+        Set <code>Anchor</code> on <code>BitBhListboxOptions</code> to automatically position
+        the dropdown relative to the button using <code>position: fixed</code>. The panel
+        flips to the opposite side when there's not enough space, shifts to stay within
+        the viewport, and auto-updates on scroll/resize. The CSS variable
+        <code>--button-width</code> is exposed so you can match the dropdown width to the trigger.
+        No <code>position: relative</code> on the parent is needed.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-end;">
+            <div>
+                <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Bottom Start (width matched)</p>
+                <BitBhListbox TValue="string" Value="@anchorPerson"
+                          OnValueChange="v => anchorPerson = v"
+                          class="listbox-anchored">
+                    <BitBhListboxButton aria-label="Person" TValue="string" class="listbox-button">
                         <Template Context="b">
-                            <span>@(b.Value)</span>
+                            <span>@(string.IsNullOrEmpty(b.Value) ? "Select a person…" : b.Value)</span>
                             <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
                         </Template>
                     </BitBhListboxButton>
-                    <BitBhListboxOptions TValue="string" class="listbox-options">
-                        <BitBhListboxOption TValue="string" Value="@("user")" class="listbox-option">User</BitBhListboxOption>
-                        <BitBhListboxOption TValue="string" Value="@("admin")" class="listbox-option">Admin</BitBhListboxOption>
-                        <BitBhListboxOption TValue="string" Value="@("owner")" class="listbox-option">Owner</BitBhListboxOption>
+                    <BitBhListboxOptions TValue="string"
+                                     Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                                     class="listbox-options-anchored">
+                        @foreach (var name in people)
+                        {
+                            <BitBhListboxOption TValue="string" Value="@name" class="listbox-option">@name</BitBhListboxOption>
+                        }
                     </BitBhListboxOptions>
                 </BitBhListbox>
+            </div>
 
-                <button type="submit" class="btn btn-primary">Submit</button>
+            <div>
+                <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Top Start (flips down if no space)</p>
+                <BitBhListbox TValue="string" Value="@anchorPerson2"
+                          OnValueChange="v => anchorPerson2 = v"
+                          class="listbox-anchored">
+                    <BitBhListboxButton aria-label="Person" TValue="string" class="listbox-button">
+                        <Template Context="b">
+                            <span>@(string.IsNullOrEmpty(b.Value) ? "Select a person…" : b.Value)</span>
+                            <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                        </Template>
+                    </BitBhListboxButton>
+                    <BitBhListboxOptions TValue="string"
+                                     Anchor="@(new BitBhAnchorOptions { To = "top start", Gap = 4 })"
+                                     class="listbox-options-anchored">
+                        @foreach (var name in people)
+                        {
+                            <BitBhListboxOption TValue="string" Value="@name" class="listbox-option">@name</BitBhListboxOption>
+                        }
+                    </BitBhListboxOptions>
+                </BitBhListbox>
+            </div>
+        </div>
 
-                @if (lastSubmitted is not null)
-                {
-                    <span class="demo-output">@lastSubmitted</span>
-                }
-            </form>
-        </LiveContent>
-    </DemoBlock>
+        <span class="demo-output" style="margin-top:0.75rem;">
+            Selected: <strong>@(anchorPerson ?? anchorPerson2 ?? "(none)")</strong>
+        </span>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Large lists (virtualized)"
-               Code="@_virtualCode"
-               Css="@_virtualCss">
-        <Description>
-            For thousands of options, pass the data through <code>Items</code> and render each option
-            with an <code>ItemTemplate</code>. <code>Virtualize="true"</code> renders only the options in
-            view — give the panel a fixed height with <code>overflow-y: auto</code> and make every option
-            exactly <code>ItemSize</code> pixels tall. Options still get <code>aria-setsize</code> /
-            <code>aria-posinset</code>, and arrow keys, Home / End and typeahead reach all 10,000. With no
-            content, <code>BitBhListboxButton</code> shows the selected option's text or its
-            <code>Placeholder</code> (and emits <code>data-placeholder</code>).
-        </Description>
-        <LiveContent>
-            <BitBhListbox TValue="string" @bind-Value="virtualPick" class="listbox-anchored">
-                <BitBhListboxButton aria-label="Item" TValue="string" Placeholder="Choose one of 10,000…"
-                                 class="listbox-button listbox-button-auto" />
-                <BitBhListboxOptions TValue="string"
-                                  Items="@VirtualItems"
-                                  Virtualize="true"
-                                  ItemSize="36"
-                                  Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
-                                  class="listbox-virtual">
-                    <ItemTemplate Context="o">
-                        <span class="listbox-virtual-check">@(o.IsSelected ? "✓" : "")</span>
-                        <span>@o.Value</span>
-                    </ItemTemplate>
+<DemoBlock Title="Form Submission"
+           Code="@_formCode"
+           Css="@_formCss">
+    <Description>
+        Set <code>Name</code> on the listbox and the selection participates in plain HTML
+        form posts. In multi-select mode a separate hidden input is rendered for each value.
+    </Description>
+    <LiveContent>
+        <form @onsubmit="HandleFormSubmit"
+              @onsubmit:preventDefault="true"
+              style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-start;">
+            <BitBhListbox TValue="string" Name="role" DefaultValue='@("user")' class="listbox">
+                <BitBhListboxButton aria-label="Role" TValue="string" class="listbox-button">
+                    <Template Context="b">
+                        <span>@(b.Value)</span>
+                        <span class="listbox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhListboxButton>
+                <BitBhListboxOptions TValue="string" class="listbox-options">
+                    <BitBhListboxOption TValue="string" Value="@("user")" class="listbox-option">User</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("admin")" class="listbox-option">Admin</BitBhListboxOption>
+                    <BitBhListboxOption TValue="string" Value="@("owner")" class="listbox-option">Owner</BitBhListboxOption>
                 </BitBhListboxOptions>
             </BitBhListbox>
 
-            <span class="demo-output">Selected: <strong>@(virtualPick ?? "(none)")</strong></span>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+
+            @if (lastSubmitted is not null)
+            {
+                <span class="demo-output">@lastSubmitted</span>
+            }
+        </form>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Large lists (virtualized)"
+           Code="@_virtualCode"
+           Css="@_virtualCss">
+    <Description>
+        For thousands of options, pass the data through <code>Items</code> and render each option
+        with an <code>ItemTemplate</code>. <code>Virtualize="true"</code> renders only the options in
+        view — give the panel a fixed height with <code>overflow-y: auto</code> and make every option
+        exactly <code>ItemSize</code> pixels tall. Options still get <code>aria-setsize</code> /
+        <code>aria-posinset</code>, and arrow keys, Home / End and typeahead reach all 10,000. With no
+        content, <code>BitBhListboxButton</code> shows the selected option's text or its
+        <code>Placeholder</code> (and emits <code>data-placeholder</code>).
+    </Description>
+    <LiveContent>
+        <BitBhListbox TValue="string" @bind-Value="virtualPick" class="listbox-anchored">
+            <BitBhListboxButton aria-label="Item" TValue="string" Placeholder="Choose one of 10,000…"
+                             class="listbox-button listbox-button-auto" />
+            <BitBhListboxOptions TValue="string"
+                              Items="@VirtualItems"
+                              Virtualize="true"
+                              ItemSize="36"
+                              Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                              class="listbox-virtual">
+                <ItemTemplate Context="o">
+                    <span class="listbox-virtual-check">@(o.IsSelected ? "✓" : "")</span>
+                    <span>@o.Value</span>
+                </ItemTemplate>
+            </BitBhListboxOptions>
+        </BitBhListbox>
+
+        <span class="demo-output">Selected: <strong>@(virtualPick ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // 10 adjectives × 10 animals × 100 = 10,000 options.

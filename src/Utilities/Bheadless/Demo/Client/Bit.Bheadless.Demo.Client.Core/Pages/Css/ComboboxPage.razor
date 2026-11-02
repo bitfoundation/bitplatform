@@ -1,325 +1,323 @@
 ﻿@page "/combobox"
 
-<PageTitle>Combobox — bit Bheadless</PageTitle>
+<PageTitle>Combobox · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Combobox</h1>
-        <p>An accessible typeable autocomplete with consumer-driven filtering.</p>
-        <SectionSwitcher Slug="combobox" />
-    </header>
+<div class="bb-intro">
+    <h1>Combobox</h1>
+    <p class="bb-subtitle">An accessible typeable autocomplete with consumer-driven filtering.</p>
+    <SectionSwitcher Slug="combobox" />
+</div>
 
-    <DemoBlock Title="Basic Combobox"
-               Code="@_basicCode"
-               Css="@_comboboxCss">
-        <Description>
-            Type to filter, use Up / Down to navigate, Enter to select, Escape to close.
-            The combobox emits an <code>OnQueryChange</code> event; you do the filtering
-            in your own code and pass only the matching options as children.
-        </Description>
-        <LiveContent>
-            <BitBhCombobox TValue="string"
-                       Value="@selectedFruit"
-                       OnValueChange="v => selectedFruit = v"
-                       OnQueryChange="HandleFruitQuery"
-                       DisplayValue="v => v ?? string.Empty"
-                       class="combobox">
-                <div class="combobox-input-wrapper">
-                    <BitBhComboboxInput TValue="string"
-                                    Placeholder="Pick a fruit…"
-                                    class="combobox-input" />
-                    <BitBhComboboxButton TValue="string" class="combobox-button">
-                        <Template Context="b">
-                            <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhComboboxButton>
-                </div>
-                <BitBhComboboxOptions TValue="string" class="combobox-options">
-                    @if (filteredFruits.Count == 0)
+<DemoBlock Title="Basic Combobox"
+           Code="@_basicCode"
+           Css="@_comboboxCss">
+    <Description>
+        Type to filter, use Up / Down to navigate, Enter to select, Escape to close.
+        The combobox emits an <code>OnQueryChange</code> event; you do the filtering
+        in your own code and pass only the matching options as children.
+    </Description>
+    <LiveContent>
+        <BitBhCombobox TValue="string"
+                   Value="@selectedFruit"
+                   OnValueChange="v => selectedFruit = v"
+                   OnQueryChange="HandleFruitQuery"
+                   DisplayValue="v => v ?? string.Empty"
+                   class="combobox">
+            <div class="combobox-input-wrapper">
+                <BitBhComboboxInput TValue="string"
+                                Placeholder="Pick a fruit…"
+                                class="combobox-input" />
+                <BitBhComboboxButton TValue="string" class="combobox-button">
+                    <Template Context="b">
+                        <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhComboboxButton>
+            </div>
+            <BitBhComboboxOptions TValue="string" class="combobox-options">
+                @if (filteredFruits.Count == 0)
+                {
+                    <li class="combobox-empty">No matches.</li>
+                }
+                else
+                {
+                    @foreach (var fruit in filteredFruits)
                     {
-                        <li class="combobox-empty">No matches.</li>
+                        <BitBhComboboxOption TValue="string" Value="@fruit" class="combobox-option">
+                            <Template Context="o">
+                                <span>@fruit</span>
+                                @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
+                            </Template>
+                        </BitBhComboboxOption>
                     }
-                    else
-                    {
-                        @foreach (var fruit in filteredFruits)
-                        {
-                            <BitBhComboboxOption TValue="string" Value="@fruit" class="combobox-option">
-                                <Template Context="o">
-                                    <span>@fruit</span>
-                                    @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
-                                </Template>
-                            </BitBhComboboxOption>
-                        }
-                    }
-                </BitBhComboboxOptions>
-            </BitBhCombobox>
+                }
+            </BitBhComboboxOptions>
+        </BitBhCombobox>
 
-            <span class="demo-output">Selected: <strong>@(selectedFruit ?? "(none)")</strong></span>
-        </LiveContent>
-    </DemoBlock>
+        <span class="demo-output">Selected: <strong>@(selectedFruit ?? "(none)")</strong></span>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Multi-select with chips"
-               Code="@_multiCode"
-               Css="@_multiCss">
-        <Description>
-            Set <code>Multiple="true"</code> to allow many selections. Selected values are
-            shown as chips above the input (each with a remove button). The panel stays
-            open after each pick.
-        </Description>
-        <LiveContent>
-            <BitBhCombobox TValue="string" Multiple="true"
-                       Values="@pickedTags"
-                       OnValuesChange="v => pickedTags = v"
-                       OnQueryChange="HandleTagQuery"
-                       class="combobox">
-                <div class="combobox-input-wrapper combobox-input-wrapper-multi">
-                    @foreach (var tag in pickedTags)
+<DemoBlock Title="Multi-select with chips"
+           Code="@_multiCode"
+           Css="@_multiCss">
+    <Description>
+        Set <code>Multiple="true"</code> to allow many selections. Selected values are
+        shown as chips above the input (each with a remove button). The panel stays
+        open after each pick.
+    </Description>
+    <LiveContent>
+        <BitBhCombobox TValue="string" Multiple="true"
+                   Values="@pickedTags"
+                   OnValuesChange="v => pickedTags = v"
+                   OnQueryChange="HandleTagQuery"
+                   class="combobox">
+            <div class="combobox-input-wrapper combobox-input-wrapper-multi">
+                @foreach (var tag in pickedTags)
+                {
+                    <span class="combobox-chip">
+                        @tag
+                        <button type="button"
+                                class="combobox-chip-remove"
+                                @onclick="() => RemoveTag(tag)"
+                                aria-label="@($"Remove {tag}")">×</button>
+                    </span>
+                }
+                <BitBhComboboxInput TValue="string"
+                                Placeholder="@(pickedTags.Count == 0 ? "Pick tags…" : "")"
+                                class="combobox-input combobox-input-inline" />
+                <BitBhComboboxButton TValue="string" class="combobox-button">
+                    <Template Context="b">
+                        <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhComboboxButton>
+            </div>
+            <BitBhComboboxOptions TValue="string" class="combobox-options">
+                @if (filteredTags.Count == 0)
+                {
+                    <li class="combobox-empty">No matches.</li>
+                }
+                else
+                {
+                    @foreach (var tag in filteredTags)
                     {
-                        <span class="combobox-chip">
-                            @tag
-                            <button type="button"
-                                    class="combobox-chip-remove"
-                                    @onclick="() => RemoveTag(tag)"
-                                    aria-label="@($"Remove {tag}")">×</button>
-                        </span>
+                        <BitBhComboboxOption TValue="string" Value="@tag" class="combobox-option">
+                            <Template Context="o">
+                                <span class="combobox-tick">@(o.IsSelected ? "✓" : "")</span>
+                                <span>@tag</span>
+                            </Template>
+                        </BitBhComboboxOption>
                     }
-                    <BitBhComboboxInput TValue="string"
-                                    Placeholder="@(pickedTags.Count == 0 ? "Pick tags…" : "")"
-                                    class="combobox-input combobox-input-inline" />
-                    <BitBhComboboxButton TValue="string" class="combobox-button">
-                        <Template Context="b">
-                            <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhComboboxButton>
-                </div>
-                <BitBhComboboxOptions TValue="string" class="combobox-options">
-                    @if (filteredTags.Count == 0)
-                    {
-                        <li class="combobox-empty">No matches.</li>
-                    }
-                    else
-                    {
-                        @foreach (var tag in filteredTags)
-                        {
-                            <BitBhComboboxOption TValue="string" Value="@tag" class="combobox-option">
-                                <Template Context="o">
-                                    <span class="combobox-tick">@(o.IsSelected ? "✓" : "")</span>
-                                    <span>@tag</span>
-                                </Template>
-                            </BitBhComboboxOption>
-                        }
-                    }
-                </BitBhComboboxOptions>
-            </BitBhCombobox>
+                }
+            </BitBhComboboxOptions>
+        </BitBhCombobox>
 
-            <span class="demo-output">Picked: <strong>@(pickedTags.Count == 0 ? "(none)" : string.Join(", ", pickedTags))</strong></span>
-        </LiveContent>
-    </DemoBlock>
+        <span class="demo-output">Picked: <strong>@(pickedTags.Count == 0 ? "(none)" : string.Join(", ", pickedTags))</strong></span>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Object values with rich content"
-               Code="@_objectCode"
-               Css="@_objectCss">
-        <Description>
-            Bind to objects rather than strings. Provide a <code>DisplayValue</code> function
-            that converts the selected object back to the input text, and render rich content
-            inside each option.
-        </Description>
-        <LiveContent>
-            <BitBhCombobox TValue="Person"
-                       Value="@selectedPerson"
-                       OnValueChange="v => selectedPerson = v"
-                       OnQueryChange="HandlePersonQuery"
-                       DisplayValue="p => p?.Name ?? string.Empty"
-                       class="combobox">
-                <div class="combobox-input-wrapper">
-                    <BitBhComboboxInput TValue="Person"
-                                    Placeholder="Search people…"
-                                    class="combobox-input" />
-                    <BitBhComboboxButton TValue="Person" class="combobox-button">
-                        <Template Context="b">
-                            <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhComboboxButton>
-                </div>
-                <BitBhComboboxOptions TValue="Person" class="combobox-options">
-                    @if (filteredPeople.Count == 0)
+<DemoBlock Title="Object values with rich content"
+           Code="@_objectCode"
+           Css="@_objectCss">
+    <Description>
+        Bind to objects rather than strings. Provide a <code>DisplayValue</code> function
+        that converts the selected object back to the input text, and render rich content
+        inside each option.
+    </Description>
+    <LiveContent>
+        <BitBhCombobox TValue="Person"
+                   Value="@selectedPerson"
+                   OnValueChange="v => selectedPerson = v"
+                   OnQueryChange="HandlePersonQuery"
+                   DisplayValue="p => p?.Name ?? string.Empty"
+                   class="combobox">
+            <div class="combobox-input-wrapper">
+                <BitBhComboboxInput TValue="Person"
+                                Placeholder="Search people…"
+                                class="combobox-input" />
+                <BitBhComboboxButton TValue="Person" class="combobox-button">
+                    <Template Context="b">
+                        <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhComboboxButton>
+            </div>
+            <BitBhComboboxOptions TValue="Person" class="combobox-options">
+                @if (filteredPeople.Count == 0)
+                {
+                    <li class="combobox-empty">No matches.</li>
+                }
+                else
+                {
+                    @foreach (var person in filteredPeople)
                     {
-                        <li class="combobox-empty">No matches.</li>
-                    }
-                    else
-                    {
-                        @foreach (var person in filteredPeople)
-                        {
-                            <BitBhComboboxOption TValue="Person" Value="@person" class="combobox-option">
-                                <Template Context="o">
-                                    <div class="person-row">
-                                        <span class="person-avatar">@person.Initials</span>
-                                        <div class="person-info">
-                                            <strong>@person.Name</strong>
-                                            <span>@person.Email</span>
-                                        </div>
-                                        @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
+                        <BitBhComboboxOption TValue="Person" Value="@person" class="combobox-option">
+                            <Template Context="o">
+                                <div class="person-row">
+                                    <span class="person-avatar">@person.Initials</span>
+                                    <div class="person-info">
+                                        <strong>@person.Name</strong>
+                                        <span>@person.Email</span>
                                     </div>
-                                </Template>
-                            </BitBhComboboxOption>
-                        }
+                                    @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
+                                </div>
+                            </Template>
+                        </BitBhComboboxOption>
                     }
-                </BitBhComboboxOptions>
-            </BitBhCombobox>
+                }
+            </BitBhComboboxOptions>
+        </BitBhCombobox>
 
-            <span class="demo-output">
-                Selected: <strong>@(selectedPerson?.Name ?? "(none)")</strong>
-            </span>
-        </LiveContent>
-    </DemoBlock>
-    <DemoBlock Title="Anchor Positioning"
-               Code="@_anchorCode"
-               Css="@_anchorCss">
-        <Description>
-            Set <code>Anchor</code> on <code>BitBhComboboxOptions</code> to automatically position
-            the dropdown relative to the input using <code>position: fixed</code>. The panel
-            flips to the opposite side when there's not enough space, shifts to stay within
-            the viewport, and auto-updates on scroll/resize. No <code>position: relative</code>
-            on the parent is needed.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-end;">
-                <div>
-                    <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Bottom Start</p>
-                    <BitBhCombobox TValue="string"
-                               Value="@anchorFruit"
-                               OnValueChange="v => anchorFruit = v"
-                               OnQueryChange="HandleAnchorFruitQuery"
-                               DisplayValue="v => v ?? string.Empty"
-                               class="combobox-anchored">
-                        <div class="combobox-input-wrapper">
-                            <BitBhComboboxInput TValue="string"
-                                            Placeholder="Pick a fruit…"
-                                            class="combobox-input" />
-                            <BitBhComboboxButton TValue="string" class="combobox-button">
-                                <Template Context="b">
-                                    <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                                </Template>
-                            </BitBhComboboxButton>
-                        </div>
-                        <BitBhComboboxOptions TValue="string"
-                                          Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
-                                          class="combobox-options-anchored">
-                            @if (anchorFilteredFruits.Count == 0)
+        <span class="demo-output">
+            Selected: <strong>@(selectedPerson?.Name ?? "(none)")</strong>
+        </span>
+    </LiveContent>
+</DemoBlock>
+<DemoBlock Title="Anchor Positioning"
+           Code="@_anchorCode"
+           Css="@_anchorCss">
+    <Description>
+        Set <code>Anchor</code> on <code>BitBhComboboxOptions</code> to automatically position
+        the dropdown relative to the input using <code>position: fixed</code>. The panel
+        flips to the opposite side when there's not enough space, shifts to stay within
+        the viewport, and auto-updates on scroll/resize. No <code>position: relative</code>
+        on the parent is needed.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-end;">
+            <div>
+                <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Bottom Start</p>
+                <BitBhCombobox TValue="string"
+                           Value="@anchorFruit"
+                           OnValueChange="v => anchorFruit = v"
+                           OnQueryChange="HandleAnchorFruitQuery"
+                           DisplayValue="v => v ?? string.Empty"
+                           class="combobox-anchored">
+                    <div class="combobox-input-wrapper">
+                        <BitBhComboboxInput TValue="string"
+                                        Placeholder="Pick a fruit…"
+                                        class="combobox-input" />
+                        <BitBhComboboxButton TValue="string" class="combobox-button">
+                            <Template Context="b">
+                                <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                            </Template>
+                        </BitBhComboboxButton>
+                    </div>
+                    <BitBhComboboxOptions TValue="string"
+                                      Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                                      class="combobox-options-anchored">
+                        @if (anchorFilteredFruits.Count == 0)
+                        {
+                            <li class="combobox-empty">No matches.</li>
+                        }
+                        else
+                        {
+                            @foreach (var fruit in anchorFilteredFruits)
                             {
-                                <li class="combobox-empty">No matches.</li>
+                                <BitBhComboboxOption TValue="string" Value="@fruit" class="combobox-option">
+                                    <Template Context="o">
+                                        <span>@fruit</span>
+                                        @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
+                                    </Template>
+                                </BitBhComboboxOption>
                             }
-                            else
-                            {
-                                @foreach (var fruit in anchorFilteredFruits)
-                                {
-                                    <BitBhComboboxOption TValue="string" Value="@fruit" class="combobox-option">
-                                        <Template Context="o">
-                                            <span>@fruit</span>
-                                            @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
-                                        </Template>
-                                    </BitBhComboboxOption>
-                                }
-                            }
-                        </BitBhComboboxOptions>
-                    </BitBhCombobox>
-                </div>
-
-                <div>
-                    <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Top Start (flips down if no space)</p>
-                    <BitBhCombobox TValue="string"
-                               Value="@anchorFruit2"
-                               OnValueChange="v => anchorFruit2 = v"
-                               OnQueryChange="HandleAnchorFruitQuery2"
-                               DisplayValue="v => v ?? string.Empty"
-                               class="combobox-anchored">
-                        <div class="combobox-input-wrapper">
-                            <BitBhComboboxInput TValue="string"
-                                            Placeholder="Pick a fruit…"
-                                            class="combobox-input" />
-                            <BitBhComboboxButton TValue="string" class="combobox-button">
-                                <Template Context="b">
-                                    <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                                </Template>
-                            </BitBhComboboxButton>
-                        </div>
-                        <BitBhComboboxOptions TValue="string"
-                                          Anchor="@(new BitBhAnchorOptions { To = "top start", Gap = 4 })"
-                                          class="combobox-options-anchored">
-                            @if (anchorFilteredFruits2.Count == 0)
-                            {
-                                <li class="combobox-empty">No matches.</li>
-                            }
-                            else
-                            {
-                                @foreach (var fruit in anchorFilteredFruits2)
-                                {
-                                    <BitBhComboboxOption TValue="string" Value="@fruit" class="combobox-option">
-                                        <Template Context="o">
-                                            <span>@fruit</span>
-                                            @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
-                                        </Template>
-                                    </BitBhComboboxOption>
-                                }
-                            }
-                        </BitBhComboboxOptions>
-                    </BitBhCombobox>
-                </div>
+                        }
+                    </BitBhComboboxOptions>
+                </BitBhCombobox>
             </div>
 
-            <span class="demo-output" style="margin-top:0.75rem;">
-                Selected: <strong>@(anchorFruit ?? anchorFruit2 ?? "(none)")</strong>
-            </span>
-        </LiveContent>
-    </DemoBlock>
+            <div>
+                <p style="font-size:0.8rem; color:var(--color-muted); margin:0 0 0.5rem;">Top Start (flips down if no space)</p>
+                <BitBhCombobox TValue="string"
+                           Value="@anchorFruit2"
+                           OnValueChange="v => anchorFruit2 = v"
+                           OnQueryChange="HandleAnchorFruitQuery2"
+                           DisplayValue="v => v ?? string.Empty"
+                           class="combobox-anchored">
+                    <div class="combobox-input-wrapper">
+                        <BitBhComboboxInput TValue="string"
+                                        Placeholder="Pick a fruit…"
+                                        class="combobox-input" />
+                        <BitBhComboboxButton TValue="string" class="combobox-button">
+                            <Template Context="b">
+                                <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                            </Template>
+                        </BitBhComboboxButton>
+                    </div>
+                    <BitBhComboboxOptions TValue="string"
+                                      Anchor="@(new BitBhAnchorOptions { To = "top start", Gap = 4 })"
+                                      class="combobox-options-anchored">
+                        @if (anchorFilteredFruits2.Count == 0)
+                        {
+                            <li class="combobox-empty">No matches.</li>
+                        }
+                        else
+                        {
+                            @foreach (var fruit in anchorFilteredFruits2)
+                            {
+                                <BitBhComboboxOption TValue="string" Value="@fruit" class="combobox-option">
+                                    <Template Context="o">
+                                        <span>@fruit</span>
+                                        @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
+                                    </Template>
+                                </BitBhComboboxOption>
+                            }
+                        }
+                    </BitBhComboboxOptions>
+                </BitBhCombobox>
+            </div>
+        </div>
 
-    <DemoBlock Title="Large lists (virtualized)"
-               Code="@_virtualCode"
-               Css="@_virtualCss">
-        <Description>
-            Pass the matching data to <code>BitBhComboboxOptions</code> through <code>Items</code> with an
-            <code>ItemTemplate</code>, and set <code>Virtualize="true"</code> so only the options in view
-            are rendered (fixed <code>ItemSize</code>, scrollable panel). Filtering stays yours:
-            <code>OnQueryChange</code> runs <code>BitBhFilter.Contains</code> — case- and
-            accent-insensitive — over 10,000 items on every keystroke. Child content such as
-            <code>BitBhComboboxEmpty</code> still renders after the data options.
-        </Description>
-        <LiveContent>
-            <BitBhCombobox TValue="string"
-                        @bind-Value="virtualPick"
-                        OnQueryChange="HandleVirtualQuery"
-                        DisplayValue="v => v ?? string.Empty"
-                        class="combobox-anchored">
-                <div class="combobox-input-wrapper">
-                    <BitBhComboboxInput TValue="string" Placeholder="Search 10,000 animals…" class="combobox-input" />
-                    <BitBhComboboxButton TValue="string" class="combobox-button">
-                        <Template Context="b">
-                            <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhComboboxButton>
-                </div>
-                <BitBhComboboxOptions TValue="string"
-                                   Items="@virtualMatches"
-                                   Virtualize="true"
-                                   ItemSize="36"
-                                   Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
-                                   class="combobox-virtual">
-                    <ItemTemplate Context="o">
-                        <span>@o.Value</span>
-                        @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
-                    </ItemTemplate>
-                    <ChildContent>
-                        <BitBhComboboxEmpty TValue="string" class="combobox-empty">No animals match.</BitBhComboboxEmpty>
-                    </ChildContent>
-                </BitBhComboboxOptions>
-            </BitBhCombobox>
+        <span class="demo-output" style="margin-top:0.75rem;">
+            Selected: <strong>@(anchorFruit ?? anchorFruit2 ?? "(none)")</strong>
+        </span>
+    </LiveContent>
+</DemoBlock>
 
-            <span class="demo-output">
-                @virtualMatches.Count.ToString("N0") matches · Selected: <strong>@(virtualPick ?? "(none)")</strong>
-            </span>
-        </LiveContent>
-    </DemoBlock>
-</div>
+<DemoBlock Title="Large lists (virtualized)"
+           Code="@_virtualCode"
+           Css="@_virtualCss">
+    <Description>
+        Pass the matching data to <code>BitBhComboboxOptions</code> through <code>Items</code> with an
+        <code>ItemTemplate</code>, and set <code>Virtualize="true"</code> so only the options in view
+        are rendered (fixed <code>ItemSize</code>, scrollable panel). Filtering stays yours:
+        <code>OnQueryChange</code> runs <code>BitBhFilter.Contains</code> — case- and
+        accent-insensitive — over 10,000 items on every keystroke. Child content such as
+        <code>BitBhComboboxEmpty</code> still renders after the data options.
+    </Description>
+    <LiveContent>
+        <BitBhCombobox TValue="string"
+                    @bind-Value="virtualPick"
+                    OnQueryChange="HandleVirtualQuery"
+                    DisplayValue="v => v ?? string.Empty"
+                    class="combobox-anchored">
+            <div class="combobox-input-wrapper">
+                <BitBhComboboxInput TValue="string" Placeholder="Search 10,000 animals…" class="combobox-input" />
+                <BitBhComboboxButton TValue="string" class="combobox-button">
+                    <Template Context="b">
+                        <span class="combobox-chevron @(b.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhComboboxButton>
+            </div>
+            <BitBhComboboxOptions TValue="string"
+                               Items="@virtualMatches"
+                               Virtualize="true"
+                               ItemSize="36"
+                               Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })"
+                               class="combobox-virtual">
+                <ItemTemplate Context="o">
+                    <span>@o.Value</span>
+                    @if (o.IsSelected) { <span class="combobox-tick">✓</span> }
+                </ItemTemplate>
+                <ChildContent>
+                    <BitBhComboboxEmpty TValue="string" class="combobox-empty">No animals match.</BitBhComboboxEmpty>
+                </ChildContent>
+            </BitBhComboboxOptions>
+        </BitBhCombobox>
+
+        <span class="demo-output">
+            @virtualMatches.Count.ToString("N0") matches · Selected: <strong>@(virtualPick ?? "(none)")</strong>
+        </span>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // ── Large lists (virtualized) ───────────────────────────────────────────

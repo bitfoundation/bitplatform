@@ -1,217 +1,215 @@
 ﻿@page "/checkbox"
 
-<PageTitle>Checkbox — bit Bheadless</PageTitle>
+<PageTitle>Checkbox · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Checkbox</h1>
-        <p>An accessible tri-state checkbox primitive with full keyboard support and zero visual opinion.</p>
-        <SectionSwitcher Slug="checkbox" />
-    </header>
+<div class="bb-intro">
+    <h1>Checkbox</h1>
+    <p class="bb-subtitle">An accessible tri-state checkbox primitive with full keyboard support and zero visual opinion.</p>
+    <SectionSwitcher Slug="checkbox" />
+</div>
 
-    <DemoBlock Title="Basic Checkbox (Uncontrolled)"
-               Code="@_basicCode"
-               Css="@_checkboxCss">
-        <Description>
-            Renders a native <code>&lt;button&gt;</code> with <code>role="checkbox"</code> and
-            <code>aria-checked</code>. Click or press Space to toggle.
-            <code>DefaultChecked</code> seeds the initial state.
-        </Description>
-        <LiveContent>
-            <BitBhCheckbox aria-label="Remember me" class="checkbox">
+<DemoBlock Title="Basic Checkbox (Uncontrolled)"
+           Code="@_basicCode"
+           Css="@_checkboxCss">
+    <Description>
+        Renders a native <code>&lt;button&gt;</code> with <code>role="checkbox"</code> and
+        <code>aria-checked</code>. Click or press Space to toggle.
+        <code>DefaultChecked</code> seeds the initial state.
+    </Description>
+    <LiveContent>
+        <BitBhCheckbox aria-label="Remember me" class="checkbox">
+            <Template Context="c">
+                @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
+            </Template>
+        </BitBhCheckbox>
+
+        <BitBhCheckbox aria-label="Keep me signed in" DefaultChecked="true" class="checkbox">
+            <Template Context="c">
+                @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
+            </Template>
+        </BitBhCheckbox>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Controlled"
+           Code="@_controlledCode"
+           Css="@_controlledCss">
+    <Description>
+        Drive state externally with <code>Checked</code> + <code>OnCheckedChange</code>.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; align-items:center; gap:1rem;">
+            <BitBhCheckbox aria-label="Accept the terms" Checked="@acceptedTerms"
+                       OnCheckedChange="v => acceptedTerms = v"
+                       class="checkbox">
                 <Template Context="c">
                     @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
                 </Template>
             </BitBhCheckbox>
 
-            <BitBhCheckbox aria-label="Keep me signed in" DefaultChecked="true" class="checkbox">
+            <span class="demo-output">
+                Terms accepted: <strong>@(acceptedTerms ? "yes" : "no")</strong>
+            </span>
+
+            <BitBhButton OnClick="() => acceptedTerms = !acceptedTerms" class="btn">
+                Toggle from outside
+            </BitBhButton>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> to block interaction. Receives the native
+        <code>disabled</code> attribute and a <code>data-disabled</code> hook.
+    </Description>
+    <LiveContent>
+        <BitBhCheckbox aria-label="Unavailable option" Disabled="true" class="checkbox">
+            <Template Context="c">
+                @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
+            </Template>
+        </BitBhCheckbox>
+
+        <BitBhCheckbox aria-label="Locked option" DefaultChecked="true" Disabled="true" class="checkbox">
+            <Template Context="c">
+                @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
+            </Template>
+        </BitBhCheckbox>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Indeterminate (Select All pattern)"
+           Code="@_indeterminateCode"
+           Css="@_indeterminateCss">
+    <Description>
+        Setting <code>Indeterminate="true"</code> emits <code>aria-checked="mixed"</code>
+        and <code>data-state="indeterminate"</code>. The classic use-case is a "select all"
+        checkbox that reflects partial child selection. Clicking an indeterminate checkbox
+        advances it to checked.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            <label class="checkbox-label">
+                <BitBhCheckbox Checked="@SelectAllChecked"
+                           Indeterminate="@SelectAllIndeterminate"
+                           OnCheckedChange="HandleSelectAll"
+                           class="checkbox">
+                    <Template Context="c">
+                        @if (c.IsIndeterminate)  { <span class="checkbox-dash">–</span> }
+                        else if (c.IsChecked)    { <span class="checkbox-tick">✓</span> }
+                    </Template>
+                </BitBhCheckbox>
+                <strong>Select all</strong>
+            </label>
+
+            <div style="display:flex; flex-direction:column; gap:0.4rem; margin-left:1.6rem;">
+                @for (var i = 0; i < items.Length; i++)
+                {
+                    var captured = i;
+                    <label class="checkbox-label">
+                        <BitBhCheckbox Checked="@items[captured]"
+                                   OnCheckedChange="v => HandleItemChange(captured, v)"
+                                   class="checkbox">
+                            <Template Context="c">
+                                @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
+                            </Template>
+                        </BitBhCheckbox>
+                        <span>@($"Item {captured + 1}")</span>
+                    </label>
+                }
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="With label"
+           Code="@_labelCode"
+           Css="@_labelCss">
+    <Description>
+        Wrap the checkbox in a <code>&lt;label&gt;</code> so clicking the text toggles the
+        checkbox — standard HTML behaviour.
+    </Description>
+    <LiveContent>
+        <label class="checkbox-label">
+            <BitBhCheckbox class="checkbox">
                 <Template Context="c">
                     @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
                 </Template>
             </BitBhCheckbox>
-        </LiveContent>
-    </DemoBlock>
+            <span>Send me product updates</span>
+        </label>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Controlled"
-               Code="@_controlledCode"
-               Css="@_controlledCss">
-        <Description>
-            Drive state externally with <code>Checked</code> + <code>OnCheckedChange</code>.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; align-items:center; gap:1rem;">
-                <BitBhCheckbox aria-label="Accept the terms" Checked="@acceptedTerms"
-                           OnCheckedChange="v => acceptedTerms = v"
+<DemoBlock Title="Form Submission"
+           Code="@_formCode"
+           Css="@_formCss">
+    <Description>
+        Set <code>Name</code> to render an adjacent <code>&lt;input type="hidden"&gt;</code>
+        so the checkbox state participates in plain form posts. The hidden input is only
+        present when the checkbox is checked or indeterminate, mirroring native checkbox behaviour.
+    </Description>
+    <LiveContent>
+        <form @onsubmit="HandleFormSubmit"
+              @onsubmit:preventDefault="true"
+              style="display:flex; flex-direction:column; gap:0.5rem; align-items:flex-start;">
+            <label class="checkbox-label">
+                <BitBhCheckbox Name="agree" Value="yes"
                            class="checkbox">
                     <Template Context="c">
                         @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
                     </Template>
                 </BitBhCheckbox>
+                <span>I agree to the terms</span>
+            </label>
 
-                <span class="demo-output">
-                    Terms accepted: <strong>@(acceptedTerms ? "yes" : "no")</strong>
-                </span>
+            <button type="submit" class="btn btn-primary">Submit</button>
 
-                <BitBhButton OnClick="() => acceptedTerms = !acceptedTerms" class="btn">
-                    Toggle from outside
-                </BitBhButton>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+            @if (lastSubmitted is not null)
+            {
+                <span class="demo-output">@lastSubmitted</span>
+            }
+        </form>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Disabled"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> to block interaction. Receives the native
-            <code>disabled</code> attribute and a <code>data-disabled</code> hook.
-        </Description>
-        <LiveContent>
-            <BitBhCheckbox aria-label="Unavailable option" Disabled="true" class="checkbox">
-                <Template Context="c">
-                    @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
-                </Template>
-            </BitBhCheckbox>
-
-            <BitBhCheckbox aria-label="Locked option" DefaultChecked="true" Disabled="true" class="checkbox">
-                <Template Context="c">
-                    @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
-                </Template>
-            </BitBhCheckbox>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Indeterminate (Select All pattern)"
-               Code="@_indeterminateCode"
-               Css="@_indeterminateCss">
-        <Description>
-            Setting <code>Indeterminate="true"</code> emits <code>aria-checked="mixed"</code>
-            and <code>data-state="indeterminate"</code>. The classic use-case is a "select all"
-            checkbox that reflects partial child selection. Clicking an indeterminate checkbox
-            advances it to checked.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                <label class="checkbox-label">
-                    <BitBhCheckbox Checked="@SelectAllChecked"
-                               Indeterminate="@SelectAllIndeterminate"
-                               OnCheckedChange="HandleSelectAll"
-                               class="checkbox">
-                        <Template Context="c">
-                            @if (c.IsIndeterminate)  { <span class="checkbox-dash">–</span> }
-                            else if (c.IsChecked)    { <span class="checkbox-tick">✓</span> }
-                        </Template>
-                    </BitBhCheckbox>
-                    <strong>Select all</strong>
-                </label>
-
-                <div style="display:flex; flex-direction:column; gap:0.4rem; margin-left:1.6rem;">
-                    @for (var i = 0; i < items.Length; i++)
+<DemoBlock Title="Group with select all"
+           Code="@_groupCode"
+           Css="@_groupCss">
+    <Description>
+        <code>BitBhCheckboxGroup</code> binds one collection with <code>@@bind-Values</code> and
+        renders <code>role="group"</code>; each <code>BitBhCheckbox</code> with a <code>Value</code>
+        toggles that value. <code>SelectAll="true"</code> turns a checkbox into the tri-state
+        parent — checked when every value is selected, <code>aria-checked="mixed"</code> /
+        <code>data-state="indeterminate"</code> when only some are. <code>BitBhCheckboxIndicator</code>
+        renders only while its checkbox is checked or mixed, and mirrors its <code>data-state</code>.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <BitBhCheckboxGroup @bind-Values="toppings" aria-label="Pizza toppings" class="checkbox-group">
+                <BitBhCheckbox SelectAll="true" class="checkbox-row checkbox-row-all">
+                    <span class="checkbox-box"><BitBhCheckboxIndicator class="checkbox-indicator" /></span>
+                    All toppings
+                </BitBhCheckbox>
+                <div class="checkbox-group-items">
+                    @foreach (var topping in allToppings)
                     {
-                        var captured = i;
-                        <label class="checkbox-label">
-                            <BitBhCheckbox Checked="@items[captured]"
-                                       OnCheckedChange="v => HandleItemChange(captured, v)"
-                                       class="checkbox">
-                                <Template Context="c">
-                                    @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
-                                </Template>
-                            </BitBhCheckbox>
-                            <span>@($"Item {captured + 1}")</span>
-                        </label>
+                        <BitBhCheckbox Value="@topping" class="checkbox-row">
+                            <span class="checkbox-box"><BitBhCheckboxIndicator class="checkbox-indicator" /></span>
+                            @topping
+                        </BitBhCheckbox>
                     }
                 </div>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+            </BitBhCheckboxGroup>
 
-    <DemoBlock Title="With label"
-               Code="@_labelCode"
-               Css="@_labelCss">
-        <Description>
-            Wrap the checkbox in a <code>&lt;label&gt;</code> so clicking the text toggles the
-            checkbox — standard HTML behaviour.
-        </Description>
-        <LiveContent>
-            <label class="checkbox-label">
-                <BitBhCheckbox class="checkbox">
-                    <Template Context="c">
-                        @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
-                    </Template>
-                </BitBhCheckbox>
-                <span>Send me product updates</span>
-            </label>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Form Submission"
-               Code="@_formCode"
-               Css="@_formCss">
-        <Description>
-            Set <code>Name</code> to render an adjacent <code>&lt;input type="hidden"&gt;</code>
-            so the checkbox state participates in plain form posts. The hidden input is only
-            present when the checkbox is checked or indeterminate, mirroring native checkbox behaviour.
-        </Description>
-        <LiveContent>
-            <form @onsubmit="HandleFormSubmit"
-                  @onsubmit:preventDefault="true"
-                  style="display:flex; flex-direction:column; gap:0.5rem; align-items:flex-start;">
-                <label class="checkbox-label">
-                    <BitBhCheckbox Name="agree" Value="yes"
-                               class="checkbox">
-                        <Template Context="c">
-                            @if (c.IsChecked) { <span class="checkbox-tick">✓</span> }
-                        </Template>
-                    </BitBhCheckbox>
-                    <span>I agree to the terms</span>
-                </label>
-
-                <button type="submit" class="btn btn-primary">Submit</button>
-
-                @if (lastSubmitted is not null)
-                {
-                    <span class="demo-output">@lastSubmitted</span>
-                }
-            </form>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Group with select all"
-               Code="@_groupCode"
-               Css="@_groupCss">
-        <Description>
-            <code>BitBhCheckboxGroup</code> binds one collection with <code>@@bind-Values</code> and
-            renders <code>role="group"</code>; each <code>BitBhCheckbox</code> with a <code>Value</code>
-            toggles that value. <code>SelectAll="true"</code> turns a checkbox into the tri-state
-            parent — checked when every value is selected, <code>aria-checked="mixed"</code> /
-            <code>data-state="indeterminate"</code> when only some are. <code>BitBhCheckboxIndicator</code>
-            renders only while its checkbox is checked or mixed, and mirrors its <code>data-state</code>.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; flex-direction:column; gap:1rem;">
-                <BitBhCheckboxGroup @bind-Values="toppings" aria-label="Pizza toppings" class="checkbox-group">
-                    <BitBhCheckbox SelectAll="true" class="checkbox-row checkbox-row-all">
-                        <span class="checkbox-box"><BitBhCheckboxIndicator class="checkbox-indicator" /></span>
-                        All toppings
-                    </BitBhCheckbox>
-                    <div class="checkbox-group-items">
-                        @foreach (var topping in allToppings)
-                        {
-                            <BitBhCheckbox Value="@topping" class="checkbox-row">
-                                <span class="checkbox-box"><BitBhCheckboxIndicator class="checkbox-indicator" /></span>
-                                @topping
-                            </BitBhCheckbox>
-                        }
-                    </div>
-                </BitBhCheckboxGroup>
-
-                <span class="demo-output">
-                    Values: <strong>@(toppings.Count == 0 ? "(none)" : string.Join(", ", toppings))</strong>
-                </span>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            <span class="demo-output">
+                Values: <strong>@(toppings.Count == 0 ? "(none)" : string.Join(", ", toppings))</strong>
+            </span>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool acceptedTerms;

@@ -1,0 +1,382 @@
+﻿@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+@* The site's search - part of the site kit every Utilities demo shares (see wwwroot/app.css): a
+   command palette rather than a dropdown under a text field.
+
+   Everything it can reach is a page of this site, so the corpus is the catalog itself -
+   DocsCatalog's titles, descriptions and keywords. No index is built and no service is called.
+
+   The trigger and the dialog are one component so the keyboard shortcut, the button and the open
+   state cannot get out of step. Ctrl+K / Cmd+K and "/" open it from anywhere - site.js owns the
+   document-level listener and calls back in here. A demo whose library claims Ctrl+K for itself
+   turns that half off with SiteInfo.PaletteCtrlK. *@
+
+<button type="button" class="bb-search-trigger" @ref="_trigger" @onclick="Open"
+        aria-label="@SearchLabel" aria-keyshortcuts="@(SiteInfo.PaletteCtrlK ? (_isApple ? "Meta+K" : "Control+K") : "/")"
+        title="@(SiteInfo.PaletteCtrlK ? $"Search documentation ({(_isApple ? "⌘K" : "Ctrl+K")})" : "Search documentation (/)")">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <span class="bb-search-trigger-label">Search docs</span>
+    <span class="bb-search-trigger-keys" aria-hidden="true">
+        @if (SiteInfo.PaletteCtrlK)
+        {
+            <kbd>@(_isApple ? "⌘" : "Ctrl")</kbd> <kbd>K</kbd>
+        }
+        else
+        {
+            <kbd>/</kbd>
+        }
+    </span>
+</button>
+
+@if (_open)
+{
+    @* The scrim takes the click that closes the dialog. The dialog itself stops the click from
+       reaching it, so a click inside never closes what the reader is using. *@
+    <div class="bb-palette-scrim" @onclick="() => Close()">
+        <div class="bb-palette" role="dialog" aria-modal="true" aria-label="Search documentation"
+             @onclick:stopPropagation="true" @onkeydown="OnKeyDown">
+            @* Focus trap. The dialog claims to be modal, so Tab must not walk out of it into the
+               page behind - which is still there and still focusable. These two zero-size stops
+               sit either side of the content: reaching one means the reader tabbed past an end,
+               and focus is handed to the opposite end instead. Two elements and no interop. *@
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _escape.FocusAsync()"></span>
+
+            <div class="bb-palette-input">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input @ref="_input"
+                       type="text"
+                       placeholder="Search the documentation and demos…"
+                       aria-label="Search documentation"
+                       role="combobox"
+                       aria-autocomplete="list"
+                       aria-expanded="true"
+                       aria-controls="bb-palette-listbox"
+                       aria-activedescendant="@(_results.Length > 0 ? $"bb-palette-option-{_activeIndex}" : null)"
+                       autocomplete="off"
+                       spellcheck="false"
+                       @bind:get="_query"
+                       @bind:set="OnInput"
+                       @bind:event="oninput" />
+                <button type="button" class="bb-palette-esc" @ref="_escape" @onclick="() => Close()" aria-label="Close search">Esc</button>
+            </div>
+
+            <div class="bb-palette-results" id="bb-palette-listbox" role="listbox" aria-label="Search results">
+                @if (_results.Length == 0)
+                {
+                    <p class="bb-palette-empty">
+                        No match for <strong>@_query</strong>.
+                        @if (SiteInfo.SearchHints.Length > 0)
+                        {
+                            <text>Try </text>
+                            @for (var i = 0; i < SiteInfo.SearchHints.Length; i++)
+                            {
+                                var hint = SiteInfo.SearchHints[i];
+                                @(i == 0 ? "" : i == SiteInfo.SearchHints.Length - 1 ? " or " : ", ")<em>@hint</em>
+                            }
+                            <text>.</text>
+                        }
+                    </p>
+                }
+                else
+                {
+                    @* Grouped by the section each hit came from, in catalog order, so the list
+                       reads as the site's own table of contents rather than as a flat ranking.
+                       The keyboard cursor still walks the FLAT order, which is why each row's
+                       position is looked up in _results rather than counted per group.
+
+                       Each group is a role="group" named by its label: a listbox may hold only
+                       options and groups of them, so a bare label between the rows would be a
+                       stray element to a screen reader rather than the heading of the rows under
+                       it. The label stays the group's first child, which is what
+                       bitDemoSite.revealPaletteOption looks for above a group's first row. *@
+                    var groupIndex = 0;
+                    @foreach (var group in _results.GroupBy(hit => hit.Group))
+                    {
+                        var labelId = $"bb-palette-group-{groupIndex++}";
+                        <div role="group" aria-labelledby="@labelId" @key="group.Key">
+                            <p class="bb-overline bb-palette-group" id="@labelId">@group.Key</p>
+                            @foreach (var hit in group)
+                            {
+                                var position = Array.IndexOf(_results, hit);
+                                <div role="option"
+                                     id="@($"bb-palette-option-{position}")"
+                                     aria-selected="@(position == _activeIndex ? "true" : "false")"
+                                     class="@(position == _activeIndex ? "bb-palette-hit bb-active" : "bb-palette-hit")"
+                                     @key="hit.Url"
+                                     @onmousemove="e => Hover(position, e)"
+                                     @onmousedown="e => Press(hit, e)" @onmousedown:preventDefault>
+                                    <span class="bb-palette-hit-title">@hit.Title</span>
+                                    <span class="bb-palette-hit-desc">@hit.Description</span>
+                                    <span class="bb-palette-hit-url">@hit.Url</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="bb-palette-foot">
+                <span><kbd>↑</kbd><kbd>↓</kbd> to navigate</span>
+                <span><kbd>Enter</kbd> to open</span>
+                <span><kbd>Esc</kbd> to dismiss</span>
+            </div>
+
+            <span class="bb-focus-sentinel" tabindex="0" @onfocus="() => _input.FocusAsync()"></span>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>One row of the palette: a place on this site, and why it matched.</summary>
+    private sealed record Hit(string Group, string Title, string Description, string Url, string Corpus);
+
+    private bool _open;
+    private bool _isApple;
+    private bool _focusPending;
+    private bool _restorePending;
+    private bool _revealPending;
+    private string _query = "";
+    private Hit[] _results = [];
+    private int _activeIndex;
+
+    private ElementReference _trigger;
+    private ElementReference _input;
+    private ElementReference _escape;
+    private DotNetObjectReference<CommandPalette>? _self;
+
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    /// <summary>
+    /// A navigation the palette did not start - the browser's Back button, a link the page followed
+    /// on its own - would otherwise leave the dialog open over the new page, with that page's scroll
+    /// still locked. The new page decides where focus belongs, as it does after <see cref="Go"/>.
+    /// </summary>
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_open is false) return;
+
+        _ = InvokeAsync(() =>
+        {
+            Close(restoreFocus: false);
+            StateHasChanged();
+        });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Neither call runs during prerendering - OnAfterRender does not fire there - so the
+            // palette is simply inert until the client takes over, which is the correct behavior
+            // for a control whose whole job is interactive.
+            _self = DotNetObjectReference.Create(this);
+            _isApple = await JSRuntime.InvokeAsync<bool>("bitDemoSite.registerPalette", _self, SiteInfo.PaletteCtrlK);
+            StateHasChanged();
+        }
+
+        if (_focusPending)
+        {
+            _focusPending = false;
+            await _input.FocusAsync();
+        }
+
+        if (_restorePending)
+        {
+            _restorePending = false;
+            await _trigger.FocusAsync();
+        }
+
+        if (_revealPending)
+        {
+            _revealPending = false;
+            // After the render that moved the cursor, not before: the row has to carry its new
+            // class before its position is worth measuring.
+            await JSRuntime.InvokeVoidAsync("bitDemoSite.revealPaletteOption", _activeIndex);
+        }
+    }
+
+    /// <summary>Opened by the document-level Ctrl+K / Cmd+K / "/" handler in site.js.</summary>
+    [JSInvokable]
+    public Task OpenFromShortcut()
+    {
+        if (_open is false) Open();
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private void Open()
+    {
+        _open = true;
+        _query = "";
+        _activeIndex = 0;
+        _pointer = null;
+        // An empty query is not "no results": with nothing typed the palette is a table of
+        // contents, which is a more useful blank state than an empty box.
+        _results = Suggest();
+        _focusPending = true;
+        LockScroll(true);
+    }
+
+    /// <summary>
+    /// Dismisses the dialog. The whole dialog is unmounted on close, so unless focus is handed
+    /// somewhere deliberately it falls to &lt;body&gt; and the next Tab restarts at the top of the
+    /// page - hence the trip back to the button that opened it. A close that ends in a navigation
+    /// passes false: the new page decides where focus belongs, and moving it here would fight that.
+    /// </summary>
+    private void Close(bool restoreFocus = true)
+    {
+        _open = false;
+        _query = "";
+        _results = [];
+        _activeIndex = 0;
+        _revealPending = false;
+        _restorePending = restoreFocus;
+        LockScroll(false);
+    }
+
+    /// <summary>
+    /// Holds the page still while the dialog is up, so a flick of the wheel scrolls the results
+    /// rather than the document behind them. Not awaited: the open/close state is already correct
+    /// in C#, and making the callers async would put a render between the click and the dialog.
+    /// </summary>
+    private void LockScroll(bool locked) => _ = JSRuntime.InvokeVoidAsync("bitDemoSite.lockScroll", locked);
+
+    private void OnInput(string? value)
+    {
+        _query = value ?? "";
+        _results = _query.Trim().Length == 0 ? Suggest() : Find(_query.Trim());
+        _activeIndex = 0;
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Escape":
+                Close();
+                break;
+
+            case "ArrowDown" when _results.Length > 0:
+                // Wrapping, because a palette is a short list: falling off the end and landing back
+                // at the top is what every other palette does, and it saves a reversal.
+                _activeIndex = (_activeIndex + 1) % _results.Length;
+                _revealPending = true;
+                break;
+
+            case "ArrowUp" when _results.Length > 0:
+                _activeIndex = (_activeIndex - 1 + _results.Length) % _results.Length;
+                _revealPending = true;
+                break;
+
+            case "Enter" when _results.Length > 0:
+                Go(_results[Math.Clamp(_activeIndex, 0, _results.Length - 1)]);
+                break;
+        }
+    }
+
+    private void Go(Hit hit)
+    {
+        Close(restoreFocus: false);
+        Nav.NavigateTo(hit.Url);
+    }
+
+    /// <summary>
+    /// Opens a row the primary button pressed. A right-click or a middle-click is the reader asking for something
+    /// else - a menu, another tab the row cannot give - and it navigated this tab away all the same.
+    /// </summary>
+    private void Press(Hit hit, MouseEventArgs e)
+    {
+        if (e.Button == 0) Go(hit);
+    }
+
+    private (double X, double Y)? _pointer;
+    private bool _skipRender;
+
+    /// <summary>
+    /// The row under the pointer takes the cursor - once the pointer has moved. mouseenter fired as well when the
+    /// palette opened, or the list scrolled, under a pointer that stood still: the row that slid under it took the
+    /// keyboard's place, so Enter opened whatever the mouse happened to rest on and a held ArrowDown kept jumping
+    /// back. The first event only notes where the pointer is; the browser sends those for a pointer at rest too.
+    /// </summary>
+    private void Hover(int position, MouseEventArgs e)
+    {
+        var at = (e.ClientX, e.ClientY);
+        var moved = _pointer is { } last && last != at;
+        _pointer = at;
+        if (!moved || position == _activeIndex)
+        {
+            _skipRender = true;
+            return;
+        }
+        _activeIndex = position;
+    }
+
+    // A pointer moving within one row asks for nothing to be drawn.
+    protected override bool ShouldRender()
+    {
+        if (!_skipRender) return true;
+        _skipRender = false;
+        return false;
+    }
+
+    // The visible label and the key hints, in the order they appear: someone using speech input says what they see
+    // (WCAG 2.5.3), and a screen reader still hears the name when a narrow screen hides both.
+    private string SearchLabel => SiteInfo.PaletteCtrlK ? $"Search docs {(_isApple ? "⌘" : "Ctrl")} K" : "Search docs /";
+
+    /// <summary>The blank state: the reading order of the docs.</summary>
+    private static Hit[] Suggest() => Regroup(Pages().Take(12));
+
+    /// <summary>
+    /// The rows in the order they are RENDERED - grouped by section, groups in first-appearance
+    /// order. The arrow keys walk the flat array, so it has to agree with what is on screen or
+    /// pressing Down would move the cursor somewhere the eye is not.
+    /// </summary>
+    private static Hit[] Regroup(IEnumerable<Hit> hits)
+        => [.. hits.GroupBy(hit => hit.Group).SelectMany(group => group)];
+
+    /// <summary>
+    /// Every term has to match somewhere, and the hits are ordered by WHERE they matched: a title
+    /// that starts with the query first, then a title that contains it, then everything that only
+    /// matched on its description or keywords. Ranking by position rather than by count keeps a
+    /// page from being outranked by another that merely says the word four times.
+    /// </summary>
+    private static Hit[] Find(string query)
+    {
+        var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        return Regroup(Pages()
+            .Where(hit => terms.All(term => hit.Corpus.Contains(term, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(hit => hit.Title.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 0
+                          : hit.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ? 1 : 2)
+            .Take(12));
+    }
+
+    private static IEnumerable<Hit> Pages()
+        => DocsCatalog.Sections.SelectMany(section => section.Pages.Select(page =>
+               new Hit(section.Title, page.Title, page.Description, page.Url,
+                       $"{page.Title} {page.Description} {page.Keywords} {page.Url}")));
+
+    public async ValueTask DisposeAsync()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+
+        if (_self is null) return;
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("bitDemoSite.unregisterPalette");
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is already gone; there is nothing on the other side to unregister from.
+        }
+
+        _self.Dispose();
+        _self = null;
+    }
+}

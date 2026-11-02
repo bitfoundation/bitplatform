@@ -1,139 +1,137 @@
 ﻿@page "/collapsible"
 
-<PageTitle>Collapsible — bit Bheadless</PageTitle>
+<PageTitle>Collapsible · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Collapsible</h1>
-        <p>An interactive component which expands and collapses a panel.</p>
-        <SectionSwitcher Slug="collapsible" />
-    </header>
-
-    <DemoBlock Title="Basic Collapsible"
-               Code="@_basicCode"
-               Css="@_collapsibleCss">
-        <Description>
-            A <code>BitBhCollapsibleTrigger</code> toggles a <code>BitBhCollapsibleContent</code> panel.
-            <code>aria-expanded</code>, <code>aria-controls</code>, and <code>aria-labelledby</code>
-            are wired automatically.
-        </Description>
-        <LiveContent>
-            <BitBhCollapsible class="collapsible">
-                <div class="collapsible-header">
-                    <span>@@peduarte starred 3 repositories</span>
-                    <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
-                </div>
-                <div class="collapsible-row">@@radix-ui/primitives</div>
-                <BitBhCollapsibleContent class="collapsible-content">
-                    <div class="collapsible-row">@@radix-ui/colors</div>
-                    <div class="collapsible-row">@@radix-ui/themes</div>
-                </BitBhCollapsibleContent>
-            </BitBhCollapsible>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Default Open"
-               Code="@_defaultOpenCode"
-               Css="@_collapsibleCss">
-        <Description>
-            Set <code>DefaultOpen="true"</code> to render the panel open initially (uncontrolled).
-        </Description>
-        <LiveContent>
-            <BitBhCollapsible DefaultOpen="true" class="collapsible">
-                <div class="collapsible-header">
-                    <span>Already open</span>
-                    <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
-                </div>
-                <BitBhCollapsibleContent class="collapsible-content">
-                    <div class="collapsible-row">I'm open by default. Click the trigger to close me.</div>
-                </BitBhCollapsibleContent>
-            </BitBhCollapsible>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Render Context (rotating chevron + Close)"
-               Code="@_renderContextCode"
-               Css="@_chevronCss">
-        <Description>
-            <code>BitBhCollapsibleTrigger</code> and <code>BitBhCollapsibleContent</code> expose a
-            <code>BitBhCollapsibleRenderContext</code> via <code>Context="c"</code>. Use it to drive UI
-            from the open state and to call <code>c.Close()</code> from anywhere inside.
-        </Description>
-        <LiveContent>
-            <BitBhCollapsible class="collapsible">
-                <div class="collapsible-header">
-                    <span>What's inside?</span>
-                    <BitBhCollapsibleTrigger class="collapsible-trigger">
-                        <Template Context="c">
-                            <span class="collapsible-chevron @(c.IsOpen ? "open" : "")">▾</span>
-                        </Template>
-                    </BitBhCollapsibleTrigger>
-                </div>
-                <BitBhCollapsibleContent class="collapsible-content">
-                    <Template Context="c">
-                        <div class="collapsible-row">
-                            <p>You can close me from inside the content:</p>
-                            <button class="btn" @onclick="c.Close">Close panel</button>
-                        </div>
-                    </Template>
-                </BitBhCollapsibleContent>
-            </BitBhCollapsible>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> on the root to block interaction. The trigger receives
-            both the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
-        </Description>
-        <LiveContent>
-            <BitBhCollapsible Disabled="true" class="collapsible">
-                <div class="collapsible-header">
-                    <span>Can't toggle me</span>
-                    <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
-                </div>
-                <BitBhCollapsibleContent class="collapsible-content">
-                    <div class="collapsible-row">You'll never see this content.</div>
-                </BitBhCollapsibleContent>
-            </BitBhCollapsible>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Controlled"
-               Code="@_controlledCode"
-               Css="@_controlledCss">
-        <Description>
-            Drive the open state externally with <code>Open</code> + <code>OnOpenChange</code>.
-            The button below opens or closes the collapsible programmatically.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; flex-direction:column; gap:1rem; width:100%">
-                <div class="demo-row">
-                    <BitBhButton OnClick="ToggleControlled" class="btn">
-                        Toggle from outside
-                    </BitBhButton>
-                    <span class="demo-output">Open: @controlledOpen.ToString().ToLowerInvariant()</span>
-                </div>
-
-                <BitBhCollapsible Open="controlledOpen"
-                               OnOpenChange="v => controlledOpen = v"
-                               class="collapsible">
-                    <div class="collapsible-header">
-                        <span>Internal trigger</span>
-                        <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
-                    </div>
-                    <BitBhCollapsibleContent class="collapsible-content">
-                        <div class="collapsible-row">
-                            Either trigger updates the same state — fully controlled.
-                        </div>
-                    </BitBhCollapsibleContent>
-                </BitBhCollapsible>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>Collapsible</h1>
+    <p class="bb-subtitle">An interactive component which expands and collapses a panel.</p>
+    <SectionSwitcher Slug="collapsible" />
 </div>
+
+<DemoBlock Title="Basic Collapsible"
+           Code="@_basicCode"
+           Css="@_collapsibleCss">
+    <Description>
+        A <code>BitBhCollapsibleTrigger</code> toggles a <code>BitBhCollapsibleContent</code> panel.
+        <code>aria-expanded</code>, <code>aria-controls</code>, and <code>aria-labelledby</code>
+        are wired automatically.
+    </Description>
+    <LiveContent>
+        <BitBhCollapsible class="collapsible">
+            <div class="collapsible-header">
+                <span>@@peduarte starred 3 repositories</span>
+                <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
+            </div>
+            <div class="collapsible-row">@@radix-ui/primitives</div>
+            <BitBhCollapsibleContent class="collapsible-content">
+                <div class="collapsible-row">@@radix-ui/colors</div>
+                <div class="collapsible-row">@@radix-ui/themes</div>
+            </BitBhCollapsibleContent>
+        </BitBhCollapsible>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Default Open"
+           Code="@_defaultOpenCode"
+           Css="@_collapsibleCss">
+    <Description>
+        Set <code>DefaultOpen="true"</code> to render the panel open initially (uncontrolled).
+    </Description>
+    <LiveContent>
+        <BitBhCollapsible DefaultOpen="true" class="collapsible">
+            <div class="collapsible-header">
+                <span>Already open</span>
+                <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
+            </div>
+            <BitBhCollapsibleContent class="collapsible-content">
+                <div class="collapsible-row">I'm open by default. Click the trigger to close me.</div>
+            </BitBhCollapsibleContent>
+        </BitBhCollapsible>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Render Context (rotating chevron + Close)"
+           Code="@_renderContextCode"
+           Css="@_chevronCss">
+    <Description>
+        <code>BitBhCollapsibleTrigger</code> and <code>BitBhCollapsibleContent</code> expose a
+        <code>BitBhCollapsibleRenderContext</code> via <code>Context="c"</code>. Use it to drive UI
+        from the open state and to call <code>c.Close()</code> from anywhere inside.
+    </Description>
+    <LiveContent>
+        <BitBhCollapsible class="collapsible">
+            <div class="collapsible-header">
+                <span>What's inside?</span>
+                <BitBhCollapsibleTrigger class="collapsible-trigger">
+                    <Template Context="c">
+                        <span class="collapsible-chevron @(c.IsOpen ? "open" : "")">▾</span>
+                    </Template>
+                </BitBhCollapsibleTrigger>
+            </div>
+            <BitBhCollapsibleContent class="collapsible-content">
+                <Template Context="c">
+                    <div class="collapsible-row">
+                        <p>You can close me from inside the content:</p>
+                        <button class="btn" @onclick="c.Close">Close panel</button>
+                    </div>
+                </Template>
+            </BitBhCollapsibleContent>
+        </BitBhCollapsible>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> on the root to block interaction. The trigger receives
+        both the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
+    </Description>
+    <LiveContent>
+        <BitBhCollapsible Disabled="true" class="collapsible">
+            <div class="collapsible-header">
+                <span>Can't toggle me</span>
+                <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
+            </div>
+            <BitBhCollapsibleContent class="collapsible-content">
+                <div class="collapsible-row">You'll never see this content.</div>
+            </BitBhCollapsibleContent>
+        </BitBhCollapsible>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Controlled"
+           Code="@_controlledCode"
+           Css="@_controlledCss">
+    <Description>
+        Drive the open state externally with <code>Open</code> + <code>OnOpenChange</code>.
+        The button below opens or closes the collapsible programmatically.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; flex-direction:column; gap:1rem; width:100%">
+            <div class="demo-row">
+                <BitBhButton OnClick="ToggleControlled" class="btn">
+                    Toggle from outside
+                </BitBhButton>
+                <span class="demo-output">Open: @controlledOpen.ToString().ToLowerInvariant()</span>
+            </div>
+
+            <BitBhCollapsible Open="controlledOpen"
+                           OnOpenChange="v => controlledOpen = v"
+                           class="collapsible">
+                <div class="collapsible-header">
+                    <span>Internal trigger</span>
+                    <BitBhCollapsibleTrigger class="collapsible-trigger">▾</BitBhCollapsibleTrigger>
+                </div>
+                <BitBhCollapsibleContent class="collapsible-content">
+                    <div class="collapsible-row">
+                        Either trigger updates the same state — fully controlled.
+                    </div>
+                </BitBhCollapsibleContent>
+            </BitBhCollapsible>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool controlledOpen;

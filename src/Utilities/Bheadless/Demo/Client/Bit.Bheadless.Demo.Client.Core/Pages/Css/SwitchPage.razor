@@ -1,140 +1,138 @@
 ﻿@page "/switch"
 
-<PageTitle>Switch — bit Bheadless</PageTitle>
+<PageTitle>Switch · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Switch</h1>
-        <p>An accessible on/off toggle with full keyboard support and zero visual opinion.</p>
-        <SectionSwitcher Slug="switch" />
-    </header>
+<div class="bb-intro">
+    <h1>Switch</h1>
+    <p class="bb-subtitle">An accessible on/off toggle with full keyboard support and zero visual opinion.</p>
+    <SectionSwitcher Slug="switch" />
+</div>
 
-    <DemoBlock Title="Basic Switch (Uncontrolled)"
-               Code="@_basicCode"
-               Css="@_switchCss">
-        <Description>
-            Renders a native <code>&lt;button&gt;</code> with <code>role="switch"</code> and
-            <code>aria-checked</code>. Click or press Space/Enter to toggle.
-            <code>DefaultChecked</code> seeds the initial state.
-        </Description>
-        <LiveContent>
-            <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false" class="switch">
+<DemoBlock Title="Basic Switch (Uncontrolled)"
+           Code="@_basicCode"
+           Css="@_switchCss">
+    <Description>
+        Renders a native <code>&lt;button&gt;</code> with <code>role="switch"</code> and
+        <code>aria-checked</code>. Click or press Space/Enter to toggle.
+        <code>DefaultChecked</code> seeds the initial state.
+    </Description>
+    <LiveContent>
+        <BitBhSwitch aria-label="Wi-Fi" DefaultChecked="false" class="switch">
+            <BitBhSwitchThumb class="switch-thumb" />
+        </BitBhSwitch>
+
+        <BitBhSwitch aria-label="Bluetooth" DefaultChecked="true" class="switch">
+            <BitBhSwitchThumb class="switch-thumb" />
+        </BitBhSwitch>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Controlled"
+           Code="@_controlledCode"
+           Css="@_controlledCss">
+    <Description>
+        Drive the state externally with <code>Checked</code> + <code>OnCheckedChange</code>.
+        Clicking either control updates the same state.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; align-items:center; gap:1rem;">
+            <BitBhSwitch aria-label="Notifications" Checked="@notificationsOn"
+                     OnCheckedChange="v => notificationsOn = v"
+                     class="switch">
                 <BitBhSwitchThumb class="switch-thumb" />
             </BitBhSwitch>
 
-            <BitBhSwitch aria-label="Bluetooth" DefaultChecked="true" class="switch">
+            <span class="demo-output">
+                Notifications: <strong>@(notificationsOn ? "on" : "off")</strong>
+            </span>
+
+            <BitBhButton OnClick="() => notificationsOn = !notificationsOn" class="btn">
+                Toggle from outside
+            </BitBhButton>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> to block interaction. The button receives
+        the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
+    </Description>
+    <LiveContent>
+        <BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true" class="switch">
+            <BitBhSwitchThumb class="switch-thumb" />
+        </BitBhSwitch>
+
+        <BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true" class="switch">
+            <BitBhSwitchThumb class="switch-thumb" />
+        </BitBhSwitch>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="With label"
+           Code="@_labelCode"
+           Css="@_labelCss">
+    <Description>
+        Wrap the switch in a <code>&lt;label&gt;</code> to make the label clickable.
+        Clicking the label text toggles the switch — standard HTML behaviour.
+    </Description>
+    <LiveContent>
+        <label class="switch-label">
+            <BitBhSwitch DefaultChecked="true" class="switch">
                 <BitBhSwitchThumb class="switch-thumb" />
             </BitBhSwitch>
-        </LiveContent>
-    </DemoBlock>
+            <span>Email me about updates</span>
+        </label>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Controlled"
-               Code="@_controlledCode"
-               Css="@_controlledCss">
-        <Description>
-            Drive the state externally with <code>Checked</code> + <code>OnCheckedChange</code>.
-            Clicking either control updates the same state.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; align-items:center; gap:1rem;">
-                <BitBhSwitch aria-label="Notifications" Checked="@notificationsOn"
-                         OnCheckedChange="v => notificationsOn = v"
+<DemoBlock Title="As a non-native element"
+           Code="@_polymorphicCode"
+           Css="@_polymorphicCss">
+    <Description>
+        Set <code>As="div"</code> to render as a div. The component automatically adds
+        <code>role="switch"</code>, <code>tabindex="0"</code>, and Space/Enter keyboard
+        handling so the switch remains fully accessible.
+    </Description>
+    <LiveContent>
+        <BitBhSwitch aria-label="Dark mode" As="div" DefaultChecked="false" class="switch">
+            <BitBhSwitchThumb class="switch-thumb" />
+        </BitBhSwitch>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Form Submission"
+           Code="@_formCode"
+           Css="@_formCss">
+    <Description>
+        Set <code>Name</code> to render an adjacent <code>&lt;input type="hidden"&gt;</code>
+        so the switch participates in plain form posts. The hidden input is only present
+        when the switch is checked, mirroring native checkbox behaviour.
+    </Description>
+    <LiveContent>
+        <form @onsubmit="HandleFormSubmit"
+              @onsubmit:preventDefault="true"
+              style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <label class="switch-label">
+                <BitBhSwitch Name="newsletter" Value="yes"
+                         DefaultChecked="false"
                          class="switch">
                     <BitBhSwitchThumb class="switch-thumb" />
                 </BitBhSwitch>
-
-                <span class="demo-output">
-                    Notifications: <strong>@(notificationsOn ? "on" : "off")</strong>
-                </span>
-
-                <BitBhButton OnClick="() => notificationsOn = !notificationsOn" class="btn">
-                    Toggle from outside
-                </BitBhButton>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> to block interaction. The button receives
-            the native <code>disabled</code> attribute and a <code>data-disabled</code> hook.
-        </Description>
-        <LiveContent>
-            <BitBhSwitch aria-label="Airplane mode" DefaultChecked="false" Disabled="true" class="switch">
-                <BitBhSwitchThumb class="switch-thumb" />
-            </BitBhSwitch>
-
-            <BitBhSwitch aria-label="Location services" DefaultChecked="true" Disabled="true" class="switch">
-                <BitBhSwitchThumb class="switch-thumb" />
-            </BitBhSwitch>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="With label"
-               Code="@_labelCode"
-               Css="@_labelCss">
-        <Description>
-            Wrap the switch in a <code>&lt;label&gt;</code> to make the label clickable.
-            Clicking the label text toggles the switch — standard HTML behaviour.
-        </Description>
-        <LiveContent>
-            <label class="switch-label">
-                <BitBhSwitch DefaultChecked="true" class="switch">
-                    <BitBhSwitchThumb class="switch-thumb" />
-                </BitBhSwitch>
-                <span>Email me about updates</span>
+                <span>Subscribe to newsletter</span>
             </label>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="As a non-native element"
-               Code="@_polymorphicCode"
-               Css="@_polymorphicCss">
-        <Description>
-            Set <code>As="div"</code> to render as a div. The component automatically adds
-            <code>role="switch"</code>, <code>tabindex="0"</code>, and Space/Enter keyboard
-            handling so the switch remains fully accessible.
-        </Description>
-        <LiveContent>
-            <BitBhSwitch aria-label="Dark mode" As="div" DefaultChecked="false" class="switch">
-                <BitBhSwitchThumb class="switch-thumb" />
-            </BitBhSwitch>
-        </LiveContent>
-    </DemoBlock>
+            <button type="submit" class="btn btn-primary">Submit</button>
 
-    <DemoBlock Title="Form Submission"
-               Code="@_formCode"
-               Css="@_formCss">
-        <Description>
-            Set <code>Name</code> to render an adjacent <code>&lt;input type="hidden"&gt;</code>
-            so the switch participates in plain form posts. The hidden input is only present
-            when the switch is checked, mirroring native checkbox behaviour.
-        </Description>
-        <LiveContent>
-            <form @onsubmit="HandleFormSubmit"
-                  @onsubmit:preventDefault="true"
-                  style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-                <label class="switch-label">
-                    <BitBhSwitch Name="newsletter" Value="yes"
-                             DefaultChecked="false"
-                             class="switch">
-                        <BitBhSwitchThumb class="switch-thumb" />
-                    </BitBhSwitch>
-                    <span>Subscribe to newsletter</span>
-                </label>
-
-                <button type="submit" class="btn btn-primary">Submit</button>
-
-                @if (lastSubmittedValue is not null)
-                {
-                    <span class="demo-output">Posted value: <code>@lastSubmittedValue</code></span>
-                }
-            </form>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            @if (lastSubmittedValue is not null)
+            {
+                <span class="demo-output">Posted value: <code>@lastSubmittedValue</code></span>
+            }
+        </form>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private bool notificationsOn = true;

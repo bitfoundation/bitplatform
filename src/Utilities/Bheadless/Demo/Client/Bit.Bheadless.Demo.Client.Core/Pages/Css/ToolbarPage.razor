@@ -1,127 +1,125 @@
 ﻿@page "/toolbar"
 
-<PageTitle>Toolbar — bit Bheadless</PageTitle>
+<PageTitle>Toolbar · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Toolbar</h1>
-        <p>A row of buttons, toggles and links that acts as a single tab stop with arrow-key navigation — and zero visual opinion.</p>
-        <SectionSwitcher Slug="toolbar" />
-    </header>
-
-    <DemoBlock Title="Formatting toolbar"
-               Code="@_formattingCode"
-               Css="@_formattingCss">
-        <Description>
-            <code>BitBhToolbar</code> renders <code>role="toolbar"</code> as a single tab stop: Tab moves in and out, ← / →
-            travel through every control — toggle-group items included — and Home / End jump to the ends. A multiple
-            <code>BitBhToggleGroup</code> (bold / italic / strikethrough, <code>aria-pressed</code>) and a single one
-            (alignment, <code>role="radio"</code>) share the toolbar's arrow-key navigation with a
-            <code>BitBhToolbarLink</code> and a <code>BitBhToolbarButton</code>. Name the toolbar with <code>aria-label</code>.
-        </Description>
-        <LiveContent>
-            <BitBhToolbar aria-label="Formatting options" class="toolbar">
-                <BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" @bind-Values="formats"
-                               aria-label="Text style" class="toolbar-toggle-group">
-                    <BitBhToggleGroupItem Value="bold" aria-label="Bold" class="toolbar-toggle"><strong>B</strong></BitBhToggleGroupItem>
-                    <BitBhToggleGroupItem Value="italic" aria-label="Italic" class="toolbar-toggle"><em>I</em></BitBhToggleGroupItem>
-                    <BitBhToggleGroupItem Value="strike" aria-label="Strikethrough" class="toolbar-toggle"><s>S</s></BitBhToggleGroupItem>
-                </BitBhToggleGroup>
-                <BitBhToolbarSeparator class="toolbar-separator" />
-                <BitBhToggleGroup @bind-Value="alignment" AllowEmpty="false"
-                               aria-label="Text alignment" class="toolbar-toggle-group">
-                    <BitBhToggleGroupItem Value="left" aria-label="Align left" class="toolbar-toggle">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <path d="M2 3.5h12M2 6.5h8M2 9.5h12M2 12.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                    </BitBhToggleGroupItem>
-                    <BitBhToggleGroupItem Value="center" aria-label="Align center" class="toolbar-toggle">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <path d="M2 3.5h12M4 6.5h8M2 9.5h12M4 12.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                    </BitBhToggleGroupItem>
-                    <BitBhToggleGroupItem Value="right" aria-label="Align right" class="toolbar-toggle">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <path d="M2 3.5h12M6 6.5h8M2 9.5h12M6 12.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                        </svg>
-                    </BitBhToggleGroupItem>
-                </BitBhToggleGroup>
-                <BitBhToolbarLink href="https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/" target="_blank" rel="noopener"
-                               class="toolbar-link">
-                    Toolbar pattern ↗
-                </BitBhToolbarLink>
-                <BitBhToolbarButton OnClick='@(() => Log("Shared"))' class="toolbar-button toolbar-button-primary">Share</BitBhToolbarButton>
-            </BitBhToolbar>
-
-            <p class="toolbar-preview" style="@PreviewStyle">
-                The quick brown fox jumps over the lazy dog.
-            </p>
-
-            <span class="demo-output">
-                Style: <strong>@(formats.Count == 0 ? "none" : string.Join(", ", formats))</strong> ·
-                Align: <strong>@alignment</strong> ·
-                Last action: <strong>@(lastAction ?? "(none)")</strong>
-            </span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Disabled buttons stay focusable"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Following the APG, a <code>Disabled</code> <code>BitBhToolbarButton</code> gets <code>aria-disabled="true"</code>
-            and <code>data-disabled</code> instead of the <code>disabled</code> attribute: arrow keys still land on it, so
-            keyboard and screen-reader users can discover it, but clicks are ignored. Paste and Clear stay reachable while
-            the clipboard is empty — cut or copy to enable them.
-        </Description>
-        <LiveContent>
-            <BitBhToolbar aria-label="Clipboard" class="toolbar">
-                <BitBhToolbarButton OnClick="Cut" class="toolbar-button">✂️ Cut</BitBhToolbarButton>
-                <BitBhToolbarButton OnClick="Copy" class="toolbar-button">📋 Copy</BitBhToolbarButton>
-                <BitBhToolbarButton OnClick="Paste" Disabled="@(clipboard is null)" class="toolbar-button">📥 Paste</BitBhToolbarButton>
-                <BitBhToolbarSeparator class="toolbar-separator" />
-                <BitBhToolbarButton OnClick="ClearClipboard" Disabled="@(clipboard is null)" class="toolbar-button">Clear</BitBhToolbarButton>
-            </BitBhToolbar>
-
-            <span class="demo-output">
-                Clipboard: <strong>@(clipboard ?? "(empty)")</strong> · Pasted <strong>@pasteCount</strong>×
-            </span>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Vertical orientation"
-               Code="@_verticalCode"
-               Css="@_verticalCss">
-        <Description>
-            <code>Orientation="BitBhRovingOrientation.Vertical"</code> switches navigation to ↑ / ↓ and sets
-            <code>aria-orientation</code> and <code>data-orientation</code> on the toolbar; its separators flip to
-            horizontal. The tool picker is a single-select toggle group (<code>AllowEmpty="false"</code> keeps one tool
-            active), and Undo / Redo disable themselves — while staying focusable — when their stack is empty.
-        </Description>
-        <LiveContent>
-            <div class="toolbar-canvas">
-                <BitBhToolbar Orientation="BitBhRovingOrientation.Vertical" aria-label="Drawing tools" class="toolbar">
-                    <BitBhToggleGroup @bind-Value="tool" AllowEmpty="false" aria-label="Tool" class="toolbar-toggle-group">
-                        <BitBhToggleGroupItem Value="Select" aria-label="Select" title="Select" class="toolbar-toggle">↖</BitBhToggleGroupItem>
-                        <BitBhToggleGroupItem Value="Pen" aria-label="Pen" title="Pen" class="toolbar-toggle">✎</BitBhToggleGroupItem>
-                        <BitBhToggleGroupItem Value="Shape" aria-label="Shape" title="Shape" class="toolbar-toggle">▭</BitBhToggleGroupItem>
-                        <BitBhToggleGroupItem Value="Text" aria-label="Text" title="Text" class="toolbar-toggle">T</BitBhToggleGroupItem>
-                    </BitBhToggleGroup>
-                    <BitBhToolbarSeparator class="toolbar-separator" />
-                    <BitBhToolbarButton OnClick="Undo" Disabled="@(undoDepth == 0)" aria-label="Undo" title="Undo"
-                                     class="toolbar-button">↶</BitBhToolbarButton>
-                    <BitBhToolbarButton OnClick="Redo" Disabled="@(redoDepth == 0)" aria-label="Redo" title="Redo"
-                                     class="toolbar-button">↷</BitBhToolbarButton>
-                </BitBhToolbar>
-
-                <div class="toolbar-stage">
-                    <strong>@tool</strong>
-                    <span>Undo stack: @undoDepth · Redo stack: @redoDepth</span>
-                </div>
-            </div>
-        </LiveContent>
-    </DemoBlock>
+<div class="bb-intro">
+    <h1>Toolbar</h1>
+    <p class="bb-subtitle">A row of buttons, toggles and links that acts as a single tab stop with arrow-key navigation — and zero visual opinion.</p>
+    <SectionSwitcher Slug="toolbar" />
 </div>
+
+<DemoBlock Title="Formatting toolbar"
+           Code="@_formattingCode"
+           Css="@_formattingCss">
+    <Description>
+        <code>BitBhToolbar</code> renders <code>role="toolbar"</code> as a single tab stop: Tab moves in and out, ← / →
+        travel through every control — toggle-group items included — and Home / End jump to the ends. A multiple
+        <code>BitBhToggleGroup</code> (bold / italic / strikethrough, <code>aria-pressed</code>) and a single one
+        (alignment, <code>role="radio"</code>) share the toolbar's arrow-key navigation with a
+        <code>BitBhToolbarLink</code> and a <code>BitBhToolbarButton</code>. Name the toolbar with <code>aria-label</code>.
+    </Description>
+    <LiveContent>
+        <BitBhToolbar aria-label="Formatting options" class="toolbar">
+            <BitBhToggleGroup Type="BitBhToggleGroupType.Multiple" @bind-Values="formats"
+                           aria-label="Text style" class="toolbar-toggle-group">
+                <BitBhToggleGroupItem Value="bold" aria-label="Bold" class="toolbar-toggle"><strong>B</strong></BitBhToggleGroupItem>
+                <BitBhToggleGroupItem Value="italic" aria-label="Italic" class="toolbar-toggle"><em>I</em></BitBhToggleGroupItem>
+                <BitBhToggleGroupItem Value="strike" aria-label="Strikethrough" class="toolbar-toggle"><s>S</s></BitBhToggleGroupItem>
+            </BitBhToggleGroup>
+            <BitBhToolbarSeparator class="toolbar-separator" />
+            <BitBhToggleGroup @bind-Value="alignment" AllowEmpty="false"
+                           aria-label="Text alignment" class="toolbar-toggle-group">
+                <BitBhToggleGroupItem Value="left" aria-label="Align left" class="toolbar-toggle">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2 3.5h12M2 6.5h8M2 9.5h12M2 12.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                </BitBhToggleGroupItem>
+                <BitBhToggleGroupItem Value="center" aria-label="Align center" class="toolbar-toggle">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2 3.5h12M4 6.5h8M2 9.5h12M4 12.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                </BitBhToggleGroupItem>
+                <BitBhToggleGroupItem Value="right" aria-label="Align right" class="toolbar-toggle">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2 3.5h12M6 6.5h8M2 9.5h12M6 12.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                </BitBhToggleGroupItem>
+            </BitBhToggleGroup>
+            <BitBhToolbarLink href="https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/" target="_blank" rel="noopener"
+                           class="toolbar-link">
+                Toolbar pattern ↗
+            </BitBhToolbarLink>
+            <BitBhToolbarButton OnClick='@(() => Log("Shared"))' class="toolbar-button toolbar-button-primary">Share</BitBhToolbarButton>
+        </BitBhToolbar>
+
+        <p class="toolbar-preview" style="@PreviewStyle">
+            The quick brown fox jumps over the lazy dog.
+        </p>
+
+        <span class="demo-output">
+            Style: <strong>@(formats.Count == 0 ? "none" : string.Join(", ", formats))</strong> ·
+            Align: <strong>@alignment</strong> ·
+            Last action: <strong>@(lastAction ?? "(none)")</strong>
+        </span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled buttons stay focusable"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Following the APG, a <code>Disabled</code> <code>BitBhToolbarButton</code> gets <code>aria-disabled="true"</code>
+        and <code>data-disabled</code> instead of the <code>disabled</code> attribute: arrow keys still land on it, so
+        keyboard and screen-reader users can discover it, but clicks are ignored. Paste and Clear stay reachable while
+        the clipboard is empty — cut or copy to enable them.
+    </Description>
+    <LiveContent>
+        <BitBhToolbar aria-label="Clipboard" class="toolbar">
+            <BitBhToolbarButton OnClick="Cut" class="toolbar-button">✂️ Cut</BitBhToolbarButton>
+            <BitBhToolbarButton OnClick="Copy" class="toolbar-button">📋 Copy</BitBhToolbarButton>
+            <BitBhToolbarButton OnClick="Paste" Disabled="@(clipboard is null)" class="toolbar-button">📥 Paste</BitBhToolbarButton>
+            <BitBhToolbarSeparator class="toolbar-separator" />
+            <BitBhToolbarButton OnClick="ClearClipboard" Disabled="@(clipboard is null)" class="toolbar-button">Clear</BitBhToolbarButton>
+        </BitBhToolbar>
+
+        <span class="demo-output">
+            Clipboard: <strong>@(clipboard ?? "(empty)")</strong> · Pasted <strong>@pasteCount</strong>×
+        </span>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Vertical orientation"
+           Code="@_verticalCode"
+           Css="@_verticalCss">
+    <Description>
+        <code>Orientation="BitBhRovingOrientation.Vertical"</code> switches navigation to ↑ / ↓ and sets
+        <code>aria-orientation</code> and <code>data-orientation</code> on the toolbar; its separators flip to
+        horizontal. The tool picker is a single-select toggle group (<code>AllowEmpty="false"</code> keeps one tool
+        active), and Undo / Redo disable themselves — while staying focusable — when their stack is empty.
+    </Description>
+    <LiveContent>
+        <div class="toolbar-canvas">
+            <BitBhToolbar Orientation="BitBhRovingOrientation.Vertical" aria-label="Drawing tools" class="toolbar">
+                <BitBhToggleGroup @bind-Value="tool" AllowEmpty="false" aria-label="Tool" class="toolbar-toggle-group">
+                    <BitBhToggleGroupItem Value="Select" aria-label="Select" title="Select" class="toolbar-toggle">↖</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="Pen" aria-label="Pen" title="Pen" class="toolbar-toggle">✎</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="Shape" aria-label="Shape" title="Shape" class="toolbar-toggle">▭</BitBhToggleGroupItem>
+                    <BitBhToggleGroupItem Value="Text" aria-label="Text" title="Text" class="toolbar-toggle">T</BitBhToggleGroupItem>
+                </BitBhToggleGroup>
+                <BitBhToolbarSeparator class="toolbar-separator" />
+                <BitBhToolbarButton OnClick="Undo" Disabled="@(undoDepth == 0)" aria-label="Undo" title="Undo"
+                                 class="toolbar-button">↶</BitBhToolbarButton>
+                <BitBhToolbarButton OnClick="Redo" Disabled="@(redoDepth == 0)" aria-label="Redo" title="Redo"
+                                 class="toolbar-button">↷</BitBhToolbarButton>
+            </BitBhToolbar>
+
+            <div class="toolbar-stage">
+                <strong>@tool</strong>
+                <span>Undo stack: @undoDepth · Redo stack: @redoDepth</span>
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private string? lastAction;

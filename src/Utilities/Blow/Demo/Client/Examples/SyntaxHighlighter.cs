@@ -21,9 +21,9 @@ namespace Bit.Blow.Demo.Client.Examples;
 /// as code in one of them uses without declaring.
 /// </para>
 /// <para>
-/// The Bdnd, Blow and Balette demos share this file, SyntaxHighlighter.CssJson.cs and CodeBlock.razor byte for
+/// The Bdnd, Blow, Balette and Bheadless demos share this file, SyntaxHighlighter.CssJson.cs and CodeBlock.razor byte for
 /// byte but for the namespace: they name no library of their own, and find the components through the demo's
-/// references. Change them in one demo and copy them to the other two.
+/// references. Change them in one demo and copy them to the other three.
 /// </para>
 /// </summary>
 public static partial class SyntaxHighlighter

@@ -2,162 +2,160 @@
 @implements IDisposable
 @inject BitBhToaster Toaster
 
-<PageTitle>Toast — bit Bheadless</PageTitle>
+<PageTitle>Toast · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Toast</h1>
-        <p>Short, non-blocking notifications — queued from anywhere, announced to screen readers, dismissed automatically.</p>
-        <SectionSwitcher Slug="toast" />
-    </header>
-
-    <DemoBlock Title="Simple toast"
-               Code="@_simpleCode"
-               Css="@_toastCss">
-        <Description>
-            Inject <code>BitBhToaster</code> (registered by <code>AddBitBheadlessServices()</code>) and call
-            <code>Show</code>. Toasts appear in a <code>BitBhToastViewport</code> — a
-            <code>role="region"</code> landmark labelled "Notifications (F8)"; press <code>F8</code>
-            to jump to it. Every toast is announced through the shared live region, auto-dismisses
-            after the viewport's <code>Duration</code> (paused while hovered or focused) and closes
-            with <code>Escape</code> or a <code>BitBhToastClose</code>.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="ShowSimple" class="btn">Show toast</BitBhButton>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="With a description"
-               Code="@_descriptionCode"
-               Css="@_toastCss">
-        <Description>
-            Pass a description and render it with <code>BitBhToastDescription</code>. Title and
-            description are announced together ("Changes saved. Your profile is now visible…").
-            <code>Data</code> carries anything your template needs — here a variant that picks the icon.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="ShowWithDescription" class="btn btn-primary">Save profile</BitBhButton>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="With an action"
-               Code="@_actionCode"
-               Css="@_actionCss">
-        <Description>
-            Set <code>ActionLabel</code> and <code>OnAction</code>; <code>BitBhToastAction</code> renders
-            the button, runs the callback and dismisses the toast. Toasts disappear, so keep the action
-            reachable elsewhere too — here "Restore all" stays on the page.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; flex-direction:column; gap:0.75rem; width:100%;">
-                @if (inbox.Count == 0)
-                {
-                    <p class="toast-inbox-empty">Inbox zero. 🎉</p>
-                }
-                else
-                {
-                    <ul class="toast-inbox">
-                        @foreach (var message in inbox)
-                        {
-                            <li class="toast-inbox-item" @key="message">
-                                <span>@message</span>
-                                <BitBhButton OnClick="() => Archive(message)" class="btn">Archive</BitBhButton>
-                            </li>
-                        }
-                    </ul>
-                }
-                @if (inbox.Count < AllMessages.Length)
-                {
-                    <div><BitBhButton OnClick="RestoreAll" class="btn btn-link">Restore all</BitBhButton></div>
-                }
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Foreground (assertive) error"
-               Code="@_errorCode"
-               Css="@_errorCss">
-        <Description>
-            Toasts are background (<code>role="status"</code>, announced politely) by default. Set
-            <code>Foreground = true</code> for the direct result of a user action that needs attention:
-            it is announced assertively and the toast gets <code>data-type="foreground"</code>.
-        </Description>
-        <LiveContent>
-            <BitBhButton OnClick="ShowError" class="btn">Pay $49.00</BitBhButton>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Custom duration and persistent toasts"
-               Code="@_durationCode"
-               Css="@_toastCss">
-        <Description>
-            <code>Duration</code> (ms) on a toast overrides the viewport's default (5000 ms).
-            <code>Duration = 0</code> keeps the toast until it is dismissed. <code>Clear()</code>
-            dismisses every toast.
-        </Description>
-        <LiveContent>
-            <div class="toast-demo-row">
-                <BitBhButton OnClick="() => ShowTimed(2000)" class="btn">2 seconds</BitBhButton>
-                <BitBhButton OnClick="() => ShowTimed(10000)" class="btn">10 seconds</BitBhButton>
-                <BitBhButton OnClick="ShowPersistent" class="btn">Persistent</BitBhButton>
-                <BitBhButton OnClick="() => Toaster.Clear()" class="btn btn-link">Dismiss all</BitBhButton>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Stacking with Limit"
-               Code="@_stackCode"
-               Css="@_stackCss">
-        <Description>
-            <code>BitBhToaster.Limit</code> (default 5) caps how many toasts are kept — the oldest is
-            dropped when a new one arrives. This demo creates its own toaster with
-            <code>Limit = 3</code> and renders it in a second viewport (passed through
-            <code>Toaster</code>, bottom-left, <code>Shift+F8</code>) styled as a stack that fans out
-            on hover or keyboard focus.
-        </Description>
-        <LiveContent>
-            <div class="toast-demo-row">
-                <BitBhButton OnClick="AddStacked" class="btn">Add notification</BitBhButton>
-                <span class="demo-output">Shown: <strong>@stackToaster.Toasts.Count</strong> of max @stackToaster.Limit</span>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    @* One viewport renders every toast shown through the injected BitBhToaster.
-       In a real app it lives in MainLayout.razor. *@
-    <BitBhToastViewport Context="t" Duration="5000" class="toast-viewport">
-        <BitBhToast Item="t" data-variant="@(t.Data ?? "info")" class="toast">
-            @if (t.Data is "success" or "error")
-            {
-                <span class="toast-icon" aria-hidden="true">@(t.Data is "error" ? "!" : "✓")</span>
-            }
-            <div class="toast-body">
-                <BitBhToastTitle class="toast-title">@t.Title</BitBhToastTitle>
-                @if (t.Description is not null)
-                {
-                    <BitBhToastDescription class="toast-description">@t.Description</BitBhToastDescription>
-                }
-            </div>
-            @if (t.Options.ActionLabel is not null)
-            {
-                <BitBhToastAction class="toast-action" />
-            }
-            <BitBhToastClose aria-label="Dismiss notification" class="toast-close">×</BitBhToastClose>
-        </BitBhToast>
-    </BitBhToastViewport>
-
-    @* A second, independent toaster for the stacking demo. *@
-    <BitBhToastViewport Toaster="stackToaster" Label="Stacked notifications" Hotkey="shift+F8"
-                     Context="t" Duration="8000" class="toast-stack">
-        <BitBhToast Item="t" class="toast">
-            <div class="toast-body">
-                <BitBhToastTitle class="toast-title">@t.Title</BitBhToastTitle>
-                <BitBhToastDescription class="toast-description">@t.Description</BitBhToastDescription>
-            </div>
-            <BitBhToastClose aria-label="Dismiss notification" class="toast-close">×</BitBhToastClose>
-        </BitBhToast>
-    </BitBhToastViewport>
+<div class="bb-intro">
+    <h1>Toast</h1>
+    <p class="bb-subtitle">Short, non-blocking notifications — queued from anywhere, announced to screen readers, dismissed automatically.</p>
+    <SectionSwitcher Slug="toast" />
 </div>
+
+<DemoBlock Title="Simple toast"
+           Code="@_simpleCode"
+           Css="@_toastCss">
+    <Description>
+        Inject <code>BitBhToaster</code> (registered by <code>AddBitBheadlessServices()</code>) and call
+        <code>Show</code>. Toasts appear in a <code>BitBhToastViewport</code> — a
+        <code>role="region"</code> landmark labelled "Notifications (F8)"; press <code>F8</code>
+        to jump to it. Every toast is announced through the shared live region, auto-dismisses
+        after the viewport's <code>Duration</code> (paused while hovered or focused) and closes
+        with <code>Escape</code> or a <code>BitBhToastClose</code>.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="ShowSimple" class="btn">Show toast</BitBhButton>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="With a description"
+           Code="@_descriptionCode"
+           Css="@_toastCss">
+    <Description>
+        Pass a description and render it with <code>BitBhToastDescription</code>. Title and
+        description are announced together ("Changes saved. Your profile is now visible…").
+        <code>Data</code> carries anything your template needs — here a variant that picks the icon.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="ShowWithDescription" class="btn btn-primary">Save profile</BitBhButton>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="With an action"
+           Code="@_actionCode"
+           Css="@_actionCss">
+    <Description>
+        Set <code>ActionLabel</code> and <code>OnAction</code>; <code>BitBhToastAction</code> renders
+        the button, runs the callback and dismisses the toast. Toasts disappear, so keep the action
+        reachable elsewhere too — here "Restore all" stays on the page.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; width:100%;">
+            @if (inbox.Count == 0)
+            {
+                <p class="toast-inbox-empty">Inbox zero. 🎉</p>
+            }
+            else
+            {
+                <ul class="toast-inbox">
+                    @foreach (var message in inbox)
+                    {
+                        <li class="toast-inbox-item" @key="message">
+                            <span>@message</span>
+                            <BitBhButton OnClick="() => Archive(message)" class="btn">Archive</BitBhButton>
+                        </li>
+                    }
+                </ul>
+            }
+            @if (inbox.Count < AllMessages.Length)
+            {
+                <div><BitBhButton OnClick="RestoreAll" class="btn btn-link">Restore all</BitBhButton></div>
+            }
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Foreground (assertive) error"
+           Code="@_errorCode"
+           Css="@_errorCss">
+    <Description>
+        Toasts are background (<code>role="status"</code>, announced politely) by default. Set
+        <code>Foreground = true</code> for the direct result of a user action that needs attention:
+        it is announced assertively and the toast gets <code>data-type="foreground"</code>.
+    </Description>
+    <LiveContent>
+        <BitBhButton OnClick="ShowError" class="btn">Pay $49.00</BitBhButton>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Custom duration and persistent toasts"
+           Code="@_durationCode"
+           Css="@_toastCss">
+    <Description>
+        <code>Duration</code> (ms) on a toast overrides the viewport's default (5000 ms).
+        <code>Duration = 0</code> keeps the toast until it is dismissed. <code>Clear()</code>
+        dismisses every toast.
+    </Description>
+    <LiveContent>
+        <div class="toast-demo-row">
+            <BitBhButton OnClick="() => ShowTimed(2000)" class="btn">2 seconds</BitBhButton>
+            <BitBhButton OnClick="() => ShowTimed(10000)" class="btn">10 seconds</BitBhButton>
+            <BitBhButton OnClick="ShowPersistent" class="btn">Persistent</BitBhButton>
+            <BitBhButton OnClick="() => Toaster.Clear()" class="btn btn-link">Dismiss all</BitBhButton>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Stacking with Limit"
+           Code="@_stackCode"
+           Css="@_stackCss">
+    <Description>
+        <code>BitBhToaster.Limit</code> (default 5) caps how many toasts are kept — the oldest is
+        dropped when a new one arrives. This demo creates its own toaster with
+        <code>Limit = 3</code> and renders it in a second viewport (passed through
+        <code>Toaster</code>, bottom-left, <code>Shift+F8</code>) styled as a stack that fans out
+        on hover or keyboard focus.
+    </Description>
+    <LiveContent>
+        <div class="toast-demo-row">
+            <BitBhButton OnClick="AddStacked" class="btn">Add notification</BitBhButton>
+            <span class="demo-output">Shown: <strong>@stackToaster.Toasts.Count</strong> of max @stackToaster.Limit</span>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+@* One viewport renders every toast shown through the injected BitBhToaster.
+   In a real app it lives in MainLayout.razor. *@
+<BitBhToastViewport Context="t" Duration="5000" class="toast-viewport">
+    <BitBhToast Item="t" data-variant="@(t.Data ?? "info")" class="toast">
+        @if (t.Data is "success" or "error")
+        {
+            <span class="toast-icon" aria-hidden="true">@(t.Data is "error" ? "!" : "✓")</span>
+        }
+        <div class="toast-body">
+            <BitBhToastTitle class="toast-title">@t.Title</BitBhToastTitle>
+            @if (t.Description is not null)
+            {
+                <BitBhToastDescription class="toast-description">@t.Description</BitBhToastDescription>
+            }
+        </div>
+        @if (t.Options.ActionLabel is not null)
+        {
+            <BitBhToastAction class="toast-action" />
+        }
+        <BitBhToastClose aria-label="Dismiss notification" class="toast-close">×</BitBhToastClose>
+    </BitBhToast>
+</BitBhToastViewport>
+
+@* A second, independent toaster for the stacking demo. *@
+<BitBhToastViewport Toaster="stackToaster" Label="Stacked notifications" Hotkey="shift+F8"
+                 Context="t" Duration="8000" class="toast-stack">
+    <BitBhToast Item="t" class="toast">
+        <div class="toast-body">
+            <BitBhToastTitle class="toast-title">@t.Title</BitBhToastTitle>
+            <BitBhToastDescription class="toast-description">@t.Description</BitBhToastDescription>
+        </div>
+        <BitBhToastClose aria-label="Dismiss notification" class="toast-close">×</BitBhToastClose>
+    </BitBhToast>
+</BitBhToastViewport>
 
 @code {
     private static readonly string[] AllMessages = ["Quarterly report", "Team offsite plan", "Invoice #1042"];

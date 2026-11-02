@@ -1,26 +1,235 @@
 ﻿@page "/radiogroup"
 
-<PageTitle>Radio Group — bit Bheadless</PageTitle>
+<PageTitle>Radio Group · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Radio Group</h1>
-        <p>An accessible single-select group with roving tabindex and full keyboard support.</p>
-        <SectionSwitcher Slug="radiogroup" />
-    </header>
+<div class="bb-intro">
+    <h1>Radio Group</h1>
+    <p class="bb-subtitle">An accessible single-select group with roving tabindex and full keyboard support.</p>
+    <SectionSwitcher Slug="radiogroup" />
+</div>
 
-    <DemoBlock Title="Basic Radio Group"
-               Code="@_basicCode"
-               Css="@_radioCss">
-        <Description>
-            Click a radio or use Up / Down arrow keys (Left / Right when horizontal) to navigate
-            and select. Disabled radios are skipped. <code>aria-checked</code>,
-            <code>role="radiogroup"</code>, and <code>role="radio"</code> are wired automatically.
-        </Description>
-        <LiveContent>
-            <BitBhRadioGroup DefaultValue="medium" class="radio-group">
+<DemoBlock Title="Basic Radio Group"
+           Code="@_basicCode"
+           Css="@_radioCss">
+    <Description>
+        Click a radio or use Up / Down arrow keys (Left / Right when horizontal) to navigate
+        and select. Disabled radios are skipped. <code>aria-checked</code>,
+        <code>role="radiogroup"</code>, and <code>role="radio"</code> are wired automatically.
+    </Description>
+    <LiveContent>
+        <BitBhRadioGroup DefaultValue="medium" class="radio-group">
+            <label class="radio-label">
+                <BitBhRadio Value="small" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Small</span>
+            </label>
+            <label class="radio-label">
+                <BitBhRadio Value="medium" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Medium</span>
+            </label>
+            <label class="radio-label">
+                <BitBhRadio Value="large" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Large</span>
+            </label>
+        </BitBhRadioGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Horizontal Orientation"
+           Code="@_horizontalCode"
+           Css="@_horizontalCss">
+    <Description>
+        Set <code>Vertical="false"</code> to lay radios out horizontally. Arrow-key
+        navigation switches to Left / Right and the group emits
+        <code>data-orientation="horizontal"</code> for CSS hooks.
+    </Description>
+    <LiveContent>
+        <BitBhRadioGroup Vertical="false" DefaultValue="card" class="radio-group">
+            <label class="radio-label">
+                <BitBhRadio Value="card" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Card</span>
+            </label>
+            <label class="radio-label">
+                <BitBhRadio Value="bank" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Bank</span>
+            </label>
+            <label class="radio-label">
+                <BitBhRadio Value="paypal" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>PayPal</span>
+            </label>
+        </BitBhRadioGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Disabled Radio"
+           Code="@_disabledCode"
+           Css="@_disabledCss">
+    <Description>
+        Set <code>Disabled="true"</code> on individual radios. Arrow-key navigation
+        skips disabled options. Set <code>Disabled="true"</code> on the root group to
+        disable everything at once.
+    </Description>
+    <LiveContent>
+        <BitBhRadioGroup DefaultValue="standard" class="radio-group">
+            <label class="radio-label">
+                <BitBhRadio Value="standard" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Standard shipping (3–5 days)</span>
+            </label>
+            <label class="radio-label">
+                <BitBhRadio Value="express" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Express shipping (1–2 days)</span>
+            </label>
+            <label class="radio-label">
+                <BitBhRadio Value="same-day" Disabled="true" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <span>Same-day shipping (unavailable in your region)</span>
+            </label>
+        </BitBhRadioGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Card-style options"
+           Code="@_cardCode"
+           Css="@_cardCss">
+    <Description>
+        Because the radio is the only interactive element, you can place rich content
+        (titles, descriptions, prices) inside the <code>&lt;label&gt;</code> wrapper
+        and use the <code>data-state="checked"</code> hook to highlight the selected card.
+    </Description>
+    <LiveContent>
+        <BitBhRadioGroup DefaultValue="pro" class="plan-group">
+            <label class="plan-card">
+                <BitBhRadio Value="free" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <div class="plan-info">
+                    <strong>Free</strong>
+                    <span>Up to 3 projects.</span>
+                </div>
+            </label>
+            <label class="plan-card">
+                <BitBhRadio Value="pro" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <div class="plan-info">
+                    <strong>Pro — $9 / mo</strong>
+                    <span>Unlimited projects, priority support.</span>
+                </div>
+            </label>
+            <label class="plan-card">
+                <BitBhRadio Value="team" class="radio">
+                    <Template Context="r">
+                        @if (r.IsChecked) { <span class="radio-dot"></span> }
+                    </Template>
+                </BitBhRadio>
+                <div class="plan-info">
+                    <strong>Team — $29 / mo</strong>
+                    <span>For groups, with shared workspaces.</span>
+                </div>
+            </label>
+        </BitBhRadioGroup>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Controlled"
+           Code="@_controlledCode"
+           Css="@_controlledCss">
+    <Description>
+        Drive selection externally with <code>Value</code> and <code>OnValueChange</code>.
+    </Description>
+    <LiveContent>
+        <div style="display:flex; flex-direction:column; gap:1rem; width:100%">
+            <div class="demo-row">
+                <BitBhButton OnClick='() => selectedColor = "red"' class="btn">Red</BitBhButton>
+                <BitBhButton OnClick='() => selectedColor = "green"' class="btn">Green</BitBhButton>
+                <BitBhButton OnClick='() => selectedColor = "blue"' class="btn">Blue</BitBhButton>
+                <span class="demo-output">Selected: <strong>@(selectedColor ?? "(none)")</strong></span>
+            </div>
+
+            <BitBhRadioGroup Value="@selectedColor"
+                         OnValueChange="v => selectedColor = v"
+                         class="radio-group">
                 <label class="radio-label">
-                    <BitBhRadio Value="small" class="radio">
+                    <BitBhRadio Value="red" class="radio">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="radio-dot"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Red</span>
+                </label>
+                <label class="radio-label">
+                    <BitBhRadio Value="green" class="radio">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="radio-dot"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Green</span>
+                </label>
+                <label class="radio-label">
+                    <BitBhRadio Value="blue" class="radio">
+                        <Template Context="r">
+                            @if (r.IsChecked) { <span class="radio-dot"></span> }
+                        </Template>
+                    </BitBhRadio>
+                    <span>Blue</span>
+                </label>
+            </BitBhRadioGroup>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Form Submission"
+           Code="@_formCode"
+           Css="@_formCss">
+    <Description>
+        Set <code>Name</code> on the group to render a hidden <code>&lt;input&gt;</code>
+        carrying the selected value, so plain HTML form posts include the group's selection.
+    </Description>
+    <LiveContent>
+        <form @onsubmit="HandleFormSubmit"
+              @onsubmit:preventDefault="true"
+              style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-start;">
+            <BitBhRadioGroup Name="size" DefaultValue="m" class="radio-group">
+                <label class="radio-label">
+                    <BitBhRadio Value="s" class="radio">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="radio-dot"></span> }
                         </Template>
@@ -28,7 +237,7 @@
                     <span>Small</span>
                 </label>
                 <label class="radio-label">
-                    <BitBhRadio Value="medium" class="radio">
+                    <BitBhRadio Value="m" class="radio">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="radio-dot"></span> }
                         </Template>
@@ -36,7 +245,7 @@
                     <span>Medium</span>
                 </label>
                 <label class="radio-label">
-                    <BitBhRadio Value="large" class="radio">
+                    <BitBhRadio Value="l" class="radio">
                         <Template Context="r">
                             @if (r.IsChecked) { <span class="radio-dot"></span> }
                         </Template>
@@ -44,227 +253,16 @@
                     <span>Large</span>
                 </label>
             </BitBhRadioGroup>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Horizontal Orientation"
-               Code="@_horizontalCode"
-               Css="@_horizontalCss">
-        <Description>
-            Set <code>Vertical="false"</code> to lay radios out horizontally. Arrow-key
-            navigation switches to Left / Right and the group emits
-            <code>data-orientation="horizontal"</code> for CSS hooks.
-        </Description>
-        <LiveContent>
-            <BitBhRadioGroup Vertical="false" DefaultValue="card" class="radio-group">
-                <label class="radio-label">
-                    <BitBhRadio Value="card" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <span>Card</span>
-                </label>
-                <label class="radio-label">
-                    <BitBhRadio Value="bank" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <span>Bank</span>
-                </label>
-                <label class="radio-label">
-                    <BitBhRadio Value="paypal" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <span>PayPal</span>
-                </label>
-            </BitBhRadioGroup>
-        </LiveContent>
-    </DemoBlock>
+            <button type="submit" class="btn btn-primary">Submit</button>
 
-    <DemoBlock Title="Disabled Radio"
-               Code="@_disabledCode"
-               Css="@_disabledCss">
-        <Description>
-            Set <code>Disabled="true"</code> on individual radios. Arrow-key navigation
-            skips disabled options. Set <code>Disabled="true"</code> on the root group to
-            disable everything at once.
-        </Description>
-        <LiveContent>
-            <BitBhRadioGroup DefaultValue="standard" class="radio-group">
-                <label class="radio-label">
-                    <BitBhRadio Value="standard" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <span>Standard shipping (3–5 days)</span>
-                </label>
-                <label class="radio-label">
-                    <BitBhRadio Value="express" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <span>Express shipping (1–2 days)</span>
-                </label>
-                <label class="radio-label">
-                    <BitBhRadio Value="same-day" Disabled="true" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <span>Same-day shipping (unavailable in your region)</span>
-                </label>
-            </BitBhRadioGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Card-style options"
-               Code="@_cardCode"
-               Css="@_cardCss">
-        <Description>
-            Because the radio is the only interactive element, you can place rich content
-            (titles, descriptions, prices) inside the <code>&lt;label&gt;</code> wrapper
-            and use the <code>data-state="checked"</code> hook to highlight the selected card.
-        </Description>
-        <LiveContent>
-            <BitBhRadioGroup DefaultValue="pro" class="plan-group">
-                <label class="plan-card">
-                    <BitBhRadio Value="free" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <div class="plan-info">
-                        <strong>Free</strong>
-                        <span>Up to 3 projects.</span>
-                    </div>
-                </label>
-                <label class="plan-card">
-                    <BitBhRadio Value="pro" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <div class="plan-info">
-                        <strong>Pro — $9 / mo</strong>
-                        <span>Unlimited projects, priority support.</span>
-                    </div>
-                </label>
-                <label class="plan-card">
-                    <BitBhRadio Value="team" class="radio">
-                        <Template Context="r">
-                            @if (r.IsChecked) { <span class="radio-dot"></span> }
-                        </Template>
-                    </BitBhRadio>
-                    <div class="plan-info">
-                        <strong>Team — $29 / mo</strong>
-                        <span>For groups, with shared workspaces.</span>
-                    </div>
-                </label>
-            </BitBhRadioGroup>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Controlled"
-               Code="@_controlledCode"
-               Css="@_controlledCss">
-        <Description>
-            Drive selection externally with <code>Value</code> and <code>OnValueChange</code>.
-        </Description>
-        <LiveContent>
-            <div style="display:flex; flex-direction:column; gap:1rem; width:100%">
-                <div class="demo-row">
-                    <BitBhButton OnClick='() => selectedColor = "red"' class="btn">Red</BitBhButton>
-                    <BitBhButton OnClick='() => selectedColor = "green"' class="btn">Green</BitBhButton>
-                    <BitBhButton OnClick='() => selectedColor = "blue"' class="btn">Blue</BitBhButton>
-                    <span class="demo-output">Selected: <strong>@(selectedColor ?? "(none)")</strong></span>
-                </div>
-
-                <BitBhRadioGroup Value="@selectedColor"
-                             OnValueChange="v => selectedColor = v"
-                             class="radio-group">
-                    <label class="radio-label">
-                        <BitBhRadio Value="red" class="radio">
-                            <Template Context="r">
-                                @if (r.IsChecked) { <span class="radio-dot"></span> }
-                            </Template>
-                        </BitBhRadio>
-                        <span>Red</span>
-                    </label>
-                    <label class="radio-label">
-                        <BitBhRadio Value="green" class="radio">
-                            <Template Context="r">
-                                @if (r.IsChecked) { <span class="radio-dot"></span> }
-                            </Template>
-                        </BitBhRadio>
-                        <span>Green</span>
-                    </label>
-                    <label class="radio-label">
-                        <BitBhRadio Value="blue" class="radio">
-                            <Template Context="r">
-                                @if (r.IsChecked) { <span class="radio-dot"></span> }
-                            </Template>
-                        </BitBhRadio>
-                        <span>Blue</span>
-                    </label>
-                </BitBhRadioGroup>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Form Submission"
-               Code="@_formCode"
-               Css="@_formCss">
-        <Description>
-            Set <code>Name</code> on the group to render a hidden <code>&lt;input&gt;</code>
-            carrying the selected value, so plain HTML form posts include the group's selection.
-        </Description>
-        <LiveContent>
-            <form @onsubmit="HandleFormSubmit"
-                  @onsubmit:preventDefault="true"
-                  style="display:flex; flex-direction:column; gap:0.75rem; align-items:flex-start;">
-                <BitBhRadioGroup Name="size" DefaultValue="m" class="radio-group">
-                    <label class="radio-label">
-                        <BitBhRadio Value="s" class="radio">
-                            <Template Context="r">
-                                @if (r.IsChecked) { <span class="radio-dot"></span> }
-                            </Template>
-                        </BitBhRadio>
-                        <span>Small</span>
-                    </label>
-                    <label class="radio-label">
-                        <BitBhRadio Value="m" class="radio">
-                            <Template Context="r">
-                                @if (r.IsChecked) { <span class="radio-dot"></span> }
-                            </Template>
-                        </BitBhRadio>
-                        <span>Medium</span>
-                    </label>
-                    <label class="radio-label">
-                        <BitBhRadio Value="l" class="radio">
-                            <Template Context="r">
-                                @if (r.IsChecked) { <span class="radio-dot"></span> }
-                            </Template>
-                        </BitBhRadio>
-                        <span>Large</span>
-                    </label>
-                </BitBhRadioGroup>
-
-                <button type="submit" class="btn btn-primary">Submit</button>
-
-                @if (lastSubmitted is not null)
-                {
-                    <span class="demo-output">@lastSubmitted</span>
-                }
-            </form>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            @if (lastSubmitted is not null)
+            {
+                <span class="demo-output">@lastSubmitted</span>
+            }
+        </form>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     private string? selectedColor = "green";

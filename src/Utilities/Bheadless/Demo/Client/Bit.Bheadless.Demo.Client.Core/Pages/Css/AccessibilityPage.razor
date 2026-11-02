@@ -1,322 +1,320 @@
 ﻿@page "/accessibility"
 @inject IBitBhAnnouncer Announcer
 
-<PageTitle>Accessibility Utilities — bit Bheadless</PageTitle>
+<PageTitle>Accessibility Utilities · Bheadless</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>Accessibility Utilities</h1>
-        <p>The low-level building blocks the components are made of — hidden labels, separators, live regions, announcements, hotkeys, focus scopes, reading direction and roving focus.</p>
-        <SectionSwitcher Slug="accessibility" />
-    </header>
+<div class="bb-intro">
+    <h1>Accessibility Utilities</h1>
+    <p class="bb-subtitle">The low-level building blocks the components are made of — hidden labels, separators, live regions, announcements, hotkeys, focus scopes, reading direction and roving focus.</p>
+    <SectionSwitcher Slug="accessibility" />
+</div>
 
-    <DemoBlock Title="Visually hidden"
-               Code="@_hiddenCode"
-               Css="@_hiddenCss">
-        <Description>
-            <code>BitBhVisuallyHidden</code> hides content visually but keeps it in the accessibility
-            tree — the label of an icon-only button is read as "Edit", "Notifications", "Delete".
-            With <code>Focusable="true"</code> the content is revealed while keyboard focus is inside
-            it: Tab into this demo to uncover the skip link.
-        </Description>
-        <LiveContent>
-            <div class="a11y-stack">
-                <BitBhVisuallyHidden Focusable="true">
-                    <a href="accessibility#a11y-skip-target" class="a11y-skip-link"
-                       @onclick="SkipToContent" @onclick:preventDefault>Skip to content</a>
-                </BitBhVisuallyHidden>
+<DemoBlock Title="Visually hidden"
+           Code="@_hiddenCode"
+           Css="@_hiddenCss">
+    <Description>
+        <code>BitBhVisuallyHidden</code> hides content visually but keeps it in the accessibility
+        tree — the label of an icon-only button is read as "Edit", "Notifications", "Delete".
+        With <code>Focusable="true"</code> the content is revealed while keyboard focus is inside
+        it: Tab into this demo to uncover the skip link.
+    </Description>
+    <LiveContent>
+        <div class="a11y-stack">
+            <BitBhVisuallyHidden Focusable="true">
+                <a href="accessibility#a11y-skip-target" class="a11y-skip-link"
+                   @onclick="SkipToContent" @onclick:preventDefault>Skip to content</a>
+            </BitBhVisuallyHidden>
 
-                <div class="a11y-row">
-                    <button type="button" class="a11y-icon-button">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
-                        </svg>
-                        <BitBhVisuallyHidden>Edit</BitBhVisuallyHidden>
-                    </button>
-                    <button type="button" class="a11y-icon-button">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4" />
-                        </svg>
-                        <BitBhVisuallyHidden>Notifications</BitBhVisuallyHidden>
-                    </button>
-                    <button type="button" class="a11y-icon-button">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
-                        </svg>
-                        <BitBhVisuallyHidden>Delete</BitBhVisuallyHidden>
-                    </button>
-                </div>
+            <div class="a11y-row">
+                <button type="button" class="a11y-icon-button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
+                    </svg>
+                    <BitBhVisuallyHidden>Edit</BitBhVisuallyHidden>
+                </button>
+                <button type="button" class="a11y-icon-button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4" />
+                    </svg>
+                    <BitBhVisuallyHidden>Notifications</BitBhVisuallyHidden>
+                </button>
+                <button type="button" class="a11y-icon-button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+                    </svg>
+                    <BitBhVisuallyHidden>Delete</BitBhVisuallyHidden>
+                </button>
+            </div>
 
-                <div id="a11y-skip-target" tabindex="-1" class="a11y-skip-target" @ref="skipTarget">
-                    Main content — the skip link moves focus here.
+            <div id="a11y-skip-target" tabindex="-1" class="a11y-skip-target" @ref="skipTarget">
+                Main content — the skip link moves focus here.
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Separator"
+           Code="@_separatorCode"
+           Css="@_separatorCss">
+    <Description>
+        <code>BitBhSeparator</code> renders <code>role="separator"</code> (plus
+        <code>aria-orientation="vertical"</code> when <code>Orientation</code> is vertical) so
+        assistive tech announces the boundary between groups of content. When the line is purely
+        visual, <code>Decorative="true"</code> renders <code>role="none"</code> instead. Both emit
+        <code>data-orientation</code> for styling.
+    </Description>
+    <LiveContent>
+        <div class="a11y-stack">
+            <div class="a11y-sep-card">
+                <p class="a11y-sep-title">bit Bheadless</p>
+                <p class="a11y-sep-text">Unstyled, accessible components for Blazor.</p>
+                <BitBhSeparator class="a11y-separator" />
+                <div class="a11y-sep-row">
+                    <span>Docs</span>
+                    <BitBhSeparator Orientation="BitBhOrientation.Vertical" class="a11y-separator" />
+                    <span>Source</span>
+                    <BitBhSeparator Orientation="BitBhOrientation.Vertical" class="a11y-separator" />
+                    <span>Changelog</span>
                 </div>
             </div>
-        </LiveContent>
-    </DemoBlock>
 
-    <DemoBlock Title="Separator"
-               Code="@_separatorCode"
-               Css="@_separatorCss">
-        <Description>
-            <code>BitBhSeparator</code> renders <code>role="separator"</code> (plus
-            <code>aria-orientation="vertical"</code> when <code>Orientation</code> is vertical) so
-            assistive tech announces the boundary between groups of content. When the line is purely
-            visual, <code>Decorative="true"</code> renders <code>role="none"</code> instead. Both emit
-            <code>data-orientation</code> for styling.
-        </Description>
-        <LiveContent>
-            <div class="a11y-stack">
-                <div class="a11y-sep-card">
-                    <p class="a11y-sep-title">bit Bheadless</p>
-                    <p class="a11y-sep-text">Unstyled, accessible components for Blazor.</p>
-                    <BitBhSeparator class="a11y-separator" />
-                    <div class="a11y-sep-row">
-                        <span>Docs</span>
-                        <BitBhSeparator Orientation="BitBhOrientation.Vertical" class="a11y-separator" />
-                        <span>Source</span>
-                        <BitBhSeparator Orientation="BitBhOrientation.Vertical" class="a11y-separator" />
-                        <span>Changelog</span>
-                    </div>
-                </div>
-
-                <div class="a11y-or">
-                    <BitBhSeparator Decorative="true" class="a11y-separator" />
-                    or
-                    <BitBhSeparator Decorative="true" class="a11y-separator" />
-                </div>
+            <div class="a11y-or">
+                <BitBhSeparator Decorative="true" class="a11y-separator" />
+                or
+                <BitBhSeparator Decorative="true" class="a11y-separator" />
             </div>
-        </LiveContent>
-    </DemoBlock>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Live regions"
-               Code="@_liveRegionCode"
-               Css="@_liveRegionCss">
-        <Description>
-            <code>BitBhLiveRegion</code> is rendered from the first render (live regions must exist before
-            their content changes), so updating its content is announced. Polite regions
-            (<code>role="status"</code>) wait for the user to be idle; assertive ones
-            (<code>role="alert"</code>) interrupt — reserve them for urgent problems. Set
-            <code>VisuallyHidden="true"</code> to announce without showing.
-        </Description>
-        <LiveContent>
-            <div class="a11y-stack">
-                <div class="a11y-row">
-                    <BitBhButton OnClick="SaveDraft" class="btn">Save draft</BitBhButton>
-                    <BitBhLiveRegion class="a11y-status">@draftStatus</BitBhLiveRegion>
-                </div>
-                <div class="a11y-row">
-                    <BitBhButton OnClick="ToggleConnection" class="btn">
-                        @(offline ? "Reconnect" : "Simulate connection loss")
-                    </BitBhButton>
-                </div>
-                <BitBhLiveRegion Politeness="BitBhPoliteness.Assertive" class="a11y-alert">@alertText</BitBhLiveRegion>
+<DemoBlock Title="Live regions"
+           Code="@_liveRegionCode"
+           Css="@_liveRegionCss">
+    <Description>
+        <code>BitBhLiveRegion</code> is rendered from the first render (live regions must exist before
+        their content changes), so updating its content is announced. Polite regions
+        (<code>role="status"</code>) wait for the user to be idle; assertive ones
+        (<code>role="alert"</code>) interrupt — reserve them for urgent problems. Set
+        <code>VisuallyHidden="true"</code> to announce without showing.
+    </Description>
+    <LiveContent>
+        <div class="a11y-stack">
+            <div class="a11y-row">
+                <BitBhButton OnClick="SaveDraft" class="btn">Save draft</BitBhButton>
+                <BitBhLiveRegion class="a11y-status">@draftStatus</BitBhLiveRegion>
             </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Announcer"
-               Code="@_announcerCode"
-               Css="@_announcerCss">
-        <Description>
-            For fire-and-forget messages from code, inject <code>IBitBhAnnouncer</code> and call
-            <code>AnnounceAsync</code>. It writes to one shared, visually hidden live region (the one
-            toasts and drag-and-drop use too), so nothing needs to be rendered. The log below only
-            mirrors what a screen reader hears.
-        </Description>
-        <LiveContent>
-            <div class="a11y-stack">
-                <div class="a11y-products">
-                    @foreach (var product in Products)
-                    {
-                        <div class="a11y-product">
-                            <strong>@product</strong>
-                            <BitBhButton OnClick="() => AddToCartAsync(product)" class="btn">Add to cart</BitBhButton>
-                        </div>
-                    }
-                </div>
-                <div class="a11y-row">
-                    <span class="demo-output">Cart: <strong>@cartCount</strong> item(s)</span>
-                    <BitBhButton OnClick="EmptyCartAsync" class="btn btn-link">Empty cart (assertive)</BitBhButton>
-                </div>
-                <ol class="a11y-log" aria-label="Announcement log">
-                    @if (announcements.Count == 0)
-                    {
-                        <li class="a11y-log-empty">Nothing announced yet.</li>
-                    }
-                    @foreach (var line in announcements)
-                    {
-                        <li>@line</li>
-                    }
-                </ol>
+            <div class="a11y-row">
+                <BitBhButton OnClick="ToggleConnection" class="btn">
+                    @(offline ? "Reconnect" : "Simulate connection loss")
+                </BitBhButton>
             </div>
-        </LiveContent>
-    </DemoBlock>
+            <BitBhLiveRegion Politeness="BitBhPoliteness.Assertive" class="a11y-alert">@alertText</BitBhLiveRegion>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Hotkeys"
-               Code="@_hotkeyCode"
-               Css="@_hotkeyCss">
-        <Description>
-            <code>BitBhHotkey</code> registers a global shortcut while it is rendered and renders nothing.
-            <code>mod</code> is ⌘ on Apple platforms and Ctrl elsewhere. Shortcuts without Ctrl / ⌘
-            (like <code>shift+?</code>) are ignored while typing in a text field unless
-            <code>AllowInInputs</code> is set. Advertise shortcuts with <code>aria-keyshortcuts</code>.
-        </Description>
-        <LiveContent>
-            <BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />
-            <BitBhHotkey Keys="shift+?" OnTriggered="ToggleShortcuts" />
-
-            <div class="a11y-stack">
-                <div class="a11y-search">
-                    <input @ref="searchInput" type="search" placeholder="Search components…"
-                           aria-label="Search components" aria-keyshortcuts="Control+K Meta+K"
-                           class="a11y-input" />
-                    <span class="a11y-search-hint" aria-hidden="true">
-                        <kbd class="a11y-kbd">Ctrl</kbd><kbd class="a11y-kbd">K</kbd>
-                    </span>
-                </div>
-                <div class="a11y-row">
-                    <BitBhButton OnClick="ToggleShortcuts" aria-expanded="@(showShortcuts ? "true" : "false")"
-                              aria-keyshortcuts="Shift+?" class="btn">
-                        Keyboard shortcuts <kbd class="a11y-kbd">?</kbd>
-                    </BitBhButton>
-                    <span class="demo-output">Last shortcut: <strong>@(lastHotkey ?? "(none)")</strong></span>
-                </div>
-                @if (showShortcuts)
+<DemoBlock Title="Announcer"
+           Code="@_announcerCode"
+           Css="@_announcerCss">
+    <Description>
+        For fire-and-forget messages from code, inject <code>IBitBhAnnouncer</code> and call
+        <code>AnnounceAsync</code>. It writes to one shared, visually hidden live region (the one
+        toasts and drag-and-drop use too), so nothing needs to be rendered. The log below only
+        mirrors what a screen reader hears.
+    </Description>
+    <LiveContent>
+        <div class="a11y-stack">
+            <div class="a11y-products">
+                @foreach (var product in Products)
                 {
-                    <section class="a11y-shortcuts" aria-label="Keyboard shortcuts">
-                        <h3>Keyboard shortcuts</h3>
-                        <dl>
-                            <dt><kbd class="a11y-kbd">Ctrl</kbd> <kbd class="a11y-kbd">K</kbd></dt>
-                            <dd>Focus search (⌘ K on macOS)</dd>
-                            <dt><kbd class="a11y-kbd">?</kbd></dt>
-                            <dd>Show / hide this list</dd>
-                        </dl>
-                    </section>
+                    <div class="a11y-product">
+                        <strong>@product</strong>
+                        <BitBhButton OnClick="() => AddToCartAsync(product)" class="btn">Add to cart</BitBhButton>
+                    </div>
                 }
             </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Focus scope and focus trap"
-               Code="@_focusScopeCode"
-               Css="@_focusScopeCss">
-        <Description>
-            <code>BitBhFocusScope</code> manages focus for a region: it moves focus inside when it
-            activates, can trap Tab / Shift+Tab (<code>Trapped</code>) or just wrap it
-            (<code>Loop</code>), and restores focus to where it was when it deactivates.
-            <code>BitBhFocusTrap</code> is the same component with <code>Trapped</code> on by default.
-            Click "Edit profile": focus lands on the first field and stays in the form; Save, Cancel
-            or Escape return it to the button.
-        </Description>
-        <LiveContent>
-            <div class="a11y-profile">
-                <div class="a11y-profile-header">
-                    <div>
-                        <strong>@profileName</strong>
-                        <span>@profileEmail</span>
-                    </div>
-                    <BitBhButton OnClick="StartEditing" aria-expanded="@(editing ? "true" : "false")" class="btn">
-                        Edit profile
-                    </BitBhButton>
-                </div>
-                @if (editing)
+            <div class="a11y-row">
+                <span class="demo-output">Cart: <strong>@cartCount</strong> item(s)</span>
+                <BitBhButton OnClick="EmptyCartAsync" class="btn btn-link">Empty cart (assertive)</BitBhButton>
+            </div>
+            <ol class="a11y-log" aria-label="Announcement log">
+                @if (announcements.Count == 0)
                 {
-                    <BitBhFocusScope Trapped="true" RestoreFocus="true" class="a11y-scope"
-                                  aria-label="Edit profile" role="group" @onkeydown="OnScopeKeyDown">
-                        <label class="a11y-field">
-                            <span>Name</span>
-                            <input class="a11y-input" @bind="draftName" />
-                        </label>
-                        <label class="a11y-field">
-                            <span>Email</span>
-                            <input class="a11y-input" type="email" @bind="draftEmail" />
-                        </label>
-                        <div class="a11y-actions">
-                            <button type="button" class="btn" @onclick="CancelEditing">Cancel</button>
-                            <button type="button" class="btn btn-primary" @onclick="SaveProfile">Save</button>
-                        </div>
-                    </BitBhFocusScope>
+                    <li class="a11y-log-empty">Nothing announced yet.</li>
                 }
-            </div>
-        </LiveContent>
-    </DemoBlock>
+                @foreach (var line in announcements)
+                {
+                    <li>@line</li>
+                }
+            </ol>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
-    <DemoBlock Title="Reading direction"
-               Code="@_directionCode"
-               Css="@_directionCss">
-        <Description>
-            <code>BitBhDirectionProvider</code> cascades the reading direction to every component below
-            it. In RTL, Left / Right arrow keys are mirrored: ArrowLeft moves to the <em>next</em>
-            radio or tab. Set the HTML <code>dir</code> attribute as well so the layout flips; a
-            component's own <code>Dir</code> parameter takes precedence.
-        </Description>
-        <LiveContent>
-            <div class="a11y-stack">
-                <div class="a11y-segments" role="group" aria-label="Reading direction">
-                    <BitBhButton OnClick="() => direction = BitBhDirection.Ltr"
-                              aria-pressed="@(direction == BitBhDirection.Ltr ? "true" : "false")"
-                              class="a11y-segment">LTR</BitBhButton>
-                    <BitBhButton OnClick="() => direction = BitBhDirection.Rtl"
-                              aria-pressed="@(direction == BitBhDirection.Rtl ? "true" : "false")"
-                              class="a11y-segment">RTL</BitBhButton>
-                </div>
+<DemoBlock Title="Hotkeys"
+           Code="@_hotkeyCode"
+           Css="@_hotkeyCss">
+    <Description>
+        <code>BitBhHotkey</code> registers a global shortcut while it is rendered and renders nothing.
+        <code>mod</code> is ⌘ on Apple platforms and Ctrl elsewhere. Shortcuts without Ctrl / ⌘
+        (like <code>shift+?</code>) are ignored while typing in a text field unless
+        <code>AllowInInputs</code> is set. Advertise shortcuts with <code>aria-keyshortcuts</code>.
+    </Description>
+    <LiveContent>
+        <BitBhHotkey Keys="mod+k" OnTriggered="FocusSearchAsync" />
+        <BitBhHotkey Keys="shift+?" OnTriggered="ToggleShortcuts" />
 
-                <div dir="@direction.ToAttribute()" class="a11y-dir-preview">
-                    <BitBhDirectionProvider Dir="direction">
-                        <BitBhRadioGroup Vertical="false" DefaultValue="m" aria-label="Size" class="a11y-radio-segments">
-                            <BitBhRadio Value="s" class="a11y-radio-segment">Small</BitBhRadio>
-                            <BitBhRadio Value="m" class="a11y-radio-segment">Medium</BitBhRadio>
-                            <BitBhRadio Value="l" class="a11y-radio-segment">Large</BitBhRadio>
-                        </BitBhRadioGroup>
-
-                        <BitBhTabGroup>
-                            <BitBhTabList aria-label="Project" class="a11y-tab-list">
-                                <BitBhTab class="a11y-tab">Overview</BitBhTab>
-                                <BitBhTab class="a11y-tab">Activity</BitBhTab>
-                                <BitBhTab class="a11y-tab">Settings</BitBhTab>
-                            </BitBhTabList>
-                            <BitBhTabPanels>
-                                <BitBhTabPanel class="a11y-tab-panel">Overview — focus a tab and press the arrow keys.</BitBhTabPanel>
-                                <BitBhTabPanel class="a11y-tab-panel">Activity — in RTL, ArrowLeft moved you here.</BitBhTabPanel>
-                                <BitBhTabPanel class="a11y-tab-panel">Settings — Home / End jump to the ends.</BitBhTabPanel>
-                            </BitBhTabPanels>
-                        </BitBhTabGroup>
-                    </BitBhDirectionProvider>
-                </div>
-            </div>
-        </LiveContent>
-    </DemoBlock>
-
-    <DemoBlock Title="Roving focus"
-               Code="@_rovingCode"
-               Css="@_rovingCss">
-        <Description>
-            <code>BitBhRovingFocusGroup</code> + <code>BitBhRovingFocusItem</code> implement a roving
-            <code>tabindex</code> for your own composite widgets: the group is a single Tab stop, arrow
-            keys (per <code>Orientation</code>) and Home / End move between items, disabled items are
-            skipped and the last focused item is remembered. Give the group the role that matches your
-            widget — here a <code>toolbar</code> of toggle chips.
-        </Description>
-        <LiveContent>
-            <div class="a11y-stack">
-                <BitBhRovingFocusGroup role="toolbar" aria-label="Filter by tag" class="a11y-chips">
-                    @foreach (var tag in Tags)
-                    {
-                        <BitBhRovingFocusItem Disabled="@(tag == "Archived")"
-                                           aria-pressed="@(selectedTags.Contains(tag) ? "true" : "false")"
-                                           @onclick="() => ToggleTag(tag)"
-                                           class="a11y-chip">
-                            @tag
-                        </BitBhRovingFocusItem>
-                    }
-                </BitBhRovingFocusGroup>
-                <span class="demo-output">
-                    Filters: <strong>@(selectedTags.Count == 0 ? "(none)" : string.Join(", ", Tags.Where(selectedTags.Contains)))</strong>
+        <div class="a11y-stack">
+            <div class="a11y-search">
+                <input @ref="searchInput" type="search" placeholder="Search components…"
+                       aria-label="Search components" aria-keyshortcuts="Control+K Meta+K"
+                       class="a11y-input" />
+                <span class="a11y-search-hint" aria-hidden="true">
+                    <kbd class="a11y-kbd">Ctrl</kbd><kbd class="a11y-kbd">K</kbd>
                 </span>
             </div>
-        </LiveContent>
-    </DemoBlock>
-</div>
+            <div class="a11y-row">
+                <BitBhButton OnClick="ToggleShortcuts" aria-expanded="@(showShortcuts ? "true" : "false")"
+                          aria-keyshortcuts="Shift+?" class="btn">
+                    Keyboard shortcuts <kbd class="a11y-kbd">?</kbd>
+                </BitBhButton>
+                <span class="demo-output">Last shortcut: <strong>@(lastHotkey ?? "(none)")</strong></span>
+            </div>
+            @if (showShortcuts)
+            {
+                <section class="a11y-shortcuts" aria-label="Keyboard shortcuts">
+                    <h3>Keyboard shortcuts</h3>
+                    <dl>
+                        <dt><kbd class="a11y-kbd">Ctrl</kbd> <kbd class="a11y-kbd">K</kbd></dt>
+                        <dd>Focus search (⌘ K on macOS)</dd>
+                        <dt><kbd class="a11y-kbd">?</kbd></dt>
+                        <dd>Show / hide this list</dd>
+                    </dl>
+                </section>
+            }
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Focus scope and focus trap"
+           Code="@_focusScopeCode"
+           Css="@_focusScopeCss">
+    <Description>
+        <code>BitBhFocusScope</code> manages focus for a region: it moves focus inside when it
+        activates, can trap Tab / Shift+Tab (<code>Trapped</code>) or just wrap it
+        (<code>Loop</code>), and restores focus to where it was when it deactivates.
+        <code>BitBhFocusTrap</code> is the same component with <code>Trapped</code> on by default.
+        Click "Edit profile": focus lands on the first field and stays in the form; Save, Cancel
+        or Escape return it to the button.
+    </Description>
+    <LiveContent>
+        <div class="a11y-profile">
+            <div class="a11y-profile-header">
+                <div>
+                    <strong>@profileName</strong>
+                    <span>@profileEmail</span>
+                </div>
+                <BitBhButton OnClick="StartEditing" aria-expanded="@(editing ? "true" : "false")" class="btn">
+                    Edit profile
+                </BitBhButton>
+            </div>
+            @if (editing)
+            {
+                <BitBhFocusScope Trapped="true" RestoreFocus="true" class="a11y-scope"
+                              aria-label="Edit profile" role="group" @onkeydown="OnScopeKeyDown">
+                    <label class="a11y-field">
+                        <span>Name</span>
+                        <input class="a11y-input" @bind="draftName" />
+                    </label>
+                    <label class="a11y-field">
+                        <span>Email</span>
+                        <input class="a11y-input" type="email" @bind="draftEmail" />
+                    </label>
+                    <div class="a11y-actions">
+                        <button type="button" class="btn" @onclick="CancelEditing">Cancel</button>
+                        <button type="button" class="btn btn-primary" @onclick="SaveProfile">Save</button>
+                    </div>
+                </BitBhFocusScope>
+            }
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Reading direction"
+           Code="@_directionCode"
+           Css="@_directionCss">
+    <Description>
+        <code>BitBhDirectionProvider</code> cascades the reading direction to every component below
+        it. In RTL, Left / Right arrow keys are mirrored: ArrowLeft moves to the <em>next</em>
+        radio or tab. Set the HTML <code>dir</code> attribute as well so the layout flips; a
+        component's own <code>Dir</code> parameter takes precedence.
+    </Description>
+    <LiveContent>
+        <div class="a11y-stack">
+            <div class="a11y-segments" role="group" aria-label="Reading direction">
+                <BitBhButton OnClick="() => direction = BitBhDirection.Ltr"
+                          aria-pressed="@(direction == BitBhDirection.Ltr ? "true" : "false")"
+                          class="a11y-segment">LTR</BitBhButton>
+                <BitBhButton OnClick="() => direction = BitBhDirection.Rtl"
+                          aria-pressed="@(direction == BitBhDirection.Rtl ? "true" : "false")"
+                          class="a11y-segment">RTL</BitBhButton>
+            </div>
+
+            <div dir="@direction.ToAttribute()" class="a11y-dir-preview">
+                <BitBhDirectionProvider Dir="direction">
+                    <BitBhRadioGroup Vertical="false" DefaultValue="m" aria-label="Size" class="a11y-radio-segments">
+                        <BitBhRadio Value="s" class="a11y-radio-segment">Small</BitBhRadio>
+                        <BitBhRadio Value="m" class="a11y-radio-segment">Medium</BitBhRadio>
+                        <BitBhRadio Value="l" class="a11y-radio-segment">Large</BitBhRadio>
+                    </BitBhRadioGroup>
+
+                    <BitBhTabGroup>
+                        <BitBhTabList aria-label="Project" class="a11y-tab-list">
+                            <BitBhTab class="a11y-tab">Overview</BitBhTab>
+                            <BitBhTab class="a11y-tab">Activity</BitBhTab>
+                            <BitBhTab class="a11y-tab">Settings</BitBhTab>
+                        </BitBhTabList>
+                        <BitBhTabPanels>
+                            <BitBhTabPanel class="a11y-tab-panel">Overview — focus a tab and press the arrow keys.</BitBhTabPanel>
+                            <BitBhTabPanel class="a11y-tab-panel">Activity — in RTL, ArrowLeft moved you here.</BitBhTabPanel>
+                            <BitBhTabPanel class="a11y-tab-panel">Settings — Home / End jump to the ends.</BitBhTabPanel>
+                        </BitBhTabPanels>
+                    </BitBhTabGroup>
+                </BitBhDirectionProvider>
+            </div>
+        </div>
+    </LiveContent>
+</DemoBlock>
+
+<DemoBlock Title="Roving focus"
+           Code="@_rovingCode"
+           Css="@_rovingCss">
+    <Description>
+        <code>BitBhRovingFocusGroup</code> + <code>BitBhRovingFocusItem</code> implement a roving
+        <code>tabindex</code> for your own composite widgets: the group is a single Tab stop, arrow
+        keys (per <code>Orientation</code>) and Home / End move between items, disabled items are
+        skipped and the last focused item is remembered. Give the group the role that matches your
+        widget — here a <code>toolbar</code> of toggle chips.
+    </Description>
+    <LiveContent>
+        <div class="a11y-stack">
+            <BitBhRovingFocusGroup role="toolbar" aria-label="Filter by tag" class="a11y-chips">
+                @foreach (var tag in Tags)
+                {
+                    <BitBhRovingFocusItem Disabled="@(tag == "Archived")"
+                                       aria-pressed="@(selectedTags.Contains(tag) ? "true" : "false")"
+                                       @onclick="() => ToggleTag(tag)"
+                                       class="a11y-chip">
+                        @tag
+                    </BitBhRovingFocusItem>
+                }
+            </BitBhRovingFocusGroup>
+            <span class="demo-output">
+                Filters: <strong>@(selectedTags.Count == 0 ? "(none)" : string.Join(", ", Tags.Where(selectedTags.Contains)))</strong>
+            </span>
+        </div>
+    </LiveContent>
+</DemoBlock>
 
 @code {
     // ── Visually hidden ────────────────────────────────────────────────────────

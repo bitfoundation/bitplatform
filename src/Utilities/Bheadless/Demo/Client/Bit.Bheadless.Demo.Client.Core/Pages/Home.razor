@@ -1,66 +1,331 @@
 ﻿@page "/"
+@layout MainLayout
 
-<PageTitle>bit Bheadless</PageTitle>
+<PageTitle>Bheadless - accessible, unstyled UI primitives for Blazor</PageTitle>
 
-<div class="demo-page">
-    <header class="demo-header">
-        <h1>bit Bheadless</h1>
-        <p>A headless component library for Blazor — zero styles, full accessibility, complete control.</p>
-    </header>
+@* The landing page: hero → proof strip → component areas → code walkthrough → comparison with a styled
+   component library → persona tiles → FAQ → final call to action. Everything else on the site is a
+   documentation page under DocsLayout. The hero's sample is a live menu rather than a picture of one -
+   a headless library is best introduced by being used with the keyboard. *@
 
-    <section class="demo-section">
-        <h2>Pick a styling section</h2>
-        <p>
-            The same demos are available styled two different ways. Pick the section that matches the
-            way you'd like to style headless components in your own app.
-        </p>
-        <div class="demo-row" style="margin-top:1rem">
-            <a href="" class="btn btn-primary" aria-current="page">Browse CSS demos →</a>
-            <a href="tw" class="btn">Browse Tailwind demos →</a>
+<div class="bb-landing">
+
+    @* ============================== Hero ============================== *@
+
+    <section class="bb-hero">
+        <div class="bb-hero-copy">
+            <span class="bb-hero-eyebrow">
+                <span class="bb-dot bb-dot-success"></span>
+                Open source · MIT · net10.0 / net11.0
+            </span>
+            <h1>UI primitives for Blazor,<br /><span class="bb-hero-accent">accessible and unstyled.</span></h1>
+            <p class="bb-hero-sub">
+                Keyboard interaction, focus management, positioning, dismissal and WAI-ARIA semantics as plain
+                Razor components that render semantic HTML and nothing else. The library ships zero CSS: every
+                state is a <code>data-*</code> or ARIA attribute, so plain CSS, Tailwind or your own design system
+                styles it.
+            </p>
+            <pre class="bb-code bb-hero-install">dotnet add package Bit.Bheadless</pre>
+            <div class="bb-hero-actions">
+                <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+                <a href="accordion" class="btn btn-secondary bb-btn-lg">Live demos</a>
+                <a class="btn btn-secondary bb-btn-lg" href="@SiteInfo.ProjectUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </div>
+        </div>
+
+        @* The sample, framed as a window: the markup on top, and the menu it renders underneath - live, so
+           the first thing a visitor can do here is open it, arrow through it and type to jump. *@
+        <div class="bb-hero-code">
+            <div class="bb-browser">
+                <div class="bb-browser-bar">
+                    <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="bb-browser-url">Actions.razor</span>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BitBhMenu</span>&gt;
+    &lt;<span class="k">BitBhMenuButton</span> class=<span class="s">"menu-button"</span>&gt;Options&lt;/<span class="k">BitBhMenuButton</span>&gt;
+    &lt;<span class="k">BitBhMenuItems</span> class=<span class="s">"menu-items"</span> Anchor=<span class="s">"@@("bottom start")"</span>&gt;
+        &lt;<span class="k">BitBhMenuItem</span> OnClick=<span class="s">"Edit"</span>&gt;Edit&lt;/<span class="k">BitBhMenuItem</span>&gt;
+        &lt;<span class="k">BitBhMenuItem</span> OnClick=<span class="s">"Archive"</span>&gt;Archive&lt;/<span class="k">BitBhMenuItem</span>&gt;
+    &lt;/<span class="k">BitBhMenuItems</span>&gt;
+&lt;/<span class="k">BitBhMenu</span>&gt;</pre>
+                <div class="home-hero-live">
+                    <BitBhMenu class="menu">
+                        <BitBhMenuButton class="menu-button">
+                            <Template Context="b">
+                                Options
+                                <span class="menu-chevron @(b.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                            </Template>
+                        </BitBhMenuButton>
+                        <BitBhMenuItems class="menu-items-anchored" Anchor="@(new BitBhAnchorOptions { To = "bottom start", Gap = 4 })">
+                            @foreach (var action in Actions)
+                            {
+                                <BitBhMenuItem OnClick="() => _lastAction = action" class="menu-item" Label="@action">@action</BitBhMenuItem>
+                            }
+                        </BitBhMenuItems>
+                    </BitBhMenu>
+                    <p class="home-hero-output">Last action: <strong>@(_lastAction ?? "none yet")</strong></p>
+                    <p class="home-hero-hint">Try it with <kbd>Enter</kbd>, <kbd>↓</kbd>, a letter and <kbd>Esc</kbd>.</p>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="demo-section">
-        <h2>What is this?</h2>
-        <p>
-            bit Bheadless provides accessible, behaviour-complete component primitives with no visual
-            opinion at all. The library ships zero CSS — you own every pixel.
-        </p>
-        <p style="margin-top:.75rem">
-            Each component handles WAI-ARIA wiring, keyboard navigation, focus management, and
-            data-attribute hooks (<code>data-state</code>, <code>data-disabled</code>) so you can style with
-            pure CSS selectors.
-        </p>
+    @* ============================== Proof strip ============================== *@
+
+    <section class="bb-proof">
+        <div><strong>Zero CSS shipped</strong><span>you own every pixel</span></div>
+        <div><strong>WAI-ARIA patterns</strong><span>roles, states, keyboard and focus</span></div>
+        <div><strong>37 component families</strong><span>overlays, menus, selection, forms and more</span></div>
+        <div><strong>Every render mode</strong><span>Server, WebAssembly, Auto and prerendering</span></div>
     </section>
 
-    <section class="demo-section">
-        <h2>Get started</h2>
-        <p>
-            Add the <code>Bit.Bheadless</code> package, register its services (in the client project
-            too, for WebAssembly and Auto) and import the namespace:
-        </p>
-        <pre class="demo-code" style="margin-top:.75rem"><code>dotnet add package Bit.Bheadless
+    @* ============================== Component areas ============================== *@
 
-builder.Services.AddBitBheadlessServices();
-
-@@using Bit.Bheadless</code></pre>
-        <p style="margin-top:.75rem">
-            The source, the guide and the issue tracker are on
-            <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bheadless" target="_blank" rel="noreferrer">GitHub</a>.
-            Coding agents can read the components, their parameters and every demo below from this site's
-            MCP server at <code>/mcp</code>.
+    <section class="bb-section">
+        <p class="bb-overline">Components</p>
+        <h2>The hard parts of interactive UI, done once</h2>
+        <p class="bb-section-sub">
+            Compound components that share their state through cascading contexts, so you decide the markup
+            and the nesting - and every one of them is demonstrated twice on this site, with hand-written CSS
+            and with Tailwind.
         </p>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Overlays</h3>
+                <p class="bb-card-desc">
+                    Dialogs with a focus trap, scroll lock and an inert background, popovers, tooltips and hover
+                    cards anchored with flip, shift and arrows - and portals that keep the component tree intact.
+                </p>
+                <a href="dialog" class="btn btn-outline">Dialog →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Menus</h3>
+                <p class="bb-card-desc">
+                    Dropdown menus with submenus, checkbox and radio items, a desktop-style menubar and a context
+                    menu at the pointer - with typeahead and roving focus throughout.
+                </p>
+                <a href="menu" class="btn btn-outline">Menu →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Selection</h3>
+                <p class="bb-card-desc">
+                    A listbox, an autocomplete combobox - single or multiple, virtualized - and a cmdk-style
+                    command palette with fuzzy ranking and nested pages.
+                </p>
+                <a href="combobox" class="btn btn-outline">Combobox →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Hierarchies and data</h3>
+                <p class="bb-card-desc">
+                    A tree with tri-state checkboxes and lazy loading, a data grid and treegrid with cell
+                    navigation, and a sortable list you can reorder with the keyboard.
+                </p>
+                <a href="tree" class="btn btn-outline">Tree view →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Disclosure</h3>
+                <p class="bb-card-desc">
+                    Tabs, accordions, disclosures and collapsibles - controlled with <code>@@bind-Value</code>,
+                    uncontrolled with <code>DefaultValue</code>, or notified through change callbacks.
+                </p>
+                <a href="tabs" class="btn btn-outline">Tabs →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Form controls</h3>
+                <p class="bb-card-desc">
+                    Checkboxes, switches, radio groups, sliders and toggles, with <code>BitBhField</code> wiring
+                    labels, descriptions and <code>EditForm</code> validation for you.
+                </p>
+                <a href="field" class="btn btn-outline">Field →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Layout and feedback</h3>
+                <p class="bb-card-desc">
+                    Toolbars, toasts that are queued from anywhere and announced, progress bars and meters,
+                    avatars, aspect ratios and a polymorphic button.
+                </p>
+                <a href="toast" class="btn btn-outline">Toast →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Accessibility utilities</h3>
+                <p class="bb-card-desc">
+                    The building blocks the components are made of - focus scopes, roving focus, live regions and
+                    an announcer, hotkeys, visually hidden text, reading direction and transitions.
+                </p>
+                <a href="accessibility" class="btn btn-outline">Utilities →</a>
+            </section>
+        </div>
     </section>
 
-    <section class="demo-section">
-        <h2>Browse components (CSS)</h2>
-        <p>Pick a component to see live demos and the source code that produced them.</p>
+    @* ============================== Code walkthrough ============================== *@
 
-        <ul class="component-list">
-            @foreach (var entry in DemoCatalog.Components)
-            {
-                <li><a href="@entry.Slug">@entry.Label</a></li>
-            }
-        </ul>
+    <section class="bb-section">
+        <p class="bb-overline">In practice</p>
+        <h2>See it in code</h2>
+        <div class="bb-walkthrough">
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">01</span>
+                    <h3>Compose the parts</h3>
+                    <p>
+                        A family is a parent and its parts. The parent owns the state and cascades it, so the
+                        parts go wherever your markup needs them - and the ARIA between them is wired for you.
+                    </p>
+                    <a href="tabs">Tabs →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BitBhTabGroup</span> @@bind-Value=<span class="s">"_tab"</span>&gt;
+    &lt;<span class="k">BitBhTabList</span> class=<span class="s">"tabs"</span>&gt;
+        &lt;<span class="k">BitBhTab</span> Value=<span class="s">"profile"</span>&gt;Profile&lt;/<span class="k">BitBhTab</span>&gt;
+        &lt;<span class="k">BitBhTab</span> Value=<span class="s">"billing"</span>&gt;Billing&lt;/<span class="k">BitBhTab</span>&gt;
+    &lt;/<span class="k">BitBhTabList</span>&gt;
+    &lt;<span class="k">BitBhTabPanels</span>&gt;…&lt;/<span class="k">BitBhTabPanels</span>&gt;
+&lt;/<span class="k">BitBhTabGroup</span>&gt;</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">02</span>
+                    <h3>Style the state, not the component</h3>
+                    <p>
+                        Every part says what it is doing in <code>data-*</code> and ARIA attributes. Plain CSS
+                        selectors are the whole styling API.
+                    </p>
+                    <a href="switch">Switch →</a>
+                </div>
+                <pre class="bb-code"><span class="k">.switch</span>[data-state=<span class="s">"checked"</span>] { <span class="p">background</span>: royalblue; }
+<span class="k">.switch</span>[data-disabled] { <span class="p">opacity</span>: .5; }
+<span class="k">.menu-item</span>[data-active] { <span class="p">background</span>: #eef2ff; }</pre>
+            </div>
+            <div class="bb-walkthrough-row">
+                <div class="bb-walkthrough-copy">
+                    <span class="bb-step">03</span>
+                    <h3>Or with Tailwind</h3>
+                    <p>
+                        The same attributes become Tailwind variants, so the look of every state is written next to
+                        the markup that has it.
+                    </p>
+                    <a href="tw">Styling with Tailwind →</a>
+                </div>
+                <pre class="bb-code">&lt;<span class="k">BitBhSwitch</span> @@bind-Checked=<span class="s">"_on"</span>
+             class=<span class="s">"bg-zinc-300 data-state-checked:bg-blue-600"</span>&gt;
+    &lt;<span class="k">BitBhSwitchThumb</span> class=<span class="s">"translate-x-0 data-state-checked:translate-x-5"</span> /&gt;
+&lt;/<span class="k">BitBhSwitch</span>&gt;</pre>
+            </div>
+        </div>
+    </section>
+
+    @* ============================== Comparison ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Comparison</p>
+        <h2>Why headless?</h2>
+        <p class="bb-section-sub">
+            A styled component library hands you its look and a set of parameters to bend it. A headless one
+            hands you the behaviour and gets out of the way of the look.
+        </p>
+        <div class="bb-scroll" tabindex="0" role="region" aria-label="A styled component library compared with Bheadless">
+            <table class="bb-table bb-compare">
+                <thead>
+                    <tr><th>Concern</th><th>Styled component library</th><th>Bheadless</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Look</td><td>The library's theme, overridden where it allows</td><td>Yours - no CSS ships</td></tr>
+                    <tr><td>Markup</td><td>Fixed per component</td><td>Compound parts you nest, polymorphic with <code>As</code></td></tr>
+                    <tr><td>Styling API</td><td>Parameters and theme variables</td><td><code>data-*</code> and ARIA attributes, any selector</td></tr>
+                    <tr><td>Accessibility</td><td>Whatever the theme kept intact</td><td>WAI-ARIA patterns, tested with the bundled audit toolkit</td></tr>
+                    <tr><td>Design system fit</td><td>Bends toward the library's</td><td>Drops into yours - CSS, Tailwind, Bootstrap, Fluent tokens</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ============================== Persona CTAs ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Where to start</p>
+        <h2>Choose your path</h2>
+        <div class="bb-grid">
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> New to Bheadless?</h3>
+                <p class="bb-card-desc">Install, register, import the namespace - an accessible menu in five minutes.</p>
+                <a href="getting-started" class="btn btn-primary">Getting started →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Styling with Tailwind?</h3>
+                <p class="bb-card-desc">Every demo has a Tailwind twin, with the custom variants its classes are written with.</p>
+                <a href="tw" class="btn btn-outline">Tailwind demos →</a>
+            </section>
+            <section class="bb-card">
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Building with an AI agent?</h3>
+                <p class="bb-card-desc">This site is an MCP server: point your agent at <code>/mcp</code> and it reads the shipped library instead of guessing.</p>
+                <a href="mcp-server" class="btn btn-outline">Try the MCP server →</a>
+            </section>
+        </div>
+    </section>
+
+    @* ============================== FAQ ============================== *@
+
+    <section class="bb-section">
+        <p class="bb-overline">Questions</p>
+        <h2>Frequently asked</h2>
+        <div class="bb-faq">
+            <details>
+                <summary>Does it really ship no CSS at all?</summary>
+                <p>
+                    None. The components render semantic elements and expose their state as <code>data-*</code> and
+                    ARIA attributes; what they look like is entirely your stylesheet. The positioning engine sets the
+                    coordinates of a floating panel inline, and that is the only style the library ever writes.
+                </p>
+            </details>
+            <details>
+                <summary>Which render modes does it work in?</summary>
+                <p>
+                    Any interactive one - Server, WebAssembly and Auto - on .NET 10 and 11. Pages are prerendered as
+                    usual: the components render their initial, accessible markup on the server and respond to input
+                    once the page is interactive. Register the services in the client project too for WebAssembly and
+                    Auto.
+                </p>
+            </details>
+            <details>
+                <summary>Is there any JavaScript to add?</summary>
+                <p>
+                    No script tag. A small runtime (<code>bit-bheadless.js</code>) is loaded automatically through a
+                    Razor class library initializer, for what has to happen in the browser: focus, positioning,
+                    dismissal and the live regions.
+                </p>
+            </details>
+            <details>
+                <summary>How do I know my styled component is still accessible?</summary>
+                <p>
+                    Every component of the library is tested with <code>Bit.Bheadless.Testing</code>, a bUnit toolkit
+                    with a WAI-ARIA rule engine, accessible-name and focus-order inspection, keyboard helpers and
+                    live-region assertions - and it is published for testing your components too.
+                </p>
+            </details>
+            <details>
+                <summary>Does it work with forms?</summary>
+                <p>
+                    Yes. The controls bind with <code>@@bind-Value</code> inside an <code>EditForm</code>, and
+                    <code>BitBhField</code> wires each one to its label, its description and its validation message.
+                </p>
+            </details>
+        </div>
+    </section>
+
+    @* ============================== Final CTA ============================== *@
+
+    <section class="bb-final-cta">
+        <h2>Bring your own design</h2>
+        <p class="bb-section-sub">One package, one service registration, one using - and the behaviour is done.</p>
+        <pre class="bb-code bb-hero-install">dotnet add package Bit.Bheadless</pre>
+        <div class="bb-hero-actions">
+            <a href="getting-started" class="btn btn-primary bb-btn-lg">Get started →</a>
+            <a href="accordion" class="btn btn-secondary bb-btn-lg">Browse the demos</a>
+        </div>
     </section>
 </div>
+
+@code {
+    private static readonly string[] Actions = ["Edit", "Duplicate", "Archive", "Delete"];
+
+    private string? _lastAction;
+}
