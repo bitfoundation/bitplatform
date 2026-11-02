@@ -525,6 +525,30 @@ public class PosDashboardUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task EveryWidgetHidden_Should_LeaveAWayBack(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await StartCustomizing();
+
+        foreach (var title in titles)
+        {
+            await Hide(title);
+        }
+
+        await Expect(Widgets).ToHaveCountAsync(0);
+        await Expect(AddWidget(widgetCount)).ToBeEnabledAsync();
+
+        await ReloadTheView();
+
+        await Expect(Widgets).ToHaveCountAsync(0);
+
+        await Press(ViewButton(WorkbenchStrings.PosResetLayout));
+
+        await Expect(Widgets).ToHaveCountAsync(widgetCount);
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheMenu_Should_MoveAWidgetLaterAndEarlierAndKeepItAfterAReload(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);

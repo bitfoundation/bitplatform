@@ -24,6 +24,11 @@
     display: flex;
     min-width: 0;
     align-items: center;
+
+    // The menu keeps its size on a narrow card, so a finger reaches all of its button.
+    ::deep .bit-mnb {
+        flex-shrink: 0;
+    }
 }
 
 .widget-handle {
