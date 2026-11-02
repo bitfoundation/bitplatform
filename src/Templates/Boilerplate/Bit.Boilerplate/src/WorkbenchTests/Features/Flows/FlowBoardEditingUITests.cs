@@ -355,6 +355,8 @@ public class FlowBoardEditingUITests : FlowPageTest
         // The screen goes back to behaving as it did: nothing waits for a click on it any more.
         await Press(EditorButton(WorkbenchStrings.Cancel));
         await Press(PresentButton);
+        await Expect(Presenter).ToBeVisibleAsync();
+        await SettledBoardViewport();
         await Screen(from).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsAdd, Exact = true }).ClickAsync();
 
         await Expect(Screen(from).GetByText(WorkbenchStrings.BuildingsAddTitle)).ToBeVisibleAsync();

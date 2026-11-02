@@ -225,7 +225,7 @@ public class ReviewApiTests
         var page = (await GetReview())["pages"]!.AsArray().Single(p => (string?)p!["page"] == "shifts")!;
 
         Assert.AreEqual(("inreview", "Junie"), ((string?)page["status"], (string?)page["by"]));
-        Assert.AreEqual(WorkbenchPageStatus.InReview, (await WorkbenchTestReviewer.WaitFor(() => Task.FromResult(reviewer.Session.PageOf("shifts")), p => p is not null))!.Status);
+        await WorkbenchTestReviewer.WaitFor(() => Task.FromResult(reviewer.Session.PageOf("shifts")?.Status), status => status == WorkbenchPageStatus.InReview);
 
         Assert.AreEqual(HttpStatusCode.NotFound, (await client.PostAsJsonAsync("api/review/pages/missing/status", new { status = "approved" }, TestContext.CancellationToken)).StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("api/review/pages/shifts/status", new { status = "shipped" }, TestContext.CancellationToken)).StatusCode);
