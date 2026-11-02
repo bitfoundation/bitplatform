@@ -66,7 +66,7 @@ public partial class ChromeShell
     }
 
     /// <summary>What a nav item opens: a Workbench page in this view's settings, or the fallback anchor when the Workbench has no such page.</summary>
-    private string PageUrl(string pageKey, string fallback)
+    public string PageUrl(string pageKey, string fallback)
     {
         if (WorkbenchPageCatalog.Find(pageKey) is null)
             return fallback;
