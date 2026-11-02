@@ -1,6 +1,7 @@
 namespace Boilerplate.WorkbenchTests.Features.Review;
 
 /// <summary>What the review's browser tests share: the review's parts on each surface, and a review written the way a saved one reads.</summary>
+[DoNotParallelize]
 public abstract class ReviewPageTest : WorkbenchPageTest
 {
     protected static readonly WorkbenchReviewAnchor SomeSpot = new("main", "BitButton", "Save", 0.5, 0.5);

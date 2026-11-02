@@ -7,7 +7,6 @@ namespace Boilerplate.WorkbenchTests.Infrastructure;
 /// answers it, so a map tile or anything else from the internet can't make a test slow or flaky. A test with
 /// <see cref="SurfacesAttribute"/> runs once per surface, and any other on a desktop with an agent.
 /// </summary>
-[DoNotParallelize]
 public class WorkbenchPageTest : PageTest
 {
     private static readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(30);

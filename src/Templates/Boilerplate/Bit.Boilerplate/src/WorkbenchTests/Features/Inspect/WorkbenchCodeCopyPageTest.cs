@@ -5,6 +5,7 @@ namespace Boilerplate.WorkbenchTests.Features.Inspect;
 /// project, so during each test it's pointed at a copy of the pages and the translation files: a change lands in the copy, and no
 /// file of the project changes. With an agent it's a Workbench of its own, as the texts it saves stay in its memory.
 /// </summary>
+[DoNotParallelize]
 public abstract class WorkbenchCodeCopyPageTest : WorkbenchPageTest
 {
     private static readonly string copyFolder = Path.Combine(AppContext.BaseDirectory, "CodeCopy", "src");

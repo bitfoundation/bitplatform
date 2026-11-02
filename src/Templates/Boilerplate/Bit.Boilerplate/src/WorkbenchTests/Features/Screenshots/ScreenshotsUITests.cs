@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace Boilerplate.WorkbenchTests.Features.Screenshots;
 
 /// <summary>The shell's screenshot buttons, the review sheet and the home page's thumbnails, used the way a reviewer uses them.</summary>
-[TestClass, TestCategory("UITest")]
+[TestClass, TestCategory("UITest"), DoNotParallelize]
 public class ScreenshotsUITests : WorkbenchPageTest
 {
     private ILocator Customize(string paneId = "1") => View(paneId).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosCustomize, Exact = true });
