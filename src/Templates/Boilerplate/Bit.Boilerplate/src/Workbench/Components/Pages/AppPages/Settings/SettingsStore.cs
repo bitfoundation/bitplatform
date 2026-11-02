@@ -6,9 +6,11 @@ namespace Boilerplate.Workbench.Components.Pages.AppPages.Settings;
 /// What the settings page changes, in place of the app's server: the profile and its draft, pending email and phone
 /// changes, passwordless, two-factor, revoked sessions, consents and the watched ad.
 /// </summary>
-[BlexStore(Name = "settings", Persist = true)]
+[BlexStore(Name = StoreName, Persist = true)]
 public partial class SettingsStore
 {
+    public const string StoreName = "settings";
+
     [BlexState] private string? _expandedSection = PageUrls.SettingsSections.Profile;
     [BlexState] private string? _accountTab;
     [BlexState] private SettingsProfile? _profile;

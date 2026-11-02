@@ -50,5 +50,5 @@ public partial class NotAuthorizedPage
     }
 
     /// <summary>Signs the view in as the next demo user, the way picking another account in the app's sign-in would.</summary>
-    private Task SignInAsDifferentUser() => ReportScenario(Scenario with { User = (Scenario.User + 1) % WorkbenchDemoUsers.All.Count });
+    private Task SignInAsDifferentUser() => ReportScenario(Scenario with { User = (Scenario.User + 1) % WorkbenchDemoUsers.All.Count }, isApplied: false);
 }

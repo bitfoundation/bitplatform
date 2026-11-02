@@ -97,6 +97,7 @@
                                         PrimaryText="@Localizer[Shell.ActiveUser.NameKey]"
                                         SecondaryText="@Shell.ActiveUser.Email"
                                         ImageOverlayText="@AppLocalizer[nameof(AppStrings.Edit)]"
+                                        OnImageClick="GoToProfile"
                                         Presence="BitPersonaPresence.Online" />
 
                             @foreach (var account in Shell.OtherAccounts)
@@ -115,7 +116,7 @@
 
                             <BitSeparator />
 
-                            <BitActionButton IconName="@BitIconName.Contact" FullWidth>
+                            <BitActionButton IconName="@BitIconName.Contact" FullWidth OnClick="GoToProfile">
                                 @AppLocalizer[nameof(AppStrings.ProfileTitle)]
                             </BitActionButton>
                         }

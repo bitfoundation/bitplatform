@@ -17,11 +17,12 @@
     border: 1px solid $bit-color-border-secondary;
     box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
 
-    // Clear of the app's bottom bar and the floating tools button.
+    // Clear of the app's bottom bar and the floating tools button, and a press on it reaches the view under it.
     @include lt-sm {
         row-gap: 0;
         flex-wrap: wrap;
         bottom: 4.75rem;
+        pointer-events: none;
         max-width: calc(100% - 5.5rem);
     }
 }
