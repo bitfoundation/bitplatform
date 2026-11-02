@@ -12,6 +12,8 @@ public class HomePageUITests : WorkbenchPageTest
 
     private ILocator Header => Page.Locator("header.shell-header");
 
+    private ILocator Headline => Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeHeadline, Level = 1 });
+
     [TestMethod, EverySurface]
     public async Task TheHomePage_Should_SayWhatTheWorkbenchIs(WorkbenchSurface surface)
     {
@@ -177,6 +179,34 @@ public class HomePageUITests : WorkbenchPageTest
         await Expect(footer.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.ShiftsTitle, Exact = true })).ToHaveAttributeAsync("href", WorkbenchUrls.Workbench("shifts"));
         await Expect(footer.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeFooterDocs })).ToHaveAttributeAsync("target", "_blank");
         await Expect(footer.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeFooterSource })).ToHaveAttributeAsync("href", new Regex("github.com"));
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheFootersLogo_Should_LeadToTheTopOfTheHomePage(WorkbenchSurface surface)
+    {
+        await OpenHome();
+
+        var footer = Page.Locator("footer.home-footer");
+
+        await footer.ScrollIntoViewIfNeededAsync();
+        await Expect(Headline).Not.ToBeInViewportAsync();
+
+        await Press(footer.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.WorkbenchTitle, Exact = true }));
+
+        await Expect(Headline).ToBeInViewportAsync();
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheHeadersLogo_Should_LeadToTheTopOfTheHomePage(WorkbenchSurface surface)
+    {
+        await OpenHome();
+
+        await Page.Locator("footer.home-footer").ScrollIntoViewIfNeededAsync();
+        await Expect(Headline).Not.ToBeInViewportAsync();
+
+        await Press(Header.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.WorkbenchTitle, Exact = true }));
+
+        await Expect(Headline).ToBeInViewportAsync();
     }
 
     [TestMethod, EverySurface]
