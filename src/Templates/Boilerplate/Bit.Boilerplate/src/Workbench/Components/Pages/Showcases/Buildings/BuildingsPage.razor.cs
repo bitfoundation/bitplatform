@@ -152,6 +152,10 @@ public partial class BuildingsPage
 
     private async Task Search(string? text)
     {
+        // The box reports its text again as it loses focus, and a refresh then would swallow the press that took the focus.
+        if (text == store.SearchText)
+            return;
+
         store.Search(text);
         BuildMarkers();
         await RefreshGrid();

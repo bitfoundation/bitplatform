@@ -236,6 +236,26 @@ public class BuildingsUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task APressRightAfterASearch_Should_NotGetLost(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Search.FillAsync("Rotterdam");
+        await Expect(Names).ToHaveCountAsync(4);
+
+        await Press(Row("Euromast").GetByRole(AriaRole.Rowheader));
+
+        await Expect(Row("Euromast")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await Search.FillAsync("Euromast");
+        await Expect(Names).ToHaveCountAsync(1);
+
+        await OpenEditorOf(Row("Euromast"));
+
+        await Expect(Field(WorkbenchStrings.BuildingName)).ToHaveValueAsync("Euromast");
+    }
+
+    [TestMethod, EverySurface]
     public async Task SortingByName_Should_PutTheFirstNameFirstThenTheLast(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);
@@ -382,6 +402,25 @@ public class BuildingsUITests : ShowcaseUITest
         await Expect(marker).ToHaveAttributeAsync("src", selectedMarkerColor);
     }
 
+    [TestMethod, EverySurface]
+    public async Task PressingAMarker_Should_SelectItsRow(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Search.FillAsync("Euromast");
+        await Expect(Names).ToHaveCountAsync(1);
+
+        await Press(MapButton);
+        await Expect(MapPins).ToHaveCountAsync(1);
+        await Press(MapPins);
+
+        await Expect(MapPins).ToHaveAttributeAsync("src", selectedMarkerColor);
+
+        await Press(ListButton);
+
+        await Expect(Row("Euromast")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
     [TestMethod, OnDesktops]
     public async Task DoubleClickingAMarker_Should_OpenItsEditor(WorkbenchSurface surface)
     {
@@ -461,6 +500,48 @@ public class BuildingsUITests : ShowcaseUITest
         await ReloadTheView();
 
         await Expect(Names).ToHaveTextAsync([name]);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheEditor_Should_KeepEveryFieldOfANewBuilding(WorkbenchSurface surface)
+    {
+        var name = $"Tower {Guid.NewGuid():N}";
+
+        await OpenWorkbench(PageKey);
+
+        await Press(AddBuilding);
+
+        await Field(WorkbenchStrings.BuildingName).FillAsync(name);
+        await Field(WorkbenchStrings.BuildingCity).FillAsync("Maastricht");
+        await Pick(Editor.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.BuildingProvince }), WorkbenchStrings.ProvinceLimburg);
+        await Pick(Editor.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.BuildingType }), WorkbenchStrings.BuildingTypeTower);
+
+        await Field(WorkbenchStrings.BuildingYear).FillAsync("1999");
+        await Field(WorkbenchStrings.BuildingYear).BlurAsync();
+        await Field(WorkbenchStrings.BuildingHeight).FillAsync("42.5");
+        await Field(WorkbenchStrings.BuildingHeight).BlurAsync();
+        await Field(WorkbenchStrings.BuildingFloors).FillAsync("12");
+        await Field(WorkbenchStrings.BuildingFloors).BlurAsync();
+        await Field(WorkbenchStrings.BuildingLatitude).FillAsync("50.85");
+        await Field(WorkbenchStrings.BuildingLatitude).BlurAsync();
+        await Field(WorkbenchStrings.BuildingLongitude).FillAsync("5.69");
+        await Field(WorkbenchStrings.BuildingLongitude).BlurAsync();
+
+        await Press(Save);
+
+        await Expect(Notice(Saved(name))).ToBeVisibleAsync();
+        await Search.FillAsync(name);
+        await Expect(Row(name)).ToContainTextAsync($"Maastricht · {WorkbenchStrings.ProvinceLimburg}");
+
+        await OpenEditorOf(Row(name));
+
+        await Expect(Field(WorkbenchStrings.BuildingYear)).ToHaveValueAsync("1999");
+        await Expect(Field(WorkbenchStrings.BuildingHeight)).ToHaveValueAsync("42.5");
+        await Expect(Field(WorkbenchStrings.BuildingFloors)).ToHaveValueAsync("12");
+        await Expect(Field(WorkbenchStrings.BuildingLatitude)).ToHaveValueAsync("50.85");
+        await Expect(Field(WorkbenchStrings.BuildingLongitude)).ToHaveValueAsync("5.69");
+        await Expect(Editor.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.BuildingType })).ToContainTextAsync(WorkbenchStrings.BuildingTypeTower);
+        await Expect(Editor.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.BuildingProvince })).ToContainTextAsync(WorkbenchStrings.ProvinceLimburg);
     }
 
     [TestMethod, EverySurface]
@@ -615,6 +696,18 @@ public class BuildingsUITests : ShowcaseUITest
         await Expect(View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsEdit })).ToHaveCountAsync(0);
         await Expect(View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsDelete })).ToHaveCountAsync(0);
         await Expect(View().GetByText(WorkbenchStrings.BuildingsMapHint)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task ADemoUser_Should_StillSearchAndSelect(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?user=2");
+
+        await Search.FillAsync("Rotterdam");
+        await Expect(Names).ToHaveCountAsync(4);
+
+        await Press(Row("Euromast").GetByRole(AriaRole.Rowheader));
+        await Expect(Row("Euromast")).ToHaveAttributeAsync("aria-selected", "true");
     }
 
     [TestMethod, OnDesktops]
