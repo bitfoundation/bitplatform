@@ -27,6 +27,8 @@ public partial class WorkbenchViewPage
     private string? selectedThreadId;
     // What's typed for a comment or a reply, kept here as the tools close and other tabs open around the review.
     private readonly WorkbenchReviewDrafts drafts = new();
+    // The flow picked and what's typed in the Flows form, which going to set up the view for the next screen doesn't lose.
+    private readonly WorkbenchFlowDraft flowDraft = new();
     // The pins last sent to the frames as JSON, so an unchanged set isn't sent again on every render.
     private string? shownPins;
     // A view to load with a snapshot once the current render is on screen, for showing a comment as it was left.

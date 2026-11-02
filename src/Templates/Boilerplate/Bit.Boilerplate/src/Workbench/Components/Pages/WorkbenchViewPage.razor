@@ -72,7 +72,7 @@ else if (isSmallScreen && IsTouring is false)
                              OnSend="SendComment"
                              OnCancel="CancelComment"
                              OnPin="PinOnPage" />
-                <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
+                <FlowsPanel Draft="flowDraft" PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
                 <PageNavigator CurrentKey="@pageInfo.Key" Query="@store.QueryString" OnNavigate="() => isToolsOpen = false" />
             </Body>
         </BitPanel>
@@ -232,7 +232,7 @@ else
                 }
                 else if (store.Column == WorkbenchModes.FlowsColumn)
                 {
-                    <FlowsPanel PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
+                    <FlowsPanel Draft="flowDraft" PageKey="@pageInfo.Key" Query="@store.SelectedPane.Scenario.ToQueryString()" CaptureState="CaptureSelectedState" />
                 }
                 else if (store.Column == WorkbenchModes.ReviewColumn)
                 {

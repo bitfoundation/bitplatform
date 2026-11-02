@@ -175,6 +175,40 @@ public class FlowsEditingUITests : FlowPageTest
     }
 
     [TestMethod, WithAnAgent]
+    public async Task TheForm_Should_StayWhileItsOutOfSight(WorkbenchSurface surface)
+    {
+        var chosen = await DrawFlow(Unique("Chosen"), [new("first", "theme", "", null, null)]);
+
+        await DrawFlow(Unique("Last"), [new("first", "theme", "", null, null)]);
+
+        await OpenWorkbench("settings");
+        await OpenTab(WorkbenchModes.FlowsColumn);
+
+        await PickFlow(chosen.Name);
+        await Field(WorkbenchStrings.ScreenNote).FillAsync("A note");
+        await Field(WorkbenchStrings.ArrowFromLast).FillAsync("An arrow");
+
+        await LeaveTheToolsAndComeBack(WorkbenchModes.FlowsColumn);
+
+        await Expect(FlowPicker).ToContainTextAsync(chosen.Name);
+        await Expect(Field(WorkbenchStrings.ScreenNote)).ToHaveValueAsync("A note");
+        await Expect(Field(WorkbenchStrings.ArrowFromLast)).ToHaveValueAsync("An arrow");
+
+        await Press(AddThisView);
+
+        var saved = await WaitForFlow(chosen.Id, f => f.Screens.Length == 2);
+
+        Assert.AreEqual("A note", saved.Screens[1].Note);
+        Assert.AreEqual("An arrow", saved.Links.Single().Label);
+
+        // Going to set the view up for the next screen doesn't move the form to another flow.
+        await LeaveTheToolsAndComeBack(WorkbenchModes.FlowsColumn);
+
+        await Expect(FlowPicker).ToContainTextAsync(chosen.Name);
+        await Expect(Tools.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.OpenBoard })).ToBeVisibleAsync();
+    }
+
+    [TestMethod, WithAnAgent]
     public async Task TheFlowsTab_Should_ShowAFlowTheAgentDrawsLive(WorkbenchSurface surface)
     {
         await OpenWorkbench("settings");

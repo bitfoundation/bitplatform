@@ -30,24 +30,24 @@
             <BitText Typography="BitTypography.Caption1" Foreground="BitColorKind.Secondary">@Localizer[nameof(WorkbenchStrings.AddToFlowHint)]</BitText>
             <BitDropdown Items="flowItems"
                          Value="@TargetFlowId"
-                         ValueChanged="(string? id) => targetFlowId = id"
+                         ValueChanged="(string? id) => Draft.TargetFlowId = id"
                          Label="@Localizer[nameof(WorkbenchStrings.Flow)]"
                          Responsive
                          FitWidth />
             @if (TargetFlowId == NewFlowValue)
             {
-                <BitTextField @bind-Value="newFlowName" Immediate Label="@Localizer[nameof(WorkbenchStrings.NewFlowName)]" MaxLength="80" />
+                <BitTextField @bind-Value="Draft.NewFlowName" Immediate Label="@Localizer[nameof(WorkbenchStrings.NewFlowName)]" MaxLength="80" />
             }
-            <BitTextField @bind-Value="note" Label="@Localizer[nameof(WorkbenchStrings.ScreenNote)]" MaxLength="300" />
+            <BitTextField @bind-Value="Draft.Note" Label="@Localizer[nameof(WorkbenchStrings.ScreenNote)]" MaxLength="300" />
             @if (TargetFlow is { Screens.Length: > 0 })
             {
-                <BitTextField @bind-Value="linkLabel"
+                <BitTextField @bind-Value="Draft.LinkLabel"
                               Label="@Localizer[nameof(WorkbenchStrings.ArrowFromLast)]"
                               Placeholder="@Localizer[nameof(WorkbenchStrings.ArrowLabelPlaceholder)]"
                               MaxLength="120" />
             }
             <BitButton IconName="@BitIconName.Add" Disabled="CanAdd is false" OnClick="Add">@Localizer[nameof(WorkbenchStrings.AddThisView)]</BitButton>
-            @if (addedFlowId is { } added)
+            @if (Draft.AddedFlowId is { } added)
             {
                 <BitLink Href="@WorkbenchUrls.Flow(added)">@Localizer[nameof(WorkbenchStrings.OpenBoard)]</BitLink>
             }
