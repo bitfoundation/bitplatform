@@ -50,7 +50,8 @@ public partial class ChromeShell
     // The account actions change the view's scenario instead of calling a server.
     public Task SignOut() => ReportScenario(Scenario with { Auth = WorkbenchAuthState.SignedOut, User = 0 });
 
-    public Task SwitchAccount(WorkbenchDemoUser user) => ReportScenario(Scenario with { User = WorkbenchDemoUsers.All.ToList().IndexOf(user) });
+    // The view reloads, as what it shows belongs to the account it's signed in as.
+    public Task SwitchAccount(WorkbenchDemoUser user) => ReportScenario(Scenario with { User = WorkbenchDemoUsers.All.ToList().IndexOf(user) }, isApplied: false);
 
     public void SwitchTenant(string tenantKey) => chromeStore.SwitchTenant(tenantKey);
 
