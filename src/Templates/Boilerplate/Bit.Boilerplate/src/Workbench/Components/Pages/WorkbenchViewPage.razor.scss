@@ -230,6 +230,8 @@
     z-index: $bit-zindex-modal;
     align-items: center;
     border-radius: 999px;
+    // Its own width, as starting halfway across the screen would leave it only the other half.
+    width: max-content;
     max-width: calc(100vw - 2rem);
     transform: translateX(-50%);
     padding-block: 0.25rem;

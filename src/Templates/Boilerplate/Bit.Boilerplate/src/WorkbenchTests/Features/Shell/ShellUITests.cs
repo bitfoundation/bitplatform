@@ -754,6 +754,47 @@ public class ShellUITests : WorkbenchPageTest
         await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
     }
 
+    [TestMethod, Surfaces(WorkbenchSurface.PhoneWithAgent)]
+    public async Task ThePinBanner_Should_HoldItsTextOnAPhone(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        await OpenTools();
+        await Press(Button(WorkbenchStrings.PinComment));
+
+        var banner = Page.Locator(".pick-banner");
+
+        await Expect(banner).ToBeVisibleAsync();
+
+        var box = await banner.BoundingBoxAsync();
+        var text = await banner.Locator("span").First.BoundingBoxAsync();
+
+        Assert.IsLessThanOrEqualTo(box!.Y + box.Height, text!.Y + text.Height);
+        Assert.IsGreaterThanOrEqualTo(box.Y, text.Y);
+        Assert.IsLessThanOrEqualTo(Page.ViewportSize!.Width, box.X + box.Width);
+        Assert.IsGreaterThan(Page.ViewportSize.Width / 2, box.Width);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task OpeningAPage_Should_LoadItsViewOnce(WorkbenchSurface surface)
+    {
+        List<string> loads = [];
+
+        Page.Request += (_, request) =>
+        {
+            if (request.IsNavigationRequest && request.Url.Contains("/preview/", StringComparison.Ordinal))
+            {
+                loads.Add(request.Url);
+            }
+        };
+
+        await OpenWorkbench("theme");
+
+        await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 2 }).First).ToBeVisibleAsync();
+
+        Assert.HasCount(1, loads, string.Join(Environment.NewLine, loads));
+    }
+
     [TestMethod, EverySurface]
     public async Task TheNoAgentNotice_Should_ShowOnlyWithoutAnAgent(WorkbenchSurface surface)
     {
