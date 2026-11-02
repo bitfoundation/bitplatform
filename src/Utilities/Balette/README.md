@@ -1280,7 +1280,7 @@ that tells its router whether there is an assembly to load - and the
 [end-to-end suite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Balette/Tests/Bit.Balette.Tests.E2E)
 runs its published copy in a browser, trimmed and AOT-compiled: the home page never downloads `Bit.Balette.wasm`, and
 the admin page - opened from the home page or by a deep link the server prerenders - downloads it once, opens the
-palette its layout holds from the trigger and with `Ctrl+K`, and runs the command the page registered through
+palette its layout holds from the trigger and from the keyboard, and runs the command the page registered through
 `GetBaletteService()`.
 
 ### Blazor Server
