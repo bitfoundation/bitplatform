@@ -14,13 +14,16 @@ public partial class BuildingsPage
 
     private static readonly BitMapClustering clustering = new();
 
+    // Where the map and a new building start.
+    private static readonly BitMapLatLng startingCenter = new(52.2, 5.3);
+
     // The Dutch government's base map, which can't be panned or zoomed out of the country.
     private readonly BitLeafletMapProvider provider = new()
     {
         TileUrl = "https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:3857/{z}/{x}/{y}.png",
         TileAttribution = "Kaartgegevens &copy; <a href=\"https://www.kadaster.nl\">Kadaster</a>",
         TileMaxZoom = 19,
-        Center = new(52.2, 5.3),
+        Center = startingCenter,
         Zoom = 7,
         MinZoom = 7,
         DoubleClickZoom = false,
@@ -67,6 +70,13 @@ public partial class BuildingsPage
             return;
 
         await WhenStateRestored();
+
+        // The map opens on the saved view, as moving it there once it's up races the pan that keeps it inside the country.
+        if (store.MapView is [var latitude, var longitude, var zoom])
+        {
+            provider.Center = new(latitude, longitude);
+            provider.Zoom = zoom;
+        }
 
         // The editor reopens the draft the store holds, so it renders only once the store is restored.
         isRestored = true;
@@ -119,7 +129,7 @@ public partial class BuildingsPage
         })];
     }
 
-    /// <summary>Draws the country's outline, dims everything outside it and goes back to the saved view.</summary>
+    /// <summary>Draws the country's outline and dims everything outside it.</summary>
     private async Task OnMapReady()
     {
         if (map is null)
@@ -138,11 +148,6 @@ public partial class BuildingsPage
             Fill = false,
             DashArray = "6 4"
         });
-
-        if (store.MapView is [var latitude, var longitude, var zoom])
-        {
-            await map.SetView(new(latitude, longitude), zoom, animate: false);
-        }
     }
 
     private void OnMapViewChanged(BitMapViewState view)
@@ -288,9 +293,7 @@ public partial class BuildingsPage
     /// <summary>Opens the editor for a new building at the map's starting center.</summary>
     private Task OpenAdd()
     {
-        var center = provider.Center;
-
-        return editor!.Open(new Building { Latitude = center.Latitude, Longitude = center.Longitude, Year = DateTime.Now.Year }, isNew: true);
+        return editor!.Open(new Building { Latitude = startingCenter.Latitude, Longitude = startingCenter.Longitude, Year = DateTime.Now.Year }, isNew: true);
     }
 
     private Task OpenEdit(Building building) => canManage ? editor!.Open(building, isNew: false) : Task.CompletedTask;

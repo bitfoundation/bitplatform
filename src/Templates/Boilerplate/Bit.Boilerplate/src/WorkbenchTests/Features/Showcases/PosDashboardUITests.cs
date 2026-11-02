@@ -113,17 +113,28 @@ public class PosDashboardUITests : ShowcaseUITest
     {
         await OpenWorkbench(PageKey);
 
-        var lastWeek = Widget(WorkbenchStrings.PosSalesByHour).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosLastWeek, Exact = true });
+        var chart = Widget(WorkbenchStrings.PosSalesByHour);
+        var lastWeek = chart.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosLastWeek, Exact = true });
+        var dashedLine = chart.Locator(".bit-cht-svg path[stroke-dasharray]");
+        var bars = chart.Locator(".bit-cht-data .bit-cht-el path");
 
         await Expect(lastWeek).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(dashedLine).ToHaveCountAsync(1);
+        await Expect(bars.First).ToBeVisibleAsync();
+
+        var barCount = await bars.CountAsync();
 
         await Press(lastWeek);
 
         await Expect(lastWeek).ToHaveAttributeAsync("aria-pressed", "false");
+        await Expect(dashedLine).ToHaveCountAsync(0);
+        await Expect(bars).ToHaveCountAsync(barCount);
 
         await Press(lastWeek);
 
         await Expect(lastWeek).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(dashedLine).ToHaveCountAsync(1);
+        await Expect(bars).ToHaveCountAsync(barCount);
     }
 
     [TestMethod, EverySurface]
@@ -223,6 +234,8 @@ public class PosDashboardUITests : ShowcaseUITest
     [TestMethod, EverySurface]
     public async Task Slow_Should_ShowPlaceholdersFirstAndTheDataAfterAWhile(WorkbenchSurface surface)
     {
+        await PlaceholderTimer.Watch(Page, ".widget-loading", ".kpi-value");
+
         await OpenWithoutWaiting(PageKey, "?data=slow");
 
         await Expect(Loading).ToHaveCountAsync(widgetCount);
@@ -230,6 +243,8 @@ public class PosDashboardUITests : ShowcaseUITest
 
         await Expect(Widgets).ToHaveCountAsync(widgetCount);
         await Expect(View().Locator(".widget-state")).ToHaveCountAsync(0);
+
+        Assert.IsGreaterThanOrEqualTo(PlaceholderTimer.SlowLoad, await PlaceholderTimer.Read(Page), "The widgets came as fast as without the slow state.");
     }
 
     [TestMethod, EverySurface]

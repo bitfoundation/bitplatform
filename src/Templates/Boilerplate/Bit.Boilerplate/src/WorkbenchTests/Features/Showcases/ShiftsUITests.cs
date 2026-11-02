@@ -266,6 +266,24 @@ public class ShiftsUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task PressingAShiftInTheAgenda_Should_OpenItsEditor(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Press(Tab(WorkbenchStrings.CalendarModeEvent));
+        await Press(Tab(WorkbenchStrings.CalendarViewAgenda));
+
+        var agenda = Panel(WorkbenchStrings.CalendarModeEvent, WorkbenchStrings.CalendarViewAgenda);
+
+        await agenda.GetByRole(AriaRole.Searchbox, new() { Name = WorkbenchStrings.CalendarSearchEventsPlaceholder }).FillAsync(WorkbenchStrings.ShiftsBakery);
+
+        await Press(agenda.GetByRole(AriaRole.Button).Filter(new() { HasText = WorkbenchStrings.ShiftsBakery }).First);
+
+        await Expect(EditShiftTitle).ToBeVisibleAsync();
+        await Expect(ShiftName).ToHaveValueAsync(WorkbenchStrings.ShiftsBakery);
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheDateButtons_Should_MoveAndComeBackAndKeepTheDateAfterAReload(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);
@@ -740,11 +758,15 @@ public class ShiftsUITests : ShowcaseUITest
     [TestMethod, EverySurface]
     public async Task Slow_Should_ShowTheShiftsAfterAWhile(WorkbenchSurface surface)
     {
+        await PlaceholderTimer.Watch(Page, "[aria-busy='true']", "[data-bit-bfc-event]");
+
         await OpenWithoutWaiting(PageKey, "?data=slow");
 
         await Expect(Panel(WorkbenchStrings.CalendarModeTimeline, WorkbenchStrings.CalendarViewDay)).ToBeVisibleAsync();
         await Expect(Events).ToHaveCountAsync(ShiftsToday);
         await Expect(AddEvent).ToBeVisibleAsync();
+
+        Assert.IsGreaterThanOrEqualTo(PlaceholderTimer.SlowLoad, await PlaceholderTimer.Read(Page), "The shifts came as fast as without the slow state.");
     }
 
     [TestMethod, EverySurface]

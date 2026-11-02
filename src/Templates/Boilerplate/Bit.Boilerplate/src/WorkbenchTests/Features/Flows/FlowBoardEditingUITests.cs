@@ -37,20 +37,6 @@ public class FlowBoardEditingUITests : FlowPageTest
         await Drag(Middle(from), Middle(to));
     }
 
-    /// <summary>A double click on an arrow's own line, which is drawn under the screens only where they are.</summary>
-    private async Task DoubleClickArrow(string linkId)
-    {
-        var point = await Page.Locator($".bit-blow-edge[data-id='{linkId}'] .bit-blow-edge-interaction").EvaluateAsync<double[]>("""
-            path => {
-                const middle = path.getPointAtLength(path.getTotalLength() / 2);
-                const screen = new DOMPoint(middle.x, middle.y).matrixTransform(path.getScreenCTM());
-                return [screen.x, screen.y];
-            }
-            """);
-
-        await Page.Mouse.DblClickAsync((float)point[0], (float)point[1]);
-    }
-
     /// <summary>A flow of two screens with no arrow yet, side by side.</summary>
     private Task<WorkbenchFlow> DrawTwoScreens() => DrawFlow(Unique("Two screens"), [new("one", "buildings", "?device=iphone-se", "One", null), new("two", "theme", "?device=iphone-se", "Two", null)]);
 
@@ -66,7 +52,7 @@ public class FlowBoardEditingUITests : FlowPageTest
 
     private async Task OpenTheLabelEditorOf(string linkId)
     {
-        await DoubleClickArrow(linkId);
+        await DoublePressArrow(linkId);
 
         await Expect(LabelEditor).ToBeVisibleAsync();
     }
@@ -355,8 +341,11 @@ public class FlowBoardEditingUITests : FlowPageTest
         // The screen goes back to behaving as it did: nothing waits for a click on it any more.
         await Press(EditorButton(WorkbenchStrings.Cancel));
         await Press(PresentButton);
-        await Expect(Presenter).ToBeVisibleAsync();
+
+        // A press on a screen the board is still zooming to lands beside its button.
+        await Expect(CardOf(from)).ToHaveClassAsync(new Regex(@"\bcurrent\b"));
         await SettledBoardViewport();
+
         await Screen(from).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsAdd, Exact = true }).ClickAsync();
 
         await Expect(Screen(from).GetByText(WorkbenchStrings.BuildingsAddTitle)).ToBeVisibleAsync();

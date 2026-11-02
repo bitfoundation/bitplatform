@@ -1,3 +1,5 @@
+using Boilerplate.WorkbenchTests.Features.Showcases;
+
 namespace Boilerplate.WorkbenchTests.Features.AppPages;
 
 /// <summary>The Settings page's sections in the data states picked in the tools: loading, empty, and error with a retry that works.</summary>
@@ -105,9 +107,40 @@ public class SettingsStatesUITests : SettingsPageTest
     [TestMethod, EverySurface]
     public async Task Slow_Should_ShowPlaceholdersFirstAndTheDataAfterAWhile(WorkbenchSurface surface)
     {
+        await PlaceholderTimer.Watch(Page, "[role='region'] .bit-smr", "[role='region'] input.bit-tfl-inp");
+
         await OpenSection(AppStrings.ProfileTitle, "?data=slow");
 
         await Expect(FullName).ToHaveValueAsync(WorkbenchStrings.DemoUserYas);
+        await Expect(Shimmers(AppStrings.ProfileTitle)).ToHaveCountAsync(0);
+
+        Assert.IsGreaterThanOrEqualTo(PlaceholderTimer.SlowLoad, await PlaceholderTimer.Read(Page), "The profile came as fast as without the slow state.");
+    }
+
+    [TestMethod, EverySurface]
+    public async Task Mixed_Should_GiveEachSectionAStateOfItsOwnInTheOrderTheyOpen(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("settings", "?data=mixed");
+
+        await Expect(Failed(AppStrings.ProfileTitle)).ToBeVisibleAsync();
+        await Expect(FullName).ToHaveCountAsync(0);
+
+        await Press(Retry(AppStrings.ProfileTitle));
+
+        await Expect(FullName).ToHaveValueAsync(WorkbenchStrings.DemoUserYas);
+
+        await Press(SectionHeader(AppStrings.SessionsTitle));
+
+        var sessions = Section(AppStrings.SessionsTitle);
+
+        await Expect(sessions.GetByText(AppStrings.CurrentSession, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(sessions.GetByText(AppStrings.OtherSessions, new() { Exact = true })).ToHaveCountAsync(0);
+        await Expect(Failed(AppStrings.SessionsTitle)).ToHaveCountAsync(0);
+
+        await Press(SectionHeader(AppStrings.TfaTitle));
+
+        await Expect(Section(AppStrings.TfaTitle).GetByRole(AriaRole.Button, new() { Name = AppStrings.TfaConfigureAutAppVerifyButtonText, Exact = true })).ToBeVisibleAsync();
+        await Expect(Failed(AppStrings.TfaTitle)).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]

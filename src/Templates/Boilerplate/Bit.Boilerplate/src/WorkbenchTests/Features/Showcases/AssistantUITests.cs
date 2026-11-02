@@ -342,6 +342,8 @@ public class AssistantUITests : ShowcaseUITest
         await Press(Reply.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.AssistantCopy, Exact = true }));
 
         await Expect(Reply.GetByRole(AriaRole.Status).Filter(new() { HasText = WorkbenchStrings.AssistantCopied })).ToHaveCountAsync(1);
+
+        Assert.Contains(WorkbenchStrings.AssistantFallbackAnswer, await View().Locator("html").EvaluateAsync<string>("() => navigator.clipboard.readText()"));
     }
 
     [TestMethod, EverySurface]
@@ -360,6 +362,26 @@ public class AssistantUITests : ShowcaseUITest
         await Press(remove);
 
         await Expect(composer).Not.ToContainTextAsync("stock.txt");
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AnAttachedFile_Should_GoWithTheMessageAndLeaveTheComposer(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await View().Locator("input[type='file']").SetInputFilesAsync(new FilePayload { Name = "stock.txt", MimeType = "text/plain", Buffer = "Oat milk"u8.ToArray() });
+
+        var composer = View().Locator(".bit-aipri-ats");
+
+        await Expect(composer).ToContainTextAsync("stock.txt");
+
+        await Prompt.FillAsync("Anything");
+        await Press(Send);
+        await ExpectTheReplyToFinish();
+
+        await Expect(Messages.First).ToContainTextAsync("Anything");
+        await Expect(Messages.First).ToContainTextAsync("stock.txt");
+        await Expect(composer).ToHaveCountAsync(0);
     }
 
     [TestMethod, EverySurface]
@@ -555,12 +577,16 @@ public class AssistantUITests : ShowcaseUITest
     [TestMethod, EverySurface]
     public async Task Slow_Should_ShowThePlaceholderFirstAndAnswerSlowly(WorkbenchSurface surface)
     {
+        await PlaceholderTimer.Watch(Page, ".placeholder", ".bit-aiems-ttl");
+
         await OpenWithoutWaiting(PageKey, "?data=slow");
 
         await Expect(Conversation.Locator(".placeholder")).ToBeVisibleAsync();
         await Expect(TheWelcome).ToBeVisibleAsync();
         await Expect(Conversation.Locator(".placeholder")).ToHaveCountAsync(0);
         await Expect(Prompt).ToBeEnabledAsync();
+
+        Assert.IsGreaterThanOrEqualTo(PlaceholderTimer.SlowLoad, await PlaceholderTimer.Read(Page), "The conversations came as fast as without the slow state.");
     }
 
     [TestMethod, EverySurface]

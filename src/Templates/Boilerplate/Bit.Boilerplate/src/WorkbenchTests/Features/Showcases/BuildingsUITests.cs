@@ -85,6 +85,78 @@ public class BuildingsUITests : ShowcaseUITest
 
     private ILocator DialogButton(string name) => DeleteDialog.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
+    private async Task OpenTheMapWithFewBuildings()
+    {
+        await OpenWorkbench(PageKey, IsPhone ? "?sw-amount=few" : $"{Wide}&sw-amount=few");
+
+        if (IsPhone)
+        {
+            await Press(MapButton);
+        }
+
+        await Expect(MapPins.First).ToBeVisibleAsync();
+    }
+
+    /// <summary>Where the only marker on the map sits in the map's pane, which only the map's own pan and zoom change.</summary>
+    private async Task<(double X, double Y)> PinPlace()
+    {
+        var place = await MapPins.EvaluateAsync<double[]>("""
+            pin => {
+                const box = pin.getBoundingClientRect();
+                const map = pin.closest('.map-pane').getBoundingClientRect();
+                return [box.left - map.left, box.top - map.top];
+            }
+            """);
+
+        return (place[0], place[1]);
+    }
+
+    /// <summary>Waits until the map has stopped moving, as it glides on for a moment after a drag or a zoom.</summary>
+    private async Task<(double X, double Y)> SettledPin()
+    {
+        var (last, reads) = ((double.NaN, double.NaN), 0);
+
+        await WorkbenchTestReviewer.WaitFor(async () =>
+        {
+            var place = await PinPlace();
+
+            reads = place == last ? reads + 1 : 0;
+            last = place;
+
+            return reads;
+        }, count => count >= 6);
+
+        return last;
+    }
+
+    /// <summary>Drags the map from a spot beside its marker: with the mouse on a desktop and a finger on a phone.</summary>
+    private async Task PanTheMap(int byX, int byY)
+    {
+        var box = (await MapPane.BoundingBoxAsync())!;
+        var (x, y) = (box.X + box.Width * 0.7, box.Y + box.Height * 0.3);
+
+        if (IsPhone)
+        {
+            var cdp = await Page.Context.NewCDPSessionAsync(Page);
+
+            await Touch(cdp, "touchStart", x, y);
+
+            for (var step = 1; step <= 8; step++)
+            {
+                await Touch(cdp, "touchMove", x + byX * step / 8d, y + byY * step / 8d);
+            }
+
+            await Touch(cdp, "touchEnd", x + byX, y + byY);
+        }
+        else
+        {
+            await Page.Mouse.MoveAsync((float)x, (float)y);
+            await Page.Mouse.DownAsync();
+            await Page.Mouse.MoveAsync((float)x + byX, (float)y + byY, new() { Steps = 8 });
+            await Page.Mouse.UpAsync();
+        }
+    }
+
     [TestMethod, EverySurface]
     public async Task TheGrid_Should_ShowTheBuildingsWithTheirCityAndProvince(WorkbenchSurface surface)
     {
@@ -428,61 +500,86 @@ public class BuildingsUITests : ShowcaseUITest
         await Expect(Row("Euromast")).ToHaveAttributeAsync("aria-selected", "true");
     }
 
-    [TestMethod, OnDesktops]
-    public async Task DoubleClickingAMarker_Should_OpenItsEditor(WorkbenchSurface surface)
+    [TestMethod, EverySurface]
+    public async Task DoublePressingAMarker_Should_OpenItsEditor(WorkbenchSurface surface)
     {
-        await OpenWorkbench(PageKey, Wide);
+        await OpenWorkbench(PageKey, IsPhone ? string.Empty : Wide);
 
         await Search.FillAsync("Euromast");
+        await Expect(Names).ToHaveCountAsync(1);
+
+        if (IsPhone)
+        {
+            await Press(MapButton);
+        }
+
         await Expect(MapPins).ToHaveCountAsync(1);
 
-        await MapPins.DblClickAsync();
+        await DoublePress(MapPins);
 
         await Expect(Editor.GetByText(WorkbenchStrings.BuildingsEditTitle)).ToBeVisibleAsync();
         await Expect(Field(WorkbenchStrings.BuildingName)).ToHaveValueAsync("Euromast");
     }
 
-    [TestMethod, OnDesktops]
-    public async Task DoubleClickingInsideTheCountry_Should_AddABuildingThere(WorkbenchSurface surface)
+    [TestMethod, EverySurface]
+    public async Task DoublePressingInsideTheCountry_Should_AddABuildingThere(WorkbenchSurface surface)
     {
-        await OpenWorkbench(PageKey, $"{Wide}&sw-amount=few");
+        await OpenTheMapWithFewBuildings();
 
-        await MapPane.DblClickAsync();
+        var box = (await MapPane.BoundingBoxAsync())!;
+
+        await DoublePressAt(box.X + box.Width * 0.6f, box.Y + box.Height * 0.4f);
 
         await Expect(Editor.GetByText(WorkbenchStrings.BuildingsAddTitle)).ToBeVisibleAsync();
         await Expect(Field(WorkbenchStrings.BuildingLatitude)).ToHaveValueAsync(new Regex(@"^5[0-3]\.\d+$"));
         await Expect(Field(WorkbenchStrings.BuildingLongitude)).ToHaveValueAsync(new Regex(@"^[3-7]\.\d+$"));
     }
 
-    [TestMethod, OnPhones]
-    public async Task DoubleTappingInsideTheCountry_Should_AddABuildingThere(WorkbenchSurface surface)
+    [TestMethod, EverySurface]
+    public async Task DoublePressingOutsideTheCountry_Should_WarnAndOpenNothing(WorkbenchSurface surface)
     {
-        await OpenWorkbench(PageKey, "?sw-amount=few");
-
-        await Press(MapButton);
-        await Expect(MapPins.First).ToBeVisibleAsync();
-
-        await MapPane.ScrollIntoViewIfNeededAsync();
+        await OpenTheMapWithFewBuildings();
 
         var box = (await MapPane.BoundingBoxAsync())!;
 
-        await Page.Touchscreen.TapAsync(box.X + box.Width * 0.6f, box.Y + box.Height * 0.4f);
-        await Page.Touchscreen.TapAsync(box.X + box.Width * 0.6f, box.Y + box.Height * 0.4f);
-
-        await Expect(Editor.GetByText(WorkbenchStrings.BuildingsAddTitle)).ToBeVisibleAsync();
-    }
-
-    [TestMethod, OnDesktops]
-    public async Task DoubleClickingOutsideTheCountry_Should_WarnAndOpenNothing(WorkbenchSurface surface)
-    {
-        await OpenWorkbench(PageKey, $"{Wide}&sw-amount=few");
-
-        var box = (await MapPane.BoundingBoxAsync())!;
-
-        await MapPane.DblClickAsync(new() { Position = new() { X = box.Width * 0.95f, Y = box.Height * 0.08f } });
+        await DoublePressAt(box.X + box.Width * 0.95f, box.Y + box.Height * 0.08f);
 
         await Expect(Notice(WorkbenchStrings.BuildingsOutsideTitle)).ToBeVisibleAsync();
         await Expect(Editor).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheMapsPanAndZoom_Should_StayAfterAReload(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, IsPhone ? string.Empty : Wide);
+
+        await Search.FillAsync("Euromast");
+        await Expect(Names).ToHaveCountAsync(1);
+
+        if (IsPhone)
+        {
+            await Press(MapButton);
+        }
+
+        await Expect(MapPins).ToHaveCountAsync(1);
+
+        var fitted = await SettledPin();
+
+        await Press(MapPane.Locator(".leaflet-control-zoom-in"));
+        await WorkbenchTestReviewer.WaitFor(PinPlace, place => place != fitted);
+
+        var zoomed = await SettledPin();
+
+        await PanTheMap(byX: -40, byY: -30);
+        await WorkbenchTestReviewer.WaitFor(PinPlace, place => place != zoomed);
+
+        var left = await SettledPin();
+
+        await ReloadTheView();
+
+        await Expect(MapPins).ToHaveCountAsync(1);
+
+        await WorkbenchTestReviewer.WaitFor(PinPlace, place => Math.Abs(place.X - left.X) <= 2 && Math.Abs(place.Y - left.Y) <= 2);
     }
 
     [TestMethod, EverySurface]
@@ -714,12 +811,12 @@ public class BuildingsUITests : ShowcaseUITest
         await Expect(Names.First).ToHaveTextAsync("Rijksmuseum");
     }
 
-    [TestMethod, OnDesktops]
-    public async Task DoubleClickingARow_Should_OpenItsEditor(WorkbenchSurface surface)
+    [TestMethod, EverySurface]
+    public async Task DoublePressingARow_Should_OpenItsEditor(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);
 
-        await Row("Westerkerk").GetByRole(AriaRole.Rowheader).DblClickAsync();
+        await DoublePress(Row("Westerkerk").GetByRole(AriaRole.Rowheader));
 
         await Expect(Field(WorkbenchStrings.BuildingName)).ToHaveValueAsync("Westerkerk");
     }
@@ -805,15 +902,27 @@ public class BuildingsUITests : ShowcaseUITest
         await Expect(Row("Euromast")).ToHaveAttributeAsync("aria-selected", "true");
     }
 
-    [TestMethod, OnDesktops]
-    public async Task ADemoUsersDoubleClick_Should_OpenNoEditor(WorkbenchSurface surface)
+    [TestMethod, EverySurface]
+    public async Task ADemoUsersDoublePress_Should_OpenNoEditor(WorkbenchSurface surface)
     {
-        await OpenWorkbench(PageKey, $"{Wide}&user=2&sw-amount=few");
+        await OpenWorkbench(PageKey, IsPhone ? "?user=2&sw-amount=few" : $"{Wide}&user=2&sw-amount=few");
 
-        await Row("Rijksmuseum").GetByRole(AriaRole.Rowheader).DblClickAsync();
-        await MapPane.DblClickAsync();
+        await DoublePress(Row("Rijksmuseum").GetByRole(AriaRole.Rowheader));
 
         await Expect(Row("Rijksmuseum")).ToHaveAttributeAsync("aria-selected", "true");
+
+        if (IsPhone)
+        {
+            await Press(MapButton);
+            await Expect(MapPins.First).ToBeVisibleAsync();
+        }
+
+        var box = (await MapPane.BoundingBoxAsync())!;
+
+        await DoublePressAt(box.X + box.Width * 0.6f, box.Y + box.Height * 0.4f);
+
+        await Press(MapPane.Locator(".leaflet-control-zoom-in"));
+
         await Expect(Editor.GetByText(WorkbenchStrings.BuildingsEditTitle)).ToHaveCountAsync(0);
         await Expect(Editor.GetByText(WorkbenchStrings.BuildingsAddTitle)).ToHaveCountAsync(0);
     }
@@ -880,12 +989,12 @@ public class BuildingsUITests : ShowcaseUITest
         await Expect(Cards).ToHaveCountAsync(seedCount - 1);
     }
 
-    [TestMethod, OnDesktops]
-    public async Task DoubleClickingACard_Should_OpenItsEditor(WorkbenchSurface surface)
+    [TestMethod, EverySurface]
+    public async Task DoublePressingACard_Should_OpenItsEditor(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey, "?variant=cards");
 
-        await Card("Westerkerk").Locator(".card-main").DblClickAsync();
+        await DoublePress(Card("Westerkerk").Locator(".card-main"));
 
         await Expect(Field(WorkbenchStrings.BuildingName)).ToHaveValueAsync("Westerkerk");
     }
@@ -971,12 +1080,16 @@ public class BuildingsUITests : ShowcaseUITest
     [TestMethod, EverySurface]
     public async Task Slow_Should_ShowPlaceholdersFirstAndTheBuildingsAfterAWhile(WorkbenchSurface surface)
     {
+        await PlaceholderTimer.Watch(Page, ".list-pane .state", ".name-cell .name");
+
         await OpenWithoutWaiting(PageKey, "?data=slow");
 
         await Expect(ListPane.Locator(".state")).ToBeVisibleAsync();
         await Expect(Names).ToHaveCountAsync(20);
         await Expect(ListPane.Locator(".state")).ToHaveCountAsync(0);
         await Expect(AddBuilding).ToBeEnabledAsync();
+
+        Assert.IsGreaterThanOrEqualTo(PlaceholderTimer.SlowLoad, await PlaceholderTimer.Read(Page), "The buildings came as fast as without the slow state.");
     }
 
     [TestMethod, EverySurface]
