@@ -388,6 +388,7 @@ public class ShellUITests : ShellPageTest
         await BuildingsSearch().FillAsync("Rotterdam");
 
         await Expect(BuildingRows()).ToHaveCountAsync(4);
+        await WaitUntilSaved("Rotterdam");
 
         await OpenTools();
         await Press(ToolsButton(WorkbenchStrings.Reset));

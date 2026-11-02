@@ -289,18 +289,30 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
     [TestMethod, EverySurface]
     public async Task ReducedMotion_Should_EndTheTransitionsAtOnce(WorkbenchSurface surface)
     {
-        const string longestTransition = "element => Math.max(...getComputedStyle(element).transitionDuration.split(',').map(parseFloat))";
-
-        var motion = View().GetByRole(AriaRole.Switch).First;
-
         await OpenWorkbench("theme");
 
-        Assert.IsGreaterThan(0.01, await motion.EvaluateAsync<double>(longestTransition), "The page has transitions to end.");
+        Assert.IsGreaterThan(0.01, await LongestTransitionOfASwitch(), "The page's components have transitions to end.");
+        Assert.AreEqual(2, await TransitionOfThePagesOwn(), 0.001);
 
         await OpenWorkbench("theme", "?motion=reduce");
 
-        Assert.IsLessThan(0.001, await motion.EvaluateAsync<double>(longestTransition));
+        Assert.IsLessThan(0.001, await LongestTransitionOfASwitch());
+        Assert.IsLessThan(0.001, await TransitionOfThePagesOwn());
     }
+
+    private Task<double> LongestTransitionOfASwitch() => View().GetByRole(AriaRole.Switch).First.EvaluateAsync<double>("element => Math.max(...getComputedStyle(element).transitionDuration.split(',').map(parseFloat))");
+
+    /// <summary>How long an element of the page's own, with a transition of 2 seconds, really takes.</summary>
+    private Task<double> TransitionOfThePagesOwn() => View().Locator("body").EvaluateAsync<double>("""
+        body => {
+            const element = document.createElement('div');
+            element.style.transition = 'opacity 2s';
+            body.append(element);
+            const duration = parseFloat(getComputedStyle(element).transitionDuration);
+            element.remove();
+            return duration;
+        }
+        """);
 
     [TestMethod, EverySurface]
     public async Task TheToolsForTextSizeMotionAndVision_Should_ChangeTheViewsLook(WorkbenchSurface surface)
