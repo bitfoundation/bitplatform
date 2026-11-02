@@ -44,7 +44,10 @@ let pinsByPane: Record<string, Pin[]> = {};
 /** The animation frame a pin repositioning is queued on, or 0. */
 let pinFrame = 0;
 /** The component last picked in Inspect mode, found again by its id, or by its place when hot reload made it anew. */
-let inspected: { paneId: string; elementId: string; selector: string } | null = null;
+let inspected: { paneId: string; isScreen: boolean; elementId: string; selector: string } | null = null;
+
+/** The inner screens of store compositions whose loads are already handled. */
+const seenScreens = new WeakSet<HTMLIFrameElement>();
 
 /** Whether a mode is on in which a click picks an element instead of acting on the page. */
 const isPicking = () => mode === 'comment' || mode === 'inspect' || mode === 'text';
@@ -70,13 +73,13 @@ export function setMode(next: string) {
     if (mode === next) return;
 
     mode = next;
-    paneFrames().forEach(prepareFrame);
+    viewFrames().forEach(prepareFrame);
 }
 
 /** Replaces the pins of every view. */
 export function showPins(pins: Record<string, unknown[]>) {
     pinsByPane = (pins ?? {}) as Record<string, Pin[]>;
-    paneFrames().forEach(prepareFrame);
+    viewFrames().forEach(prepareFrame);
 }
 
 /** Sets up a view's page, its listeners once per window, then applies the current mode and pins to it. */
@@ -131,6 +134,19 @@ export function prepareFrame(frame: HTMLIFrameElement) {
     }
 
     renderPins(frame);
+    prepareScreen(frame);
+}
+
+/** A store composition shows its page in an inner screen, which is set up like a view of its own, also each time it loads. */
+function prepareScreen(frame: HTMLIFrameElement) {
+    const screen = screenOf(frame);
+
+    if (!screen || seenScreens.has(screen)) return;
+
+    seenScreens.add(screen);
+    screen.dataset.paneId = frame.dataset.paneId;
+    screen.addEventListener('load', () => prepareFrame(screen));
+    prepareFrame(screen);
 }
 
 /** Adds the Workbench's style and overlay layer to a view's page when they are missing, and returns the layer. */
@@ -157,6 +173,20 @@ function ensureLayer(doc: Document) {
 /** The iframes of the views on the shell. */
 function paneFrames() {
     return Array.from(document.querySelectorAll<HTMLIFrameElement>('iframe[data-pane-id]'));
+}
+
+/** The inner screen of a view that is a store composition. */
+function screenOf(frame: HTMLIFrameElement) {
+    return frame.contentDocument?.querySelector<HTMLIFrameElement>('iframe.screen-frame') ?? null;
+}
+
+/** The iframes of the views with the inner screens they show. */
+function viewFrames() {
+    return paneFrames().flatMap(frame => {
+        const screen = screenOf(frame);
+
+        return screen ? [frame, screen] : [frame];
+    });
 }
 
 /** A click on a pin opens its thread in any mode; a click while picking starts a comment or a text edit on the element. */
@@ -219,7 +249,7 @@ function inspect(frame: HTMLIFrameElement, target: Element, x?: number, y?: numb
         return;
     }
 
-    inspected = { paneId, elementId: found.root.id, selector: selectorOf(found.root) };
+    inspected = { paneId, isScreen: frame.matches('.screen-frame'), elementId: found.root.id, selector: selectorOf(found.root) };
 
     const preview = frame.contentWindow as any;
 
@@ -230,7 +260,7 @@ function inspect(frame: HTMLIFrameElement, target: Element, x?: number, y?: numb
 
 /** Reads the last picked component again, after a change to its code reached the view. */
 export function inspectAgain() {
-    const frame = inspected && paneFrames().find(f => f.dataset.paneId === inspected!.paneId);
+    const frame = inspected && viewFrames().find(f => f.dataset.paneId === inspected!.paneId && f.matches('.screen-frame') === inspected!.isScreen);
     const doc = frame?.contentDocument;
     const element = inspected && (doc?.getElementById(inspected.elementId) ?? doc?.querySelector(inspected.selector));
 
@@ -585,7 +615,7 @@ function schedulePins() {
 
     pinFrame = requestAnimationFrame(() => {
         pinFrame = 0;
-        paneFrames().forEach(frame => frame.contentDocument && positionPins(frame.contentDocument));
+        viewFrames().forEach(frame => frame.contentDocument && positionPins(frame.contentDocument));
     });
 }
 

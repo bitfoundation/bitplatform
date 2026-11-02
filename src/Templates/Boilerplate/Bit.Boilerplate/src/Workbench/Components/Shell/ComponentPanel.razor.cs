@@ -101,7 +101,7 @@ public partial class ComponentPanel
     /// <summary>Writes a parameter's value into the tag; null takes the attribute away, so the component's default applies.</summary>
     private Task<bool> Set(WorkbenchComponentParameter parameter, string? value)
     {
-        if (Info?.Tag is not { } tag || CanEdit(parameter) is false || (value is not null && value == parameter.Value && parameter.IsSet))
+        if (Info?.Tag is not { } tag || CanEdit(parameter) is false || (value is not null && value == Shown(parameter) && IsSet(parameter)))
             return Task.FromResult(false);
 
         return Save(tag, parameter.Name, value, () => edits.Set(Info.Name, tag, parameter.Name, value, parameter.DefaultValue));
@@ -114,7 +114,7 @@ public partial class ComponentPanel
         if (Info?.Tag is not { } tag || CanEdit(parameter) is false)
             return Task.FromResult(false);
 
-        var parts = parameter.Parts.Select(part => part.Name == partName ? part with { Value = value } : part).ToArray();
+        var parts = parameter.Parts.Select(part => part with { Value = part.Name == partName ? value : ShownPart(parameter, part) }).ToArray();
 
         return Save(tag, $"{parameter.Name}.{partName}", value, () => edits.SetParts(Info.Name, tag, parameter.Name, parts));
     }
@@ -124,10 +124,10 @@ public partial class ComponentPanel
     {
         value = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-        if (StyleParameter is not { } style || CanEditVariables is false || value == variable.Value)
+        if (StyleParameter is not { } style || CanEditVariables is false || value == Shown(variable.Name, variable.Value))
             return;
 
-        var all = (style.Value ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var all = (Shown(style) ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var declarations = all.Where(declaration => declaration.Split(':', 2)[0].Trim() != variable.Name).ToList();
 
         // Clearing a variable the Style doesn't set leaves the theme's value, which is what it has.

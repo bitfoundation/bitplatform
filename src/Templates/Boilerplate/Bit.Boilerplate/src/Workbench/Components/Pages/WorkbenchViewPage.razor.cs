@@ -128,13 +128,16 @@ public partial class WorkbenchViewPage
             BuildCompareItems();
         }
 
-        // A comment being written and a thread that's open belong to the page that was left.
+        // A comment being written, a thread that's open and what was picked belong to the page that was left.
         if (pageInfo != previous)
         {
             pendingComment = null;
             selectedThreadId = null;
             drafts.Comment = null;
             drafts.Reply = null;
+            pickedComponent = null;
+            pickedText = null;
+            draftedAnchor = null;
         }
 
         // An address the shell didn't write itself, like Back or a link to another page: its views win.
@@ -329,6 +332,12 @@ public partial class WorkbenchViewPage
     /// </summary>
     private async Task ShowColumn(string column)
     {
+        // Edit text holds the whole column, so a tab asked for ends it.
+        if (store.Mode == WorkbenchModes.Text)
+        {
+            SetMode(WorkbenchModes.Browse);
+        }
+
         store.ShowColumn(column);
 
         if (column is not WorkbenchModes.ReviewColumn || store.Mode != WorkbenchModes.Inspect || reviewSession.CanWrite is false
@@ -595,7 +604,15 @@ public partial class WorkbenchViewPage
     private void OnSmallScreenChanged(bool matched)
     {
         isSmallScreen = matched;
+
+        // A phone has no way out of Inspect and Edit text, so they end when a screen narrows to one; a tour puts the mode back itself.
+        if (matched && IsTouring is false && IsDesktopOnly(store.Mode))
+        {
+            SetMode(WorkbenchModes.Browse);
+        }
     }
+
+    private static bool IsDesktopOnly(string mode) => mode is WorkbenchModes.Inspect or WorkbenchModes.Text;
 
     /// <summary>Clears what was done on the selected view's page and puts its scenario back to the defaults, keeping its device.</summary>
     private async Task Reset()

@@ -623,8 +623,9 @@ host.workbench = {
         anchor.remove();
     },
 
+    /** Runs the checks on this preview's page, in the inner screen when there is one. */
     runChecks() {
-        return runChecks();
+        return workbenchOf(screenFrame())?.runChecks() ?? runChecks();
     },
 
     forceStates() {
@@ -660,8 +661,9 @@ host.workbench = {
         });
     },
 
+    /** Flashes an element of this preview's page, in the inner screen when there is one. */
     highlight(selector: string) {
-        return highlight(selector);
+        return workbenchOf(screenFrame())?.highlight(selector) ?? highlight(selector);
     },
 
     /** Runs the accessibility and theme checks inside a view, giving up after 30 seconds. */
