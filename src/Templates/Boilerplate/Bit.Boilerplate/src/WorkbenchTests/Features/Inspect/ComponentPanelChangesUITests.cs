@@ -83,6 +83,23 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task AToggleTurnedOffAndOnBeforeHotReload_Should_EndOnInTheCode(WorkbenchSurface surface)
+    {
+        await PickTheIconButton();
+
+        var iconOnly = Parameter(nameof(BitButton.IconOnly)).GetByRole(AriaRole.Switch);
+
+        await Press(iconOnly);
+        await IconButtonTag(Has("IconOnly=\"false\""));
+        await Expect(iconOnly).ToBeEnabledAsync();
+
+        await Press(iconOnly);
+
+        await IconButtonTag(tag => tag.Contains("IconOnly=\"false\"", StringComparison.Ordinal) is false && tag.Contains("IconOnly", StringComparison.Ordinal));
+        await Expect(iconOnly).ToBeCheckedAsync();
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task ADropdown_Should_WriteTheEnumValue(WorkbenchSurface surface)
     {
         await PickTheIconButton();
@@ -287,6 +304,26 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task APartOfStyles_Should_BeWrittenWithTheOthersKept(WorkbenchSurface surface)
+    {
+        await PickTheIconButton();
+
+        var styles = Parameter("Styles");
+        var root = styles.GetByRole(AriaRole.Textbox, new() { Name = nameof(BitButtonClassStyles.Root), Exact = true });
+        var icon = styles.GetByRole(AriaRole.Textbox, new() { Name = nameof(BitButtonClassStyles.Icon), Exact = true });
+
+        await Type(root, "color: red");
+
+        await IconButtonTag(Has("Styles=\"@(new() { Root = \"color: red\" })\""));
+        await ExpectSaved();
+        await Expect(root).ToHaveValueAsync("color: red");
+
+        await Type(icon, "margin: 0");
+
+        await IconButtonTag(tag => tag.Contains("Root = \"color: red\"", StringComparison.Ordinal) && tag.Contains("Icon = \"margin: 0\"", StringComparison.Ordinal));
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task HotReload_Should_ShowThePartsTheTagSetsAndBackToDefaultTakeThemAway(WorkbenchSurface surface)
     {
         await PickTheIconButton();
@@ -349,6 +386,35 @@ public class ComponentPanelChangesUITests : WorkbenchCodeCopyPageTest
         await Type(Variable("btn-pad-ntx").GetByRole(AriaRole.Textbox), "3px");
 
         await IconButtonTag(Has("--bit-btn-pad-ntx: 3px;"));
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task TwoVariablesBeforeHotReload_Should_BothStayInTheStyle(WorkbenchSurface surface)
+    {
+        await PickTheIconButton();
+
+        await Type(Variable("btn-pad-ntx").GetByRole(AriaRole.Textbox), "3px");
+        await IconButtonTag(Has("--bit-btn-pad-ntx: 3px;"));
+
+        await Type(Variable("btn-sbg").GetByRole(AriaRole.Textbox), "#00ff00");
+
+        await IconButtonTag(tag => tag.Contains("--bit-btn-sbg: #00ff00;", StringComparison.Ordinal) && tag.Contains("--bit-btn-pad-ntx: 3px;", StringComparison.Ordinal));
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task ClearingAVariable_Should_TakeItOutOfTheStyle(WorkbenchSurface surface)
+    {
+        await PickTheIconButton();
+
+        await Type(Variable("btn-pad-ntx").GetByRole(AriaRole.Textbox), "3px");
+        await IconButtonTag(Has("--bit-btn-pad-ntx: 3px;"));
+
+        await Type(Variable("btn-sbg").GetByRole(AriaRole.Textbox), "#00ff00");
+        await IconButtonTag(Has("--bit-btn-sbg: #00ff00;"));
+
+        await Type(Variable("btn-pad-ntx").GetByRole(AriaRole.Textbox), string.Empty);
+
+        await IconButtonTag(tag => tag.Contains("--bit-btn-sbg: #00ff00;", StringComparison.Ordinal) && tag.Contains("btn-pad-ntx", StringComparison.Ordinal) is false);
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
