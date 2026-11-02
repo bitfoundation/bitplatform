@@ -14,15 +14,15 @@ public class TourUITests : WorkbenchPageTest
 
     private async Task Advance(string nextTitle)
     {
-        await Next.ClickAsync();
+        await Press(Next);
         await Expect(Popover.GetByText(nextTitle, new() { Exact = true })).ToBeVisibleAsync();
     }
 
-    [TestMethod]
-    public async Task TheTour_Should_ShowEachFeatureAndPutTheViewsBack()
+    [TestMethod, OnDesktops]
+    public async Task TheTour_Should_ShowEachFeatureAndPutTheViewsBack(WorkbenchSurface surface)
     {
         await Page.GotoAsync(Server.Address.ToString());
-        await Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }));
 
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
 
@@ -59,7 +59,7 @@ public class TourUITests : WorkbenchPageTest
 
         await Advance(WorkbenchStrings.HomeWhyCustomizeTitle);
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourDone, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourDone, Exact = true }));
 
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Views).ToHaveCountAsync(1);
@@ -67,29 +67,29 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Mode(WorkbenchStrings.ModeBrowse)).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
-    [TestMethod]
-    public async Task LeavingTheTourHalfway_Should_BringBackTheViewsItStartedFrom()
+    [TestMethod, OnDesktops]
+    public async Task LeavingTheTourHalfway_Should_BringBackTheViewsItStartedFrom(WorkbenchSurface surface)
     {
         await OpenWorkbench("shifts", "?device=desktop-1536&theme=dark");
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
         await Advance(WorkbenchStrings.HomeWhyHeadStartTitle);
         await Advance(WorkbenchStrings.HomeWhyDevicesTitle);
         await Expect(Views).ToHaveCountAsync(2);
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
 
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Views).ToHaveCountAsync(1);
         await Expect(Page).ToHaveURLAsync(new Regex("theme=dark.*device=desktop-1536"));
     }
 
-    [TestMethod]
-    public async Task LeavingTheTourOnTheShiftPlanner_Should_GoBackToThePageItStartedFrom()
+    [TestMethod, OnDesktops]
+    public async Task LeavingTheTourOnTheShiftPlanner_Should_GoBackToThePageItStartedFrom(WorkbenchSurface surface)
     {
         await OpenWorkbench("pos-dashboard", "?device=desktop-1536");
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
 
         foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle })
         {
@@ -98,19 +98,19 @@ public class TourUITests : WorkbenchPageTest
 
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
 
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/pos-dashboard.*device=desktop-1536"));
         await Expect(Mode(WorkbenchStrings.ModeBrowse)).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
-    [TestMethod]
-    public async Task LeavingTheTourOnTheFlowsPage_Should_GoBackToTheViewsItStartedFrom()
+    [TestMethod, OnDesktops]
+    public async Task LeavingTheTourOnTheFlowsPage_Should_GoBackToTheViewsItStartedFrom(WorkbenchSurface surface)
     {
         await OpenWorkbench("shifts", "?device=desktop-1536&theme=dark");
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
 
         foreach (var title in new[] { WorkbenchStrings.HomeWhyHeadStartTitle, WorkbenchStrings.HomeWhyDevicesTitle, WorkbenchStrings.HomeWhyStatesTitle, WorkbenchStrings.HomeWhyStoresTitle, WorkbenchStrings.HomeWhyRealTitle, WorkbenchStrings.HomeWhyLiveTitle, WorkbenchStrings.Flows })
         {
@@ -119,12 +119,12 @@ public class TourUITests : WorkbenchPageTest
 
         await Expect(Page).ToHaveURLAsync(new Regex($"/flows/{WorkbenchSampleFlows.BuildingsId}$"));
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
 
         await Advance(WorkbenchStrings.Flows);
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
 
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts.*theme=dark.*device=desktop-1536"));
@@ -142,12 +142,11 @@ public class TourUITests : WorkbenchPageTest
         Assert.IsLessThanOrEqualTo(Page.ViewportSize!.Width, box.X + box.Width);
     }
 
-    [TestMethod]
-    public async Task TheTourOnAPhone_Should_ShowEachFeatureAboveItsCardAndGiveThePhoneLayoutBack()
+    [TestMethod, OnPhones]
+    public async Task TheTourOnAPhone_Should_ShowEachFeatureAboveItsCardAndGiveThePhoneLayoutBack(WorkbenchSurface surface)
     {
-        await Page.SetViewportSizeAsync(390, 800);
         await Page.GotoAsync(Server.Address.ToString());
-        await Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.HomeStartHere, Exact = true }));
 
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(Page.Locator(".phone-layout")).ToHaveCountAsync(0);
@@ -164,7 +163,7 @@ public class TourUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex("data=loading"));
         await ExpectAboveTheCard(Views.First);
         await ExpectAboveTheCard(Page.Locator("[data-bonboarding-anchor='data-states']"));
-        await Page.Locator("[data-bonboarding-anchor='data-states']").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DataError }).ClickAsync();
+        await Press(Page.Locator("[data-bonboarding-anchor='data-states']").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DataError }));
         await Expect(Page).ToHaveURLAsync(new Regex("data=error"));
 
         await Advance(WorkbenchStrings.HomeWhyStoresTitle);
@@ -192,17 +191,16 @@ public class TourUITests : WorkbenchPageTest
 
         await Advance(WorkbenchStrings.HomeWhyCustomizeTitle);
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourDone, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourDone, Exact = true }));
 
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Page.Locator(".phone-view iframe")).ToBeVisibleAsync();
         await Expect(Page.Locator(".workbench")).ToHaveCountAsync(0);
     }
 
-    [TestMethod]
-    public async Task TheBackButtonOnAPhonesFlowsStep_Should_GoBackAStepAndKeepTheViewsDrawn()
+    [TestMethod, OnPhones]
+    public async Task TheBackButtonOnAPhonesFlowsStep_Should_GoBackAStepAndKeepTheViewsDrawn(WorkbenchSurface surface)
     {
-        await Page.SetViewportSizeAsync(390, 800);
         await Page.GotoAsync(new Uri(Server.Address, "workbench/pos-dashboard?tour=true").ToString());
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
 
@@ -219,34 +217,33 @@ public class TourUITests : WorkbenchPageTest
 
         // The card's own Back reloads the view during the step that hides it: it has to keep a size there, or its page draws nothing.
         await Advance(WorkbenchStrings.Flows);
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourBack, Exact = true }));
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyLiveTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(Views).ToHaveCountAsync(1);
         Assert.IsNotNull(await Views.First.BoundingBoxAsync());
     }
 
-    [TestMethod]
-    public async Task TheToolsPanelOnAPhone_Should_StartTheTourAndSkippingIt_Should_GiveThePhoneLayoutBack()
+    [TestMethod, OnPhones]
+    public async Task TheToolsPanelOnAPhone_Should_StartTheTourAndSkippingIt_Should_GiveThePhoneLayoutBack(WorkbenchSurface surface)
     {
-        await Page.SetViewportSizeAsync(390, 800);
         await Page.GotoAsync(new Uri(Server.Address, "workbench/shifts").ToString());
 
-        await Page.Locator(".tools-button").ClickAsync();
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+        await Press(Page.Locator(".tools-button"));
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
 
         await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
         await Expect(Page.Locator(".tools-panel")).ToHaveCountAsync(0);
 
         await Advance(WorkbenchStrings.HomeWhyHeadStartTitle);
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
 
         await Expect(Popover).ToHaveCountAsync(0);
         await Expect(Page.Locator(".phone-view iframe")).ToBeVisibleAsync();
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
     }
 
-    [TestMethod]
-    public async Task TheTourOnASidewaysPhone_Should_ShowTheCardBesideTheViews()
+    [TestMethod, OnPhones]
+    public async Task TheTourOnASidewaysPhone_Should_ShowTheCardBesideTheViews(WorkbenchSurface surface)
     {
         await Page.SetViewportSizeAsync(844, 390);
         await Page.GotoAsync(new Uri(Server.Address, "workbench/pos-dashboard?tour=true").ToString());
@@ -261,12 +258,13 @@ public class TourUITests : WorkbenchPageTest
         Assert.IsLessThanOrEqualTo(card!.X, view!.X + view.Width);
     }
 
-    [TestMethod]
-    public async Task TheGuides_Should_FollowTheAppsButtonsAndColors()
+    [TestMethod, EverySurface]
+    public async Task TheGuides_Should_FollowTheAppsButtonsAndColors(WorkbenchSurface surface)
     {
         await OpenWorkbench("shifts");
 
-        await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }).ClickAsync();
+        await OpenTools();
+        await Press(Button(WorkbenchStrings.TourStart));
         await Expect(Next).ToHaveClassAsync(new Regex("bit-btn"));
 
         await Page.EvaluateAsync("document.documentElement.style.setProperty('--bit-clr-pri', 'rgb(200, 0, 120)')");

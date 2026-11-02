@@ -152,6 +152,21 @@ public class WorkbenchPageTest : PageTest
     /// <summary>Waits until a page the server drew first has come alive, as a press before that goes nowhere.</summary>
     protected Task WaitUntilInteractive() => Page.WaitForFunctionAsync("() => [...document.querySelectorAll('button')].some(button => [...button.attributes].some(attribute => attribute.name.startsWith('_bl_')))");
 
+    /// <summary>Waits until the browser has saved a store's state with this in it, which comes a moment after the change, as a reload before that loses it.</summary>
+    protected Task WaitUntilSaved(string text) => WorkbenchTestReviewer.WaitFor(() => Page.EvaluateAsync<string>("""
+        () => new Promise(resolve => {
+            const open = indexedDB.open('bit-workbench');
+            open.onerror = () => resolve('');
+            open.onsuccess = () => {
+                const database = open.result;
+                if (database.objectStoreNames.contains('state') === false) return resolve('');
+                const all = database.transaction('state').objectStore('state').getAll();
+                all.onerror = () => resolve('');
+                all.onsuccess = () => resolve(JSON.stringify(all.result));
+            };
+        })
+        """), saved => saved.Contains(text, StringComparison.OrdinalIgnoreCase));
+
     /// <summary>The same text in another language.</summary>
     protected static string InCulture(string culture, string key) => new System.Resources.ResourceManager(typeof(WorkbenchStrings)).GetString(key, CultureInfo.GetCultureInfo(culture))!;
 }
