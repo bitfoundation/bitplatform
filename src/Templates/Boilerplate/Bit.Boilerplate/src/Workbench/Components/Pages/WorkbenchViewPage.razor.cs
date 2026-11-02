@@ -40,6 +40,9 @@ public partial class WorkbenchViewPage
     // The spot the Review tab last started a comment on, so going back to the tab doesn't start it again after a Cancel.
     private WorkbenchReviewAnchor? draftedAnchor;
 
+    // The id the pin of the comment being written goes by.
+    private const string DraftPinId = "draft";
+
     private static readonly (string Mode, string IconName, string TextKey)[] modes =
     [
         (WorkbenchModes.Browse, BitIconName.TouchPointer, nameof(WorkbenchStrings.ModeBrowse)),
@@ -210,7 +213,7 @@ public partial class WorkbenchViewPage
             .Where(t => t.Status is not WorkbenchReviewStatus.Done || t.Id == selectedThreadId)
             .Select(t => new { t.Id, Number = t.Number.ToString(CultureInfo.InvariantCulture), t.Anchor.Selector, t.Anchor.Text, t.Anchor.X, t.Anchor.Y, Status = t.Status.ToString().ToLowerInvariant(), Selected = t.Id == selectedThreadId })
             .Concat(pendingComment is { } pending && pending.PaneId == pane.Id
-                ? [new { Id = "draft", Number = "+", pending.Anchor.Selector, pending.Anchor.Text, pending.Anchor.X, pending.Anchor.Y, Status = "draft", Selected = true }]
+                ? [new { Id = DraftPinId, Number = "+", pending.Anchor.Selector, pending.Anchor.Text, pending.Anchor.X, pending.Anchor.Y, Status = "draft", Selected = true }]
                 : [])
             .ToArray());
 
@@ -373,12 +376,15 @@ public partial class WorkbenchViewPage
         store.ShowColumn(WorkbenchModes.ReviewColumn);
     }
 
-    /// <summary>A click on a comment's pin in a view.</summary>
+    /// <summary>A click on a comment's pin in a view; the pin of the comment being written brings its composer back.</summary>
     [JSInvokable]
     public void OpenThread(string threadId)
     {
-        selectedThreadId = threadId;
-        pendingComment = null;
+        if (threadId != DraftPinId)
+        {
+            selectedThreadId = threadId;
+            pendingComment = null;
+        }
 
         store.ShowColumn(WorkbenchModes.ReviewColumn);
 

@@ -729,6 +729,28 @@ public class ReviewUITests : ReviewPageTest
     }
 
     [TestMethod, WithAnAgent]
+    public async Task TheDraftsPin_Should_KeepTheDraft(WorkbenchSurface surface)
+    {
+        var text = Unique("Keep me");
+
+        await OpenShiftsWithNoPins();
+
+        await PickSpot(ShiftsHeading);
+        await Composer.FillAsync(text);
+
+        await CloseTools();
+        await Expect(DraftPin).ToBeVisibleAsync();
+
+        await Press(DraftPin);
+
+        await ExpectToolsOpen();
+
+        await LeaveTheToolsAndComeBack();
+
+        await Expect(Composer).ToHaveValueAsync(text);
+    }
+
+    [TestMethod, WithAnAgent]
     public async Task WhatsTyped_Should_StayWhileTheReviewIsOutOfSight(WorkbenchSurface surface)
     {
         var commentText = Unique("A comment half typed");
