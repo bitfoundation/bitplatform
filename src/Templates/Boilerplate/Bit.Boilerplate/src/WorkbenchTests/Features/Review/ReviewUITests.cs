@@ -870,6 +870,26 @@ public class ReviewUITests : ReviewPageTest
     }
 
     [TestMethod, WithAnAgent]
+    public async Task AnotherPage_Should_NotInheritTheDraft(WorkbenchSurface surface)
+    {
+        var text = Unique("About the shifts");
+
+        await OpenShiftsWithNoPins();
+
+        await PickSpot(ShiftsHeading);
+        await Composer.FillAsync(text);
+
+        await Press(Page.GetByRole(AriaRole.Navigation, new() { Name = WorkbenchStrings.Pages }).GetByRole(AriaRole.Link).Filter(new() { HasText = WorkbenchStrings.ThemePageTitle }));
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/theme"));
+        await WaitForViews();
+        await OpenReview();
+
+        await Expect(Composer).ToHaveCountAsync(0);
+        await Expect(DraftPin).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, WithAnAgent]
     public async Task ThePins_Should_ShowEachCommentsStatusAndLeaveWhenDone(WorkbenchSurface surface)
     {
         var working = await SeedComment("shifts", Unique("In progress"), anchor: headingSpot);

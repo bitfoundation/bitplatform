@@ -126,6 +126,15 @@ public partial class WorkbenchViewPage
             BuildCompareItems();
         }
 
+        // A comment being written and a thread that's open belong to the page that was left.
+        if (pageInfo != previous)
+        {
+            pendingComment = null;
+            selectedThreadId = null;
+            drafts.Comment = null;
+            drafts.Reply = null;
+        }
+
         // An address the shell didn't write itself, like Back or a link to another page: its views win.
         if (isRestored && NavigationManager.Uri != lastAppliedUri)
         {
