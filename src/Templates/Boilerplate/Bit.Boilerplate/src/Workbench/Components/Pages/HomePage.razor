@@ -19,7 +19,7 @@
             </Bmotion>
             <Bmotion Initial="Bm.To(opacity: 0, y: 16)" Animate="Bm.To(opacity: 1, y: 0)" Transition="Enter(3)">
                 <div class="hero-actions">
-                    @* Opens the first page with the tour of the Workbench over it; a phone gets just the page. *@
+                    @* Opens the first page with the tour of the Workbench over it. *@
                     @if (HeroPage is { } heroPage)
                     {
                         <BitButton Size="BitSize.Large" IconName="@BitIconName.Rocket" Href="@WorkbenchUrls.Tour(heroPage.Key)">

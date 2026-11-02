@@ -5,7 +5,7 @@ namespace Boilerplate.Workbench.Components.Pages;
 
 /// <summary>
 /// /workbench/{key}: the shell around one page. On wider screens it shows the page's views as iframes of /preview side
-/// by side with the inspector, review, checks and flows; on a phone it renders the page inline with the tools in a panel.
+/// by side with the inspector, review, checks and flows; on a phone the selected view fills the screen, with the tools in a panel.
 /// The views and their settings live in <see cref="WorkbenchStore"/> and are mirrored into the address.
 /// </summary>
 public partial class WorkbenchViewPage
@@ -18,7 +18,6 @@ public partial class WorkbenchViewPage
     private bool isSmallScreen;
     private bool isToolsOpen;
     private bool startsTour;
-    private bool isPickingInline;
     private bool isLinkCopied;
     private List<BitMenuButtonItem> compareItems = [];
     private List<BitMenuButtonItem> screenshotItems = [];
@@ -268,39 +267,22 @@ public partial class WorkbenchViewPage
         store.SelectPane(paneId);
         store.ShowColumn(WorkbenchModes.ReviewColumn);
 
+        // On a phone the tools hold the draft, and the page goes back to being used once the spot is pinned.
+        if (isSmallScreen)
+        {
+            isToolsOpen = true;
+            store.SetMode(WorkbenchModes.Browse);
+        }
+
         StateHasChanged();
     }
 
     /// <summary>Phone layout: closes the tools so the next tap on the page pins a comment there.</summary>
-    private async Task PinInline()
+    private void PinOnPage()
     {
         isToolsOpen = false;
-        isPickingInline = true;
 
-        await JSRuntime.InvokeVoidAsync("workbench.pickInline");
-    }
-
-    /// <summary>The tap that pins a comment on the inline page; its state is this circuit's own, as the page runs here.</summary>
-    [JSInvokable]
-    public void BeginInlineComment(WorkbenchReviewAnchor anchor)
-    {
-        isPickingInline = false;
-
-        if (reviewSession.CanWrite is false)
-            return;
-
-        pendingComment = (store.SelectedPane.Id, anchor, blexManager.CaptureGlobalState().ToJsonString());
-        selectedThreadId = null;
-        isToolsOpen = true;
-
-        StateHasChanged();
-    }
-
-    private async Task CancelInlinePick()
-    {
-        isPickingInline = false;
-
-        await JSRuntime.InvokeVoidAsync("workbench.cancelInlinePick");
+        SetMode(WorkbenchModes.Comment);
     }
 
     /// <summary>A text clicked in Edit text mode, with the resource entries that render it.</summary>
@@ -398,6 +380,8 @@ public partial class WorkbenchViewPage
 
         store.ShowColumn(WorkbenchModes.ReviewColumn);
 
+        isToolsOpen = isSmallScreen;
+
         StateHasChanged();
     }
 
@@ -444,12 +428,10 @@ public partial class WorkbenchViewPage
         return shownSnapshot is { } shown && shown.PaneId == pane.Id && shown.Query == pane.Scenario.ToQueryString() ? shown.SnapshotId : null;
     }
 
-    /// <summary>The selected view's stores: read from its iframe, or from this circuit when the page runs inline on a phone.</summary>
+    /// <summary>The selected view's stores, read from its iframe.</summary>
     private async Task<string?> CaptureSelectedState()
     {
-        return isSmallScreen
-            ? blexManager.CaptureGlobalState().ToJsonString()
-            : await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", store.SelectedPane.Id);
+        return await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", store.SelectedPane.Id);
     }
 
     private void OnReviewChanged() => InvokeAsync(StateHasChanged);
@@ -459,12 +441,9 @@ public partial class WorkbenchViewPage
     /// mode, tab or collapsed column was hiding it, and points at it with the rest of the screen dimmed.
     /// </summary>
     [JSInvokable]
-    public async Task ShowSignInGuide(string? paneId)
+    public async Task ShowSignInGuide(string paneId)
     {
-        if (paneId is not null)
-        {
-            store.SelectPane(paneId);
-        }
+        store.SelectPane(paneId);
 
         SetMode(WorkbenchModes.Browse);
 
@@ -504,7 +483,15 @@ public partial class WorkbenchViewPage
     [JSInvokable]
     public void ReportScenario(string paneId, string query)
     {
-        store.ReportScenario(paneId, WorkbenchScenario.Parse(query));
+        var scenario = WorkbenchScenario.Parse(query);
+
+        // A phone shows the view on itself, and the view stays set to the device it was set to.
+        if (scenario.Device == DevicePresets.ThisDeviceKey && store.Panes.FirstOrDefault(pane => pane.Id == paneId)?.Scenario is { } current)
+        {
+            scenario = scenario with { Device = current.Device, Width = current.Width, Height = current.Height, Rotated = current.Rotated };
+        }
+
+        store.ReportScenario(paneId, scenario);
     }
 
     /// <summary>The end of a drag on a view's edge or corner.</summary>
@@ -525,13 +512,10 @@ public partial class WorkbenchViewPage
     }
 
     /// <summary>
-    /// Gives the shell's own circuit the selected view's scenario (the phone layout renders the page with it) and writes
-    /// the views into the address, so a reload or a copied link opens the same ones.
+    /// Writes the views into the address, so a reload or a copied link opens the same ones.
     /// </summary>
     private void Apply()
     {
-        ScenarioState.Set(store.SelectedPane.Scenario);
-
         if (isRestored is false || pageInfo is null)
         {
             lastAppliedUri = NavigationManager.Uri;
@@ -599,17 +583,7 @@ public partial class WorkbenchViewPage
     {
         var pane = store.SelectedPane;
 
-        if (isSmallScreen)
-        {
-            foreach (var pageStore in blexManager.Stores.OfType<BlexStoreBase>().Where(s => s != store))
-            {
-                pageStore.ResetState();
-            }
-        }
-        else
-        {
-            await JSRuntime.InvokeVoidAsync("workbench.resetFrame", pane.Id);
-        }
+        await JSRuntime.InvokeVoidAsync("workbench.resetFrame", pane.Id);
 
         store.ChangeScenario(new WorkbenchScenario { Device = pane.Scenario.Device, Rotated = pane.Scenario.Rotated });
     }
@@ -617,9 +591,7 @@ public partial class WorkbenchViewPage
     /// <summary>Saves a view's current stores as a snapshot for the screenshot service; null when there is none.</summary>
     private async Task<string?> CaptureState(WorkbenchPane pane)
     {
-        var state = isSmallScreen
-            ? blexManager.CaptureGlobalState().ToJsonString()
-            : await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", pane.Id);
+        var state = await JSRuntime.InvokeAsync<string?>("workbench.captureFrame", pane.Id);
 
         return snapshots.Add(state);
     }

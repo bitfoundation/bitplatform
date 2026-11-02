@@ -195,7 +195,7 @@ public class TourUITests : WorkbenchPageTest
         await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourDone, Exact = true }).ClickAsync();
 
         await Expect(Popover).ToHaveCountAsync(0);
-        await Expect(Page.Locator(".inline-surface")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".phone-view iframe")).ToBeVisibleAsync();
         await Expect(Page.Locator(".workbench")).ToHaveCountAsync(0);
     }
 
@@ -241,7 +241,7 @@ public class TourUITests : WorkbenchPageTest
         await Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }).ClickAsync();
 
         await Expect(Popover).ToHaveCountAsync(0);
-        await Expect(Page.Locator(".inline-surface")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".phone-view iframe")).ToBeVisibleAsync();
         await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
     }
 

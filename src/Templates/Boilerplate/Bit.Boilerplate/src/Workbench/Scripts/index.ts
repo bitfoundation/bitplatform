@@ -1,5 +1,5 @@
 import { highlight, parseColor, runChecks } from './checks';
-import { cancelInlinePick, connectFrames, inspectAgain, pickInline, prepareFrame, setComponentNames, setMode, showPins } from './frames';
+import { connectFrames, inspectAgain, prepareFrame, setComponentNames, setMode, showPins } from './frames';
 import { cancelSpotPick, pickSpot } from './spots';
 import { forceStates } from './states';
 
@@ -587,13 +587,9 @@ host.workbench = {
         }
     },
 
-    /** Asks the shell to point at its user picker, from a view or from a page the shell renders itself on a phone. */
+    /** Asks the shell to point at its user picker. */
     askForSignInGuide() {
-        if (window.parent !== window) {
-            window.parent.postMessage({ type: 'workbench-sign-in-guide' }, location.origin);
-        } else {
-            callShell('ShowSignInGuide', null);
-        }
+        window.parent.postMessage({ type: 'workbench-sign-in-guide' }, location.origin);
     },
 
     /** Scrolls an element of the shell into sight, for a guide that points at it along with something else. */
@@ -690,15 +686,6 @@ host.workbench = {
     /** Shows the comment pins of each view, keyed by pane id. */
     showPins(pins: Record<string, never[]>) {
         showPins(pins);
-    },
-
-    /** Waits for a click on the inline preview to start a comment there. */
-    pickInline() {
-        pickInline(anchor => callShell('BeginInlineComment', anchor));
-    },
-
-    cancelInlinePick() {
-        cancelInlinePick();
     },
 
     /** Lets the user pick the spot a flow arrow starts from on a flow screen. */

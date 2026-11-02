@@ -9,6 +9,9 @@ public static class DevicePresets
 
     public const string CustomKey = "custom";
 
+    /// <summary>The device the Workbench itself runs on, which is how a phone shows a view: nothing made up around the page or inside its edges.</summary>
+    public const string ThisDeviceKey = "this-device";
+
     public const int MinCustomSize = 240;
 
     public const int MaxCustomWidth = 3840;
@@ -53,8 +56,12 @@ public static class DevicePresets
 
     public static DevicePreset Default { get; } = All.First(d => d.Key == DefaultKey);
 
+    public static DevicePreset ThisDevice { get; } = new(ThisDeviceKey, "This device", DeviceKind.Desktop, 390, 844, 1);
+
     /// <summary>The preset with this key, ignoring case, or the default one.</summary>
-    public static DevicePreset Find(string? key) => All.FirstOrDefault(d => string.Equals(d.Key, key, StringComparison.OrdinalIgnoreCase)) ?? Default;
+    public static DevicePreset Find(string? key) => string.Equals(key, ThisDeviceKey, StringComparison.OrdinalIgnoreCase)
+        ? ThisDevice
+        : All.FirstOrDefault(d => string.Equals(d.Key, key, StringComparison.OrdinalIgnoreCase)) ?? Default;
 
     /// <summary>A desktop of the given size, clamped to the limits above; 0 picks a default size.</summary>
     public static DevicePreset Custom(int width, int height)

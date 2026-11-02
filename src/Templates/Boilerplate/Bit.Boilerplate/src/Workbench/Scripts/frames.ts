@@ -43,8 +43,6 @@ let notFromThemeLabel = '';
 let pinsByPane: Record<string, Pin[]> = {};
 /** The animation frame a pin repositioning is queued on, or 0. */
 let pinFrame = 0;
-/** The click listener of an inline pick in progress. */
-let inlinePick: ((event: MouseEvent) => void) | null = null;
 /** The component last picked in Inspect mode, found again by its id, or by its place when hot reload made it anew. */
 let inspected: { paneId: string; elementId: string; selector: string } | null = null;
 
@@ -79,32 +77,6 @@ export function setMode(next: string) {
 export function showPins(pins: Record<string, unknown[]>) {
     pinsByPane = (pins ?? {}) as Record<string, Pin[]>;
     paneFrames().forEach(prepareFrame);
-}
-
-/** Waits for one click on the inline preview surface and hands its anchor to the callback. */
-export function pickInline(onPick: (anchor: ReturnType<typeof anchorOf>) => void) {
-    cancelInlinePick();
-
-    inlinePick = event => {
-        const target = event.target as Element | null;
-        if (!target?.closest('.inline-surface')) return;
-
-        event.preventDefault();
-        event.stopImmediatePropagation();
-
-        cancelInlinePick();
-        onPick(anchorOf(target, event.clientX, event.clientY));
-    };
-
-    window.addEventListener('click', inlinePick, true);
-}
-
-/** Stops waiting for an inline pick. */
-export function cancelInlinePick() {
-    if (!inlinePick) return;
-
-    window.removeEventListener('click', inlinePick, true);
-    inlinePick = null;
 }
 
 /** Sets up a view's page, its listeners once per window, then applies the current mode and pins to it. */
