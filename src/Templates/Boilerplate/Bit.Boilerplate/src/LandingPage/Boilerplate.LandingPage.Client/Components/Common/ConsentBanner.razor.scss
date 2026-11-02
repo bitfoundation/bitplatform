@@ -1,0 +1,60 @@
+@import '../../Styles/tokens';
+
+.lp-consent {
+    position: fixed;
+    z-index: 900;
+    inset-inline-start: max(16px, env(safe-area-inset-left, 0px));
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    display: grid;
+    gap: 12px;
+    width: min(400px, calc(100% - 32px));
+    padding: 20px;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+    color: var(--lp-fg);
+    box-shadow: 0 18px 48px -18px color-mix(in oklab, var(--lp-fg) 40%, transparent);
+    font-size: .9375rem;
+    line-height: 1.55;
+    animation: lp-consent-in .35s var(--lp-ease) both;
+
+    h2 {
+        font-family: var(--lp-stack-body);
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0;
+    }
+
+    a {
+        color: var(--lp-accent);
+    }
+
+    @include lt-sm {
+        inset-inline: 12px;
+        width: auto;
+    }
+}
+
+.lp-consent-choices {
+    display: grid;
+    gap: 4px;
+}
+
+.lp-consent-hint {
+    margin-bottom: 8px;
+    color: var(--lp-fg-muted);
+    font-size: .8125rem;
+}
+
+.lp-consent-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@keyframes lp-consent-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+}

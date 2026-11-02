@@ -1,0 +1,27 @@
+.lp-countdown {
+    display: flex;
+    gap: 10px;
+}
+
+.lp-countdown-part {
+    display: grid;
+    justify-items: center;
+    min-width: 64px;
+    padding: 10px 8px;
+    border-radius: var(--lp-radius-control);
+    background: var(--lp-surface);
+    box-shadow: 0 0 0 1px var(--lp-line);
+}
+
+.lp-countdown-value {
+    font-family: var(--lp-stack-display);
+    font-size: 1.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.lp-countdown-unit {
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+}

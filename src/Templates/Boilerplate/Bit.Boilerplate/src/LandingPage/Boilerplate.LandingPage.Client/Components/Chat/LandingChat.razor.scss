@@ -1,0 +1,194 @@
+@import '../../Styles/tokens';
+
+.lp-chat-bubble-root {
+    position: fixed;
+    z-index: 700;
+    inset-inline-end: max(20px, env(safe-area-inset-right, 0px));
+    bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    display: grid;
+    justify-items: end;
+    gap: 12px;
+}
+
+.lp-chat-bubble {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    padding-inline: 18px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--lp-chat-bubble-bg, var(--lp-fg));
+    color: var(--lp-chat-bubble-fg, var(--lp-bg));
+    box-shadow: 0 12px 32px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
+    font-size: .9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .2s var(--lp-ease);
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    @include lt-sm {
+        width: 52px;
+        padding: 0;
+        justify-content: center;
+
+        .lp-chat-bubble-label {
+            display: none;
+        }
+    }
+}
+
+.lp-chat-card {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: min(400px, calc(100vw - 40px));
+    height: min(600px, calc(100dvh - 120px));
+    border: 1px solid var(--lp-line);
+    border-radius: calc(var(--lp-radius) + 4px);
+    background: var(--lp-surface);
+    box-shadow: 0 30px 70px -30px color-mix(in oklab, var(--lp-fg) 55%, transparent);
+    overflow: hidden;
+    animation: lp-chat-in .3s var(--lp-ease) both;
+    transform-origin: bottom right;
+
+    @include lt-sm {
+        position: fixed;
+        inset: 0;
+        width: auto;
+        height: auto;
+        border-radius: 0;
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+}
+
+.lp-chat-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 12px 12px 18px;
+    border-bottom: 1px solid var(--lp-line);
+
+    h2 {
+        font-family: var(--lp-stack-body);
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0;
+    }
+
+    a {
+        color: var(--lp-accent);
+        font-size: .8125rem;
+    }
+}
+
+.lp-chat-card-body,
+.lp-chat-panel-body {
+    min-height: 0;
+    padding: 8px 12px 12px;
+}
+
+.lp-chat-panel-body {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    gap: 8px;
+}
+
+.lp-chat-card-footer {
+    padding: 10px 16px;
+    border-top: 1px solid var(--lp-line);
+    background: var(--lp-bg-alt);
+}
+
+.lp-chat-handoff {
+    justify-self: start;
+    color: var(--lp-accent);
+    font-size: .875rem;
+}
+
+.lp-chat-concierge-tab {
+    position: fixed;
+    z-index: 700;
+    inset-inline-end: 0;
+    top: 50%;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px;
+    border: 0;
+    border-start-start-radius: 12px;
+    border-end-start-radius: 12px;
+    background: var(--lp-chat-bubble-bg, var(--lp-fg));
+    color: var(--lp-chat-bubble-fg, var(--lp-bg));
+    font-size: .875rem;
+    font-weight: 600;
+    writing-mode: vertical-rl;
+    cursor: pointer;
+    transform: translateY(-50%);
+    box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
+
+    &:lang(fa) {
+        writing-mode: horizontal-tb;
+        padding: 12px 14px;
+    }
+
+    @include lt-sm {
+        top: auto;
+        bottom: max(20px, env(safe-area-inset-bottom, 0px));
+        writing-mode: horizontal-tb;
+        padding: 12px 14px;
+        transform: none;
+    }
+}
+
+.lp-chat-inline {
+    display: grid;
+    gap: 12px;
+}
+
+.lp-chat-ask {
+    display: flex;
+    gap: 8px;
+
+    ::deep .lp-chat-ask-field {
+        flex: 1;
+    }
+}
+
+.lp-chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lp-chat-inline-notice {
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+}
+
+.lp-chat-inline-conversation {
+    height: min(460px, 70dvh);
+    padding: 8px;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+    animation: lp-chat-in .3s var(--lp-ease) both;
+}
+
+@keyframes lp-chat-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(.98);
+    }
+}
+
+.lp-chat-status {
+    padding: 24px 8px;
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+    text-align: center;
+}

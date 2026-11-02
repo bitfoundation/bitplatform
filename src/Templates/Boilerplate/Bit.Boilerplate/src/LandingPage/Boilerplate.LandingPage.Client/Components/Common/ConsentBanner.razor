@@ -1,0 +1,32 @@
+@inherits LandingComponentBase
+
+@if (isVisible)
+{
+    <section class="lp-consent" role="dialog" aria-labelledby="lp-consent-title" aria-describedby="lp-consent-body">
+        <h2 id="lp-consent-title">@Localizer[nameof(LandingStrings.ConsentTitle)]</h2>
+        <p id="lp-consent-body">@Localizer[nameof(LandingStrings.ConsentBody)] <a href="@LocalUrl($"{SitePath}/privacy")">@Localizer[nameof(LandingStrings.Privacy)]</a></p>
+
+        @if (isChoosing)
+        {
+            <div class="lp-consent-choices">
+                <BitToggle @bind-Value="performance" Label="@Localizer[nameof(LandingStrings.ConsentPerformance)]" />
+                <p class="lp-consent-hint">@Localizer[nameof(LandingStrings.ConsentPerformanceHint)]</p>
+                <BitToggle @bind-Value="analytics" Label="@Localizer[nameof(LandingStrings.ConsentAnalytics)]" />
+                <p class="lp-consent-hint">@Localizer[nameof(LandingStrings.ConsentAnalyticsHint)]</p>
+            </div>
+        }
+
+        <div class="lp-consent-actions">
+            @if (isChoosing)
+            {
+                <BitButton OnClick="Save">@Localizer[nameof(LandingStrings.ConsentSave)]</BitButton>
+            }
+            else
+            {
+                <BitButton OnClick="Accept">@Localizer[nameof(LandingStrings.ConsentAccept)]</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="Reject">@Localizer[nameof(LandingStrings.ConsentReject)]</BitButton>
+                <BitButton Variant="BitVariant.Text" OnClick="() => isChoosing = true">@Localizer[nameof(LandingStrings.ConsentChoose)]</BitButton>
+            }
+        </div>
+    </section>
+}

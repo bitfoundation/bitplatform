@@ -1,0 +1,16 @@
+@inherits LandingComponentBase
+
+<div class="lp-share @Class">
+    @if (canShare)
+    {
+        <BitButton Variant="BitVariant.Outline" IconName="@BitIconName.Share" OnClick="Share">@Localizer[nameof(LandingStrings.Share)]</BitButton>
+    }
+    <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@(copied ? BitIconName.CheckMark : BitIconName.Link)" OnClick="Copy">
+        @(copied ? Localizer[nameof(LandingStrings.ShareLinkCopied)] : Localizer[nameof(LandingStrings.ShareCopyLink)])
+    </BitButton>
+    <a class="lp-share-link" href="@($"https://wa.me/?text={Encoded($"{Title} {Url}")}")" rel="noopener" target="_blank">WhatsApp</a>
+    <a class="lp-share-link" href="@($"https://t.me/share/url?url={Encoded(Url)}&text={Encoded(Title)}")" rel="noopener" target="_blank">Telegram</a>
+    <a class="lp-share-link" href="@($"https://x.com/intent/post?url={Encoded(Url)}&text={Encoded(Title)}")" rel="noopener" target="_blank">X</a>
+    <a class="lp-share-link" href="@($"https://www.linkedin.com/sharing/share-offsite/?url={Encoded(Url)}")" rel="noopener" target="_blank">LinkedIn</a>
+    <a class="lp-share-link" href="@($"mailto:?subject={Encoded(Title)}&body={Encoded(Url)}")">@Localizer[nameof(LandingStrings.ShareByEmail)]</a>
+</div>

@@ -1,0 +1,50 @@
+@inherits LandingComponentBase
+
+<PageTitle>@Title</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@Description" />
+    <link rel="canonical" href="@Absolute(CurrentCulture)" />
+    @if (LandingCultures.InvariantGlobalization is false)
+    {
+        @foreach (var (_, culture) in LandingCultures.Supported)
+        {
+            <link rel="alternate" hreflang="@culture.Name" href="@Absolute(culture)" />
+        }
+        <link rel="alternate" hreflang="x-default" href="@Absolute(LandingCultures.Default)" />
+    }
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="@(Site?.Name ?? Title)" />
+    <meta property="og:title" content="@Title" />
+    <meta property="og:description" content="@Description" />
+    <meta property="og:url" content="@Absolute(CurrentCulture)" />
+    <meta property="og:locale" content="@CurrentCulture.Name.Replace('-', '_')" />
+    @foreach (var (_, culture) in LandingCultures.Supported.Where(s => s.Culture.Name != CurrentCulture.Name))
+    {
+        <meta property="og:locale:alternate" content="@culture.Name.Replace('-', '_')" />
+    }
+    @if (Image is not null)
+    {
+        <meta property="og:image" content="@AbsoluteAsset(Image)" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="@Title" />
+    }
+    <meta name="twitter:card" content="@(Image is null ? "summary" : "summary_large_image")" />
+    <meta name="twitter:title" content="@Title" />
+    <meta name="twitter:description" content="@Description" />
+
+    @if (Site?.AppleAppId is { } appleAppId)
+    {
+        <meta name="apple-itunes-app" content="app-id=@appleAppId" />
+    }
+    @if (Icon is not null)
+    {
+        <link rel="icon" type="image/svg+xml" href="@Icon" />
+    }
+    @if (structuredData is not null)
+    {
+        <script type="application/ld+json">@((MarkupString)structuredData)</script>
+    }
+</HeadContent>

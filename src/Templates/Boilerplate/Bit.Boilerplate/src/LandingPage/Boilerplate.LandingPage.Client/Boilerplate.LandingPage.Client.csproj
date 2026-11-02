@@ -1,0 +1,98 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <CoreCompileDependsOn>PrepareResources;$(CompileDependsOn)</CoreCompileDependsOn>
+        <InvariantTimezone>true</InvariantTimezone>
+        <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <StaticWebAssetPublishCompressAllAssets>true</StaticWebAssetPublishCompressAllAssets>
+        <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
+        <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Environment)' != 'Development'">
+        <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
+        <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+        <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+        <PackageReference Include="Microsoft.Extensions.Localization" />
+        <PackageReference Include="Bit.BlazorUI" />
+        <PackageReference Include="Bit.BlazorUI.Icons" />
+        <PackageReference Include="Bit.BlazorUI.Extras" />
+        <PackageReference Include="Bit.BlazorUI.AI" />
+        <PackageReference Include="Bit.Bswup" />
+        <PackageReference Include="Bit.Butil" />
+        <PackageReference Include="Bit.Belemetry" />
+        <PackageReference Include="Bit.Minifier" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="appsettings*.json" />
+        <EmbeddedResource Include="appsettings*.json" />
+        <Using Include="Microsoft.JSInterop" />
+        <Using Include="Microsoft.AspNetCore.Components" />
+        <Using Include="Microsoft.AspNetCore.Components.Web" />
+        <Using Include="Microsoft.AspNetCore.Components.Routing" />
+        <Using Include="Microsoft.Extensions.Logging" />
+        <Using Include="Bit.BlazorUI" />
+        <Using Include="Boilerplate.LandingPage.Client.Resources" />
+        <Using Include="Boilerplate.LandingPage.Client.Components" />
+        <Using Include="Boilerplate.LandingPage.Client.Components.Common" />
+        <Using Include="Boilerplate.LandingPage.Client.Infrastructure" />
+        <Using Include="Boilerplate.LandingPage.Client.Infrastructure.Models" />
+        <Using Include="Boilerplate.LandingPage.Client.Infrastructure.Services" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' AND '$(PublishAot)' != 'true' ">
+        <BlazorWebAssemblyLazyLoad Include="Bit.BlazorUI.AI.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.Client.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Net.WebSockets.wasm" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\LandingStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="LandingStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Resources" StronglyTypedFileName="$(IntermediateOutputPath)\LandingStrings.Designer.cs" />
+        <EmbeddedResource Update="Components\Pages\Ecommerce\EcommerceStrings.resx" Generator="MSBuild:Compile" StronglyTypedLanguage="CSharp" PublicClass="true" StronglyTypedClassName="EcommerceStrings" StronglyTypedNamespace="Boilerplate.LandingPage.Client.Components.Pages.Ecommerce" StronglyTypedFileName="$(IntermediateOutputPath)\EcommerceStrings.Designer.cs" />
+        <None Include="..\..\..\Bit.ResxTranslator.json" Link="Resources\Bit.ResxTranslator.json" />
+    </ItemGroup>
+
+    <Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
+        <CallTarget Targets="InstallNodejsDependencies" />
+        <CallTarget Targets="CopyAppAssets" />
+        <CallTarget Targets="BuildCssFiles" />
+        <ItemGroup>
+            <Content Include="**\*.razor.css;wwwroot\styles\landing.css;wwwroot\fonts\vazirmatn\*.*;wwwroot\favicon.ico;wwwroot\images\icons\bit-icon-512.png" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="CopyAppAssets">
+        <ItemGroup>
+            <AppFont Include="..\..\Client\Boilerplate.Client.Core\wwwroot\fonts\vazirmatn\*.woff2;..\..\Client\Boilerplate.Client.Core\wwwroot\fonts\vazirmatn\OFL.txt" />
+        </ItemGroup>
+        <Copy SourceFiles="@(AppFont)" DestinationFolder="wwwroot\fonts\vazirmatn" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="..\..\Client\Boilerplate.Client.Web\wwwroot\favicon.ico" DestinationFolder="wwwroot" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="..\..\Client\Boilerplate.Client.Web\wwwroot\images\icons\bit-icon-512.png" DestinationFolder="wwwroot\images\icons" SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildCssFiles">
+        <Exec Command="node_modules/.bin/sass Components:Components Styles/landing.scss:wwwroot/styles/landing.css --style compressed --silence-deprecation=import --update --color" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    </Target>
+
+    <ItemGroup>
+        <Content Remove="package*.json" />
+        <None Include="package*.json" />
+    </ItemGroup>
+
+</Project>

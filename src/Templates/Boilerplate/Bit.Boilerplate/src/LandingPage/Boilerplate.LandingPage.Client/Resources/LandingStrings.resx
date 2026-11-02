@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="SkipToContent" xml:space="preserve">
+        <value>Skip to content</value>
+    </data>
+    <data name="Menu" xml:space="preserve">
+        <value>Menu</value>
+    </data>
+    <data name="CloseMenu" xml:space="preserve">
+        <value>Close the menu</value>
+    </data>
+    <data name="SignIn" xml:space="preserve">
+        <value>Sign in</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>Language</value>
+    </data>
+    <data name="SwitchToDark" xml:space="preserve">
+        <value>Switch to dark mode</value>
+    </data>
+    <data name="SwitchToLight" xml:space="preserve">
+        <value>Switch to light mode</value>
+    </data>
+    <data name="Dismiss" xml:space="preserve">
+        <value>Dismiss</value>
+    </data>
+    <data name="FooterProduct" xml:space="preserve">
+        <value>Product</value>
+    </data>
+    <data name="FooterCompany" xml:space="preserve">
+        <value>Company</value>
+    </data>
+    <data name="FooterLegal" xml:space="preserve">
+        <value>Legal</value>
+    </data>
+    <data name="About" xml:space="preserve">
+        <value>About</value>
+    </data>
+    <data name="Contact" xml:space="preserve">
+        <value>Contact</value>
+    </data>
+    <data name="Privacy" xml:space="preserve">
+        <value>Privacy</value>
+    </data>
+    <data name="Terms" xml:space="preserve">
+        <value>Terms</value>
+    </data>
+    <data name="Cookies" xml:space="preserve">
+        <value>Cookies</value>
+    </data>
+    <data name="Imprint" xml:space="preserve">
+        <value>Imprint</value>
+    </data>
+    <data name="AccessibilityStatement" xml:space="preserve">
+        <value>Accessibility</value>
+    </data>
+    <data name="ServiceStatus" xml:space="preserve">
+        <value>Service status</value>
+    </data>
+    <data name="PrivacySettings" xml:space="preserve">
+        <value>Privacy settings</value>
+    </data>
+    <data name="Copyright" xml:space="preserve">
+        <value>© {0} {1}. All rights reserved.</value>
+    </data>
+    <data name="SampleSite" xml:space="preserve">
+        <value>This is a sample site. The business, people and numbers on it are made up.</value>
+    </data>
+    <data name="ConsentTitle" xml:space="preserve">
+        <value>Your privacy</value>
+    </data>
+    <data name="ConsentBody" xml:space="preserve">
+        <value>We'd like to measure how this site is used and catch the errors you run into, so we can make it better. Nothing is collected until you agree, and we use no cookies.</value>
+    </data>
+    <data name="ConsentAccept" xml:space="preserve">
+        <value>Accept</value>
+    </data>
+    <data name="ConsentReject" xml:space="preserve">
+        <value>No, thanks</value>
+    </data>
+    <data name="ConsentChoose" xml:space="preserve">
+        <value>Let me choose</value>
+    </data>
+    <data name="ConsentSave" xml:space="preserve">
+        <value>Save my choices</value>
+    </data>
+    <data name="ConsentPerformance" xml:space="preserve">
+        <value>Performance and errors</value>
+    </data>
+    <data name="ConsentPerformanceHint" xml:space="preserve">
+        <value>How fast pages load, and the errors visitors run into.</value>
+    </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+        <value>Usage statistics</value>
+    </data>
+    <data name="ConsentAnalyticsHint" xml:space="preserve">
+        <value>Which pages are read and which buttons are pressed, without telling who you are.</value>
+    </data>
+    <data name="PlatformiOS" xml:space="preserve">
+        <value>iPhone and iPad</value>
+    </data>
+    <data name="PlatformAndroid" xml:space="preserve">
+        <value>Android</value>
+    </data>
+    <data name="PlatformWindows" xml:space="preserve">
+        <value>Windows</value>
+    </data>
+    <data name="PlatformmacOS" xml:space="preserve">
+        <value>Mac</value>
+    </data>
+    <data name="PlatformWeb" xml:space="preserve">
+        <value>Web</value>
+    </data>
+    <data name="StatusLive" xml:space="preserve">
+        <value>Available now</value>
+    </data>
+    <data name="StatusPreOrder" xml:space="preserve">
+        <value>Pre-order</value>
+    </data>
+    <data name="StatusComingSoon" xml:space="preserve">
+        <value>Coming soon</value>
+    </data>
+    <data name="BadgeAppStore" xml:space="preserve">
+        <value>Download on the App Store</value>
+    </data>
+    <data name="BadgeGooglePlay" xml:space="preserve">
+        <value>Get it on Google Play</value>
+    </data>
+    <data name="BadgeMicrosoft" xml:space="preserve">
+        <value>Get it from Microsoft</value>
+    </data>
+    <data name="DownloadForWindows" xml:space="preserve">
+        <value>Download for Windows</value>
+    </data>
+    <data name="DownloadForMac" xml:space="preserve">
+        <value>Download for Mac</value>
+    </data>
+    <data name="OpenWebApp" xml:space="preserve">
+        <value>Open in your browser</value>
+    </data>
+    <data name="InstallWebApp" xml:space="preserve">
+        <value>Install on this device</value>
+    </data>
+    <data name="ScanToGetApp" xml:space="preserve">
+        <value>Point your phone's camera here to get the app.</value>
+    </data>
+    <data name="QrAlt" xml:space="preserve">
+        <value>QR code that opens the app's page in your phone's store</value>
+    </data>
+    <data name="YourDevice" xml:space="preserve">
+        <value>For your device</value>
+    </data>
+    <data name="AppStoreRating" xml:space="preserve">
+        <value>{0} on the App Store</value>
+    </data>
+    <data name="RatingsCount" xml:space="preserve">
+        <value>{0} ratings</value>
+    </data>
+    <data name="WaitlistEmailLabel" xml:space="preserve">
+        <value>Email</value>
+    </data>
+    <data name="WaitlistNameLabel" xml:space="preserve">
+        <value>First name (optional)</value>
+    </data>
+    <data name="WaitlistPlatformsLabel" xml:space="preserve">
+        <value>Tell me when it's out for</value>
+    </data>
+    <data name="WaitlistUpdatesLabel" xml:space="preserve">
+        <value>Also send me the occasional product update</value>
+    </data>
+    <data name="WaitlistSubmit" xml:space="preserve">
+        <value>Join the waitlist</value>
+    </data>
+    <data name="WaitlistSubmitting" xml:space="preserve">
+        <value>Adding you…</value>
+    </data>
+    <data name="WaitlistPromise" xml:space="preserve">
+        <value>One email when it launches. No spam, and you can leave any time.</value>
+    </data>
+    <data name="WaitlistDoneTitle" xml:space="preserve">
+        <value>Check your inbox</value>
+    </data>
+    <data name="WaitlistDoneBody" xml:space="preserve">
+        <value>We sent a confirmation link to {0}. Open it to keep your place: number {1}.</value>
+    </data>
+    <data name="WaitlistAlreadyJoined" xml:space="preserve">
+        <value>You're already on the list, as number {0}.</value>
+    </data>
+    <data name="WaitlistSharePrompt" xml:space="preserve">
+        <value>Know someone who'd want this too?</value>
+    </data>
+    <data name="WaitlistConfirmTitle" xml:space="preserve">
+        <value>One last step</value>
+    </data>
+    <data name="WaitlistConfirmBody" xml:space="preserve">
+        <value>Confirm that this email address is yours to keep your place on the list.</value>
+    </data>
+    <data name="WaitlistConfirmButton" xml:space="preserve">
+        <value>Confirm my email</value>
+    </data>
+    <data name="WaitlistConfirmedTitle" xml:space="preserve">
+        <value>You're on the list</value>
+    </data>
+    <data name="WaitlistConfirmedBody" xml:space="preserve">
+        <value>Thanks for confirming. You're number {0}, and you'll hear from us on launch day.</value>
+    </data>
+    <data name="WaitlistUnsubscribeTitle" xml:space="preserve">
+        <value>Leave the waitlist?</value>
+    </data>
+    <data name="WaitlistUnsubscribeBody" xml:space="preserve">
+        <value>You won't get any more email from us about this.</value>
+    </data>
+    <data name="WaitlistUnsubscribeButton" xml:space="preserve">
+        <value>Unsubscribe</value>
+    </data>
+    <data name="WaitlistUnsubscribedTitle" xml:space="preserve">
+        <value>You're off the list</value>
+    </data>
+    <data name="WaitlistOffline" xml:space="preserve">
+        <value>You seem to be offline. Check your connection and try again.</value>
+    </data>
+    <data name="WaitlistTooManyRequests" xml:space="preserve">
+        <value>That's a lot of attempts. Please try again in a few minutes.</value>
+    </data>
+    <data name="WaitlistInvalidEmail" xml:space="preserve">
+        <value>That email address doesn't look right.</value>
+    </data>
+    <data name="WaitlistLinkExpired" xml:space="preserve">
+        <value>This link is no longer valid.</value>
+    </data>
+    <data name="WaitlistFailed" xml:space="preserve">
+        <value>Something went wrong on our side. Please try again.</value>
+    </data>
+    <data name="ShareCopyLink" xml:space="preserve">
+        <value>Copy link</value>
+    </data>
+    <data name="ShareLinkCopied" xml:space="preserve">
+        <value>Link copied</value>
+    </data>
+    <data name="ShareOn" xml:space="preserve">
+        <value>Share on {0}</value>
+    </data>
+    <data name="ShareByEmail" xml:space="preserve">
+        <value>Share by email</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>Back to the home page</value>
+    </data>
+    <data name="WaitlistEmailSubject" xml:space="preserve">
+        <value>Confirm your place on the {0} waitlist</value>
+    </data>
+    <data name="WaitlistEmailPreview" xml:space="preserve">
+        <value>One click and you're on the list for {0}.</value>
+    </data>
+    <data name="WaitlistEmailTitle" xml:space="preserve">
+        <value>Confirm your email</value>
+    </data>
+    <data name="WaitlistEmailBody" xml:space="preserve">
+        <value>You asked to hear from {0} when it's out. Confirm that this address is yours and you're on the list.</value>
+    </data>
+    <data name="WaitlistEmailButton" xml:space="preserve">
+        <value>Confirm my email</value>
+    </data>
+    <data name="WaitlistEmailPosition" xml:space="preserve">
+        <value>You're number {0} on the list.</value>
+    </data>
+    <data name="WaitlistEmailIgnore" xml:space="preserve">
+        <value>Didn't sign up? Ignore this email and nothing happens.</value>
+    </data>
+    <data name="LaunchEmailSubject" xml:space="preserve">
+        <value>{0} is here</value>
+    </data>
+    <data name="LaunchEmailPreview" xml:space="preserve">
+        <value>The wait is over: {0} is ready to install.</value>
+    </data>
+    <data name="LaunchEmailTitle" xml:space="preserve">
+        <value>{0} is out</value>
+    </data>
+    <data name="LaunchEmailBody" xml:space="preserve">
+        <value>Thanks for waiting. You were on the list, so you're among the first to know: the app is ready.</value>
+    </data>
+    <data name="EmailFooter" xml:space="preserve">
+        <value>You get this email because you joined the {0} waitlist.</value>
+    </data>
+    <data name="EmailUnsubscribe" xml:space="preserve">
+        <value>Unsubscribe</value>
+    </data>
+    <data name="ChatOpen" xml:space="preserve">
+        <value>Ask a question</value>
+    </data>
+    <data name="ChatClose" xml:space="preserve">
+        <value>Close the chat</value>
+    </data>
+    <data name="ChatTitle" xml:space="preserve">
+        <value>Ask {0}</value>
+    </data>
+    <data name="ChatAiNotice" xml:space="preserve">
+        <value>An AI assistant answers here. It can make mistakes, so check anything important with the team.</value>
+    </data>
+    <data name="ChatPlaceholder" xml:space="preserve">
+        <value>Type your question</value>
+    </data>
+    <data name="ChatLoading" xml:space="preserve">
+        <value>Opening the chat…</value>
+    </data>
+    <data name="ChatHandoff" xml:space="preserve">
+        <value>Talk to a person</value>
+    </data>
+    <data name="ChatSend" xml:space="preserve">
+        <value>Ask</value>
+    </data>
+    <data name="ChatConnectionLost" xml:space="preserve">
+        <value>The connection to the assistant dropped. Please try again.</value>
+    </data>
+    <data name="ChatInvalidQuestion" xml:space="preserve">
+        <value>That question is too long to answer here. Please ask it more briefly.</value>
+    </data>
+    <data name="ChatFailed" xml:space="preserve">
+        <value>The assistant couldn't answer just now. Try again in a moment.</value>
+    </data>
+    <data name="ChatTooManyQuestions" xml:space="preserve">
+        <value>That's a lot of questions in a short time. Please wait a few minutes, or contact the team directly.</value>
+    </data>
+    <data name="ChatNoModelAnswer" xml:space="preserve">
+        <value>Thanks for asking. No AI model is connected to this chat yet, so this is a sample answer. Once the server has one (AI:OpenAI:ChatApiKey in its settings), I'll answer questions about {0} from the facts its team wrote. Until then, the page covers the main questions.</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This page doesn't exist</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>The address may be mistyped, or the page has moved.</value>
+    </data>
+    <data name="LegalSampleNotice" xml:space="preserve">
+        <value>Sample text. Replace it with your own, checked by a lawyer.</value>
+    </data>
+    <data name="LastUpdated" xml:space="preserve">
+        <value>Last updated {0}</value>
+    </data>
+    <data name="Share" xml:space="preserve">
+        <value>Share</value>
+    </data>
+    <data name="ChatStop" xml:space="preserve">
+        <value>Stop</value>
+    </data>
+    <data name="ChatRetry" xml:space="preserve">
+        <value>Try again</value>
+    </data>
+    <data name="ChatCopy" xml:space="preserve">
+        <value>Copy</value>
+    </data>
+    <data name="ChatScrollToLatest" xml:space="preserve">
+        <value>Go to the latest message</value>
+    </data>
+    <data name="ChatThinking" xml:space="preserve">
+        <value>Thinking…</value>
+    </data>
+    <data name="ChatStopped" xml:space="preserve">
+        <value>Stopped</value>
+    </data>
+    <data name="ChatEmptyTitle" xml:space="preserve">
+        <value>How can I help?</value>
+    </data>
+    <data name="ChatEmptyBody" xml:space="preserve">
+        <value>Ask anything about {0}: what it does, what it costs, or how to get it.</value>
+    </data>
+    <data name="LegalPrivacyTitle" xml:space="preserve">
+        <value>Privacy policy</value>
+    </data>
+    <data name="LegalPrivacyLede" xml:space="preserve">
+        <value>What {3} collects when you use this site, why, and what you can do about it.</value>
+    </data>
+    <data name="LegalPrivacy1Title" xml:space="preserve">
+        <value>Who we are</value>
+    </data>
+    <data name="LegalPrivacy1Body" xml:space="preserve">
+        <value>{0} ({2}) runs this site and decides how the data collected on it is used. Write to {1} about anything in this policy.</value>
+    </data>
+    <data name="LegalPrivacy2Title" xml:space="preserve">
+        <value>What we collect</value>
+    </data>
+    <data name="LegalPrivacy2Body" xml:space="preserve">
+        <value>When you join the waitlist: your email address, your first name if you give it, the platforms you chose, your language and the page that brought you here. When you use the chat: your questions, which are sent to an AI provider to be answered and aren't kept after the conversation. With your consent only: how pages load and which ones are read, without cookies and without telling who you are. Always: the server's logs of requests, including IP addresses, kept briefly for security.</value>
+    </data>
+    <data name="LegalPrivacy3Title" xml:space="preserve">
+        <value>Why we may use it</value>
+    </data>
+    <data name="LegalPrivacy3Body" xml:space="preserve">
+        <value>Your consent, for the waitlist and the usage statistics. Our legitimate interest in keeping the site secure, for the server's logs.</value>
+    </data>
+    <data name="LegalPrivacy4Title" xml:space="preserve">
+        <value>Who else handles it</value>
+    </data>
+    <data name="LegalPrivacy4Body" xml:space="preserve">
+        <value>The companies that host the site, send our emails, answer the chat and store the usage statistics, only on our instructions. We sell no data to anyone.</value>
+    </data>
+    <data name="LegalPrivacy5Title" xml:space="preserve">
+        <value>How long we keep it</value>
+    </data>
+    <data name="LegalPrivacy5Body" xml:space="preserve">
+        <value>Waitlist details until you unsubscribe or we launch and send the last email. Server logs for 30 days. Chat questions not at all.</value>
+    </data>
+    <data name="LegalPrivacy6Title" xml:space="preserve">
+        <value>Your rights</value>
+    </data>
+    <data name="LegalPrivacy6Body" xml:space="preserve">
+        <value>You can ask for a copy of your data, have it corrected or deleted, object to its use, and withdraw your consent at any time from the privacy settings in the footer. You can also complain to your data protection authority.</value>
+    </data>
+    <data name="LegalTermsTitle" xml:space="preserve">
+        <value>Terms of use</value>
+    </data>
+    <data name="LegalTermsLede" xml:space="preserve">
+        <value>The rules for using this website. The app has terms of its own, shown when you install it.</value>
+    </data>
+    <data name="LegalTerms1Title" xml:space="preserve">
+        <value>Using this site</value>
+    </data>
+    <data name="LegalTerms1Body" xml:space="preserve">
+        <value>You may read, share and link to this site. Don't try to break it, overload it or get around its limits, and don't use the chat or the waitlist to send anything unlawful.</value>
+    </data>
+    <data name="LegalTerms2Title" xml:space="preserve">
+        <value>What's on it</value>
+    </data>
+    <data name="LegalTerms2Body" xml:space="preserve">
+        <value>We work to keep it accurate, but prices, dates and features can change before launch, and the chat's answers can be wrong. The app's store page and its own terms are what count.</value>
+    </data>
+    <data name="LegalTerms3Title" xml:space="preserve">
+        <value>Our name and work</value>
+    </data>
+    <data name="LegalTerms3Body" xml:space="preserve">
+        <value>The name, logo, texts and images of {3} belong to {0}. Store badges belong to their owners and are used to point to the app.</value>
+    </data>
+    <data name="LegalTerms4Title" xml:space="preserve">
+        <value>Liability</value>
+    </data>
+    <data name="LegalTerms4Body" xml:space="preserve">
+        <value>This site is offered as it is. As far as the law allows, {0} isn't liable for losses from using it or from sites it links to.</value>
+    </data>
+    <data name="LegalTerms5Title" xml:space="preserve">
+        <value>Changes and law</value>
+    </data>
+    <data name="LegalTerms5Body" xml:space="preserve">
+        <value>We may update these terms, and the date at the top says when. The law of the country in {2} applies.</value>
+    </data>
+    <data name="LegalCookiesTitle" xml:space="preserve">
+        <value>Cookies and local storage</value>
+    </data>
+    <data name="LegalCookiesLede" xml:space="preserve">
+        <value>This site sets no cookies. Here is what it keeps in your browser instead.</value>
+    </data>
+    <data name="LegalCookies1Title" xml:space="preserve">
+        <value>Your choices</value>
+    </data>
+    <data name="LegalCookies1Body" xml:space="preserve">
+        <value>Light or dark mode, your answer to the privacy question, and the notices you closed, so they aren't asked or shown again. They stay on your device and are never sent to us.</value>
+    </data>
+    <data name="LegalCookies2Title" xml:space="preserve">
+        <value>Usage statistics</value>
+    </data>
+    <data name="LegalCookies2Body" xml:space="preserve">
+        <value>Only if you agree: an identifier for the current visit, kept until you close the tab, so page views in one visit can be counted together.</value>
+    </data>
+    <data name="LegalCookies3Title" xml:space="preserve">
+        <value>Offline files</value>
+    </data>
+    <data name="LegalCookies3Body" xml:space="preserve">
+        <value>The files the page runs on are kept for your next visit, so it opens faster. Clear them from your browser's site settings whenever you like.</value>
+    </data>
+    <data name="LegalImprintTitle" xml:space="preserve">
+        <value>Imprint</value>
+    </data>
+    <data name="LegalImprintLede" xml:space="preserve">
+        <value>The legal details of the company behind this site.</value>
+    </data>
+    <data name="LegalImprintCompany" xml:space="preserve">
+        <value>Company</value>
+    </data>
+    <data name="LegalImprintAddress" xml:space="preserve">
+        <value>Address</value>
+    </data>
+    <data name="LegalImprintRepresentative" xml:space="preserve">
+        <value>Represented by</value>
+    </data>
+    <data name="LegalImprintRegistration" xml:space="preserve">
+        <value>Registration</value>
+    </data>
+    <data name="LegalImprintVat" xml:space="preserve">
+        <value>VAT ID</value>
+    </data>
+    <data name="LegalImprintEmail" xml:space="preserve">
+        <value>Email</value>
+    </data>
+    <data name="LegalImprintPhone" xml:space="preserve">
+        <value>Phone</value>
+    </data>
+    <data name="LegalAccessibilityTitle" xml:space="preserve">
+        <value>Accessibility statement</value>
+    </data>
+    <data name="LegalAccessibilityLede" xml:space="preserve">
+        <value>We want everyone to be able to use {3}, including people who use a screen reader, a keyboard or zoom.</value>
+    </data>
+    <data name="LegalAccessibility1Title" xml:space="preserve">
+        <value>Our target</value>
+    </data>
+    <data name="LegalAccessibility1Body" xml:space="preserve">
+        <value>This site aims to meet the Web Content Accessibility Guidelines (WCAG) 2.2 at level AA: enough contrast, every action reachable from the keyboard, text alternatives for images, and pages that work at 400% zoom and in right-to-left languages.</value>
+    </data>
+    <data name="LegalAccessibility2Title" xml:space="preserve">
+        <value>Known gaps</value>
+    </data>
+    <data name="LegalAccessibility2Body" xml:space="preserve">
+        <value>The interactive previews of the app are simplified copies, and a screen reader describes them in less detail than the app itself.</value>
+    </data>
+    <data name="LegalAccessibility3Title" xml:space="preserve">
+        <value>Tell us</value>
+    </data>
+    <data name="LegalAccessibility3Body" xml:space="preserve">
+        <value>If anything here is hard to use, write to {1}. We answer within five working days.</value>
+    </data>
+    <data name="StoreListingVersion" xml:space="preserve">
+        <value>Version {0} on the App Store</value>
+    </data>
+    <data name="StoreListingUpdated" xml:space="preserve">
+        <value>Updated {0}</value>
+    </data>
+</root>

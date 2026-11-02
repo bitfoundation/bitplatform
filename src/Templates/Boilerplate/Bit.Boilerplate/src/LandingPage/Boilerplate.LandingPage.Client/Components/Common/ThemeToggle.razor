@@ -1,0 +1,9 @@
+@inherits LandingComponentBase
+
+<BitButton Variant="BitVariant.Text"
+           Color="BitColor.PrimaryForeground"
+           Class="@($"lp-theme-toggle {Class}")"
+           IconName="@(isDark ? BitIconName.Sunny : BitIconName.ClearNight)"
+           Title="@(isDark ? Localizer[nameof(LandingStrings.SwitchToLight)] : Localizer[nameof(LandingStrings.SwitchToDark)])"
+           AriaDescription="@(isDark ? Localizer[nameof(LandingStrings.SwitchToLight)] : Localizer[nameof(LandingStrings.SwitchToDark)])"
+           OnClick="Toggle" />

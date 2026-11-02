@@ -1,0 +1,104 @@
+@inherits LandingComponentBase
+
+@switch (Variant)
+{
+    case LandingChatVariant.Inline:
+        <div class="lp-chat-inline @Class">
+            @if (isLoaded && question is not null)
+            {
+                <div class="lp-chat-inline-conversation">
+                    <LandingChatSurface Site="Site" Suggestions="Suggestions" InitialQuestion="@question" />
+                </div>
+            }
+            else
+            {
+                <div class="lp-chat-ask">
+                    <BitTextField @bind-Value="draft"
+                                  Placeholder="@(Placeholder ?? Localizer[nameof(LandingStrings.ChatPlaceholder)])"
+                                  AriaDescription="@Localizer[nameof(LandingStrings.ChatAiNotice)]"
+                                  IconName="@BitIconName.ChatBot"
+                                  OnEnter="() => Ask(draft)"
+                                  Disabled="isLoading"
+                                  Class="lp-chat-ask-field" />
+                    <BitButton OnClick="() => Ask(draft)" IsLoading="isLoading" LoadingLabel="@Localizer[nameof(LandingStrings.ChatLoading)]">@Localizer[nameof(LandingStrings.ChatSend)]</BitButton>
+                </div>
+                @if (Suggestions is { Count: > 0 })
+                {
+                    <div class="lp-chat-suggestions">
+                        @foreach (var suggestion in Suggestions)
+                        {
+                            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Size="BitSize.Small" Disabled="isLoading" OnClick="() => Ask(suggestion)">@suggestion</BitButton>
+                        }
+                    </div>
+                }
+                <p class="lp-chat-inline-notice">@(hasFailed ? Localizer[nameof(LandingStrings.ChatFailed)] : Localizer[nameof(LandingStrings.ChatAiNotice)])</p>
+            }
+        </div>
+        break;
+
+    case LandingChatVariant.Concierge:
+        <button type="button" class="lp-chat-concierge-tab @Class" aria-haspopup="dialog" aria-expanded="@isOpen" @onclick="Open">
+            <BitIcon IconName="@BitIconName.ChatBot" />
+            <span>@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</span>
+        </button>
+        <BitPanel @bind-IsOpen="isOpen"
+                  Placement="@(IsRtl ? BitPlacement.Left : BitPlacement.Right)"
+                  Styles="@(new() { Root = "--bit-Panel-size: min(440px, 100vw)" })"
+                  ShowCloseButton
+                  CloseButtonTitle="@Localizer[nameof(LandingStrings.ChatClose)]"
+                  HeaderText="@Title">
+            <div class="lp-chat-panel-body">
+                @if (HandoffUrl is not null)
+                {
+                    <a class="lp-chat-handoff" href="@HandoffUrl">@Localizer[nameof(LandingStrings.ChatHandoff)]</a>
+                }
+                @if (isLoaded)
+                {
+                    <LandingChatSurface Site="Site" Suggestions="Suggestions" />
+                }
+                else
+                {
+                    <p class="lp-chat-status">@(hasFailed ? Localizer[nameof(LandingStrings.ChatFailed)] : Localizer[nameof(LandingStrings.ChatLoading)])</p>
+                }
+            </div>
+        </BitPanel>
+        break;
+
+    default:
+        <div class="lp-chat-bubble-root @Class">
+            @if (isOpen)
+            {
+                <section class="lp-chat-card" role="dialog" aria-label="@Title">
+                    <header class="lp-chat-card-header">
+                        <div>
+                            <h2>@Title</h2>
+                            @if (HandoffUrl is not null)
+                            {
+                                <a href="@HandoffUrl">@Localizer[nameof(LandingStrings.ChatHandoff)]</a>
+                            }
+                        </div>
+                        <BitButton Variant="BitVariant.Text" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Cancel" Title="@Localizer[nameof(LandingStrings.ChatClose)]" OnClick="() => isOpen = false" />
+                    </header>
+                    <div class="lp-chat-card-body">
+                        @if (isLoaded)
+                        {
+                            <LandingChatSurface Site="Site" Suggestions="Suggestions" />
+                        }
+                        else
+                        {
+                            <p class="lp-chat-status">@(hasFailed ? Localizer[nameof(LandingStrings.ChatFailed)] : Localizer[nameof(LandingStrings.ChatLoading)])</p>
+                        }
+                    </div>
+                    @if (Footer is not null)
+                    {
+                        <footer class="lp-chat-card-footer">@Footer</footer>
+                    }
+                </section>
+            }
+            <button type="button" class="lp-chat-bubble" aria-haspopup="dialog" aria-expanded="@isOpen" @onclick="Toggle" title="@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])">
+                <BitIcon IconName="@(isOpen ? BitIconName.Cancel : BitIconName.ChatBot)" />
+                <span class="lp-chat-bubble-label">@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</span>
+            </button>
+        </div>
+        break;
+}

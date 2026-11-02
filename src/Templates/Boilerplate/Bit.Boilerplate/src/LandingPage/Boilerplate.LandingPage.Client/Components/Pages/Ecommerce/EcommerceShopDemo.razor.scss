@@ -1,0 +1,152 @@
+.shop-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    padding: 46px 16px 16px;
+    font-size: .8125rem;
+    overflow: hidden;
+
+    p {
+        color: var(--lp-fg-muted);
+    }
+}
+
+.shop-demo-name {
+    color: var(--lp-fg) !important;
+    font-family: var(--lp-stack-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.shop-demo-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.shop-demo-bag {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--lp-bg-alt);
+    font-size: 1rem;
+}
+
+.shop-demo-bag-count {
+    position: absolute;
+    top: -4px;
+    inset-inline-end: -4px;
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding-inline: 4px;
+    border-radius: 9px;
+    background: var(--lp-sun);
+    color: var(--lp-sun-fg);
+    font-size: .6875rem;
+    font-weight: 700;
+    animation: shop-demo-pop .35s var(--lp-ease);
+}
+
+.shop-demo-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: 1 1 auto;
+    min-height: 0;
+    border-radius: 18px;
+    background: linear-gradient(180deg, var(--lp-bg-alt), color-mix(in oklab, var(--lp-bg-alt), var(--lp-sun) 10%));
+
+    ::deep .shop-demo-plant {
+        position: absolute;
+        inset: 30px 10% 6px;
+        width: 80%;
+        height: calc(100% - 36px);
+    }
+}
+
+.shop-demo-light {
+    position: absolute;
+    top: 10px;
+    inset-inline-start: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--lp-surface) 88%, transparent);
+    color: var(--lp-fg);
+    font-size: .6875rem;
+    font-weight: 500;
+}
+
+.shop-demo-info {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.shop-demo-price {
+    color: var(--lp-fg) !important;
+    font-family: var(--lp-stack-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.shop-demo-swatch {
+    display: block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, #000000 12%, transparent);
+    transition: box-shadow .2s;
+
+    &.is-selected {
+        box-shadow: 0 0 0 2px var(--lp-surface), 0 0 0 4px var(--lp-fg);
+    }
+}
+
+.shop-demo-size {
+    display: block;
+    padding: 5px 12px;
+    border: 1px solid var(--lp-line);
+    border-radius: 999px;
+    color: var(--lp-fg);
+    font-size: .75rem;
+    white-space: nowrap;
+    transition: background-color .2s, color .2s, border-color .2s;
+
+    &.is-selected {
+        border-color: var(--lp-fg);
+        background: var(--lp-fg);
+        color: var(--lp-bg);
+    }
+}
+
+.shop-demo-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 2.6em;
+    font-size: .75rem;
+}
+
+@keyframes shop-demo-pop {
+    0% {
+        transform: scale(.4);
+    }
+
+    70% {
+        transform: scale(1.15);
+    }
+}

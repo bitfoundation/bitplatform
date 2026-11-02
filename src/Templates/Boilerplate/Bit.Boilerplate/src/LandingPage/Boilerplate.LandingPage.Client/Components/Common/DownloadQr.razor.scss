@@ -1,0 +1,24 @@
+.lp-qr {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0;
+
+    img {
+        flex: none;
+        padding: 8px;
+        border-radius: 12px;
+        background: #FFFFFF;
+        box-shadow: 0 0 0 1px var(--lp-line);
+    }
+
+    figcaption {
+        max-width: 22ch;
+        color: var(--lp-fg-muted);
+        font-size: .875rem;
+    }
+
+    @media (hover: none), (max-width: 959px) {
+        display: none;
+    }
+}

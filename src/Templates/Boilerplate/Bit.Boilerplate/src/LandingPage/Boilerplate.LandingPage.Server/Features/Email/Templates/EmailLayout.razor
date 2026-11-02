@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.Name" dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>@SiteName</title>
+</head>
+<body style="margin:0;padding:0;background:#F4F4F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Tahoma,Roboto,Helvetica,Arial,sans-serif">
+    <div style="display:none;max-height:0;overflow:hidden">@Preview</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F4F5">
+        <tr>
+            <td align="center" style="padding:32px 16px">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
+                    <tr>
+                        <td style="padding:0 4px 16px;font-size:15px;font-weight:700;color:@AccentColor">@SiteName</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:32px;border-radius:16px;background:#FFFFFF;border:1px solid #E4E4E7">@ChildContent</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:16px 4px 0;font-size:12px;line-height:1.6;color:#71717A">
+                            @L[nameof(LandingStrings.EmailFooter), SiteName]
+                            <a href="@UnsubscribeUrl" style="color:#71717A">@L[nameof(LandingStrings.EmailUnsubscribe)]</a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+

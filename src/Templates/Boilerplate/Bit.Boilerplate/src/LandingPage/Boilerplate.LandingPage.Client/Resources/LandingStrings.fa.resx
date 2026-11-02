@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="SkipToContent" xml:space="preserve">
+        <value>رفتن به محتوا</value>
+    </data>
+    <data name="Menu" xml:space="preserve">
+        <value>منو</value>
+    </data>
+    <data name="CloseMenu" xml:space="preserve">
+        <value>بستن منو</value>
+    </data>
+    <data name="SignIn" xml:space="preserve">
+        <value>ورود</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>زبان</value>
+    </data>
+    <data name="SwitchToDark" xml:space="preserve">
+        <value>رفتن به حالت تیره</value>
+    </data>
+    <data name="SwitchToLight" xml:space="preserve">
+        <value>رفتن به حالت روشن</value>
+    </data>
+    <data name="Dismiss" xml:space="preserve">
+        <value>بستن</value>
+    </data>
+    <data name="FooterProduct" xml:space="preserve">
+        <value>محصول</value>
+    </data>
+    <data name="FooterCompany" xml:space="preserve">
+        <value>شرکت</value>
+    </data>
+    <data name="FooterLegal" xml:space="preserve">
+        <value>قوانین</value>
+    </data>
+    <data name="About" xml:space="preserve">
+        <value>درباره‌ی ما</value>
+    </data>
+    <data name="Contact" xml:space="preserve">
+        <value>تماس</value>
+    </data>
+    <data name="Privacy" xml:space="preserve">
+        <value>حریم خصوصی</value>
+    </data>
+    <data name="Terms" xml:space="preserve">
+        <value>شرایط استفاده</value>
+    </data>
+    <data name="Cookies" xml:space="preserve">
+        <value>کوکی‌ها</value>
+    </data>
+    <data name="Imprint" xml:space="preserve">
+        <value>اطلاعات حقوقی</value>
+    </data>
+    <data name="AccessibilityStatement" xml:space="preserve">
+        <value>دسترس‌پذیری</value>
+    </data>
+    <data name="ServiceStatus" xml:space="preserve">
+        <value>وضعیت سرویس</value>
+    </data>
+    <data name="PrivacySettings" xml:space="preserve">
+        <value>تنظیمات حریم خصوصی</value>
+    </data>
+    <data name="Copyright" xml:space="preserve">
+        <value>© {0} {1}. همه‌ی حقوق محفوظ است.</value>
+    </data>
+    <data name="SampleSite" xml:space="preserve">
+        <value>این یک سایت نمونه است. کسب‌وکار، آدم‌ها و عددهایش ساختگی‌اند.</value>
+    </data>
+    <data name="ConsentTitle" xml:space="preserve">
+        <value>حریم خصوصی شما</value>
+    </data>
+    <data name="ConsentBody" xml:space="preserve">
+        <value>می‌خواهیم ببینیم این سایت چطور استفاده می‌شود و خطاهایی را که با آن روبه‌رو می‌شوید پیدا کنیم تا بهترش کنیم. تا موافقت نکنید چیزی جمع نمی‌شود و از کوکی هم استفاده نمی‌کنیم.</value>
+    </data>
+    <data name="ConsentAccept" xml:space="preserve">
+        <value>موافقم</value>
+    </data>
+    <data name="ConsentReject" xml:space="preserve">
+        <value>نه، ممنون</value>
+    </data>
+    <data name="ConsentChoose" xml:space="preserve">
+        <value>خودم انتخاب می‌کنم</value>
+    </data>
+    <data name="ConsentSave" xml:space="preserve">
+        <value>ذخیره‌ی انتخاب‌ها</value>
+    </data>
+    <data name="ConsentPerformance" xml:space="preserve">
+        <value>سرعت و خطاها</value>
+    </data>
+    <data name="ConsentPerformanceHint" xml:space="preserve">
+        <value>سرعت بارگذاری صفحه‌ها و خطاهایی که بازدیدکننده‌ها می‌بینند.</value>
+    </data>
+    <data name="ConsentAnalytics" xml:space="preserve">
+        <value>آمار استفاده</value>
+    </data>
+    <data name="ConsentAnalyticsHint" xml:space="preserve">
+        <value>کدام صفحه‌ها خوانده و کدام دکمه‌ها زده می‌شوند، بدون این‌که معلوم شود شما چه کسی هستید.</value>
+    </data>
+    <data name="PlatformiOS" xml:space="preserve">
+        <value>آیفون و آی‌پد</value>
+    </data>
+    <data name="PlatformAndroid" xml:space="preserve">
+        <value>اندروید</value>
+    </data>
+    <data name="PlatformWindows" xml:space="preserve">
+        <value>ویندوز</value>
+    </data>
+    <data name="PlatformmacOS" xml:space="preserve">
+        <value>مک</value>
+    </data>
+    <data name="PlatformWeb" xml:space="preserve">
+        <value>وب</value>
+    </data>
+    <data name="StatusLive" xml:space="preserve">
+        <value>در دسترس</value>
+    </data>
+    <data name="StatusPreOrder" xml:space="preserve">
+        <value>پیش‌ثبت‌نام</value>
+    </data>
+    <data name="StatusComingSoon" xml:space="preserve">
+        <value>به‌زودی</value>
+    </data>
+    <data name="BadgeAppStore" xml:space="preserve">
+        <value>دانلود از App Store</value>
+    </data>
+    <data name="BadgeGooglePlay" xml:space="preserve">
+        <value>دریافت از Google Play</value>
+    </data>
+    <data name="BadgeMicrosoft" xml:space="preserve">
+        <value>دریافت از Microsoft</value>
+    </data>
+    <data name="DownloadForWindows" xml:space="preserve">
+        <value>دانلود برای ویندوز</value>
+    </data>
+    <data name="DownloadForMac" xml:space="preserve">
+        <value>دانلود برای مک</value>
+    </data>
+    <data name="OpenWebApp" xml:space="preserve">
+        <value>باز کردن در مرورگر</value>
+    </data>
+    <data name="InstallWebApp" xml:space="preserve">
+        <value>نصب روی همین دستگاه</value>
+    </data>
+    <data name="ScanToGetApp" xml:space="preserve">
+        <value>دوربین گوشی را روبه‌روی این کد بگیرید تا اپ را بگیرید.</value>
+    </data>
+    <data name="QrAlt" xml:space="preserve">
+        <value>کد QR که صفحه‌ی اپ را در فروشگاه گوشی‌تان باز می‌کند</value>
+    </data>
+    <data name="YourDevice" xml:space="preserve">
+        <value>برای دستگاه شما</value>
+    </data>
+    <data name="AppStoreRating" xml:space="preserve">
+        <value>{0} در App Store</value>
+    </data>
+    <data name="RatingsCount" xml:space="preserve">
+        <value>{0} امتیاز</value>
+    </data>
+    <data name="WaitlistEmailLabel" xml:space="preserve">
+        <value>ایمیل</value>
+    </data>
+    <data name="WaitlistNameLabel" xml:space="preserve">
+        <value>نام (اختیاری)</value>
+    </data>
+    <data name="WaitlistPlatformsLabel" xml:space="preserve">
+        <value>وقتی منتشر شد خبرم کن برای</value>
+    </data>
+    <data name="WaitlistUpdatesLabel" xml:space="preserve">
+        <value>گاهی خبرهای محصول را هم برایم بفرست</value>
+    </data>
+    <data name="WaitlistSubmit" xml:space="preserve">
+        <value>عضویت در فهرست انتظار</value>
+    </data>
+    <data name="WaitlistSubmitting" xml:space="preserve">
+        <value>در حال ثبت…</value>
+    </data>
+    <data name="WaitlistPromise" xml:space="preserve">
+        <value>فقط یک ایمیل در روز انتشار. هرزنامه نمی‌فرستیم و هر وقت خواستید می‌توانید خارج شوید.</value>
+    </data>
+    <data name="WaitlistDoneTitle" xml:space="preserve">
+        <value>صندوق ایمیلتان را ببینید</value>
+    </data>
+    <data name="WaitlistDoneBody" xml:space="preserve">
+        <value>یک پیوند تأیید به {0} فرستادیم. بازش کنید تا جایتان حفظ شود: نفر {1}.</value>
+    </data>
+    <data name="WaitlistAlreadyJoined" xml:space="preserve">
+        <value>شما از قبل در فهرست هستید، نفر {0}.</value>
+    </data>
+    <data name="WaitlistSharePrompt" xml:space="preserve">
+        <value>کسی را می‌شناسید که این را بخواهد؟</value>
+    </data>
+    <data name="WaitlistConfirmTitle" xml:space="preserve">
+        <value>یک قدم مانده</value>
+    </data>
+    <data name="WaitlistConfirmBody" xml:space="preserve">
+        <value>تأیید کنید که این ایمیل مال شماست تا جایتان در فهرست بماند.</value>
+    </data>
+    <data name="WaitlistConfirmButton" xml:space="preserve">
+        <value>تأیید ایمیل</value>
+    </data>
+    <data name="WaitlistConfirmedTitle" xml:space="preserve">
+        <value>در فهرست هستید</value>
+    </data>
+    <data name="WaitlistConfirmedBody" xml:space="preserve">
+        <value>ممنون از تأیید. شما نفر {0} هستید و روز انتشار خبرتان می‌کنیم.</value>
+    </data>
+    <data name="WaitlistUnsubscribeTitle" xml:space="preserve">
+        <value>از فهرست انتظار خارج می‌شوید؟</value>
+    </data>
+    <data name="WaitlistUnsubscribeBody" xml:space="preserve">
+        <value>دیگر هیچ ایمیلی درباره‌ی این موضوع از ما نمی‌گیرید.</value>
+    </data>
+    <data name="WaitlistUnsubscribeButton" xml:space="preserve">
+        <value>لغو اشتراک</value>
+    </data>
+    <data name="WaitlistUnsubscribedTitle" xml:space="preserve">
+        <value>از فهرست خارج شدید</value>
+    </data>
+    <data name="WaitlistOffline" xml:space="preserve">
+        <value>به نظر می‌رسد اینترنت وصل نیست. اتصال را بررسی کنید و دوباره امتحان کنید.</value>
+    </data>
+    <data name="WaitlistTooManyRequests" xml:space="preserve">
+        <value>تلاش‌ها زیاد بود. چند دقیقه‌ی دیگر دوباره امتحان کنید.</value>
+    </data>
+    <data name="WaitlistInvalidEmail" xml:space="preserve">
+        <value>این نشانی ایمیل درست به نظر نمی‌رسد.</value>
+    </data>
+    <data name="WaitlistLinkExpired" xml:space="preserve">
+        <value>این پیوند دیگر معتبر نیست.</value>
+    </data>
+    <data name="WaitlistFailed" xml:space="preserve">
+        <value>مشکلی در سمت ما پیش آمد. لطفاً دوباره امتحان کنید.</value>
+    </data>
+    <data name="ShareCopyLink" xml:space="preserve">
+        <value>کپی پیوند</value>
+    </data>
+    <data name="ShareLinkCopied" xml:space="preserve">
+        <value>پیوند کپی شد</value>
+    </data>
+    <data name="ShareOn" xml:space="preserve">
+        <value>اشتراک در {0}</value>
+    </data>
+    <data name="ShareByEmail" xml:space="preserve">
+        <value>ارسال با ایمیل</value>
+    </data>
+    <data name="BackToHome" xml:space="preserve">
+        <value>بازگشت به صفحه‌ی اصلی</value>
+    </data>
+    <data name="WaitlistEmailSubject" xml:space="preserve">
+        <value>جایتان را در فهرست انتظار {0} تأیید کنید</value>
+    </data>
+    <data name="WaitlistEmailPreview" xml:space="preserve">
+        <value>با یک کلیک در فهرست انتظار {0} قرار می‌گیرید.</value>
+    </data>
+    <data name="WaitlistEmailTitle" xml:space="preserve">
+        <value>ایمیلتان را تأیید کنید</value>
+    </data>
+    <data name="WaitlistEmailBody" xml:space="preserve">
+        <value>خواسته بودید وقتی {0} منتشر شد خبرتان کنیم. تأیید کنید که این نشانی مال شماست تا در فهرست قرار بگیرید.</value>
+    </data>
+    <data name="WaitlistEmailButton" xml:space="preserve">
+        <value>تأیید ایمیل</value>
+    </data>
+    <data name="WaitlistEmailPosition" xml:space="preserve">
+        <value>شما نفر {0} فهرست هستید.</value>
+    </data>
+    <data name="WaitlistEmailIgnore" xml:space="preserve">
+        <value>ثبت‌نام نکرده‌اید؟ این ایمیل را نادیده بگیرید؛ اتفاقی نمی‌افتد.</value>
+    </data>
+    <data name="LaunchEmailSubject" xml:space="preserve">
+        <value>{0} منتشر شد</value>
+    </data>
+    <data name="LaunchEmailPreview" xml:space="preserve">
+        <value>انتظار تمام شد: {0} آماده‌ی نصب است.</value>
+    </data>
+    <data name="LaunchEmailTitle" xml:space="preserve">
+        <value>{0} منتشر شد</value>
+    </data>
+    <data name="LaunchEmailBody" xml:space="preserve">
+        <value>ممنون که منتظر ماندید. چون در فهرست بودید، جزو اولین کسانی هستید که خبردار می‌شوند: اپ آماده است.</value>
+    </data>
+    <data name="EmailFooter" xml:space="preserve">
+        <value>این ایمیل را دریافت می‌کنید چون در فهرست انتظار {0} ثبت‌نام کرده‌اید.</value>
+    </data>
+    <data name="EmailUnsubscribe" xml:space="preserve">
+        <value>لغو اشتراک</value>
+    </data>
+    <data name="ChatOpen" xml:space="preserve">
+        <value>سؤال بپرسید</value>
+    </data>
+    <data name="ChatClose" xml:space="preserve">
+        <value>بستن گفتگو</value>
+    </data>
+    <data name="ChatTitle" xml:space="preserve">
+        <value>از {0} بپرسید</value>
+    </data>
+    <data name="ChatAiNotice" xml:space="preserve">
+        <value>این‌جا یک دستیار هوش مصنوعی پاسخ می‌دهد. ممکن است اشتباه کند؛ موارد مهم را با تیم چک کنید.</value>
+    </data>
+    <data name="ChatPlaceholder" xml:space="preserve">
+        <value>سؤالتان را بنویسید</value>
+    </data>
+    <data name="ChatLoading" xml:space="preserve">
+        <value>در حال باز کردن گفتگو…</value>
+    </data>
+    <data name="ChatHandoff" xml:space="preserve">
+        <value>صحبت با یک انسان</value>
+    </data>
+    <data name="ChatSend" xml:space="preserve">
+        <value>بپرس</value>
+    </data>
+    <data name="ChatConnectionLost" xml:space="preserve">
+        <value>ارتباط با دستیار قطع شد. لطفاً دوباره امتحان کنید.</value>
+    </data>
+    <data name="ChatInvalidQuestion" xml:space="preserve">
+        <value>این سؤال برای پاسخ دادن در این‌جا خیلی طولانی است. لطفاً کوتاه‌تر بپرسید.</value>
+    </data>
+    <data name="ChatFailed" xml:space="preserve">
+        <value>دستیار الان نتوانست پاسخ بدهد. چند لحظه‌ی دیگر دوباره امتحان کنید.</value>
+    </data>
+    <data name="ChatTooManyQuestions" xml:space="preserve">
+        <value>در مدت کوتاهی سؤال‌های زیادی پرسیده‌اید. چند دقیقه صبر کنید یا مستقیم با تیم تماس بگیرید.</value>
+    </data>
+    <data name="ChatNoModelAnswer" xml:space="preserve">
+        <value>ممنون از سؤالتان. هنوز هیچ مدل هوش مصنوعی به این گفتگو وصل نشده، پس این یک پاسخ نمونه است. وقتی سرور یک مدل داشته باشد (AI:OpenAI:ChatApiKey در تنظیماتش)، درباره‌ی {0} از روی اطلاعاتی که تیمش نوشته پاسخ می‌دهم. تا آن موقع، پاسخ سؤال‌های اصلی در همین صفحه هست.</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>این صفحه وجود ندارد</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>شاید نشانی اشتباه تایپ شده یا صفحه جابه‌جا شده باشد.</value>
+    </data>
+    <data name="LegalSampleNotice" xml:space="preserve">
+        <value>این متن نمونه است. آن را با متن خودتان که یک وکیل بررسی کرده جایگزین کنید.</value>
+    </data>
+    <data name="LastUpdated" xml:space="preserve">
+        <value>آخرین به‌روزرسانی {0}</value>
+    </data>
+    <data name="Share" xml:space="preserve">
+        <value>اشتراک‌گذاری</value>
+    </data>
+    <data name="ChatStop" xml:space="preserve">
+        <value>توقف</value>
+    </data>
+    <data name="ChatRetry" xml:space="preserve">
+        <value>دوباره امتحان کنید</value>
+    </data>
+    <data name="ChatCopy" xml:space="preserve">
+        <value>کپی</value>
+    </data>
+    <data name="ChatScrollToLatest" xml:space="preserve">
+        <value>رفتن به آخرین پیام</value>
+    </data>
+    <data name="ChatThinking" xml:space="preserve">
+        <value>در حال فکر کردن…</value>
+    </data>
+    <data name="ChatStopped" xml:space="preserve">
+        <value>متوقف شد</value>
+    </data>
+    <data name="ChatEmptyTitle" xml:space="preserve">
+        <value>چه کمکی از من برمی‌آید؟</value>
+    </data>
+    <data name="ChatEmptyBody" xml:space="preserve">
+        <value>هر سؤالی درباره‌ی {0} دارید بپرسید: چه کار می‌کند، چقدر هزینه دارد، یا چطور آن را بگیرید.</value>
+    </data>
+    <data name="LegalPrivacyTitle" xml:space="preserve">
+        <value>سیاست حریم خصوصی</value>
+    </data>
+    <data name="LegalPrivacyLede" xml:space="preserve">
+        <value>این‌که {3} هنگام استفاده‌ی شما از این سایت چه اطلاعاتی جمع می‌کند، چرا، و شما چه اختیاری دارید.</value>
+    </data>
+    <data name="LegalPrivacy1Title" xml:space="preserve">
+        <value>ما چه کسی هستیم</value>
+    </data>
+    <data name="LegalPrivacy1Body" xml:space="preserve">
+        <value>{0} ({2}) این سایت را اداره می‌کند و تصمیم می‌گیرد اطلاعاتی که در آن جمع می‌شود چطور استفاده شود. برای هر موضوعی درباره‌ی این سیاست به {1} ایمیل بزنید.</value>
+    </data>
+    <data name="LegalPrivacy2Title" xml:space="preserve">
+        <value>چه چیزی جمع می‌کنیم</value>
+    </data>
+    <data name="LegalPrivacy2Body" xml:space="preserve">
+        <value>وقتی عضو فهرست انتظار می‌شوید: ایمیلتان، نامتان اگر بدهید، پلتفرم‌هایی که انتخاب کرده‌اید، زبانتان و صفحه‌ای که شما را به این‌جا آورد. وقتی از گفتگو استفاده می‌کنید: سؤال‌هایتان، که برای پاسخ به یک سرویس هوش مصنوعی فرستاده می‌شوند و بعد از گفتگو نگه داشته نمی‌شوند. فقط با موافقت شما: این‌که صفحه‌ها چطور بارگذاری می‌شوند و کدام خوانده می‌شوند، بدون کوکی و بدون شناسایی شما. همیشه: گزارش درخواست‌ها در سرور، همراه با نشانی IP، که برای امنیت مدت کوتاهی نگه داشته می‌شود.</value>
+    </data>
+    <data name="LegalPrivacy3Title" xml:space="preserve">
+        <value>چرا اجازه‌ی استفاده داریم</value>
+    </data>
+    <data name="LegalPrivacy3Body" xml:space="preserve">
+        <value>رضایت شما، برای فهرست انتظار و آمار استفاده. منفعت مشروع ما در امن نگه داشتن سایت، برای گزارش‌های سرور.</value>
+    </data>
+    <data name="LegalPrivacy4Title" xml:space="preserve">
+        <value>چه کسان دیگری با آن سروکار دارند</value>
+    </data>
+    <data name="LegalPrivacy4Body" xml:space="preserve">
+        <value>شرکت‌هایی که سایت را میزبانی می‌کنند، ایمیل‌های ما را می‌فرستند، به گفتگو پاسخ می‌دهند و آمار استفاده را نگه می‌دارند، و فقط طبق دستور ما. هیچ داده‌ای را به کسی نمی‌فروشیم.</value>
+    </data>
+    <data name="LegalPrivacy5Title" xml:space="preserve">
+        <value>تا کی نگهش می‌داریم</value>
+    </data>
+    <data name="LegalPrivacy5Body" xml:space="preserve">
+        <value>اطلاعات فهرست انتظار تا وقتی اشتراک را لغو کنید یا محصول منتشر شود و آخرین ایمیل فرستاده شود. گزارش‌های سرور تا ۳۰ روز. سؤال‌های گفتگو اصلاً.</value>
+    </data>
+    <data name="LegalPrivacy6Title" xml:space="preserve">
+        <value>حقوق شما</value>
+    </data>
+    <data name="LegalPrivacy6Body" xml:space="preserve">
+        <value>می‌توانید نسخه‌ای از اطلاعاتتان را بخواهید، اصلاح یا حذفش را بخواهید، با استفاده از آن مخالفت کنید و هر وقت خواستید از «تنظیمات حریم خصوصی» در پایین صفحه رضایتتان را پس بگیرید. می‌توانید به نهاد حفاظت از داده‌ی کشورتان هم شکایت کنید.</value>
+    </data>
+    <data name="LegalTermsTitle" xml:space="preserve">
+        <value>شرایط استفاده</value>
+    </data>
+    <data name="LegalTermsLede" xml:space="preserve">
+        <value>قوانین استفاده از این وب‌سایت. اپ شرایط جداگانه‌ی خودش را دارد که هنگام نصب نشان داده می‌شود.</value>
+    </data>
+    <data name="LegalTerms1Title" xml:space="preserve">
+        <value>استفاده از این سایت</value>
+    </data>
+    <data name="LegalTerms1Body" xml:space="preserve">
+        <value>می‌توانید این سایت را بخوانید، به اشتراک بگذارید و به آن پیوند بدهید. سعی نکنید آن را از کار بیندازید، بیش از حد بارش کنید یا محدودیت‌هایش را دور بزنید، و از گفتگو یا فهرست انتظار برای فرستادن چیز غیرقانونی استفاده نکنید.</value>
+    </data>
+    <data name="LegalTerms2Title" xml:space="preserve">
+        <value>محتوای سایت</value>
+    </data>
+    <data name="LegalTerms2Body" xml:space="preserve">
+        <value>تلاش می‌کنیم محتوا دقیق بماند، اما قیمت‌ها، تاریخ‌ها و امکانات ممکن است تا انتشار تغییر کنند و پاسخ‌های گفتگو ممکن است اشتباه باشد. ملاک، صفحه‌ی اپ در فروشگاه و شرایط خود اپ است.</value>
+    </data>
+    <data name="LegalTerms3Title" xml:space="preserve">
+        <value>نام و آثار ما</value>
+    </data>
+    <data name="LegalTerms3Body" xml:space="preserve">
+        <value>نام، لوگو، متن‌ها و تصویرهای {3} متعلق به {0} است. نشان‌های فروشگاه‌ها متعلق به صاحبانشان است و فقط برای معرفی اپ استفاده شده‌اند.</value>
+    </data>
+    <data name="LegalTerms4Title" xml:space="preserve">
+        <value>مسئولیت</value>
+    </data>
+    <data name="LegalTerms4Body" xml:space="preserve">
+        <value>این سایت همان‌طور که هست ارائه می‌شود. تا جایی که قانون اجازه می‌دهد، {0} مسئول زیان ناشی از استفاده از آن یا از سایت‌هایی که به آن‌ها پیوند داده نیست.</value>
+    </data>
+    <data name="LegalTerms5Title" xml:space="preserve">
+        <value>تغییرات و قانون</value>
+    </data>
+    <data name="LegalTerms5Body" xml:space="preserve">
+        <value>ممکن است این شرایط را به‌روز کنیم و تاریخ بالای صفحه زمانش را نشان می‌دهد. قانون کشور محل {2} حاکم است.</value>
+    </data>
+    <data name="LegalCookiesTitle" xml:space="preserve">
+        <value>کوکی‌ها و ذخیره‌سازی محلی</value>
+    </data>
+    <data name="LegalCookiesLede" xml:space="preserve">
+        <value>این سایت هیچ کوکی‌ای ذخیره نمی‌کند. این‌ها چیزهایی است که به‌جایش در مرورگرتان نگه می‌دارد.</value>
+    </data>
+    <data name="LegalCookies1Title" xml:space="preserve">
+        <value>انتخاب‌های شما</value>
+    </data>
+    <data name="LegalCookies1Body" xml:space="preserve">
+        <value>حالت روشن یا تیره، پاسخ شما به سؤال حریم خصوصی و اعلان‌هایی که بسته‌اید، تا دوباره پرسیده یا نشان داده نشوند. این‌ها روی دستگاه خودتان می‌مانند و هرگز برای ما فرستاده نمی‌شوند.</value>
+    </data>
+    <data name="LegalCookies2Title" xml:space="preserve">
+        <value>آمار استفاده</value>
+    </data>
+    <data name="LegalCookies2Body" xml:space="preserve">
+        <value>فقط اگر موافقت کنید: یک شناسه برای همین بازدید که تا بستن تب نگه داشته می‌شود، تا صفحه‌های دیده‌شده در یک بازدید با هم شمرده شوند.</value>
+    </data>
+    <data name="LegalCookies3Title" xml:space="preserve">
+        <value>فایل‌های آفلاین</value>
+    </data>
+    <data name="LegalCookies3Body" xml:space="preserve">
+        <value>فایل‌هایی که صفحه با آن‌ها کار می‌کند برای بازدید بعدی نگه داشته می‌شوند تا سریع‌تر باز شود. هر وقت خواستید از تنظیمات سایت در مرورگرتان پاکشان کنید.</value>
+    </data>
+    <data name="LegalImprintTitle" xml:space="preserve">
+        <value>اطلاعات حقوقی</value>
+    </data>
+    <data name="LegalImprintLede" xml:space="preserve">
+        <value>اطلاعات حقوقی شرکتی که پشت این سایت است.</value>
+    </data>
+    <data name="LegalImprintCompany" xml:space="preserve">
+        <value>شرکت</value>
+    </data>
+    <data name="LegalImprintAddress" xml:space="preserve">
+        <value>نشانی</value>
+    </data>
+    <data name="LegalImprintRepresentative" xml:space="preserve">
+        <value>نماینده‌ی قانونی</value>
+    </data>
+    <data name="LegalImprintRegistration" xml:space="preserve">
+        <value>شماره‌ی ثبت</value>
+    </data>
+    <data name="LegalImprintVat" xml:space="preserve">
+        <value>شناسه‌ی مالیاتی</value>
+    </data>
+    <data name="LegalImprintEmail" xml:space="preserve">
+        <value>ایمیل</value>
+    </data>
+    <data name="LegalImprintPhone" xml:space="preserve">
+        <value>تلفن</value>
+    </data>
+    <data name="LegalAccessibilityTitle" xml:space="preserve">
+        <value>بیانیه‌ی دسترس‌پذیری</value>
+    </data>
+    <data name="LegalAccessibilityLede" xml:space="preserve">
+        <value>می‌خواهیم همه بتوانند از {3} استفاده کنند، از جمله کسانی که از صفحه‌خوان، صفحه‌کلید یا بزرگ‌نمایی استفاده می‌کنند.</value>
+    </data>
+    <data name="LegalAccessibility1Title" xml:space="preserve">
+        <value>هدف ما</value>
+    </data>
+    <data name="LegalAccessibility1Body" xml:space="preserve">
+        <value>هدف این سایت رعایت راهنمای دسترس‌پذیری محتوای وب (WCAG) نسخه‌ی ۲.۲ در سطح AA است: کنتراست کافی، دسترسی به همه‌ی کارها با صفحه‌کلید، متن جایگزین برای تصویرها و صفحه‌هایی که در بزرگ‌نمایی ۴۰۰ درصد و زبان‌های راست‌به‌چپ هم کار می‌کنند.</value>
+    </data>
+    <data name="LegalAccessibility2Title" xml:space="preserve">
+        <value>کمبودهای شناخته‌شده</value>
+    </data>
+    <data name="LegalAccessibility2Body" xml:space="preserve">
+        <value>پیش‌نمایش‌های تعاملی اپ نسخه‌های ساده‌شده‌اند و صفحه‌خوان آن‌ها را با جزئیات کمتری از خود اپ توصیف می‌کند.</value>
+    </data>
+    <data name="LegalAccessibility3Title" xml:space="preserve">
+        <value>به ما بگویید</value>
+    </data>
+    <data name="LegalAccessibility3Body" xml:space="preserve">
+        <value>اگر استفاده از بخشی از این‌جا سخت است، به {1} ایمیل بزنید. ظرف پنج روز کاری پاسخ می‌دهیم.</value>
+    </data>
+    <data name="StoreListingVersion" xml:space="preserve">
+        <value>نسخه‌ی {0} در App Store</value>
+    </data>
+    <data name="StoreListingUpdated" xml:space="preserve">
+        <value>به‌روزرسانی {0}</value>
+    </data>
+</root>

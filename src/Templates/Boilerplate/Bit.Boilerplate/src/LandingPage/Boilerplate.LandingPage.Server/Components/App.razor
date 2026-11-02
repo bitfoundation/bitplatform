@@ -1,0 +1,61 @@
+@using Bit.Belemetry
+
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.Name" dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : "ltr")" @attributes="BitThemeSsr.BuildRootThemeAttributeMap(null, themeOptions)">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <BitThemeHead Options="@themeOptions" />
+    <BelemetryScript />
+
+    @if (string.IsNullOrWhiteSpace(settings.Site.GoogleSiteVerification) is false)
+    {
+        <meta name="google-site-verification" content="@settings.Site.GoogleSiteVerification" />
+    }
+    @if (string.IsNullOrWhiteSpace(settings.Site.BingSiteVerification) is false)
+    {
+        <meta name="msvalidate.01" content="@settings.Site.BingSiteVerification" />
+    }
+
+    @if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
+    {
+        <Link rel="preload" Href="fonts/vazirmatn/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin />
+    }
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <Link rel="stylesheet" Href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <Link rel="stylesheet" Href="styles/landing.css" />
+    <Link rel="stylesheet" Href="Boilerplate.LandingPage.Server.styles.css" />
+    <Link rel="manifest" Href="manifest.json" />
+
+    <HeadOutlet @rendermode="settings.WebAppRender.RenderMode" />
+</head>
+
+<body>
+    <Routes @rendermode="settings.WebAppRender.RenderMode" />
+
+    <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
+    <script>
+        (() => {
+            const start = Blazor.start;
+            Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name' } });
+
+            window.bitBswupHandler = (message, data) => {
+                if (message === 'DOWNLOAD_FINISHED' && data?.firstInstall) {
+                    data.reload();
+                } else if (message === 'UPDATE_READY') {
+                    document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && data.reload());
+                }
+            };
+        })();
+    </script>
+    <Script Src="_content/Bit.Bswup/bit-bswup.js" sw="service-worker.js" blazorScript="_framework/bit.blazor.web.es2019.js" updateInterval="600" updateOnVisibility="true"></Script>
+    <Script Src="_content/Bit.Butil/bit-butil.js"></Script>
+    <Script Src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></Script>
+    <Script Src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></Script>
+    <Script Src="scripts/landing.js"></Script>
+</body>
+
+</html>

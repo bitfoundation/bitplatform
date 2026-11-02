@@ -1,0 +1,50 @@
+@inherits LandingComponentBase
+
+<div class="lp-badges @Class">
+    @foreach (var link in ordered.Where(l => l.Status is not LandingPlatformStatus.ComingSoon && l.Url is not null))
+    {
+        <div class="lp-badge @(link.Platform == visitorPlatform ? "lp-badge-yours" : null)">
+            @switch (link.Platform)
+            {
+                case LandingPlatform.iOS:
+                case LandingPlatform.macOS when Site.Find(LandingPlatform.iOS) is null:
+                    <a href="@Track(link)" rel="noopener" target="_blank">
+                        <img src="images/badges/app-store.svg" width="120" height="40" alt="@Localizer[nameof(LandingStrings.BadgeAppStore)]" />
+                    </a>
+                    break;
+                case LandingPlatform.Android:
+                    <a href="@Track(link)" rel="noopener" target="_blank">
+                        <img src="@($"images/badges/google-play-{(CurrentCulture.TwoLetterISOLanguageName is "fa" ? "fa" : "en")}.webp")" width="135" height="40" alt="@Localizer[nameof(LandingStrings.BadgeGooglePlay)]" />
+                    </a>
+                    break;
+                case LandingPlatform.Windows when link.Url!.Contains("microsoft.com", StringComparison.OrdinalIgnoreCase):
+                    <a href="@Track(link)" rel="noopener" target="_blank">
+                        <img class="lp-badge-light" src="images/badges/microsoft-dark.svg" width="110" height="40" alt="@Localizer[nameof(LandingStrings.BadgeMicrosoft)]" />
+                    </a>
+                    break;
+                case LandingPlatform.Windows:
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@link.Url" IconName="@BitIconName.Download">@Localizer[nameof(LandingStrings.DownloadForWindows)]</BitButton>
+                    break;
+                case LandingPlatform.Web:
+                    <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@link.Url" IconName="@BitIconName.Globe">@Localizer[nameof(LandingStrings.OpenWebApp)]</BitButton>
+                    break;
+            }
+            @if (link.Status is LandingPlatformStatus.PreOrder)
+            {
+                <span class="lp-badge-note">@Localizer[nameof(LandingStrings.StatusPreOrder)]</span>
+            }
+            else if (link.Platform == visitorPlatform)
+            {
+                <span class="lp-badge-note">@Localizer[nameof(LandingStrings.YourDevice)]</span>
+            }
+        </div>
+    }
+
+    @if (ShowComingSoon)
+    {
+        @foreach (var link in Site.Platforms.Where(l => l.Status is LandingPlatformStatus.ComingSoon))
+        {
+            <span class="lp-badge-soon">@PlatformName(link.Platform) · @Localizer[nameof(LandingStrings.StatusComingSoon)]</span>
+        }
+    }
+</div>

@@ -1,0 +1,187 @@
+@import 'tokens';
+@import 'fonts';
+@import 'vazirmatn';
+
+:root {
+    --lp-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --lp-stack-body: var(--lp-font-body), "Vazirmatn", system-ui, sans-serif;
+    --lp-stack-display: var(--lp-font-display), "Vazirmatn", system-ui, sans-serif;
+    --lp-max-width: 1180px;
+    --lp-gutter: clamp(16px, 4vw, 40px);
+    --lp-section-space: clamp(64px, 9vw, 128px);
+    --lp-nav-height: 64px;
+    --lp-ease: cubic-bezier(.2, .7, .2, 1);
+    --bit-tpg-font-family: var(--lp-stack-body);
+
+    @include type((system-ui, -apple-system, "Segoe UI", Roboto, sans-serif), (system-ui, -apple-system, "Segoe UI", Roboto, sans-serif));
+    @include shape(16px, 10px);
+    @include palette(light, #2448C9, #FFFFFF, #FBFBFA, #F3F3F0, #FFFFFF, #17181B, #5A5F69, #E4E4E0);
+}
+
+:root[bit-theme="dark"] {
+    @include palette(dark, #8EA8FF, #0C0E14, #111214, #17181B, #1D1F23, #F2F2EF, #A9ADB5, #2C2E33);
+}
+
+:root:lang(fa) {
+    --lp-stack-body: "Vazirmatn FD Digits", var(--lp-font-body), "Vazirmatn", system-ui, sans-serif;
+    --lp-stack-display: "Vazirmatn FD Digits", var(--lp-font-display), "Vazirmatn", system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--lp-nav-height) + 16px);
+}
+
+body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--lp-bg);
+    color: var(--lp-fg);
+    font-family: var(--lp-stack-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+    font-family: var(--lp-stack-display);
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -.015em;
+    text-wrap: balance;
+}
+
+p {
+    margin: 0;
+    text-wrap: pretty;
+}
+
+img,
+svg,
+video {
+    display: block;
+    max-width: 100%;
+}
+
+a {
+    color: inherit;
+}
+
+button {
+    font: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid var(--lp-accent);
+    outline-offset: 3px;
+}
+
+h1:focus {
+    outline: none;
+}
+
+::selection {
+    background: color-mix(in oklab, var(--lp-accent) 28%, transparent);
+}
+
+:lang(fa) :is(h1, h2, h3, h4, .lp-eyebrow, .lp-caps) {
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.lp-container {
+    width: min(var(--lp-max-width), 100% - 2 * var(--lp-gutter));
+    margin-inline: auto;
+}
+
+.lp-section {
+    padding-block: var(--lp-section-space);
+}
+
+.lp-eyebrow {
+    display: inline-block;
+    font-size: .8125rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--lp-accent);
+}
+
+.lp-title {
+    font-size: clamp(2rem, 1.6rem + 2vw, 3.25rem);
+}
+
+.lp-lede {
+    max-width: 62ch;
+    font-size: clamp(1.0625rem, 1rem + .4vw, 1.25rem);
+    color: var(--lp-fg-muted);
+}
+
+.lp-muted {
+    color: var(--lp-fg-muted);
+}
+
+.lp-mono {
+    font-family: var(--lp-font-mono);
+    font-feature-settings: "tnum";
+}
+
+.lp-visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.lp-skip {
+    position: fixed;
+    z-index: 1000;
+    top: 8px;
+    inset-inline-start: 8px;
+    padding: 10px 16px;
+    border-radius: var(--lp-radius-control);
+    background: var(--lp-fg);
+    color: var(--lp-bg);
+    font-weight: 600;
+    text-decoration: none;
+    transform: translateY(-200%);
+
+    &:focus {
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+@import 'sites/ecommerce';

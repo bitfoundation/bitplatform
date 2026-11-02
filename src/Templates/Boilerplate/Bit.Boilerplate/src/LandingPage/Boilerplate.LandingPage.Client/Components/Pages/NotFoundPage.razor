@@ -1,0 +1,19 @@
+@attribute [Route(LandingRoutes.NotFound)]
+@inherits LandingComponentBase
+
+<PageTitle>@Localizer[nameof(LandingStrings.NotFoundTitle)]</PageTitle>
+
+@if (site is not null)
+{
+    <LayoutView Layout="site.Layout">
+        <DynamicComponent Type="site.NotFound" />
+    </LayoutView>
+}
+else
+{
+    <section class="lp-container lp-section not-found">
+        <h1 class="lp-title">@Localizer[nameof(LandingStrings.NotFoundTitle)]</h1>
+        <p class="lp-lede">@Localizer[nameof(LandingStrings.NotFoundBody)]</p>
+        <BitButton Href="@LocalUrl(LandingRoutes.Home)">@Localizer[nameof(LandingStrings.BackToHome)]</BitButton>
+    </section>
+}

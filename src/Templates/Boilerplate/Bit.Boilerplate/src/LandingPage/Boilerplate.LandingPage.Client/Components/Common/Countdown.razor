@@ -1,0 +1,11 @@
+@inherits LandingComponentBase
+
+<div class="lp-countdown @Class" role="timer" aria-label="@Label">
+    @foreach (var (value, unit) in Parts())
+    {
+        <div class="lp-countdown-part">
+            <span class="lp-countdown-value">@value.ToString("00", CurrentCulture)</span>
+            <span class="lp-countdown-unit">@unit</span>
+        </div>
+    }
+</div>

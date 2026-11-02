@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Fernhouse: گیاه آپارتمانی، با تحویل و مراقبت</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>از میان ۶۰۰ گیاه آپارتمانی و گلدان‌های جورشان در اپ Fernhouse خرید کنید. هر سفارش تا ساعت رسیدن قابل پیگیری است و یادآورهای مراقبت برای نور خانه‌ی شما نوشته شده‌اند.</value>
+    </data>
+    <data name="Announcement" xml:space="preserve">
+        <value>فقط در اپ: ۱۵ درصد تخفیف برای اولین سفارش با کد FERN15.</value>
+    </data>
+    <data name="AnnouncementLink" xml:space="preserve">
+        <value>دریافت اپ</value>
+    </data>
+    <data name="NavFeatures" xml:space="preserve">
+        <value>چرا Fernhouse</value>
+    </data>
+    <data name="NavCare" xml:space="preserve">
+        <value>مراقبت از گیاه</value>
+    </data>
+    <data name="NavReviews" xml:space="preserve">
+        <value>نظرها</value>
+    </data>
+    <data name="NavFaq" xml:space="preserve">
+        <value>پرسش‌ها</value>
+    </data>
+    <data name="NavGetApp" xml:space="preserve">
+        <value>دریافت اپ</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>اپ Fernhouse</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>گیاه‌هایی که سرحال می‌رسند و سرحال می‌مانند.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>از میان ۶۰۰ گیاه آپارتمانی و گلدان‌های جورشان خرید کنید، هر سفارش را تا ساعت رسیدن دنبال کنید و یادآور مراقبتی بگیرید که برای نور خانه‌ی شما نوشته شده.</value>
+    </data>
+    <data name="HeroDelivery" xml:space="preserve">
+        <value>ارسال رایگان برای سفارش بالای ۴۵ یورو. تحویل روز بعد در سراسر هلند و بلژیک.</value>
+    </data>
+    <data name="DemoLabel" xml:space="preserve">
+        <value>یک صفحه‌ی محصول از اپ. امتحانش کنید.</value>
+    </data>
+    <data name="DemoProduct" xml:space="preserve">
+        <value>مونسترا دلیسیوزا</value>
+    </data>
+    <data name="DemoProductNote" xml:space="preserve">
+        <value>گیاه پنیر سوئیسی · نگهداری آسان</value>
+    </data>
+    <data name="DemoLight" xml:space="preserve">
+        <value>مناسب پنجره‌ی رو به شمال شما</value>
+    </data>
+    <data name="DemoPot" xml:space="preserve">
+        <value>گلدان</value>
+    </data>
+    <data name="DemoPotClay" xml:space="preserve">
+        <value>سفالی</value>
+    </data>
+    <data name="DemoPotSage" xml:space="preserve">
+        <value>سبز مریمی</value>
+    </data>
+    <data name="DemoPotCharcoal" xml:space="preserve">
+        <value>زغالی</value>
+    </data>
+    <data name="DemoSize" xml:space="preserve">
+        <value>اندازه</value>
+    </data>
+    <data name="DemoSizeS" xml:space="preserve">
+        <value>۴۰ سانتی‌متر</value>
+    </data>
+    <data name="DemoSizeM" xml:space="preserve">
+        <value>۷۰ سانتی‌متر</value>
+    </data>
+    <data name="DemoSizeL" xml:space="preserve">
+        <value>۱۱۰ سانتی‌متر</value>
+    </data>
+    <data name="DemoPrice" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="DemoAdd" xml:space="preserve">
+        <value>افزودن به سبد</value>
+    </data>
+    <data name="DemoAdded" xml:space="preserve">
+        <value>در سبد شماست. تحویل پنجشنبه، ساعت ۹ تا ۱۳.</value>
+    </data>
+    <data name="DemoBag" xml:space="preserve">
+        <value>سبد، {0} کالا</value>
+    </data>
+    <data name="DemoGuarantee" xml:space="preserve">
+        <value>ضمانت ۳۰ روزه‌ی گیاه</value>
+    </data>
+    <data name="PressLabel" xml:space="preserve">
+        <value>درباره‌ی ما نوشته‌اند</value>
+    </data>
+    <data name="FeaturesEyebrow" xml:space="preserve">
+        <value>چرا Fernhouse</value>
+    </data>
+    <data name="FeaturesTitle" xml:space="preserve">
+        <value>هر چیزی که گیاه لازم دارد، قبل از این‌که لازمش شود</value>
+    </data>
+    <data name="FeaturesLede" xml:space="preserve">
+        <value>اپ گیاه‌ها، پنجره‌ها و برنامه‌ی هفته‌ی شما را می‌شناسد. یادآوری با او، لذتش با شما.</value>
+    </data>
+    <data name="Feature1Title" xml:space="preserve">
+        <value>متناسب با نور خانه</value>
+    </data>
+    <data name="Feature1Body" xml:space="preserve">
+        <value>بگویید پنجره‌هایتان رو به کدام سمت است تا فروشگاه اول گیاه‌هایی را نشان بدهد که آن‌جا خوب رشد می‌کنند.</value>
+    </data>
+    <data name="Feature2Title" xml:space="preserve">
+        <value>یادآورهایی که خودشان را تطبیق می‌دهند</value>
+    </data>
+    <data name="Feature2Body" xml:space="preserve">
+        <value>یادآور آب دادن، کود و تعویض گلدان که با فصل و هوای شهر شما جابه‌جا می‌شود.</value>
+    </data>
+    <data name="Feature3Title" xml:space="preserve">
+        <value>تحویل در ساعت مشخص</value>
+    </data>
+    <data name="Feature3Body" xml:space="preserve">
+        <value>یک بازه‌ی دوساعته از روز قبل و پیگیری زنده در روز تحویل. گیاه‌ها ایستاده و در بسته‌بندی کمپوست‌شدنی جابه‌جا می‌شوند.</value>
+    </data>
+    <data name="Feature4Title" xml:space="preserve">
+        <value>ضمانت ۳۰ روزه</value>
+    </data>
+    <data name="Feature4Body" xml:space="preserve">
+        <value>اگر گیاه در ماه اول اذیت شد، از داخل اپ عکسش را بفرستید. جایگزینش می‌کنیم و کسی نمی‌پرسد چه کسی آب دادن را فراموش کرد.</value>
+    </data>
+    <data name="Feature5Title" xml:space="preserve">
+        <value>گلدانی که اندازه است</value>
+    </data>
+    <data name="Feature5Body" xml:space="preserve">
+        <value>کنار هر گیاه گلدان‌هایی آمده که اندازه‌اش هستند، تا هیچ‌وقت با گلدانی زیبا که دو سانت کوچک است به خانه نرسید.</value>
+    </data>
+    <data name="Feature6Title" xml:space="preserve">
+        <value>پزشک گیاه</value>
+    </data>
+    <data name="Feature6Body" xml:space="preserve">
+        <value>برگ‌ها زرد شده؟ عکس بگیرید تا یک متخصص گیاه ظرف یک روز کاری در اپ جواب بدهد.</value>
+    </data>
+    <data name="CareEyebrow" xml:space="preserve">
+        <value>مراقبت از گیاه</value>
+    </data>
+    <data name="CareTitle" xml:space="preserve">
+        <value>برنامه‌ی مراقبت برای همین هفته، نه برای گیاه توی کتاب</value>
+    </data>
+    <data name="CareBody" xml:space="preserve">
+        <value>Fernhouse برنامه‌ی هر گیاه را از گونه، گلدان و اتاقی که در آن است می‌سازد. وقتی موج گرما می‌آید، برنامه قبل از این‌که گیاهتان بفهمد عوض می‌شود.</value>
+    </data>
+    <data name="CareWeek" xml:space="preserve">
+        <value>این هفته</value>
+    </data>
+    <data name="CareItem1" xml:space="preserve">
+        <value>آب دادن مونسترا</value>
+    </data>
+    <data name="CareItem1When" xml:space="preserve">
+        <value>فردا</value>
+    </data>
+    <data name="CareItem2" xml:space="preserve">
+        <value>کود دادن پوتوس</value>
+    </data>
+    <data name="CareItem2When" xml:space="preserve">
+        <value>شنبه</value>
+    </data>
+    <data name="CareItem3" xml:space="preserve">
+        <value>چرخاندن انجیر برگ‌ویولنی رو به نور</value>
+    </data>
+    <data name="CareItem3When" xml:space="preserve">
+        <value>یکشنبه</value>
+    </data>
+    <data name="CareNote" xml:space="preserve">
+        <value>جمعه موج گرما می‌آید، برای همین آب دادن یک روز جلو افتاد.</value>
+    </data>
+    <data name="StepsEyebrow" xml:space="preserve">
+        <value>چطور کار می‌کند</value>
+    </data>
+    <data name="StepsTitle" xml:space="preserve">
+        <value>از گلخانه‌ی ما تا لب پنجره‌ی شما</value>
+    </data>
+    <data name="Step1Title" xml:space="preserve">
+        <value>انتخاب</value>
+    </data>
+    <data name="Step1Body" xml:space="preserve">
+        <value>یک گیاه و گلدانی که اندازه‌اش است انتخاب کنید. اپ نور را برایتان بررسی می‌کند.</value>
+    </data>
+    <data name="Step2Title" xml:space="preserve">
+        <value>بسته‌بندی</value>
+    </data>
+    <data name="Step2Body" xml:space="preserve">
+        <value>هر گیاه با دست بررسی و بعد ایستاده در مواد کمپوست‌شدنی بسته‌بندی می‌شود.</value>
+    </data>
+    <data name="Step3Title" xml:space="preserve">
+        <value>تحویل</value>
+    </data>
+    <data name="Step3Body" xml:space="preserve">
+        <value>در همان بازه‌ی دوساعته، با یک کارت مراقبت و اولین یادآوری که از قبل تنظیم شده.</value>
+    </data>
+    <data name="ReviewsEyebrow" xml:space="preserve">
+        <value>نظرها</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>از کسانی که قبلاً حتی کاکتوس را هم از دست می‌دادند</value>
+    </data>
+    <data name="Review1Quote" xml:space="preserve">
+        <value>یادآورها واقعاً خودشان را تطبیق می‌دهند. کالاتئای من اولین زمستان هلند را دوام آورد، کاری که سه‌تای قبلی نکردند.</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>لوته ب.</value>
+    </data>
+    <data name="Review1Place" xml:space="preserve">
+        <value>اوترخت</value>
+    </data>
+    <data name="Review2Quote" xml:space="preserve">
+        <value>در همان بازه‌ای که قول داده بودند رسید، ایستاده در جعبه‌ای که می‌شد مستقیم در کمپوست انداخت.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>سمیر ک.</value>
+    </data>
+    <data name="Review2Place" xml:space="preserve">
+        <value>آنتورپ</value>
+    </data>
+    <data name="Review3Quote" xml:space="preserve">
+        <value>دوشنبه عکس یک انجیر برگ‌ویولنی پژمرده را فرستادم و تا ظهر هم جواب داشتم و هم برنامه.</value>
+    </data>
+    <data name="Review3Name" xml:space="preserve">
+        <value>اِما د.</value>
+    </data>
+    <data name="Review3Place" xml:space="preserve">
+        <value>هارلم</value>
+    </data>
+    <data name="FaqEyebrow" xml:space="preserve">
+        <value>پرسش‌ها</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>پیش از سفارش</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>به کجا ارسال دارید؟</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>روز بعد در سراسر هلند و بلژیک، و ظرف سه روز به آلمان، فرانسه و لوکزامبورگ.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>کدام گیاه‌ها برای گربه و سگ بی‌خطرند؟</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>در صفحه‌ی هر گیاه نوشته شده که برای حیوان خانگی بی‌خطر است یا نه، و اپ می‌تواند بقیه را پنهان کند. کالاتئا، گیاه عنکبوتی و سرخس بوستون انتخاب‌های بی‌خطر محبوبی‌اند.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>ضمانت ۳۰ روزه چطور کار می‌کند؟</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>اگر گیاه در ۳۰ روز اول اذیت شد، از صفحه‌ی سفارش عکسش را بفرستید. یک گیاه جایگزین می‌فرستیم، یا اگر بخواهید پول را برمی‌گردانیم.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>برای سفارش حتماً اپ لازم است؟</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>نه، روی وب هم می‌توانید سفارش بدهید. اپ یادآورهای مراقبت، پزشک گیاه و تخفیف اولین سفارش را اضافه می‌کند.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>کد FERN15 را چطور استفاده کنم؟</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>اپ را نصب کنید، گیاه‌ها را به سبد اضافه کنید و هنگام پرداخت FERN15 را وارد کنید. ۱۵ درصد از اولین سفارشتان کم می‌شود.</value>
+    </data>
+    <data name="DownloadTitle" xml:space="preserve">
+        <value>گیاه‌هایتان از شما ممنون می‌شوند</value>
+    </data>
+    <data name="DownloadBody" xml:space="preserve">
+        <value>اپ را بگیرید تا یادآورهای مراقبت، پزشک گیاه و ۱۵ درصد تخفیف اولین سفارش را داشته باشید.</value>
+    </data>
+    <data name="CouponLabel" xml:space="preserve">
+        <value>کد اولین سفارش شما</value>
+    </data>
+    <data name="CouponCopy" xml:space="preserve">
+        <value>کپی کد</value>
+    </data>
+    <data name="CouponCopied" xml:space="preserve">
+        <value>کپی شد</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>به آلمان هم ارسال دارید؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>کدام گیاه‌ها برای گربه بی‌خطرند؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>ضمانت گیاه چطور کار می‌کند؟</value>
+    </data>
+    <data name="StickyCta" xml:space="preserve">
+        <value>دریافت اپ · ۱۵٪ تخفیف</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>گیاه آپارتمانی و گلدان‌های جورش، با ارسال در سراسر بنلوکس از سال ۲۰۱۹.</value>
+    </data>
+    <data name="FooterShop" xml:space="preserve">
+        <value>فروشگاه</value>
+    </data>
+    <data name="FooterLowLight" xml:space="preserve">
+        <value>گیاه برای نور کم</value>
+    </data>
+    <data name="FooterPetSafe" xml:space="preserve">
+        <value>گیاه بی‌خطر برای حیوانات</value>
+    </data>
+    <data name="FooterPots" xml:space="preserve">
+        <value>گلدان و جاگلدانی</value>
+    </data>
+    <data name="FooterGiftCards" xml:space="preserve">
+        <value>کارت هدیه</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>درباره‌ی Fernhouse</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>این‌که چطور یک گلخانه‌ی اجاره‌ای بیرون آلسمیر به فروشگاهی تبدیل شد که اول از نور خانه‌ی شما می‌پرسد.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Fernhouse را در یک گلخانه‌ی اجاره‌ای بیرون آلسمیر شروع کردیم، چون خرید گیاه نباید شبیه قمار باشد.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>چرا شروع کردیم</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>نور در یک سال چهار گیاه را از دست داده بود و از یک پرورش‌دهنده دلیلش را پرسید. جواب ساده بود: گیاه‌ها مناسب آپارتمانش نبودند و هیچ‌کس از او درباره‌ی نور نپرسیده بود.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>Fernhouse اول می‌پرسد. هر گیاهی که می‌فرستیم برای خانه‌هایی مثل خانه‌ی شما پرورش یافته، با دست بررسی شده و با برنامه‌ای برای زنده نگه داشتنش می‌آید.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>آدم‌های پشت گیاه‌ها</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>نور ون دایک</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>بنیان‌گذار</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>جسی اوکافور</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>سرپرست پرورش</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>مینا رحیمی</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>پزشک گیاه</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>تام فیسر</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>ارسال و بسته‌بندی</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>با ما حرف بزنید</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>سؤالی درباره‌ی سفارش یا یک گیاه دارید؟ برایمان بنویسید تا یک انسان ظرف یک روز کاری جواب بدهد.</value>
+    </data>
+    <data name="VisitTitle" xml:space="preserve">
+        <value>به گلخانه سر بزنید</value>
+    </data>
+    <data name="VisitBody" xml:space="preserve">
+        <value>شنبه‌ها از ساعت ۱۰ تا ۱۶ باز است. Legmeerdijk 313، آلسمیر.</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>گلدان این صفحه عوض شده</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>آن را جایی که قبلاً بود پیدا نکردیم. فروشگاه همان جایی است که رهایش کردید.</value>
+    </data>
+</root>

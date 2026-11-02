@@ -1,0 +1,11 @@
+@inherits LandingComponentBase
+
+@if (isVisible)
+{
+    <div class="lp-announcement @Class" role="region" aria-label="@Label">
+        <div class="lp-container lp-announcement-inner">
+            <p>@ChildContent</p>
+            <BitButton Variant="BitVariant.Text" Color="BitColor.PrimaryBackground" IconName="@BitIconName.Cancel" Title="@Localizer[nameof(LandingStrings.Dismiss)]" OnClick="Dismiss" />
+        </div>
+    </div>
+}
