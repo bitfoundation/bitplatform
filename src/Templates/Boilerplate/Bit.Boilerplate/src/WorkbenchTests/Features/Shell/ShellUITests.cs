@@ -738,6 +738,44 @@ public class ShellUITests : ShellPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task TheKeyboardOrAPressInAView_Should_SelectIt(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "ipad-mini" }])}");
+
+        var first = Page.GetByRole(AriaRole.Group, new() { Name = "iPhone SE" });
+        var second = Page.GetByRole(AriaRole.Group, new() { Name = "iPad mini" });
+        var ids = await PaneIds();
+
+        await Expect(first).ToHaveAttributeAsync("aria-current", "true");
+
+        await second.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Rotate }).FocusAsync();
+
+        await Expect(second).ToHaveAttributeAsync("aria-current", "true");
+        await Expect(first).Not.ToHaveAttributeAsync("aria-current", "true");
+
+        // The keyboard going back into the page of the view before it.
+        await Page.Keyboard.PressAsync("Shift+Tab");
+
+        await Expect(first).ToHaveAttributeAsync("aria-current", "true");
+        await Expect(second).Not.ToHaveAttributeAsync("aria-current", "true");
+
+        // A press on a view's page.
+        await View(ids[1]).Locator(".theme-header").ClickAsync();
+
+        await Expect(second).ToHaveAttributeAsync("aria-current", "true");
+        await Expect(first).Not.ToHaveAttributeAsync("aria-current", "true");
+
+        // A page moving the focus by itself selects nothing.
+        await View(ids[0]).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ThemeIconButton }).First.FocusAsync();
+
+        // The tools change the selected view.
+        await Page.Locator("#wb-inspector").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Landscape, Exact = true }).ClickAsync();
+
+        await Expect(second.Locator(".pane-size")).ToContainTextAsync("1133×744");
+        await Expect(first.Locator(".pane-size")).ToContainTextAsync("375×667");
+    }
+
+    [TestMethod, OnDesktops]
     public async Task ASettingChangedWithSeveralViews_Should_ReachEveryView(WorkbenchSurface surface)
     {
         var panes = WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "ipad-mini" }]);
