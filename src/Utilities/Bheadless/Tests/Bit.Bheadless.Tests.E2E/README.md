@@ -61,7 +61,7 @@ WebAssembly client, so an interop payload the trimmer breaks fails here and nowh
 skip it, publish once and point `BHEADLESS_E2E_DEMO_DIR` at the output:
 
 ```bash
-dotnet publish Demo/Bit.Bheadless.Demo.Server/Bit.Bheadless.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -p:InvariantGlobalization=true -o ../../../demo
+dotnet publish Demo/Server/Bit.Bheadless.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -p:InvariantGlobalization=true -o ../../../demo
 BHEADLESS_E2E_DEMO_DIR=../../../demo dotnet test
 ```
 
