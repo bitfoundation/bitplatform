@@ -15,6 +15,28 @@ public class SideMenuUITests : AppViewPageTest
     private ILocator CurrentPageInTheShell => Page.GetByRole(AriaRole.Navigation, new() { Name = WorkbenchStrings.Pages, Exact = true }).Locator("[aria-current='page']");
 
 
+    [TestMethod, EverySurface]
+    public async Task EveryPageOfTheMenu_Should_OpenAndNameItself(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        foreach (var (link, title) in new[]
+        {
+            (WorkbenchStrings.PosDashboardTitle, WorkbenchStrings.PosDashboardTitle),
+            (WorkbenchStrings.AssistantTitle, WorkbenchStrings.AssistantTitle),
+            (WorkbenchStrings.ShiftsTitle, WorkbenchStrings.ShiftsTitle),
+            (AppStrings.Settings, WorkbenchStrings.SettingsTitle),
+            (WorkbenchStrings.ThemePageTitle, WorkbenchStrings.ThemePageTitle)
+        })
+        {
+            await OpenSideMenu();
+            await Press(SideMenuLink(link));
+
+            await Expect(PageTitle).ToHaveTextAsync(title);
+            await WaitForViews();
+        }
+    }
+
 
     [TestMethod, EverySurface]
     public async Task ALinkToAPageThatIsNotHere_Should_LeaveTheViewOnItsPage(WorkbenchSurface surface)
