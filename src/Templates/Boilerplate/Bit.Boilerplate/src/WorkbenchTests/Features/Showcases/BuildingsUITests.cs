@@ -479,6 +479,21 @@ public class BuildingsUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    [TestCategory("Localization")]
+    public async Task TheDeleteQuestion_Should_SpeakTheViewsLanguage(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?culture=fa-IR");
+
+        var dialog = View().GetByRole(AriaRole.Alertdialog, new() { Name = InCulture("fa-IR", nameof(WorkbenchStrings.BuildingsDeleteTitle)) });
+
+        await Press(View().GetByRole(AriaRole.Grid).GetByRole(AriaRole.Button, new() { Name = InCulture("fa-IR", nameof(WorkbenchStrings.BuildingsDelete)), Exact = true }).First);
+
+        await Expect(dialog).ToBeVisibleAsync();
+        await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = InCulture("fa-IR", nameof(WorkbenchStrings.Cancel)), Exact = true })).ToBeVisibleAsync();
+        await Expect(dialog.GetByRole(AriaRole.Button, new() { NameRegex = new Regex("^(Ok|Cancel)$", RegexOptions.IgnoreCase) })).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
     public async Task SwitchingToTheMap_Should_ShowTheBuildingSelectedInTheList(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);
@@ -703,6 +718,63 @@ public class BuildingsUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task DeletingABuilding_Should_AskFirstAndStayDeletedAfterAReload(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Expect(Names.First).ToHaveTextAsync("Rijksmuseum");
+
+        await AskToDelete(Row("Rijksmuseum"));
+
+        await Expect(DeleteDialog).ToContainTextAsync(string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.BuildingsDeleteBody, "Rijksmuseum"));
+
+        await Press(DialogButton(AppStrings.Delete));
+
+        await Expect(Notice(Deleted("Rijksmuseum"))).ToBeVisibleAsync();
+        await Expect(Names.First).ToHaveTextAsync("Amsterdam Centraal");
+        await Expect(Subtitle(seedCount - 1, 12)).ToBeVisibleAsync();
+        await Expect(MapMarkers).ToHaveCountAsync(seedCount - 1);
+
+        await ReloadTheView();
+
+        await Expect(Names.First).ToHaveTextAsync("Amsterdam Centraal");
+        await Expect(Subtitle(seedCount - 1, 12)).ToBeVisibleAsync();
+    }
+
+    [TestMethod, EverySurface]
+    public async Task RefusingTheDelete_Should_KeepTheBuilding(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await AskToDelete(Row("Rijksmuseum"));
+
+        await Press(DialogButton(WorkbenchStrings.Cancel));
+
+        await Expect(DeleteDialog).ToHaveCountAsync(0);
+        await Expect(Names.First).ToHaveTextAsync("Rijksmuseum");
+        await Expect(Subtitle(seedCount, 12)).ToBeVisibleAsync();
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task TheDeleteKeyOnTheMap_Should_AskToDeleteTheSelectedBuilding(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, Wide);
+
+        await Press(Row("Rijksmuseum").GetByRole(AriaRole.Rowheader));
+        await Expect(Row("Rijksmuseum")).ToHaveAttributeAsync("aria-selected", "true");
+
+        await MapPane.Locator(".leaflet-container").FocusAsync();
+        await Page.Keyboard.PressAsync("Delete");
+
+        await Expect(DeleteDialog).ToContainTextAsync("Rijksmuseum");
+
+        await Press(DialogButton(AppStrings.Delete));
+
+        await Expect(Notice(Deleted("Rijksmuseum"))).ToBeVisibleAsync();
+        await Expect(Row("Rijksmuseum")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
     public async Task ADemoUser_Should_NotBeOfferedToChangeTheBuildings(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey, "?user=2");
@@ -765,6 +837,40 @@ public class BuildingsUITests : ShowcaseUITest
 
         await Expect(Page).Not.ToHaveURLAsync(new Regex("variant=cards"));
         await Expect(Names).ToHaveCountAsync(20);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheCards_Should_SelectSearchEditAndDelete(WorkbenchSurface surface)
+    {
+        var name = $"Rijksmuseum {Guid.NewGuid():N}";
+
+        await OpenWorkbench(PageKey, "?variant=cards");
+
+        await Press(Card("Westerkerk").Locator(".card-main"));
+
+        await Expect(Card("Westerkerk")).ToHaveClassAsync(new Regex("selected"));
+
+        await Search.FillAsync("Rotterdam");
+
+        await Expect(Cards).ToHaveCountAsync(4);
+
+        await Search.FillAsync(string.Empty);
+
+        await Expect(Cards).ToHaveCountAsync(seedCount);
+
+        await OpenEditorOf(Card("Rijksmuseum"));
+
+        await Field(WorkbenchStrings.BuildingName).FillAsync(name);
+        await Press(Save);
+
+        await Expect(Card(name)).ToBeVisibleAsync();
+        await Expect(Card("Rijksmuseum")).ToHaveCountAsync(0);
+
+        await AskToDelete(Card(name));
+        await Press(DialogButton(AppStrings.Delete));
+
+        await Expect(Card(name)).ToHaveCountAsync(0);
+        await Expect(Cards).ToHaveCountAsync(seedCount - 1);
     }
 
     [TestMethod, OnDesktops]

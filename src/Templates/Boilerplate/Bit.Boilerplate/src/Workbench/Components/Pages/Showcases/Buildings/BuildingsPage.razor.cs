@@ -317,8 +317,14 @@ public partial class BuildingsPage
 
     private async Task ConfirmDelete(Building building)
     {
-        var confirmed = await messageBoxService.Confirm(Localizer[nameof(WorkbenchStrings.BuildingsDeleteTitle)],
-                                                        Localizer[nameof(WorkbenchStrings.BuildingsDeleteBody), building.Name]);
+        var confirmed = await messageBoxService.Confirm(new BitMessageBoxParameters
+        {
+            Title = Localizer[nameof(WorkbenchStrings.BuildingsDeleteTitle)],
+            Body = Localizer[nameof(WorkbenchStrings.BuildingsDeleteBody), building.Name],
+            Buttons = BitMessageBoxButtons.OkCancel,
+            OkText = AppLocalizer[nameof(AppStrings.Delete)],
+            CancelText = Localizer[nameof(WorkbenchStrings.Cancel)]
+        });
 
         if (confirmed is false)
             return;
