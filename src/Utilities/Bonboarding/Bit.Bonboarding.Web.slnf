@@ -8,6 +8,8 @@
       "Samples\\Auto\\Bit.Bonboarding.Samples.Auto.Client\\Bit.Bonboarding.Samples.Auto.Client.csproj",
       "Samples\\Auto\\Bit.Bonboarding.Samples.Auto\\Bit.Bonboarding.Samples.Auto.csproj",
       "Samples\\Core\\Bit.Bonboarding.Samples.Core.csproj",
+      "Samples\\Lazy\\Bit.Bonboarding.Samples.Lazy.Client\\Bit.Bonboarding.Samples.Lazy.Client.csproj",
+      "Samples\\Lazy\\Bit.Bonboarding.Samples.Lazy\\Bit.Bonboarding.Samples.Lazy.csproj",
       "Samples\\Server\\Bit.Bonboarding.Samples.Server.csproj",
       "Samples\\Wasm\\Bit.Bonboarding.Samples.Wasm.Client\\Bit.Bonboarding.Samples.Wasm.Client.csproj",
       "Samples\\Wasm\\Bit.Bonboarding.Samples.Wasm\\Bit.Bonboarding.Samples.Wasm.csproj",

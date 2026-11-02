@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+@layout MainLayout
+@using Bit.Balette
+@implements IDisposable
+@inject IServiceProvider Services
+
+@* Only the admin page uses this layout, and Bit.Balette.wasm is downloaded before it renders, so it may hold the palette
+   and its trigger. Neither finds Balette's services registered in the browser, so they create them themselves; the
+   commands go to the same palette through GetBaletteService(). *@
+<div class="admin-bar">
+    <BaletteTrigger Label="Search…" />
+</div>
+
+@Body
+
+<Balette />
+
+@code {
+    private IDisposable? _commands;
+
+    // Taken from GetBaletteService() rather than injected: an app that lazy loads Balette cannot register IBaletteService.
+    protected override void OnInitialized()
+        => _commands = Services.GetBaletteService().Register(
+            BaletteCmd.Navigate("Home", "/").Id("navigation.home").Group("Navigation"),
+            BaletteCmd.Navigate("Admin", "/admin").Id("navigation.admin").Group("Navigation"));
+
+    public void Dispose() => _commands?.Dispose();
+}

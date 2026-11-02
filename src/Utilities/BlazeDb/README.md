@@ -131,6 +131,9 @@ app for Android, iOS, macOS and Windows. The pages are the same everywhere; wher
 host is a minimal example of the wiring its [hosting model](#hosting-models) needs: files on the server shared by every
 circuit behind one lock (Server), OPFS in the browser tab with a placeholder wherever the page renders on the server
 (Wasm and Auto), and files in the app's data directory (Maui).
+[Lazy](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Lazy/) stands apart: a
+Blazor Web App of its own whose browser half downloads `Bit.BlazeDb.wasm` only when its todos page, the part with the
+database, opens (see [lazy loading](#lazy-loading-on-webassembly)).
 
 ## MCP server
 
@@ -800,6 +803,16 @@ builder.Services.AddSingleton<AppDatabase>();
   loads nothing outside the browser: `builder.Services.AddScoped<LazyAssemblyLoader>()`.
 - Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to
   download later, and lazy loading an AOT-compiled assembly can fail at startup.
+
+The [lazy loading sample](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Samples/Lazy/)
+does all of this in a Blazor Web App - its project file leaves the mark out of AOT builds, and sets a switch next to it
+that tells its router whether there is an assembly to load - and the
+[end-to-end suite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E)
+runs its published copy in a browser, trimmed and AOT-compiled: `AppDatabase` is registered in the client's
+`Program.cs` and the layout every page shares creates a table type, yet the home page never downloads
+`Bit.BlazeDb.wasm`; the todos page - opened from the home page or by a deep link the server prerenders - downloads it
+once, opens the database through `AppDatabase` (on IndexedDB where OPFS cannot be written, as under
+[Without OPFS](#without-opfs)), and finds the rows it wrote again after a reload.
 
 ## Encryption at rest
 

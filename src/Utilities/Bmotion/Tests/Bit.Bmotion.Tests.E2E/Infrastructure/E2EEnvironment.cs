@@ -38,6 +38,12 @@ public static class E2EEnvironment
     /// <summary><c>BMOTION_E2E_SKIP_BUILD=1</c>: the harness host was built beforehand (as CI does); do not rebuild it.</summary>
     public static bool SkipBuild { get; } = Read("BMOTION_E2E_SKIP_BUILD") == "1";
 
+    /// <summary>
+    /// <c>CI=true</c>, as GitHub Actions sets it: a build server, where a test that could not run fails rather than
+    /// reporting inconclusive, so a suite that never ran cannot pass.
+    /// </summary>
+    public static bool IsContinuousIntegration { get; } = string.Equals(Read("CI"), "true", StringComparison.OrdinalIgnoreCase);
+
     private static string? Read(string name)
     {
         var value = Environment.GetEnvironmentVariable(name);

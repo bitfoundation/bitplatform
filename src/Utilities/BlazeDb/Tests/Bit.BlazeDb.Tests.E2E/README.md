@@ -13,7 +13,8 @@ and file backends. That covers the engine well and leaves out everything that on
 
 This suite boots the demo (`Bit.BlazeDb.Demo.Server`, which serves the client and runs every page on
 WebAssembly without prerendering) and drives it with Playwright - in Chromium by default, in Firefox or WebKit
-when `BLAZEDB_E2E_BROWSER` says so.
+when `BLAZEDB_E2E_BROWSER` says so. One suite drives the published lazy loading sample (`Samples/Lazy`) instead, an
+app that downloads `Bit.BlazeDb.wasm` only when its page with the database opens.
 
 ## What it proves
 
@@ -25,11 +26,13 @@ when `BLAZEDB_E2E_BROWSER` says so.
 | `DemoPageTests` | Every page of the site renders through the navigation without a console error or the error UI; a deep link opens its page; an unknown route answers 404 with the site's own page; the host page carries the boot screen and nothing prerendered; the modules are served as static web assets. |
 | `DemoScenarioTests` | Every button of every interactive page pressed without a console error or the error UI (the benchmark run aside); the EF Core scenarios report what they describe - an empty tracker under `AsNoTracking`, a duplicate key surfacing as `DbUpdateException` with nothing kept, `Find` and `Include` working in the trimmed client; every case on the errors page behaving as documented, in the runtime's own words rather than resource keys; the durability scenarios reaching their outcome even on a log with no records yet, and a self-checkpoint noticed by the snapshot's name; the date ranges opening on rows of the tab's database, however old it is. |
 | `FeatureDemoTests` | The pages that show one feature each reach the outcome they describe: every scenario of the writes, transactions, EF Core and backups pages without a step reporting "unexpected"; an encrypted database opened with its key and refused with any other, a flipped byte and a torn frame told apart; a replica tab following the writer's announced checkpoints and refusing writes; a flush past the storage quota refused, retried by the flusher and completed once space is freed; a stream yielding between batches and refusing a write made meanwhile; a failing change handler surfacing after its commit. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.BlazeDb.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync` - as the README's "Lazy loading on WebAssembly" section sets it up: the app's own `AppDatabase`, registered in the client's `Program.cs` before the assembly is there, keeps the engine's types in a nested class, and the layout every page shares creates a `[BlazeDbTable]` type and reads its title; the home page never downloads `Bit.BlazeDb.wasm`; navigating to the todos page downloads it once (and not again on the way back), and a deep link to it is prerendered by the server (which registers the router's `LazyAssemblyLoader`) and then downloads it; either way the page opens the tab's database through `AppDatabase` - on OPFS, or on IndexedDB where the context cannot write OPFS (WebKit's) - adds rows, marks one done through the generated `Done` index, and finds them again after the singleton handed it the same database or after a reload replayed them from storage. No console error, unhandled exception or failed request. Published with AOT (`BLAZEDB_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.BlazeDb with the app and nothing on demand. |
 
 The tests that need a writable Origin Private File System (the OPFS module test and `PersistenceTests`) end
 **Inconclusive** in a browser that gives a Playwright context none: WebKit's contexts are ephemeral, like a
 private window, and refuse `navigator.storage.getDirectory()`, so the demo runs there on its in-memory
-fallback - which every other test still drives.
+fallback - which every other test still drives. `LazyLoadingTests` runs in every engine: the sample falls back to
+IndexedDB there, as the README's "Without OPFS" says.
 
 Nothing is prerendered, so the app replacing the boot screen is the app running. Each test then waits
 until the demo database is open - `data-storage` on the storage badge (`.bd-status`, mounted beside the
@@ -41,8 +44,10 @@ fallbacks) - before it touches the page.
 From `src/Utilities/BlazeDb` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish them
+# first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.BlazeDb.Demo.Server.csproj
+dotnet publish Samples/Lazy/Bit.BlazeDb.Samples.Lazy/Bit.BlazeDb.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browsers Playwright drives.
@@ -67,10 +72,22 @@ provider and MCP tests only. To do what CI does:
 
 ```bash
 dotnet publish src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+dotnet publish src/Utilities/BlazeDb/Samples/Lazy/Bit.BlazeDb.Samples.Lazy/Bit.BlazeDb.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj -c Release
 pwsh src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.BlazeDb.Demo.Server.dll --urls http://localhost:5000 &)
 cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E && BLAZEDB_E2E_BASE_URL=http://localhost:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename blazedb-e2e.trx
+```
+
+Its `lazy-loading-aot` job publishes the lazy loading sample with AOT as well, which leaves its lazy mark out as the
+README says an AOT build must, and runs `LazyLoadingTests` against it (needs the wasm-tools workloads). The suite's
+session boots the demo before any test runs, so the demo is built there too, though no test of that job drives it:
+
+```bash
+dotnet build src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/BlazeDb/Samples/Lazy/Bit.BlazeDb.Samples.Lazy/Bit.BlazeDb.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+dotnet build src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj -c Release
+cd src/Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E && BLAZEDB_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
@@ -84,6 +101,13 @@ context of its own - and with it an Origin Private File System, an IndexedDB and
 tests run one at a time: a second page booting WebAssembly next to a test that waits on a background flush is
 exactly the load that turns the wait into a flake.
 
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares), at `http://127.0.0.1:<free port>` - a loopback address Chromium,
+Firefox and WebKit treat as a secure context, so OPFS and Web Locks are there. `BLAZEDB_E2E_LAZY_BASE_URL` points
+those tests at a copy that is already running. A sample that has not been published makes them inconclusive - or
+failed, on a build server - and leaves the other suites alone.
+
 When no browser can be launched or the demo does not start, every test reports **Inconclusive** with the
 reason. On a build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
 
@@ -95,4 +119,6 @@ reason. On a build server (`CI=true`) the same tests **fail** instead, so a suit
 | `BLAZEDB_E2E_BASE_URL` | Drive an already running demo (a published one, or one started from the IDE) instead of booting one. |
 | `BLAZEDB_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, as Playwright installs them. |
 | `BLAZEDB_E2E_CHANNEL` / `BLAZEDB_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`; Chromium only) or a specific binary of the engine. Without either, the browser Playwright installed is used - for Chromium falling back to an installed Chrome, then Edge. |
+| `BLAZEDB_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BLAZEDB_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.BlazeDb comes with the app and nothing is downloaded on demand. |
 | `BLAZEDB_E2E_HEADED=1` | Show the browser. |

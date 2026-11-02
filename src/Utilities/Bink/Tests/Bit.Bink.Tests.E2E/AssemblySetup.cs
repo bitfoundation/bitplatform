@@ -1,4 +1,5 @@
 ﻿using Bit.Bink.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 
 // The tests run one at a time. Most of them measure pixels a moment after a gesture, or race a pointer against
@@ -26,6 +27,13 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-        await PlaywrightSession.StopAsync();
+        try
+        {
+            await PlaywrightSession.StopAsync();
+        }
+        finally
+        {
+            await LazyLoadingSample.StopAsync();
+        }
     }
 }

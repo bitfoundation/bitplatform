@@ -24,8 +24,24 @@ public static class E2EEnvironment
         "Release";
 #endif
 
-    /// <summary><c>BMAGE_E2E_SKIP_BUILD=1</c>: the demo host was built beforehand (as CI does); do not rebuild it.</summary>
+    /// <summary>
+    /// <c>BMAGE_E2E_SKIP_BUILD=1</c>: the demo host and the samples were built, and the lazy loading sample published,
+    /// beforehand (as CI does); do not do it again.
+    /// </summary>
     public static bool SkipBuild { get; } = Read("BMAGE_E2E_SKIP_BUILD") == "1";
+
+    /// <summary>
+    /// <c>BMAGE_E2E_LAZY_BASE_URL</c>: an already running lazy loading sample for <see cref="LazyLoadingTests"/> to drive
+    /// instead of the one it publishes and starts. Read by the shared harness (<c>LazyLoadingSample</c>); here only so the
+    /// suite does not publish a sample it will not run.
+    /// </summary>
+    public static string? LazyBaseUrl { get; } = Read("BMAGE_E2E_LAZY_BASE_URL");
+
+    /// <summary>
+    /// <c>BMAGE_E2E_LAZY_AOT=1</c>: the lazy loading sample was published with <c>-p:RunAOTCompilation=true</c>, which
+    /// loads Bmage with the app. Read by the shared harness too; the suite then leaves that publish as it is.
+    /// </summary>
+    public static bool LazyAot { get; } = Read("BMAGE_E2E_LAZY_AOT") == "1";
 
     /// <summary>
     /// <c>BMAGE_E2E_MAUI_DEBUGGING_PORT</c>: the WebView2 debugging port the MAUI sample was given from outside - by the

@@ -1,0 +1,25 @@
+﻿@inherits LayoutComponentBase
+@layout MainLayout
+@using Bit.Bonboarding
+@inject IServiceProvider Services
+
+@* Only the admin pages use this layout, so it renders after the router downloaded Bit.Bonboarding.wasm, and may use
+   Bonboarding's types: it hosts their tour and the one BonboardingRoot. *@
+<div class="toolbar">
+    <button type="button" data-bonboarding-anchor="invite">Invite people</button>
+    <button type="button" data-bonboarding-anchor="replay" @onclick="ReplayAsync">Replay the tour</button>
+</div>
+
+@Body
+
+<BonboardingTour Id="admin-welcome" AutoStart="BonboardingAutoStart.Once">
+    <BonboardingStep Anchor="invite" Title="Invite your team" Description="Add the people you work with, and pick what each of them may do." />
+    <BonboardingStep Anchor="replay" Title="Replay it any time" Description="This tour starts by itself once. The button brings it back." />
+</BonboardingTour>
+
+<BonboardingRoot />
+
+@code {
+    // Not an injected IBonboardingService: an app that lazy loads Bonboarding cannot register one.
+    private Task ReplayAsync() => Services.GetBonboardingService().StartAsync("admin-welcome");
+}

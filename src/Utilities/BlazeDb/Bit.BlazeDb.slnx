@@ -20,6 +20,10 @@
     <Project Path="Samples/Auto/Bit.BlazeDb.Samples.Auto.Client/Bit.BlazeDb.Samples.Auto.Client.csproj" />
     <Project Path="Samples/Auto/Bit.BlazeDb.Samples.Auto/Bit.BlazeDb.Samples.Auto.csproj" />
   </Folder>
+  <Folder Name="/Samples/Lazy/">
+    <Project Path="Samples/Lazy/Bit.BlazeDb.Samples.Lazy.Client/Bit.BlazeDb.Samples.Lazy.Client.csproj" />
+    <Project Path="Samples/Lazy/Bit.BlazeDb.Samples.Lazy/Bit.BlazeDb.Samples.Lazy.csproj" />
+  </Folder>
   <Folder Name="/Samples/Server/">
     <Project Path="Samples/Server/Bit.BlazeDb.Samples.Server.csproj" />
   </Folder>

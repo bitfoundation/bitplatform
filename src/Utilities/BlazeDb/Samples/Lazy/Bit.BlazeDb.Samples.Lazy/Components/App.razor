@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>BlazeDb lazy loading sample</title>
+    @* No script for BlazeDb: each browser backend imports its module from _content/Bit.BlazeDb/ the first time it is
+       used. The modules are static web assets, not part of Bit.BlazeDb.wasm. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Without an icon the browser asks for /favicon.ico, and the 404 lands in the console the end-to-end tests check. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bit.BlazeDb.wasm before the todos page renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

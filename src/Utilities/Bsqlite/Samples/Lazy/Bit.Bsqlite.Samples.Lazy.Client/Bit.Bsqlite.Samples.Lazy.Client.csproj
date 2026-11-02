@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The browser half of the lazy loading sample: it downloads Bit.Bsqlite.wasm, EF Core and the library with the
+         app's model only when the products page opens. It does everything docs/getting-started.md's "Lazy loading on
+         WebAssembly" asks of such a project, and the end-to-end suite (Tests/Bit.Bsqlite.Tests.E2E, LazyLoadingTests)
+         publishes it and checks it in a browser. -->
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
+        <ProjectReference Include="..\..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
+        <ProjectReference Include="..\Bit.Bsqlite.Samples.Lazy.Data\Bit.Bsqlite.Samples.Lazy.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The server registers Bsqlite's services with AppDatabase.Register, the method the pages build them from here,
+             as the guide says a server that prerenders the pages may. -->
+        <InternalsVisibleTo Include="Bit.Bsqlite.Samples.Lazy" />
+    </ItemGroup>
+
+    <!-- AOT builds load Bsqlite with the rest of the app. The list is the guide's: Bit.Bsqlite, EF Core, what only they
+         use, and the library with the context, its configuration and its migration. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bsqlite.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.EntityFrameworkCore.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.EntityFrameworkCore.Relational.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.EntityFrameworkCore.Sqlite.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.Data.Sqlite.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="SQLitePCLRaw.core.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.Extensions.Caching.Abstractions.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.Extensions.Caching.Memory.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Microsoft.Extensions.DependencyModel.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Data.Common.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Private.Xml.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="System.Transactions.Local.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bsqlite.Samples.Lazy.Data.wasm" />
+        <RuntimeHostConfigurationOption Include="Bit.Bsqlite.Samples.Lazy.LazyLoadsBsqlite" Value="true" Trim="true" />
+    </ItemGroup>
+
+    <!-- What the Bit.Bsqlite package imports into every app that references it, and a project reference does not. -->
+    <Import Project="..\..\..\Bit.Bsqlite\buildTransitive\Bit.Bsqlite.targets" />
+
+</Project>

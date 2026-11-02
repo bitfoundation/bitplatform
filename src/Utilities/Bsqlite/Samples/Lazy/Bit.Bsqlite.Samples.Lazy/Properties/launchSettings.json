@@ -1,0 +1,13 @@
+﻿{
+    "profiles": {
+        "Bit.Bsqlite.Samples.Lazy": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7312;http://localhost:5312",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using Bit.Bmage.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 
 // One test at a time. The suite drives a Debug WebAssembly build - Bmage's pixel loops on the IL
 // interpreter, which is CPU-bound - and several tests measure what happens after a fixed settling
@@ -9,8 +10,9 @@
 namespace Bit.Bmage.Tests.E2E;
 
 /// <summary>
-/// Session-wide setup. The hosts - the demo, the hosting samples, the MAUI app - are each built and started the first
-/// time a test needs them and stopped here at the end, so a run filtered to one of them never builds the others.
+/// Session-wide setup. The hosts - the demo, the hosting samples, the lazy loading sample (published rather than built),
+/// the MAUI app - are each built and started the first time a test needs them and stopped here at the end, so a run
+/// filtered to one of them never builds the others.
 /// </summary>
 [TestClass]
 public static class AssemblySetup
@@ -30,5 +32,6 @@ public static class AssemblySetup
         await PlaywrightSession.StopAsync();
         await DemoHost.StopAsync();
         await SampleHosts.StopAsync();
+        await LazyLoadingSample.StopAsync();
     }
 }

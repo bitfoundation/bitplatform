@@ -95,7 +95,9 @@ pages - a welcome tour that starts once by itself, a tour across two routes with
 beacon, a checklist and a tour list, and the stored progress beside the live event stream - hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/) and [Auto](Samples/Auto/), and under [MAUI](Samples/Maui/)
 (Android, iOS, Mac Catalyst and Windows), where a `BlazorWebView` runs them as a Blazor Hybrid app. Their
-`Program.cs` (and the MAUI sample's `MauiProgram.cs`) is the registration to copy.
+`Program.cs` (and the MAUI sample's `MauiProgram.cs`) is the registration to copy. [Lazy](Samples/Lazy/) stands
+apart: a Blazor Web App of its own whose browser half downloads `Bit.Bonboarding.wasm` only when its admin page opens
+(see [lazy loading](#lazy-loading-on-webassembly)).
 
 ```bash
 dotnet run --project src/Utilities/Bonboarding/Samples/Server
@@ -170,6 +172,7 @@ Bit.Bonboarding                 The library
 Demo                            Demo application (Blazor Web App: Server + Client) and the MCP server
 Samples/Core                    The samples' shared pages
 Samples/{Server,Wasm,Auto,Maui} The same pages in each hosting model
+Samples/Lazy                    A Blazor Web App that downloads Bit.Bonboarding.wasm only when its admin page opens
 Tests/Bit.Bonboarding.Tests     Engine, layout and component tests
 Tests/Bit.Bonboarding.Tests.Mcp The MCP server, exercised over the protocol
 Tests/Bit.Bonboarding.Tests.E2E The demo in Chromium, Firefox and WebKit, with axe-core (see its README)
@@ -616,6 +619,14 @@ JavaScript module the first time they need it.
   subscribe to `GetBonboardingService().EventRaised` instead of registering an observer.
 - Do not lazy load in an AOT build. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left
   to download later, and lazy loading an AOT-compiled assembly can fail at startup.
+
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App - its project file leaves the mark out of
+AOT builds, and sets a switch next to it that tells its router whether there is an assembly to load, while
+`Bit.Bonboarding.LazyLoad` stays on in every build, as its `Program.cs` registers nothing in any of them - and the
+[end-to-end suite](Tests/Bit.Bonboarding.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled:
+the home page never downloads `Bit.Bonboarding.wasm`, and the admin page - opened from the home page or by a deep link
+the server prerenders - downloads it once, its tour starts by itself and frames each element it names, and
+`GetBonboardingService()` replays the tour and reads its stored progress.
 
 ### Verifying the setup
 

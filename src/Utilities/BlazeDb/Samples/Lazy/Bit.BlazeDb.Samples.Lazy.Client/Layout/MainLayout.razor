@@ -1,0 +1,26 @@
+﻿@inherits LayoutComponentBase
+
+@* Every page shares this layout, so it renders before Bit.BlazeDb.wasm is downloaded and may not use the engine. It may
+   use a table type, though: see _suggestion. data-interactive turns true once the page runs in the browser; the
+   end-to-end tests wait for it. *@
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink href="todos">Todos</NavLink>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+
+    <footer class="footer">
+        Nothing to do? Try <q id="suggestion">@_suggestion.Title</q>.
+    </footer>
+</div>
+
+@code {
+    // A table type created and read on every page, before Bit.BlazeDb.wasm is downloaded on the home page: the code the
+    // generator adds keeps the engine's types out of its fields, so this needs nothing of the assembly. TodoItem.Table and
+    // TodoItem.Indexes would, so only the todos page touches them.
+    private readonly TodoItem _suggestion = new() { Title = "Water the plants" };
+}

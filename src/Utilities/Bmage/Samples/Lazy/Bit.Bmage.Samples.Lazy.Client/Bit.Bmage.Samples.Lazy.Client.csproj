@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The browser half of the lazy loading sample: it downloads Bit.Bmage.wasm and Bit.Bmage.Blazor.wasm only when the
+         editor's page opens. It does everything docs/getting-started.md's "Lazy loading Bmage on WebAssembly" asks of
+         such a project, and the end-to-end suite (Tests/Bit.Bmage.Tests.E2E, LazyLoadingTests) publishes it and checks
+         it in a browser. -->
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.3.26522.148" />
+        <ProjectReference Include="..\..\..\Bit.Bmage.Blazor\Bit.Bmage.Blazor.csproj" />
+    </ItemGroup>
+
+    <!-- AOT builds load Bmage with the rest of the app. Both assemblies are marked: the editor lives in
+         Bit.Bmage.Blazor, and everything it does runs on Bit.Bmage. -->
+    <ItemGroup Condition=" '$(RunAOTCompilation)' != 'true' ">
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
+        <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Blazor.wasm" />
+        <RuntimeHostConfigurationOption Include="Bit.Bmage.Samples.Lazy.LazyLoadsBmage" Value="true" Trim="true" />
+    </ItemGroup>
+
+</Project>

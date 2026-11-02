@@ -1,0 +1,59 @@
+﻿@page "/board"
+@using Bit.Bdnd
+@inject IServiceProvider Services
+
+<PageTitle>Board - Bdnd lazy loading sample</PageTitle>
+
+<h1>Board</h1>
+
+<p>
+    <code>Bit.Bdnd.wasm</code> was downloaded as this page opened. The cards and the column create the interop they
+    need themselves, and the button below takes the same one from <code>GetBdndInterop()</code>: the app does not
+    register Bdnd's services.
+</p>
+
+<BdndProvider>
+    <div class="columns">
+        <div class="column">
+            <h3>To do</h3>
+            @foreach (var card in _todo)
+            {
+                <BdndDraggable TItem="string" Type="card" Item="card" Label="@card" class="card" @key="card">@card</BdndDraggable>
+            }
+        </div>
+        <div class="column" @ref="_doneColumn">
+            <h3>Done</h3>
+            <BdndDropTarget TItem="string" Accept="card" Label="Done" class="target" OnDrop="Drop" Context="drop">
+                <span id="done">@(drop.IsOver && drop.CanDrop ? "Release to drop" : _done.Count == 0 ? "Nothing yet" : string.Join(", ", _done))</span>
+            </BdndDropTarget>
+        </div>
+    </div>
+</BdndProvider>
+
+<p>
+    <button type="button" class="btn" @onclick="MeasureAsync">Measure the Done column</button>
+    <span id="done-size">@_size</span>
+</p>
+
+@code {
+    private readonly List<string> _todo = ["Write", "Review", "Ship"];
+    private readonly List<string> _done = [];
+    private ElementReference _doneColumn;
+    private string? _size;
+
+    // Taken once, as an injected service would be: an app that lazy loads Bdnd cannot register BdndInterop.
+    private BdndInterop Interop => field ??= Services.GetBdndInterop();
+
+    private void Drop(BdndDropEventArgs<string> e)
+    {
+        if (e.Item is not { } card || _todo.Remove(card) is false) return;
+
+        _done.Add(card);
+    }
+
+    private async Task MeasureAsync()
+    {
+        var rect = await Interop.GetBoundingClientRectAsync(_doneColumn);
+        _size = rect is null ? "not rendered" : $"{Math.Round(rect.Width)} x {Math.Round(rect.Height)}";
+    }
+}
