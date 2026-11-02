@@ -583,7 +583,7 @@
         <value>繁忙</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>下午好，亚斯</value>
+        <value>下午好，{0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>门店</value>

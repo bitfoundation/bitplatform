@@ -152,6 +152,10 @@ public partial class BuildingsPage
 
     private async Task Search(string? text)
     {
+        // The box reports its text again as it loses focus, and a refresh then would swallow the press that took the focus.
+        if (text == store.SearchText)
+            return;
+
         store.Search(text);
         BuildMarkers();
         await RefreshGrid();
@@ -252,18 +256,24 @@ public partial class BuildingsPage
         }
     }
 
-    /// <summary>Selects the building everywhere; <paramref name="flyTo"/> also moves the map to it when it is visible.</summary>
+    /// <summary>Selects the building everywhere; <paramref name="flyTo"/> also moves the map to it, at once while it waits behind the list.</summary>
     private async Task Select(Building building, bool flyTo)
     {
         store.Select(building.Id);
         selectedItems = [building];
         BuildMarkers();
 
-        if (flyTo && map is not null && (isNarrow is false || store.IsMapShown))
+        if (flyTo is false || map is null)
+            return;
+
+        if (isNarrow && store.IsMapShown is false)
+        {
+            await map.SetView(new(building.Latitude, building.Longitude), 13, animate: false);
+        }
+        else
         {
             await map.FlyTo(new(building.Latitude, building.Longitude), 13);
         }
-
     }
 
     /// <summary>Delete or Backspace on the map deletes the selected building, after a confirmation.</summary>
@@ -307,8 +317,14 @@ public partial class BuildingsPage
 
     private async Task ConfirmDelete(Building building)
     {
-        var confirmed = await messageBoxService.Confirm(Localizer[nameof(WorkbenchStrings.BuildingsDeleteTitle)],
-                                                        Localizer[nameof(WorkbenchStrings.BuildingsDeleteBody), building.Name]);
+        var confirmed = await messageBoxService.Confirm(new BitMessageBoxParameters
+        {
+            Title = Localizer[nameof(WorkbenchStrings.BuildingsDeleteTitle)],
+            Body = Localizer[nameof(WorkbenchStrings.BuildingsDeleteBody), building.Name],
+            Buttons = BitMessageBoxButtons.OkCancel,
+            OkText = AppLocalizer[nameof(AppStrings.Delete)],
+            CancelText = Localizer[nameof(WorkbenchStrings.Cancel)]
+        });
 
         if (confirmed is false)
             return;

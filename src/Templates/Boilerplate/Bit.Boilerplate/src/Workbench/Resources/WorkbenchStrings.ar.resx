@@ -583,7 +583,7 @@
         <value>مزدحم</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>مساء الخير يا ياس</value>
+        <value>مساء الخير يا {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>الفرع</value>

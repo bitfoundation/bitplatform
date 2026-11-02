@@ -583,7 +583,7 @@
         <value>Druk</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Goedemiddag, Yas</value>
+        <value>Goedemiddag, {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Winkel</value>
