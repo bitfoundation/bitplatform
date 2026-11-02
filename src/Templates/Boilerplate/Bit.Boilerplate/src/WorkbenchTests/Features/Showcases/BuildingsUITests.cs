@@ -412,7 +412,14 @@ public class BuildingsUITests : ShowcaseUITest
 
         await Press(MapButton);
         await Expect(MapPins).ToHaveCountAsync(1);
-        await Press(MapPins);
+
+        var map = await MapPane.BoundingBoxAsync();
+        var marker = await MapPins.BoundingBoxAsync();
+
+        // Where it stands on the screen, as nothing scrolls it into place for a person, and a map that doesn't fit on the screen stays put under the press.
+        await (IsPhone ? Page.Touchscreen.TapAsync(marker!.X + marker.Width / 2, marker.Y + marker.Height / 2) : Page.Mouse.ClickAsync(marker!.X + marker.Width / 2, marker.Y + marker.Height / 2));
+
+        Assert.AreEqual(map!.Y, (await MapPane.BoundingBoxAsync())!.Y, 1);
 
         await Expect(MapPins).ToHaveAttributeAsync("src", selectedMarkerColor);
 

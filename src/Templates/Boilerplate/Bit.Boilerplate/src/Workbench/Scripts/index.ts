@@ -471,6 +471,11 @@ if (isPreview && document.body.classList.contains('wb-touch')) {
     emulateTouch();
 }
 
+// Focuses a pressed map without scrolling, as Leaflet's own focus brings back only the window's scroll, and a page scrolling in a container would jump from under the press.
+if (isPreview) {
+    document.addEventListener('mousedown', event => (event.target as Element).closest<HTMLElement>('.leaflet-container')?.focus({ preventScroll: true }), true);
+}
+
 // A store composition waits for its inner screen and passes the screen's reports on to the shell.
 if (isPreview) {
     window.addEventListener('message', event => {
