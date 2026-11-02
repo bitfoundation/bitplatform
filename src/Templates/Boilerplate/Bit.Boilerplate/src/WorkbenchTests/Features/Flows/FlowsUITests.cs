@@ -298,6 +298,35 @@ public class FlowsUITests : FlowPageTest
         await Expect(CardOf(flow.Screens[1].Id)).ToHaveClassAsync(new Regex(@"\bcurrent\b"));
     }
 
+    [TestMethod, EverySurface]
+    public async Task TheBoardsControls_Should_ZoomAndFit(WorkbenchSurface surface)
+    {
+        var flow = await DrawThemeFlow();
+
+        await OpenBoard(flow.Id, 2);
+
+        var fitted = await SettledBoardViewport();
+
+        await Press(Page.Locator(".bit-blow-controls-button").Nth(0));
+
+        await WorkbenchTestReviewer.WaitFor(BoardViewport, viewport => viewport != fitted);
+
+        var zoomedIn = await SettledBoardViewport();
+
+        Assert.IsGreaterThan(ScaleOf(fitted), ScaleOf(zoomedIn));
+
+        await Press(Page.Locator(".bit-blow-controls-button").Nth(1));
+
+        await WorkbenchTestReviewer.WaitFor(BoardViewport, viewport => viewport != zoomedIn);
+
+        Assert.IsLessThan(ScaleOf(zoomedIn), ScaleOf(await SettledBoardViewport()));
+
+        await Press(Page.Locator(".bit-blow-controls-button").Nth(2));
+
+        await Expect(CardOf(flow.Screens[0].Id)).ToBeInViewportAsync(new() { Ratio = 1 });
+        await Expect(CardOf(flow.Screens[1].Id)).ToBeInViewportAsync(new() { Ratio = 1 });
+    }
+
     [TestMethod, OnPhones]
     public async Task AFinger_Should_PanTheBoard(WorkbenchSurface surface)
     {
