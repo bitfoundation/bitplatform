@@ -37,6 +37,34 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
         await Expect(View().GetByRole(AriaRole.Button, new() { Name = AppStrings.Language, Exact = true })).ToBeVisibleAsync();
     }
 
+    private Task<string> ViewPrimaryColor() => View().Locator("body").EvaluateAsync<string>("e => getComputedStyle(e).getPropertyValue('--bit-clr-pri').trim()");
+
+    /// <summary>The theme's color swatches as the screen shows them, as the largest gap between a pixel's red, green and blue: none on a gray picture.</summary>
+    private async Task<int> ColorOfTheSwatches()
+    {
+        var picture = await View().Locator(".swatches").First.ScreenshotAsync();
+
+        return await Page.EvaluateAsync<int>("""
+            async picture => {
+                const bytes = Uint8Array.from(atob(picture), character => character.charCodeAt(0));
+                const image = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+                const canvas = new OffscreenCanvas(image.width, image.height);
+                const context = canvas.getContext('2d');
+
+                context.drawImage(image, 0, 0);
+
+                const { data } = context.getImageData(0, 0, image.width, image.height);
+                let most = 0;
+
+                for (let index = 0; index < data.length; index += 4) {
+                    most = Math.max(most, Math.abs(data[index] - data[index + 1]), Math.abs(data[index + 1] - data[index + 2]));
+                }
+
+                return most;
+            }
+            """, Convert.ToBase64String(picture));
+    }
+
     [TestMethod, EverySurface]
     public async Task Dark_Should_ReachTheViewOnly(WorkbenchSurface surface)
     {
@@ -55,6 +83,61 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
         {
             await Expect(Page.Locator(".pane-chip")).ToHaveTextAsync(WorkbenchStrings.ThemeDark);
         }
+    }
+
+    [TestMethod, EverySurface]
+    public async Task Light_Should_BringTheViewBackFromDark(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?theme=dark");
+
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+
+        await OpenTools();
+        await Press(Tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ThemeLight, Exact = true }));
+        await CloseTools();
+
+        await Expect(Page).Not.ToHaveURLAsync(new Regex("theme="));
+        await WaitForViews();
+        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+        await Expect(View().Locator("body")).ToHaveCSSAsync("background-color", new Regex(@"rgb\((2[0-9]{2}), "));
+    }
+
+    [TestMethod, EverySurface]
+    public async Task System_Should_MakeTheViewFollowTheDevice(WorkbenchSurface surface)
+    {
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Dark });
+
+        await OpenWorkbench("theme");
+
+        await OpenTools();
+        await Press(Tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ThemeSystem, Exact = true }));
+        await CloseTools();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?theme=system$"));
+        await WaitForViews();
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+
+        if (IsPhone is false)
+        {
+            await Expect(Page.Locator(".pane-chip")).ToHaveTextAsync(WorkbenchStrings.ThemeSystem);
+        }
+
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Light });
+
+        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheAddress_Should_OpenAViewInTheDevicesThemeWithSystem(WorkbenchSurface surface)
+    {
+        await Page.EmulateMediaAsync(new() { ColorScheme = ColorScheme.Dark });
+
+        await OpenWorkbench("theme", "?theme=system");
+
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+
+        await OpenTools();
+        await Expect(Tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ThemeSystem, Exact = true })).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
     [TestMethod, EverySurface]
@@ -118,6 +201,40 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task ACustomColor_Should_BeTypedAndBeTriedOnTheViewOnly(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        var field = Tools.GetByLabel(WorkbenchStrings.CustomColor, new() { Exact = true });
+        var before = await ViewPrimaryColor();
+        var shell = await Page.Locator("body").EvaluateAsync<string>("e => getComputedStyle(e).getPropertyValue('--bit-clr-pri').trim()");
+
+        await OpenTools();
+        await field.FillAsync("#c81e6e");
+        await field.BlurAsync();
+        await CloseTools();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?accent=c81e6e$"));
+        await WaitForViews();
+
+        await WorkbenchTestReviewer.WaitFor(ViewPrimaryColor, primary => primary != before);
+
+        Assert.MatchesRegex(new Regex("(?i)c81e6e|rgb\\(200, 30, 110\\)"), await ViewPrimaryColor());
+        Assert.AreEqual(shell, await Page.Locator("body").EvaluateAsync<string>("e => getComputedStyle(e).getPropertyValue('--bit-clr-pri').trim()"));
+
+        // What isn't a color takes the theme's own primary back.
+        await OpenTools();
+        await field.FillAsync("nope");
+        await field.BlurAsync();
+        await CloseTools();
+
+        await Expect(Page).Not.ToHaveURLAsync(new Regex("accent="));
+        await WaitForViews();
+
+        await WorkbenchTestReviewer.WaitFor(ViewPrimaryColor, primary => primary == before);
+    }
+
+    [TestMethod, EverySurface]
     public async Task TextSizeAndColorVision_Should_ChangeTheViewsLook(WorkbenchSurface surface)
     {
         await OpenWorkbench("theme", "?text=200&vision=achromatopsia&motion=reduce");
@@ -130,6 +247,59 @@ public class ThemeAndCultureUITests : WorkbenchPageTest
         {
             await Expect(Page.Locator(".pane-chip")).ToHaveTextAsync([$"{WorkbenchStrings.TextSize} 200%", WorkbenchStrings.ReduceMotion, WorkbenchStrings.VisionAchromatopsia]);
         }
+    }
+
+    [TestMethod, EverySurface]
+    public async Task AColorVision_Should_ChangeTheColorsOnTheScreen(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        var typical = await ColorOfTheSwatches();
+
+        Assert.IsGreaterThan(60, typical, "The swatches have color to lose.");
+
+        await OpenWorkbench("theme", "?vision=achromatopsia");
+
+        Assert.IsLessThanOrEqualTo(2, await ColorOfTheSwatches(), "No color is left.");
+
+        await OpenWorkbench("theme", "?vision=tritanopia");
+
+        Assert.AreNotEqual(typical, await ColorOfTheSwatches());
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TypicalVision_Should_TakeTheFilterAway(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?vision=achromatopsia");
+
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("data-wb-vision", "achromatopsia");
+
+        await OpenTools();
+        await Press(Tools.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.ColorVision }));
+        await Press(Page.GetByRole(AriaRole.Option, new() { Name = WorkbenchStrings.VisionTypical, Exact = true }));
+        await CloseTools();
+
+        await Expect(Page).Not.ToHaveURLAsync(new Regex("vision="));
+        await WaitForViews();
+        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("data-wb-vision", new Regex("."));
+
+        Assert.IsGreaterThan(60, await ColorOfTheSwatches(), "The colors are back.");
+    }
+
+    [TestMethod, EverySurface]
+    public async Task ReducedMotion_Should_EndTheTransitionsAtOnce(WorkbenchSurface surface)
+    {
+        const string longestTransition = "element => Math.max(...getComputedStyle(element).transitionDuration.split(',').map(parseFloat))";
+
+        var motion = View().GetByRole(AriaRole.Switch).First;
+
+        await OpenWorkbench("theme");
+
+        Assert.IsGreaterThan(0.01, await motion.EvaluateAsync<double>(longestTransition), "The page has transitions to end.");
+
+        await OpenWorkbench("theme", "?motion=reduce");
+
+        Assert.IsLessThan(0.001, await motion.EvaluateAsync<double>(longestTransition));
     }
 
     [TestMethod, EverySurface]

@@ -2,9 +2,21 @@ namespace Boilerplate.WorkbenchTests.Features.Shell;
 
 /// <summary>The shell around a view: opening a page in it, the page list, the view's settings and what the address and the browser remember of them.</summary>
 [TestClass, TestCategory("UITest")]
-public class ShellUITests : WorkbenchPageTest
+public class ShellUITests : ShellPageTest
 {
     private ILocator PageList => Tools.Or(Page.Locator("#wb-navigator")).GetByRole(AriaRole.Navigation, new() { Name = WorkbenchStrings.Pages });
+
+    private ILocator ToolsButton(string name) => Tools.GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+
+    private ILocator BuildingRows(string paneId = "1") => View(paneId).Locator(".name-cell .name");
+
+    private ILocator BuildingsPlaceholders(string paneId = "1") => View(paneId).Locator(".list-pane .state");
+
+    private ILocator BuildingsGrid(string paneId = "1") => View(paneId).GetByRole(AriaRole.Grid, new() { Name = WorkbenchStrings.BuildingsHeading });
+
+    private ILocator BuildingCards(string paneId = "1") => View(paneId).GetByRole(AriaRole.List, new() { Name = WorkbenchStrings.BuildingsHeading }).GetByRole(AriaRole.Listitem);
+
+    private static string BuildingsSubtitle(int buildings, int provinces) => string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.BuildingsSubtitle, buildings, provinces);
 
     [TestMethod, EverySurface]
     public async Task APage_Should_OpenInAViewOfTheShell(WorkbenchSurface surface)
@@ -158,6 +170,17 @@ public class ShellUITests : WorkbenchPageTest
     [TestMethod, EverySurface]
     public async Task EveryDataState_Should_ReachTheView(WorkbenchSurface surface)
     {
+        // Notes when each view's placeholders and rows first show, from the moment its document starts.
+        await Context.AddInitScriptAsync("""
+            if (location.pathname.startsWith('/preview')) {
+                const seen = window.__seen = {};
+                new MutationObserver(() => {
+                    seen.placeholders ??= document.querySelector('.list-pane .state') ? performance.now() : undefined;
+                    seen.rows ??= document.querySelector('.name-cell') ? performance.now() : undefined;
+                }).observe(document, { childList: true, subtree: true });
+            }
+            """);
+
         await OpenWorkbench("buildings");
 
         await OpenTools();
@@ -174,20 +197,53 @@ public class ShellUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex(@"\?data=loading$"));
         await WaitForViews();
         await Expect(View().GetByText(WorkbenchStrings.BuildingsFailedTitle)).ToHaveCountAsync(0);
-        await Expect(View().Locator(".buildings-grid .bit-dtg-body .name-cell")).ToHaveCountAsync(0);
+        await Expect(BuildingsPlaceholders()).ToBeVisibleAsync();
+        await Expect(BuildingRows()).ToHaveCountAsync(0);
 
         await OpenTools();
         await Press(Tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DataSlow, Exact = true }));
         await CloseTools();
 
         await Expect(Page).ToHaveURLAsync(new Regex(@"\?data=slow$"));
-        await Expect(View().Locator(".buildings-grid .bit-dtg-body .name-cell").First.Or(View().Locator(".buildings-cards > *").First)).ToBeVisibleAsync();
+        await Expect(BuildingRows().First).ToBeVisibleAsync();
+        await Expect(BuildingsPlaceholders()).ToHaveCountAsync(0);
+
+        // Live takes 150 ms at most once the page runs, and Slow 1200 ms at least.
+        Assert.IsGreaterThanOrEqualTo(1100, await View().Locator("html").EvaluateAsync<double>("() => window.__seen.rows - window.__seen.placeholders"));
 
         await OpenTools();
         await Press(Tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DataLive, Exact = true }));
         await CloseTools();
 
         await Expect(Page).ToHaveURLAsync(new Regex(@"/workbench/buildings$"));
+        await WaitForViews();
+        await Expect(BuildingRows().First).ToBeVisibleAsync();
+        await Expect(BuildingsPlaceholders()).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheMixedButton_Should_GiveEachOfThePagesSourcesAStateOfItsOwn(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("pos-dashboard");
+
+        await Expect(View().GetByText(WorkbenchStrings.PosWidgetFailedTitle)).ToHaveCountAsync(0);
+
+        await OpenTools();
+        await Press(ToolsButton(WorkbenchStrings.DataMixed));
+
+        await Expect(ToolsButton(WorkbenchStrings.DataMixed)).ToHaveAttributeAsync("aria-pressed", "true");
+
+        await CloseTools();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?data=mixed$"));
+        await WaitForViews();
+        await Expect(View().GetByText(WorkbenchStrings.PosWidgetFailedTitle).First).ToBeVisibleAsync();
+        await Expect(View().GetByText(WorkbenchStrings.PosNoSalesYet).First).ToBeVisibleAsync();
+
+        if (IsPhone is false)
+        {
+            await Expect(Page.Locator(".pane-chip")).ToHaveTextAsync(WorkbenchStrings.DataMixed);
+        }
     }
 
     [TestMethod, EverySurface]
@@ -243,18 +299,60 @@ public class ShellUITests : WorkbenchPageTest
     [TestMethod, EverySurface]
     public async Task Reset_Should_PutTheViewAndWhatWasDoneOnItBack(WorkbenchSurface surface)
     {
-        await OpenWorkbench("buildings", "?theme=dark&data=empty");
+        await OpenWorkbench("buildings", "?theme=dark&data=mixed&device=ipad-mini");
 
-        await Expect(View().GetByText(WorkbenchStrings.BuildingsEmptyTitle)).ToBeVisibleAsync();
+        await Expect(View().GetByText(WorkbenchStrings.BuildingsFailedTitle)).ToBeVisibleAsync();
+
+        await Press(View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosRetry, Exact = true }));
+        await BuildingsSearch().FillAsync("Rotterdam");
+
+        await Expect(BuildingRows()).ToHaveCountAsync(4);
+        await WaitUntilSaved("Rotterdam");
 
         await OpenTools();
-        await Press(Tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Reset, Exact = true }));
+        await Press(ToolsButton(WorkbenchStrings.Reset));
         await CloseTools();
 
-        await Expect(Page).ToHaveURLAsync(new Regex(@"/workbench/buildings$"));
+        await Expect(Page).ToHaveURLAsync(new Regex(@"/workbench/buildings\?device=ipad-mini$"));
         await WaitForViews();
         await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("bit-theme", new Regex("dark"));
-        await Expect(View().GetByText(WorkbenchStrings.BuildingsEmptyTitle)).ToHaveCountAsync(0);
+        await Expect(View().GetByText(WorkbenchStrings.BuildingsFailedTitle)).ToHaveCountAsync(0);
+        await Expect(BuildingsSearch()).ToHaveValueAsync(string.Empty);
+        await Expect(BuildingRows()).Not.ToHaveCountAsync(4);
+
+        if (IsPhone is false)
+        {
+            await Expect(Page.GetByRole(AriaRole.Group, new() { Name = "iPad mini", Exact = true })).ToBeVisibleAsync();
+            await ExpectViewSize(744, 1133);
+        }
+
+        // It stays cleared, as the browser no longer holds it.
+        await WorkbenchTestReviewer.WaitFor(SavedState, saved => saved.Contains("Rotterdam", StringComparison.Ordinal) is false);
+
+        await Page.ReloadAsync();
+        await WaitForViews();
+
+        await Expect(BuildingRows().First).ToBeVisibleAsync();
+        await Expect(BuildingsSearch()).ToHaveValueAsync(string.Empty);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task Reset_Should_ClearOnlyTheSelectedViewsPage(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("buildings", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "ipad-mini" }])}");
+
+        var ids = await PaneIds();
+
+        await BuildingsSearch(ids[0]).FillAsync("Rotterdam");
+        await BuildingsSearch(ids[1]).FillAsync("Euromast");
+
+        await Expect(BuildingRows(ids[1])).ToHaveCountAsync(1);
+
+        await Page.GetByRole(AriaRole.Group, new() { Name = "iPhone SE" }).Locator(".pane-header").ClickAsync();
+        await ToolsButton(WorkbenchStrings.Reset).ClickAsync();
+
+        await Expect(BuildingsSearch(ids[0])).ToHaveValueAsync(string.Empty);
+        await Expect(BuildingsSearch(ids[1])).ToHaveValueAsync("Euromast");
     }
 
     [TestMethod, EverySurface]
@@ -299,11 +397,13 @@ public class ShellUITests : WorkbenchPageTest
     [TestMethod, EverySurface]
     public async Task APageAlone_Should_TakeItsSettingsFromItsAddress(WorkbenchSurface surface)
     {
-        await OpenPreview("theme", "?theme=dark&culture=fa-IR&data=loading");
+        await OpenPreview("buildings", "?theme=dark&culture=fa-IR&data=loading");
 
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = InCulture("fa-IR", nameof(WorkbenchStrings.ThemeHeading)), Level = 2 }).First).ToBeVisibleAsync();
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = InCulture("fa-IR", nameof(WorkbenchStrings.BuildingsHeading)) }).First).ToBeVisibleAsync();
+        await Expect(Page.Locator(".list-pane .state")).ToBeVisibleAsync();
+        await Expect(Page.Locator(".name-cell")).ToHaveCountAsync(0);
         await Expect(Page.Locator(".workbench")).ToHaveCountAsync(0);
     }
 
@@ -337,6 +437,42 @@ public class ShellUITests : WorkbenchPageTest
         await Expect(Page).ToHaveURLAsync(new Regex(@"\?device=galaxy-s26$"));
         await Expect(Page.GetByRole(AriaRole.Group, new() { Name = "Galaxy S26", Exact = true })).ToBeVisibleAsync();
         await Expect(Page.Locator(".pane-size")).ToHaveTextAsync("360×780 · 3x");
+        await ExpectViewSize(360, 780);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task AStoreSize_Should_ShowThatStoresRulesAndGiveTheViewItsSize(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        var appStore = Tools.GetByText(WorkbenchStrings.StoreRuleAppStore);
+        var googlePlay = Tools.GetByText(WorkbenchStrings.StoreRuleGooglePlay);
+        var microsoftStore = Tools.GetByText(WorkbenchStrings.StoreRuleMicrosoftStore);
+
+        await Expect(googlePlay).ToHaveCountAsync(0);
+
+        await Page.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.Device }).ClickAsync();
+        await Page.GetByRole(AriaRole.Option, new() { NameRegex = new Regex("^Google Play .* 1080×1920$") }).ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?device=store-play-phone$"));
+        await Expect(googlePlay).ToBeVisibleAsync();
+        await Expect(appStore).ToHaveCountAsync(0);
+        await ExpectViewSize(360, 640);
+
+        await OpenWorkbench("theme", "?device=store-apple-iphone-69");
+
+        await Expect(appStore).ToBeVisibleAsync();
+        await Expect(googlePlay).ToHaveCountAsync(0);
+
+        await OpenWorkbench("theme", "?device=store-microsoft");
+
+        await Expect(microsoftStore).ToBeVisibleAsync();
+
+        await Page.GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.Device }).ClickAsync();
+        await Page.GetByRole(AriaRole.Option, new() { Name = "Galaxy S26 · 360×780", Exact = true }).ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?device=galaxy-s26$"));
+        await Expect(microsoftStore).ToHaveCountAsync(0);
     }
 
     [TestMethod, OnDesktops]
@@ -356,6 +492,13 @@ public class ShellUITests : WorkbenchPageTest
         await Expect(Page.Locator(".pane-size")).ToContainTextAsync("700×");
         await WaitForViews();
         await Expect(Page.Locator(".breakpoint[aria-pressed='true']")).ToHaveCountAsync(1);
+
+        await Page.GetByLabel(WorkbenchStrings.Height, new() { Exact = true }).FillAsync("500");
+        await Page.GetByLabel(WorkbenchStrings.Height, new() { Exact = true }).BlurAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"size=700x500$"));
+        await Expect(Page.Locator(".pane-size")).ToContainTextAsync("700×500");
+        await ExpectViewSize(700, 500);
     }
 
     [TestMethod, OnDesktops]
@@ -363,15 +506,42 @@ public class ShellUITests : WorkbenchPageTest
     {
         await OpenWorkbench("theme", "?device=custom&size=600x500");
 
-        var handle = Page.Locator(".resize-handle.resize-xy");
-        var box = await handle.BoundingBoxAsync();
+        await ExpectViewSize(600, 500);
 
-        await Page.Mouse.MoveAsync(box!.X + box.Width / 2, box.Y + box.Height / 2);
-        await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(box.X + box.Width / 2 - 100, box.Y + box.Height / 2 - 80, new() { Steps = 5 });
-        await Page.Mouse.UpAsync();
+        await DragBy(Page.Locator(".resize-handle.resize-xy"), -100, -80);
 
-        await Expect(Page).ToHaveURLAsync(new Regex(@"device=custom&size=(?!600x500)\d+x\d+"));
+        await Expect(Page).ToHaveURLAsync(new Regex(@"device=custom&size=500x420$"));
+        await ExpectViewSize(500, 420);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task DraggingAViewsEdge_Should_ChangeOnlyThatSide(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?device=custom&size=600x500");
+
+        await DragBy(Page.Locator(".resize-handle.resize-x"), 120, 40);
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"size=720x500$"));
+        await ExpectViewSize(720, 500);
+
+        await DragBy(Page.Locator(".resize-handle.resize-y"), 30, -60);
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"size=720x440$"));
+        await ExpectViewSize(720, 440);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task DraggingAPhonesEdge_Should_TurnItIntoACustomSize(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?device=iphone-se");
+
+        await ExpectViewSize(375, 667);
+
+        await DragBy(Page.Locator(".resize-handle.resize-x"), 50, 0);
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"device=custom&size=425x667$"));
+        await Expect(Page.GetByRole(AriaRole.Group, new() { Name = WorkbenchStrings.CustomSize, Exact = true })).ToBeVisibleAsync();
+        await ExpectViewSize(425, 667);
     }
 
     [TestMethod, OnDesktops]
@@ -380,16 +550,19 @@ public class ShellUITests : WorkbenchPageTest
         await OpenWorkbench("theme", "?device=iphone-se");
 
         await Expect(Page.Locator(".pane-size")).ToHaveTextAsync("375×667 · 2x");
+        await ExpectViewSize(375, 667);
 
         await Button(WorkbenchStrings.Rotate).ClickAsync();
 
         await Expect(Page.Locator(".pane-size")).ToHaveTextAsync("667×375 · 2x");
         await Expect(Page).ToHaveURLAsync(new Regex("rotated=true"));
         await Expect(Button(WorkbenchStrings.Landscape)).ToHaveAttributeAsync("aria-pressed", "true");
+        await ExpectViewSize(667, 375);
 
         await Button(WorkbenchStrings.Portrait).ClickAsync();
 
         await Expect(Page.Locator(".pane-size")).ToHaveTextAsync("375×667 · 2x");
+        await ExpectViewSize(375, 667);
     }
 
     [TestMethod, OnDesktops]
@@ -411,14 +584,34 @@ public class ShellUITests : WorkbenchPageTest
     {
         await OpenWorkbench("theme", "?device=iphone-se");
 
+        await ExpectShownWidth(375);
+
         await Button("0.5").ClickAsync();
 
         await Expect(Page).ToHaveURLAsync(new Regex("zoom=0.5"));
         await Expect(Page.Locator(".pane-scaler")).ToHaveCSSAsync("--wb-scale", "0.5");
+        await ExpectShownWidth(187.5);
+        await ExpectViewSize(375, 667);
 
         await Button(WorkbenchStrings.ZoomFit).ClickAsync();
 
         await Expect(Page).Not.ToHaveURLAsync(new Regex("zoom="));
+        await ExpectShownWidth(375);
+        await ExpectViewSize(375, 667);
+    }
+
+    private async Task ExpectShownWidth(double width)
+    {
+        var shown = 0d;
+
+        try
+        {
+            await WorkbenchTestReviewer.WaitFor(async () => shown = (await Page.Locator("iframe[data-pane-id='1']").BoundingBoxAsync())!.Width, read => Math.Abs(read - width) < 1);
+        }
+        catch (TimeoutException)
+        {
+            Assert.AreEqual(width, shown, 1);
+        }
     }
 
     [TestMethod, OnDesktops]
@@ -518,8 +711,11 @@ public class ShellUITests : WorkbenchPageTest
         await Expect(Page.Locator(".pane")).ToHaveCountAsync(4);
         await Expect(Page.Locator(".pane-chip")).ToHaveTextAsync([WorkbenchStrings.DataLoading, WorkbenchStrings.DataEmpty, WorkbenchStrings.DataError]);
 
-        var panes = await Page.Locator("iframe[data-pane-id]").EvaluateAllAsync<string[]>("frames => frames.map(f => f.dataset.paneId)");
+        var panes = await PaneIds();
 
+        await Expect(BuildingRows(panes[0]).First).ToBeVisibleAsync();
+        await Expect(BuildingsPlaceholders(panes[1])).ToBeVisibleAsync();
+        await Expect(BuildingRows(panes[1])).ToHaveCountAsync(0);
         await Expect(View(panes[2]).GetByText(WorkbenchStrings.BuildingsEmptyTitle)).ToBeVisibleAsync();
         await Expect(View(panes[3]).GetByText(WorkbenchStrings.BuildingsFailedTitle)).ToBeVisibleAsync();
     }
@@ -558,6 +754,17 @@ public class ShellUITests : WorkbenchPageTest
 
         await Expect(View(panes[0]).GetByRole(AriaRole.Button, new() { Name = AppStrings.AccountMenuTitle }).First).ToBeVisibleAsync();
         await Expect(View(panes[1]).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DemoUserYas }).First).ToBeVisibleAsync();
+
+        // Only the multi-account view has others to move to.
+        foreach (var (pane, others) in new[] { (panes[1], 0), (panes[2], 1) })
+        {
+            await View(pane).Locator(".persona").First.ClickAsync();
+
+            var menu = View(pane).Locator(".app-menu-card");
+
+            await Expect(menu).ToBeInViewportAsync();
+            await Expect(menu.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.DemoUserSaleh, Exact = true })).ToHaveCountAsync(others);
+        }
     }
 
     [TestMethod, OnDesktops]
@@ -571,11 +778,27 @@ public class ShellUITests : WorkbenchPageTest
 
         await Expect(Page.Locator(".pane")).ToHaveCountAsync(2);
 
+        var options = await PaneIds();
+        var seedCount = BuildingSeed.Create().Count;
+
+        await Expect(BuildingsGrid(options[0])).ToBeVisibleAsync();
+        await Expect(BuildingCards(options[0])).ToHaveCountAsync(0);
+        await Expect(BuildingCards(options[1])).ToHaveCountAsync(seedCount);
+        await Expect(BuildingsGrid(options[1])).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".pane-chip")).ToHaveTextAsync([WorkbenchStrings.BuildingsVariantCards]);
+
         await Button(WorkbenchStrings.Compare).ClickAsync();
         await Page.GetByRole(AriaRole.Menuitem, new() { Name = WorkbenchStrings.BuildingsSwitchAmount, Exact = true }).ClickAsync();
         await WaitForViews();
 
         await Expect(Page.Locator(".pane")).ToHaveCountAsync(3);
+
+        var amounts = await PaneIds();
+
+        await Expect(View(amounts[0]).GetByText(BuildingsSubtitle(seedCount, 12))).ToBeVisibleAsync();
+        await Expect(BuildingRows(amounts[1])).ToHaveCountAsync(3);
+        await Expect(View(amounts[2]).GetByText(BuildingsSubtitle(seedCount * 12, 12))).ToBeVisibleAsync();
+        await Expect(Page.Locator(".pane-chip")).ToHaveTextAsync([WorkbenchStrings.BuildingsAmountFew, WorkbenchStrings.BuildingsAmountMany]);
     }
 
     [TestMethod, OnDesktops]
@@ -607,6 +830,34 @@ public class ShellUITests : WorkbenchPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task ABreakpoint_Should_GiveThePageTheLayoutOfThatWidth(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?device=desktop-1536");
+
+        var breakpoints = Page.GetByRole(AriaRole.Group, new() { Name = WorkbenchStrings.Breakpoints }).GetByRole(AriaRole.Button);
+        var bottomBar = View().Locator("section.nav-bar");
+        var menuButton = View().GetByRole(AriaRole.Button, new() { Name = AppStrings.OpenNavigationMenuTitle, Exact = true });
+
+        await ExpectViewSize(1536, 864);
+        await Expect(bottomBar).ToBeHiddenAsync();
+        await Expect(menuButton).ToBeHiddenAsync();
+
+        await breakpoints.First.ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"device=custom&size=375x864$"));
+        await ExpectViewSize(375, 864);
+        await Expect(bottomBar).ToBeVisibleAsync();
+        await Expect(menuButton).ToBeVisibleAsync();
+
+        await breakpoints.Last.ClickAsync();
+
+        await Expect(Page).Not.ToHaveURLAsync(new Regex(@"size=375x864"));
+        await WaitForViews();
+        await Expect(bottomBar).ToBeHiddenAsync();
+        await Expect(menuButton).ToBeHiddenAsync();
+    }
+
+    [TestMethod, OnDesktops]
     public async Task CopyLink_Should_PutAnAddressThatOpensTheSameViewsOnTheClipboard(WorkbenchSurface surface)
     {
         await Context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
@@ -616,6 +867,18 @@ public class ShellUITests : WorkbenchPageTest
         await Button(WorkbenchStrings.CopyLink).ClickAsync();
 
         await WorkbenchTestReviewer.WaitFor(() => Page.EvaluateAsync<string>("() => navigator.clipboard.readText()"), text => text.EndsWith("/workbench/theme?theme=dark", StringComparison.Ordinal));
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task CopyLink_Should_SaySoWhenTheBrowserRefuses(WorkbenchSurface surface)
+    {
+        await Context.AddInitScriptAsync("navigator.clipboard.writeText = () => Promise.reject(new Error('Refused'))");
+
+        await OpenWorkbench("theme");
+
+        await Button(WorkbenchStrings.CopyLink).ClickAsync();
+
+        await Expect(Page.Locator(".bit-snb-ttl", new() { HasText = WorkbenchStrings.CopyFailed }).First).ToBeVisibleAsync();
     }
 
     [TestMethod, OnDesktops]
@@ -655,6 +918,48 @@ public class ShellUITests : WorkbenchPageTest
     }
 
     [TestMethod, OnDesktops]
+    [TestCategory("Localization")]
+    public async Task TheSideColumnsTabs_Should_MoveTheOtherWayInRightToLeft(WorkbenchSurface surface)
+    {
+        await Page.GotoAsync(Server.Address.ToString());
+        await WaitUntilInteractive();
+
+        await Page.Locator("header.shell-header").GetByRole(AriaRole.Combobox, new() { Name = WorkbenchStrings.Language }).ClickAsync();
+        await Page.GetByRole(AriaRole.Option, new() { Name = "فارسی", Exact = true }).ClickAsync();
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
+
+        await OpenWorkbench("theme");
+
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("dir", "rtl");
+
+        await Page.Locator("#wb-tab-view").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowLeft");
+
+        await Expect(Page.Locator("#wb-tab-review")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Page.Locator("#wb-tab-review")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Page.Locator("#wb-tab-view")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(Page.Locator("#wb-tab-view")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("ArrowRight");
+
+        await Expect(Page.Locator("#wb-tab-flows")).ToHaveAttributeAsync("aria-selected", "true");
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task TheLogoInTheTopBar_Should_LeadHome(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        await Page.Locator(".topbar").GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.WorkbenchTitle }).ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(Server.Address.ToString());
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeHeadline, Level = 1 })).ToBeVisibleAsync();
+    }
+
+    [TestMethod, OnDesktops]
     public async Task ThePagesTitleInTheTopBar_Should_FollowThePage(WorkbenchSurface surface)
     {
         await OpenWorkbench("theme");
@@ -679,6 +984,7 @@ public class ShellUITests : WorkbenchPageTest
         Assert.AreEqual(Page.ViewportSize!.Width, box.Width);
         Assert.AreEqual(Page.ViewportSize.Height, box.Height);
 
+        await ExpectViewSize(Page.ViewportSize.Width, Page.ViewportSize.Height);
         await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.BuildingsHeading })).ToBeVisibleAsync();
         await Expect(Page.Locator(".workbench")).ToHaveCountAsync(0);
         await Expect(Page.Locator(".pane-header")).ToHaveCountAsync(0);
@@ -710,6 +1016,72 @@ public class ShellUITests : WorkbenchPageTest
         await Expect(View().Locator("body")).Not.ToHaveClassAsync(new Regex("wb-touch"));
     }
 
+    [TestMethod, OnDesktops]
+    public async Task AMouseDragInAHandheldView_Should_ScrollItTheWayAFingerDoes(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        await Expect(View().Locator("body")).ToHaveClassAsync(new Regex("wb-touch"));
+        Assert.AreEqual(0, await ViewScroll());
+
+        await DragBy(Page.Locator("iframe[data-pane-id='1']"), 0, -250);
+
+        await WorkbenchTestReviewer.WaitFor(ViewScroll, scroll => scroll > 100);
+
+        var scrolled = await ViewScroll();
+
+        await DragBy(Page.Locator("iframe[data-pane-id='1']"), 0, 120);
+
+        await WorkbenchTestReviewer.WaitFor(ViewScroll, scroll => scroll < scrolled);
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task AMouseDragInAHandheldView_Should_NotPressWhatItStartedOn(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("buildings", "?variant=cards");
+
+        var card = BuildingCards().First.Locator(".card-main");
+
+        await View().Locator("body").EvaluateAsync("body => { window.__presses = 0; body.addEventListener('click', () => window.__presses++); }");
+
+        await DragBy(card, 0, -150);
+
+        await WorkbenchTestReviewer.WaitFor(ViewScroll, scroll => scroll > 50);
+
+        Assert.AreEqual(0, await View().Locator("body").EvaluateAsync<int>("() => window.__presses"));
+        await Expect(BuildingCards().First).Not.ToHaveClassAsync(new Regex("selected"));
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task APlainClickInAHandheldView_Should_StillPress(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("buildings", "?variant=cards");
+
+        await BuildingCards().First.Locator(".card-main").ClickAsync();
+
+        await Expect(BuildingCards().First).ToHaveClassAsync(new Regex("selected"));
+
+        // A hand that moves a little on the way isn't a drag.
+        await DragBy(BuildingCards().Nth(1).Locator(".card-main"), 3, 2);
+
+        await Expect(BuildingCards().Nth(1)).ToHaveClassAsync(new Regex("selected"));
+        Assert.AreEqual(0, await ViewScroll());
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task AMouseDragInADesktopSizedView_Should_NotScrollIt(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?device=desktop-1536");
+
+        await Expect(View().Locator("body")).Not.ToHaveClassAsync(new Regex("wb-touch"));
+
+        await DragBy(Page.Locator("iframe[data-pane-id='1']"), 0, -200);
+
+        Assert.AreEqual(0, await ViewScroll());
+    }
+
+    private Task<double> ViewScroll() => View().Locator("html").EvaluateAsync<double>("html => [html, ...html.querySelectorAll('*')].reduce((sum, element) => sum + element.scrollTop, 0)");
+
     [TestMethod, OnPhones]
     public async Task ALinkWithADeviceOnAPhone_Should_KeepTheDeviceInTheAddressAndStillFillTheScreen(WorkbenchSurface surface)
     {
@@ -718,6 +1090,8 @@ public class ShellUITests : WorkbenchPageTest
         var box = await Page.Locator("iframe[data-pane-id='1']").BoundingBoxAsync();
 
         Assert.AreEqual(Page.ViewportSize!.Width, box!.Width);
+
+        await ExpectViewSize(Page.ViewportSize.Width, Page.ViewportSize.Height);
 
         await Press(View().Locator(".persona").First);
         await Press(View().GetByRole(AriaRole.Button, new() { Name = AppStrings.Light, Exact = true }));
@@ -752,6 +1126,46 @@ public class ShellUITests : WorkbenchPageTest
         await Expect(Page.Locator(".phone-layout")).ToBeVisibleAsync();
         await WaitForViews();
         await Expect(View().Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+    }
+
+    [TestMethod, OnPhones]
+    public async Task TheToolsButton_Should_MoveWithAFingerAndStillOpenTheTools(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        var button = Page.Locator(".tools-button");
+        var start = (await button.BoundingBoxAsync())!;
+
+        await DragWithAFinger((start.X + start.Width / 2, start.Y + start.Height / 2), (start.X + start.Width / 2 - 150, start.Y + start.Height / 2 - 300));
+
+        var moved = (await button.BoundingBoxAsync())!;
+
+        Assert.AreEqual(start.X - 150, moved.X, 8);
+        Assert.AreEqual(start.Y - 300, moved.Y, 8);
+
+        // A drag isn't a press.
+        await Expect(Page.Locator(".tools-header")).ToHaveCountAsync(0);
+
+        // A press still is one, from where the button is now, once the hand is back: the button ignores one for 100 ms after a drag.
+        await Page.WaitForTimeoutAsync(200);
+        await OpenTools();
+        await CloseTools();
+
+        var after = (await button.BoundingBoxAsync())!;
+
+        Assert.AreEqual(moved.X, after.X, 1);
+        Assert.AreEqual(moved.Y, after.Y, 1);
+
+        // It can't be lost off the screen.
+        await DragWithAFinger((after.X + after.Width / 2, after.Y + after.Height / 2), (Page.ViewportSize!.Width - 1, 1));
+
+        var atTheEdge = (await button.BoundingBoxAsync())!;
+
+        Assert.IsLessThanOrEqualTo(Page.ViewportSize.Width, atTheEdge.X + atTheEdge.Width);
+        Assert.IsGreaterThanOrEqualTo(0, atTheEdge.Y);
+
+        await Page.WaitForTimeoutAsync(200);
+        await OpenTools();
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.PhoneWithAgent)]

@@ -20,7 +20,7 @@ public class HomePageUITests : WorkbenchPageTest
         await OpenHome();
 
         await Expect(Page).ToHaveTitleAsync(WorkbenchStrings.HomePageTitle);
-        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeHeadline, Level = 1 })).ToBeVisibleAsync();
+        await Expect(Headline).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeWhyTitle, Level = 2 })).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeHowTitle, Level = 2 })).ToBeVisibleAsync();
         await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.HomeWhyCustomizeTitle, Level = 3 })).ToBeVisibleAsync();
@@ -182,6 +182,18 @@ public class HomePageUITests : WorkbenchPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheFootersPageLinks_Should_OpenThatPage(WorkbenchSurface surface)
+    {
+        await OpenHome();
+
+        await Press(Page.Locator("footer.home-footer").GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.ShiftsTitle, Exact = true }));
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts$"));
+        await WaitForViews();
+        await Expect(Page).ToHaveTitleAsync($"{WorkbenchStrings.ShiftsTitle} · {WorkbenchStrings.WorkbenchTitle}");
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheFootersLogo_Should_LeadToTheTopOfTheHomePage(WorkbenchSurface surface)
     {
         await OpenHome();
@@ -210,6 +222,17 @@ public class HomePageUITests : WorkbenchPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheAllFlowsCard_Should_LeadToTheFlows(WorkbenchSurface surface)
+    {
+        await OpenHome();
+
+        await Press(Page.Locator("a.all-flows"));
+
+        await Expect(Page).ToHaveURLAsync(new Regex($"{WorkbenchUrls.Flows}$"));
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.Flows, Level = 1 })).ToBeVisibleAsync();
+    }
+
+    [TestMethod, EverySurface]
     public async Task ThePromptsCopyButton_Should_PutThePromptOnTheClipboard(WorkbenchSurface surface)
     {
         await Context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
@@ -223,28 +246,6 @@ public class HomePageUITests : WorkbenchPageTest
         await WorkbenchTestReviewer.WaitFor(() => Page.EvaluateAsync<string>("() => navigator.clipboard.readText()"), text => text == WorkbenchStrings.HomeCtaPrompt);
 
         await Expect(Button(WorkbenchStrings.HomeCtaCopy)).ToBeVisibleAsync();
-    }
-
-    [TestMethod, EverySurface]
-    public async Task ThePagesCard_Should_ShowItsReviewOnlyOnceItHasOne(WorkbenchSurface surface)
-    {
-        await OpenHome();
-
-        var card = Page.Locator("a.page-card").Filter(new() { HasText = WorkbenchStrings.BuildingsTitle });
-
-        await Expect(card.Locator(".page-title")).ToBeVisibleAsync();
-
-        if (HasAgent is false)
-        {
-            await Expect(card.Locator(".page-review")).ToHaveCountAsync(0);
-            return;
-        }
-
-        await using var reviewer = await WorkbenchTestReviewer.Open(Server, name: "Home reviewer");
-
-        await reviewer.Comment(Server, "pos-dashboard", $"A comment for the home page {Guid.NewGuid():N}");
-
-        await Expect(Page.Locator("a.page-card").Filter(new() { HasText = WorkbenchStrings.PosDashboardTitle }).Locator(".review-count")).ToBeVisibleAsync();
     }
 
     [TestMethod, EverySurface]
