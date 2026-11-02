@@ -1,0 +1,98 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>MCP server</h1>
+    <p class="bb-subtitle">
+        This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent building a menu, a
+        listbox or a dialog with Bit.Bheadless reads the library itself - its component families, their parts and
+        parameters, the guide and these demo pages - instead of writing the ARIA wiring from memory. Every tool is
+        read-only.
+    </p>
+</div>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Connect a client</h3>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else.
+    </p>
+
+    <CodeBlock Language="json" Code="@ClientConfig" />
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Tools</h3>
+
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Tool</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var tool in Tools)
+                {
+                    <tr>
+                        <td class="bb-table-key"><code>@tool.Name</code></td>
+                        <td>@((MarkupString)tool.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> The same tools over plain HTTP</h3>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul class="bb-detail-list">
+        @foreach (var (href, text) in HttpExamples)
+        {
+            <li><a href="@href" target="_blank" rel="noopener">@text</a></li>
+        }
+    </ul>
+</section>
+
+@code {
+    private const string ClientConfig = """
+        {
+          "mcpServers": {
+            "bheadless": {
+              "type": "http",
+              "url": "https://bheadless.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+
+    // The server's tools (Demo/Server/Controllers/McpController.cs), in the order an agent usually needs them.
+    // The one place to change when a tool is added, renamed or retired; the description is markup.
+    private static readonly (string Name, string Description)[] Tools =
+    [
+        ("SearchBheadless",
+            "Everything at once - the component families, every part and parameter, the library's other types, the demo's examples and the guide - asked by what the UI has to do or by a name, each hit with the exact follow-up call."),
+        ("GetBheadlessSetupGuide",
+            "The package, the service registration, the using and the render mode an app needs - or, with a topic, one section of the guide: state, <code>Template</code>, positioning, overlays, announcements, right-to-left, styling hooks, testing."),
+        ("GetBheadlessComponent",
+            "A component family's parts with their parameters, real defaults, two-way bindings, rendered element and <code>data-*</code> / <code>aria-*</code> hooks - or the catalog of every family, grouped by area."),
+        ("GetBheadlessExamples",
+            "This site's examples of a family as the code they run - the Razor with its CSS, or with Tailwind classes - each with the paragraph that explains it."),
+    ];
+
+    private static readonly (string Href, string Text)[] HttpExamples =
+    [
+        ("/api/mcp/SearchBheadless?query=dropdown%20menu%20with%20submenus", "/api/mcp/SearchBheadless?query=dropdown menu with submenus"),
+        ("/api/mcp/GetBheadlessComponent?names=Menu", "/api/mcp/GetBheadlessComponent?names=Menu"),
+        ("/api/mcp/GetBheadlessExamples?name=Combobox&styling=tailwind", "/api/mcp/GetBheadlessExamples?name=Combobox&styling=tailwind"),
+        ("/api/mcp/GetBheadlessSetupGuide?topic=Positioning", "/api/mcp/GetBheadlessSetupGuide?topic=Positioning"),
+    ];
+}

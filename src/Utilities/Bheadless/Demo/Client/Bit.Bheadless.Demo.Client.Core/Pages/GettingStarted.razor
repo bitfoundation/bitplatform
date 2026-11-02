@@ -1,0 +1,198 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started · Bheadless</PageTitle>
+
+<div class="bb-intro">
+    <h1>Getting started</h1>
+    <p class="bb-subtitle">
+        One package and one service registration - then plain Razor components that render semantic HTML with the
+        keyboard, focus and ARIA wiring done, and nothing else. Bheadless ships no CSS: every state is a
+        <code>data-*</code> or ARIA attribute your own stylesheet, Tailwind or design system styles.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Install</h3>
+    <p class="bb-card-desc">
+        In a Blazor Web App with an interactive client, the package belongs in the <code>.Client</code> project,
+        next to the pages that use it.
+    </p>
+    <pre class="bb-code">dotnet add package Bit.Bheadless</pre>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Register the services</h3>
+    <p class="bb-card-desc">
+        It registers <code>BitBhInterop</code>, the scoped wrapper around the library's script, the live-region
+        announcer <code>IBitBhAnnouncer</code> and the toast queue <code>BitBhToaster</code>. The components fall back
+        to sensible defaults without it, but register it anyway - in a Blazor Web App in both <code>Program.cs</code>
+        files, because the pages are prerendered on the server before they run in the browser.
+    </p>
+    <CodeBlock Language="csharp" Code="@RegisterCode" />
+    <p class="bb-card-desc">And the namespace, in <code>_Imports.razor</code>:</p>
+    <CodeBlock Code="@ImportsCode" />
+    <div class="bb-note">
+        There is no stylesheet to link and no script tag to add: the small runtime, <code>bit-bheadless.js</code>, is
+        loaded by a Razor class library initializer. The components need an <strong>interactive</strong> render mode
+        to respond to input; prerendered, they render their initial, accessible markup.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A first component</h3>
+    <p class="bb-card-desc">
+        A component family is a parent and its parts: <code>BitBhDisclosure</code> owns the open state and cascades it
+        to <code>BitBhDisclosureButton</code> and <code>BitBhDisclosurePanel</code>, which render a
+        <code>&lt;button&gt;</code> and a <code>&lt;div&gt;</code> with <code>aria-expanded</code>,
+        <code>aria-controls</code> and <code>data-state</code> already set. The classes are yours.
+    </p>
+
+    <div class="bb-demo">
+        <div class="bb-demo-bar"><span class="bb-demo-label">Live</span></div>
+        <BitBhDisclosure class="disclosure">
+            <BitBhDisclosureButton class="disclosure-button">
+                <Template Context="d">
+                    @(d.IsOpen ? "Hide details" : "Show details")
+                    <span class="disclosure-chevron @(d.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhDisclosureButton>
+            <BitBhDisclosurePanel class="disclosure-panel">
+                <div class="disclosure-body">
+                    Opened with a click, <kbd>Enter</kbd> or <kbd>Space</kbd> - and a screen reader hears that the
+                    button is expanded.
+                </div>
+            </BitBhDisclosurePanel>
+        </BitBhDisclosure>
+    </div>
+
+    <CodeBlock Code="@FirstComponentCode" />
+    <CodeBlock Language="css" Code="@FirstComponentCss" />
+
+    <div class="bb-note">
+        Most of the time CSS is all the state you need - style <code>[data-state="open"]</code> directly. Reach for a
+        part's <code>Template</code>, as the chevron does here, only when the markup itself depends on the state.
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Core concepts</h3>
+    <div class="bb-scroll">
+        <table class="bb-table">
+            <thead>
+                <tr><th>Concept</th><th>In Bheadless</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="bb-table-key">Compound components</td>
+                    <td>A parent owns the state and cascades it to its parts: <code>BitBhMenu</code> and its <code>BitBhMenuButton</code>, <code>BitBhMenuItems</code> and <code>BitBhMenuItem</code>s. <code>ChildContent</code> is always a plain <code>RenderFragment</code>, so parts nest freely inside an <code>EditForm</code>, a panel or each other.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">State</td>
+                    <td>Every stateful part is controlled (<code>@@bind-Value</code>), uncontrolled (<code>DefaultValue</code>, <code>DefaultOpen</code>) or uncontrolled and notified (<code>OnValueChange</code>).</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Template</td>
+                    <td>A part's <code>Template</code> hands its child content the part's state - <code>IsOpen</code>, <code>IsActive</code>, <code>IsSelected</code> - for markup that depends on it.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Common parameters</td>
+                    <td><code>As</code> renders another element, <code>Id</code> overrides the generated one (the <code>aria-*</code> references follow it) and <code>Ref</code> hands over the element. Any other attribute - <code>class</code>, <code>style</code>, <code>data-*</code>, <code>aria-*</code>, an <code>@@onclick</code> - is forwarded and merged.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Styling hooks</td>
+                    <td><code>data-state</code>, <code>data-active</code>, <code>data-highlighted</code>, <code>data-selected</code>, <code>data-disabled</code>, <code>data-invalid</code>, <code>data-orientation</code>, <code>data-anchor</code> and the ARIA states they mirror.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Positioning</td>
+                    <td>Floating parts take an <code>Anchor</code> - a placement such as <code>"bottom start"</code> or a <code>BitBhAnchorOptions</code> with gap, flip, shift and size matching - and expose the measured sizes as <code>--bit-bh-*</code> CSS variables.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Overlays</td>
+                    <td>Escape and outside clicks dismiss the topmost layer only, and <code>OnDismissRequest</code> can cancel it. Modals trap focus, make the rest of the page <code>inert</code>, lock scrolling and give focus back on close; closing parts stay mounted until their exit animation ends.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Announcements</td>
+                    <td><code>IBitBhAnnouncer</code> speaks through a shared polite / assertive live region - the command palette's result counts and the toasts use it, and so can your own code.</td>
+                </tr>
+                <tr>
+                    <td class="bb-table-key">Right-to-left</td>
+                    <td><code>BitBhDirectionProvider</code> (or <code>Dir</code> on a component) mirrors the horizontal arrow keys.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Plain CSS or Tailwind</h3>
+    <p class="bb-card-desc">
+        Every component page on this site comes twice: once styled with hand-written CSS, once with Tailwind v4
+        utilities and <code>data-*</code> variants. The switcher at the top of a page moves between the two; the
+        components and their markup are the same in both.
+    </p>
+    <CodeBlock Code="@TailwindCode" />
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Where to go next</h3>
+    <div class="bb-try">
+        <a href="menu" class="btn btn-outline">Build a dropdown menu →</a>
+        <a href="dialog" class="btn btn-outline">Open a modal dialog →</a>
+        <a href="combobox" class="btn btn-outline">Filter a combobox →</a>
+        <a href="tabs" class="btn btn-outline">Switch tabs with the arrows →</a>
+        <a href="popover" class="btn btn-outline">Anchor a popover →</a>
+        <a href="accessibility" class="btn btn-outline">Announce to screen readers →</a>
+        <a href="tw" class="btn btn-outline">Style it with Tailwind →</a>
+        <a href="mcp-server" class="btn btn-outline">Let an AI agent read the docs →</a>
+    </div>
+</div>
+
+@code {
+    // The snippets the page shows, coloured by CodeBlock.
+
+    private const string RegisterCode = """
+        // Program.cs - in every project that renders the components
+        builder.Services.AddBitBheadlessServices();
+        """;
+
+    private const string ImportsCode = "@using Bit.Bheadless";
+
+    private const string FirstComponentCode = """
+        <BitBhDisclosure class="disclosure">
+            <BitBhDisclosureButton class="disclosure-button">
+                <Template Context="d">
+                    @(d.IsOpen ? "Hide details" : "Show details")
+                    <span class="disclosure-chevron @(d.IsOpen ? "open" : "")" aria-hidden="true">▾</span>
+                </Template>
+            </BitBhDisclosureButton>
+            <BitBhDisclosurePanel class="disclosure-panel">
+                <div class="disclosure-body">...</div>
+            </BitBhDisclosurePanel>
+        </BitBhDisclosure>
+        """;
+
+    private const string FirstComponentCss = """
+        .disclosure-button {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .disclosure-button[data-state="open"] {
+            background: var(--color-fill);
+        }
+
+        .disclosure-button:focus-visible {
+            outline: 2px solid var(--color-focus);
+        }
+
+        .disclosure-chevron.open {
+            transform: rotate(180deg);
+        }
+        """;
+
+    private const string TailwindCode = """
+        <BitBhMenuItem class="rounded px-2 py-1 data-highlighted:bg-blue-50 data-disabled:opacity-50">Edit</BitBhMenuItem>
+        <BitBhTab class="border-b-2 border-transparent data-[state=active]:border-blue-600">Profile</BitBhTab>
+        """;
+}

@@ -27,8 +27,10 @@
     <meta name="description" content="bit Bheadless - accessible, unstyled UI primitives for Blazor: keyboard interaction, focus management, positioning, dismissal and WAI-ARIA semantics, styled with plain CSS or Tailwind." />
     <ResourcePreloader />
     @* Render-blocking on purpose: sets <html data-theme> before the first paint. *@
-    <script src="@Assets["_content/Bit.Bheadless.Demo.Client.Core/theme.js"]"></script>
-    <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/app.css"]" />
+    <script src="@Assets["theme.js"]"></script>
+    @* The site kit (app.css, theme.js, site.js - shared by every Utilities demo), then this demo's own sample styles. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demo.css"]" />
     @* Styles of the newer demo pages (plain CSS section), one file per component. *@
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/accessibility.css"]" />
     <link rel="stylesheet" href="@Assets["_content/Bit.Bheadless.Demo.Client.Core/demos/command.css"]" />
@@ -98,6 +100,7 @@
         <ReconnectModal />
     }
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["site.js"]"></script>
 </body>
 
 </html>
