@@ -153,6 +153,23 @@ public class ReviewAgentUITests : ReviewPageTest
         await Expect(AgentLine).ToHaveTextAsync(Formatted(WorkbenchStrings.AgentListening, AgentName));
     }
 
+    [TestMethod, WithAnAgent]
+    public async Task TheAgentLine_Should_GoIdleOnceTheAgentStopsCalling(WorkbenchSurface surface)
+    {
+        await Server.Agent.Wait(AgentName, long.MaxValue, TimeSpan.Zero, CancellationToken.None);
+
+        await OpenWorkbench("shifts");
+        await OpenReview();
+
+        await Expect(AgentLine).ToHaveTextAsync(Formatted(WorkbenchStrings.AgentListening, AgentName));
+
+        // Its last call was just long enough ago, and nothing changes in the review after that.
+        await SetAgentLastSeen(AgentName, null, DateTimeOffset.UtcNow - WorkbenchReviewAgentInfo.OnlineFor + TimeSpan.FromSeconds(2));
+
+        await Expect(AgentLine).ToHaveTextAsync(WorkbenchStrings.NoAgentListening);
+        await Expect(AgentLine).Not.ToHaveClassAsync(new Regex(@"\bactive\b"));
+    }
+
     [TestMethod, WithoutAnAgent]
     public async Task TheAgentLine_Should_SayOfflineWhateverTheReviewRemembers(WorkbenchSurface surface)
     {

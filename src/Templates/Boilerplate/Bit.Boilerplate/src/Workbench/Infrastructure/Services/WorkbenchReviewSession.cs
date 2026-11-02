@@ -18,6 +18,7 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
     private bool? canWrite;
     private Task? opening;
     private BcrdtCollaborativeDocument? document;
+    private Timer? agentGoneTimer;
 
     /// <summary>Raised after the document changes, whoever changed it.</summary>
     public event Action? Changed;
@@ -217,10 +218,24 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
         Pages = WorkbenchReviewDocument.ReadPages(document.GetMap("pages"));
         Agent = WorkbenchReviewDocument.ReadAgent(document.GetMap("agent"));
         Flows = WorkbenchReviewDocument.ReadFlows(document.GetMap("flows"));
+
+        WatchAgent();
+    }
+
+    /// <summary>An agent that stops calling changes nothing in the document, so the review is told once it counts as gone.</summary>
+    private void WatchAgent()
+    {
+        if (Agent is not { IsActive: true } agent)
+            return;
+
+        agentGoneTimer ??= new(_ => Changed?.Invoke());
+        agentGoneTimer.Change(agent.At + WorkbenchReviewAgentInfo.OnlineFor + TimeSpan.FromSeconds(1) - DateTimeOffset.UtcNow, Timeout.InfiniteTimeSpan);
     }
 
     public async ValueTask DisposeAsync()
     {
+        agentGoneTimer?.Dispose();
+
         if (document is null)
             return;
 
