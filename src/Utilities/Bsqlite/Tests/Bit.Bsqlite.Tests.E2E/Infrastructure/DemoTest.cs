@@ -9,19 +9,25 @@ namespace Bit.Bsqlite.Tests.E2E.Infrastructure;
 /// </summary>
 public abstract class DemoTest : BsqliteTest
 {
-    private PlaywrightSession.DemoSession? _demo;
+    private string? _baseUrl;
 
-    /// <summary>The origin the demo answers at, without a trailing slash.</summary>
-    protected string DemoUrl => (_demo?.Host ?? throw new InvalidOperationException("The demo is started in TestInitialize.")).BaseUrl;
+    /// <summary>The origin the app under test answers at - the demo's, unless a suite drives another - without a trailing slash.</summary>
+    protected string DemoUrl => _baseUrl ?? throw new InvalidOperationException("The demo is started in TestInitialize.");
 
     [TestInitialize]
-    public async Task StartDemoAsync()
-    {
-        _demo = await PlaywrightSession.GetDemoAsync();
-        if (_demo.Unavailable is not { } reason) return;
+    public async Task StartDemoAsync() => _baseUrl = await StartHostAsync();
 
-        if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The demo tests could not run: " + reason);
-        Assert.Inconclusive("The demo tests could not run: " + reason);
+    /// <summary>Starts the app the suite drives, once for the run, and returns its origin: the demo, unless a suite drives another.</summary>
+    protected virtual async Task<string> StartHostAsync()
+    {
+        var demo = await PlaywrightSession.GetDemoAsync();
+        if (demo.Unavailable is { } reason)
+        {
+            if (E2EEnvironment.IsContinuousIntegration) Assert.Fail("The demo tests could not run: " + reason);
+            Assert.Inconclusive("The demo tests could not run: " + reason);
+        }
+
+        return demo.Host!.BaseUrl;
     }
 
     /// <summary>

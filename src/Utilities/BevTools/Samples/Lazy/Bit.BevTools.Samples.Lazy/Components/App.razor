@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>BevTools lazy loading sample</title>
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Without it a browser asks for /favicon.ico, which this app does not serve. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The pages run in the browser, where the layout's "Open dev tools" button downloads Bit.BevTools.wasm. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

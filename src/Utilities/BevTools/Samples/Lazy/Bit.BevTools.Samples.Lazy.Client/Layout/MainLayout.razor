@@ -1,0 +1,31 @@
+﻿@inherits LayoutComponentBase
+@inject BevToolsLoader BevToolsLoader
+
+@* Every page shares this layout, so it renders before Bit.BevTools.wasm is downloaded: it names the loader's types
+   only (BevToolsLoader, BevToolsLoaderPanel), never one of Bit.BevTools'. data-interactive turns true once the page
+   runs in the browser; the end-to-end tests wait for it. *@
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <nav class="topbar">
+        <NavLink href="" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink href="counter">Counter</NavLink>
+
+        @* The server prerenders this layout, and serves many users: outside Development CanOpen is false there, so the
+           button appears once the page runs in the browser, which only ever shows its user their own process. *@
+        @if (BevToolsLoader.CanOpen)
+        {
+            <button type="button" class="btn" @onclick="BevToolsLoader.OpenAsync">Open dev tools</button>
+        }
+    </nav>
+
+    @if (RendererInfo.IsInteractive && BevToolsLoader.Problem is { } problem)
+    {
+        <p class="problem" role="alert">@problem</p>
+    }
+
+    <main>
+        @Body
+    </main>
+</div>
+
+@* Instead of <BevToolsPanel />: renders it once BevTools runs in this app - here, once OpenAsync loaded and attached it. *@
+<BevToolsLoaderPanel />

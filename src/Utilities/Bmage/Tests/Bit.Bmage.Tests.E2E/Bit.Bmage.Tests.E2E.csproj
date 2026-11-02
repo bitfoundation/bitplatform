@@ -29,6 +29,11 @@
         <ProjectReference Include="..\..\Bit.Bmage\Bit.Bmage.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The lazy loading harness every lazy-loadable library shares (src/Utilities/Shared/LazyLoading.md). -->
+        <Compile Include="..\..\..\Shared\Tests\E2E\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
     <!-- Deliberately no ProjectReference to the demo: it is a separate process the suite boots (or an
          already-running deployment, BMAGE_E2E_HOST_URL), and a reference would pull a Blazor
          WebAssembly build into this project's own. Infrastructure/DemoBuild builds it before the first

@@ -1,7 +1,8 @@
 name: bit platform CI - Blow E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven with Playwright in Chromium, Firefox
-# and WebKit. It takes far longer than the build-and-unit pipeline (bit.ci.Blow.yml), so it runs only when started by
+# and WebKit, and the published lazy loading sample next to it - trimmed in every engine and, in a job of its own,
+# AOT-compiled. It takes far longer than the build-and-unit pipeline (bit.ci.Blow.yml), so it runs only when started by
 # hand. See src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/README.md for what it proves and how to run it locally.
 
 on:
@@ -52,6 +53,12 @@ jobs:
     - name: Publish the demo
       run: dotnet publish src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
 
+    # Published rather than built for the same reason: LazyLoadingTests drives what an app that lazy loads ships,
+    # trimmed, and only a publish writes the lazy mark into the boot configuration. The suite starts it from its
+    # publish folder.
+    - name: Publish the lazy loading sample
+      run: dotnet publish src/Utilities/Blow/Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj -c Release
+
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
 
@@ -87,4 +94,59 @@ jobs:
         path: |
           **/blow-e2e-${{ matrix.browser }}.trx
           demo.log
+        if-no-files-found: ignore
+
+  # The README's setup for an AOT build: the sample's project file leaves the lazy mark and the router's switch out when
+  # RunAOTCompilation is true, so Bit.Blow loads with the app. LazyLoadingTests (BLOW_E2E_LAZY_AOT=1) checks that the
+  # workflow page then works all the same and nothing is downloaded on demand.
+  lazy-loading-aot:
+    name: Blow lazy loading (AOT)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    # Every test opens the session the suite shares, which starts the demo before anything else. These tests do not
+    # drive it, so its build output is enough here.
+    - name: Build the demo, publish the lazy loading sample with AOT and build the E2E suite
+      run: |
+        dotnet build src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Blow/Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+        dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run the lazy loading tests against the AOT publish
+      env:
+        BLOW_E2E_LAZY_AOT: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E &&
+        dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
+        --report-trx --report-trx-filename blow-e2e-lazy-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: blow-e2e-lazy-aot
+        path: '**/blow-e2e-lazy-aot.trx'
         if-no-files-found: ignore

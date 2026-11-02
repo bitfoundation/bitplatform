@@ -1,0 +1,18 @@
+﻿@page "/counter"
+
+<PageTitle>Counter - BevTools lazy loading sample</PageTitle>
+
+<h1>Counter</h1>
+
+<p>Something for BevTools to watch: each click renders this page again, with the cause it was rendered for.</p>
+
+<p>
+    <button type="button" class="btn" @onclick="Increment">Click me</button>
+    <span id="count">Current count: @_count</span>
+</p>
+
+@code {
+    private int _count;
+
+    private void Increment() => _count++;
+}

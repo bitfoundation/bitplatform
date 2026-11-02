@@ -1,4 +1,5 @@
 ﻿using Bit.Bortable.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 
@@ -10,16 +11,14 @@ namespace Bit.Bortable.Tests.E2E;
 /// configuration - and driven in a browser. Its home page has no list and never downloads <c>Bit.Bortable.wasm</c>; its
 /// board has the router download it before the page renders, and its lists, which find no registration but the
 /// <c>Bit.Bortable.Unregistered</c> switch, create their coordinator themselves and hand items to each other. A deep link
-/// to the board is prerendered by the server, which registers the <c>LazyAssemblyLoader</c> its router injects.
+/// to the board is prerendered by the server, which registers the <c>LazyAssemblyLoader</c> its router injects. Published
+/// with AOT (<c>BORTABLE_E2E_LAZY_AOT=1</c>), the sample loads Bit.Bortable with the app, as the README says an AOT build
+/// must, and works just the same.
 /// </summary>
 [TestClass]
 public sealed class LazyLoadingTests : BortableTest
 {
-    // The fingerprinted file the browser downloads for it: _framework/Bit.Bortable.<hash>.wasm.
-    private const string AssemblyDownloaded =
-        @"() => performance.getEntriesByType('resource').some(e => /^\/_framework\/Bit\.Bortable(\.\w+)?\.wasm$/.test(new URL(e.name).pathname))";
-
-    private DemoHost? _sample;
+    private LazyLoadingSample? _sample;
 
     protected override string BaseUrl => _sample!.BaseUrl;
 
@@ -28,7 +27,7 @@ public sealed class LazyLoadingTests : BortableTest
     {
         try
         {
-            _sample = await PlaywrightSession.GetLazySampleAsync();
+            _sample = await LazyLoadingSample.GetAsync("Bit.Bortable", "BORTABLE", E2EEnvironment.Configuration);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException or TimeoutException)
         {
@@ -44,17 +43,18 @@ public sealed class LazyLoadingTests : BortableTest
     {
         var page = await (await NewContextAsync()).NewPageAsync();
         var problems = TrackProblems(page, BaseUrl);
+        var requests = _sample!.Track(page);
 
         await GotoAsync(page, "/");
         await WaitForListsAsync(page);
-        Assert.IsFalse(await page.EvaluateAsync<bool>(AssemblyDownloaded), "the home page has no list, yet Bit.Bortable.wasm was downloaded");
+        _sample.AssertNotLoaded(requests);
 
         // In the app: the router's OnNavigateAsync downloads the assembly, then the board renders.
         await page.GetByRole(AriaRole.Link, new() { Name = "Board", Exact = true }).ClickAsync();
         await page.WaitForURLAsync(BaseUrl + "/board");
         await Expect(page.Locator("h1")).ToHaveTextAsync("Board");
         await WaitForListsAsync(page);
-        Assert.IsTrue(await page.EvaluateAsync<bool>(AssemblyDownloaded), "the board rendered its lists, but Bit.Bortable.wasm was never downloaded");
+        _sample.AssertLoadedOnce(requests);
 
         await AssertDragAcrossTheBoardAsync(page);
 
@@ -67,6 +67,7 @@ public sealed class LazyLoadingTests : BortableTest
     {
         var page = await (await NewContextAsync()).NewPageAsync();
         var problems = TrackProblems(page, BaseUrl);
+        var requests = _sample!.Track(page);
 
         // The server prerenders the router - LazyAssemblyLoader resolved there too - and the board's lists, with their
         // items, from its own registration.
@@ -77,7 +78,7 @@ public sealed class LazyLoadingTests : BortableTest
         Assert.Contains("Review", prerendered);
 
         await WaitForListsAsync(page);
-        Assert.IsTrue(await page.EvaluateAsync<bool>(AssemblyDownloaded), "the board runs in the browser, but Bit.Bortable.wasm was never downloaded");
+        _sample.AssertLoadedOnce(requests);
 
         await AssertDragAcrossTheBoardAsync(page);
 

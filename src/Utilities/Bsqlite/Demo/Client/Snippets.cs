@@ -79,8 +79,9 @@ internal static class Snippets
         public const string LazyServices =
             """
             // Program.cs registers nothing of Bsqlite's: it runs before the assemblies are there.
-            // Called only from the pages the assemblies are loaded for.
-            internal static class AppDatabase
+            // Called only from the pages the assemblies are loaded for - and, to register, from a server
+            // that prerenders them or a Blazor Hybrid app that shares them: public for those.
+            public static class AppDatabase
             {
                 // What Program.cs would have registered, unchanged. Pass this one method to
                 // every call - and register with it in MauiProgram.cs, in a Blazor Hybrid app.

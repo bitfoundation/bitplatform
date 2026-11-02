@@ -161,6 +161,13 @@ server process outside Development it stays off unless `BitBevToolsOptions.Enabl
 with its scope, and a BevTools registered at startup but left off does not stand in the way of an attach. The About
 panel lists exactly what an attached session can see.
 
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App - its project file leaves the mark out of
+AOT builds, where the loader then finds `Bit.BevTools` among the assemblies the app started with - and the
+[end-to-end suite](Tests/Bit.BevTools.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the
+app moves between its pages without downloading `Bit.BevTools.wasm`; its "Open dev tools" button downloads it once and
+opens a panel that lists the components that existed before the attach and follows the app from then on; and a deep
+link, prerendered by a server that serves many users, offers the button only once the page runs in the browser.
+
 ---
 
 ## Panel, companion window, browser extension
@@ -413,7 +420,8 @@ Bit.BevTools.Extension        the browser extension (Manifest V3, Chromium and F
 Bit.BevTools.Cli              the bevtools .NET tool for CI: an export's findings (check), two recordings (compare)
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
 Samples                       the same pages (Core) in every host, each with its own BevTools setup in Program.cs:
-                              Server, Wasm (+ Client), Auto (+ Client) and MAUI (Blazor Hybrid)
+                              Server, Wasm (+ Client), Auto (+ Client) and MAUI (Blazor Hybrid); and Lazy (+ Client),
+                              an app of its own that opens BevTools on demand and lazy loads it on WebAssembly
 Tests/Bit.BevTools.Tests      MSTest + bUnit on net10.0/net11.0: instrumentation, tree, rendering, timeline,
                               state, network, interop, diagnostics, DI graph, concurrency, overhead, memory bounds,
                               scale, panel interaction, framework-diagnostics attribution, extensibility, forced-render
@@ -422,6 +430,7 @@ Tests/Bit.BevTools.Tests      MSTest + bUnit on net10.0/net11.0: instrumentation
 Tests/bit-bevtools-js         vitest suite: the bridge (isolation, pre-.NET redaction, downloads, shortcuts), the hub
                               (several runtimes, traffic decoding, browser failures), the companion (DOM, happy-dom)
                               and the extension source
+Tests/Bit.BevTools.Tests.E2E  Playwright: the published lazy loading sample in a browser, trimmed and AOT-compiled
 Tests/Bit.BevTools.Benchmarks reproducible overhead measurement (dotnet run -c Release)
 docs/                         capability matrix, architecture, performance; audit, roadmap, progress
 ```
@@ -429,12 +438,14 @@ docs/                         capability matrix, architecture, performance; audi
 Run the demo with `dotnet run --project src/Utilities/BevTools/Demo/Server`, then open `/problems`. To see BevTools in
 one hosting model, run its sample: `dotnet run --project src/Utilities/BevTools/Samples/Server` (or
 `Samples/Wasm/Bit.BevTools.Samples.Wasm`, `Samples/Auto/Bit.BevTools.Samples.Auto`), and `Samples/MAUI` from Visual
-Studio or with `dotnet build -t:Run -f <target framework>`. The tests:
+Studio or with `dotnet build -t:Run -f <target framework>`. `Samples/Lazy/Bit.BevTools.Samples.Lazy` lazy loads
+BevTools once published (in Development it registers it wherever it can, as the setup above says). The tests:
 
 ```bash
 cd src/Utilities/BevTools/Tests/Bit.BevTools.Tests && dotnet test     # run from inside src, so global.json's test runner applies
 cd src/Utilities/BevTools/Tests/bit-bevtools-js && npm ci && npm test # after a build of Bit.BevTools, which produces the bundles
 cd src/Utilities/BevTools/Bit.BevTools.Extension && node build.mjs    # the unpacked extension, in dist/
+cd src/Utilities/BevTools/Tests/Bit.BevTools.Tests.E2E && dotnet test # after publishing Samples/Lazy, see its README
 ```
 
 See [CLAUDE.md](CLAUDE.md) for the principles every change has to respect.

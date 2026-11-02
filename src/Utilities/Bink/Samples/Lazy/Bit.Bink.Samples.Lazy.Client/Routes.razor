@@ -1,0 +1,34 @@
+﻿@* The router waits for OnNavigateAsync before it renders a page, so Bit.Bink.wasm is there before the whiteboard
+   renders its canvas. This file renders before the assembly is downloaded, so it may not use Bink's types itself. The
+   server prerenders it too: it registers LazyAssemblyLoader for that (its Program.cs), and does not set the switch, as
+   it loads Bink with the rest of the app. *@
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader LazyAssemblyLoader
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    // Set only where Bit.Bink.wasm is marked (the project file): loading an assembly that is not marked throws.
+    private static readonly bool LazyLoadsBink = AppContext.TryGetSwitch("Bit.Bink.Samples.Lazy.LazyLoadsBink", out var on) && on;
+
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        // The pages that draw: fetch Bink before they render. A second call loads nothing again.
+        if (LazyLoadsBink && IsDrawingPage(context.Path))
+            await LazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bink.wasm"]);
+    }
+
+    // /whiteboard and the routes beneath it (routes match regardless of case), but not /whiteboard-settings. The path
+    // keeps any query and fragment.
+    private static bool IsDrawingPage(string path)
+    {
+        path = path.Split('?', '#')[0];
+        return path.Equals("whiteboard", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith("whiteboard/", StringComparison.OrdinalIgnoreCase);
+    }
+}

@@ -31,6 +31,9 @@ That query runs in a dedicated worker in the browser: SQLite 3.53 (via [wa-sqlit
 
 Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Demo/) - run the
 `Demo/Server` project, or visit [bsqlite.bitplatform.dev](https://bsqlite.bitplatform.dev).
+[`Samples/Lazy`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Samples/Lazy/) stands
+apart: a Blazor Web App of its own whose browser half downloads Bit.Bsqlite and EF Core only when its products page opens
+(see [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)).
 
 ---
 
@@ -172,8 +175,9 @@ Brotli, for a small app on the demo's model. An app whose database only some pag
 then registers nothing of Bsqlite's, and the pages build the same services the first time one of them asks:
 
 ```csharp
-// Called only from the pages the assemblies are loaded for, once they run in the browser.
-internal static class AppDatabase
+// Called only from the pages the assemblies are loaded for, once they run in the browser - and, to register, from a
+// server that prerenders them or a Blazor Hybrid app that shares them: public for those.
+public static class AppDatabase
 {
     public static void Register(IServiceCollection services)
     {
@@ -237,7 +241,7 @@ The wa-sqlite engine and the upstream VFS files are vendored at restore, verifie
 
 ```bash
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests && dotnet test        # ADO.NET, EF Core and storage selection, every target framework
-cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test    # the worker, the engine and every VFS in a real browser, plus the demo
+cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test    # the worker, the engine and every VFS in a real browser, plus the demo and the lazy loading sample
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.Mcp && dotnet test    # the MCP server, hosted in-memory
 cd src/Utilities/Bsqlite/Tests/bit-bsqlite-js && npm ci && npm test   # the JavaScript that needs no browser
 ```

@@ -20,6 +20,10 @@
     <Project Path="Samples/Auto/Bit.Bmotion.Samples.Auto.Client/Bit.Bmotion.Samples.Auto.Client.csproj" />
     <Project Path="Samples/Auto/Bit.Bmotion.Samples.Auto/Bit.Bmotion.Samples.Auto.csproj" />
   </Folder>
+  <Folder Name="/Samples/Lazy/">
+    <Project Path="Samples/Lazy/Bit.Bmotion.Samples.Lazy.Client/Bit.Bmotion.Samples.Lazy.Client.csproj" />
+    <Project Path="Samples/Lazy/Bit.Bmotion.Samples.Lazy/Bit.Bmotion.Samples.Lazy.csproj" />
+  </Folder>
   <Folder Name="/Samples/Server/">
     <Project Path="Samples/Server/Bit.Bmotion.Samples.Server.csproj" />
   </Folder>

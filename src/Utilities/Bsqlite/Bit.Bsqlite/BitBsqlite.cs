@@ -89,8 +89,9 @@ public static partial class BitBsqlite
     /// </remarks>
     /// <example>
     /// <code>
-    /// // Called from the pages Bit.Bsqlite is loaded for, never from Program.cs.
-    /// internal static class AppDatabase
+    /// // Called from the pages Bit.Bsqlite is loaded for, never from Program.cs - and, to register, from a server that
+    /// // prerenders them or a Blazor Hybrid app that shares them: public for those.
+    /// public static class AppDatabase
     /// {
     ///     // What Program.cs would have registered.
     ///     public static void Register(IServiceCollection services)

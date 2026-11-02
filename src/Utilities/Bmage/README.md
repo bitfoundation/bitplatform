@@ -237,7 +237,9 @@ unchanged under [Server](https://github.com/bitfoundation/bitplatform/tree/devel
 [Auto](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Auto/) so the same code
 runs, prerendered first, in each render mode, and under [MAUI](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/MAUI/),
 a Blazor Hybrid app for Android, iOS, macOS and Windows. Each host is also a minimal example of the wiring that
-platform needs.
+platform needs. [Lazy](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Lazy/)
+stands apart: a Blazor Web App of its own whose browser half downloads `Bit.Bmage.wasm` and `Bit.Bmage.Blazor.wasm`
+only when its editor opens (see [lazy loading](docs/getting-started.md#lazy-loading-bmage-on-webassembly)).
 
 ## MCP server (for AI agents)
 

@@ -1,0 +1,13 @@
+﻿{
+    "profiles": {
+        "Bit.BlazeDb.Samples.Lazy": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7275;http://localhost:5275",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

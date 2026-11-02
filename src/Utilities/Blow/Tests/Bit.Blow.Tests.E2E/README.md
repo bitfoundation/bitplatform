@@ -16,7 +16,8 @@ measurements. That covers the C# side well and leaves out everything that only e
 This suite boots the demo (`Bit.Blow.Demo.Server`, which prerenders the pages and runs them on WebAssembly) and
 drives it with Playwright, in Chromium unless `BLOW_E2E_BROWSER` names Firefox or WebKit. It asserts **effects**, not
 markup: where nodes landed on screen, the points an edge's path really runs through, the transform the viewport is
-painted with, the colours the browser computed.
+painted with, the colours the browser computed. One suite drives the published lazy loading sample (`Samples/Lazy`)
+instead, an app that downloads `Bit.Blow.wasm` only when its page with a canvas opens.
 
 ## What it proves
 
@@ -27,6 +28,7 @@ painted with, the colours the browser computed.
 | `KeyboardTests` | Tab reaches a node, Enter selects it, the arrow keys move it by the fine and the coarse step and announce it, without scrolling the page; Escape clears the selection; Escape abandons a drag and puts the node back; Backspace in a field inside a node edits the text instead of deleting the node, while Delete with the node itself focused does delete it. |
 | `GuardTests` | A drag in a `nodrag` area works the control and leaves the node alone, while its title still drags it; a wheel over a `nowheel` element scrolls it instead of zooming the flow; dragging a `nopan` overlay does not pan; a wheel the flow uses never scrolls the page, while one over the controls does. |
 | `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, so a new page is swept without being listed) answers, becomes interactive, loads `bit-blow.js` when it has a flow, and runs every button on it without a console error, an unhandled exception, a failed request or the error banner; the examples gallery and the docs navigation both link to every example page; navigating through the tours in the app leaves a working canvas behind; "View code" sits under the sample and shows the page's source, coloured. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.Blow.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, nothing of Blow's registered anywhere - as the README's "Lazy loading on WebAssembly" section sets it up: its home page never downloads `Bit.Blow.wasm`, yet Blow's stylesheet is already linked from it; navigating to the workflow page downloads it once (and not again on the way back), and a deep link to it is prerendered by the server (which resolves the router's `LazyAssemblyLoader`) and then downloads it; either way the canvas measures its nodes and fits them in view, a node follows the mouse and the page shows where it was dropped, and a drag from one handle to another draws a new edge between them that the page counts - with no console error, unhandled exception or failed request. Published with AOT (`BLOW_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Blow with the app and nothing on demand. |
 
 Every page is prerendered, so the nodes and edges are on screen before anything listens to them, and before a
 single node has been measured. Each test waits until the page runs in the browser (`data-interactive="true"` on
@@ -38,8 +40,10 @@ until every edge starts and ends on a handle, which only holds once the browser 
 From `src/Utilities/Blow` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish them
+# first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.Blow.Demo.Server.csproj
+dotnet publish Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -70,10 +74,21 @@ reads) fails there and nowhere else:
 
 ```bash
 dotnet publish src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true
+dotnet publish src/Utilities/Blow/Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 (cd demo && dotnet Bit.Blow.Demo.Server.dll --urls http://127.0.0.1:5000 &)
 cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E && BLOW_E2E_BASE_URL=http://127.0.0.1:5000 dotnet test -c Release --no-build --report-trx --report-trx-filename blow-e2e.trx
+```
+
+A fourth job, `lazy-loading-aot`, publishes the lazy loading sample with `-p:RunAOTCompilation=true`, which leaves its
+lazy mark out as the README says an AOT build must, and runs `LazyLoadingTests` against it in Chromium to check that
+Bit.Blow then loads with the app and works all the same. To run that leg locally (it needs the wasm-tools workload,
+and the demo server built in Release, which the session every test shares starts first):
+
+```bash
+dotnet publish src/Utilities/Blow/Samples/Lazy/Bit.Blow.Samples.Lazy/Bit.Blow.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+cd src/Utilities/Blow/Tests/Bit.Blow.Tests.E2E && BLOW_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
 ```
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell
@@ -89,6 +104,12 @@ internet access runs the suite just the same. The tests run one at a time: most 
 landed a moment after a gesture, and a second page booting WebAssembly next to them is exactly the load that turns
 those waits into flakes.
 
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares); `BLOW_E2E_LAZY_BASE_URL` points those tests at a copy that is already
+running. A sample that has not been published makes them inconclusive - or failed, on a build server - and leaves the
+other suites alone. They still need the demo, which the session every test shares starts first.
+
 When no browser can be launched or the demo does not start, every test reports **Inconclusive** with the reason.
 On a build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
 
@@ -100,4 +121,6 @@ On a build server (`CI=true`) the same tests **fail** instead, so a suite that n
 | `BLOW_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
 | `BLOW_E2E_BROWSER` | The engine: `chromium` (the default), `firefox` or `webkit`, each the build Playwright installs. |
 | `BLOW_E2E_CHANNEL` / `BLOW_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`) or a specific Chromium binary (with `BLOW_E2E_BROWSER`, an executable of that engine). Without either, the Chromium Playwright installed is used, falling back to an installed Chrome, then Edge. |
+| `BLOW_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BLOW_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Blow comes with the app and nothing is downloaded on demand. |
 | `BLOW_E2E_HEADED=1` | Show the browser. |

@@ -1,4 +1,5 @@
 ﻿using Bit.BlazeDb.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 
 // The tests run one at a time. A page booting WebAssembly in the next context over is exactly the kind of
@@ -25,6 +26,13 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-        await PlaywrightSession.StopAsync();
+        try
+        {
+            await PlaywrightSession.StopAsync();
+        }
+        finally
+        {
+            await LazyLoadingSample.StopAsync();
+        }
     }
 }

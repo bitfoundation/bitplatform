@@ -2,8 +2,9 @@ name: bit platform CI - Bcrdt E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven with Playwright in each of the three
 # engines - Chromium, Firefox and WebKit, one job apiece - the side-by-side replicas of every demo page merging in one
-# tab, and two browser contexts meeting on the live page through the demo server's SignalR hub and WebSocket endpoint.
-# It takes far longer than the build-and-unit pipeline (bit.ci.Bcrdt.yml), so it runs only when started by hand. See
+# tab, and two browser contexts meeting on the live page through the demo server's SignalR hub and WebSocket endpoint -
+# and the published lazy loading sample next to it, trimmed in every engine and AOT-compiled in a job of its own. It
+# takes far longer than the build-and-unit pipeline (bit.ci.Bcrdt.yml), so it runs only when started by hand. See
 # src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/README.md for what it proves and how to run it locally.
 
 on:
@@ -50,9 +51,12 @@ jobs:
     - name: dotnet workload restore
       run: cd src/Utilities/Bcrdt && dotnet workload restore Demo/Server/Bit.Bcrdt.Demo.Server.csproj
 
-    - name: Build the demo and the E2E suite
+    - name: Build the demo, publish the lazy loading sample and build the E2E suite
+      # The sample is published rather than built: LazyLoadingTests drives what an app that lazy loads ships, and only a
+      # publish trims it.
       run: |
         dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+        dotnet publish src/Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Release
         dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
 
     - name: Install Playwright ${{ matrix.browser }}
@@ -73,4 +77,63 @@ jobs:
       with:
         name: bcrdt-e2e-${{ matrix.browser }}
         path: '**/bcrdt-e2e-${{ matrix.browser }}.trx'
+        if-no-files-found: ignore
+
+  # The README says not to lazy load in an AOT build, and the sample's project file leaves the lazy mark and its router's
+  # switch out when RunAOTCompilation is true. Published that way it loads Bit.Bcrdt with the app, and LazyLoadingTests
+  # (BCRDT_E2E_LAZY_AOT=1) checks that it then works all the same and downloads nothing on demand.
+  lazy-loading-aot:
+    name: Bcrdt lazy loading (AOT)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    # Bit.Bcrdt compiles its TypeScript (bit-bcrdt.ts) with npm-installed tsc and esbuild as part of its build.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # AOT compilation needs it. From inside src, so src/global.json picks the SDK: the workload has to be installed for
+    # the SDK that publishes.
+    - name: Install wasm-tools
+      run: cd src && dotnet workload install wasm-tools
+
+    - name: Publish the lazy loading sample with AOT
+      run: dotnet publish src/Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+
+    # Every test of the suite boots the demo before anything else (BcrdtTest), the lazy loading tests included.
+    - name: Build the demo and the E2E suite
+      run: |
+        dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+        dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run the lazy loading tests against the AOT publish
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      env:
+        BCRDT_E2E_LAZY_AOT: 1
+      run: >
+        cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E &&
+        dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
+        --report-trx --report-trx-filename bcrdt-e2e-lazy-aot.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bcrdt-e2e-lazy-aot
+        path: '**/bcrdt-e2e-lazy-aot.trx'
         if-no-files-found: ignore

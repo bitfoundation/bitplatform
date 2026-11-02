@@ -19,7 +19,9 @@ This suite boots the demo (`Bit.Bcrdt.Demo.Server`, which prerenders the pages a
 drives it with Playwright, in Chromium by default and in Firefox or WebKit on request (`BCRDT_E2E_BROWSER`): each
 engine has its own text input, focus and IndexedDB behavior, so the suite is meant to pass in all three. It asserts
 **effects**, not markup: what each replica's editor holds, what its connection badge and presence list say, the raw
-state each replica projects as JSON under the panels, and which relay a tab opened its socket to.
+state each replica projects as JSON under the panels, and which relay a tab opened its socket to. One suite drives the
+published lazy loading sample (`Samples/Lazy`) instead, an app that downloads `Bit.Bcrdt.wasm` only when a page that
+collaborates opens.
 
 ## What it proves
 
@@ -34,6 +36,7 @@ state each replica projects as JSON under the panels, and which relay a tab open
 | `VersionHistoryTests` | A version saved on one replica is listed on the other, previews the text as it was when it was saved after both have edited on, and restores as an edit both replicas show; a version saved while the other replica is offline reaches it on reconnection together with the text it names, and opens there. |
 | `InternalsTests` | "Type 500 characters" reaches the peer and is held in a handful of blocks on both replicas; the update log tells A's local edits from what B received; a character typed into B's editor reaches A; 200 scattered edits grow the block count; both replicas project the same document; "500 insertions in one transaction" is one update on each side and one change event, and the page's listener on the library's meter counts the messages and bytes it caused. |
 | `LiveTests` | Two browser contexts (two people, two WebAssembly instances) on the same `/live/{room}` link meet through the SignalR hub, and with `?relay=websocket` through the WebSocket endpoint - each tab's socket goes to the relay the link names; each tab lists the other in its presence list; text typed in either reaches the other; a tab taken offline leaves the other's presence list, and when it comes back both tabs converge on both paragraphs; a document outlives every tab that had it open - a newcomer with nothing stored is handed it by the server's document host, on either relay; an edit made offline survives a reload (the browser's IndexedDB) and reaches the other tab once the reloaded one reconnects; and a tab opened from the read-only link (`?access=read`), on either relay, gets a read-only editor that still receives every change and still shows in the other tab's presence list. |
+| `LazyLoadingTests` | The published lazy loading sample - trimmed, `Bit.Bcrdt.wasm` marked `BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, no `AddBitBcrdtServices` in the browser - as the README's "Lazy loading on WebAssembly" section sets it up: its home page never downloads `Bit.Bcrdt.wasm`; navigating to the notes downloads it once (and not again on the way back, when the notes open again with everything typed), and a deep link to the notes is prerendered by the server (which resolves the router's `LazyAssemblyLoader` and keeps its own `AddBitBcrdtServices`) and then downloads it. Either way the notes' layout configures the collaboration service through `GetBcrdtCollaborationService(...)` - the WebSocket transport to the sample's relay and the IndexedDB store - a second browser context on the same notes lists the first in its presence and the two edit them together, and the page's own `GetBcrdtCollaborationService()` reads the document the scope opened; no console error, uncaught exception, failed request or error status meanwhile, in every engine. Published with AOT (`BCRDT_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the README says an AOT build must, and the same tests check that it loads Bit.Bcrdt with the app and nothing on demand. |
 | `CodeSnippetTests` | Every page that shows the code of its samples (counted from the `<CodeSnippet>` tags of its source under `Demo/Client/Pages`, so a sample added to a page is checked without being listed) carries that many snippets once its replicas are open; each one opens from its toggle to its sample's source - found among the samples the client embeds, highlighted, and with the copy button every code block gets - and the page logs no error meanwhile. |
 | `DemoPagesTests` | Every demo page (the routes are read from the `@page` directives under `Demo/Client/Pages`, and the expected `h1` from each page's source, so a new page is swept without being listed; the live page on both relays) answers 200, turns interactive, shows its heading, opens and connects its replicas, loads `bit-bcrdt.js` when it has an editor, and logs no console error, uncaught exception, failed request or error status, without showing the error banner; an unknown address answers 404 with the not-found page, from which the site's links still navigate; `/live` without a room is sent to a fresh room, on the relay asked for; at phone width the docs drawer and the site menu take the focus as they open, close on Escape and hand the focus back to their buttons. |
 
@@ -52,8 +55,10 @@ every later edit unapplied, and the test would otherwise time out pointing at th
 From `src/Utilities/Bcrdt` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# The suite runs the demo server's build output: build it first, in the configuration the tests run in.
+# The suite runs the demo server's build output and the lazy loading sample's publish output: build and publish them
+# first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.Bcrdt.Demo.Server.csproj
+dotnet publish Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Debug
 dotnet build Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browsers Playwright drives.
@@ -77,6 +82,7 @@ and the pack:
 
 ```bash
 dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+dotnet publish src/Utilities/Bcrdt/Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Release
 dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
 # chromium, firefox or webkit
 pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps $BROWSER
@@ -98,6 +104,21 @@ room no other test uses. The tests run one at a time: most of them race an edit 
 in another, and a second page booting WebAssembly next to them is exactly the load that turns those waits into
 flakes.
 
+The lazy loading sample is started the same way, from its publish folder (`bin/<configuration>/net11.0/publish`) in
+the Production environment, by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`,
+the harness every lazy-loadable library shares); `BCRDT_E2E_LAZY_BASE_URL` points those tests at a copy that is already
+running. A sample that has not been published makes them inconclusive - or failed, on a build server - and leaves the
+other suites alone. They still need the demo, which every test of the suite boots first.
+
+The `lazy-loading-aot` job of `bit.ci.Bcrdt.e2e.yml` publishes the sample AOT-compiled too, which leaves its lazy mark
+out as the README says an AOT build must, and runs `LazyLoadingTests` against it:
+
+```bash
+# Needs the wasm-tools workload (dotnet workload install wasm-tools, from inside src).
+dotnet publish Samples/Lazy/Bit.Bcrdt.Samples.Lazy/Bit.Bcrdt.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+cd Tests/Bit.Bcrdt.Tests.E2E && BCRDT_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
+```
+
 When no browser can be launched or the demo does not start, every test reports **Inconclusive** with the reason. On a
 build server (`CI=true`) the same tests **fail** instead, so a suite that never ran cannot pass.
 
@@ -109,4 +130,6 @@ build server (`CI=true`) the same tests **fail** instead, so a suite that never 
 | `BCRDT_E2E_BASE_URL` | Drive an already running demo (for example one started from the IDE) instead of booting one. |
 | `BCRDT_E2E_BROWSER` | The engine to drive: `chromium` (the default), `firefox` or `webkit`. |
 | `BCRDT_E2E_CHANNEL` / `BCRDT_E2E_EXECUTABLE` | Use an installed Chrome/Edge (`chrome`, `msedge`, Chromium only) or a specific binary of the engine `BCRDT_E2E_BROWSER` names. Without either, the browser Playwright installed is used; for Chromium, falling back to an installed Chrome, then Edge. |
+| `BCRDT_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BCRDT_E2E_LAZY_AOT=1` | The lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Bcrdt comes with the app and nothing is downloaded on demand. |
 | `BCRDT_E2E_HEADED=1` | Show the browser. |

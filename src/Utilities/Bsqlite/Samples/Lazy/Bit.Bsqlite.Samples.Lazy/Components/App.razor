@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Bsqlite lazy loading sample</title>
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Named, so a browser does not ask for /favicon.ico, which the sample does not have. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bsqlite and EF Core before the products page
+       renders. Bsqlite's own modules - the worker, the engine, the VFS - are imported on demand and need no tag. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

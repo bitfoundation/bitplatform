@@ -545,6 +545,24 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
         return ValueTask.FromResult(RefResolver(elementReference));
     }
 
+    /// <summary>
+    /// The ids, among those a resolve returns, of elements the page reports the engine has never addressed: an element
+    /// rendered again in place of one that had its id. None by default.
+    /// </summary>
+    public Func<string[], string[]> NewElements { get; set; } = static _ => [];
+
+    async ValueTask<(string[] Ids, string[] NewIds)> IBmotionInterop.ResolveBySelectorAsync(string selector)
+    {
+        var ids = await ResolveOrRegisterBySelectorAsync(selector);
+        return (ids, NewElements(ids));
+    }
+
+    async ValueTask<(string Id, bool IsNew)> IBmotionInterop.ResolveByRefAsync(ElementReference elementReference)
+    {
+        var id = await ResolveOrRegisterByRefAsync(elementReference);
+        return (id, NewElements([id]).Contains(id));
+    }
+
     /// <summary>Simulates native support for the View Transitions API (false = fallback path).</summary>
     public bool SupportsViewTransitions { get; set; }
 
