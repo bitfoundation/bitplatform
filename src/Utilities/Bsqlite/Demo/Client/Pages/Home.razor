@@ -235,7 +235,7 @@
                     <td>Storage.CacheStorage</td>
                     <td><span class="bb-badge bb-badge-success">yes</span></td>
                     <td>yes</td>
-                    <td>The migration path off Bit.Besql. Persistence cost scales with database size.</td>
+                    <td>Read-heavy apps open in several tabs: the one browser backend whose readers do not queue. Persistence cost scales with database size.</td>
                 </tr>
                 <tr>
                     <td class="bq-nowrap"><span class="bq-storage-dot" data-name="in-memory" aria-hidden="true"></span> in-memory</td>
@@ -297,8 +297,8 @@
                 <a href="catalog" class="btn btn-outline">Open the demos →</a>
             </section>
             <section class="bb-card">
-                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Moving off Bit.Besql?</h3>
-                <p class="bb-card-desc">The <code>cache-storage</code> backend imports the database Bit.Besql left behind, losslessly, the first time it opens.</p>
+                <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Choosing a backend?</h3>
+                <p class="bb-card-desc">OPFS first, IndexedDB behind it: see which one this browser chose, what each one declares, and why.</p>
                 <a href="storage" class="btn btn-outline">Storage backends →</a>
             </section>
             <section class="bb-card">

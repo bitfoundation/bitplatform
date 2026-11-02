@@ -52,7 +52,7 @@ public static class McpResources
         => BsqliteStorageCatalog.Render(provider) ?? $"No first-party storage backend is called '{BsqliteText.Quote(provider)}'.";
 
     [McpServerResource(UriTemplate = "bsqlite://setup/{scenario}", Name = "bsqlite-setup", Title = "Setup guide", MimeType = "text/markdown")]
-    [Description("The complete wiring for one scenario, e.g. bsqlite://setup/wasm or bsqlite://setup/move-from-besql.")]
+    [Description("The complete wiring for one scenario, e.g. bsqlite://setup/wasm or bsqlite://setup/hybrid.")]
     public static string Setup(string scenario)
         => BsqliteSetupGuide.Get(scenario) ?? $"'{BsqliteText.Quote(scenario)}' is not a known scenario.";
 

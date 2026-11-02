@@ -29,7 +29,7 @@ public class McpToolTests
     {
         var guides = BsqliteSourceCatalog.Documents.Where(document => document.Kind == "Guide").Select(document => document.Name).ToArray();
 
-        CollectionAssert.AreEqual(new[] { "getting-started", "storage", "live-queries", "architecture", "limits", "extending", "migrating-from-besql", "migrating-boilerplate-from-besql" }, guides);
+        CollectionAssert.AreEqual(new[] { "getting-started", "storage", "live-queries", "architecture", "limits", "extending" }, guides);
     }
 
     [TestMethod]
@@ -364,17 +364,6 @@ public class McpToolTests
 
         Assert.Contains("not supported", guide);
         Assert.Contains("InteractiveWebAssembly", guide);
-    }
-
-    [TestMethod]
-    public async Task The_besql_guide_puts_cache_storage_first_under_besqls_own_file_name()
-    {
-        var guide = await McpCall.TextAsync("GetBsqliteSetupGuide", new() { ["scenario"] = "move-from-besql" });
-
-        Assert.Contains(".Prefer(BsqliteCacheStorageProvider.ProviderName)", guide);
-        Assert.Contains("AddDatabase(\"Offline-Client.db\")", guide);
-        Assert.Contains("/data/cache/", guide);
-        Assert.Contains("bit-besql.js", guide);
     }
 
     [TestMethod]

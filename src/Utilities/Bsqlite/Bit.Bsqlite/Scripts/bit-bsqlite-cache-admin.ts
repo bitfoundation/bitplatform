@@ -1,15 +1,11 @@
 ﻿// Cache Storage as a bag of SQLite file images, without the engine.
 //
-// Our layout is page-sized entries under the `bit-bsqlite` cache. besql stored a whole file
-// under `bit-Besql` at `/data/cache/{name}` - list/export/exists see those too so a migration
-// can copy them out. Opening through the VFS imports a besql file losslessly into our layout.
+// Our layout is page-sized entries under the `bit-bsqlite` cache.
 
 import {
-    BESQL_CACHE,
     CACHE_NAME,
     PAGE_SIZE,
     fileNameOf,
-    importBesqlIfPresent,
     metaUrl,
     pageUrl,
     pathOf,
@@ -58,11 +54,8 @@ export async function exists(databaseName: string): Promise<boolean> {
     const name = requireName(databaseName);
     const path = pathOf(name);
     const cache = await caches.open(CACHE_NAME);
-    if (await cache.match(metaUrl(path))) {
-        return true;
-    }
 
-    return Boolean(await importBesqlIfPresent(name));
+    return Boolean(await cache.match(metaUrl(path)));
 }
 
 export async function list(): Promise<string[]> {
@@ -81,19 +74,6 @@ export async function list(): Promise<string[]> {
         }
 
         names.add(fileNameOf(path));
-    }
-
-    try {
-        const besql = await caches.open(BESQL_CACHE);
-        for (const request of await besql.keys()) {
-            const url = new URL(request.url, 'https://placeholder.invalid');
-            const match = url.pathname.match(/\/data\/cache\/(.+)$/);
-            if (match) {
-                names.add(decodeURIComponent(match[1]));
-            }
-        }
-    } catch {
-        // besql's cache is optional.
     }
 
     return [...names].sort();
@@ -115,13 +95,6 @@ export async function deleteDatabase(databaseName: string): Promise<void> {
             return prefixes.some(prefix => pathname.startsWith(prefix));
         })
         .map(request => cache.delete(request)));
-
-    try {
-        const besql = await caches.open(BESQL_CACHE);
-        await besql.delete(`/data/cache/${name}`);
-    } catch {
-        // optional
-    }
 }
 
 export async function exportDatabase(databaseName: string): Promise<Uint8Array> {
@@ -129,31 +102,26 @@ export async function exportDatabase(databaseName: string): Promise<Uint8Array> 
     const path = pathOf(name);
     const cache = await caches.open(CACHE_NAME);
     const meta = await cache.match(metaUrl(path));
-    if (meta) {
-        const { size } = await meta.json();
-        const image = new Uint8Array(size ?? 0);
-        const reads: Promise<void>[] = [];
-        for (let offset = 0; offset < image.byteLength; offset += PAGE_SIZE) {
-            reads.push(cache.match(pageUrl(path, offset / PAGE_SIZE)).then(async page => {
-                if (!page) {
-                    return;
-                }
-
-                const bytes = new Uint8Array(await page.arrayBuffer());
-                image.set(bytes.subarray(0, Math.min(PAGE_SIZE, image.byteLength - offset)), offset);
-            }));
-        }
-
-        await Promise.all(reads);
-        return image;
+    if (!meta) {
+        throw new Error(`Cache Storage holds no database named '${name}'.`);
     }
 
-    const besql = await importBesqlIfPresent(name);
-    if (besql) {
-        return besql;
+    const { size } = await meta.json();
+    const image = new Uint8Array(size ?? 0);
+    const reads: Promise<void>[] = [];
+    for (let offset = 0; offset < image.byteLength; offset += PAGE_SIZE) {
+        reads.push(cache.match(pageUrl(path, offset / PAGE_SIZE)).then(async page => {
+            if (!page) {
+                return;
+            }
+
+            const bytes = new Uint8Array(await page.arrayBuffer());
+            image.set(bytes.subarray(0, Math.min(PAGE_SIZE, image.byteLength - offset)), offset);
+        }));
     }
 
-    throw new Error(`Cache Storage holds no database named '${name}'.`);
+    await Promise.all(reads);
+    return image;
 }
 
 export async function importDatabase(databaseName: string, contents: Uint8Array | ArrayLike<number> | null): Promise<void> {

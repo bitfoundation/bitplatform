@@ -8,9 +8,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Static assets only; no Razor components, so no need to scan for them. -->
         <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
-        <Description>bit Bsqlite: SQLite in the browser - and on the device in Blazor Hybrid - for Blazor, with EF Core on top. The ADO.NET surface with live queries, the worker transport (storage selection, engine-build negotiation, binary framing, batching, lifecycle), the storage provider contract, the EF Core integration (UseBitBsqlite() on the stock SQLite provider), the storage backends - OPFS (OPFSCoopSyncVFS), IndexedDB (IDBBatchAtomicVFS), Cache Storage (which imports a database Bit.Besql left behind), in-memory, and the file system a Blazor Hybrid app keeps its databases on with the native SQLite engine it brings - and the browser half: worker host, wa-sqlite engine builds and VFSes, each downloaded only when the backend that needs it is selected.</Description>
+        <Description>bit Bsqlite: SQLite in the browser - and on the device in Blazor Hybrid - for Blazor, with EF Core on top. The ADO.NET surface with live queries, the worker transport (storage selection, engine-build negotiation, binary framing, batching, lifecycle), the storage provider contract, the EF Core integration (UseBitBsqlite() on the stock SQLite provider), the storage backends - OPFS (OPFSCoopSyncVFS), IndexedDB (IDBBatchAtomicVFS), Cache Storage, in-memory, and the file system a Blazor Hybrid app keeps its databases on with the native SQLite engine it brings - and the browser half: worker host, wa-sqlite engine builds and VFSes, each downloaded only when the backend that needs it is selected.</Description>
         <PackageDescription>$(Description)</PackageDescription>
-        <PackageTags>Bit;Bsqlite;Blazor;WebAssembly;Blazor Hybrid;MAUI;SQLite;EF Core;Entity Framework Core;ADO.NET;Offline;Live query;OPFS;Origin private file system;IndexedDB;Cache Storage;Besql;Storage;Migration</PackageTags>
+        <PackageTags>Bit;Bsqlite;Blazor;WebAssembly;Blazor Hybrid;MAUI;SQLite;EF Core;Entity Framework Core;ADO.NET;Offline;Live query;OPFS;Origin private file system;IndexedDB;Cache Storage;Storage;Migration</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
