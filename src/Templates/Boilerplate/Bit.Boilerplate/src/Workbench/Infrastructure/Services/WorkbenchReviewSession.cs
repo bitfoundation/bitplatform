@@ -234,12 +234,11 @@ public sealed partial class WorkbenchReviewSession : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        agentGoneTimer?.Dispose();
-
         if (document is null)
             return;
 
         document.Changed -= OnDocumentChanged;
+        agentGoneTimer?.Dispose();
         await collaboration.CloseAsync(WorkbenchReviewDocument.Id);
     }
 }

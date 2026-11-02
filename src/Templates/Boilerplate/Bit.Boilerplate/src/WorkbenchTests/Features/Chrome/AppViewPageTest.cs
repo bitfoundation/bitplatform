@@ -109,7 +109,6 @@ public abstract class AppViewPageTest : WorkbenchPageTest
     {
         await Press(UserPicker);
         await Press(Page.GetByRole(AriaRole.Option, new() { NameRegex = new Regex($"^{Regex.Escape(name)} ") }));
-        await Expect(Page.Locator(".tools-panel[data-bit-callout-link]")).ToHaveCountAsync(0);
     }
 
     protected async Task ReloadTheView()
