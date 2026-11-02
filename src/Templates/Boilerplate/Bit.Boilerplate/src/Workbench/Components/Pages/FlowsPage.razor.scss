@@ -268,17 +268,18 @@ iframe {
 }
 
 .presenter {
-    left: 50%;
+    left: 1rem;
+    right: 1rem;
     gap: 0.25rem;
     z-index: 6;
     bottom: 1.25rem;
     display: flex;
-    max-width: 92vw;
+    width: fit-content;
     position: absolute;
     align-items: center;
     border-radius: 999px;
+    margin-inline: auto;
     padding: 0.25rem 0.5rem;
-    transform: translateX(-50%);
     background-color: $bit-color-background-primary;
     border: 1px solid $bit-color-border-secondary;
     box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.35);

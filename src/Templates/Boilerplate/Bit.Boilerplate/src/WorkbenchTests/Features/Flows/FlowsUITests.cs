@@ -248,6 +248,25 @@ public class FlowsUITests : FlowPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task ThePresenter_Should_ShowItsTextWhole(WorkbenchSurface surface)
+    {
+        var flow = await DrawThemeFlow();
+
+        await OpenBoard(flow.Id, 2);
+
+        await Press(PresentButton);
+
+        await Expect(Presenter).ToContainTextAsync("Light");
+
+        var isCut = await Presenter.Locator(".presenter-text span").EvaluateAsync<bool>("e => e.scrollWidth > e.clientWidth");
+        var count = await Presenter.Locator(".presenter-text b").BoundingBoxAsync();
+
+        Assert.IsFalse(isCut, "The screen's note is cut off.");
+        Assert.IsNotNull(count);
+        Assert.IsLessThan(30, count.Height, "The count is on one line.");
+    }
+
+    [TestMethod, EverySurface]
     public async Task ThePresentedScreen_Should_BeUsableAndTheOthersNot(WorkbenchSurface surface)
     {
         var flow = await DrawFlow(Unique("Try it"), [new("list", "buildings", "?device=iphone-se", null, null), new("other", "theme", "?device=iphone-se", null, null)]);
