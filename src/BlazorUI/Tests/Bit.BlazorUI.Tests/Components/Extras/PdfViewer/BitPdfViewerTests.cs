@@ -135,10 +135,10 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForPages(1);
 
-        await component.Instance.GoToPage(42);
+        await component.InvokeAsync(() => component.Instance.GoToPage(42));
         Assert.AreEqual(1, component.Instance.CurrentPage);
 
-        await component.Instance.PrevPage();
+        await component.InvokeAsync(() => component.Instance.PrevPage());
         Assert.AreEqual(1, component.Instance.CurrentPage);
     }
 

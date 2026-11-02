@@ -129,8 +129,7 @@ public class BitPdfRangeEngineTests
     public async Task ValidLinearizationShouldSelectTheFirstXrefButStaleLengthMustUseTheTail(bool staleLength)
     {
         // Two blank pages, generated and checked with qpdf through pikepdf.
-        byte[] bytes = Convert.FromBase64String(
-            "JVBERi0xLjMKJb/3ov4KNCAwIG9iago8PCAvTGluZWFyaXplZCAxIC9MIDEyNjggL0ggWyA1MjkgMTE2IF0gL08gNyAvRSA4MjEgL04gMiAvVCAxMDcwID4+CmVuZG9iagogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKeHJlZgo0IDUKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwNDgwIDAwMDAwIG4gCjAwMDAwMDA1MjkgMDAwMDAgbiAKMDAwMDAwMDY0NSAwMDAwMCBuIAowMDAwMDAwNzUxIDAwMDAwIG4gCnRyYWlsZXIgPDwgL1Jvb3QgNSAwIFIgL1NpemUgOSAvUHJldiAxMDYyICAgICAgICAgICAgICAgICAgL0lEIFs8MGM3ZTc1OGRjZTljYTE2ZGJhMWY5ZTZjZTFhNDkxOGY+PDBjN2U3NThkY2U5Y2ExNmRiYTFmOWU2Y2UxYTQ5MThmPl0gPj4Kc3RhcnR4cmVmCjAKJSVFT0YKNSAwIG9iago8PCAvUGFnZXMgMyAwIFIgL1R5cGUgL0NhdGFsb2cgPj4KZW5kb2JqCjYgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL1MgMzYgL0xlbmd0aCAzOSA+PgpzdHJlYW0KeJxjYGBgAiJBBhDYwIAAEDZQjoEFSZQJihkY3BjYJjAwAABFtQJcCmVuZHN0cmVhbQplbmRvYmoKNyAwIG9iago8PCAvQ29udGVudHMgOCAwIFIgL01lZGlhQm94IFsgMCAwIDIwMCAzMDAgXSAvUGFyZW50IDMgMCBSIC9SZXNvdXJjZXMgPDwgPj4gL1R5cGUgL1BhZ2UgPj4KZW5kb2JqCjggMCBvYmoKPDwgL0xlbmd0aCAwIC9GaWx0ZXIgL0ZsYXRlRGVjb2RlID4+CnN0cmVhbQoKZW5kc3RyZWFtCmVuZG9iagoxIDAgb2JqCjw8IC9Db250ZW50cyAyIDAgUiAvTWVkaWFCb3ggWyAwIDAgNDAwIDUwMCBdIC9QYXJlbnQgMyAwIFIgL1Jlc291cmNlcyA8PCA+PiAvVHlwZSAvUGFnZSA+PgplbmRvYmoKMiAwIG9iago8PCAvTGVuZ3RoIDAgL0ZpbHRlciAvRmxhdGVEZWNvZGUgPj4Kc3RyZWFtCgplbmRzdHJlYW0KZW5kb2JqCjMgMCBvYmoKPDwgL0NvdW50IDIgL0tpZHMgWyA3IDAgUiAxIDAgUiBdIC9UeXBlIC9QYWdlcyA+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwODIxIDAwMDAwIG4gCjAwMDAwMDA5MjcgMDAwMDAgbiAKMDAwMDAwMDk5NyAwMDAwMCBuIAp0cmFpbGVyIDw8IC9TaXplIDQgL0lEIFs8MGM3ZTc1OGRjZTljYTE2ZGJhMWY5ZTZjZTFhNDkxOGY+PDBjN2U3NThkY2U5Y2ExNmRiYTFmOWU2Y2UxYTQ5MThmPl0gPj4Kc3RhcnR4cmVmCjIxNgolJUVPRgo=");
+        byte[] bytes = LinearizedTwoPages();
         string text = Encoding.ASCII.GetString(bytes);
         int lengthAt = text.IndexOf("/L ", StringComparison.Ordinal) + 3;
         if (staleLength)
@@ -143,9 +142,42 @@ public class BitPdfRangeEngineTests
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.Invoke(document.XRef, null);
         if (staleLength) Assert.IsNull(offset);
         else Assert.AreEqual(text.IndexOf("xref\n", StringComparison.Ordinal), offset);
+        var ranges = await source.Run(document, d => (List<(int Offset, int Length)>)typeof(BitPdfXRef)
+            .GetMethod("HintRanges", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(d.XRef, [1, d.PageCount, 262144])!);
+        if (staleLength) Assert.AreEqual(0, ranges.Count);
+        else Assert.IsTrue(ranges.Count > 0, "The independently generated page/shared hints should be usable.");
         Assert.AreEqual(2, document.PageCount);
         Assert.AreEqual(400d, document.Pages[1].Width);
     }
+
+    [TestMethod]
+    public async Task FailedAttemptShouldRestoreOnlyTouchedStreamAndPageState()
+    {
+        using var handler = new RangeHandler(BitPdfRangeViewerTests.SpacedPages());
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 1024 * 1024, 65536);
+        var document = await source.Load();
+        var stream = await source.Run(document, d => (BitPdfBaseStream)d.Pages[0].Dict.Get("Contents")!);
+        const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        stream.Reset();
+        int original = stream.Pos;
+        using ((IDisposable)typeof(BitPdfDocument).GetMethod("BeginPartialAttempt", flags)!.Invoke(document, null)!)
+        {
+            Assert.IsTrue(stream.GetByte() >= 0);
+            Assert.AreNotEqual(original, stream.Pos);
+        }
+        Assert.AreEqual(original, stream.Pos);
+        Assert.AreEqual(632d, await source.Run(document, d => d.Pages[2].Width));
+        var pages = (System.Collections.IDictionary)typeof(BitPdfDocument).GetField("_partialPageCache", flags)!.GetValue(document)!;
+        Assert.IsFalse(pages.Contains(1));
+        using ((IDisposable)typeof(BitPdfDocument).GetMethod("BeginPartialAttempt", flags)!.Invoke(document, null)!)
+            Assert.AreEqual(622d, document.Pages[1].Width);
+        Assert.IsFalse(pages.Contains(1));
+    }
+
+    internal static byte[] LinearizedTwoPages() => Convert.FromBase64String(
+        "JVBERi0xLjMKJb/3ov4KNCAwIG9iago8PCAvTGluZWFyaXplZCAxIC9MIDEyNjggL0ggWyA1MjkgMTE2IF0gL08gNyAvRSA4MjEgL04gMiAvVCAxMDcwID4+CmVuZG9iagogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKeHJlZgo0IDUKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwNDgwIDAwMDAwIG4gCjAwMDAwMDA1MjkgMDAwMDAgbiAKMDAwMDAwMDY0NSAwMDAwMCBuIAowMDAwMDAwNzUxIDAwMDAwIG4gCnRyYWlsZXIgPDwgL1Jvb3QgNSAwIFIgL1NpemUgOSAvUHJldiAxMDYyICAgICAgICAgICAgICAgICAgL0lEIFs8MGM3ZTc1OGRjZTljYTE2ZGJhMWY5ZTZjZTFhNDkxOGY+PDBjN2U3NThkY2U5Y2ExNmRiYTFmOWU2Y2UxYTQ5MThmPl0gPj4Kc3RhcnR4cmVmCjAKJSVFT0YKNSAwIG9iago8PCAvUGFnZXMgMyAwIFIgL1R5cGUgL0NhdGFsb2cgPj4KZW5kb2JqCjYgMCBvYmoKPDwgL0ZpbHRlciAvRmxhdGVEZWNvZGUgL1MgMzYgL0xlbmd0aCAzOSA+PgpzdHJlYW0KeJxjYGBgAiJBBhDYwIAAEDZQjoEFSZQJihkY3BjYJjAwAABFtQJcCmVuZHN0cmVhbQplbmRvYmoKNyAwIG9iago8PCAvQ29udGVudHMgOCAwIFIgL01lZGlhQm94IFsgMCAwIDIwMCAzMDAgXSAvUGFyZW50IDMgMCBSIC9SZXNvdXJjZXMgPDwgPj4gL1R5cGUgL1BhZ2UgPj4KZW5kb2JqCjggMCBvYmoKPDwgL0xlbmd0aCAwIC9GaWx0ZXIgL0ZsYXRlRGVjb2RlID4+CnN0cmVhbQoKZW5kc3RyZWFtCmVuZG9iagoxIDAgb2JqCjw8IC9Db250ZW50cyAyIDAgUiAvTWVkaWFCb3ggWyAwIDAgNDAwIDUwMCBdIC9QYXJlbnQgMyAwIFIgL1Jlc291cmNlcyA8PCA+PiAvVHlwZSAvUGFnZSA+PgplbmRvYmoKMiAwIG9iago8PCAvTGVuZ3RoIDAgL0ZpbHRlciAvRmxhdGVEZWNvZGUgPj4Kc3RyZWFtCgplbmRzdHJlYW0KZW5kb2JqCjMgMCBvYmoKPDwgL0NvdW50IDIgL0tpZHMgWyA3IDAgUiAxIDAgUiBdIC9UeXBlIC9QYWdlcyA+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwODIxIDAwMDAwIG4gCjAwMDAwMDA5MjcgMDAwMDAgbiAKMDAwMDAwMDk5NyAwMDAwMCBuIAp0cmFpbGVyIDw8IC9TaXplIDQgL0lEIFs8MGM3ZTc1OGRjZTljYTE2ZGJhMWY5ZTZjZTFhNDkxOGY+PDBjN2U3NThkY2U5Y2ExNmRiYTFmOWU2Y2UxYTQ5MThmPl0gPj4Kc3RhcnR4cmVmCjIxNgolJUVPRgo=");
 
     private static byte[] MiddleStream(bool compressedObject)
     {

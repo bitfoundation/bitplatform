@@ -2,15 +2,23 @@
 
 public sealed partial class BitPdfXRef
 {
+    [ThreadStatic] private static PartialAttempt? _currentAttempt;
+    internal static void TrackPartialStream(BitPdfBaseStream stream) => _currentAttempt?.Track(stream);
     private Dictionary<(int Num, int Gen), object?>? _attemptCache;
     private Dictionary<int, List<object?>>? _attemptObjectStreams;
     private readonly HashSet<int> _pendingObjectStreams = [];
+    private BitPdfLinearizationHints.Header? _linearization;
+    private BitPdfLinearizationHints? _hints;
+    private bool _hintsRead;
     internal bool IsPartial => _source is IBitPdfPartialByteSource;
 
     private bool TryGetCachedObject((int Num, int Gen) key, out object? value)
     {
-        if (_attemptCache is not null && _attemptCache.TryGetValue(key, out value)) return true;
-        return _cache.TryGetValue(key, out value);
+        // Buffered reads have no transaction and keep the direct dictionary lookup.
+        if (_attemptCache is null) return _cache.TryGetValue(key, out value);
+        bool found = _attemptCache.TryGetValue(key, out value) || _cache.TryGetValue(key, out value);
+        if (found && value is BitPdfBaseStream stream) TrackPartialStream(stream);
+        return found;
     }
     private bool TryGetCachedObjectStream(int number, out List<object?> value)
     {
@@ -29,8 +37,8 @@ public sealed partial class BitPdfXRef
 
     // A stale /L means an incremental update was appended: its tail wins.
     // A validated header lets us start at the first-page xref without a tail probe.
-    // The normal /Prev chain still supplies exact page-tree and non-page entries;
-    // hint-table interpretation is deliberately outside this proof of concept.
+    // The normal /Prev chain still supplies exact page-tree and non-page entries.
+    // Validated hint tables can then prefetch page and shared-object byte ranges.
     private int? ReadLinearizedStart()
     {
         if (!IsPartial || _startOffset != 0) return null;
@@ -58,7 +66,10 @@ public sealed partial class BitPdfXRef
                 if (token is not BitPdfCmd { Value: "endobj" }) continue;
                 int offset = lexer.Pos - 1;
                 while (offset < bytes.Length && IsWhite(bytes[offset])) offset++;
-                return offset < bytes.Length ? offset : null;
+                if (offset >= bytes.Length) return null;
+                _linearization = new(Integer("N")!.Value, Integer("P") ?? 0, Integer("O")!.Value, end,
+                    Enumerable.Range(0, hints.Count / 2).Select(i => ((int)(double)hints[i * 2]!, (int)(double)hints[i * 2 + 1]!)).ToArray());
+                return offset;
             }
             return null;
 
@@ -68,22 +79,78 @@ public sealed partial class BitPdfXRef
         catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { return null; }
     }
 
+    internal List<(int Offset, int Length)> HintRanges(int page, int pageCount, int maxBytes)
+    {
+        if (!_hintsRead)
+        {
+            var header = _linearization;
+            // Encrypted or unusually large optional hints use the ordinary xref path.
+            if (header is null || header.PageCount != pageCount || _security is not null
+                || header.Streams.Sum(s => (long)s.Length) > Math.Min(maxBytes, 1024 * 1024))
+            { _hintsRead = true; return []; }
+            try
+            {
+                using var data = new System.IO.MemoryStream();
+                int sharedOffset = -1;
+                bool primary = true;
+                foreach (var window in header.Streams)
+                {
+                    var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(window.Offset, window.Length)), this, _reader);
+                    if (parser.GetObj() is not BitPdfBaseStream stream || stream.Dict is null
+                        || stream.Start < window.Offset || (long)stream.Start + stream.Length > (long)window.Offset + window.Length)
+                        throw new BitPdfFormatException("Invalid linearization hint stream.");
+                    if (primary)
+                        sharedOffset = stream.Dict.Get("S") is double number && number == Math.Floor(number)
+                            && number >= 0 && number <= int.MaxValue ? (int)number : -1;
+                    primary = false;
+                    byte[] decoded = BitPdfStreamDecoder.Decode(stream);
+                    if (decoded.Length > 4 * 1024 * 1024 - data.Length) throw new BitPdfFormatException("Linearization hints exceed the optional hint budget.");
+                    data.Write(decoded);
+                }
+                _hints = BitPdfLinearizationHints.Read(data.ToArray(), sharedOffset, header, _source.Length,
+                    (number, offset) => _entries.TryGetValue(number, out var entry)
+                        && entry.Type == EntryType.Uncompressed && entry.Field3 == 0 && entry.Field2 == offset);
+                _hintsRead = true;
+            }
+            catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { _hintsRead = true; }
+        }
+        return _hints?.Ranges(page, maxBytes) ?? [];
+    }
+
+    internal (int Offset, int Length)? MetadataRange(object? value, int chunkSize)
+    {
+        if (value is not BitPdfRef reference || TryGetCachedObject((reference.Num, reference.Gen), out _)
+            || !_entries.TryGetValue(reference.Num, out var entry)) return null;
+        if (entry.Type == EntryType.Compressed)
+        {
+            if (!_entries.TryGetValue(entry.Field2, out entry)) return null;
+        }
+        if (entry.Type != EntryType.Uncompressed) return null;
+        long offset = (long)entry.Field2 + _startOffset;
+        if (offset < 0 || offset >= _source.Length) return null;
+        int start = (int)offset / chunkSize * chunkSize;
+        return (start, Math.Min(chunkSize, _source.Length - start));
+    }
+
     internal PartialAttempt BeginPartialAttempt() => new(this);
     internal sealed class PartialAttempt : IDisposable
     {
         private readonly BitPdfXRef _xref;
         private readonly int _warnings;
         private readonly bool _scanned;
-        private readonly Dictionary<BitPdfBaseStream, int> _positions;
+        private readonly Dictionary<BitPdfBaseStream, int> _positions = [];
+        private readonly PartialAttempt? _previous;
         private bool _committed;
         internal PartialAttempt(BitPdfXRef xref)
         {
             if (xref._attemptCache is not null) throw new InvalidOperationException("Nested PDF parser attempts are unsupported.");
             _xref = xref; _warnings = xref.Warnings.Count; _scanned = xref._scanned;
-            _positions = xref._cache.Values.OfType<BitPdfBaseStream>().Distinct()
-                .ToDictionary(s => s, s => s.Pos);
+            // CPU attempts are synchronous; record cursors only when this thread touches them.
+            _previous = _currentAttempt;
+            _currentAttempt = this;
             xref._attemptCache = []; xref._attemptObjectStreams = [];
         }
+        internal void Track(BitPdfBaseStream stream) => _positions.TryAdd(stream, stream.Pos);
         internal void Commit()
         {
             foreach (var pair in _xref._attemptCache!) _xref._cache[pair.Key] = pair.Value;
@@ -92,6 +159,7 @@ public sealed partial class BitPdfXRef
         }
         public void Dispose()
         {
+            _currentAttempt = _previous;
             _xref._attemptCache = null; _xref._attemptObjectStreams = null;
             if (_committed) return;
             _xref._scanned = _scanned;

@@ -14,7 +14,7 @@ internal sealed class BitPdfOutlineBuilder
     private readonly IReadOnlyDictionary<BitPdfDict, int> _pageIndex;
     private readonly Func<BitPdfDict, int?>? _resolvePageIndex;
     private readonly int? _pageCount;
-    private readonly BitPdfBudget _nameTreeWork = new(MaxNameTreeWork);
+    private readonly BitPdfBudget _nameTreeWork;
     private readonly Dictionary<BitPdfDict, Dictionary<string, object?>> _nameTreeLeaves = new();
     private const long MaxNameTreeWork = 1L << 25;
 
@@ -23,6 +23,7 @@ internal sealed class BitPdfOutlineBuilder
     {
         _xref = xref;
         _catalog = catalog;
+        _nameTreeWork = BitPdfBudget.ForRetry(MaxNameTreeWork, catalog, "outline-names");
         _pageIndex = pageIndex;
         _resolvePageIndex = resolvePageIndex;
         _pageCount = pageCount;

@@ -439,7 +439,9 @@
                     Keep the URL source in a field and add <b>WithRangeLoading()</b> to request PDF bytes as needed.
                     A first page can appear before the complete file downloads; later pages load during navigation.
                     The default URL source still downloads the complete file. A linearized PDF can reduce startup
-                    work; the layout and dependencies of each file determine how many ranges are needed.
+                    work; validated page and shared-object hints prefetch related bytes. Invalid or stale hints
+                    use ordinary Range loading. Page-tree metadata is fetched in bounded batches for distant
+                    navigation. The layout and dependencies of each file still determine how many ranges are needed.
                     <br /><br />
                     <b>CacheSize</b> defaults to 16 MiB of raw bytes, including pinned windows and in-flight buffers.
                     <b>ChunkSize</b> defaults to 64 KiB. Decoded resources and explicit caller-owned copies are separate.

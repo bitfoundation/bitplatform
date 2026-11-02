@@ -4,6 +4,7 @@ namespace Bit.BlazorUI;
 
 public sealed partial class BitPdfDocument
 {
+    private PartialAttempt? _partialAttempt;
     private IReadOnlyList<BitPdfPage>? _partialPages;
     private int? _partialPageCount;
     private readonly Dictionary<int, BitPdfPage> _partialPageCache = [];
@@ -56,6 +57,51 @@ public sealed partial class BitPdfDocument
         private List<object?>? _kids;
         private readonly HashSet<BitPdfDict> _visited = new(ReferenceEqualityComparer.Instance);
         private bool _complete;
+        private int _prefetchedUntil;
+
+        internal List<(int Offset, int Length)> TakeMetadataRanges(int chunkSize, int maxBytes)
+        {
+            var ranges = new List<(int Offset, int Length)>();
+            if (_kids is null || _nextChild < _prefetchedUntil) return ranges;
+            // Page one normally needs one child, not an entire lookahead batch.
+            // Empty subtrees can require further batches; their Count is still read.
+            int limit = Math.Min(16, _remaining + 1);
+            int budget = Math.Max(chunkSize, maxBytes);
+            int next = _nextChild;
+            for (; next < _kids.Count && next - _nextChild < limit; next++)
+            {
+                var range = document._xref.MetadataRange(_kids[next], chunkSize);
+                if (range is null) continue;
+                // Let the next batch combine a nearby trailing header with its successors,
+                // rather than spending a separate request on one chunk at this batch's limit.
+                if (ranges.Any(r => range.Value.Offset >= (long)r.Offset + r.Length
+                    && range.Value.Offset <= (long)r.Offset + r.Length + chunkSize
+                    && (long)range.Value.Offset + range.Value.Length - r.Offset > budget)) break;
+                var candidate = Merge(ranges.Append(range.Value));
+                if (candidate.Sum(r => r.Length) > budget) break;
+                ranges = candidate;
+            }
+            _prefetchedUntil = next;
+            return ranges;
+
+            List<(int Offset, int Length)> Merge(IEnumerable<(int Offset, int Length)> windows)
+            {
+                var merged = new List<(int Offset, int Length)>();
+                foreach (var window in windows.OrderBy(w => w.Offset))
+                {
+                    if (merged.Count > 0)
+                    {
+                        var last = merged[^1];
+                        long end = Math.Max((long)last.Offset + last.Length, (long)window.Offset + window.Length);
+                        // One skipped chunk is cheaper than another round trip on typical HTTP links.
+                        if (window.Offset <= (long)last.Offset + last.Length + chunkSize && end - last.Offset <= budget)
+                        { merged[^1] = (last.Offset, (int)(end - last.Offset)); continue; }
+                    }
+                    merged.Add(window);
+                }
+                return merged;
+            }
+        }
 
         internal bool Advance()
         {
@@ -78,7 +124,9 @@ public sealed partial class BitPdfDocument
                 var page = new BitPdfPage(document._xref, _node, _index + 1,
                     inherited.MediaBox ?? [0, 0, 612, 792], inherited.Resources,
                     inherited.Rotate ?? 0, inherited.CropBox);
+                document._partialAttempt?.TrackPage(_index);
                 document._partialPageCache[_index] = page;
+                document._partialAttempt?.TrackIndex(_node);
                 document._pageIndexByDict[_node] = _index;
                 _complete = true;
                 return true;
@@ -86,7 +134,7 @@ public sealed partial class BitPdfDocument
             if (_node.Get("Kids") is not List<object?> children || children.Count == 0) throw InvalidTree();
             // All possibly missing reads completed; only now advance the walk.
             _visited.Add(_node); _depth++;
-            _inherited = inherited; _kids = children; _nextChild = 0;
+            _inherited = inherited; _kids = children; _nextChild = 0; _prefetchedUntil = 0;
             return false;
         }
 
@@ -114,6 +162,7 @@ public sealed partial class BitPdfDocument
             if (ReferenceEquals(child, root))
             {
                 if ((uint)index >= (uint)PartialPageCount) return null;
+                _partialAttempt?.TrackIndex(target);
                 _pageIndexByDict[target] = index;
                 return index;
             }
@@ -184,8 +233,8 @@ public sealed partial class BitPdfDocument
     {
         private readonly BitPdfDocument _document;
         private readonly BitPdfXRef.PartialAttempt _xref;
-        private readonly HashSet<int> _pages;
-        private readonly HashSet<BitPdfDict> _indexes;
+        private readonly Dictionary<int, BitPdfPage?> _pages = [];
+        private readonly Dictionary<BitPdfDict, int?> _indexes = new(ReferenceEqualityComparer.Instance);
         private readonly IReadOnlyList<BitPdfOutlineItem>? _outline;
         private readonly BitPdfMetadata? _metadata;
         private readonly IReadOnlyList<string>? _labels;
@@ -197,19 +246,27 @@ public sealed partial class BitPdfDocument
         internal PartialAttempt(BitPdfDocument document)
         {
             _document = document; _xref = document._xref.BeginPartialAttempt();
-            _pages = document._partialPageCache.Keys.ToHashSet();
-            _indexes = document._pageIndexByDict.Keys.ToHashSet<BitPdfDict>(ReferenceEqualityComparer.Instance);
+            document._partialAttempt = this;
             _outline = document._outline; _metadata = document._metadata; _labels = document._pageLabels;
             _structure = document._structure; _layers = document._layers;
             _attachments = document._attachments; _forms = document._formFields;
         }
+        internal void TrackPage(int index)
+            => _pages.TryAdd(index, _document._partialPageCache.GetValueOrDefault(index));
+        internal void TrackIndex(BitPdfDict dictionary)
+            => _indexes.TryAdd(dictionary, _document._pageIndexByDict.TryGetValue(dictionary, out int index) ? index : null);
         internal void Commit() { _xref.Commit(); _committed = true; }
         public void Dispose()
         {
+            _document._partialAttempt = null;
             _xref.Dispose();
             if (_committed) return;
-            foreach (int page in _document._partialPageCache.Keys.Where(k => !_pages.Contains(k)).ToArray()) _document._partialPageCache.Remove(page);
-            foreach (var dictionary in _document._pageIndexByDict.Keys.Where(k => !_indexes.Contains(k)).ToArray()) _document._pageIndexByDict.Remove(dictionary);
+            foreach (var pair in _pages)
+                if (pair.Value is null) _document._partialPageCache.Remove(pair.Key);
+                else _document._partialPageCache[pair.Key] = pair.Value;
+            foreach (var pair in _indexes)
+                if (pair.Value is not int index) _document._pageIndexByDict.Remove(pair.Key);
+                else _document._pageIndexByDict[pair.Key] = index;
             _document._outline = _outline; _document._metadata = _metadata; _document._pageLabels = _labels;
             _document._structure = _structure; _document._layers = _layers;
             _document._attachments = _attachments; _document._formFields = _forms;

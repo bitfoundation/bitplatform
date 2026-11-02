@@ -81,6 +81,9 @@ public sealed class BitPdfSource
     /// consistent lengths and a stable strong ETag. Cross-origin WASM requests need
     /// exposed Content-Range/ETag headers and preflight permission for Range,
     /// If-Range and authentication headers. HTTP compression is unsupported.
+    /// Validated linearization page/shared-object hints guide bounded prefetching;
+    /// unusable hints use ordinary Range reads. Distant page-tree metadata reads
+    /// may combine nearby chunks to reduce network round trips.
     /// Unsupported delivery falls back to buffered loading before publication,
     /// subject to MaxFallbackSize. Later failures never silently replace the document.</remarks>
     /// <exception cref="ArgumentOutOfRangeException">The chunk/cache size or fallback cap is invalid.</exception>

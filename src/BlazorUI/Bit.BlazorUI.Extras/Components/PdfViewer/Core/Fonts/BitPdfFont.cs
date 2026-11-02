@@ -641,7 +641,7 @@ public sealed class BitPdfFont
     {
         // Two forms: "c [w1 w2 ...]" and "cFirst cLast w". Array elements (and the
         // inner width list) may be indirect references, so resolve each.
-        var expanded = new BitPdfBudget(MaxCidWidthEntries);
+        var expanded = BitPdfBudget.ForRetry(MaxCidWidthEntries, w, "cid-widths");
         int i = 0;
         while (i < w.Count)
         {

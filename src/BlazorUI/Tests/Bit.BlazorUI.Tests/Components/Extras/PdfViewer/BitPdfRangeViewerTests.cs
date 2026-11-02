@@ -343,7 +343,54 @@ public class BitPdfRangeViewerTests : BunitTestContext
         Assert.IsNull(component.Instance.GetBytes());
     }
 
-    private static byte[] ManySpacedPages(int count)
+    [TestMethod]
+    public async Task DistantPageMetadataShouldBeAcquiredInBatches()
+    {
+        using var handler = new RangeHandler(ManySpacedPages(256, 131072));
+        Services.AddSingleton(new HttpClient(handler));
+        var errors = new List<string>();
+        var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source,
+            BitPdfSource.FromUrl("https://pdf.test/document").WithRangeLoading())
+            .Add(v => v.OnError, errors.Add));
+        component.WaitForPages(256);
+        int before = handler.Requests.Count;
+        await component.InvokeAsync(() => component.Instance.GoToPage(211)).WaitAsync(TimeSpan.FromSeconds(20));
+        StringAssert.Contains(component.Markup, ">Page 211</");
+        Assert.AreEqual(0, component.Instance.FailedPages.Count);
+        Assert.AreEqual(0, errors.Count, string.Join("; ", errors));
+        Assert.IsTrue(handler.Requests.Count - before < 40, $"Distant lookup issued {handler.Requests.Count - before} requests: {string.Join(",", handler.Requests.Skip(before))}");
+        Assert.IsNull(component.Instance.GetBytes());
+    }
+
+    [TestMethod]
+    public async Task RangeReadRetriesShouldKeepTheSameWorkBudget()
+    {
+        using var handler = new RangeHandler(SpacedPages());
+        Services.AddSingleton(new HttpClient(handler));
+        var component = RenderComponent<BitPdfViewer>(p => p.Add(v => v.Source,
+            BitPdfSource.FromUrl("https://pdf.test/document").WithRangeLoading()));
+        component.WaitForPages(3);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
+        var budgetType = typeof(BitPdfViewer).Assembly.GetType("Bit.BlazorUI.BitPdfBudget", true)!;
+        var raw = typeof(BitPdfViewer).GetField("_rangeSource", flags)!.GetValue(component.Instance)!;
+        var cursor = (BitPdfBaseStream)raw.GetType().GetMethod("CreateStream", flags)!.Invoke(raw, [200000, (int?)1])!;
+        int attempts = 0;
+        Func<BitPdfDocument, bool> build = document =>
+        {
+            attempts++;
+            var budget = budgetType.GetMethod("ForRetry", flags)!.Invoke(null, [10L, document.Catalog, "forced-miss-test"])!;
+            bool allowed = (bool)budgetType.GetMethod("TrySpend", flags)!.Invoke(budget, [7L])!;
+            cursor.GetByte();
+            return allowed;
+        };
+        var method = typeof(BitPdfViewer).GetMethod("RunRangeWorkAsync", flags)!.MakeGenericMethod(typeof(bool));
+        bool result = await component.InvokeAsync(() => (Task<bool>)method.Invoke(component.Instance,
+            [component.Instance.Document!, build, CancellationToken.None, null])!);
+        Assert.AreEqual(2, attempts);
+        Assert.IsFalse(result, "Fetching missing bytes must not reset the work already spent by an earlier attempt.");
+    }
+
+    private static byte[] ManySpacedPages(int count, int padding = 70000)
     {
         var pdf = new StringBuilder("%PDF-1.7\n");
         int size = 4 + count * 2;
@@ -359,7 +406,7 @@ public class BitPdfRangeViewerTests : BunitTestContext
             string content = $"BT /F1 18 Tf 50 700 Td (Page {i + 1}) Tj ET";
             Obj(page + 1, $"<< /Length {content.Length} >>\nstream\n{content}\nendstream");
             // Obsolete, free objects space the live page headers across raw chunks.
-            pdf.Append($"{size + i} 0 obj\n<< /Length 70000 >>\nstream\n").Append('a', 70000).Append("\nendstream\nendobj\n");
+            pdf.Append($"{size + i} 0 obj\n<< /Length {padding} >>\nstream\n").Append('a', padding).Append("\nendstream\nendobj\n");
         }
         int xref = pdf.Length;
         pdf.Append($"xref\n0 {size + count}\n0000000000 65535 f \n");

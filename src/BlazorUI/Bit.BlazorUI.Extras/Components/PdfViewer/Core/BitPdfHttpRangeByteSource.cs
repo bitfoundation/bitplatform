@@ -369,6 +369,9 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         }
     }
 
+    internal int MetadataChunkSize => _options.ChunkSize;
+    internal int MetadataBatchSize => Math.Min(1024 * 1024, _options.CacheSize / 4);
+
     internal async Task EnsureRangesAsync(IEnumerable<(int Offset, int Length)> ranges, CancellationToken token)
     {
         // Merge overlapping/adjacent dependency windows before occupying request slots.
@@ -500,6 +503,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         { _source = source; Start = Pos = start; End = start + length; }
         public override int GetByte()
         {
+            BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
             if (Pos < Start || Pos > End) throw new ArgumentOutOfRangeException(nameof(Pos));
             if (Pos == End) return -1;
@@ -508,6 +512,7 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         }
         public override byte[] GetBytes(int length = 0)
         {
+            BitPdfXRef.TrackPartialStream(this);
             _source.CheckRead();
             if (Pos < Start || Pos > End) throw new ArgumentOutOfRangeException(nameof(Pos));
             int count = length <= 0 ? End - Pos : Math.Min(length, End - Pos);
@@ -521,8 +526,9 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             begin = Math.Clamp(begin, Start, End); end = Math.Clamp(end, Start, End);
             var bytes = new byte[Math.Max(0, end - begin)]; _source.ReadExactly(begin, bytes); return bytes;
         }
-        public override void Reset() { _source.ThrowIfDisposed(); Pos = Start; }
-        public override void MoveStart() { _source.CheckRead(); if (Pos < Start || Pos > End) throw new ArgumentOutOfRangeException(nameof(Pos)); Start = Pos; }
+        public override void Skip(int n = 1) { BitPdfXRef.TrackPartialStream(this); base.Skip(n); }
+        public override void Reset() { BitPdfXRef.TrackPartialStream(this); _source.ThrowIfDisposed(); Pos = Start; }
+        public override void MoveStart() { BitPdfXRef.TrackPartialStream(this); _source.CheckRead(); if (Pos < Start || Pos > End) throw new ArgumentOutOfRangeException(nameof(Pos)); Start = Pos; }
         public override BitPdfBaseStream MakeSubStream(int start, int length, BitPdfDict? dict = null)
         { var stream = _source.CreateStream(start, length); stream.Dict = dict; return stream; }
     }

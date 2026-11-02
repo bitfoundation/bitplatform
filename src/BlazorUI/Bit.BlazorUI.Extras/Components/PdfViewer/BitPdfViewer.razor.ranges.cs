@@ -61,6 +61,7 @@ public partial class BitPdfViewer
         int version = _loadVersion;
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(_streamLoadCancellation?.Token ?? default, cancellationToken);
         var token = linked.Token;
+        using var retryBudget = BitPdfBudget.BeginRetryScope();
         try
         {
             if (pageIndex is int requested) await PrepareRangePageAsync(document, source, version, requested, token);
@@ -116,11 +117,26 @@ public partial class BitPdfViewer
         CheckRangeOperation(source, version, token);
         // Children share this request budget, but own separate raw-byte pins.
         using var budget = source.BeginOperation();
+        var hints = await RunRangeWorkAsync(document,
+            d => d.XRef.HintRanges(index, d.PageCount, source.MetadataBatchSize), token);
+        if (hints.Count > 0)
+        {
+            using var prefetch = source.BeginOperation();
+            await source.EnsureRangesAsync(hints, token);
+        }
         var walk = await RunRangeWorkAsync(document, d => d.BeginPartialPageWalk(index), token);
         if (walk is null) return;
         for (int step = 0; step < 2_000_128; step++)
         {
             CheckRangeOperation(source, version, token);
+            var ranges = await RunRangeWorkAsync(document,
+                _ => walk.TakeMetadataRanges(source.MetadataChunkSize, source.MetadataBatchSize), token);
+            if (ranges.Count > 0)
+            {
+                // Release lookahead pins before the next parser operation needs its own working set.
+                using var prefetch = source.BeginOperation();
+                await source.EnsureRangesAsync(ranges, token);
+            }
             if (await RunRangeWorkAsync(document, _ => walk.Advance(), token)) return;
             if (step % 64 == 63) await Task.Delay(1, token);
         }
