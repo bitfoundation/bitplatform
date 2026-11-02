@@ -297,6 +297,50 @@ public class ShellUITests : ShellPageTest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheBackgroundSwitch_Should_TakeTheBackgroundAwayAndBringTheSameOneBack(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme");
+
+        var background = Tools.GetByRole(AriaRole.Switch, new() { Name = WorkbenchStrings.Backdrop });
+        var ocean = Tools.GetByRole(AriaRole.Radio, new() { Name = WorkbenchStrings.BackdropOcean, Exact = true });
+
+        await OpenTools();
+        await Press(background);
+        await Press(ocean);
+        await CloseTools();
+
+        await Expect(Page).ToHaveURLAsync(new Regex("backdrop=ocean"));
+        await WaitForViews();
+        await Expect(View().Locator(".composition.ocean")).ToBeVisibleAsync();
+
+        await OpenTools();
+        await Press(background);
+        await CloseTools();
+
+        await Expect(Page).Not.ToHaveURLAsync(new Regex("backdrop="));
+        await WaitForViews();
+        await Expect(View().Locator(".composition")).ToHaveCountAsync(0);
+        await Expect(View().GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeHeading, Level = 2 }).First).ToBeVisibleAsync();
+
+        // It outlives the tools, which a phone has just closed and a desktop swaps for another tab.
+        if (IsPhone is false)
+        {
+            await OpenTab(WorkbenchModes.ChecksColumn);
+            await OpenTab(WorkbenchModes.ViewColumn);
+        }
+
+        await OpenTools();
+        await Expect(ocean).ToHaveCountAsync(0);
+        await Press(background);
+        await Expect(ocean).ToHaveAttributeAsync("aria-checked", "true");
+        await CloseTools();
+
+        await Expect(Page).ToHaveURLAsync(new Regex("backdrop=ocean"));
+        await WaitForViews();
+        await Expect(View().Locator(".composition.ocean")).ToBeVisibleAsync();
+    }
+
+    [TestMethod, EverySurface]
     public async Task Reset_Should_PutTheViewAndWhatWasDoneOnItBack(WorkbenchSurface surface)
     {
         await OpenWorkbench("buildings", "?theme=dark&data=mixed&device=ipad-mini");
