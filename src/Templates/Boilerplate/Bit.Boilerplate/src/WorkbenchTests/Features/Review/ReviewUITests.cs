@@ -445,6 +445,90 @@ public class ReviewUITests : ReviewPageTest
     }
 
     [TestMethod, WithAnAgent]
+    public async Task ResolvingAComment_Should_MoveItUnderDoneAndReopeningBackUnderOpen(WorkbenchSurface surface)
+    {
+        await ClearComments("settings");
+
+        var text = Unique("Done soon");
+        var id = await SeedComment("settings", text);
+
+        await OpenWorkbench("settings");
+        await OpenReview();
+
+        await Expect(ListButton(WorkbenchStrings.OpenComments)).ToHaveTextAsync(ListName(WorkbenchStrings.OpenComments, 1));
+        await Expect(ListButton(WorkbenchStrings.DoneComments)).ToHaveTextAsync(ListName(WorkbenchStrings.DoneComments, 0));
+
+        await OpenThread(text);
+        await Press(ThreadWith(text).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Resolve, Exact = true }));
+
+        await WorkbenchTestReviewer.WaitFor(() => Server.Agent.GetThreads(CancellationToken.None), all => all.Single(t => t.Id == id).Status is WorkbenchReviewStatus.Done);
+
+        await Expect(ListButton(WorkbenchStrings.DoneComments)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(ListButton(WorkbenchStrings.DoneComments)).ToHaveTextAsync(ListName(WorkbenchStrings.DoneComments, 1));
+        await Expect(ListButton(WorkbenchStrings.OpenComments)).ToHaveTextAsync(ListName(WorkbenchStrings.OpenComments, 0));
+        await Expect(ThreadWith(text).Locator(".thread-status")).ToHaveTextAsync(WorkbenchStrings.ReviewStatusDone);
+
+        await Press(ThreadWith(text).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Reopen, Exact = true }));
+
+        await WorkbenchTestReviewer.WaitFor(() => Server.Agent.GetThreads(CancellationToken.None), all => all.Single(t => t.Id == id).Status is WorkbenchReviewStatus.Open);
+
+        await Expect(ListButton(WorkbenchStrings.OpenComments)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(ListButton(WorkbenchStrings.OpenComments)).ToHaveTextAsync(ListName(WorkbenchStrings.OpenComments, 1));
+        await Expect(ThreadWith(text).Locator(".thread-status")).ToHaveTextAsync(WorkbenchStrings.ReviewStatusOpen);
+    }
+
+    [TestMethod, WithAnAgent]
+    public async Task TheOpenList_Should_StayWhileADoneThreadIsSelected(WorkbenchSurface surface)
+    {
+        var text = Unique("Just resolved");
+        var other = Unique("Something else");
+
+        await SeedComment("settings", text);
+
+        var otherId = await SeedComment("settings", other);
+
+        await OpenWorkbench("settings");
+        await OpenReview();
+        await OpenThread(text);
+        await Press(ThreadWith(text).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.Resolve, Exact = true }));
+
+        await Expect(ListButton(WorkbenchStrings.DoneComments)).ToHaveAttributeAsync("aria-pressed", "true");
+
+        await Press(ListButton(WorkbenchStrings.OpenComments));
+
+        await Expect(ThreadWith(other)).ToBeVisibleAsync();
+
+        // Any change to the review draws the page again.
+        await Server.Agent.Reply("Claude Code", otherId, Unique("An answer"), CancellationToken.None);
+
+        await Expect(Tools.Locator(".from-agent").Filter(new() { HasText = "An answer" })).ToBeVisibleAsync();
+        await Expect(ListButton(WorkbenchStrings.OpenComments)).ToHaveAttributeAsync("aria-pressed", "true");
+    }
+
+    [TestMethod, WithAnAgent]
+    public async Task AReplyToADoneComment_Should_ReopenIt(WorkbenchSurface surface)
+    {
+        var text = Unique("Back from the dead");
+        var id = await SeedComment("settings", text);
+
+        await Server.Agent.SetStatus("Claude Code", id, WorkbenchReviewStatus.Done, CancellationToken.None);
+
+        await OpenWorkbench("settings");
+        await OpenReview();
+
+        await Press(ListButton(WorkbenchStrings.DoneComments));
+        await OpenThread(text);
+
+        var reply = Unique("Not quite");
+
+        await ReplyBox.FillAsync(reply);
+        await ReplyBox.PressAsync("Control+Enter");
+
+        await Expect(ListButton(WorkbenchStrings.OpenComments)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(ThreadWith(reply).Locator(".thread-status")).ToHaveTextAsync(WorkbenchStrings.ReviewStatusOpen);
+    }
+
+    [TestMethod, WithAnAgent]
     public async Task DeletingAComment_Should_AskOnceMoreAndRemoveItEverywhere(WorkbenchSurface surface)
     {
         var text = Unique("Never mind");

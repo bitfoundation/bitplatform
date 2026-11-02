@@ -13,6 +13,8 @@ public partial class ReviewPanel
     private bool isSending;
     // The thread whose delete button was pressed once and now asks to be pressed again.
     private string? confirmingDeleteId;
+    // The selected thread the list last followed, and whether it was done then.
+    private (string Id, bool IsDone)? followedThread;
 
     [AutoInject] private WorkbenchReviewSession session = default!;
     [AutoInject] private WorkbenchStore store = default!;
@@ -80,11 +82,15 @@ public partial class ReviewPanel
 
     protected override void OnParametersSet()
     {
-        // A selected thread that is done is only listed under Done, so switch there.
-        if (SelectedThreadId is not null && PageThreads.FirstOrDefault(t => t.Id == SelectedThreadId) is { Status: WorkbenchReviewStatus.Done })
+        // The list goes where the selected thread is listed when it gets selected or moves; other than that, it's the reviewer's to pick.
+        (string Id, bool IsDone)? thread = PageThreads.FirstOrDefault(t => t.Id == SelectedThreadId) is { } selected ? (selected.Id, selected.Status is WorkbenchReviewStatus.Done) : null;
+
+        if (thread is { } moved && moved != followedThread)
         {
-            showDone = true;
+            showDone = moved.IsDone;
         }
+
+        followedThread = thread;
     }
 
     /// <summary>Names a comment's element by its component and text, or "this spot" when neither is known.</summary>
