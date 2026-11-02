@@ -97,6 +97,30 @@ public partial class McpSearchTests
     }
 
     [TestMethod]
+    public async Task The_guides_for_moving_off_besql_answer_only_a_question_that_names_it()
+    {
+        // Their headings are phrased the way anyone's question is - "Keep your users' data" - so a reader who never
+        // ran Bit.Besql was handed the steps for keeping Bit.Besql's data ahead of the storage guide that answers them.
+        foreach (var query in new[] { "keep the database when OPFS is not available", "move the database to opfs" })
+        {
+            var result = await McpCall.StructuredAsync<BsqliteSearchResultDto>("SearchBsqlite", new() { ["query"] = query, ["limit"] = 6 });
+
+            Assert.IsTrue(result.Hits.Any(hit => hit.Title == "First-party backends"), query);
+            Assert.IsFalse(result.Hits.Any(IsForBesqlReader), $"'{query}': {string.Join(" | ", result.Hits.Select(hit => hit.Title))}");
+        }
+
+        // Named, they are exactly what is asked for.
+        var named = await McpCall.StructuredAsync<BsqliteSearchResultDto>("SearchBsqlite", new() { ["query"] = "keep besql data", ["limit"] = 6 });
+
+        Assert.IsTrue(named.Hits.Take(2).All(IsForBesqlReader), string.Join(" | ", named.Hits.Select(hit => hit.Title)));
+        Assert.IsTrue(named.Hits.Any(hit => hit.Title == "4. Keep your users' data"));
+        Assert.IsTrue(named.Hits.Any(hit => hit.Title == "Keeping your users' data"));
+    }
+
+    /// <summary>A hit in one of the guides for moving off Bit.Besql, or in the setup guide for it.</summary>
+    private static bool IsForBesqlReader(BsqliteSearchHitDto hit) => hit.Tool.Contains("from-besql\"", StringComparison.Ordinal);
+
+    [TestMethod]
     public async Task A_query_of_filler_words_is_told_what_to_search_for()
     {
         var result = await McpCall.StructuredAsync<BsqliteSearchResultDto>("SearchBsqlite", new() { ["query"] = "how do I do it" });
