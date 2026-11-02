@@ -220,7 +220,9 @@ public class ThemePageUITests : ShowcaseUITest
     {
         await OpenWorkbench(PageKey, "?sw-overlay=date");
 
+        await Expect(TheOverlaysCalendar).ToBeVisibleAsync();
         await Expect(TheOverlaysCalendar).ToBeInViewportAsync();
+        await Expect(Overlays.GetByRole(AriaRole.Combobox).Nth(1)).ToBeInViewportAsync();
         await Expect(TheOverlaysCalendar).ToContainTextAsync("1990");
     }
 
@@ -229,8 +231,10 @@ public class ThemePageUITests : ShowcaseUITest
     {
         await OpenWorkbench(PageKey, "?sw-overlay=menu");
 
+        await Expect(TheOverlaysMenu.GetByRole(AriaRole.Menuitem, new() { Name = AppStrings.Edit, Exact = true })).ToBeVisibleAsync();
         await Expect(TheOverlaysMenu.GetByRole(AriaRole.Menuitem, new() { Name = AppStrings.Edit, Exact = true })).ToBeInViewportAsync();
         await Expect(TheOverlaysMenu.GetByRole(AriaRole.Menuitem, new() { Name = AppStrings.Delete, Exact = true })).ToBeInViewportAsync();
+        await Expect(Overlays.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ThemeActions, Exact = true })).ToBeInViewportAsync();
     }
 
     [TestMethod, EverySurface]
