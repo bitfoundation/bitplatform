@@ -149,6 +149,21 @@ public class ReviewUITests : ReviewPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.PhoneWithAgent)]
+    public async Task TheBanner_Should_TakeALineAndLeaveThePageToTap(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("shifts");
+        await StartPicking();
+
+        var banner = await PickBanner.BoundingBoxAsync();
+        var heading = await ShiftsHeading.BoundingBoxAsync();
+
+        Assert.IsNotNull(banner);
+        Assert.IsNotNull(heading);
+        Assert.IsLessThan(48, banner.Height, "Its text fits on one line.");
+        Assert.IsLessThanOrEqualTo(heading.Y, banner.Y + banner.Height, "The page's content under the app bar stays free to tap.");
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.PhoneWithAgent)]
     public async Task TheBannersCancel_Should_LeavePickingAndGiveThePageBack(WorkbenchSurface surface)
     {
         await OpenWorkbench("buildings");
