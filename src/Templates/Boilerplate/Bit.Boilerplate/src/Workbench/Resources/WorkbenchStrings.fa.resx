@@ -583,7 +583,7 @@
         <value>شلوغ</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>عصر بخیر، یاس</value>
+        <value>عصر بخیر، {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>شعبه</value>

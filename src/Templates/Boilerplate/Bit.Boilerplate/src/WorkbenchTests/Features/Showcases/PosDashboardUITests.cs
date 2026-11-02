@@ -94,6 +94,21 @@ public class PosDashboardUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheGreeting_Should_NameWhoeverIsSignedIn(WorkbenchSurface surface)
+    {
+        var greeting = View().GetByRole(AriaRole.Heading, new() { Level = 2 }).First;
+
+        await OpenWorkbench(PageKey);
+
+        await Expect(greeting).ToContainTextAsync(WorkbenchStrings.DemoUserYas);
+
+        await OpenWorkbench(PageKey, "?user=2");
+
+        await Expect(greeting).ToContainTextAsync(WorkbenchStrings.DemoUserZahra);
+        await Expect(greeting).Not.ToContainTextAsync(WorkbenchStrings.DemoUserYas);
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheChartsLegend_Should_TurnASeriesOffAndOn(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);

@@ -583,7 +583,7 @@
         <value>Busy</value>
     </data>
     <data name="PosGreeting" xml:space="preserve">
-        <value>Good afternoon, Yas</value>
+        <value>Good afternoon, {0}</value>
     </data>
     <data name="PosStore" xml:space="preserve">
         <value>Store</value>
