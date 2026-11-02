@@ -121,13 +121,16 @@ public class RememberedViewsUITests : ShellPageTest
     {
         await OpenWorkbench("theme", "?device=iphone-se");
 
-        await WaitUntilSaved("iphone-se");
+        await Button(WorkbenchStrings.Rotate).ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex("device=iphone-se&rotated=true$"));
+        await WaitUntilSaved("rotated\\\":true");
 
         await OpenWorkbench("theme", "?zoom=0.5");
 
-        await Expect(Page).ToHaveURLAsync(new Regex("device=iphone-se&zoom=0.5$"));
+        await Expect(Page).ToHaveURLAsync(new Regex("device=iphone-se&rotated=true&zoom=0.5$"));
         await Expect(Page.Locator(".pane-scaler")).ToHaveCSSAsync("--wb-scale", "0.5");
-        await ExpectViewSize(375, 667);
+        await ExpectViewSize(667, 375);
     }
 
     [TestMethod, OnDesktops]
@@ -159,12 +162,20 @@ public class RememberedViewsUITests : ShellPageTest
 
         await OpenWorkbench("theme", $"?panes={panes}");
 
+        await OpenTools();
+        await Press(Tools.GetByRole(AriaRole.Button, new() { Name = "130%", Exact = true }));
+        await CloseTools();
+
         await WaitUntilSaved("ipad-mini");
 
         await OpenWorkbench("theme");
 
         await Expect(Page).ToHaveURLAsync(new Regex(@"\?panes="));
         await Expect(Page.Locator("iframe[data-pane-id]")).ToHaveCountAsync(1);
-        await Expect(Page.Locator("iframe[data-pane-id]").ContentFrame.Locator("html")).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+
+        var view = Page.Locator("iframe[data-pane-id]").ContentFrame.Locator("html");
+
+        await Expect(view).ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+        await Expect(view).ToHaveAttributeAsync("style", new Regex(@"font-size:\s*130%"));
     }
 }

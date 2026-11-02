@@ -42,6 +42,9 @@ public class ShellUITests : ShellPageTest
         await Expect(Page.GetByText(WorkbenchStrings.PageNotFound)).ToBeVisibleAsync();
         await Expect(back).ToHaveAttributeAsync("href", "/");
 
+        // A press lands only once the page is alive, which draws this link anew.
+        await back.Locator("xpath=self::*[@*[starts-with(name(), '_bl_')]]").WaitForAsync();
+
         await Press(back);
 
         await Expect(Page.Locator("a.page-card").First).ToBeVisibleAsync();

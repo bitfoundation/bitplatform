@@ -118,8 +118,7 @@ export function prepareFrame(frame: HTMLIFrameElement) {
         shieldedEvents.forEach(type => win.addEventListener(type, shield, { capture: true, passive: true }));
         win.addEventListener('click', event => onClick(frame, event), true);
 
-        // A press or a key inside a view's page doesn't reach the shell's document, so they select the view from here. Focus alone
-        // doesn't, as a page moves it by itself while it loads.
+        // A press or a key in a view's page doesn't reach the shell's document, so they select the view from here; focus doesn't, as a page moves it while loading.
         ['pointerdown', 'keyup'].forEach(type => win.addEventListener(type, () => selectView(frame), true));
 
         win.addEventListener('mousemove', event => onHover(frame, event), true);
