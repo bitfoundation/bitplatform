@@ -1,12 +1,13 @@
 using System.IO.Compression;
 using System.Text;
+using Boilerplate.WorkbenchTests.Features.Review;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Boilerplate.WorkbenchTests.Features.Screenshots;
 
 /// <summary>The shell's screenshot buttons, the review sheet and the home page's thumbnails, used the way a reviewer uses them.</summary>
 [TestClass, TestCategory("UITest"), DoNotParallelize]
-public class ScreenshotsUITests : WorkbenchPageTest
+public class ScreenshotsUITests : ReviewPageTest
 {
     private ILocator Customize(string paneId = "1") => View(paneId).GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosCustomize, Exact = true });
 
@@ -223,11 +224,16 @@ public class ScreenshotsUITests : WorkbenchPageTest
     {
         var comment = $"Bigger please <{Guid.NewGuid():N}>";
 
+        // A copy without an agent has the comments it was given, and nobody on it can add one.
         if (HasAgent)
         {
             await using var reviewer = await WorkbenchTestReviewer.Open(Server);
 
             await reviewer.Comment(Server, "theme", comment);
+        }
+        else
+        {
+            await SeedComment("theme", comment);
         }
 
         await OpenWorkbench("theme", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "iphone-se", Theme = WorkbenchThemeMode.Dark }])}");
@@ -239,16 +245,20 @@ public class ScreenshotsUITests : WorkbenchPageTest
         Assert.AreEqual(2, Regex.Count(sheet, "<img [^>]*src=\"data:image/png;base64,"));
         Assert.AreEqual(2, Regex.Count(sheet, "<figcaption>"));
         Assert.Contains(WorkbenchStrings.ThemeDark, sheet);
+        Assert.Contains(System.Text.Encodings.Web.HtmlEncoder.Default.Encode(comment), sheet);
+        Assert.DoesNotContain(WorkbenchStrings.ReviewSheetNoComments, sheet);
+    }
 
-        if (HasAgent)
-        {
-            Assert.Contains(System.Text.Encodings.Web.HtmlEncoder.Default.Encode(comment), sheet);
-            Assert.DoesNotContain(WorkbenchStrings.ReviewSheetNoComments, sheet);
-        }
-        else
-        {
-            Assert.Contains(WorkbenchStrings.ReviewSheetNoComments, sheet);
-        }
+    [TestMethod, OnDesktops]
+    public async Task TheReviewSheet_Should_SaySoWhenThePageHasNoComments(WorkbenchSurface surface)
+    {
+        await ClearComments("theme");
+
+        await OpenWorkbench("theme", "?device=iphone-se");
+
+        var (html, _) = await Download(() => PressInTheMenu(WorkbenchStrings.ReviewSheetHtml), "theme-review.html");
+
+        Assert.Contains(WorkbenchStrings.ReviewSheetNoComments, Encoding.UTF8.GetString(html));
     }
 
     [TestMethod, OnDesktops]

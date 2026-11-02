@@ -95,6 +95,23 @@ public class ReviewReadOnlyUITests : ReviewPageTest
         await Expect(Composer).ToHaveCountAsync(0);
     }
 
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
+    public async Task CommentMode_Should_OpenTheToolsWhenTheyAreFoldedAway(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("shifts");
+
+        await Button(WorkbenchStrings.Tools).ClickAsync();
+        await Expect(Button(WorkbenchStrings.Tools)).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(Page.Locator("#wb-inspector")).Not.ToBeInViewportAsync();
+
+        await Button(WorkbenchStrings.ModeComment).ClickAsync();
+
+        await Expect(Button(WorkbenchStrings.Tools)).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(AgentLine).ToHaveTextAsync(WorkbenchStrings.AgentOffline);
+        await Expect(AgentLine).ToBeInViewportAsync();
+        await Expect(Button(WorkbenchStrings.ModeComment)).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
     [TestMethod, Surfaces(WorkbenchSurface.PhoneWithoutAgent)]
     public async Task ThePhonesTools_Should_OfferNoPinAndNoBanner(WorkbenchSurface surface)
     {
