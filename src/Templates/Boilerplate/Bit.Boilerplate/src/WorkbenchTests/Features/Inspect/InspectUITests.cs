@@ -608,6 +608,48 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task AStoreView_Should_BeInspectedInTheScreenItShows(WorkbenchSurface surface)
+    {
+        await Inspect("pos-dashboard", StoreView);
+
+        var screen = View().FrameLocator("iframe.screen-frame");
+        var customize = screen.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosCustomize, Exact = true });
+
+        await Expect(screen.Locator("html")).ToHaveAttributeAsync("data-wb-mode", "inspect");
+
+        await customize.HoverAsync();
+        await Expect(screen.Locator(".wb-info")).ToContainTextAsync(nameof(BitButton), new() { UseInnerText = true });
+
+        await Press(customize);
+
+        await Expect(Panel.Locator(".component-name")).ToHaveTextAsync(nameof(BitButton));
+        await Expect(Panel.Locator(".parameter").First).ToBeVisibleAsync();
+        await Expect(screen.GetByText(WorkbenchStrings.PosEditHint)).ToHaveCountAsync(0);
+
+        await SetMode(WorkbenchStrings.ModeBrowse, null);
+        await Expect(screen.Locator("html")).Not.ToHaveAttributeAsync("data-wb-mode", new Regex("."));
+
+        await Press(customize);
+        await Expect(screen.GetByText(WorkbenchStrings.PosEditHint)).ToBeVisibleAsync();
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    public async Task AStoreView_Should_TakeACommentInTheScreenItShows(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("pos-dashboard", StoreView);
+        await SetMode(WorkbenchStrings.ModeComment, "comment");
+
+        var screen = View().FrameLocator("iframe.screen-frame");
+
+        await Expect(screen.Locator("html")).ToHaveAttributeAsync("data-wb-mode", "comment");
+
+        await Press(screen.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.PosCustomize, Exact = true }));
+
+        await Expect(Page.Locator(".composer")).ToContainTextAsync(nameof(BitButton));
+        await Expect(screen.GetByText(WorkbenchStrings.PosEditHint)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, OnDesktops]
     public async Task TheMode_Should_EndWithAReload(WorkbenchSurface surface)
     {
         await Inspect();

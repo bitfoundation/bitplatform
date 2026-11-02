@@ -192,6 +192,22 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task AStoreView_Should_LetItsPageAndItsCaptionBePicked(WorkbenchSurface surface)
+    {
+        await EditText("theme", "?device=store-play-phone&backdrop=ocean");
+
+        var screen = View().FrameLocator("iframe.screen-frame");
+
+        await Expect(screen.Locator("html")).ToHaveAttributeAsync("data-wb-mode", "text");
+
+        await Pick(screen.GetByRole(AriaRole.Heading, new() { Name = WorkbenchStrings.ThemeButtons, Exact = true }), WorkbenchStrings.ThemeButtons);
+        await Expect(Key).ToHaveTextAsync($"{nameof(WorkbenchStrings)} · {nameof(WorkbenchStrings.ThemeButtons)}");
+
+        await Pick(View().Locator("h1.caption"), WorkbenchStrings.ThemePageCaption);
+        await Expect(Key).ToHaveTextAsync($"{nameof(WorkbenchStrings)} · {nameof(WorkbenchStrings.ThemePageCaption)}");
+    }
+
+    [TestMethod, OnDesktops]
     public async Task AnotherPage_Should_ForgetThePickedText(WorkbenchSurface surface)
     {
         await EditText();

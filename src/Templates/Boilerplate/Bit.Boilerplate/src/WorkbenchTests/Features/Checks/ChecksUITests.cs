@@ -246,6 +246,25 @@ public class ChecksUITests : WorkbenchPageTest
         await Expect(Finding("critical")).ToHaveCountAsync(0);
     }
 
+    [TestMethod, OnDesktops]
+    public async Task AStoreViewsChecks_Should_CoverThePageInItsScreen(WorkbenchSurface surface)
+    {
+        await OpenChecks("theme", "?device=store-play-phone&backdrop=ocean");
+
+        var screen = View().FrameLocator("iframe.screen-frame");
+
+        await screen.Locator("section").Last.EvaluateAsync("section => section.insertAdjacentHTML('afterend', `<button id='nameless'></button><div style='color: #ff00ff'>Own text</div>`)");
+
+        await RunTheChecks();
+
+        await Expect(Finding("critical").Locator(".count")).ToHaveTextAsync("× 1");
+        await Expect(ThemeSection.GetByText(string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ThemeFindings, 1))).ToBeVisibleAsync();
+
+        await Press(Finding("critical").GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowOnPage }));
+
+        await WorkbenchTestReviewer.WaitFor(() => screen.Locator("#nameless").EvaluateAsync<int>("e => e.getAnimations().length"), count => count > 0);
+    }
+
     [TestMethod, OnPhones]
     public async Task APhone_Should_NotOfferTheChecks(WorkbenchSurface surface)
     {
