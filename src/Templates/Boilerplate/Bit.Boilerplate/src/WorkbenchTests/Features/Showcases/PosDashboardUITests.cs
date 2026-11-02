@@ -488,6 +488,28 @@ public class PosDashboardUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheGallery_Should_StayOpenAfterAReloadAndCloseWithItsButton(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await StartCustomizing();
+        await Hide(WorkbenchStrings.PosRefunds);
+        await Press(AddWidget(1));
+
+        await Expect(Gallery).ToBeInViewportAsync();
+
+        await ReloadTheView();
+
+        await Expect(Gallery).ToBeInViewportAsync();
+        await Expect(Gallery).ToContainTextAsync(WorkbenchStrings.PosRefunds);
+
+        await Press(View().Locator(".bit-pnl").Filter(new() { Has = Gallery }).GetByRole(AriaRole.Button).Locator("visible=true").First);
+
+        await Expect(Gallery).Not.ToBeInViewportAsync();
+        await Expect(Widget(WorkbenchStrings.PosRefunds)).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheMenu_Should_MoveAWidgetLaterAndEarlierAndKeepItAfterAReload(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey);

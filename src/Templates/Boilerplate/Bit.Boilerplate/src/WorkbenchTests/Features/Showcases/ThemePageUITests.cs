@@ -326,4 +326,37 @@ public class ThemePageUITests : ShowcaseUITest
 
         await Expect(TheDialog).ToHaveCountAsync(0);
     }
+
+    [TestMethod, EverySurface]
+    public async Task ThePanel_Should_OpenFromItsButtonAndCloseWithItsCloseButton(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Press(Overlays.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ThemeOverlayPanel, Exact = true }));
+
+        await Expect(ThePanel).ToBeInViewportAsync();
+
+        await Press(View().Locator(".bit-pnl").GetByRole(AriaRole.Button).Locator("visible=true").First);
+
+        await Expect(ThePanel).Not.ToBeInViewportAsync();
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheSnackBars_Should_ShowFromTheirButtonAndCloseOneByOne(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey);
+
+        await Press(Overlays.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ThemeOverlaySnackBar, Exact = true }));
+
+        var success = View().GetByRole(AriaRole.Status, new() { Name = WorkbenchStrings.ThemeSuccess, Exact = true });
+
+        await Expect(success).ToBeInViewportAsync();
+        await Expect(View().GetByRole(AriaRole.Status, new() { Name = WorkbenchStrings.ThemeWarning, Exact = true })).ToBeInViewportAsync();
+        await Expect(View().GetByRole(AriaRole.Status, new() { Name = WorkbenchStrings.ThemeError, Exact = true })).ToBeInViewportAsync();
+
+        await Press(success.GetByRole(AriaRole.Button));
+
+        await Expect(success).ToHaveCountAsync(0);
+        await Expect(View().GetByRole(AriaRole.Status, new() { Name = WorkbenchStrings.ThemeError, Exact = true })).ToBeVisibleAsync();
+    }
 }
