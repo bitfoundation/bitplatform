@@ -87,6 +87,72 @@ public class FlowsEditingUITests : FlowPageTest
     }
 
     [TestMethod, WithAnAgent]
+    public async Task ANewFlowsName_Should_EnableAddWhileItsTyped(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("settings");
+        await OpenTab(WorkbenchModes.FlowsColumn);
+
+        await PickFlow(WorkbenchStrings.NewFlow);
+
+        await Expect(AddThisView).ToBeDisabledAsync();
+
+        await Field(WorkbenchStrings.NewFlowName).FillAsync(Unique("Typed, not left"));
+
+        await Expect(Field(WorkbenchStrings.NewFlowName)).ToBeFocusedAsync();
+        await Expect(AddThisView).ToBeEnabledAsync();
+    }
+
+    [TestMethod, WithAnAgent]
+    public async Task AddingTwice_Should_GrowTheNewFlowWithAnArrow(WorkbenchSurface surface)
+    {
+        var name = Unique("Two in a row");
+
+        await OpenWorkbench("settings", "?device=iphone-se");
+        await OpenTab(WorkbenchModes.FlowsColumn);
+
+        await PickFlow(WorkbenchStrings.NewFlow);
+
+        await Expect(Field(WorkbenchStrings.ArrowFromLast)).ToHaveCountAsync(0);
+
+        await Field(WorkbenchStrings.NewFlowName).FillAsync(name);
+        await Press(AddThisView);
+
+        await Expect(FlowPicker).ToContainTextAsync(name);
+        await Expect(Field(WorkbenchStrings.NewFlowName)).ToHaveCountAsync(0);
+
+        await Field(WorkbenchStrings.ArrowFromLast).FillAsync("And again");
+        await Press(AddThisView);
+
+        var flow = (await WorkbenchTestReviewer.WaitFor(() => Server.Agent.GetFlows(CancellationToken.None), flows => flows.Any(f => f.Name == name && f.Screens.Length == 2))).Single(f => f.Name == name);
+
+        Assert.AreEqual("And again", flow.Links.Single().Label);
+        Assert.AreEqual((flow.Screens[0].Id, flow.Screens[1].Id), (flow.Links[0].From, flow.Links[0].To));
+    }
+
+    [TestMethod, WithAnAgent]
+    public async Task AnAddedScreen_Should_OpenTheWayTheViewShowedIt(WorkbenchSurface surface)
+    {
+        var name = Unique("With the editor open");
+
+        await OpenWorkbench("buildings", "?device=iphone-se");
+
+        await Press(View().GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.BuildingsAdd, Exact = true }));
+        await Expect(View().GetByText(WorkbenchStrings.BuildingsAddTitle, new() { Exact = true })).ToBeVisibleAsync();
+
+        await OpenTab(WorkbenchModes.FlowsColumn);
+        await PickFlow(WorkbenchStrings.NewFlow);
+        await Field(WorkbenchStrings.NewFlowName).FillAsync(name);
+        await Press(AddThisView);
+        await Press(Tools.GetByRole(AriaRole.Link, new() { Name = WorkbenchStrings.OpenBoard }));
+
+        await Expect(Cards).ToHaveCountAsync(1);
+
+        var flow = (await Server.Agent.GetFlows(CancellationToken.None)).Single(f => f.Name == name);
+
+        await Expect(Screen(flow.Screens[0].Id).GetByText(WorkbenchStrings.BuildingsAddTitle, new() { Exact = true })).ToBeVisibleAsync();
+    }
+
+    [TestMethod, WithAnAgent]
     public async Task TheFlowsTab_Should_LetAnotherFlowBeChosen(WorkbenchSurface surface)
     {
         var chosen = await DrawFlow(Unique("Chosen"), [new("first", "theme", "", null, null)]);
@@ -120,6 +186,23 @@ public class FlowsEditingUITests : FlowPageTest
         await Expect(Tools.GetByRole(AriaRole.Link, new() { Name = flow.Name })).ToBeVisibleAsync();
         await Expect(FlowPicker).ToContainTextAsync(flow.Name);
         await ExpectNoReload();
+    }
+
+    [TestMethod, WithAnAgent]
+    public async Task AFullFlow_Should_TakeNoMoreScreens(WorkbenchSurface surface)
+    {
+        var flow = await DrawFlow(Unique("Full"), [.. Enumerable.Range(0, WorkbenchReviewDocument.MaxScreens).Select(index => new WorkbenchFlowScreenRequest($"screen{index}", "theme", "", null, null))]);
+
+        await OpenWorkbench("settings");
+        await OpenTab(WorkbenchModes.FlowsColumn);
+
+        await Expect(FlowPicker).ToContainTextAsync(flow.Name);
+        await Expect(AddThisView).ToBeDisabledAsync();
+
+        await PickFlow(WorkbenchStrings.NewFlow);
+        await Field(WorkbenchStrings.NewFlowName).FillAsync(Unique("Another one"));
+
+        await Expect(AddThisView).ToBeEnabledAsync();
     }
 
     [TestMethod, WithAnAgent]

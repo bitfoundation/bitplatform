@@ -36,7 +36,7 @@
                          FitWidth />
             @if (TargetFlowId == NewFlowValue)
             {
-                <BitTextField @bind-Value="newFlowName" Label="@Localizer[nameof(WorkbenchStrings.NewFlowName)]" MaxLength="80" />
+                <BitTextField @bind-Value="newFlowName" Immediate Label="@Localizer[nameof(WorkbenchStrings.NewFlowName)]" MaxLength="80" />
             }
             <BitTextField @bind-Value="note" Label="@Localizer[nameof(WorkbenchStrings.ScreenNote)]" MaxLength="300" />
             @if (TargetFlow is { Screens.Length: > 0 })
