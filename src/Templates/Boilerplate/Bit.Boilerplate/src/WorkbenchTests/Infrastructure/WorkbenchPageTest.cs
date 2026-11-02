@@ -113,7 +113,7 @@ public class WorkbenchPageTest : PageTest
     /// Where the shell keeps the selected view's settings, its comments and its flows: a desktop's side column, or a phone's Tools
     /// panel, in which they follow each other instead of being tabs.
     /// </summary>
-    protected ILocator Tools => Page.Locator(IsPhone ? ".tools-panel" : "#wb-inspector");
+    protected ILocator Tools => Page.Locator(IsPhone ? ".bit-pnl.tools-panel" : "#wb-inspector");
 
     /// <summary>Brings the tools into sight, which a desktop has in sight already.</summary>
     protected async Task OpenTools()
