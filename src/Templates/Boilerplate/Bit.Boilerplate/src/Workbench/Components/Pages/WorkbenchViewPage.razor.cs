@@ -121,6 +121,14 @@ public partial class WorkbenchViewPage
             BuildCompareItems();
         }
 
+        // What was picked on the last page isn't on this one.
+        if (pageInfo != previous)
+        {
+            pickedComponent = null;
+            pickedText = null;
+            draftedAnchor = null;
+        }
+
         // An address the shell didn't write itself, like Back or a link to another page: its views win.
         if (isRestored && NavigationManager.Uri != lastAppliedUri)
         {

@@ -590,6 +590,24 @@ public class InspectUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task AnotherPage_Should_ForgetThePickedComponentAndKeepTheMode(WorkbenchSurface surface)
+    {
+        await PickTheIconButton();
+
+        await Press(Page.Locator("#wb-navigator").GetByRole(AriaRole.Link).Filter(new() { HasText = WorkbenchStrings.ShiftsTitle }));
+
+        await Expect(Page).ToHaveURLAsync(new Regex("/workbench/shifts"));
+        await WaitForViews();
+        await Expect(View().Locator(".shifts")).ToBeVisibleAsync();
+        await Expect(Mode(WorkbenchStrings.ModeInspect)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Panel.GetByText(WorkbenchStrings.ComponentPanelHint)).ToBeVisibleAsync();
+        await Expect(Panel.Locator(".component-name")).ToHaveCountAsync(0);
+
+        await OpenTab(WorkbenchModes.ReviewColumn);
+        await Expect(Page.Locator(".composer")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, OnDesktops]
     public async Task TheMode_Should_EndWithAReload(WorkbenchSurface surface)
     {
         await Inspect();
