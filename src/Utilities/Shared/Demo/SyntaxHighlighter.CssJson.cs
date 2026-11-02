@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Bit.Bheadless.Demo.Client.Core.Shared;
+namespace Bit.Utilities.Demo;
 
 public static partial class SyntaxHighlighter
 {

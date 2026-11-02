@@ -4,7 +4,8 @@ using Bit.Bheadless.Tests.E2E.Infrastructure;
 namespace Bit.Bheadless.Tests.E2E;
 
 /// <summary>
-/// Every demo page, in both styling sections, passes axe-core (WCAG 2.2 A and AA plus best practices, over <c>main</c>)
+/// Every demo page, in both styling sections, passes axe-core (WCAG 2.2 A and AA plus best practices, over the page's
+/// content - <see cref="DemoTest.Content"/>)
 /// in its initial, interactive state, and renders without a script error. The pages come from the demo's own catalogue
 /// (<see cref="DemoCatalog"/>), so a page added to the site is audited without touching this suite.
 /// </summary>

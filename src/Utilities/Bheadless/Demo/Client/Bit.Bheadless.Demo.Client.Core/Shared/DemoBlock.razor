@@ -4,7 +4,10 @@
     The tabs are the library's own BitBhTabGroup, so the demo dogfoods the headless tab component; they
     take the kit's tab-list look (.bb-tabs, which keys off the aria-selected the tabs render). The code is
     shown by CodeBlock - the kit's pre.bb-code, which site.js gives a copy button - coloured by
-    SyntaxHighlighter.
+    SyntaxHighlighter. The code panels unmount while another tab is selected: a page holds a dozen
+    examples, and keeping every one's code mounted would lex every snippet on the prerender and again on
+    the interactive render, and ship the highlighted markup of tabs nobody opened. The Preview panel
+    stays mounted, so a sample keeps its state while its code is being read.
 
     The heading is an h2, so the docs layout's "on this page" rail lists every example. The MCP server
     (BheadlessDemoSource) reads each block's Title, Description, Code and Css out of the page's markup.
@@ -49,13 +52,13 @@
             }
             @if (!string.IsNullOrWhiteSpace(Code))
             {
-                <BitBhTabPanel class="bh-example-panel">
+                <BitBhTabPanel class="bh-example-panel" Unmount="true">
                     <CodeBlock Code="@Code" Language="razor" />
                 </BitBhTabPanel>
             }
             @if (!string.IsNullOrWhiteSpace(Css))
             {
-                <BitBhTabPanel class="bh-example-panel">
+                <BitBhTabPanel class="bh-example-panel" Unmount="true">
                     <CodeBlock Code="@Css" Language="css" />
                 </BitBhTabPanel>
             }

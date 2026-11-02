@@ -9,7 +9,7 @@ and runs it on WebAssembly) and drives it with Playwright in Chromium.
 
 | Suite | What it covers |
 |---|---|
-| `AccessibilityTests` | Every page of the demo's catalogue (`DemoCatalog` in `Demo/Client/.../Shared/DemoSection.cs`, compiled into this project), in both styling sections - `/<slug>` (plain CSS) and `/tw/<slug>` (Tailwind) - passes axe-core over `main` (tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, `best-practice`) in its initial, interactive state, and reports no script error. One test per page per section. |
+| `AccessibilityTests` | Every page of the demo's catalogue (`DemoCatalog` in `Demo/Client/.../Shared/DemoSection.cs`, compiled into this project), in both styling sections - `/<slug>` (plain CSS) and `/tw/<slug>` (Tailwind) - passes axe-core over the page's content - `.bb-docs-content`, the docs layout's content column, without the site's navigation, breadcrumb, pager and rail (tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, `best-practice`) in its initial, interactive state, and reports no script error. One test per page per section. |
 | `KeyboardTests` | The flows only a browser can verify, with axe-core run again on the open state of every overlay: the dialog traps the focus, makes the page inert, locks the scroll and gives the focus back; the menu opens with `ArrowDown`, moves its active item and returns the focus on `Escape`; the listbox and the combobox move their active option and select with `Enter`; tabs move the selection without scrolling the page; the popover and the alert dialog close on `Escape` and restore the focus, the alert dialog ignoring outside clicks; the tooltip shows on hover and hides on `Escape`; radio group arrows move the focus and check; a checkbox toggles with `Space` and not `Enter`; tree arrows move the focus and `ArrowRight` expands; the command palette opens with `Ctrl+K`, filters and restores the focus; slider arrows, `Home` and `End` set the value; sortable keyboard reordering is announced in the live region; toasts are announced and `F8` moves the focus to them. |
 
 It is a port of the Playwright (JavaScript) suite the library was written with: the same pages, rules and flows,
@@ -24,11 +24,15 @@ page that does not answer with a success status - a page whose prerender threw i
 Every page is prerendered, so its markup is on screen long before anything handles a key, and neither the load event
 nor an idle network says when that changes. A test starts once both of these hold:
 
-- the page's `h1` has `tabindex="-1"`. `FocusOnNavigate` (`Routes.razor`) focuses it, and adds that attribute, from
-  `OnAfterRenderAsync` - after the router's first interactive render, which on WebAssembly means the runtime has
-  loaded and rendered the whole page over its prerendered markup, and on Blazor Server that the circuit has. A
-  prerender never runs it.
+- the site shell's `.page` says `data-interactive="true"`. `MainLayout.razor` renders it from
+  `RendererInfo.IsInteractive`, which is false in a prerender, so it turns true with the first interactive render -
+  on WebAssembly once the runtime has loaded and rendered the whole page over its prerendered markup, on Blazor
+  Server once the circuit has - in the same batch that attaches the page's event handlers.
 - `[data-bit-bh-live-region]` exists: the library's JS initializer has installed its document-level behaviours.
+
+Tests find their elements inside `.bb-docs-content` (`DemoTest.Content`) rather than `main`: the docs layout puts its
+navigation, its "Browse docs" toggle, the pager and the rail inside `main` as well, and a selector such as
+`main button[aria-expanded]` would find the toggle before the page's own popover.
 
 axe-core then waits until the page is at rest: no element is marked `[data-transition]` (a `BitBhTransition` sets it
 from its first render until its phase ends) and every finite CSS animation or transition has finished. Audited

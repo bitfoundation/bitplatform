@@ -24,8 +24,8 @@
        widths; this is how each one hears that the other opened. *@
     <CascadingValue Value="_drawers" IsFixed="true">
         @* An island of its own on a page that stays on the server (see IsStatic); part of the page's interactive tree
-           everywhere else. The island runs in the site's own render mode (AppRenderMode.Current): a Debug build has no
-           WebAssembly client to hand it to. *@
+           everywhere else. The island runs in the site's own render mode (AppRenderMode.Current): a Debug build, or a
+           Release build with -p:IncludeWasm=false, has no WebAssembly client to hand it to. *@
         <Header @rendermode="@(IsStatic ? AppRenderMode.Current : null)" />
 
         <div class="bb-site-content">

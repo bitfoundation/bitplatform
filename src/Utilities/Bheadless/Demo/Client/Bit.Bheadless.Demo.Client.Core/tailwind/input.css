@@ -66,7 +66,7 @@
 
 /* ------------------------------------------------------------
    Dark theme.
-   wwwroot/theme.js sets <html data-theme="dark">. Rather than adding dark:
+   The site kit's theme.js (Server/wwwroot) sets <html bit-theme="dark">. Rather than adding dark:
    variants to every demo (which would double the classes you read in each
    Razor tab), the palette itself is remapped: neutrals flip, tints become
    dark washes, solid brand fills stay put so white text on them stays legible.
@@ -108,7 +108,7 @@
 }
 
 @layer theme {
-    :root[data-theme="dark"] {
+    :root[bit-theme="dark"] {
         /* Neutrals: inverted, with white surfaces mapped to zinc-900. */
         --color-zinc-50: oklch(23.5% 0.006 286);
         --color-zinc-100: oklch(27.4% 0.006 286.033);

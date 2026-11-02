@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Bit.Blow.Demo.Client.Examples;
+using Bit.Utilities.Demo;
 using Microsoft.AspNetCore.Components;
 
 namespace Bit.Blow.Tests.Mcp;

@@ -11,6 +11,8 @@ on:
     - 'src/Utilities/Balette/**'
     # The MCP server's search ranking, linked in from there.
     - 'src/Utilities/Shared/Mcp/**'
+    # The demo's code highlighter, linked in from there.
+    - 'src/Utilities/Shared/Demo/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 
-namespace Bit.Balette.Demo.Client.Shared;
+namespace Bit.Utilities.Demo;
 
 /// <summary>
 /// A small, dependency-free syntax highlighter for the demo's code snippets - Razor, C#, CSS and JSON. It returns
@@ -21,9 +21,11 @@ namespace Bit.Balette.Demo.Client.Shared;
 /// as code in one of them uses without declaring.
 /// </para>
 /// <para>
-/// The Bdnd, Blow, Balette and Bheadless demos share this file, SyntaxHighlighter.CssJson.cs and CodeBlock.razor byte for
-/// byte but for the namespace: they name no library of their own, and find the components through the demo's
-/// references. Change them in one demo and copy them to the other three.
+/// One source for the Bdnd, Blow, Balette and Bheadless demos: each client project compiles this file and
+/// SyntaxHighlighter.CssJson.cs from src/Utilities/Shared/Demo (a linked Compile item), the way the MCP servers share
+/// Shared/Mcp, and renders the result through a CodeBlock.razor of its own. It names no library of its own: the
+/// components it looks up are found through the references of the assembly it is compiled into. Each demo's CI
+/// workflow lists this folder in its paths, so a change here builds and tests all four.
 /// </para>
 /// </summary>
 public static partial class SyntaxHighlighter

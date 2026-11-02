@@ -22,4 +22,10 @@
         <ProjectReference Include="..\..\Bit.Balette\Bit.Balette.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The code viewer's lexer (CodeBlock.razor colours every snippet with it), which the Bdnd, Blow, Balette and
+             Bheadless demos share. -->
+        <Compile Include="..\..\..\Shared\Demo\*.cs" LinkBase="Shared" />
+    </ItemGroup>
+
 </Project>

@@ -29,7 +29,9 @@
 
         <p class="bb-overline bb-docs-nav-title">Documentation</p>
 
-        @foreach (var section in DocsCatalog.Sections)
+        @* The sections of the styling the reader is browsing: on a Tailwind page every component links to its
+           Tailwind page (see DocsCatalog). *@
+        @foreach (var section in DocsCatalog.SectionsOf(_current))
         {
             @* The group label is a <p> rather than a heading on purpose: the panel precedes the
                page in the DOM, and a heading here would open the document's outline two levels
