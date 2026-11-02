@@ -14,8 +14,8 @@ public abstract class BonboardingTest
 
     public TestContext TestContext { get; set; } = default!;
 
-    /// <summary>The origin the demo is served from, without a trailing slash.</summary>
-    protected string BaseUrl => Session.Host!.BaseUrl;
+    /// <summary>The origin the app under test is served from - the demo's, unless a suite drives another - without a trailing slash.</summary>
+    protected virtual string BaseUrl => Session.Host!.BaseUrl;
 
     protected IBrowser Browser => Session.Browser!;
 

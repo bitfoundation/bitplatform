@@ -1,4 +1,5 @@
 ﻿using Bit.Bdnd.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 
 // The tests run one at a time. A drag is a sequence of native events whose handlers round-trip into .NET between
@@ -37,7 +38,14 @@ public static class AssemblySetup
         }
         finally
         {
-            await HybridSession.StopAsync();
+            try
+            {
+                await HybridSession.StopAsync();
+            }
+            finally
+            {
+                await LazyLoadingSample.StopAsync();
+            }
         }
     }
 }

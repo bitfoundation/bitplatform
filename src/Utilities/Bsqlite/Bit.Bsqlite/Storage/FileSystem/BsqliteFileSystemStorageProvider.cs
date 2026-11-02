@@ -119,7 +119,7 @@ public sealed class BsqliteFileSystemStorageProvider : IBsqliteFileStorageProvid
         var relative = databaseName.Replace('\\', '/').Trim('/');
         var segments = relative.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-        // A leading slash is tolerated - Bit.Besql trimmed it too - but a drive or a parent is not.
+        // A leading slash is tolerated, but a drive or a parent is not.
         var path = segments.Length == 0 || Path.IsPathRooted(relative) || !segments.All(IsPortableSegment)
             ? null
             : Path.GetFullPath(Path.Combine([RootDirectory, .. segments]));

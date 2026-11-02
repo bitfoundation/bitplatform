@@ -1,0 +1,45 @@
+﻿/* Just enough to keep the sample readable; BevTools brings its own stylesheet with its panel. */
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    color: #1b1b1f;
+    background: #fafafa;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid #e3e3e8;
+}
+
+.topbar a.active {
+    font-weight: 600;
+}
+
+.topbar .btn {
+    margin-left: auto;
+}
+
+main {
+    padding: 1rem 1.5rem;
+}
+
+.btn {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid #c9c9d1;
+    border-radius: 4px;
+    background: #f4f6fa;
+    cursor: pointer;
+}
+
+.problem {
+    margin: 0;
+    padding: 0.5rem 1.5rem;
+    color: #8a1c1c;
+    background: #fdecec;
+}

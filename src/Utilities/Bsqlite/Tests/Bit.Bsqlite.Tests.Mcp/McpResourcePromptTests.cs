@@ -21,7 +21,7 @@ public class McpResourcePromptTests
         CollectionAssert.IsSubsetOf(new[] { "bsqlite://guide", "bsqlite://api", "bsqlite://storage" }, uris);
         CollectionAssert.Contains(uris, "bsqlite://docs/storage");
         CollectionAssert.Contains(uris, "bsqlite://docs/Bit.Bsqlite.Testing");
-        CollectionAssert.Contains(uris, "bsqlite://setup/move-from-besql");
+        CollectionAssert.Contains(uris, "bsqlite://setup/hybrid");
 
         foreach (var document in BsqliteSourceCatalog.Documents) CollectionAssert.Contains(uris, $"bsqlite://docs/{Uri.EscapeDataString(document.Name)}");
         foreach (var scenario in BsqliteSetupGuide.Scenarios) CollectionAssert.Contains(uris, $"bsqlite://setup/{scenario}");
@@ -75,7 +75,6 @@ public class McpResourcePromptTests
     private static readonly (string Name, Dictionary<string, object?> Arguments)[] _prompts =
     [
         ("add-bsqlite-to-app", new() { ["hosting"] = "wasm" }),
-        ("move-from-besql", new() { ["dataSource"] = "Offline-Client.db" }),
         ("debug-bsqlite-storage", new() { ["symptom"] = "the database is empty after a reload" }),
     ];
 
@@ -143,14 +142,14 @@ public class McpResourcePromptTests
         var types = await CompleteAsync("bsqlite://api/{typeName}", "typeName", "BsqliteData");
         var names = await CompleteAsync("bsqlite://docs/{name}", "name", "live");
         var providers = await CompleteAsync("bsqlite://storage/{provider}", "provider", "index");
-        var scenarios = await CompleteAsync("bsqlite://setup/{scenario}", "scenario", "besql");
+        var scenarios = await CompleteAsync("bsqlite://setup/{scenario}", "scenario", "hyb");
         var paths = await CompleteAsync("bsqlite://source/{path}", "path", "SessionLifecycle");
 
         CollectionAssert.Contains(types, "BsqliteDatabase");
         Assert.StartsWith("BsqliteData", types[0], "A value the typed text starts should rank first.");
         CollectionAssert.Contains(names, "live-queries");
         CollectionAssert.Contains(providers, "indexeddb");
-        CollectionAssert.Contains(scenarios, "move-from-besql");
+        CollectionAssert.Contains(scenarios, "hybrid");
         CollectionAssert.Contains(paths, "Demo/Client/Components/SessionLifecycle.razor");
     }
 

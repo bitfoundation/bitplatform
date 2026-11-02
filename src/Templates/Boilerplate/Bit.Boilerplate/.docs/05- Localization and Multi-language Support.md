@@ -535,7 +535,7 @@ The tool performs the following tasks automatically:
 
 ### Installation
 
-Nothing to install: `dnx Bit.Cli --version 11.0.0-pre-15 -- translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli --version 11.0.0-pre-15`), the command is `bit translate`.
+Nothing to install: `dnx Bit.Cli --version 11.0.0-pre-16 -- translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli --version 11.0.0-pre-16`), the command is `bit translate`.
 
 #### `Bit.ResxTranslator.json` Configuration Options Explained
 

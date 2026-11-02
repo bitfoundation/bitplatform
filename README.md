@@ -25,7 +25,7 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 Create a ready-to-run [bit Boilerplate](src/Templates/Boilerplate/Readme.md) project on Windows, macOS or Linux with the [bit CLI](src/Toolings/Cli/README.md):
 
 ```bash
-dotnet tool install --global Bit.Cli --version 11.0.0-pre-15
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-16
 bit new MyApp
 ```
 
@@ -57,7 +57,7 @@ bit new MyApp
 - [***Blex***](src/Utilities/Blex/README.md) (`Bit.Blex`): Reactive state management for Blazor and .NET MAUI. A source generator turns plain `[BlexState]` fields and `[BlexAction]` methods into observable stores, with computed state, effects, middleware, persistence, undo/redo and Redux DevTools time-travel built in.
 - [***BlazeDb***](src/Utilities/BlazeDb/README.md) (`Bit.BlazeDb`): A memory-first, SQL-free embedded database for Blazor WebAssembly. Rows live in managed memory as the objects you declared, reads are method calls into source-generated hash and ordered indexes, and commits go to a write-ahead log flushed in the background to OPFS, IndexedDB or files - with transactions, encryption at rest, multi-tab replicas and an EF Core provider.
 - [***Bcrdt***](src/Utilities/Bcrdt/README.md) (`Bit.Bcrdt`): Real-time collaborative editing for .NET and Blazor - a native C# CRDT engine for text, lists, maps and sets, with a sync protocol that survives loss, duplication and long offline sessions, presence and cursors, offline-first persistence, selective undo and Blazor components, over SignalR, WebSockets or any transport. No JavaScript CRDT library underneath; the server only relays.
-- [***Bsqlite***](src/Utilities/Bsqlite/README.md) (`Bit.Bsqlite`): SQLite in the browser for Blazor, with EF Core on top. The same entities and migrations run on the client as on the server, in a dedicated worker over OPFS, IndexedDB, Cache Storage or memory - and, in Blazor Hybrid apps, on the device's native SQLite with the same registration - with live queries, a complete ADO.NET surface and storage selection that never loses data silently. It replaces Bit.Besql, and imports the databases Bit.Besql left behind.
+- [***Bsqlite***](src/Utilities/Bsqlite/README.md) (`Bit.Bsqlite`): SQLite in the browser for Blazor, with EF Core on top. The same entities and migrations run on the client as on the server, in a dedicated worker over OPFS, IndexedDB, Cache Storage or memory - and, in Blazor Hybrid apps, on the device's native SQLite with the same registration - with live queries, a complete ADO.NET surface and storage selection that never loses data silently.
 - [***Bswup***](src/Bswup/README.md) (`Bit.Bswup`): Turns your Blazor app into a PWA with service-worker update progress, and works with prerendering for an experience like GitHub's or Reddit's.
 
 ## Build & tooling

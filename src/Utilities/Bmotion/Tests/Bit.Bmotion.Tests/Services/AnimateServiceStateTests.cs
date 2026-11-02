@@ -68,6 +68,51 @@ public class AnimateServiceStateTests
     }
 
     [TestMethod]
+    public async Task SecondAnimation_OnANewElementWithTheReleasedOnesId_StartsFromWhatItShows()
+    {
+        var (service, engine, interop) = Create();
+        await using var _ = engine;
+
+        var first = await service.AnimateAsync("#box", Bm.To(x: 100, scale: 2), Bm.Tween(0.3));
+        interop.FinishWaapi();
+        await first.WhenCompleteAsync().WaitAsync(Timeout);
+        await WaitUntilAsync(() => !engine.IsRegistered("bm-sel-1"), "the finished animation must release its element");
+
+        // The page was left and opened again: the element answering to the id is a new one, at rest.
+        interop.NewElements = ids => ids;
+        await service.AnimateAsync("#box", Bm.To(x: 200), Bm.Tween(0.3));
+
+        // Nothing kept for the element before it is resumed: it neither starts at x 100 nor takes the scale.
+        var state = engine.GetDiagnostics().Single(d => d.Id == "bm-sel-1");
+        Assert.IsFalse(state.Transforms.ContainsKey("scale"), "the new element must not take the old one's scale");
+        var from = FirstFrameTransform(interop);
+        Assert.IsFalse(from.Contains("100px", StringComparison.Ordinal), $"the new element must not leave from x 100: {from}");
+        Assert.IsFalse(from.Contains("scale(2)", StringComparison.Ordinal), $"nor with the old element's scale: {from}");
+    }
+
+    [TestMethod]
+    public async Task SecondAnimation_ByReferenceOnANewElementWithTheReleasedOnesId_StartsFromWhatItShows()
+    {
+        var (service, engine, interop) = Create();
+        await using var _ = engine;
+        interop.RefResolver = _ => "ball";
+
+        var first = await service.AnimateAsync(default(ElementReference), Bm.To(x: 160), Bm.Tween(0.3));
+        interop.FinishWaapi();
+        await first.WhenCompleteAsync().WaitAsync(Timeout);
+        await WaitUntilAsync(() => !engine.IsRegistered("ball"), "the finished animation must release its element");
+
+        interop.NewElements = ids => ids;
+        var played = interop.ArgsOf("playWaapiAnimation").Count;
+        await service.AnimateAsync(default(ElementReference), Bm.To(x: 160), Bm.Tween(0.3));
+
+        // Were the old element's x resumed, the new one would already be "there": nothing would play, and it would jump.
+        Assert.AreEqual(played + 1, interop.ArgsOf("playWaapiAnimation").Count, "the new element must be animated");
+        var from = FirstFrameTransform(interop);
+        Assert.IsFalse(from.Contains("160px", StringComparison.Ordinal), $"the new element must animate from where it is: {from}");
+    }
+
+    [TestMethod]
     public async Task ProgrammaticAnimation_OnAnElementAComponentOwned_DoesNotResumeItsState()
     {
         using var ctx = new BmotionTestContext();

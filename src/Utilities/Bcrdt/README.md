@@ -35,6 +35,8 @@ collaborative pages - notes, a to-do list and a ticket form - hosted unchanged u
 [WASM](Samples/Wasm/) and [Auto](Samples/Auto/), each with its own `BcrdtHub` and document host, so two tabs edit
 one document whichever render mode they run in - and under [MAUI](Samples/Maui/) (Android, iOS, Mac Catalyst and
 Windows), where a `BlazorWebView` runs them as a local-first Blazor Hybrid app over a file-system store.
+[Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its own whose browser half downloads `Bit.Bcrdt.wasm` only when
+its notes open (see [lazy loading](#lazy-loading-on-webassembly)).
 
 ---
 
@@ -598,6 +600,13 @@ Only the browser lazy loads; the server project loads bit Bcrdt with the rest of
 - The server project also registers `LazyAssemblyLoader`, which `Routes.razor` injects while it is prerendered there,
   and which loads nothing outside the browser:
   `builder.Services.AddScoped<Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader>();`.
+
+The [lazy loading sample](Samples/Lazy) does all of this - its project file leaves the mark out of AOT builds, and sets
+a switch next to it that tells its router whether there is an assembly to load; the layout of its notes configures the
+WebSocket transport and the IndexedDB store, and its server maps the WebSocket relay - and the
+[end-to-end suite](Tests/Bit.Bcrdt.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the home
+page never downloads `Bit.Bcrdt.wasm`, and the notes - opened from the home page or by a deep link the server
+prerenders - download it once, and two browsers edit them together through the relay.
 
 ---
 
@@ -1471,7 +1480,7 @@ called without input. Every tool is read-only, and every one is also a plain HTT
 | `Bit.Bcrdt.Server` | The ASP.NET Core relays: the SignalR hub and the WebSocket endpoint, the document host behind them, and the Blazor Server presence circuit handler. |
 | `Bit.Bcrdt.Testing` | The network simulator, operation generators, convergence harness and update corrupter. |
 | `Demo` | The demo (`Client` + prerendering `Server` host): side-by-side replicas over the in-memory transport, a live page across tabs through the server's relays, and the MCP server. |
-| `Samples` | The hosting samples: the `Core` pages hosted under `Server`, `Wasm` and `Auto` (each with its own relay) and `Maui` (local-first, file-system store). |
+| `Samples` | The hosting samples: the `Core` pages hosted under `Server`, `Wasm` and `Auto` (each with its own relay) and `Maui` (local-first, file-system store); and `Lazy`, a Blazor Web App that lazy loads bit Bcrdt on WebAssembly. |
 | `Tests/Bit.Bcrdt.Tests` | MSTest tests - convergence, adversarial networks, fuzzing, persistence recovery, undo, presence, the transports and relays, the demo's own plumbing - on every target framework. |
 | `Tests/Bit.Bcrdt.Tests.Mcp` | MCP server tests, over the real protocol against the demo server's own `Program.cs`. |
 | `Tests/Bit.Bcrdt.Tests.E2E` | Playwright tests of the demo in a real browser, including collaboration between tabs. See its [README](Tests/Bit.Bcrdt.Tests.E2E/README.md). |

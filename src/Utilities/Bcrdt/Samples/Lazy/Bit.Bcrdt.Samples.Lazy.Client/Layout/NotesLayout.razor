@@ -1,0 +1,19 @@
+﻿@* The layout only the notes use, so Bit.Bcrdt.wasm is there before it renders and it may use Bcrdt's types - though
+   not derive from one: the router reads this assembly's public types before anything is downloaded. Its OnInitialized
+   runs before the notes' components ask for the collaboration service, and configures it with what Program.cs would
+   otherwise have registered. *@
+@using Bit.Bcrdt
+@inherits LayoutComponentBase
+@layout MainLayout
+@inject IServiceProvider Services
+@inject NavigationManager Navigation
+
+@Body
+
+@code {
+    // In the browser the first call creates the service and every later one - the notes opened again - gets it back.
+    // On the server, which registers Bcrdt's services, it returns that registration without calling the configuration.
+    protected override void OnInitialized() => Services.GetBcrdtCollaborationService(collaboration => collaboration
+        .UseTransport(new BcrdtWebSocketTransportFactory(Navigation.BaseUri + "ws/bcrdt/{documentId}"))
+        .UseIndexedDbStore());
+}

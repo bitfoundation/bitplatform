@@ -106,7 +106,9 @@ in-browser decoder benchmark, customisation and error handling.
 pages (the live camera, still images, and the decoder reading every symbology in-process), hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/Maui/) (Blazor Hybrid on
 Android, iOS, macOS and Windows), so each [hosting model](#hosting-models) can be seen doing the same things: the
-camera, still images, and `BbBarcodeDecoder` in-process.
+camera, still images, and `BbBarcodeDecoder` in-process. [Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its
+own whose browser half downloads `Bit.BbScanner.wasm` only when its scanner page opens (see
+[lazy loading](#lazy-loading-on-webassembly)).
 
 ## How it fits together
 
@@ -726,6 +728,13 @@ it renders.
   camera should be compiled ahead of time (see [performance](#performance)), lazy loading suits one that is not: one
   that reads still images, or scans rarely enough that the interpreter's speed is acceptable.
 
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App - its project file leaves the mark out of
+AOT builds, and sets a switch next to it that tells its router whether there is an assembly to load - and the
+[end-to-end suite](Tests/Bit.BbScanner.Tests.E2E) runs its published copy in a browser whose camera plays a QR code,
+trimmed and AOT-compiled: the home page never downloads `Bit.BbScanner.wasm` yet has the stylesheet, and the scanner
+page - opened from the home page or by a deep link the server prerenders - downloads it once, opens the camera and
+reads the code.
+
 ### Blazor Web App
 
 Any of the interactive render modes works, per page or for the whole app. Reference the package from the project
@@ -1208,6 +1217,7 @@ Demo/Client                       the demo's pages, run on WebAssembly
 Demo/Server                       the demo's host, and the MCP server
 Samples/Core                      the samples' shared pages
 Samples/Server, Wasm, Auto, Maui  the same pages in each hosting model
+Samples/Lazy                      a Blazor Web App that downloads Bit.BbScanner.wasm only when its scanner page opens
 Tests/Bit.BbScanner.TestKit       encoders, image helpers and the sample catalog, shared by the tests, the benchmarks, the demo and the samples
 Tests/Bit.BbScanner.Tests         unit, round-trip and image robustness tests
 Tests/Bit.BbScanner.Tests.Mcp     the MCP server, over the wire
@@ -1265,5 +1275,6 @@ run by any test.
 
 `Tests/Bit.BbScanner.Tests.E2E` runs the demo in Chromium whose camera is a generated video file, so the whole stack
 is exercised: the WebAssembly runtime, the JavaScript module, a real `MediaStream`, the frame loop and the decoder.
-It runs the Blazor Server sample the same way, on a real circuit, the watchdog included. Only the sensor is
-synthetic. Its [README](Tests/Bit.BbScanner.Tests.E2E/README.md) says what it covers and how to run it.
+It runs the Blazor Server sample the same way, on a real circuit, the watchdog included, and the published lazy loading
+sample. Only the sensor is synthetic. Its [README](Tests/Bit.BbScanner.Tests.E2E/README.md) says what it covers and how
+to run it.

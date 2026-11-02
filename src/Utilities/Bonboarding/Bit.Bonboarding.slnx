@@ -20,6 +20,10 @@
     <Project Path="Samples/Auto/Bit.Bonboarding.Samples.Auto.Client/Bit.Bonboarding.Samples.Auto.Client.csproj" />
     <Project Path="Samples/Auto/Bit.Bonboarding.Samples.Auto/Bit.Bonboarding.Samples.Auto.csproj" />
   </Folder>
+  <Folder Name="/Samples/Lazy/">
+    <Project Path="Samples/Lazy/Bit.Bonboarding.Samples.Lazy.Client/Bit.Bonboarding.Samples.Lazy.Client.csproj" />
+    <Project Path="Samples/Lazy/Bit.Bonboarding.Samples.Lazy/Bit.Bonboarding.Samples.Lazy.csproj" />
+  </Folder>
   <Folder Name="/Samples/Server/">
     <Project Path="Samples/Server/Bit.Bonboarding.Samples.Server.csproj" />
   </Folder>

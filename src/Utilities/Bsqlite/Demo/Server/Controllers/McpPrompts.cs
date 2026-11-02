@@ -5,9 +5,8 @@ using System.ComponentModel.DataAnnotations;
 namespace Bit.Bsqlite.Demo.Server.Controllers;
 
 /// <summary>
-/// Ready-made workflows for the three things people actually ask a browser database for: add it to an
-/// app, move an existing Bit.Besql app onto it without losing anyone's data, and work out why a
-/// database does not open, opens empty, or will not take a statement.
+/// Ready-made workflows for the two things people actually ask a browser database for: add it to an
+/// app, and work out why a database does not open, opens empty, or will not take a statement.
 /// <para>
 /// Each prompt spends its words on the order to call the tools in and on the mistakes that are
 /// expensive to make - the ones that produce a page that fails only when prerendered, or a returning
@@ -54,41 +53,6 @@ public static class McpPrompts
             7. Build the app and fix what the compiler says.
 
             Show me the diff for each file you change, and say which project the registration and the pages live in and why.
-            """;
-    }
-
-    [McpServerPrompt(Name = "move-from-besql", Title = "Move a Bit.Besql app to Bit.Bsqlite")]
-    [Description("Moves an app from Bit.Besql to Bit.Bsqlite so that every existing user's database is imported rather than lost.")]
-    public static string MoveFromBesql(
-        [Description("The Data Source the app passes to UseSqlite under Bit.Besql, e.g. 'Offline-Client.db'. Pass 'unknown' to have it found in the project first.")] string dataSource = "unknown")
-    {
-        return $"""
-            Move this app from Bit.Besql to Bit.Bsqlite without losing any user's data. Besql's Data Source is: {dataSource}.
-
-            Work in this order:
-
-            1. If the Data Source is 'unknown', find it first: the `UseSqlite("Data Source=...")` inside
-               `AddBesqlDbContextFactory`. That exact file name is the key: Bsqlite's cache-storage backend imports the
-               database Besql left under `/data/cache/<that name>`, and only under it.
-            2. Call `GetBsqliteSetupGuide` with scenario 'move-from-besql' and follow it.
-            3. Register `BsqliteCacheStorageProvider` and make 'cache-storage' the FIRST candidate, and pass the Data Source
-               to `AddDatabase`. Then prove it with `PlanBsqliteStorageSelection`: with no existing binding (a user opening
-               the new version for the first time) the database must open on 'cache-storage'. Any other backend ranked
-               first gives every returning user an empty database there, silently.
-            4. Remove Bit.Besql's script tag and its `ConfigureSqliteJournalMode()` calls, move `dbContextInitializer` work
-               to `OnFirstUse` (migrations already run by default) and a compiled model to `options.Configure`. If the
-               project lazy loads `System.Private.Xml.wasm`, keep it and load it in `BeforeFirstOpen` on the builder:
-               opening any Bsqlite connection needs it.
-            5. Replace every synchronous EF call with its async overload: they worked under Besql and throw
-               `BsqliteSynchronousApiNotSupportedException` under Bsqlite. Search the code for `SaveChanges()`,
-               `.ToList()`, `.First(`, `.Single(`, `.Count()` and `CreateDbContext()`.
-            6. If the app should end up on OPFS, do not reorder the candidates: migrate deliberately with
-               `BsqliteStorageMigrator` once the database is bound to 'cache-storage' - fetch
-               `GetBsqliteSourceFile(path: "Demo/Client/BrowserDatabase.cs")` for the demo's working version.
-            7. Build the app and fix what the compiler says.
-
-            Show me the diff for each file you change, and the PlanBsqliteStorageSelection result that shows a first open
-            lands on cache-storage.
             """;
     }
 

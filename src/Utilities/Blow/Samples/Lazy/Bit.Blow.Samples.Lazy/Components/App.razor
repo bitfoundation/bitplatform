@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Blow lazy loading sample</title>
+    @* Linked by hand, as in every app: Blow does not inject its stylesheet. It is a static web asset, not part of
+       Bit.Blow.wasm, so it is served before the assembly is downloaded and the canvas is laid out from its first
+       render. app.css comes after it, so the sample's own rules win. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Blow/bit-blow.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Without an icon the browser asks for /favicon.ico, and the 404 lands in the console the end-to-end tests check. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bit.Blow.wasm before the workflow renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

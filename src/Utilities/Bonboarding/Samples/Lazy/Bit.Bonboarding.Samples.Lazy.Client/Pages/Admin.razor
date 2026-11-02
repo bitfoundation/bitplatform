@@ -1,0 +1,35 @@
+﻿@page "/admin"
+@layout AdminLayout
+@using Bit.Bonboarding
+@inject IServiceProvider Services
+
+<PageTitle>Admin - Bonboarding lazy loading sample</PageTitle>
+
+<h1>Admin</h1>
+
+<p>
+    <code>Bit.Bonboarding.wasm</code> was downloaded as this page opened. The tour above starts by itself the first
+    time, and the tour and its host create the services they need themselves: the app does not register Bonboarding's
+    services. The button below reads the tour's stored progress through <code>GetBonboardingService()</code>.
+</p>
+
+<p>
+    <button type="button" @onclick="ReadProgressAsync">Read the stored progress</button>
+    <span id="progress">@_progress</span>
+</p>
+
+@code {
+    private string? _progress;
+
+    private async Task ReadProgressAsync()
+    {
+        var record = await Services.GetBonboardingService().GetRecordAsync("admin-welcome");
+        _progress = record switch
+        {
+            null => "Not started",
+            { Completed: true } => "Completed",
+            { Dismissed: true } => "Dismissed",
+            _ => $"At step {record.CurrentIndex + 1}",
+        };
+    }
+}

@@ -13,8 +13,8 @@
            Microsoft.Data.Sqlite makes on its own when it finds the bundle.
 
          So a browser build drops the bundle's native library and its two assemblies, and runs exactly as it would
-         without the package's Blazor Hybrid support - unless the app set WasmBuildNative itself, as an app that still
-         runs SQLite through Microsoft.Data.Sqlite in the browser (Bit.Besql, say) does.
+         without the package's Blazor Hybrid support - unless the app set WasmBuildNative itself, as an app that also
+         runs SQLite through Microsoft.Data.Sqlite in the browser does.
 
          In targets rather than at evaluation, so they see the items whatever order the packages' targets were imported
          in: the native reference before the WebAssembly SDK reads it, and the copy-local files once NuGet has resolved

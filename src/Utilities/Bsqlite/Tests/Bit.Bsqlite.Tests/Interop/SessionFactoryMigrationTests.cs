@@ -6,8 +6,8 @@ using Bit.Bsqlite.Testing;
 namespace Bit.Bsqlite.Interop.Tests;
 
 /// <summary>
-/// How an application moving off Bit.Besql keeps its users' data while new users start on the preferred
-/// backend: the backend holding the old database is registered but not preferred, and
+/// How an application that changes the backend it prefers keeps its users' data while new users start on the
+/// preferred backend: the backend holding the old database is registered but not preferred, and
 /// <see cref="BsqliteStorageMigrationMode.AutomaticOnOpen"/> moves the database on its first open.
 /// </summary>
 [TestClass]
@@ -27,7 +27,7 @@ public sealed class SessionFactoryMigrationTests
 
     /// <summary>
     /// A database with no binding is looked for on every registered backend before a new one is created, so the
-    /// one Bit.Besql left is found although its backend is not in the preference - and then moved to the preferred one.
+    /// one an earlier version left is found although its backend is not in the preference - and then moved to the preferred one.
     /// </summary>
     [TestMethod]
     public async Task ADatabaseOnABackendNotPreferred_IsFound_AndMovedOnFirstOpen()

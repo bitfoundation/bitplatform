@@ -214,6 +214,23 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask<string[]> ResolveOrRegisterBySelectorAsync(string selector);
     ValueTask<string> ResolveOrRegisterByRefAsync(ElementReference elementReference);
 
+    /// <summary>
+    /// Resolves the elements as <see cref="ResolveOrRegisterBySelectorAsync"/> does, and names the ones among them the
+    /// engine has never addressed: an element rendered in place of one that had the same id - the page left and opened
+    /// again - is one of them, and shows nothing of what was animated on the element before it. Without that the
+    /// engine resumes the values it kept for the id, and the new element jumps to them instead of animating there.
+    /// Defaults to naming none, as an implementation that cannot tell does.
+    /// </summary>
+    internal async ValueTask<(string[] Ids, string[] NewIds)> ResolveBySelectorAsync(string selector)
+        => (await ResolveOrRegisterBySelectorAsync(selector), []);
+
+    /// <summary>
+    /// Resolves the element as <see cref="ResolveOrRegisterByRefAsync"/> does, and says whether the engine has never
+    /// addressed it (see <see cref="ResolveBySelectorAsync"/>).
+    /// </summary>
+    internal async ValueTask<(string Id, bool IsNew)> ResolveByRefAsync(ElementReference elementReference)
+        => (await ResolveOrRegisterByRefAsync(elementReference), false);
+
     // ── View Transitions API ───────────────────────────────────────────────────
     /// <summary>
     /// Wraps <c>document.startViewTransition</c> around a C# DOM-update callback (invoked by name

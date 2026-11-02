@@ -1,4 +1,5 @@
 ﻿using Bit.Balette.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 
 // The tests run one at a time. Many of them race a keystroke against a render, or a debounce against a clock, and
@@ -26,6 +27,13 @@ public static class AssemblySetup
     [AssemblyCleanup]
     public static async Task CleanupAsync()
     {
-        await PlaywrightSession.StopAsync();
+        try
+        {
+            await PlaywrightSession.StopAsync();
+        }
+        finally
+        {
+            await LazyLoadingSample.StopAsync();
+        }
     }
 }

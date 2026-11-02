@@ -164,12 +164,13 @@ Subscribe to `Closing` to drop contexts and live queries before the worker goes 
 EF Core and Bsqlite are most of what a WebAssembly app downloads for its database: about 2.1 MB of the 4.9 MB of assemblies a small app on the demo's model downloads, compressed with Brotli. An app whose database only some pages use can download them when one of those pages first opens. `Program.cs` then registers nothing of Bsqlite's - it runs before the assemblies are there - and the pages build the same services with `GetBitBsqliteServices`, the first time one of them asks:
 
 ```csharp
-// AppDatabase.cs: internal, and called only from the pages the assemblies are loaded for.
+// AppDatabase.cs: called only from the pages the assemblies are loaded for - and, to register, from the server that
+// prerenders them or a Blazor Hybrid app that shares them, which is why it is public.
 using Bit.Bsqlite.EntityFrameworkCore;
 using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Storage.Opfs;
 
-internal static class AppDatabase
+public static class AppDatabase
 {
     // What Program.cs would have registered, unchanged - and what a Blazor Hybrid app that shares the pages registers.
     public static void Register(IServiceCollection services)
@@ -325,3 +326,11 @@ The rest of the app has to keep to these rules:
 - A Blazor Hybrid app downloads nothing, so there is nothing to lazy load: it registers the services as usual, with the same method - `AppDatabase.Register(builder.Services)` in `MauiProgram.cs` - and `GetBitBsqliteServices` hands the pages it shares with the WebAssembly client its container. It builds none of its own there: a web view closes long before the app does, and would leave its databases open. If it shares the router's file, it registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because the router injects it there too, though the switch leaves it unused.
 - The condition leaves AOT builds out. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup. The switch is set only where the marks are, so an AOT build skips `LoadAssembliesAsync` as well.
 - `Could not load file or assembly 'Bit.Bsqlite'` - or `'Microsoft.EntityFrameworkCore'`, or `Could not load type of field` - when a database page opens means something used their types before the assemblies loaded: load them in `OnNavigateAsync` for every route whose page uses the database - from the page itself, for a page with its own render mode - and keep their types out of `Program.cs`, `App.razor`, the layouts every page shares and the method that loads them. If it comes in a `ReflectionTypeLoadException` from the router on the first page - and only when the app is opened away from the database pages - a public type in an assembly the router reads derives from or implements one of theirs. The same error naming another assembly of the list, on a page that does not use the database, is one your app uses itself: take it out of the list. `... must be marked with 'BlazorWebAssemblyLazyLoad' item group` names an assembly the call loads that the project file does not mark.
+
+The [lazy loading sample](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Samples/Lazy/)
+does all of this in a Blazor Web App - its client marks the list above, with its own data library in place of
+`MyApp.Data.wasm`, and the switch, out of AOT builds; its server registers with the same `AppDatabase.Register` and
+registers `LazyAssemblyLoader` - and the [end-to-end suite](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/)
+runs its published copy in a browser, trimmed and AOT-compiled: the home page downloads none of the assemblies, and the
+products page - opened from the home page or by a deep link the server prerenders - downloads each of them once, opens
+and migrates its database through `GetBitBsqliteServices`, and adds a product that a reload reads back.

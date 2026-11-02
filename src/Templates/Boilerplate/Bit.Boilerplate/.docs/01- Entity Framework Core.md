@@ -318,7 +318,7 @@ While you develop, you do **NOT** need to run `dotnet ef database update` or `Up
 bit migration add Initial
 ```
 
-`bit migration` runs EF Core's `dotnet ef` with the `dotnet-ef` version that matches the project's EF Core packages, formats the new migration with `dotnet format`, and when it fails, shows its errors and the command to run it again. Install the bit CLI with `dotnet tool install --global Bit.Cli --version 11.0.0-pre-15`, or run it without installing it: `dnx Bit.Cli --version 11.0.0-pre-15 -- migration add Initial`.
+`bit migration` runs EF Core's `dotnet ef` with the `dotnet-ef` version that matches the project's EF Core packages, formats the new migration with `dotnet format`, and when it fails, shows its errors and the command to run it again. Install the bit CLI with `dotnet tool install --global Bit.Cli --version 11.0.0-pre-16`, or run it without installing it: `dnx Bit.Cli --version 11.0.0-pre-16 -- migration add Initial`.
 
 ### Adding Future Migrations
 

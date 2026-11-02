@@ -1,4 +1,5 @@
 ﻿using Bit.Bsqlite.Tests.E2E.Infrastructure;
+using Bit.Utilities.Testing;
 using Microsoft.Playwright;
 
 // The tests run one at a time. Many of them share an origin's storage on purpose (two tabs on one OPFS
@@ -28,5 +29,6 @@ public static class AssemblySetup
     public static async Task CleanupAsync()
     {
         await PlaywrightSession.StopAsync();
+        await LazyLoadingSample.StopAsync();
     }
 }

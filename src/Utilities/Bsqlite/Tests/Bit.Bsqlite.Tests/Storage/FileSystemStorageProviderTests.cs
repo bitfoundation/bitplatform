@@ -172,7 +172,7 @@ public sealed class FileSystemStorageProviderTests
     }
 
     /// <summary>
-    /// A file a stock EF Core app - Bit.Besql's, on a device - wrote in WAL mode may hold committed rows in its log
+    /// A file a stock EF Core app wrote in WAL mode may hold committed rows in its log
     /// alone. Exporting the file without them, and then deleting the source with its log, would lose them.
     /// </summary>
     [TestMethod]

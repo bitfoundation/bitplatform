@@ -108,6 +108,8 @@ Every page explains what it shows, and its source is one click away.
 pages (signature, whiteboard, images, export, collaboration, autosave and canvas lifecycle), hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/), [Auto](Samples/Auto/) and [MAUI](Samples/MAUI/) (Blazor Hybrid on
 Android, iOS, macOS and Windows), so the same drawing code can be exercised in every hosting model.
+[Lazy](Samples/Lazy/) stands apart: a Blazor Web App of its own whose browser half downloads `Bit.Bink.wasm` only when
+its whiteboard opens (see [lazy loading](#lazy-loading-on-webassembly)).
 
 ## How it fits together
 
@@ -1895,6 +1897,12 @@ these rules:
   from, implements or is constrained to one of Bink's: make it internal, or move it into the library lazy loaded with
   Bit.Bink. `... must be marked with 'BlazorWebAssemblyLazyLoad' item group` names an assembly the call loads that the
   project file does not mark.
+
+The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App - its project file leaves the mark and the
+switch out of AOT builds, and its server registers `LazyAssemblyLoader` and nothing of Bink's - and the
+[end-to-end suite](Tests/Bit.Bink.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the home
+page never downloads `Bit.Bink.wasm`, and the whiteboard - opened from the home page or by a deep link the server
+prerenders - downloads it once, takes the zero-copy render path and draws a stroke with the mouse.
 
 ### Blazor Server
 

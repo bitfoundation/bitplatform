@@ -3,7 +3,9 @@
 MSTest + Microsoft.Playwright suite that drives the harness pages of `Bit.Bmotion.Tests.Harness.Web` in a real
 Chromium and measures what the browser actually renders. The same tests run against every render mode a Blazor app
 can host Bit.Bmotion in; the mode is picked per run with `BMOTION_E2E_HOST`. Uses the **Microsoft.Testing.Platform**
-runner (mandated by the repo `global.json`) via `EnableMSTestRunner`.
+runner (mandated by the repo `global.json`) via `EnableMSTestRunner`. One fixture, `LazyLoadingTests`, drives the
+published lazy loading sample (`Samples/Lazy`) instead, an app that downloads `Bit.Bmotion.wasm` only when its page
+that animates opens - see [Lazy loading](#lazy-loading).
 
 ## What is measured, and how
 
@@ -55,6 +57,9 @@ From inside `src` (so `src/global.json` selects the test runner):
 ```powershell
 dotnet build Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj
 
+# LazyLoadingTests runs the lazy loading sample's publish output: publish it in the configuration the tests run in.
+dotnet publish Utilities\Bmotion\Samples\Lazy\Bit.Bmotion.Samples.Lazy\Bit.Bmotion.Samples.Lazy.csproj -c Debug
+
 # First time only: the Playwright-managed Chromium.
 pwsh Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\bin\Debug\net10.0\playwright.ps1 install chromium
 
@@ -80,6 +85,8 @@ any page listed on `/`; `?mode=<mode>` overrides the render mode of one request.
 | `BMOTION_E2E_CHANNEL` | An installed browser channel instead of the bundled Chromium - e.g. `chrome`, `msedge`. Chromium only. |
 | `BMOTION_E2E_EXECUTABLE` | Full path to a chromium-family executable. |
 | `BMOTION_E2E_HEADED` | `1` to watch the run in a visible window. |
+| `BMOTION_E2E_LAZY_BASE_URL` | Drive an already running lazy loading sample instead of booting its publish output. |
+| `BMOTION_E2E_LAZY_AOT` | `1`: the lazy loading sample was published with `-p:RunAOTCompilation=true`, which leaves its lazy mark out: `LazyLoadingTests` then checks that Bit.Bmotion comes with the app and nothing is downloaded on demand. |
 
 **Firefox and WebKit.** Install the engine once (`playwright.ps1 install firefox webkit`) and run one test class at
 a time: headless Firefox throttles the timers and frames of windows that aren't in front, so tests running in
@@ -94,6 +101,41 @@ Some browser quirks shape the tests. Under automation Firefox reports a pointer 
 wrong place and drops its `pointerup`, so drags stay inside the viewport. WebKit passes every Playwright pointer move
 on the moment it arrives instead of once a frame, so `DragByAsync` paces them a frame apart there.
 
+## Lazy loading
+
+`LazyLoadingTests` drives the published lazy loading sample (`Samples/Lazy`) - trimmed, `Bit.Bmotion.wasm` marked
+`BlazorWebAssemblyLazyLoad` and loaded by the router's `OnNavigateAsync`, no `AddBitBmotionServices` in the browser -
+as the library README's "Lazy loading on WebAssembly" section sets it up. Its home page never downloads
+`Bit.Bmotion.wasm`; navigating to the showcase downloads it once (and not again on the way back), and its card enters
+through the frames between rather than snapping to rest. A deep link to the showcase is prerendered by the server (which
+registers Bmotion's services with the options the showcase's layout gives `ConfigureBmotionServices`, and the router's
+`LazyAssemblyLoader`) with the card's enter in CSS, the client's `Program.cs` downloads the assembly before the app
+starts, and the runtime takes the card over without playing its enter again. Either way the card grows under the
+pointer, and the page's buttons animate from code through `GetBmotionService<BmotionAnimateService>()`: a Web Animation
+on an element handed over by reference, and a number counted up on the per-frame loop. No console error, unhandled
+exception or failed request. Published with AOT (`BMOTION_E2E_LAZY_AOT=1`), the sample leaves the lazy mark out as the
+README says an AOT build must, and the same tests check that it loads Bit.Bmotion with the app and nothing on demand.
+
+The sample is an app of its own, so the fixture does not derive from `BmotionPageTest`; it opens the sample in the
+run's browser and measures it with the same probe. It runs on WebAssembly and .NET 11 whatever `BMOTION_E2E_HOST` and
+`BMOTION_E2E_FRAMEWORK` say, so only the run on their defaults (`wasm`, `net11.0`) tests it, and every other run reports
+it inconclusive. It is started from its publish folder (`bin/<configuration>/net11.0/publish`) in the Production
+environment by the first test that drives it (`src/Utilities/Shared/Tests/E2E/LazyLoadingSample.cs`, the harness every
+lazy-loadable library shares); `BMOTION_E2E_LAZY_BASE_URL` points it at a copy that is already running. A sample that
+has not been published makes those tests inconclusive - or failed, on a build server (`CI=true`) - and leaves the other
+fixtures alone.
+
+In `bit.ci.Bmotion.e2e.yml` the `wasm` / `net11.0` leg publishes the sample next to the harness build, and the
+`lazy-loading-aot` job publishes it with AOT (needs the wasm-tools workload) and runs `LazyLoadingTests` alone. The
+suite starts the harness host before any test runs, so that job builds it too, though none of its tests drive it:
+
+```bash
+dotnet build src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.Harness.Web/Bit.Bmotion.Tests.Harness.Web.csproj -c Release -f net11.0
+dotnet publish src/Utilities/Bmotion/Samples/Lazy/Bit.Bmotion.Samples.Lazy/Bit.Bmotion.Samples.Lazy.csproj -c Release -p:RunAOTCompilation=true
+dotnet build src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.E2E/Bit.Bmotion.Tests.E2E.csproj -c Release
+cd src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.E2E && BMOTION_E2E_SKIP_BUILD=1 BMOTION_E2E_LAZY_AOT=1 dotnet test -c Release --no-build --filter "FullyQualifiedName~LazyLoadingTests"
+```
+
 ## Layout
 
 * `Infrastructure/` - the host processes (`HarnessTarget`, `WebHarnessHost`, `HarnessProfile`), the build, the
@@ -102,3 +144,4 @@ on the moment it arrives instead of once a frame, so `DragByAsync` paces them a 
   `Programmatic`, `Config`, `SplitText`, `Reorder`, `Prerender` (static, without the stylesheet, reduced motion,
   takeover, global options, CSS safe mode) and `Misc` (motion values, view transitions, the inspector, and the
   interop contract against the bundle the host serves).
+* `LazyLoadingTests` - the published lazy loading sample rather than a harness page (see [Lazy loading](#lazy-loading)).

@@ -7,7 +7,7 @@ inputs:
     default: ''
   version:
     description: The bit CLI's version. It defaults to the bit platform version of this action.
-    default: 11.0.0-pre-15
+    default: 11.0.0-pre-16
 
 runs:
   using: composite

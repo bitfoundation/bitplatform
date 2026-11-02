@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- The library with the lazy loading sample's context, its configuration and its migration: public, as dotnet ef
+         scaffolds them, so they live here rather than in the client, whose public types the router reads before the
+         assemblies have loaded. The client marks it BlazorWebAssemblyLazyLoad with Bit.Bsqlite and EF Core. -->
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The provider the migration is written for. Bit.Bsqlite takes any EF Core 11 it accepts and would pick its
+             lowest; naming the one the rest of the sample builds on keeps every EF Core assembly the same version. -->
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="11.0.0-rc.3.26522.148" />
+    </ItemGroup>
+
+</Project>

@@ -128,20 +128,18 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
         var step = thorough ? 1 : Math.Max(1, image.Height / 160);
         _rowPhase = (_rowPhase + 1) % step;
         var runs = _runs;
+        var width = image.Width;
         for (var y = _rowPhase; y < image.Height; y += step)
         {
-            // The last eleven runs of the row, the oldest first; count says how many there are yet.
+            // The last eleven runs of the row, the oldest first; count says how many there are yet. Each run's end is
+            // found a word at a time rather than a pixel at a time: a frame's rows are mostly long runs.
+            var words = image.GetRowWords(y);
             var count = 0;
             var x = 0;
-            var width = image.Width;
+            var dark = image[0, y];
             while (x < width)
             {
-                var dark = image[x, y];
-                var end = x + 1;
-                while (end < width && image[end, y] == dark)
-                {
-                    end++;
-                }
+                var end = NextChange(words, width, x, dark);
 
                 if (count == 11)
                 {
@@ -160,6 +158,7 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
                 }
 
                 x = end;
+                dark = !dark;
             }
         }
 
@@ -174,6 +173,24 @@ public sealed class BbMaxiCodeReader : IBbMatrixDecoder, IBbLuminanceMatrixDecod
             }
 
             return sum;
+        }
+
+        // The first pixel at or after from whose colour is not dark.
+        static int NextChange(ReadOnlySpan<uint> words, int width, int from, bool dark)
+        {
+            var word = from >> 5;
+            var current = (dark ? ~words[word] : words[word]) & ~((1u << (from & 31)) - 1);
+            while (current == 0)
+            {
+                if (++word == words.Length)
+                {
+                    return width;
+                }
+
+                current = dark ? ~words[word] : words[word];
+            }
+
+            return Math.Min(width, (word << 5) + BitOperations.TrailingZeroCount(current));
         }
     }
 

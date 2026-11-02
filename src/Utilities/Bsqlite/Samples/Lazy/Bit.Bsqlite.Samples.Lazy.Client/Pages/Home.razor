@@ -1,0 +1,10 @@
+﻿@page "/"
+
+<PageTitle>Bsqlite lazy loading sample</PageTitle>
+
+<h1>Lazy loading</h1>
+
+<p>
+    This page uses no database, so the browser has not downloaded <code>Bit.Bsqlite.wasm</code>, EF Core or the library
+    with the app's model. Open the <a href="products">product list</a>: the router downloads them first, then renders it.
+</p>

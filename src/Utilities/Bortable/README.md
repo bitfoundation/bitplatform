@@ -1051,7 +1051,7 @@ keep to these rules:
   the same `Program.cs`, without the registration.
 
 The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App, and the
-[end-to-end suite](Tests/Bit.Bortable.Tests.E2E) runs its published, trimmed copy in a browser: the home page never
+[end-to-end suite](Tests/Bit.Bortable.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the home page never
 downloads `Bit.Bortable.wasm`, and the board - opened from the home page or by a deep link the server prerenders -
 downloads it and hands items between its lists.
 

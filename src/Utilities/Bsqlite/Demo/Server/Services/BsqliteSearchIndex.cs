@@ -126,9 +126,10 @@ public static class BsqliteSearchIndex
         // inside: "queries" has to count the "Query" of AsLiveQuery, and "backends" every "backend". Each is
         // taken once here, since every entry is compared by it.
         var stems = terms.Select(Stem).ToArray();
+        var common = CommonStems(stems);
 
         var ranked = _entries.Value
-            .Select(entry => (Entry: entry, Score: Score(entry, stems)))
+            .Select(entry => (Entry: entry, Score: Score(entry, stems, common)))
             .Where(hit => hit.Score > 0)
             .OrderByDescending(hit => hit.Score)
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
@@ -140,7 +141,7 @@ public static class BsqliteSearchIndex
 
         var take = Math.Clamp(limit, 1, MaxHits);
 
-        var hits = Cover(ranked, stems, take).Select(hit => new BsqliteSearchHitDto
+        var hits = Cover(ranked, stems, common, take).Select(hit => new BsqliteSearchHitDto
         {
             Kind = hit.Entry.Kind,
             Title = hit.Entry.Title,
@@ -188,9 +189,10 @@ public static class BsqliteSearchIndex
     /// backends - and the one with more material behind it would otherwise fill every place, leaving the
     /// caller to conclude the other has no answer. So for each word that is the name of some entry yet
     /// names none of the top hits, the best entry it does name takes the place of the lowest-ranked hit
-    /// that is not itself there for that reason. The order stays the ranking's.
+    /// that is not itself there for that reason. The order stays the ranking's. A <paramref name="common"/> word
+    /// names nothing in particular, so it brings nothing back.
     /// </summary>
-    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] stems, int take)
+    private static (Entry Entry, int Score)[] Cover((Entry Entry, int Score)[] ranked, string[] stems, HashSet<string> common, int take)
     {
         var top = ranked.Take(take).ToList();
         if (top.Count < take || stems.Length < 2) return [.. top];
@@ -199,7 +201,7 @@ public static class BsqliteSearchIndex
 
         foreach (var stem in stems)
         {
-            if (top.Any(hit => IsTitleWord(hit.Entry, stem))) continue;
+            if (common.Contains(stem) || top.Any(hit => IsTitleWord(hit.Entry, stem))) continue;
 
             var best = ranked.Skip(take).FirstOrDefault(hit => IsTitleWord(hit.Entry, stem));
             if (best.Entry is null) continue;
@@ -233,7 +235,25 @@ public static class BsqliteSearchIndex
             .Take(MaxSuggestions)];
     }
 
-    private static int Score(Entry entry, string[] stems)
+    /// <summary>
+    /// The query's words that more than a quarter of the entries mention - "database", "storage" - and so name
+    /// nothing in particular. Like an ambient word they are true of nearly everything here; unlike one they still
+    /// say what the question is about, so they are searched by and only stop counting as a name. Counted as one,
+    /// a heading that shares just such a word with a question ("The shared database") ranks level with, or ahead
+    /// of, the section that answers all of it. When the query says nothing else, they are all it names.
+    /// </summary>
+    private static HashSet<string> CommonStems(string[] stems)
+    {
+        var entries = _entries.Value;
+
+        bool Mentions(Entry entry, string stem) => Count(entry.Title, stem) + Count(entry.Boosted, stem) + Count(entry.Body, stem) > 0;
+
+        var common = stems.Where(stem => entries.Count(entry => Mentions(entry, stem)) * 4 > entries.Length).ToHashSet(StringComparer.Ordinal);
+
+        return common.Count < stems.Length ? common : [];
+    }
+
+    private static int Score(Entry entry, string[] stems, HashSet<string> common)
     {
         var score = 0;
         var matched = 0;
@@ -249,7 +269,7 @@ public static class BsqliteSearchIndex
             if (isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
 
             matched++;
-            if (isTitleWord || inTitle + inBoosted > 0) named++;
+            if (common.Contains(stem) is false && (isTitleWord || inTitle + inBoosted > 0)) named++;
 
             // A term in a name is worth far more than the same term buried in prose: someone asking for
             // "AllowNonPersistentFallback" wants the option, not the paragraphs that happen to mention it.
@@ -258,8 +278,9 @@ public static class BsqliteSearchIndex
 
         // Every term matching is the strongest signal a hit is the right one - and a term the entry is named
         // by counts twice, since every long section mentions "database", "open" and "page" somewhere, and a
-        // multiplier fed only by prose hands the longest of them every query phrased in plain words. The
-        // weight is what keeps a worked example from outranking the reference that answers the question.
+        // multiplier fed only by prose hands the longest of them every query phrased in plain words. A common
+        // term is not a name, for the same reason. The weight is what keeps a worked example from outranking
+        // the reference that answers the question.
         return matched == 0 ? 0 : score * (matched + named) * entry.Weight;
     }
 

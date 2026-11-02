@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Balette lazy loading sample</title>
+    @* A plain stylesheet, served whether Bit.Balette.wasm has been downloaded or not. app.css comes after it, so the
+       sample's own rules win. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Balette/bit-balette.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* Without an icon the browser asks for /favicon.ico, and the 404 lands in the console the end-to-end tests check. *@
+    <link rel="icon" type="image/svg+xml" href="@Assets["favicon.svg"]" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* The router runs in the browser, where its OnNavigateAsync downloads Bit.Balette.wasm before the admin page renders. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>
