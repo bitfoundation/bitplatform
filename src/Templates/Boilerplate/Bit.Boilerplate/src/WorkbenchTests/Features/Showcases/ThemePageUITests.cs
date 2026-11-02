@@ -198,6 +198,33 @@ public class ThemePageUITests : ShowcaseUITest
     }
 
     [TestMethod, EverySurface]
+    public async Task TheDropdownSwitch_Should_OpenTheListWithItsSectionInSight(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?sw-overlay=dropdown");
+
+        await Expect(VisibleOption(string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ThemeOption, 1))).ToBeInViewportAsync();
+        await Expect(Overlays.GetByRole(AriaRole.Combobox).First).ToBeInViewportAsync();
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheDateSwitch_Should_OpenTheCalendarWithItsSectionInSight(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?sw-overlay=date");
+
+        await Expect(TheOverlaysCalendar).ToBeInViewportAsync();
+        await Expect(TheOverlaysCalendar).ToContainTextAsync("1990");
+    }
+
+    [TestMethod, EverySurface]
+    public async Task TheMenuSwitch_Should_OpenTheMenuWithItsSectionInSight(WorkbenchSurface surface)
+    {
+        await OpenWorkbench(PageKey, "?sw-overlay=menu");
+
+        await Expect(TheOverlaysMenu.GetByRole(AriaRole.Menuitem, new() { Name = AppStrings.Edit, Exact = true })).ToBeInViewportAsync();
+        await Expect(TheOverlaysMenu.GetByRole(AriaRole.Menuitem, new() { Name = AppStrings.Delete, Exact = true })).ToBeInViewportAsync();
+    }
+
+    [TestMethod, EverySurface]
     public async Task TheDialogSwitch_Should_OpenTheDialog(WorkbenchSurface surface)
     {
         await OpenWorkbench(PageKey, "?sw-overlay=dialog");
