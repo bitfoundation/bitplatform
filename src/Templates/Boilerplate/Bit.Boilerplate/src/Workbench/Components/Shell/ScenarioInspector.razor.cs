@@ -13,8 +13,6 @@ public partial class ScenarioInspector
     private List<BitDropdownItem<string>> cultureItems = [];
     private List<BitDropdownItem<int>> userItems = [];
     private List<BitDropdownItem<string>> visionItems = [];
-    // The backdrop that turning Background back on brings back.
-    private WorkbenchBackdrop lastBackdrop = WorkbenchBackdrop.Paper;
 
     [Parameter] public WorkbenchScenario Value { get; set; } = new();
 
@@ -103,12 +101,15 @@ public partial class ScenarioInspector
         return Update(Value with { Device = device ?? DevicePresets.DefaultKey, Rotated = false });
     }
 
-    protected override void OnParametersSet()
+    /// <summary>Turns the background on or off; the one it had comes back, even after this tab or a phone's tools have closed.</summary>
+    private Task ToggleBackdrop(bool isOn)
     {
-        if (Value.Backdrop is { } backdrop)
+        if (isOn is false && Value.Backdrop is { } backdrop)
         {
-            lastBackdrop = backdrop;
+            WorkbenchStore.RememberBackdrop(backdrop);
         }
+
+        return Update(Value with { Backdrop = isOn ? WorkbenchStore.LastBackdrop : null });
     }
 
     private Task SelectBackdrop(WorkbenchBackdrop backdrop) => Update(Value with { Backdrop = backdrop });

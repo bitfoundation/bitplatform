@@ -117,6 +117,10 @@ export function prepareFrame(frame: HTMLIFrameElement) {
         blockedEvents.forEach(type => win.addEventListener(type, block, true));
         shieldedEvents.forEach(type => win.addEventListener(type, shield, { capture: true, passive: true }));
         win.addEventListener('click', event => onClick(frame, event), true);
+
+        // A press or a key in a view's page doesn't reach the shell's document, so they select the view from here; focus doesn't, as a page moves it while loading.
+        ['pointerdown', 'keyup'].forEach(type => win.addEventListener(type, () => selectView(frame), true));
+
         win.addEventListener('mousemove', event => onHover(frame, event), true);
         doc.documentElement.addEventListener('mouseleave', () => hideHover(doc));
         win.addEventListener('scroll', schedulePins, true);
@@ -187,6 +191,15 @@ function viewFrames() {
 
         return screen ? [frame, screen] : [frame];
     });
+}
+
+/** Selects a view, when another one of several is the selected one. */
+function selectView(frame: HTMLIFrameElement) {
+    const selected = document.querySelector<HTMLIFrameElement>('.pane.selected iframe[data-pane-id]');
+
+    if (selected && selected.dataset.paneId !== frame.dataset.paneId) {
+        host?.invoke('SelectPane', frame.dataset.paneId);
+    }
 }
 
 /** A click on a pin opens its thread in any mode; a click while picking starts a comment or a text edit on the element. */

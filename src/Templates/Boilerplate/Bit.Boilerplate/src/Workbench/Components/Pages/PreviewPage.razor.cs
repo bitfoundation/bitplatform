@@ -103,8 +103,14 @@ public partial class PreviewPage
     [JSInvokable]
     public string CaptureState() => blexManager.CaptureGlobalState().ToJsonString();
 
+    /// <summary>Puts this preview's stores back to their defaults, saved in the browser by the time it returns, as the view reloads next.</summary>
     [JSInvokable]
-    public void ResetState() => blexManager.ResetAll();
+    public async Task ResetState()
+    {
+        blexManager.ResetAll();
+
+        await Persistor.FlushAsync();
+    }
 
     /// <summary>The resource entries this preview rendered as the given text, for Edit text mode.</summary>
     [JSInvokable]
