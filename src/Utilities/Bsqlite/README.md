@@ -44,7 +44,6 @@ Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundati
 - [Where it runs](#where-it-runs)
 - [Lazy loading on WebAssembly](#lazy-loading-on-webassembly)
 - [What this release does not claim](#what-this-release-does-not-claim)
-- [Moving off Bit.Besql](#moving-off-bitbesql)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Tests](#tests)
 - [Documentation](#documentation)
@@ -81,7 +80,7 @@ The storage backends, each in its own namespace and each registered with `AddSto
 | --- | --- | --- |
 | `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Persistent, synchronous engine build (the smallest download), several connections |
 | `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Persistent, JSPI or Asyncify engine build, widest reach |
-| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, and the migration path off `Bit.Besql` |
+| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, JSPI or Asyncify engine build, pages in the Cache API |
 | `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Volatile: tests, demos, and a declared last resort |
 | `file-system` | `BsqliteFileSystemStorageProvider` (`Bit.Bsqlite.Storage.FileSystem`) | Blazor Hybrid: plain SQLite files in the app's own folder, registered and selected automatically |
 
@@ -216,14 +215,6 @@ the router reads, nothing of EF Core's in `Program.cs`, the database asked for o
 - `indexeddb` serializes readers. `IDBBatchAtomicVFS` is registered with `WebLocksMixin`'s default `exclusive` lock
   policy, so a read holds the same lock a write does. `SupportsConcurrentReads` reports that honestly.
 
-## Moving off Bit.Besql
-
-Bsqlite replaces Bit.Besql. The `cache-storage` backend (`BsqliteCacheStorageProvider`) reads the file Bit.Besql left in
-its `bit-Besql` cache: a database is imported losslessly into Bsqlite's own page layout the first time it is opened, so an
-application that switches keeps its users' data - and in a Blazor Hybrid app, the `file-system` backend opens the SQLite
-file Bit.Besql used on the device in place. The *Moving from Bit.Besql* guide, listed under [Documentation](#documentation),
-maps every Bit.Besql API to its replacement and walks through the move step by step.
-
 ## MCP server (for AI agents)
 
 The demo website hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at
@@ -253,8 +244,6 @@ for the browser matrix, the soak suite and the benchmark page.
 - [Architecture and performance](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/architecture.md) - the worker, the binary wire format, the statement cache, change tracking
 - [Limits](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/limits.md) - what the browser cannot do and how the library tells you
 - [Extending](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/extending.md) - SQL functions from JavaScript, custom transports
-- [Moving from Bit.Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-from-besql.md) - what replaces each Bit.Besql API, and keeping users' data
-- [Moving a bit Boilerplate project from Bit.Besql](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/migrating-boilerplate-from-besql.md) - the offline database of a project made from the template, file by file
 
 ## License
 

@@ -2,8 +2,7 @@
 // multi-entry atomic write, so we do not claim SQLITE_IOCAP_BATCH_ATOMIC.
 //
 // Pages are 4096-byte cache entries. Dirty pages flush on xSync, in parallel. Cross-tab writers
-// are coordinated by WebLocksMixin. A database that exists only in besql's `bit-Besql` cache is
-// imported losslessly on first open and then served from our own layout.
+// are coordinated by WebLocksMixin.
 //
 // Every operation is addressed by page index computed from the file's recorded size, never by
 // enumerating the cache's keys: `cache.keys()` walks every entry of every database in the origin,
@@ -18,7 +17,6 @@ import { WebLocksMixin } from './engine/WebLocksMixin.js';
 
 export const VFS_NAME = 'cache-storage';
 export const CACHE_NAME = 'bit-bsqlite';
-export const BESQL_CACHE = 'bit-Besql';
 export const PAGE_SIZE = 4096;
 
 class File {
@@ -70,14 +68,6 @@ export class CacheStorageVFS extends WebLocksMixin(FacadeVFS) {
     override async jOpen(zName: string | null, fileId: number, flags: number, pOutFlags: DataView): Promise<number> {
         const path = pathOf(zName || Math.random().toString(36).slice(2));
         let size = await this.#readSize(path);
-
-        if (size === null) {
-            const imported = await importBesqlIfPresent(fileNameOf(path));
-            if (imported) {
-                await this.#writeImage(path, imported);
-                size = imported.byteLength;
-            }
-        }
 
         if (size === null) {
             if (!(flags & VFS.SQLITE_OPEN_CREATE)) {
@@ -296,19 +286,6 @@ export class CacheStorageVFS extends WebLocksMixin(FacadeVFS) {
         await this.#store.put(metaUrl(path), jsonResponse({ size }));
     }
 
-    async #writeImage(path: string, bytes: Uint8Array): Promise<void> {
-        await this.#deletePath(path);
-        const writes: Promise<void>[] = [];
-        for (let offset = 0; offset < bytes.byteLength; offset += PAGE_SIZE) {
-            const page = new Uint8Array(PAGE_SIZE);
-            page.set(bytes.subarray(offset, offset + PAGE_SIZE));
-            writes.push(this.#store.put(pageUrl(path, offset / PAGE_SIZE), bytesResponse(page)));
-        }
-
-        await Promise.all(writes);
-        await this.#writeSize(path, bytes.byteLength);
-    }
-
     /**
      * Deletes a file, its first page before anything else.
      *
@@ -362,24 +339,6 @@ export function metaUrl(path: string): string {
 
 export function pageUrl(path: string, index: number): string {
     return `https://bit-bsqlite.invalid/bit-bsqlite/db/${encodeURIComponent(path)}/p/${index}`;
-}
-
-export async function importBesqlIfPresent(fileName: string): Promise<Uint8Array | null> {
-    if (typeof caches === 'undefined' || !fileName) {
-        return null;
-    }
-
-    try {
-        const cache = await caches.open(BESQL_CACHE);
-        const match = await cache.match(`/data/cache/${fileName}`);
-        if (!match) {
-            return null;
-        }
-
-        return new Uint8Array(await match.arrayBuffer());
-    } catch {
-        return null;
-    }
 }
 
 function bytesResponse(bytes: Uint8Array): Response {

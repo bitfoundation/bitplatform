@@ -8,8 +8,7 @@ namespace Bit.Bsqlite.Storage.CacheStorage;
 /// </summary>
 /// <remarks>
 /// Built against the frozen storage contract with no core changes. Batch-atomic writes are not
-/// offered - the Cache API cannot commit several entries as one. A database left behind by besql
-/// is imported losslessly on first open.
+/// offered - the Cache API cannot commit several entries as one.
 /// </remarks>
 public sealed class BsqliteCacheStorageProvider : IBsqliteStorageProvider
 {

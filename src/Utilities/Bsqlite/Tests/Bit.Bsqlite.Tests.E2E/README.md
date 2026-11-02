@@ -11,7 +11,7 @@ the JavaScript side scripted. That covers the .NET half well and leaves out ever
   the asynchronous VFSes get JSPI or Asyncify as the browser allows, or that the function-table patch lets `EF_DECIMAL`
   register;
 - OPFS, IndexedDB and Cache Storage are never touched: no persistence across a worker restart, no crash safety, no two
-  tabs sharing a file through Web Locks, no import of a database Bit.Besql left behind;
+  tabs sharing a file through Web Locks;
 - the demo website - prerendered on the server, hydrated on WebAssembly - never runs.
 
 This suite does all of that in a real browser with Playwright. The library suites drive the library's own modules
@@ -26,7 +26,7 @@ its pages.
 | `BinaryWireTests`, `InteropTests`, `WorkerTests` | The binary batch and reply format end to end, the interop envelope that keeps SQLite result codes across the boundary, and the worker's request queue, failures, guards and lifecycle. |
 | `FunctionsTests` | The `ef_*` decimal functions, aggregates, the `EF_DECIMAL` collation and `REGEXP`, against .NET's answers. |
 | `LiveQueryTests` | Change notifications from the update and commit hooks, in one tab and across tabs. |
-| `OpfsTests`, `IndexedDbTests`, `CacheStorageTests`, `StorageIsolationTests` | Each backend's persistence, crash safety, admin surface and multi-tab behaviour, the Bit.Besql import, and that two backends never see each other's data under the same name. |
+| `OpfsTests`, `IndexedDbTests`, `CacheStorageTests`, `StorageIsolationTests` | Each backend's persistence, crash safety, admin surface and multi-tab behaviour, and that two backends never see each other's data under the same name. |
 | `SubPathTests` | Every module is reached relative to the document, so an app under `<base href="/nested/">` works unchanged. |
 | `DemoTests` | Every page in the docs panel, and the landing page, is prerendered, hydrates and opens its database without a console error; an unknown route answers 404 with the site's own page; moving the database between backends from the session bar keeps the data and the binding sticks, even while the page is still loading, and is not offered onto in-memory; a refused write shows SQLite's reason without Blazor's error bar; an unsaved order edit stays out of the grid; a file that is not a database is refused before import; the browser and the server seed the same catalog through the same model. |
 | `SoakTests` (category `Soak`) | Per storage, a worker killed mid-transaction a thousand times, and four then eight tabs committing at once, each ending on `PRAGMA integrity_check`. Opt-in: minutes, not seconds. |

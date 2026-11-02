@@ -16,7 +16,7 @@ namespace Bit.Bsqlite.Demo.Server.Services;
 /// </summary>
 public static class BsqliteSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight, string[]? Readers = null)
+    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight)
     {
         /// <summary>
         /// The title split into words, camel-case humps included, so "AllowNonPersistentFallback" is found
@@ -27,12 +27,6 @@ public static class BsqliteSearchIndex
 
         /// <summary>The title words' stems, taken once here rather than for every term of every search.</summary>
         public string[] TitleStems { get; } = [.. SplitWords(Title).Select(Stem)];
-
-        /// <summary>
-        /// The stems of the words that name the one reader this entry is written for - "besql" for the guides
-        /// on moving off Bit.Besql - or none for an entry written for everyone. See <see cref="IsForAsker"/>.
-        /// </summary>
-        public string[] ReaderStems { get; } = [.. (Readers ?? []).Select(Stem)];
     }
 
     private const int MaxTerms = 16;
@@ -100,20 +94,6 @@ public static class BsqliteSearchIndex
         (BsqliteSourceCatalog.ReadmeName, "License"),
         ("Bit.Bsqlite", "Links"),
     ];
-
-    /// <summary>
-    /// The guides written for one reader, and the words a query names that reader by: someone moving an
-    /// application off Bit.Besql, and someone moving a bit Boilerplate project, which used it, off it. Their
-    /// headings are phrased the way everyone's questions are - "Keep your users' data", "Register" - so
-    /// ranked like any guide they answer a question about keeping a database with the steps for keeping
-    /// Bit.Besql's. Unless the query names their reader, they rank at <see cref="ExampleWeight"/> instead, and
-    /// are not brought back to keep one of its words in view.
-    /// </summary>
-    private static readonly Dictionary<string, string[]> _readerGuides = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["migrating-from-besql"] = ["besql"],
-        ["migrating-boilerplate-from-besql"] = ["besql", "boilerplate"],
-    };
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -221,9 +201,7 @@ public static class BsqliteSearchIndex
         {
             if (top.Any(hit => IsTitleWord(hit.Entry, stem))) continue;
 
-            // Only by an entry written for whoever asked: the guides for moving off Bit.Besql are titled with the
-            // words of every question about keeping a database, and would be brought back for each of them.
-            var best = ranked.Skip(take).FirstOrDefault(hit => IsTitleWord(hit.Entry, stem) && IsForAsker(hit.Entry, stems));
+            var best = ranked.Skip(take).FirstOrDefault(hit => IsTitleWord(hit.Entry, stem));
             if (best.Entry is null) continue;
 
             var replace = top.FindLastIndex(hit => kept.Contains(hit.Entry) is false);
@@ -281,30 +259,8 @@ public static class BsqliteSearchIndex
         // Every term matching is the strongest signal a hit is the right one - and a term the entry is named
         // by counts twice, since every long section mentions "database", "open" and "page" somewhere, and a
         // multiplier fed only by prose hands the longest of them every query phrased in plain words. The
-        // weight is what keeps a worked example from outranking the reference that answers the question - and
-        // an entry written for one reader from answering anyone else's question.
-        return matched == 0 ? 0 : score * (matched + named) * (IsForAsker(entry, stems) ? entry.Weight : ExampleWeight);
-    }
-
-    /// <summary>
-    /// Whether the entry is written for whoever asked: for everyone, or for the one reader the query names -
-    /// "keep besql data" is asking for exactly the steps for keeping Bit.Besql's data.
-    /// </summary>
-    private static bool IsForAsker(Entry entry, string[] stems)
-    {
-        return entry.ReaderStems.Length == 0 || stems.Any(stem => entry.ReaderStems.Contains(stem, StringComparer.Ordinal));
-    }
-
-    /// <summary>
-    /// The words that name the one reader a document, a section of one or a setup guide is written for: a
-    /// reader guide's own, or "besql" for anything titled with Bit.Besql - the README's section on moving off
-    /// it and its setup guide, whose "Moving" is otherwise every question about moving a database.
-    /// </summary>
-    private static string[]? ReadersOf(string? document, string title)
-    {
-        if (document is not null && _readerGuides.TryGetValue(document, out var readers)) return readers;
-
-        return SplitWords(title).Contains("Besql", StringComparer.OrdinalIgnoreCase) ? ["besql"] : null;
+        // weight is what keeps a worked example from outranking the reference that answers the question.
+        return matched == 0 ? 0 : score * (matched + named) * entry.Weight;
     }
 
     /// <summary>
@@ -485,7 +441,7 @@ public static class BsqliteSearchIndex
             // without any (the limits table) is all of it.
             entries.Add(new Entry("Document", document.Title, document.Name,
                 $"GetBsqliteDocument(name: \"{document.Name}\")", BsqliteSourceCatalog.GetPreamble(document.Name) ?? document.Summary ?? string.Empty,
-                $"{document.Name.Replace('-', ' ')} {document.Kind.ToLowerInvariant()}", Readers: ReadersOf(document.Name, document.Title)));
+                $"{document.Name.Replace('-', ' ')} {document.Kind.ToLowerInvariant()}"));
 
             foreach (var section in BsqliteSourceCatalog.GetSections(document.Name))
             {
@@ -495,8 +451,7 @@ public static class BsqliteSearchIndex
 
                 entries.Add(new Entry(document.Kind == "Package" ? "Package section" : "Guide section", section.Heading,
                     section.Parent is null ? document.Name : $"{document.Name} > {section.Parent}",
-                    $"GetBsqliteDocument(name: \"{document.Name}\", section: \"{section.Key}\")", body, string.Empty,
-                    Readers: ReadersOf(document.Name, section.Heading)));
+                    $"GetBsqliteDocument(name: \"{document.Name}\", section: \"{section.Key}\")", body, string.Empty));
             }
         }
 
@@ -545,11 +500,9 @@ public static class BsqliteSearchIndex
 
         foreach (var scenario in BsqliteSetupGuide.Scenarios)
         {
-            var title = $"Setup: {BsqliteSetupGuide.Title(scenario)}";
-
-            entries.Add(new Entry("Setup guide", title, scenario,
+            entries.Add(new Entry("Setup guide", $"Setup: {BsqliteSetupGuide.Title(scenario)}", scenario,
                 $"GetBsqliteSetupGuide(scenario: \"{scenario}\")", BsqliteSetupGuide.Summary(scenario),
-                $"setup install wiring register {scenario.Replace('-', ' ')}", Readers: ReadersOf(null, title)));
+                $"setup install wiring register {scenario.Replace('-', ' ')}"));
         }
 
         entries.Add(new Entry("Storage lab", "Plan a storage selection", null,

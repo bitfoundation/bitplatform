@@ -145,8 +145,8 @@ names, together with every package that requires it (`Microsoft.EntityFrameworkC
 `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`,
 `Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`) and its `dnx dotnet-ef` calls, while the
 rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was missed. A shipped library's EF Core
-floor in the band the Boilerplate uses can't go above that version either: `Bit.Besql`'s raised the offline
-database's Sqlite above it, and the project's restore failed with NU1605.
+floor in the band the Boilerplate uses can't go above that version either: one that raises the offline database's
+Sqlite above it fails the project's restore with NU1605.
 
 **Linux runners are on `ubuntu-26.04`** in the GitHub workflows. It
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
