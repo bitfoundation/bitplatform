@@ -576,7 +576,15 @@ public partial class WorkbenchViewPage
     private void OnSmallScreenChanged(bool matched)
     {
         isSmallScreen = matched;
+
+        // A phone has no way out of Inspect and Edit text, so they end when a screen narrows to one; a tour puts the mode back itself.
+        if (matched && IsTouring is false && IsDesktopOnly(store.Mode))
+        {
+            SetMode(WorkbenchModes.Browse);
+        }
     }
+
+    private static bool IsDesktopOnly(string mode) => mode is WorkbenchModes.Inspect or WorkbenchModes.Text;
 
     /// <summary>Clears what was done on the selected view's page and puts its scenario back to the defaults, keeping its device.</summary>
     private async Task Reset()

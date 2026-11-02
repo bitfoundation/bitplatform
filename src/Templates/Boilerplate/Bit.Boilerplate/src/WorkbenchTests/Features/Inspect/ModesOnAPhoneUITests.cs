@@ -126,4 +126,62 @@ public class ModesOnAPhoneUITests : WorkbenchPageTest
         await Expect(Page.Locator(".pick-banner")).ToHaveCountAsync(0);
         await ExpectThePageInUse();
     }
+
+    [TestMethod, OnPhones]
+    public async Task APhoneTurnedBackFromSideways_Should_LeaveInspect(WorkbenchSurface surface)
+    {
+        await TurnSidewaysAndPick(WorkbenchStrings.ModeInspect);
+
+        await ExpectThePageInUse();
+    }
+
+    [TestMethod, OnPhones]
+    public async Task APhoneTurnedBackFromSideways_Should_LeaveEditText(WorkbenchSurface surface)
+    {
+        await TurnSidewaysAndPick(WorkbenchStrings.ModeText);
+
+        await ExpectThePageInUse();
+    }
+
+    [TestMethod, OnPhones]
+    public async Task ATourStartedSidewaysInInspect_Should_EndWithoutItOnAnUprightPhone(WorkbenchSurface surface)
+    {
+        var size = Page.ViewportSize!;
+
+        await OpenWorkbench("pos-dashboard");
+
+        await Page.SetViewportSizeAsync(size.Height, size.Width);
+        await Expect(Page.Locator(".modes")).ToBeVisibleAsync();
+        await WaitForViews();
+
+        await Press(Mode(WorkbenchStrings.ModeInspect));
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("data-wb-mode", "inspect");
+
+        await Press(Button(WorkbenchStrings.TourStart));
+        await Expect(Popover.GetByText(WorkbenchStrings.HomeWhyAgentsTitle, new() { Exact = true })).ToBeVisibleAsync();
+
+        await Page.SetViewportSizeAsync(size.Width, size.Height);
+
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true }));
+
+        await Expect(Popover).ToHaveCountAsync(0);
+        await ExpectThePageInUse();
+    }
+
+    [TestMethod, OnDesktops]
+    public async Task AWindowNarrowedToAPhonesWidth_Should_LeaveInspect(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("pos-dashboard");
+
+        await Press(Mode(WorkbenchStrings.ModeInspect));
+        await Expect(View().Locator("html")).ToHaveAttributeAsync("data-wb-mode", "inspect");
+
+        await Page.SetViewportSizeAsync(400, 800);
+        await Expect(Page.Locator(".phone-layout")).ToBeVisibleAsync();
+
+        await ExpectThePageInUse();
+
+        await Page.SetViewportSizeAsync(1600, 1000);
+        await Expect(Mode(WorkbenchStrings.ModeBrowse)).ToHaveAttributeAsync("aria-pressed", "true");
+    }
 }
