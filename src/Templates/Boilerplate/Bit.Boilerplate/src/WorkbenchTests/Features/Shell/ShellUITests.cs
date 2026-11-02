@@ -336,6 +336,24 @@ public class ShellUITests : ShellPageTest
         await Expect(BuildingsSearch()).ToHaveValueAsync(string.Empty);
     }
 
+    [TestMethod, EverySurface]
+    public async Task Reset_Should_ClearWhatWasDoneOnAPageWhoseSettingsAreTheDefaults(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("buildings");
+
+        await BuildingsSearch().FillAsync("Rotterdam");
+
+        await Expect(BuildingRows()).ToHaveCountAsync(4);
+
+        await OpenTools();
+        await Press(ToolsButton(WorkbenchStrings.Reset));
+        await CloseTools();
+
+        await Expect(BuildingsSearch()).ToHaveValueAsync(string.Empty);
+        await Expect(BuildingRows()).Not.ToHaveCountAsync(4);
+        await Expect(Page).ToHaveURLAsync(new Regex(@"/workbench/buildings$"));
+    }
+
     [TestMethod, OnDesktops]
     public async Task Reset_Should_KeepACustomSizeAndARotation(WorkbenchSurface surface)
     {
