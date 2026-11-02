@@ -621,7 +621,7 @@ public partial class WorkbenchViewPage
 
         await JSRuntime.InvokeVoidAsync("workbench.resetFrame", pane.Id);
 
-        store.ChangeScenario(new WorkbenchScenario { Device = pane.Scenario.Device, Rotated = pane.Scenario.Rotated });
+        store.ChangeScenario(new WorkbenchScenario { Device = pane.Scenario.Device, Width = pane.Scenario.Width, Height = pane.Scenario.Height, Rotated = pane.Scenario.Rotated });
     }
 
     /// <summary>Saves a view's current stores as a snapshot for the screenshot service; null when there is none.</summary>

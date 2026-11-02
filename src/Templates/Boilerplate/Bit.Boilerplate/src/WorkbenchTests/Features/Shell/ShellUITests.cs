@@ -337,6 +337,27 @@ public class ShellUITests : ShellPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task Reset_Should_KeepACustomSizeAndARotation(WorkbenchSurface surface)
+    {
+        await OpenWorkbench("theme", "?theme=dark&device=custom&size=600x500");
+
+        await ExpectViewSize(600, 500);
+
+        await ToolsButton(WorkbenchStrings.Reset).ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?device=custom&size=600x500$"));
+        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("bit-theme", new Regex("dark"));
+        await ExpectViewSize(600, 500);
+
+        await OpenWorkbench("theme", "?theme=dark&device=iphone-se&rotated=true");
+
+        await ToolsButton(WorkbenchStrings.Reset).ClickAsync();
+
+        await Expect(Page).ToHaveURLAsync(new Regex(@"\?device=iphone-se&rotated=true$"));
+        await ExpectViewSize(667, 375);
+    }
+
+    [TestMethod, OnDesktops]
     public async Task Reset_Should_ClearOnlyTheSelectedViewsPage(WorkbenchSurface surface)
     {
         await OpenWorkbench("buildings", $"?panes={WorkbenchUrls.EncodePanes([new() { Device = "iphone-se" }, new() { Device = "ipad-mini" }])}");
