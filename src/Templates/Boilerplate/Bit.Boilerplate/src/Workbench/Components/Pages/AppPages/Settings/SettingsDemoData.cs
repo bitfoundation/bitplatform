@@ -17,7 +17,7 @@ public static class SettingsDemoData
 
     public static SettingsProfile CreateProfile(string fullName, string email) => new(fullName,
                                                                                          email,
-                                                                                         "+31 6 4821 7735",
+                                                                                         "+31648217735",
                                                                                          new DateTimeOffset(1991, 4, 18, 0, 0, 0, TimeSpan.Zero),
                                                                                          Gender.Female,
                                                                                          HasPicture: true);
