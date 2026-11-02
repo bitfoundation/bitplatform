@@ -9,17 +9,15 @@ public partial class FlowsPanel
     // The dropdown value that stands for a new flow.
     private const string NewFlowValue = "+";
 
-    private string? targetFlowId;
-    private string? newFlowName;
-    private string? note;
-    private string? linkLabel;
-    private string? addedFlowId;
     private bool isAdding;
     private List<BitDropdownItem<string>> flowItems = [];
     // The flow ids and names the dropdown items were built from, so the items are rebuilt only when those change.
     private string? flowsSignature;
 
     [AutoInject] private WorkbenchReviewSession session = default!;
+
+    /// <summary>What's chosen and typed in the form, which the page keeps as this panel comes and goes.</summary>
+    [Parameter] public WorkbenchFlowDraft Draft { get; set; } = new();
 
     [Parameter] public string PageKey { get; set; } = default!;
 
@@ -29,12 +27,12 @@ public partial class FlowsPanel
     [Parameter] public Func<Task<string?>>? CaptureState { get; set; }
 
     /// <summary>The chosen flow while it exists, otherwise the last flow, or a new flow when there is none.</summary>
-    private string TargetFlowId => targetFlowId is { } id && (id == NewFlowValue || session.Flows.Any(f => f.Id == id)) ? id : session.Flows.LastOrDefault()?.Id ?? NewFlowValue;
+    private string TargetFlowId => Draft.TargetFlowId is { } id && (id == NewFlowValue || session.Flows.Any(f => f.Id == id)) ? id : session.Flows.LastOrDefault()?.Id ?? NewFlowValue;
 
     private WorkbenchFlow? TargetFlow => session.Flows.FirstOrDefault(f => f.Id == TargetFlowId);
 
     private bool CanAdd => isAdding is false
-                           && (TargetFlowId != NewFlowValue || string.IsNullOrWhiteSpace(newFlowName) is false)
+                           && (TargetFlowId != NewFlowValue || string.IsNullOrWhiteSpace(Draft.NewFlowName) is false)
                            && (TargetFlow?.Screens.Length ?? 0) < WorkbenchReviewDocument.MaxScreens;
 
     protected override void OnInitialized()
@@ -75,19 +73,19 @@ public partial class FlowsPanel
 
             if (flowId == NewFlowValue)
             {
-                flowId = createdFlowId = session.CreateFlow(newFlowName ?? string.Empty);
+                flowId = createdFlowId = session.CreateFlow(Draft.NewFlowName ?? string.Empty);
             }
 
             if (flowId is null)
                 return;
 
-            await session.AddScreen(flowId, PageKey, Query, note, state, linkLabel);
+            await session.AddScreen(flowId, PageKey, Query, Draft.Note, state, Draft.LinkLabel);
 
-            targetFlowId = flowId;
-            addedFlowId = flowId;
-            newFlowName = null;
-            note = null;
-            linkLabel = null;
+            Draft.TargetFlowId = flowId;
+            Draft.AddedFlowId = flowId;
+            Draft.NewFlowName = null;
+            Draft.Note = null;
+            Draft.LinkLabel = null;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {

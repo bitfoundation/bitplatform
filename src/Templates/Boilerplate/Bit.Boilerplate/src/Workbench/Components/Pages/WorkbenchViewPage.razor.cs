@@ -25,6 +25,10 @@ public partial class WorkbenchViewPage
     // A comment being written: the view and spot it was pinned to, and the view's state at that moment.
     private (string PaneId, WorkbenchReviewAnchor Anchor, string? State)? pendingComment;
     private string? selectedThreadId;
+    // What's typed for a comment or a reply, kept here as the tools close and other tabs open around the review.
+    private readonly WorkbenchReviewDrafts drafts = new();
+    // The flow picked and what's typed in the Flows form, which going to set up the view for the next screen doesn't lose.
+    private readonly WorkbenchFlowDraft flowDraft = new();
     // The pins last sent to the frames as JSON, so an unchanged set isn't sent again on every render.
     private string? shownPins;
     // A view to load with a snapshot once the current render is on screen, for showing a comment as it was left.
@@ -37,6 +41,9 @@ public partial class WorkbenchViewPage
     private (string PaneId, WorkbenchComponentInfo? Info, WorkbenchCssVariable[] Variables, WorkbenchReviewAnchor Anchor)? pickedComponent;
     // The spot the Review tab last started a comment on, so going back to the tab doesn't start it again after a Cancel.
     private WorkbenchReviewAnchor? draftedAnchor;
+
+    // The id the pin of the comment being written goes by.
+    private const string DraftPinId = "draft";
 
     private static readonly (string Mode, string IconName, string TextKey)[] modes =
     [
@@ -119,6 +126,15 @@ public partial class WorkbenchViewPage
         if (pageInfo != previous || compareItems.Count == 0)
         {
             BuildCompareItems();
+        }
+
+        // A comment being written and a thread that's open belong to the page that was left.
+        if (pageInfo != previous)
+        {
+            pendingComment = null;
+            selectedThreadId = null;
+            drafts.Comment = null;
+            drafts.Reply = null;
         }
 
         // An address the shell didn't write itself, like Back or a link to another page: its views win.
@@ -208,7 +224,7 @@ public partial class WorkbenchViewPage
             .Where(t => t.Status is not WorkbenchReviewStatus.Done || t.Id == selectedThreadId)
             .Select(t => new { t.Id, Number = t.Number.ToString(CultureInfo.InvariantCulture), t.Anchor.Selector, t.Anchor.Text, t.Anchor.X, t.Anchor.Y, Status = t.Status.ToString().ToLowerInvariant(), Selected = t.Id == selectedThreadId })
             .Concat(pendingComment is { } pending && pending.PaneId == pane.Id
-                ? [new { Id = "draft", Number = "+", pending.Anchor.Selector, pending.Anchor.Text, pending.Anchor.X, pending.Anchor.Y, Status = "draft", Selected = true }]
+                ? [new { Id = DraftPinId, Number = "+", pending.Anchor.Selector, pending.Anchor.Text, pending.Anchor.X, pending.Anchor.Y, Status = "draft", Selected = true }]
                 : [])
             .ToArray());
 
@@ -371,12 +387,15 @@ public partial class WorkbenchViewPage
         store.ShowColumn(WorkbenchModes.ReviewColumn);
     }
 
-    /// <summary>A click on a comment's pin in a view.</summary>
+    /// <summary>A click on a comment's pin in a view; the pin of the comment being written brings its composer back.</summary>
     [JSInvokable]
     public void OpenThread(string threadId)
     {
-        selectedThreadId = threadId;
-        pendingComment = null;
+        if (threadId != DraftPinId)
+        {
+            selectedThreadId = threadId;
+            pendingComment = null;
+        }
 
         store.ShowColumn(WorkbenchModes.ReviewColumn);
 

@@ -222,18 +222,18 @@
 
 .pick-banner {
     top: 0.75rem;
-    left: 50%;
+    left: 1rem;
+    right: 1rem;
     gap: 0.5rem;
     display: flex;
+    font-size: 13px;
     position: fixed;
     // Over the view's frame and the tools button.
     z-index: $bit-zindex-modal;
+    width: fit-content;
     align-items: center;
     border-radius: 999px;
-    // Its own width, as starting halfway across the screen would leave it only the other half.
-    width: max-content;
-    max-width: calc(100vw - 2rem);
-    transform: translateX(-50%);
+    margin-inline: auto;
     padding-block: 0.25rem;
     padding-inline: 1rem 0.25rem;
     box-sizing: border-box;
