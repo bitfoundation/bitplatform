@@ -77,6 +77,19 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, OnDesktops]
+    public async Task ATabPressed_Should_ShowThatTabAndLeaveEditText(WorkbenchSurface surface)
+    {
+        await EditText();
+
+        await OpenTab(WorkbenchModes.ChecksColumn);
+
+        await Expect(Tools.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.RunChecks })).ToBeVisibleAsync();
+        await Expect(Panel).ToHaveCountAsync(0);
+        await Expect(ModeButton(WorkbenchStrings.ModeBrowse)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(View().Locator("html")).Not.ToHaveAttributeAsync("data-wb-mode", new Regex("."));
+    }
+
+    [TestMethod, OnDesktops]
     [TestCategory("Localization")]
     public async Task APickedText_Should_ShowItsEntryInEveryLanguage(WorkbenchSurface surface)
     {

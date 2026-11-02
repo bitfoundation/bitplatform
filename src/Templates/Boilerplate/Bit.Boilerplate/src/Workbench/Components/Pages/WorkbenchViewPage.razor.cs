@@ -313,6 +313,12 @@ public partial class WorkbenchViewPage
     /// </summary>
     private async Task ShowColumn(string column)
     {
+        // Edit text holds the whole column, so a tab asked for ends it.
+        if (store.Mode == WorkbenchModes.Text)
+        {
+            SetMode(WorkbenchModes.Browse);
+        }
+
         store.ShowColumn(column);
 
         if (column is not WorkbenchModes.ReviewColumn || store.Mode != WorkbenchModes.Inspect || reviewSession.CanWrite is false
