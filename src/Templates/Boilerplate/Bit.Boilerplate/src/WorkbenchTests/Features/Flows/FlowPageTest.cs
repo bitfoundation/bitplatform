@@ -90,6 +90,44 @@ public abstract class FlowPageTest : ReviewPageTest
         return last;
     }
 
+    /// <summary>A double press on an arrow's own line, which is drawn under the screens only where they are.</summary>
+    protected async Task DoublePressArrow(string linkId)
+    {
+        var point = await Page.Locator($".bit-blow-edge[data-id='{linkId}'] .bit-blow-edge-interaction").EvaluateAsync<double[]>("""
+            path => {
+                const middle = path.getPointAtLength(path.getTotalLength() / 2);
+                const screen = new DOMPoint(middle.x, middle.y).matrixTransform(path.getScreenCTM());
+                return [screen.x, screen.y];
+            }
+            """);
+
+        await DoublePressAt((float)point[0], (float)point[1]);
+    }
+
+    /// <summary>Presses a spot twice in a row, as this surface does: a double click on a desktop and two quick taps on a phone.</summary>
+    protected async Task DoublePressAt(float x, float y)
+    {
+        if (IsPhone)
+        {
+            await Page.Touchscreen.TapAsync(x, y);
+            await Page.Touchscreen.TapAsync(x, y);
+        }
+        else
+        {
+            await Page.Mouse.DblClickAsync(x, y);
+        }
+    }
+
+    /// <summary>Presses the middle of an element twice in a row.</summary>
+    protected async Task DoublePress(ILocator target)
+    {
+        var box = await target.BoundingBoxAsync();
+
+        Assert.IsNotNull(box);
+
+        await DoublePressAt(box.X + box.Width / 2, box.Y + box.Height / 2);
+    }
+
     /// <summary>The zoom in a value of <see cref="BoardViewport"/>.</summary>
     protected static double ScaleOf(string viewport) => double.Parse(Regex.Match(viewport, @"scale\(([\d.]+)\)").Groups[1].Value, CultureInfo.InvariantCulture);
 }

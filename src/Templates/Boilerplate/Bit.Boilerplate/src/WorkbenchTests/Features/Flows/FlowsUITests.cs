@@ -267,6 +267,40 @@ public class FlowsUITests : FlowPageTest
     }
 
     [TestMethod, EverySurface]
+    [TestCategory("Localization")]
+    public async Task ThePresentersChevrons_Should_PointAwayFromEachOtherInEitherDirection(WorkbenchSurface surface)
+    {
+        var flow = await DrawThemeFlow();
+
+        foreach (var (culture, isRtl) in new[] { ("en-US", false), ("fa-IR", true) })
+        {
+            await Context.AddCookiesAsync([new() { Name = ".AspNetCore.Culture", Value = $"c={culture}|uic={culture}", Url = Server.Address.ToString() }]);
+
+            await OpenBoard(flow.Id, 2);
+
+            await Press(Page.GetByRole(AriaRole.Button, new() { Name = InCulture(culture, nameof(WorkbenchStrings.Present)), Exact = true }));
+
+            var previous = Page.GetByRole(AriaRole.Button, new() { Name = InCulture(culture, nameof(WorkbenchStrings.PreviousScreen)) });
+            var next = Page.GetByRole(AriaRole.Button, new() { Name = InCulture(culture, nameof(WorkbenchStrings.NextScreen)) });
+
+            await Expect(previous.Locator("i")).ToHaveClassAsync(new Regex(isRtl ? "ChevronRight" : "ChevronLeft"));
+            await Expect(next.Locator("i")).ToHaveClassAsync(new Regex(isRtl ? "ChevronLeft" : "ChevronRight"));
+
+            var previousBox = await previous.BoundingBoxAsync();
+            var nextBox = await next.BoundingBoxAsync();
+
+            Assert.IsNotNull(previousBox);
+            Assert.IsNotNull(nextBox);
+            Assert.AreEqual(isRtl, previousBox.X > nextBox.X, "Previous sits on the side its chevron points to.");
+
+            await Press(next);
+
+            await Expect(previous).ToBeEnabledAsync();
+            await Expect(next).ToBeDisabledAsync();
+        }
+    }
+
+    [TestMethod, EverySurface]
     public async Task ThePresentedScreen_Should_BeUsableAndTheOthersNot(WorkbenchSurface surface)
     {
         var flow = await DrawFlow(Unique("Try it"), [new("list", "buildings", "?device=iphone-se", null, null), new("other", "theme", "?device=iphone-se", null, null)]);
@@ -304,14 +338,14 @@ public class FlowsUITests : FlowPageTest
         await Expect(CardOf(flow.Screens[1].Id)).ToBeInViewportAsync(new() { Ratio = 1 });
     }
 
-    [TestMethod, OnDesktops]
-    public async Task ADoubleClickOnAScreen_Should_PresentIt(WorkbenchSurface surface)
+    [TestMethod, EverySurface]
+    public async Task ADoublePressOnAScreen_Should_PresentIt(WorkbenchSurface surface)
     {
         var flow = await DrawThemeFlow();
 
         await OpenBoard(flow.Id, 2);
 
-        await CardOf(flow.Screens[1].Id).Locator(".screen-title").DblClickAsync();
+        await DoublePress(CardOf(flow.Screens[1].Id).Locator(".screen-title"));
 
         await Expect(Presenter).ToContainTextAsync(ScreenOf(2, 2));
         await Expect(CardOf(flow.Screens[1].Id)).ToHaveClassAsync(new Regex(@"\bcurrent\b"));
@@ -344,20 +378,6 @@ public class FlowsUITests : FlowPageTest
 
         await Expect(CardOf(flow.Screens[0].Id)).ToBeInViewportAsync(new() { Ratio = 1 });
         await Expect(CardOf(flow.Screens[1].Id)).ToBeInViewportAsync(new() { Ratio = 1 });
-    }
-
-    [TestMethod, OnPhones]
-    public async Task AFinger_Should_PanTheBoard(WorkbenchSurface surface)
-    {
-        var flow = await DrawThemeFlow();
-
-        await OpenBoard(flow.Id, 2);
-
-        var fitted = await BoardViewport();
-
-        await SwipeUp(fromY: 700, toY: 500);
-
-        await WorkbenchTestReviewer.WaitFor(BoardViewport, viewport => viewport != fitted);
     }
 
     [TestMethod, EverySurface]
@@ -458,30 +478,24 @@ public class FlowsUITests : FlowPageTest
         await Expect(Presenter).ToContainTextAsync(ScreenOf(1, 2));
     }
 
-    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithoutAgent)]
+    [TestMethod, WithoutAnAgent]
     public async Task ABoardWithoutAnAgent_Should_LetNothingBeMovedOrDeleted(WorkbenchSurface surface)
     {
         var flow = await DrawThemeFlow();
 
         await OpenBoard(flow.Id, 2);
 
-        var screen = flow.Screens[0];
-        var node = Page.Locator($".bit-blow-node[data-id='{screen.Id}']");
-        var before = await node.GetAttributeAsync("style");
+        await ExpectNothingToMoveOrGo(flow.Screens[0].Id, 2);
 
-        await Drag(CardOf(screen.Id).Locator(".screen-title"), 120, 80);
-
-        await Expect(node).ToHaveAttributeAsync("style", before!);
-
-        await CardOf(screen.Id).Locator(".screen-title").ClickAsync();
-        await Page.Keyboard.PressAsync("Delete");
-
-        await Expect(Cards).ToHaveCountAsync(2);
         Assert.HasCount(2, (await FlowById(flow.Id)).Screens);
+    }
 
-        await ArrowLabels.DblClickAsync(new() { Force = true });
+    [TestMethod, EverySurface]
+    public async Task ASample_Should_LetNothingBeMovedOrDeletedEvenInDevMode(WorkbenchSurface surface)
+    {
+        await OpenBoard(WorkbenchSampleFlows.BuildingsId, 3);
 
-        await Expect(Page.GetByRole(AriaRole.Dialog, new() { Name = WorkbenchStrings.ArrowLabel })).ToHaveCountAsync(0);
+        await ExpectNothingToMoveOrGo("list", 3);
     }
 
     [TestMethod, EverySurface]
@@ -545,6 +559,7 @@ public class FlowsUITests : FlowPageTest
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.MuteReplySound, Exact = true })).ToHaveCountAsync(0);
     }
 
+    /// <summary>Drags an element: with the mouse on a desktop and a finger on a phone.</summary>
     private async Task Drag(ILocator handle, float byX, float byY)
     {
         var box = await handle.BoundingBoxAsync();
@@ -553,9 +568,65 @@ public class FlowsUITests : FlowPageTest
 
         var (x, y) = (box.X + box.Width / 2, box.Y + box.Height / 2);
 
-        await Page.Mouse.MoveAsync(x, y);
-        await Page.Mouse.DownAsync();
-        await Page.Mouse.MoveAsync(x + byX, y + byY, new() { Steps = 8 });
-        await Page.Mouse.UpAsync();
+        if (IsPhone)
+        {
+            var devTools = await Context.NewCDPSessionAsync(Page);
+
+            Task Finger(string type, params (float X, float Y)[] points) => devTools.SendAsync("Input.dispatchTouchEvent", new Dictionary<string, object>
+            {
+                ["type"] = type,
+                ["touchPoints"] = points.Select(point => (object)new Dictionary<string, object> { ["x"] = point.X, ["y"] = point.Y }).ToArray()
+            });
+
+            await Finger("touchStart", (x, y));
+
+            for (var step = 1; step <= 8; step++)
+            {
+                await Finger("touchMove", (x + byX * step / 8, y + byY * step / 8));
+            }
+
+            await Finger("touchEnd");
+        }
+        else
+        {
+            await Page.Mouse.MoveAsync(x, y);
+            await Page.Mouse.DownAsync();
+            await Page.Mouse.MoveAsync(x + byX, y + byY, new() { Steps = 8 });
+            await Page.Mouse.UpAsync();
+        }
+    }
+
+    /// <summary>Really tries to move a screen, delete it and an arrow, and open an arrow's editor. Presenting at the end proves the board has dealt with all of that.</summary>
+    private async Task ExpectNothingToMoveOrGo(string screenId, int screens)
+    {
+        var title = CardOf(screenId).Locator(".screen-title");
+        var node = Page.Locator($".bit-blow-node[data-id='{screenId}']");
+        var before = await node.GetAttributeAsync("style");
+        var arrows = await Arrows.CountAsync();
+        var arrowId = await Arrows.First.GetAttributeAsync("data-id");
+        var arrow = Page.Locator($".bit-blow-edge[data-id='{arrowId}']");
+
+        await Drag(title, 60, 40);
+
+        // A drag that doesn't move a screen can pan the board, which this brings back.
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ShowAllScreens }));
+        await SettledBoardViewport();
+
+        await Press(title);
+        await Page.Keyboard.PressAsync("Delete");
+
+        await (IsPhone ? arrow.Locator(".bit-blow-edge-label").TapAsync(new() { Force = true }) : arrow.Locator(".bit-blow-edge-label").ClickAsync(new() { Force = true }));
+        await Page.Keyboard.PressAsync("Delete");
+
+        await DoublePressArrow(arrowId!);
+
+        await Press(PresentButton);
+        await Expect(Presenter).ToBeVisibleAsync();
+
+        await Expect(node).ToHaveAttributeAsync("style", before!);
+        await Expect(Cards).ToHaveCountAsync(screens);
+        await Expect(Arrows).ToHaveCountAsync(arrows);
+        await Expect(arrow).Not.ToHaveClassAsync(new Regex(@"\bselected\b"));
+        await Expect(Page.GetByRole(AriaRole.Dialog, new() { Name = WorkbenchStrings.ArrowLabel })).ToHaveCountAsync(0);
     }
 }
