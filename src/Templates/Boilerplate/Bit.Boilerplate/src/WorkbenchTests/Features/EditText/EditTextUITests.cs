@@ -363,6 +363,48 @@ public class EditTextUITests : WorkbenchCodeCopyPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    [TestCategory("Localization")]
+    public async Task EveryLanguagesField_Should_BeSaved(WorkbenchSurface surface)
+    {
+        await EditText();
+
+        await Pick(Heading(WorkbenchStrings.ThemeNavigation), WorkbenchStrings.ThemeNavigation);
+
+        foreach (var (displayName, culture) in CultureInfoManager.SupportedCultures)
+        {
+            var text = $"{culture.Name} {Guid.NewGuid():N}";
+
+            await Field(displayName).FillAsync(text);
+            await Press(SaveButton);
+
+            await Expect(Page.GetByText(WorkbenchStrings.SaveTranslationsFailed)).ToHaveCountAsync(0);
+            await Expect(SaveButton).ToBeDisabledAsync();
+            await Expect(Field(displayName)).ToHaveValueAsync(text);
+        }
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
+    [TestCategory("Localization")]
+    public async Task EnglishUK_Should_ShareTheFileOfTheDefaultLanguage(WorkbenchSurface surface)
+    {
+        var text = $"Forms {Guid.NewGuid():N}";
+
+        await EditText();
+
+        await Pick(Heading(WorkbenchStrings.ThemeSelection), WorkbenchStrings.ThemeSelection);
+
+        await Field(Language("en-GB")).FillAsync(text);
+        await Press(SaveButton);
+
+        await Expect(SaveButton).ToBeDisabledAsync();
+        await Expect(Field(defaultLanguage)).ToHaveValueAsync(text);
+        await Expect(Field(Language("en-GB"))).ToHaveValueAsync(text);
+        await Expect(Page.GetByText(WorkbenchStrings.SaveTranslationsFailed)).ToHaveCountAsync(0);
+
+        Assert.AreEqual(text, Entry(WorkbenchTexts, nameof(WorkbenchStrings.ThemeSelection)));
+    }
+
+    [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
     public async Task AChangeThatLosesAPlaceholder_Should_BeRefusedWithTheEditKept(WorkbenchSurface surface)
     {
         var shown = string.Format(CultureInfo.InvariantCulture, WorkbenchStrings.ThemeTab, 1);
