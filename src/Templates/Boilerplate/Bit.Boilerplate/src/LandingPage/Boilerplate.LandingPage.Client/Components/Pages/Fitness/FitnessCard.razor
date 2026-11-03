@@ -1,0 +1,28 @@
+@inherits LandingComponentBase
+
+<a class="gallery-card fit-card" href="@LocalUrl(FitnessSite.Path)">
+    <div class="fit-card-preview" aria-hidden="true">
+        <span class="fit-card-brand" lang="en"><FitnessLogo /> pulsepath</span>
+        <svg class="fit-card-track" viewBox="0 0 300 150" focusable="false">
+            <rect x="4" y="4" width="292" height="142" rx="71" fill="#E04A77" />
+            <rect x="34" y="34" width="232" height="82" rx="41" fill="#F6E35A" />
+            <rect x="14" y="14" width="272" height="122" rx="61" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.2" />
+            <rect x="24" y="24" width="252" height="102" rx="51" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.2" />
+            <path d="M150 4v30" stroke="#FFFFFF" stroke-width="2.5" />
+            <path d="M150 19H75A56 56 0 0 0 75 131H225A56 56 0 0 0 281 75" fill="none" stroke="#17131F" stroke-width="5" />
+            <text x="150" y="86" text-anchor="middle" direction="ltr" font-size="34" font-weight="800" fill="#17131F" style="font-family: 'Bricolage Grotesque', system-ui, sans-serif">10:00</text>
+        </svg>
+        <span class="fit-card-streak"><BitIcon IconName="@BitIconName.FlameSolid" /> 42</span>
+    </div>
+    <div class="gallery-card-body">
+        <p class="gallery-card-industry">@F[nameof(FitnessStrings.CardIndustry)]</p>
+        <h2>Pulsepath</h2>
+        <p>@F[nameof(FitnessStrings.CardSummary)]</p>
+        <ul class="gallery-card-tags">
+            <li class="is-mode">@L[nameof(LandingStrings.GalleryModeStaged)]</li>
+            <li>@F[nameof(FitnessStrings.CardTag1)]</li>
+            <li>@F[nameof(FitnessStrings.CardTag2)]</li>
+            <li>@F[nameof(FitnessStrings.CardTag3)]</li>
+        </ul>
+    </div>
+</a>

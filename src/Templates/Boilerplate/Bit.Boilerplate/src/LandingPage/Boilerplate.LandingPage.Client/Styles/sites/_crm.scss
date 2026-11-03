@@ -1,0 +1,46 @@
+@include site(lp-crm) {
+    --crm-ink: #0F1B35;
+    --crm-ink-fg: #EEF2F8;
+    --crm-ink-muted: #A9B4C8;
+    --crm-ink-line: #24314F;
+    --crm-ink-line-strong: #4A5878;
+    --crm-signal: #FF8466;
+    --crm-signal-fg: #22090A;
+    --crm-lane: #EAEEF3;
+    --crm-lane-won: #F9E4DF;
+    --crm-won-text: #A32C15;
+    --crm-conflict: #D69E1E;
+    --crm-figures: var(--lp-font-mono);
+    --crm-wordmark-mono: "IBM Plex Mono", ui-monospace, monospace;
+    --crm-avatar: #0F1B35;
+    --crm-avatar-fg: #EEF2F8;
+    --crm-strong: #0F1B35;
+    --crm-strong-fg: #EEF2F8;
+
+    @include type(("Schibsted Grotesk", system-ui, sans-serif), ("Schibsted Grotesk", system-ui, sans-serif));
+    @include shape(10px, 6px);
+    @include palette(light, #C8371D, #FFFFFF, #F7F8FA, #EEF1F5, #FFFFFF, #0F1B35, #4F5B73, #DDE2EA);
+}
+
+@include site-dark(lp-crm) {
+    --crm-ink: #16223F;
+    --crm-ink-fg: #EEF2F8;
+    --crm-ink-muted: #A9B4C8;
+    --crm-ink-line: #2A3757;
+    --crm-ink-line-strong: #52618A;
+    --crm-lane: #0F1829;
+    --crm-lane-won: #2B1816;
+    --crm-won-text: #FFAE98;
+    --crm-conflict: #E7B54A;
+    --crm-avatar: #33446B;
+    --crm-avatar-fg: #F2F5FA;
+    --crm-strong: #DCE3EF;
+    --crm-strong-fg: #0B1222;
+
+    @include palette(dark, #FF7A5C, #1A0A05, #0B1222, #10192E, #141F37, #E8ECF4, #A3AEC4, #24304A);
+}
+
+:root:lang(fa):has(.lp-crm) {
+    --lp-font-mono: var(--lp-stack-body);
+    --crm-figures: var(--lp-stack-body);
+}

@@ -1,0 +1,67 @@
+@import '../../../Styles/tokens';
+
+.crm-platforms {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--lp-fg);
+    list-style: none;
+
+    li {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 4px 16px;
+        padding-block: 16px;
+        border-bottom: 1px solid var(--lp-line);
+
+        @include lt-sm {
+            grid-template-columns: 28px minmax(0, 1fr);
+
+            .crm-platform-action {
+                grid-column: 2;
+                margin-top: 8px;
+            }
+        }
+    }
+
+    li.is-yours {
+        .crm-platform-name span {
+            display: inline-block;
+            margin-inline-start: 8px;
+            padding: 1px 8px;
+            border-radius: 4px;
+            background: var(--lp-accent-soft);
+            color: var(--lp-accent);
+            font-size: .75rem;
+            font-weight: 600;
+            vertical-align: 2px;
+        }
+    }
+
+    ::deep .crm-platform-icon {
+        font-size: 1.25rem;
+        color: var(--lp-fg-muted);
+    }
+}
+
+.crm-platform-name {
+    font-weight: 600;
+}
+
+.crm-platform-detail {
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+}
+
+.crm-platform-action {
+    a {
+        display: block;
+        border-radius: 8px;
+    }
+
+    img {
+        height: 40px;
+        width: auto;
+    }
+}

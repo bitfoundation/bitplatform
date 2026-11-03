@@ -1,0 +1,241 @@
+@attribute [Route(CrmSite.Path)]
+@attribute [Route("/{culture}" + CrmSite.Path)]
+@layout CrmLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@R[nameof(CrmStrings.HomeTitle)]"
+             Description="@R[nameof(CrmStrings.HomeDescription)]"
+             Path="@CrmSite.Path"
+             Site="CrmSite.Info"
+             StructuredData="structuredData" />
+
+<section class="crm-hero" aria-labelledby="crm-hero-title">
+    <div class="lp-container crm-hero-top">
+        <div class="crm-hero-heading">
+            <p class="crm-kicker">@R[nameof(CrmStrings.HeroEyebrow)]</p>
+            <h1 id="crm-hero-title">@R[nameof(CrmStrings.HeroTitle)]</h1>
+        </div>
+        <div class="crm-hero-pitch">
+            <p class="lp-lede">@R[nameof(CrmStrings.HeroLede)]</p>
+            <div class="crm-hero-actions">
+                <BitButton Href="@CrmSite.TrialUrl" IconName="@BitIconName.Rocket">@R[nameof(CrmStrings.HeroTrial)]</BitButton>
+                <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@Page("/pricing")">@R[nameof(CrmStrings.HeroPricing)]</BitButton>
+            </div>
+            <p class="crm-hero-fine">@R[nameof(CrmStrings.HeroFine)]</p>
+        </div>
+    </div>
+    <div class="crm-hero-stage">
+        <div class="lp-container">
+            <DeviceFrame Kind="LandingDeviceKind.Browser" Address="app.brightlane.example/pipeline" Class="crm-frame">
+                <CrmPipelineDemo />
+            </DeviceFrame>
+            <p class="crm-hero-caption">@R[nameof(CrmStrings.DemoCaption)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="crm-ink crm-logos" aria-labelledby="crm-logos-title">
+    <div class="lp-container crm-logos-row">
+        <h2 id="crm-logos-title" class="crm-logos-title">@R[nameof(CrmStrings.LogosTitle)]</h2>
+        <ul class="crm-wordmarks">
+            <li class="crm-wm-nordvik" dir="ltr">NORDVIK</li>
+            <li class="crm-wm-okapi" dir="ltr"><span aria-hidden="true"></span>Okapi Freight</li>
+            <li class="crm-wm-tessera" dir="ltr">tessera<b>labs</b></li>
+            <li class="crm-wm-vireo" dir="ltr"><span aria-hidden="true"></span>Vireo Solar</li>
+            <li class="crm-wm-halden" dir="ltr">halden&amp;co</li>
+            <li class="crm-wm-marisol" dir="ltr">MARISOL<small>HOTELS</small></li>
+        </ul>
+    </div>
+</section>
+
+<section class="crm-ink crm-stats" aria-labelledby="crm-stats-title">
+    <div class="lp-container">
+        <h2 id="crm-stats-title" class="lp-visually-hidden">@R[nameof(CrmStrings.StatsTitle)]</h2>
+        <dl class="crm-stat-grid">
+            @foreach (var (value, unit, label) in stats)
+            {
+                <div>
+                    <dt>@R[label]</dt>
+                    <dd><span class="crm-figure">@R[value]</span>@if (unit is not null)
+                        {
+                            <span class="crm-unit">@R[unit]</span>
+                        }</dd>
+                </div>
+            }
+        </dl>
+        <p class="crm-stats-note">@R[nameof(CrmStrings.StatsNote)]</p>
+    </div>
+</section>
+
+<section id="product" class="lp-section crm-product" aria-labelledby="crm-product-title">
+    <div class="lp-container">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.ProductEyebrow)]</p>
+            <h2 id="crm-product-title" class="lp-title">@R[nameof(CrmStrings.ProductTitle)]</h2>
+            <p class="lp-lede">@R[nameof(CrmStrings.ProductLede)]</p>
+        </header>
+        <ul class="crm-spec">
+            @foreach (var (tag, title, body, detail) in capabilities)
+            {
+                <li>
+                    <p class="crm-spec-tag">@R[tag]</p>
+                    <div>
+                        <h3>@R[title]</h3>
+                        <p>@R[body]</p>
+                        <p class="crm-spec-detail"><BitIcon IconName="@BitIconName.CheckMark" /> @R[detail]</p>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section id="customers" class="lp-section crm-case" aria-labelledby="crm-case-title">
+    <div class="lp-container crm-case-grid">
+        <div class="crm-case-story">
+            <p class="crm-kicker">@R[nameof(CrmStrings.CaseEyebrow)]</p>
+            <h2 id="crm-case-title" class="lp-title">@R[nameof(CrmStrings.CaseTitle)]</h2>
+            <p>@R[nameof(CrmStrings.CaseBody1)]</p>
+            <p>@R[nameof(CrmStrings.CaseBody2)]</p>
+            <figure class="crm-case-quote">
+                <blockquote>@R[nameof(CrmStrings.CaseQuote)]</blockquote>
+                <figcaption>
+                    <span class="crm-avatar" aria-hidden="true">@Initials(R[nameof(CrmStrings.CaseQuoteName)])</span>
+                    <span><strong>@R[nameof(CrmStrings.CaseQuoteName)]</strong><br />@R[nameof(CrmStrings.CaseQuoteRole)]</span>
+                </figcaption>
+            </figure>
+        </div>
+        <div class="crm-case-sheet">
+            <p class="crm-case-company"><span class="crm-wm-nordvik">NORDVIK</span> @R[nameof(CrmStrings.CaseCompany)]</p>
+            <dl class="crm-case-numbers">
+                @foreach (var (value, unit, label) in caseNumbers)
+                {
+                    <div>
+                        <dt>@R[label]</dt>
+                        <dd><span class="crm-figure">@R[value]</span>@if (unit is not null)
+                            {
+                                <span class="crm-unit">@R[unit]</span>
+                            }</dd>
+                    </div>
+                }
+            </dl>
+            <p class="crm-case-period">@R[nameof(CrmStrings.CasePeriod)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section crm-compare" aria-labelledby="crm-compare-title">
+    <div class="lp-container">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.CompareEyebrow)]</p>
+            <h2 id="crm-compare-title" class="lp-title">@R[nameof(CrmStrings.CompareTitle)]</h2>
+        </header>
+        <div class="crm-compare-table">
+            <table>
+                <thead>
+                    <tr>
+                        <td></td>
+                        <th scope="col">@R[nameof(CrmStrings.CompareSpreadsheet)]</th>
+                        <th scope="col" class="is-us">Brightlane</th>
+                        <th scope="col">@R[nameof(CrmStrings.CompareSuite)]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (row, sheet, us, suite) in comparison)
+                    {
+                        <tr>
+                            <th scope="row">@R[row]</th>
+                            <td data-label="@R[nameof(CrmStrings.CompareSpreadsheet)]">@R[sheet]</td>
+                            <td data-label="Brightlane" class="is-us">@R[us]</td>
+                            <td data-label="@R[nameof(CrmStrings.CompareSuite)]">@R[suite]</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="crm-compare-more"><a href="@Page("/vs-spreadsheets")">@R[nameof(CrmStrings.CompareMore)]</a></p>
+    </div>
+</section>
+
+<section class="lp-section crm-reviews" aria-labelledby="crm-reviews-title">
+    <div class="lp-container">
+        <header class="crm-head">
+            <p class="crm-kicker">@R[nameof(CrmStrings.ReviewsEyebrow)]</p>
+            <h2 id="crm-reviews-title" class="lp-title">@R[nameof(CrmStrings.ReviewsTitle)]</h2>
+        </header>
+        <div class="crm-review-grid">
+            @foreach (var (quote, name, role) in reviews)
+            {
+                <figure>
+                    <blockquote>@R[quote]</blockquote>
+                    <figcaption>
+                        <span class="crm-avatar" aria-hidden="true">@Initials(R[name])</span>
+                        <span><strong>@R[name]</strong><br />@R[role]</span>
+                    </figcaption>
+                </figure>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="security" class="lp-section crm-security" aria-labelledby="crm-security-title">
+    <div class="lp-container crm-security-grid">
+        <header class="crm-head crm-head-side">
+            <p class="crm-kicker">@R[nameof(CrmStrings.SecurityEyebrow)]</p>
+            <h2 id="crm-security-title" class="lp-title">@R[nameof(CrmStrings.SecurityTitle)]</h2>
+            <p class="lp-lede">@R[nameof(CrmStrings.SecurityLede)]</p>
+        </header>
+        <div>
+            <ul class="crm-security-list">
+                @foreach (var (icon, title, body) in security)
+                {
+                    <li>
+                        <BitIcon IconName="@icon" Class="crm-security-icon" />
+                        <div>
+                            <h3>@R[title]</h3>
+                            <p>@R[body]</p>
+                        </div>
+                    </li>
+                }
+            </ul>
+            <div class="crm-seals">
+                <ul>
+                    @foreach (var (name, detail) in seals)
+                    {
+                        <li>
+                            <span class="crm-seal-sample">@R[nameof(CrmStrings.SealSample)]</span>
+                            <strong>@R[name]</strong>
+                            <span>@R[detail]</span>
+                        </li>
+                    }
+                </ul>
+                <p>@R[nameof(CrmStrings.SealsNote)]</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="apps" class="lp-section crm-apps" aria-labelledby="crm-apps-title">
+    <div class="lp-container crm-apps-grid">
+        <header class="crm-head crm-head-side">
+            <p class="crm-kicker">@R[nameof(CrmStrings.AppsEyebrow)]</p>
+            <h2 id="crm-apps-title" class="lp-title">@R[nameof(CrmStrings.AppsTitle)]</h2>
+            <p class="lp-lede">@R[nameof(CrmStrings.AppsLede)]</p>
+            <DownloadQr Site="CrmSite.Info" />
+        </header>
+        <CrmPlatforms />
+    </div>
+</section>
+
+<section class="crm-ink crm-cta" aria-labelledby="crm-cta-title">
+    <div class="lp-container crm-cta-grid">
+        <div>
+            <h2 id="crm-cta-title">@R[nameof(CrmStrings.CtaTitle)]</h2>
+            <p>@R[nameof(CrmStrings.CtaBody)]</p>
+        </div>
+        <div class="crm-cta-actions">
+            <BitButton Href="@CrmSite.TrialUrl" IconName="@BitIconName.Rocket" Class="crm-cta-trial">@R[nameof(CrmStrings.HeroTrial)]</BitButton>
+            <BitButton Variant="BitVariant.Outline" Href="@($"mailto:{CrmSite.SalesEmail}")" IconName="@BitIconName.Mail" Class="crm-cta-sales">@R[nameof(CrmStrings.TalkToSales)]</BitButton>
+        </div>
+    </div>
+</section>

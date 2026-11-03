@@ -1,0 +1,23 @@
+@import '../../../Styles/tokens';
+
+.lp-accounting {
+    --lp-chat-bubble-bg: var(--lp-accent);
+    --lp-chat-bubble-fg: var(--lp-accent-fg);
+}
+
+::deep .accounting-chat {
+    --bit-Icon-color: var(--lp-accent-fg);
+}
+
+::deep .accounting-chat:dir(ltr) {
+    @media (min-width: 600px) {
+        right: 0;
+        bottom: auto;
+    }
+}
+
+::deep .accounting-nav-cta {
+    @include lt-sm {
+        display: none;
+    }
+}

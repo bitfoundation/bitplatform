@@ -1,0 +1,51 @@
+.fit-card-preview {
+    --fit-mark: #C81E5B;
+    --fit-mark-dot: #F6E35A;
+
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    padding: 44px 24px 22px;
+    overflow: hidden;
+    background: #F9F8FB;
+    color: #17131F;
+}
+
+.fit-card-brand {
+    position: absolute;
+    top: 14px;
+    inset-inline-start: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "Bricolage Grotesque", system-ui, sans-serif;
+    font-size: 1.125rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+}
+
+.fit-card-track {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+}
+
+.fit-card-streak {
+    --bit-Icon-color: #C81E5B;
+    --bit-Icon-size: .875rem;
+
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    background: #F6E35A;
+    color: #17131F;
+    font-family: "Bricolage Grotesque", system-ui, sans-serif;
+    font-size: .875rem;
+    font-weight: 800;
+}

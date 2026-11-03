@@ -1,0 +1,134 @@
+@attribute [Route(FitnessSite.Path + "/about")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/about")]
+@layout FitnessLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@F[nameof(FitnessStrings.AboutPageTitle)]"
+             Description="@F[nameof(FitnessStrings.AboutDescription)]"
+             Path="@($"{FitnessSite.Path}/about")"
+             Site="FitnessSite.Info"
+             StructuredData="structuredData" />
+
+<section class="lp-container fit-about-hero" aria-labelledby="fit-about-title">
+    <div>
+        <p class="fit-kicker">@F[nameof(FitnessStrings.AboutKicker)]</p>
+        <h1 id="fit-about-title">@F[nameof(FitnessStrings.AboutTitle)]</h1>
+        <p class="lp-lede">@F[nameof(FitnessStrings.AboutLede)]</p>
+    </div>
+    <svg class="fit-about-art" viewBox="0 0 360 240" aria-hidden="true" focusable="false">
+        <rect x="6" y="6" width="348" height="228" rx="114" fill="var(--fit-track)" />
+        <rect x="60" y="60" width="240" height="120" rx="60" fill="var(--fit-infield)" />
+        <rect x="24" y="24" width="312" height="192" rx="96" fill="none" stroke="var(--fit-track-lane)" stroke-width="1.5" />
+        <rect x="42" y="42" width="276" height="156" rx="78" fill="none" stroke="var(--fit-track-lane)" stroke-width="1.5" />
+        <path d="M180 6v54" stroke="var(--fit-track-finish)" stroke-width="3" />
+        <g fill="var(--fit-on-lemon)" style="font-family: var(--lp-stack-display)" font-weight="800" text-anchor="middle" direction="ltr">
+            <text x="180" y="132" font-size="44">10:00</text>
+        </g>
+        <circle cx="120" cy="33" r="9" fill="var(--fit-lap)" />
+        <circle cx="96" cy="51" r="7" fill="var(--fit-lap)" opacity=".55" />
+        <circle cx="79" cy="74" r="5" fill="var(--fit-lap)" opacity=".3" />
+    </svg>
+</section>
+
+<section class="lp-container fit-about-story" aria-labelledby="fit-story-title">
+    <h2 id="fit-story-title">@F[nameof(FitnessStrings.AboutStoryTitle)]</h2>
+    <div class="fit-about-story-text">
+        <p>@F[nameof(FitnessStrings.AboutStory1)]</p>
+        <p>@F[nameof(FitnessStrings.AboutStory2)]</p>
+        <p>@F[nameof(FitnessStrings.AboutStory3)]</p>
+    </div>
+</section>
+
+<section class="lp-section fit-about-numbers" aria-labelledby="fit-numbers-title">
+    <div class="lp-container">
+        <h2 id="fit-numbers-title" class="lp-visually-hidden">@F[nameof(FitnessStrings.AboutNumbersTitle)]</h2>
+        <dl class="fit-numbers">
+            @foreach (var (value, label) in numbers)
+            {
+                <div>
+                    <dt>@F[label]</dt>
+                    <dd>@F[value]</dd>
+                </div>
+            }
+        </dl>
+    </div>
+</section>
+
+<section class="lp-container lp-section fit-about-principles" aria-labelledby="fit-principles-title">
+    <h2 id="fit-principles-title">@F[nameof(FitnessStrings.AboutPrinciplesTitle)]</h2>
+    <ul>
+        @foreach (var (icon, title, body) in principles)
+        {
+            <li>
+                <span class="fit-principle-icon" aria-hidden="true"><BitIcon IconName="@icon" /></span>
+                <h3>@F[title]</h3>
+                <p>@F[body]</p>
+            </li>
+        }
+    </ul>
+</section>
+
+<section class="lp-section fit-about-launch" aria-labelledby="fit-launch-title">
+    <div class="lp-container fit-about-launch-grid">
+        <div>
+            <h2 id="fit-launch-title">@F[nameof(FitnessStrings.AboutLaunchTitle)]</h2>
+            <p>@F[nameof(FitnessStrings.AboutLaunchBody)]</p>
+        </div>
+        <ol class="fit-launch">
+            @foreach (var (state, when, what) in launch)
+            {
+                <li class="is-@state">
+                    <p class="fit-launch-when">@F[when]</p>
+                    <p>@F[what]</p>
+                </li>
+            }
+        </ol>
+    </div>
+</section>
+
+<section class="lp-container lp-section fit-about-team" aria-labelledby="fit-team-title">
+    <h2 id="fit-team-title">@F[nameof(FitnessStrings.AboutTeamTitle)]</h2>
+    <ul class="fit-team">
+        @foreach (var (name, role, bio) in team)
+        {
+            <li>
+                <span class="fit-team-mark" aria-hidden="true">@Initials(F[name])</span>
+                <h3>@F[name]</h3>
+                <p class="fit-team-role">@F[role]</p>
+                <p>@F[bio]</p>
+            </li>
+        }
+    </ul>
+</section>
+
+<section class="lp-section fit-about-contact" aria-labelledby="fit-contact-title">
+    <div class="lp-container fit-about-contact-grid">
+        <div>
+            <h2 id="fit-contact-title">@F[nameof(FitnessStrings.AboutContactTitle)]</h2>
+            <p>@F[nameof(FitnessStrings.AboutContactBody)]</p>
+            <dl class="fit-contact">
+                <div>
+                    <dt>@F[nameof(FitnessStrings.AboutContactGeneral)]</dt>
+                    <dd><a href="@($"mailto:{FitnessSite.Info.Company.Email}")" dir="ltr">@FitnessSite.Info.Company.Email</a></dd>
+                </div>
+                <div>
+                    <dt>@F[nameof(FitnessStrings.AboutContactPress)]</dt>
+                    <dd><a href="@($"mailto:{FitnessSite.PressEmail}")" dir="ltr">@FitnessSite.PressEmail</a></dd>
+                </div>
+                <div>
+                    <dt>@F[nameof(FitnessStrings.AboutContactAddress)]</dt>
+                    <dd>@F[nameof(FitnessStrings.AboutAddress)]</dd>
+                </div>
+            </dl>
+        </div>
+        <div class="fit-ask">
+            <h2>@F[nameof(FitnessStrings.AskTitle)]</h2>
+            <p>@F[nameof(FitnessStrings.AskBody)]</p>
+            <LandingChat Site="FitnessSite.Info"
+                         Variant="LandingChatVariant.Inline"
+                         Suggestions="suggestions"
+                         Placeholder="@F[nameof(FitnessStrings.AskPlaceholder)]"
+                         Class="fit-chat" />
+        </div>
+    </div>
+</section>

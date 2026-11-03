@@ -1,0 +1,23 @@
+@inherits LandingComponentBase
+
+<a class="gallery-card accounting-card" href="@LocalUrl(AccountingSite.Path)">
+    <div class="accounting-card-preview" aria-hidden="true">
+        <div class="accounting-card-sheet">
+            <span class="accounting-card-brand"><AccountingLogo /> Sumwise</span>
+            <i></i><i></i><i class="is-short"></i>
+            <span class="accounting-card-total">€936.00</span>
+            <span class="accounting-card-stamp">@R[nameof(AccountingStrings.DemoStamp)]</span>
+        </div>
+    </div>
+    <div class="gallery-card-body">
+        <p class="gallery-card-industry">@R[nameof(AccountingStrings.CardIndustry)]</p>
+        <h2>Sumwise</h2>
+        <p>@R[nameof(AccountingStrings.CardSummary)]</p>
+        <ul class="gallery-card-tags">
+            <li class="is-mode">@L[nameof(LandingStrings.GalleryModeLaunched)]</li>
+            <li>@R[nameof(AccountingStrings.CardTag1)]</li>
+            <li>@R[nameof(AccountingStrings.CardTag2)]</li>
+            <li>@R[nameof(AccountingStrings.CardTag3)]</li>
+        </ul>
+    </div>
+</a>

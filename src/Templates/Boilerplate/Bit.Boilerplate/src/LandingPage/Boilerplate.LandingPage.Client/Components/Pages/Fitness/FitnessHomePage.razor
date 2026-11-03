@@ -1,0 +1,224 @@
+@attribute [Route(FitnessSite.Path)]
+@attribute [Route("/{culture}" + FitnessSite.Path)]
+@layout FitnessLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@F[nameof(FitnessStrings.HomeTitle)]"
+             Description="@F[nameof(FitnessStrings.HomeDescription)]"
+             Path="@FitnessSite.Path"
+             Site="FitnessSite.Info"
+             StructuredData="structuredData" />
+
+<section id="session" class="fit-hero" aria-labelledby="fit-hero-title">
+    <div class="lp-container fit-hero-grid">
+        <div class="fit-hero-text">
+            <a class="fit-new" href="@($"{Home}#whats-new")">
+                <span class="fit-new-tag">@F[nameof(FitnessStrings.HeroNewTag)]</span>
+                <span>@F[nameof(FitnessStrings.HeroNewText)]</span>
+            </a>
+            <h1 id="fit-hero-title">@F[nameof(FitnessStrings.HeroTitleStart)] <span class="fit-hl">@F[nameof(FitnessStrings.HeroTitleMark)]</span></h1>
+            <p class="fit-hero-lede">@F[nameof(FitnessStrings.HeroLede)]</p>
+            <p class="fit-hero-try"><BitIcon IconName="@BitIconName.Stopwatch" /> @F[nameof(FitnessStrings.HeroTry)]</p>
+        </div>
+
+        <div class="fit-hero-get">
+            <p class="fit-label">@F[nameof(FitnessStrings.HeroGetTitle)]</p>
+            <div class="fit-get-row">
+                <a class="fit-appstore" href="@FitnessSite.AppStoreUrl" rel="noopener" target="_blank">
+                    <img src="images/badges/app-store.svg" width="120" height="40" alt="@L[nameof(LandingStrings.BadgeAppStore)]" />
+                </a>
+                <FitnessInstall Compact />
+            </div>
+            <p class="fit-get-note">@F[nameof(FitnessStrings.HeroGetNote)]</p>
+            <p class="fit-android">
+                <span class="fit-soon">@L[nameof(LandingStrings.StatusComingSoon)]</span>
+                <span>@F[nameof(FitnessStrings.HeroAndroid)] <a href="@($"{Home}#android")">@F[nameof(FitnessStrings.HeroAndroidLink)]</a></span>
+            </p>
+            <p class="fit-price">@F[nameof(FitnessStrings.HeroPrice), Money(4.99m), Money(39.99m)]</p>
+        </div>
+
+        <div class="fit-hero-stage">
+            <FitnessSession />
+        </div>
+    </div>
+</section>
+
+<section id="screens" class="lp-section fit-screens-section" aria-labelledby="fit-screens-title">
+    <div class="lp-container">
+        <header class="fit-head">
+            <p class="fit-kicker">@F[nameof(FitnessStrings.ScreensKicker)]</p>
+            <h2 id="fit-screens-title">@F[nameof(FitnessStrings.ScreensTitle)]</h2>
+            <p class="fit-head-lede">@F[nameof(FitnessStrings.ScreensLede)]</p>
+        </header>
+        <FitnessScreens />
+    </div>
+</section>
+
+<section id="whats-new" class="lp-section fit-news" aria-labelledby="fit-news-title">
+    <div class="lp-container fit-news-grid">
+        <header class="fit-head">
+            <p class="fit-kicker">@F[nameof(FitnessStrings.NewsKicker)]</p>
+            <h2 id="fit-news-title">@F[nameof(FitnessStrings.NewsTitle)]</h2>
+            <p class="fit-head-lede">@F[nameof(FitnessStrings.NewsLede)]</p>
+        </header>
+        @foreach (var release in releases)
+        {
+            <article class="fit-release @(release == releases[0] ? "is-latest" : null)" aria-labelledby="@($"fit-release-{release.Version.Replace('.', '-')}")">
+                <p class="fit-release-meta">
+                    <span class="fit-release-version">@F[nameof(FitnessStrings.NewsVersion), release.Version]</span>
+                    <time datetime="@release.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@release.Date.ToString("d MMMM yyyy", CurrentCulture)</time>
+                </p>
+                <h3 id="@($"fit-release-{release.Version.Replace('.', '-')}")">@F[release.Title]</h3>
+                <ul>
+                    @foreach (var (kind, text) in release.Notes)
+                    {
+                        <li>
+                            <span class="fit-note-kind is-@kind.ToLowerInvariant()">@F[$"NewsKind{kind}"]</span>
+                            <span>@F[text]</span>
+                        </li>
+                    }
+                </ul>
+            </article>
+        }
+    </div>
+</section>
+
+<section id="download" class="lp-section fit-devices" aria-labelledby="fit-devices-title">
+    <div class="lp-container">
+        <header class="fit-head">
+            <p class="fit-kicker">@F[nameof(FitnessStrings.DevicesKicker)]</p>
+            <h2 id="fit-devices-title">@F[nameof(FitnessStrings.DevicesTitle)]</h2>
+            <p class="fit-head-lede">@F[nameof(FitnessStrings.DevicesLede)]</p>
+        </header>
+
+        <div class="fit-device-grid">
+            <article class="fit-device is-iphone" aria-labelledby="fit-device-iphone">
+                <div class="fit-device-top">
+                    <svg class="fit-device-art" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                        <rect x="13" y="4" width="22" height="40" rx="6" />
+                        <path d="M21 8.5h6" />
+                        <path class="is-accent" d="M18 30l4-6 4 4 4-7" />
+                    </svg>
+                    <span class="fit-status is-live">@L[nameof(LandingStrings.StatusLive)]</span>
+                </div>
+                <h3 id="fit-device-iphone">@F[nameof(FitnessStrings.DeviceIphone)]</h3>
+                <p>@F[nameof(FitnessStrings.DeviceIphoneBody)]</p>
+                <div class="fit-device-actions">
+                    <a class="fit-appstore" href="@FitnessSite.AppStoreUrl" rel="noopener" target="_blank">
+                        <img src="images/badges/app-store.svg" width="120" height="40" alt="@L[nameof(LandingStrings.BadgeAppStore)]" />
+                    </a>
+                    <DownloadQr Site="FitnessSite.Info" Class="fit-qr" />
+                </div>
+            </article>
+
+            <article id="android" class="fit-device is-android" aria-labelledby="fit-device-android">
+                <div class="fit-device-top">
+                    <svg class="fit-device-art" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                        <rect x="12" y="4" width="24" height="40" rx="4" />
+                        <circle cx="24" cy="9" r="1.6" />
+                        <path class="is-accent" d="M24 20v7l4 3" />
+                        <circle class="is-accent" cx="24" cy="26" r="8" />
+                    </svg>
+                    <span class="fit-status is-soon">@F[nameof(FitnessStrings.DeviceAndroidStatus)]</span>
+                </div>
+                <h3 id="fit-device-android">@F[nameof(FitnessStrings.DeviceAndroid)]</h3>
+                <p>@F[nameof(FitnessStrings.DeviceAndroidBody)]</p>
+                <WaitlistForm Site="FitnessSite.Info" Platforms="androidOnly" SubmitText="@F[nameof(FitnessStrings.DeviceAndroidSubmit)]" Id="android-waitlist" Class="fit-waitlist" />
+            </article>
+            <article id="install" class="fit-device is-web" aria-labelledby="fit-device-web">
+                <div class="fit-device-intro">
+                    <div class="fit-device-top">
+                        <svg class="fit-device-art" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                            <rect x="4" y="9" width="40" height="30" rx="4" />
+                            <path d="M4 16h40" />
+                            <path class="is-accent" d="M24 21v11M19 27.5l5 5 5-5" />
+                        </svg>
+                        <span class="fit-status is-live">@L[nameof(LandingStrings.StatusLive)]</span>
+                    </div>
+                    <h3 id="fit-device-web">@F[nameof(FitnessStrings.DeviceWeb)]</h3>
+                    <p>@F[nameof(FitnessStrings.DeviceWebBody)]</p>
+                </div>
+                <FitnessInstall Class="fit-device-install" />
+            </article>
+        </div>
+
+        <div class="fit-device-later">
+            <svg class="fit-device-art" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <path d="M18 4h12l1 7M18 4l-1 7M17 37l1 7h12l1-7" />
+                <rect x="13" y="11" width="22" height="26" rx="7" />
+                <path class="is-accent" d="M24 18v6l4 2" />
+            </svg>
+            <p>
+                <strong>@F[nameof(FitnessStrings.DeviceWatch)]</strong>
+                <span class="fit-status is-later">@F[nameof(FitnessStrings.DeviceWatchStatus)]</span>
+            </p>
+            <p class="fit-device-later-body">@F[nameof(FitnessStrings.DeviceWatchBody)]</p>
+        </div>
+    </div>
+</section>
+
+<section id="next" class="lp-section fit-next" aria-labelledby="fit-next-title">
+    <div class="lp-container">
+        <header class="fit-head">
+            <p class="fit-kicker">@F[nameof(FitnessStrings.NextKicker)]</p>
+            <h2 id="fit-next-title">@F[nameof(FitnessStrings.NextTitle)]</h2>
+            <p class="fit-head-lede">@F[nameof(FitnessStrings.NextLede)]</p>
+        </header>
+        <ol class="fit-roadmap">
+            @foreach (var (state, label, title, when, body) in roadmap)
+            {
+                <li class="is-@state">
+                    <p class="fit-roadmap-state">@F[label]</p>
+                    <h3>@F[title]</h3>
+                    <p class="fit-roadmap-when">@F[when]</p>
+                    <p>@F[body]</p>
+                </li>
+            }
+        </ol>
+    </div>
+</section>
+
+<section id="voices" class="lp-section fit-voices" aria-labelledby="fit-voices-title">
+    <div class="lp-container fit-voices-grid">
+        <header class="fit-voices-head">
+            <p class="fit-kicker">@F[nameof(FitnessStrings.VoicesKicker)]</p>
+            <h2 id="fit-voices-title">@F[nameof(FitnessStrings.VoicesTitle)]</h2>
+            <StoreRating AppleAppId="@(FitnessSite.Info.AppleAppId!)" Class="fit-rating" />
+            <p class="fit-voices-note">@F[nameof(FitnessStrings.VoicesNote)]</p>
+        </header>
+        @foreach (var (quote, name, who, streak) in voices)
+        {
+            <figure class="fit-quote @(quote == voices[0].Quote ? "is-lead" : null)">
+                <blockquote><p>@F[quote]</p></blockquote>
+                <figcaption>
+                    <span class="fit-quote-mark" aria-hidden="true">@Initials(F[name])</span>
+                    <span>
+                        <strong>@F[name]</strong>
+                        <span>@F[who]</span>
+                    </span>
+                    <span class="fit-quote-streak"><BitIcon IconName="@BitIconName.FlameSolid" /> @F[nameof(FitnessStrings.ScreenStreakDays), streak]</span>
+                </figcaption>
+            </figure>
+        }
+    </div>
+</section>
+
+<section id="faq" class="lp-section fit-faq" aria-labelledby="fit-faq-title">
+    <div class="lp-container fit-faq-grid">
+        <div>
+            <p class="fit-kicker">@F[nameof(FitnessStrings.FaqKicker)]</p>
+            <h2 id="fit-faq-title">@F[nameof(FitnessStrings.FaqTitle)]</h2>
+            <FaqList Items="faq" Class="fit-faq-list" />
+        </div>
+        <aside class="fit-ask" aria-labelledby="fit-ask-title">
+            <h2 id="fit-ask-title">@F[nameof(FitnessStrings.AskTitle)]</h2>
+            <p>@F[nameof(FitnessStrings.AskBody)]</p>
+            <LandingChat Site="FitnessSite.Info"
+                         Variant="LandingChatVariant.Inline"
+                         Suggestions="suggestions"
+                         Placeholder="@F[nameof(FitnessStrings.AskPlaceholder)]"
+                         Class="fit-chat" />
+            <p class="fit-ask-mail">@F[nameof(FitnessStrings.AskMail)] <a href="@($"mailto:{FitnessSite.Info.Company.Email}")" dir="ltr">@FitnessSite.Info.Company.Email</a></p>
+        </aside>
+    </div>
+</section>

@@ -1,4 +1,8 @@
+using Boilerplate.LandingPage.Client.Components.Pages.Accounting;
+using Boilerplate.LandingPage.Client.Components.Pages.Crm;
 using Boilerplate.LandingPage.Client.Components.Pages.Ecommerce;
+using Boilerplate.LandingPage.Client.Components.Pages.Fitness;
+using Boilerplate.LandingPage.Client.Components.Pages.HotelSoftware;
 using Boilerplate.LandingPage.Client.Components.Pages.Minimal;
 
 namespace Boilerplate.LandingPage.Client.Infrastructure;
@@ -8,6 +12,10 @@ public static class LandingSites
     public static LandingSite[] All { get; } =
     [
         EcommerceSite.Info,
+        FitnessSite.Info,
+        CrmSite.Info,
+        AccountingSite.Info,
+        HotelSoftwareSite.Info,
         MinimalSite.Info
     ];
 

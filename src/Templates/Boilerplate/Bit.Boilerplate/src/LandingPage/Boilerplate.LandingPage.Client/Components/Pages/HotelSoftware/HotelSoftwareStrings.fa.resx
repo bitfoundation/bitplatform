@@ -1,0 +1,1023 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Lodgeboard: نرم‌افزار هتل‌داری برای هتل‌های مستقل، گروه‌های کوچک و اقامتگاه‌ها</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>سامانه‌ی مدیریت اقامتگاه برای پذیرش، خانه‌داری، نرخ‌ها و کانال‌های رزرو. 2٬300 اقامتگاه در 31 کشور، از اتاقی 4 یورو در ماه.</value>
+    </data>
+    <data name="NavDesk" xml:space="preserve">
+        <value>پذیرش</value>
+    </data>
+    <data name="NavAudiences" xml:space="preserve">
+        <value>برای چه کسانی</value>
+    </data>
+    <data name="NavPricing" xml:space="preserve">
+        <value>قیمت‌ها</value>
+    </data>
+    <data name="NavPress" xml:space="preserve">
+        <value>رسانه‌ها</value>
+    </data>
+    <data name="NavTrial" xml:space="preserve">
+        <value>امتحان رایگان</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>مدیریت اقامتگاه برای هتل‌های مستقل، گروه‌های کوچک و اقامتگاه‌ها. از پورتو و لیوبلیانا، از سال 2017.</value>
+    </data>
+    <data name="FooterReviews" xml:space="preserve">
+        <value>نظرها و جایزه‌ها</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>به سایت‌های رزرو وصل می‌شود؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>برای 24 اتاق چقدر می‌شود؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>عوارض شهری را خودش حساب می‌کند؟</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>مدیریت اقامتگاه برای هتل‌های مستقل</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>شما پذیرش را بچرخانید، نه نرم‌افزار را.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Lodgeboard ورودی‌ها، اتاق‌ها، خانه‌داری و کانال‌های رزرو را روی یک تابلو نگه می‌دارد تا هر کسی پشت پیشخوان است، به مهمان نگاه کند.</value>
+    </data>
+    <data name="HeroTrial" xml:space="preserve">
+        <value>شروع 30 روز آزمایش</value>
+    </data>
+    <data name="HeroDemo" xml:space="preserve">
+        <value>رزرو یک دموی 20 دقیقه‌ای</value>
+    </data>
+    <data name="HeroFine" xml:space="preserve">
+        <value>هزینه‌ی راه‌اندازی ندارد. رزروها، مهمان‌ها و نرخ‌هایتان را رایگان از سامانه‌ی فعلی‌تان منتقل می‌کنیم.</value>
+    </data>
+    <data name="DeskCaption" xml:space="preserve">
+        <value>پذیرش امروزِ یک هتل 12 اتاقه. مهمانی را پذیرش یا تسویه کنید، یا اتاقی را تمیز علامت بزنید و تغییر تابلو را ببینید.</value>
+    </data>
+    <data name="DeskRooms" xml:space="preserve">
+        <value>12 اتاق</value>
+    </data>
+    <data name="DeskToday" xml:space="preserve">
+        <value>امروز در یک نگاه</value>
+    </data>
+    <data name="DeskInHouse" xml:space="preserve">
+        <value>مقیم</value>
+    </data>
+    <data name="DeskArriving" xml:space="preserve">
+        <value>ورودی</value>
+    </data>
+    <data name="DeskDeparting" xml:space="preserve">
+        <value>خروجی</value>
+    </data>
+    <data name="DeskToClean" xml:space="preserve">
+        <value>برای نظافت</value>
+    </data>
+    <data name="DeskArrivals" xml:space="preserve">
+        <value>ورودی‌های امروز</value>
+    </data>
+    <data name="DeskDepartures" xml:space="preserve">
+        <value>خروجی‌های امروز</value>
+    </data>
+    <data name="DeskArrival1" xml:space="preserve">
+        <value>2 شب · ساعت 14:30</value>
+    </data>
+    <data name="DeskArrival2" xml:space="preserve">
+        <value>1 شب · ساعت 16:00</value>
+    </data>
+    <data name="DeskArrival3" xml:space="preserve">
+        <value>3 شب · خانواده‌ی 4 نفره · 17:15</value>
+    </data>
+    <data name="DeskArrival4" xml:space="preserve">
+        <value>2 شب · ورود دیرهنگام، 21:00</value>
+    </data>
+    <data name="DeskDeparture1" xml:space="preserve">
+        <value>تسویه‌شده</value>
+    </data>
+    <data name="DeskDeparture2" xml:space="preserve">
+        <value>84 یورو مانده: مینی‌بار و عوارض شهری</value>
+    </data>
+    <data name="DeskCheckIn" xml:space="preserve">
+        <value>پذیرش</value>
+    </data>
+    <data name="DeskCheckInLabel" xml:space="preserve">
+        <value>پذیرش {0} در اتاق {1}</value>
+    </data>
+    <data name="DeskCheckedIn" xml:space="preserve">
+        <value>پذیرش شد</value>
+    </data>
+    <data name="DeskCheckOut" xml:space="preserve">
+        <value>تسویه</value>
+    </data>
+    <data name="DeskCheckOutLabel" xml:space="preserve">
+        <value>تسویه‌ی {0} از اتاق {1}</value>
+    </data>
+    <data name="DeskCheckedOut" xml:space="preserve">
+        <value>تسویه شد</value>
+    </data>
+    <data name="DeskRoomsLabel" xml:space="preserve">
+        <value>اتاق‌ها</value>
+    </data>
+    <data name="DeskFloor" xml:space="preserve">
+        <value>طبقه‌ی {0}</value>
+    </data>
+    <data name="DeskKindDouble" xml:space="preserve">
+        <value>دوتخته</value>
+    </data>
+    <data name="DeskKindTwin" xml:space="preserve">
+        <value>دو تخت جدا</value>
+    </data>
+    <data name="DeskKindSuite" xml:space="preserve">
+        <value>سوئیت</value>
+    </data>
+    <data name="DeskKindSingle" xml:space="preserve">
+        <value>یک‌تخته</value>
+    </data>
+    <data name="DeskKindFamily" xml:space="preserve">
+        <value>خانوادگی</value>
+    </data>
+    <data name="DeskStatusClean" xml:space="preserve">
+        <value>تمیز، آماده</value>
+    </data>
+    <data name="DeskStatusDirty" xml:space="preserve">
+        <value>نیاز به نظافت</value>
+    </data>
+    <data name="DeskStatusOccupied" xml:space="preserve">
+        <value>پر</value>
+    </data>
+    <data name="DeskStatusArriving" xml:space="preserve">
+        <value>ورودی امروز</value>
+    </data>
+    <data name="DeskStatusDeparting" xml:space="preserve">
+        <value>خروجی امروز</value>
+    </data>
+    <data name="DeskStatusOutOfOrder" xml:space="preserve">
+        <value>خارج از سرویس</value>
+    </data>
+    <data name="DeskMarkClean" xml:space="preserve">
+        <value>تمیز شد</value>
+    </data>
+    <data name="DeskMarkCleanLabel" xml:space="preserve">
+        <value>علامت تمیز برای اتاق {0}</value>
+    </data>
+    <data name="DeskMessageIn" xml:space="preserve">
+        <value>{0} در اتاق {1} پذیرش شد. کد در با ایمیل ارسال شد.</value>
+    </data>
+    <data name="DeskMessageOut" xml:space="preserve">
+        <value>{0} از اتاق {1} تسویه کرد. اتاق در فهرست خانه‌داری است.</value>
+    </data>
+    <data name="DeskMessageClean" xml:space="preserve">
+        <value>اتاق {0} تمیز و آماده‌ی فروش است.</value>
+    </data>
+    <data name="DeskTonight" xml:space="preserve">
+        <value>امشب: {0} از {1} اتاق فروخته شده. اتاق 204 تا پنجشنبه خارج از سرویس است.</value>
+    </data>
+    <data name="StatsTitle" xml:space="preserve">
+        <value>Lodgeboard به زبان عدد</value>
+    </data>
+    <data name="Stat1Value" xml:space="preserve">
+        <value>2٬300</value>
+    </data>
+    <data name="Stat1Label" xml:space="preserve">
+        <value>هتل، گروه و اقامتگاه</value>
+    </data>
+    <data name="Stat2Value" xml:space="preserve">
+        <value>31</value>
+    </data>
+    <data name="Stat2Label" xml:space="preserve">
+        <value>کشور، از ایسلند تا پرتغال</value>
+    </data>
+    <data name="Stat3Value" xml:space="preserve">
+        <value>4٫1 میلیون</value>
+    </data>
+    <data name="Stat3Label" xml:space="preserve">
+        <value>شب اقامت که در 2025 با Lodgeboard رزرو شد</value>
+    </data>
+    <data name="Stat4Value" xml:space="preserve">
+        <value>4 دقیقه</value>
+    </data>
+    <data name="Stat4Label" xml:space="preserve">
+        <value>میانه‌ی زمان اولین پاسخ پشتیبانی، شب و روز</value>
+    </data>
+    <data name="AudiencesEyebrow" xml:space="preserve">
+        <value>برای چه کسانی</value>
+    </data>
+    <data name="AudiencesTitle" xml:space="preserve">
+        <value>ساخته‌شده برای اقامتگاه‌هایی که آدم‌ها می‌چرخانندشان، نه دپارتمان‌ها</value>
+    </data>
+    <data name="AudienceHotelsTab" xml:space="preserve">
+        <value>هتل‌های مستقل</value>
+    </data>
+    <data name="AudienceHotelsWho" xml:space="preserve">
+        <value>15 تا 120 اتاق، یک اقامتگاه</value>
+    </data>
+    <data name="AudienceHotelsTitle" xml:space="preserve">
+        <value>پذیرشی که پابه‌پای هتلِ پر می‌آید</value>
+    </data>
+    <data name="AudienceHotelsBody" xml:space="preserve">
+        <value>پذیرش، پرداخت، خانه‌داری و کانال‌های رزرو در یک‌جا، تا کسی که پشت پیشخوان است به مهمان نگاه کند، نه به صفحه.</value>
+    </data>
+    <data name="AudienceHotelsPoint1" xml:space="preserve">
+        <value>همگام‌سازی دوطرفه با بیش از 40 کانال رزرو</value>
+    </data>
+    <data name="AudienceHotelsPoint2" xml:space="preserve">
+        <value>پذیرش آنلاین با کد در</value>
+    </data>
+    <data name="AudienceHotelsPoint3" xml:space="preserve">
+        <value>موتور رزرو روی سایت خودتان، بدون کمیسیون</value>
+    </data>
+    <data name="AudienceHotelsPoint4" xml:space="preserve">
+        <value>گزارش درآمد به تفکیک نوع اتاق و کانال</value>
+    </data>
+    <data name="AudienceHotelsFigure" xml:space="preserve">
+        <value>2 دقیقه</value>
+    </data>
+    <data name="AudienceHotelsFigureLabel" xml:space="preserve">
+        <value>میانگین زمان پذیرش در هتل Marlowe، که قبلاً 6 دقیقه بود</value>
+    </data>
+    <data name="AudienceHotelsPlan" xml:space="preserve">
+        <value>بیشترشان Professional را انتخاب می‌کنند، اتاقی 7 یورو در ماه</value>
+    </data>
+    <data name="AudienceGroupsTab" xml:space="preserve">
+        <value>گروه‌های کوچک</value>
+    </data>
+    <data name="AudienceGroupsWho" xml:space="preserve">
+        <value>2 تا 10 اقامتگاه</value>
+    </data>
+    <data name="AudienceGroupsTitle" xml:space="preserve">
+        <value>یک نمای واحد از همه‌ی اقامتگاه‌ها، بدون پروژه‌ی دفتر مرکزی</value>
+    </data>
+    <data name="AudienceGroupsBody" xml:space="preserve">
+        <value>اشغال، درآمد و سابقه‌ی مهمان‌ها را در همه‌ی هتل‌هایتان ببینید، نرخ گروهی را یک بار تعیین کنید و بگذارید کارکنان با یک حساب کاربری بین اقامتگاه‌ها جابه‌جا شوند.</value>
+    </data>
+    <data name="AudienceGroupsPoint1" xml:space="preserve">
+        <value>گزارش و نرخ‌گذاری مرکزی</value>
+    </data>
+    <data name="AudienceGroupsPoint2" xml:space="preserve">
+        <value>پرونده‌ی مهمان مشترک بین اقامتگاه‌ها</value>
+    </data>
+    <data name="AudienceGroupsPoint3" xml:space="preserve">
+        <value>یک حساب کاربری، با نقش جدا در هر اقامتگاه</value>
+    </data>
+    <data name="AudienceGroupsPoint4" xml:space="preserve">
+        <value>انتقال رزرو به اقامتگاه دیگر با دو کلیک</value>
+    </data>
+    <data name="AudienceGroupsFigure" xml:space="preserve">
+        <value>1 حساب</value>
+    </data>
+    <data name="AudienceGroupsFigureLabel" xml:space="preserve">
+        <value>برای همه‌ی اقامتگاه‌ها و همه‌ی نقش‌ها</value>
+    </data>
+    <data name="AudienceGroupsPlan" xml:space="preserve">
+        <value>پلن Groups، اتاقی 6 یورو در ماه</value>
+    </data>
+    <data name="AudienceBnbTab" xml:space="preserve">
+        <value>اقامتگاه‌ها و مهمان‌خانه‌ها</value>
+    </data>
+    <data name="AudienceBnbWho" xml:space="preserve">
+        <value>تا 15 اتاق، اغلب با مدیریت خود صاحبان</value>
+    </data>
+    <data name="AudienceBnbTitle" xml:space="preserve">
+        <value>هر چه یک مهمان‌خانه لازم دارد، روی یک آیپد</value>
+    </data>
+    <data name="AudienceBnbBody" xml:space="preserve">
+        <value>رزرو بگیرید، ایمیل خوشامد بفرستید، فاکتور را با عوارض شهری چاپ کنید و ببینید چه کسی صبحانه می‌خورد؛ اگر خواستید، از پشت میز آشپزخانه.</value>
+    </data>
+    <data name="AudienceBnbPoint1" xml:space="preserve">
+        <value>تقویم با جابه‌جایی رزرو با کشیدن و رها کردن</value>
+    </data>
+    <data name="AudienceBnbPoint2" xml:space="preserve">
+        <value>فاکتور با محاسبه‌ی عوارض شهری</value>
+    </data>
+    <data name="AudienceBnbPoint3" xml:space="preserve">
+        <value>ایمیل خوشامد و مسیر رسیدن</value>
+    </data>
+    <data name="AudienceBnbPoint4" xml:space="preserve">
+        <value>روی آیپد کار می‌کند، حتی مدتی بدون اینترنت</value>
+    </data>
+    <data name="AudienceBnbFigure" xml:space="preserve">
+        <value>39 یورو</value>
+    </data>
+    <data name="AudienceBnbFigureLabel" xml:space="preserve">
+        <value>در ماه با پلن Essentials، برای حداکثر 9 اتاق</value>
+    </data>
+    <data name="AudienceBnbPlan" xml:space="preserve">
+        <value>پلن Essentials، اتاقی 4 یورو با حداقل 39 یورو</value>
+    </data>
+    <data name="DayEyebrow" xml:space="preserve">
+        <value>یک روز پشت پیشخوان</value>
+    </data>
+    <data name="DayTitle" xml:space="preserve">
+        <value>از فهرست صبحانه تا بستن حساب شب</value>
+    </data>
+    <data name="DayLede" xml:space="preserve">
+        <value>همان پنج لحظه، هر روز سال. Lodgeboard لحظه‌ی بعدی را پیش از رسیدنش آماده کرده.</value>
+    </data>
+    <data name="Day1Time" xml:space="preserve">
+        <value>06:30</value>
+    </data>
+    <data name="Day1Title" xml:space="preserve">
+        <value>فهرست صبحانه</value>
+    </data>
+    <data name="Day1Body" xml:space="preserve">
+        <value>آشپزخانه می‌بیند چند صبحانه آماده کند، با حساسیت‌های غذایی و خروج‌های زودهنگام که علامت خورده‌اند.</value>
+    </data>
+    <data name="Day2Time" xml:space="preserve">
+        <value>10:00</value>
+    </data>
+    <data name="Day2Title" xml:space="preserve">
+        <value>خروجی‌ها و خانه‌داری</value>
+    </data>
+    <data name="Day2Body" xml:space="preserve">
+        <value>مهمان‌ها پشت پیشخوان یا روی آیپد تسویه می‌کنند و هر اتاق به ترتیبی که لازم است به خانه‌داری می‌رود.</value>
+    </data>
+    <data name="Day3Time" xml:space="preserve">
+        <value>14:00</value>
+    </data>
+    <data name="Day3Title" xml:space="preserve">
+        <value>ورودی‌ها</value>
+    </data>
+    <data name="Day3Body" xml:space="preserve">
+        <value>مهمان‌هایی که آنلاین پذیرش شده‌اند کد در را با ایمیل می‌گیرند. برای بقیه، کارت ثبت‌نام پر شده و آماده است.</value>
+    </data>
+    <data name="Day4Time" xml:space="preserve">
+        <value>18:00</value>
+    </data>
+    <data name="Day4Title" xml:space="preserve">
+        <value>نرخ‌ها و کانال‌ها</value>
+    </data>
+    <data name="Day4Body" xml:space="preserve">
+        <value>قیمت فردا را یک بار عوض کنید؛ همه‌ی کانال‌های رزرو و سایت خودتان ظرف یک دقیقه به‌روز می‌شوند.</value>
+    </data>
+    <data name="Day5Time" xml:space="preserve">
+        <value>23:30</value>
+    </data>
+    <data name="Day5Title" xml:space="preserve">
+        <value>بستن حساب شب</value>
+    </data>
+    <data name="Day5Body" xml:space="preserve">
+        <value>روز خودش بسته می‌شود: پرداخت‌ها تطبیق، عوارض شهری شمارش و گزارش تا صبح در ایمیل مدیر.</value>
+    </data>
+    <data name="CasePlate" xml:space="preserve">
+        <value>42 اتاق · لیوبلیانا</value>
+    </data>
+    <data name="CaseEyebrow" xml:space="preserve">
+        <value>تجربه‌ی مشتری</value>
+    </data>
+    <data name="CaseTitle" xml:space="preserve">
+        <value>هتل Marlowe زمان پذیرش را از شش دقیقه به دو دقیقه رساند</value>
+    </data>
+    <data name="CaseBody" xml:space="preserve">
+        <value>Marlowe یک هتل 42 اتاقه در بافت قدیمی لیوبلیاناست که 14 نفر اداره‌اش می‌کنند. سال 2025، در یک هفته‌ی خلوت بهمن، از یک نرم‌افزار دسکتاپ و دو پنل جدای سایت‌های رزرو به Lodgeboard آمد.</value>
+    </data>
+    <data name="CaseNumber1Value" xml:space="preserve">
+        <value>6 ← 2 دقیقه</value>
+    </data>
+    <data name="CaseNumber1Label" xml:space="preserve">
+        <value>میانگین پذیرش، با پذیرش آنلاین و کد در</value>
+    </data>
+    <data name="CaseNumber2Value" xml:space="preserve">
+        <value>18% ← 31%</value>
+    </data>
+    <data name="CaseNumber2Label" xml:space="preserve">
+        <value>سهم شب‌های رزرو مستقیم، در سال اول</value>
+    </data>
+    <data name="CaseNumber3Value" xml:space="preserve">
+        <value>11 ساعت</value>
+    </data>
+    <data name="CaseNumber3Label" xml:space="preserve">
+        <value>در هفته که دیگر صرف تطبیق کانال‌ها نمی‌شود</value>
+    </data>
+    <data name="CaseQuote" xml:space="preserve">
+        <value>یک جمعه‌ی مرداد 40 ورودی داریم. حالا پیشخوان با مهمان‌ها حرف می‌زند و بقیه‌اش با تابلو.</value>
+    </data>
+    <data name="CaseQuoteBy" xml:space="preserve">
+        <value>نیکا زوپان، مدیر کل هتل Marlowe</value>
+    </data>
+    <data name="ReviewsEyebrow" xml:space="preserve">
+        <value>نظرها و جایزه‌ها</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>هتل‌دارها وقتی کسی ازشان نخواسته، چه می‌گویند</value>
+    </data>
+    <data name="TrustWord" xml:space="preserve">
+        <value>عالی</value>
+    </data>
+    <data name="TrustStars" xml:space="preserve">
+        <value>4٫7 ستاره از 5</value>
+    </data>
+    <data name="TrustScore" xml:space="preserve">
+        <value>امتیاز TrustScore برابر 4٫7 از 5</value>
+    </data>
+    <data name="TrustCount" xml:space="preserve">
+        <value>بر پایه‌ی 1٬284 نظر در Trustpilot</value>
+    </data>
+    <data name="TrustLink" xml:space="preserve">
+        <value>خواندن نظرها</value>
+    </data>
+    <data name="TrustSample" xml:space="preserve">
+        <value>عددها نمونه‌اند. امتیاز TrustScore، تعداد نظرها و پیوند صفحه‌ی خودتان را جایشان بگذارید و به‌روز نگهشان دارید.</value>
+    </data>
+    <data name="ReviewFiveStars" xml:space="preserve">
+        <value>5 ستاره از 5</value>
+    </data>
+    <data name="Review1Quote" xml:space="preserve">
+        <value>وسط فصل عوض کردیم و حتی یک رزرو هم از دست نرفت. انتقال داده‌ها یک آخر هفته طول کشید و آموزش یک بعدازظهر.</value>
+    </data>
+    <data name="Review1Name" xml:space="preserve">
+        <value>هنریک آلتو</value>
+    </data>
+    <data name="Review1Place" xml:space="preserve">
+        <value>ویلا Saaristo، 18 اتاق، تورکو</value>
+    </data>
+    <data name="Review2Quote" xml:space="preserve">
+        <value>ساعت دو بامداد که کارت‌خوانمان قفل کرد، پشتیبانی جواب داد. فقط همین ارزش قیمتش را دارد.</value>
+    </data>
+    <data name="Review2Name" xml:space="preserve">
+        <value>جولیا فِری</value>
+    </data>
+    <data name="Review2Place" xml:space="preserve">
+        <value>اقامتگاه Casa Ferri، 6 اتاق، لوکا</value>
+    </data>
+    <data name="AwardsTitle" xml:space="preserve">
+        <value>جایزه‌ها</value>
+    </data>
+    <data name="Award1Year" xml:space="preserve">
+        <value>2025</value>
+    </data>
+    <data name="Award1Name" xml:space="preserve">
+        <value>بهترین PMS برای هتل‌های مستقل</value>
+    </data>
+    <data name="Award1By" xml:space="preserve">
+        <value>انجمن هتل‌داران مستقل</value>
+    </data>
+    <data name="Award2Year" xml:space="preserve">
+        <value>2024</value>
+    </data>
+    <data name="Award2Name" xml:space="preserve">
+        <value>نرم‌افزار پذیرش سال</value>
+    </data>
+    <data name="Award2By" xml:space="preserve">
+        <value>جوایز مهمان‌نوازی آلپ</value>
+    </data>
+    <data name="Award3Year" xml:space="preserve">
+        <value>2023</value>
+    </data>
+    <data name="Award3Name" xml:space="preserve">
+        <value>جایزه‌ی فناوری هتل‌های کوچک</value>
+    </data>
+    <data name="Award3By" xml:space="preserve">
+        <value>نمایشگاه هتل آتلانتیک</value>
+    </data>
+    <data name="AwardsSample" xml:space="preserve">
+        <value>این جایزه‌ها نمونه و ساختگی‌اند. فقط جایزه‌هایی را که واقعاً برده‌اید فهرست کنید، هر کدام با پیوندش.</value>
+    </data>
+    <data name="CtaTitle" xml:space="preserve">
+        <value>در یک روز واقعی پشت پیشخوان امتحانش کنید</value>
+    </data>
+    <data name="CtaBody" xml:space="preserve">
+        <value>30 روز با همه‌ی امکانات Professional و داده‌های خودتان که ما منتقلشان می‌کنیم. نه کارت بانکی، نه قرارداد، تا وقتی تصمیم بگیرید.</value>
+    </data>
+    <data name="CtaPricing" xml:space="preserve">
+        <value>دیدن قیمت‌ها</value>
+    </data>
+    <data name="AppsBody" xml:space="preserve">
+        <value>در مرورگر، روی کامپیوتر پذیرش با اپ ویندوز، و روی آیپد برای خانه‌داری و پذیرش دم در.</value>
+    </data>
+    <data name="PricingPageTitle" xml:space="preserve">
+        <value>قیمت‌ها | Lodgeboard</value>
+    </data>
+    <data name="PricingDescription" xml:space="preserve">
+        <value>Lodgeboard برای هر اتاق ماهی 4 تا 7 یورو است، بدون هزینه‌ی راه‌اندازی و با انتقال رایگان داده‌ها. قیمتتان را با ماشین‌حساب اتاق حساب کنید، یا برای گروه‌های بزرگ‌تر با ما حرف بزنید.</value>
+    </data>
+    <data name="PricingTitle" xml:space="preserve">
+        <value>قیمت برای هر اتاق، بی هیچ هزینه‌ی پنهانی پشتش</value>
+    </data>
+    <data name="PricingLede" xml:space="preserve">
+        <value>برای اتاق‌هایی که دارید بپردازید، نه برای امکاناتی که استفاده نمی‌کنید. نه هزینه‌ی راه‌اندازی، نه کمیسیون روی رزروها، و انتقال رایگان از سامانه‌ی فعلی‌تان.</value>
+    </data>
+    <data name="CalcTitle" xml:space="preserve">
+        <value>قیمتتان را حساب کنید</value>
+    </data>
+    <data name="CalcRooms" xml:space="preserve">
+        <value>تعداد اتاق‌های اقامتگاه، یا همه‌ی اقامتگاه‌ها برای پلن Groups</value>
+    </data>
+    <data name="CalcRoomsValue" xml:space="preserve">
+        <value>{0} اتاق</value>
+    </data>
+    <data name="CalcPlan" xml:space="preserve">
+        <value>پلن</value>
+    </data>
+    <data name="CalcMonthly" xml:space="preserve">
+        <value>قیمت ماهانه‌ی شما، بدون ارزش افزوده</value>
+    </data>
+    <data name="CalcMath" xml:space="preserve">
+        <value>{0} اتاق × {1} = {2}</value>
+    </data>
+    <data name="CalcMinimum" xml:space="preserve">
+        <value>حداقل ماهانه‌ی {1} یعنی {0} اعمال می‌شود.</value>
+    </data>
+    <data name="CalcYearly" xml:space="preserve">
+        <value>یا با پرداخت سالانه {0} در سال، یعنی {1}% کمتر.</value>
+    </data>
+    <data name="CalcNote" xml:space="preserve">
+        <value>بدون هزینه‌ی راه‌اندازی. لغو با 30 روز اطلاع قبلی.</value>
+    </data>
+    <data name="MoneyEur" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="PlansEyebrow" xml:space="preserve">
+        <value>پلن‌ها</value>
+    </data>
+    <data name="PlansTitle" xml:space="preserve">
+        <value>سه پلن، و یک گفتگو برای بقیه</value>
+    </data>
+    <data name="PerRoomMonth" xml:space="preserve">
+        <value>برای هر اتاق در ماه</value>
+    </data>
+    <data name="PlanMinimum" xml:space="preserve">
+        <value>حداقل {0} در ماه</value>
+    </data>
+    <data name="PlanEssentials" xml:space="preserve">
+        <value>Essentials</value>
+    </data>
+    <data name="PlanEssentialsSummary" xml:space="preserve">
+        <value>برای اقامتگاه‌ها، مهمان‌خانه‌ها و هتل‌های کوچک.</value>
+    </data>
+    <data name="PlanEssentialsFeature1" xml:space="preserve">
+        <value>پذیرش و تقویم رزرو</value>
+    </data>
+    <data name="PlanEssentialsFeature2" xml:space="preserve">
+        <value>خانه‌داری روی آیپد</value>
+    </data>
+    <data name="PlanEssentialsFeature3" xml:space="preserve">
+        <value>فاکتور با عوارض شهری</value>
+    </data>
+    <data name="PlanEssentialsFeature4" xml:space="preserve">
+        <value>ایمیل خوشامد و مسیر</value>
+    </data>
+    <data name="PlanProfessional" xml:space="preserve">
+        <value>Professional</value>
+    </data>
+    <data name="PlanProfessionalSummary" xml:space="preserve">
+        <value>برای هتل‌های مستقلی که در کانال‌های زیادی می‌فروشند.</value>
+    </data>
+    <data name="PlanProfessionalFeature1" xml:space="preserve">
+        <value>هر چه Essentials دارد</value>
+    </data>
+    <data name="PlanProfessionalFeature2" xml:space="preserve">
+        <value>همگام‌سازی دوطرفه با بیش از 40 کانال رزرو</value>
+    </data>
+    <data name="PlanProfessionalFeature3" xml:space="preserve">
+        <value>موتور رزرو برای سایتتان، بدون کمیسیون</value>
+    </data>
+    <data name="PlanProfessionalFeature4" xml:space="preserve">
+        <value>پذیرش آنلاین، کد در و گزارش درآمد</value>
+    </data>
+    <data name="PlanGroups" xml:space="preserve">
+        <value>Groups</value>
+    </data>
+    <data name="PlanGroupsSummary" xml:space="preserve">
+        <value>برای 2 تا 10 اقامتگاه زیر یک حساب.</value>
+    </data>
+    <data name="PlanGroupsFeature1" xml:space="preserve">
+        <value>هر چه Professional دارد</value>
+    </data>
+    <data name="PlanGroupsFeature2" xml:space="preserve">
+        <value>گزارش مرکزی و نرخ گروهی</value>
+    </data>
+    <data name="PlanGroupsFeature3" xml:space="preserve">
+        <value>پرونده‌ی مهمان مشترک بین اقامتگاه‌ها</value>
+    </data>
+    <data name="PlanGroupsFeature4" xml:space="preserve">
+        <value>یک حساب کاربری با نقش جدا در هر اقامتگاه</value>
+    </data>
+    <data name="PlanEnterprise" xml:space="preserve">
+        <value>Enterprise</value>
+    </data>
+    <data name="PlanEnterpriseSummary" xml:space="preserve">
+        <value>برای بیش از 10 اقامتگاه یا 500 اتاق.</value>
+    </data>
+    <data name="PlanEnterprisePrice" xml:space="preserve">
+        <value>توافقی</value>
+    </data>
+    <data name="Enterprise1" xml:space="preserve">
+        <value>اتصال به قفل درها، صندوق فروش و حسابداری شما</value>
+    </data>
+    <data name="Enterprise2" xml:space="preserve">
+        <value>تعهد 99٫9% در دسترس بودن</value>
+    </data>
+    <data name="Enterprise3" xml:space="preserve">
+        <value>مدیر حساب اختصاصی و آموزش حضوری</value>
+    </data>
+    <data name="Enterprise4" xml:space="preserve">
+        <value>خروجی شبانه به انبار داده‌ی شما</value>
+    </data>
+    <data name="TalkToUs" xml:space="preserve">
+        <value>با ما حرف بزنید</value>
+    </data>
+    <data name="PricingFaqEyebrow" xml:space="preserve">
+        <value>پرسش‌ها</value>
+    </data>
+    <data name="PricingFaqTitle" xml:space="preserve">
+        <value>پیش از آن‌که از بانک بپرسید</value>
+    </data>
+    <data name="PricingFaq1Question" xml:space="preserve">
+        <value>هزینه‌ی راه‌اندازی دارد؟</value>
+    </data>
+    <data name="PricingFaq1Answer" xml:space="preserve">
+        <value>نه. رزروها، مهمان‌ها و نرخ‌هایتان را رایگان از سامانه‌ی فعلی منتقل می‌کنیم و جلسه‌ی آموزش اول هم شامل قیمت است.</value>
+    </data>
+    <data name="PricingFaq2Question" xml:space="preserve">
+        <value>چه چیزی یک اتاق حساب می‌شود؟</value>
+    </data>
+    <data name="PricingFaq2Answer" xml:space="preserve">
+        <value>هر واحدی که شبانه می‌فروشید: اتاق، آپارتمان یا تخت‌های خوابگاهی که یک‌جا فروخته می‌شوند. اتاق‌های خارج از سرویس هم حساب می‌شوند.</value>
+    </data>
+    <data name="PricingFaq3Question" xml:space="preserve">
+        <value>روی رزروها کمیسیون می‌گیرید؟</value>
+    </data>
+    <data name="PricingFaq3Answer" xml:space="preserve">
+        <value>هرگز. موتور رزرو و مدیریت کانال‌ها بخشی از قیمت پلن‌اند، هر چقدر هم شب بفروشید.</value>
+    </data>
+    <data name="PricingFaq4Question" xml:space="preserve">
+        <value>بعداً می‌شود پلن یا تعداد اتاق را عوض کرد؟</value>
+    </data>
+    <data name="PricingFaq4Answer" xml:space="preserve">
+        <value>بله، از یک ماه به ماه بعد. اضافه کردن اتاق همان لحظه اعمال می‌شود و رفتن به پلن کوچک‌تر از صورت‌حساب بعدی.</value>
+    </data>
+    <data name="PricingFaq5Question" xml:space="preserve">
+        <value>دوره‌ی آزمایشی چطور است؟</value>
+    </data>
+    <data name="PricingFaq5Answer" xml:space="preserve">
+        <value>30 روز پلن Professional با داده‌های خودتان، بدون نیاز به کارت بانکی. در پایان پلنی انتخاب می‌کنید، یا حساب و داده‌هایش را حذف می‌کنیم.</value>
+    </data>
+    <data name="PressPageTitle" xml:space="preserve">
+        <value>بسته‌ی رسانه‌ای | Lodgeboard</value>
+    </data>
+    <data name="PressDescription" xml:space="preserve">
+        <value>عددها، لوگوها، رنگ‌ها و راه‌های تماس برای نوشتن درباره‌ی Lodgeboard، سامانه‌ی مدیریت اقامتگاه برای هتل‌های مستقل.</value>
+    </data>
+    <data name="PressTitle" xml:space="preserve">
+        <value>بسته‌ی رسانه‌ای</value>
+    </data>
+    <data name="PressLede" xml:space="preserve">
+        <value>هر چه برای نوشتن درباره‌ی Lodgeboard لازم دارید. آزادانه از همه‌اش استفاده کنید و هر چه این‌جا نیست را از ما بخواهید.</value>
+    </data>
+    <data name="PressAboutTitle" xml:space="preserve">
+        <value>Lodgeboard در 60 کلمه</value>
+    </data>
+    <data name="PressAboutText" xml:space="preserve">
+        <value>Lodgeboard سامانه‌ی مدیریت اقامتگاه برای هتل‌های مستقل، گروه‌های کوچک هتل و اقامتگاه‌ها می‌سازد. بیش از 2٬300 اقامتگاه در 31 کشور پذیرش، خانه‌داری، نرخ‌ها و کانال‌های رزروشان را با آن می‌چرخانند. این شرکت را یک مدیر سابق هتل و یک مهندس سال 2017 در پورتو بنیان گذاشتند و 85 نفر در پورتو و لیوبلیانا در آن کار می‌کنند.</value>
+    </data>
+    <data name="PressCopy" xml:space="preserve">
+        <value>کپی متن</value>
+    </data>
+    <data name="PressCopied" xml:space="preserve">
+        <value>کپی شد</value>
+    </data>
+    <data name="Fact1Label" xml:space="preserve">
+        <value>تأسیس</value>
+    </data>
+    <data name="Fact1Value" xml:space="preserve">
+        <value>2017، در پورتو</value>
+    </data>
+    <data name="Fact2Label" xml:space="preserve">
+        <value>دفترها</value>
+    </data>
+    <data name="Fact2Value" xml:space="preserve">
+        <value>پورتو و لیوبلیانا</value>
+    </data>
+    <data name="Fact3Label" xml:space="preserve">
+        <value>کارکنان</value>
+    </data>
+    <data name="Fact3Value" xml:space="preserve">
+        <value>85 نفر</value>
+    </data>
+    <data name="Fact4Label" xml:space="preserve">
+        <value>اقامتگاه‌ها</value>
+    </data>
+    <data name="Fact4Value" xml:space="preserve">
+        <value>2٬300 در 31 کشور</value>
+    </data>
+    <data name="Fact5Label" xml:space="preserve">
+        <value>شب‌های 2025</value>
+    </data>
+    <data name="Fact5Value" xml:space="preserve">
+        <value>4٫1 میلیون</value>
+    </data>
+    <data name="Fact6Label" xml:space="preserve">
+        <value>سرمایه</value>
+    </data>
+    <data name="Fact6Value" xml:space="preserve">
+        <value>سودآور از 2021، بدون سرمایه‌گذار بیرونی</value>
+    </data>
+    <data name="PressLogosTitle" xml:space="preserve">
+        <value>لوگوها و رنگ‌ها</value>
+    </data>
+    <data name="PressLogosLede" xml:space="preserve">
+        <value>فایل‌های برداری، آماده‌ی چاپ و نمایش. لطفاً دوباره نکشیدشان، رنگشان را عوض نکنید و کش ندهید.</value>
+    </data>
+    <data name="LogoFull" xml:space="preserve">
+        <value>لوگو، برای زمینه‌ی روشن</value>
+    </data>
+    <data name="LogoFullNote" xml:space="preserve">
+        <value>SVG، زغالی و برنجی</value>
+    </data>
+    <data name="LogoLight" xml:space="preserve">
+        <value>لوگو، برای زمینه‌ی تیره</value>
+    </data>
+    <data name="LogoLightNote" xml:space="preserve">
+        <value>SVG، سنگی و برنجی</value>
+    </data>
+    <data name="LogoMark" xml:space="preserve">
+        <value>نشانه‌ی جاکلیدی</value>
+    </data>
+    <data name="LogoMarkNote" xml:space="preserve">
+        <value>SVG، برای فضاهای کوچک و آیکون اپ</value>
+    </data>
+    <data name="PressDownloadSvg" xml:space="preserve">
+        <value>دانلود SVG</value>
+    </data>
+    <data name="PressColorsTitle" xml:space="preserve">
+        <value>رنگ‌ها</value>
+    </data>
+    <data name="ColorCharcoal" xml:space="preserve">
+        <value>زغالی</value>
+    </data>
+    <data name="ColorBrass" xml:space="preserve">
+        <value>برنجی</value>
+    </data>
+    <data name="ColorStone" xml:space="preserve">
+        <value>سنگی</value>
+    </data>
+    <data name="PressUsage" xml:space="preserve">
+        <value>نام را به شکل Lodgeboard بنویسید، یک کلمه با L بزرگ. نشانه‌ی جاکلیدی فقط جایی تنها می‌آید که لوگوی کامل جا نشود.</value>
+    </data>
+    <data name="PressFoundersTitle" xml:space="preserve">
+        <value>بنیان‌گذاران</value>
+    </data>
+    <data name="Founder1Name" xml:space="preserve">
+        <value>ترزا لوبو</value>
+    </data>
+    <data name="Founder1Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیرعامل</value>
+    </data>
+    <data name="Founder1Bio" xml:space="preserve">
+        <value>پیش از Lodgeboard نُه سال یک هتل 40 اتاقه کنار رود دورو را اداره کرد. هنوز هر فصل یک شیفت در پذیرش هتل یکی از مشتری‌ها می‌ایستد.</value>
+    </data>
+    <data name="Founder2Name" xml:space="preserve">
+        <value>لوکا هوروات</value>
+    </data>
+    <data name="Founder2Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیر فنی</value>
+    </data>
+    <data name="Founder2Bio" xml:space="preserve">
+        <value>برای یک گروه پیست اسکی در کرانسکا گورا سامانه‌ی رزرو ساخت و بعد از اولین خط کد، مهندسی Lodgeboard را رهبری کرد.</value>
+    </data>
+    <data name="PressContactTitle" xml:space="preserve">
+        <value>تماس رسانه‌ای</value>
+    </data>
+    <data name="PressContactName" xml:space="preserve">
+        <value>آنا ریبیرو</value>
+    </data>
+    <data name="PressContactRole" xml:space="preserve">
+        <value>ارتباطات، پورتو</value>
+    </data>
+    <data name="PressContactNote" xml:space="preserve">
+        <value>به درخواست‌های رسانه‌ای ظرف یک روز کاری جواب می‌دهیم و می‌توانیم مصاحبه یا بازدید از هتل یکی از مشتری‌ها ترتیب بدهیم.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>درباره‌ی Lodgeboard</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Lodgeboard را یک مدیر هتل و یک مهندس سال 2017 در پورتو راه انداختند. حالا 85 نفر در پورتو و لیوبلیانا آن را برای 2٬300 اقامتگاه می‌سازند.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>ما برای آدم‌های پشت پیشخوان نرم‌افزار می‌سازیم: صاحبان اقامتگاه، کارکنان پذیرش، خانه‌داری و نگهبان شب. 85 نفریم، در پورتو و لیوبلیانا.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>از پشت یک پیشخوان شروع شد</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>ترزا لوبو نُه سال یک هتل 40 اتاقه کنار رود دورو را با سه نرم‌افزاری اداره کرد که با هم حرف نمی‌زدند و یک تخته‌وایت‌برد که کار اصلی را انجام می‌داد.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>سال 2017 او و لوکا هوروات همان تخته را به نرم‌افزار تبدیل کردند: یک تابلو برای ورودی‌ها، اتاق‌ها و خانه‌داری که به سایت‌های رزرو وصل است. اولین مشتری‌اش هتل خود ترزا بود.</value>
+    </data>
+    <data name="StoryBody3" xml:space="preserve">
+        <value>Lodgeboard از 2021 بدون سرمایه‌گذار بیرونی سودآور است؛ برای همین برنامه‌ی کاری‌اش را هتل‌دارها می‌نویسند، نه هیئت‌مدیره.</value>
+    </data>
+    <data name="PrinciplesTitle" xml:space="preserve">
+        <value>چطور کار می‌کنیم</value>
+    </data>
+    <data name="Principle1Title" xml:space="preserve">
+        <value>مثل نگهبان شب جواب بدهیم</value>
+    </data>
+    <data name="Principle1Body" xml:space="preserve">
+        <value>هتل‌ها تعطیل نمی‌شوند، پس پشتیبانی هم تعطیل نمی‌شود. یک آدم شب و روز با گفتگو یا تلفن جواب می‌دهد، با میانه‌ی چهار دقیقه.</value>
+    </data>
+    <data name="Principle2Title" xml:space="preserve">
+        <value>هر فصل یک شیفت کار کنیم</value>
+    </data>
+    <data name="Principle2Body" xml:space="preserve">
+        <value>همه در Lodgeboard، مهندس‌ها هم، هر سه ماه یک شیفت پشت پیشخوان یکی از مشتری‌ها می‌ایستند.</value>
+    </data>
+    <data name="Principle3Title" xml:space="preserve">
+        <value>هیچ‌وقت داده‌هایتان را گروگان نگیریم</value>
+    </data>
+    <data name="Principle3Body" xml:space="preserve">
+        <value>رزروها، مهمان‌ها و فاکتورها هر وقت بخواهید در قالب‌های باز خروجی گرفته می‌شوند و رفتن از پیش ما هزینه‌ای ندارد.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>چند نفر از آدم‌های پشت آن</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>سوفیا مارکِش</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>مدیر پشتیبانی</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>آنا ریبیرو</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>ارتباطات</value>
+    </data>
+    <data name="OfficesTitle" xml:space="preserve">
+        <value>دفترها</value>
+    </data>
+    <data name="OfficePorto" xml:space="preserve">
+        <value>پورتو</value>
+    </data>
+    <data name="OfficePortoNote" xml:space="preserve">
+        <value>دفتر مرکزی، پشتیبانی و فروش.</value>
+    </data>
+    <data name="OfficeLjubljana" xml:space="preserve">
+        <value>لیوبلیانا</value>
+    </data>
+    <data name="OfficeLjubljanaAddress" xml:space="preserve">
+        <value>Trubarjeva cesta 42، 1000 لیوبلیانا، اسلوونی</value>
+    </data>
+    <data name="OfficeLjubljanaNote" xml:space="preserve">
+        <value>مهندسی و پشتیبانی شبانه.</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>با ما حرف بزنید</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>پرسشی درباره‌ی محصول، دوره‌ی آزمایشی یا انتقال از سامانه‌ی فعلی‌تان دارید؟ بنویسید تا یک آدم ظرف یک روز کاری جواب بدهد.</value>
+    </data>
+    <data name="ContactHours" xml:space="preserve">
+        <value>مشتری‌ها شبانه‌روز با گفتگوی داخل اپ یا تلفن به پشتیبانی دسترسی دارند.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>مشخصات شرکت</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>این اتاق روی تابلو نیست</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>صفحه‌ای که خواستید وجود ندارد، یا کلیدش پس داده شده. پذیرش همان‌جایی است که ترکش کردید.</value>
+    </data>
+    <data name="NotFoundKey" xml:space="preserve">
+        <value>کلید سر جایش نیست</value>
+    </data>
+    <data name="NotFoundPricing" xml:space="preserve">
+        <value>دیدن قیمت‌ها</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>نرم‌افزار هتل‌داری</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>سامانه‌ی مدیریت اقامتگاه برای هتل‌های مستقل که روی وب، ویندوز و آیپد منتشر شده: پذیرشی که می‌شود با آن کار کرد، ماشین‌حساب قیمت هر اتاق و بسته‌ی رسانه‌ای.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>پذیرش در hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>ماشین‌حساب اتاق</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>بسته‌ی رسانه‌ای</value>
+    </data>
+</root>
