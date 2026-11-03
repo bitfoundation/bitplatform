@@ -25,6 +25,7 @@ $gallery-brands: (
     }
 }
 
+// Each sample's logo reads variables of its own, so this sets them all to the tile's brand colors
 .gallery-logo {
     --logo: var(--brand);
     --logo-fg: var(--brand-fg);

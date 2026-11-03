@@ -16,6 +16,7 @@
 
     <div class="hs-desk-body">
         <div class="hs-desk-lists">
+            @* The tour checks guests in through hs-stay, is-done and hs-stay-action, so keep those classes *@
             <section class="hs-desk-list" aria-label="@H[nameof(HotelSoftwareStrings.DeskArrivals)]">
                 <p class="hs-desk-list-title">@H[nameof(HotelSoftwareStrings.DeskArrivals)]</p>
                 @foreach (var stay in arrivals)

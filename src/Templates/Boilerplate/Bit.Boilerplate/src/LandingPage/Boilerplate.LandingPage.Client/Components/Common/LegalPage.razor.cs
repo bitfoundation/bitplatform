@@ -11,6 +11,7 @@ public partial class LegalPage
     private LandingLegalKind kind;
     private string slug = default!;
 
+    // How many Legal<Kind><n>Title and Body pairs each kind has in LandingStrings
     private int SectionCount => kind switch
     {
         LandingLegalKind.Privacy => 6,

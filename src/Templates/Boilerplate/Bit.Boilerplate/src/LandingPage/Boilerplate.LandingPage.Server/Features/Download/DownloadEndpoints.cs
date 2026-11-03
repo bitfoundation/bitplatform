@@ -52,6 +52,7 @@ public static class DownloadEndpoints
 
         if (link is { Status: not LandingPlatformStatus.ComingSoon, Url: { } url })
         {
+            // Google Play hands referrer on to the installed app, and ct is the App Store's campaign token
             target = platform switch
             {
                 LandingPlatform.Android => AppendQuery(url, "referrer", string.Join('&', query.Where(q => q.Key.StartsWith("utm_", StringComparison.Ordinal)).Select(q => $"{q.Key}={q.Value}"))),
@@ -65,6 +66,7 @@ public static class DownloadEndpoints
             target = $"{LandingCultures.Localize(site.Path, culture)}{context.Request.QueryString}#download";
         }
 
+        // The target depends on the device, so no cache may keep one visitor's redirect for the next
         context.Response.Headers.CacheControl = "private, no-store";
         context.Response.Headers.Vary = "User-Agent";
 

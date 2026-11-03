@@ -44,6 +44,7 @@ public sealed record LandingCompany
 
 public sealed record LandingSite
 {
+    // More than a label: the chat's facts, the preview image, the gallery's colors and the tour all find the sample by it
     public required string Key { get; init; }
 
     public required string Path { get; init; }

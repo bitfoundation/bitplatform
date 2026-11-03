@@ -62,6 +62,7 @@ public sealed class InMemoryWaitlistStore : IWaitlistStore
 
         var added = entries.GetOrAdd(key, _ => entry with { Position = counts.AddOrUpdate(entry.Site, 1, (_, count) => count + 1) });
 
+        // When two sign-ups race only one entry is stored, and the other learns from its token that it already joined
         return Task.FromResult((added, added.Token != entry.Token));
     }
 

@@ -15,6 +15,7 @@ internal sealed class LandingAiTransport(ILandingChatClient chatClient, string s
 
         await using var deltas = chatClient.AskAsync(new(site, CultureInfo.CurrentUICulture.Name, turns), cancellationToken).GetAsyncEnumerator(cancellationToken);
 
+        // C# can't yield inside a try with a catch, so only MoveNextAsync is guarded and a failure is yielded after the loop
         LandingChatException? failure = null;
 
         while (failure is null)

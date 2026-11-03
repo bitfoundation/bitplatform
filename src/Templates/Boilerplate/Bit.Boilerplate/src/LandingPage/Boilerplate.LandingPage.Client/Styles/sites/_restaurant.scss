@@ -45,6 +45,7 @@
         font-style: italic;
         color: var(--lp-accent);
 
+        // Vazirmatn has no italic, so Persian stays upright rather than slanted by the browser
         &:lang(fa) {
             font-style: normal;
         }

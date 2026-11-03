@@ -28,6 +28,7 @@ public partial class LandingChatSurface : IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The inline chat's question was typed before Bit.BlazorUI.AI had loaded, so it's sent once the chat is on screen
         if (firstRender && string.IsNullOrWhiteSpace(InitialQuestion) is false)
         {
             await session.SubmitAsync(InitialQuestion);

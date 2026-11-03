@@ -25,6 +25,7 @@ public static class IServiceCollectionExtensions
         services.AddBitBelemetryServices(options =>
         {
             options.ServiceName = "Boilerplate.LandingPage";
+            // Errors are reported from the first moment, as a legitimate interest; everything else waits for consent
             options.Consent.Default = BelemetryFeatures.Errors;
 
             if (string.IsNullOrWhiteSpace(configuration["Belemetry:AzureMonitorConnectionString"]) is false)
@@ -38,6 +39,7 @@ public static class IServiceCollectionExtensions
 
     public static IConfigurationBuilder AddLandingPageClientConfigurations(this IConfigurationBuilder builder, string environment)
     {
+        // Embedded in the assembly rather than served from wwwroot, which also lets the server read the client's settings
         var assembly = typeof(IServiceCollectionExtensions).Assembly;
 
         foreach (var name in new[] { "appsettings.json", $"appsettings.{environment}.json" })

@@ -11,6 +11,7 @@ public partial class LandingTourHost
     {
         if (firstRender)
         {
+            // Bonboarding is lazy loaded, so its services aren't registered at startup and come from here instead
             await serviceProvider.GetBonboardingService().StartAsync(LandingTourSteps.Create(T), new() { Resume = false, Force = true });
         }
 

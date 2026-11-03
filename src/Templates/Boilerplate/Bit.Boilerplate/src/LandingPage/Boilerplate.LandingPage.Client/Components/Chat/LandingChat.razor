@@ -4,6 +4,7 @@
 {
     case LandingChatVariant.Inline:
         <div class="lp-chat-inline @Class">
+            @* LandingChatSurface is built on Bit.BlazorUI.AI, so it renders only once EnsureLoaded has loaded that *@
             @if (isLoaded && question is not null)
             {
                 <div class="lp-chat-inline-conversation">
@@ -45,6 +46,7 @@
         break;
 
     case LandingChatVariant.Concierge:
+        @* A string, since Blazor drops a false bool attribute and a closed chat must still say aria-expanded="false" *@
         <button type="button" class="lp-chat-concierge-tab @Class" aria-haspopup="dialog" aria-expanded="@(isOpen ? "true" : "false")" @onclick="Open">
             <BitIcon IconName="@BitIconName.ChatBot" />
             <span>@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</span>

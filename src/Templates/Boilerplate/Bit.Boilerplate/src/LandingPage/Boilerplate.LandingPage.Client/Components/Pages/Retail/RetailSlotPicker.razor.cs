@@ -83,6 +83,7 @@ public partial class RetailSlotPicker
 
     private bool IsFull(int? hour) => hour is { } value && IsFull(day, value);
 
+    // A fixed pattern rather than Random, so the prerendered page and the running app agree on the full slots
     private bool IsFull(int dayIndex, int hour) => (ShopIndex * 7 + dayIndex * 3 + hour * 5) % 9 is 0;
 
     private string DayName(int dayIndex) => dayIndex switch

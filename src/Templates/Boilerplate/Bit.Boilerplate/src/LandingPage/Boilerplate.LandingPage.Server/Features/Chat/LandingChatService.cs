@@ -17,9 +17,11 @@ public sealed partial class LandingChatService(IServiceProvider serviceProvider,
         var site = LandingSites.Find(ask.Site);
         var culture = LandingCultures.Find(ask.Culture) ?? LandingCultures.Default;
 
+        // Bounds what one ask can send the model, and the last turn has to be the visitor's own question
         if (site is null || ask.Turns is not { Length: > 0 and <= MaxTurns } || ask.Turns[^1].FromVisitor is false || ask.Turns.Any(t => t.Text is not { Length: > 0 and <= MaxTurnLength }))
             throw new LandingChatException(localizer.In(culture, nameof(LandingStrings.ChatInvalidQuestion)), retryable: false);
 
+        // Without an AI key a sample answer streams word by word, so the chat works on a fresh project too
         if (serviceProvider.GetService<IChatClient>() is not { } chatClient)
         {
             foreach (var word in localizer.In(culture, nameof(LandingStrings.ChatNoModelAnswer), site.Name).Split(' '))
@@ -34,10 +36,12 @@ public sealed partial class LandingChatService(IServiceProvider serviceProvider,
         List<ChatMessage> messages = [new(ChatRole.System, LandingChatPrompts.Get(site, culture))];
         messages.AddRange(ask.Turns.TakeLast(12).Select(t => new ChatMessage(t.FromVisitor ? ChatRole.User : ChatRole.Assistant, t.Text)));
 
+        // A copy for each ask, as ChatOptions is mutable and the settings' instance is shared by every request
         var options = settings.AI.ChatOptions.Clone();
 
         await using var updates = chatClient.GetStreamingResponseAsync(messages, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
 
+        // C# can't yield inside a try with a catch, so only MoveNextAsync is guarded and the text is yielded below
         while (true)
         {
             string? text;
@@ -76,6 +80,7 @@ public static partial class LandingChatEndpoints
         services.AddScoped<LandingChatService>();
         services.AddScoped<ILandingChatClient, DirectLandingChatClient>();
 
+        // The endpoint's limit counts connections, and one connection can carry many questions, so this counts questions
         services.AddSingleton(PartitionedRateLimiter.Create<string, string>(ip => RateLimitPartition.GetSlidingWindowLimiter(ip, _ => new()
         {
             PermitLimit = 30,
@@ -109,6 +114,7 @@ public static partial class LandingChatEndpoints
                 return;
             }
 
+            // Browsers apply no CORS to WebSockets, so this keeps other sites' pages from using the chat
             if (context.Request.Headers.Origin is [{ } origin, ..]
                 && Uri.TryCreate(origin, UriKind.Absolute, out var originUri)
                 && string.Equals(originUri.Authority, context.Request.Host.Value, StringComparison.OrdinalIgnoreCase) is false)
@@ -180,6 +186,7 @@ public static partial class LandingChatEndpoints
 
             stream.Write(buffer, 0, result.Count);
 
+            // Past the most a valid ask can take at four UTF-8 bytes a character, so it isn't buffered any further
             if (stream.Length > LandingChatService.MaxTurns * LandingChatService.MaxTurnLength * 4)
                 return null;
 

@@ -19,6 +19,7 @@
                 </div>
                 <p class="fit-streak @(streakBumped ? "is-bumped" : null)">
                     <BitIcon IconName="@BitIconName.FlameSolid" />
+                    @* Keyed by the count, so each new number is a new element and plays its roll animation again *@
                     <span class="fit-streak-num" @key="streak">@streak.ToString(CurrentCulture)</span>
                     <span class="lp-visually-hidden">@F[nameof(FitnessStrings.SessionStreakDays)]</span>
                 </p>

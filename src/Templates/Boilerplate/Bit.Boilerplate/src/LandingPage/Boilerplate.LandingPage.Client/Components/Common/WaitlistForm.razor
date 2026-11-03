@@ -42,6 +42,7 @@
             <BitCheckbox @bind-Value="wantsUpdates" Label="@Localizer[nameof(LandingStrings.WaitlistUpdatesLabel)]" Disabled="isSubmitting" Class="lp-waitlist-updates" />
         }
 
+        @* A honeypot, hidden from people and screen readers: whatever fills it in is a bot *@
         <div class="lp-waitlist-trap" aria-hidden="true">
             <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" @bind="website" /></label>
         </div>

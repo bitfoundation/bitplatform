@@ -10,6 +10,7 @@ public static class SeoEndpoints
     private static readonly XNamespace sitemapNamespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
     private static readonly XNamespace xhtmlNamespace = "http://www.w3.org/1999/xhtml";
 
+    // Every page with a fixed route, so a new page needs no entry here; noindex pages must be filtered out too
     public static string[] Pages => field ??= [.. typeof(Client.Program).Assembly.ExportedTypes
         .SelectMany(type => type.GetCustomAttributes<RouteAttribute>())
         .Select(route => route.Template)

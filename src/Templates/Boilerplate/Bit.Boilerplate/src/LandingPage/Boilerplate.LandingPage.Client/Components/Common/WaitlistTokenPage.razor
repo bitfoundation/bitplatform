@@ -21,6 +21,7 @@
             {
                 <p class="lp-token-error" role="alert">@error</p>
             }
+            @* Nothing changes on a visit alone, since mail scanners open links too; the button sends it *@
             <BitButton OnClick="Submit" IsLoading="isSubmitting" Disabled="@(string.IsNullOrEmpty(token))">
                 @(isConfirm ? Localizer[nameof(LandingStrings.WaitlistConfirmButton)] : Localizer[nameof(LandingStrings.WaitlistUnsubscribeButton)])
             </BitButton>

@@ -20,6 +20,7 @@ public static partial class LandingChatPrompts
             """;
     }
 
+    // The chat knows nothing else about a sample, so these must say what its page says
     private static string GetFacts(string siteKey) => siteKey switch
     {
         "ecommerce" => """

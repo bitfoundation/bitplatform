@@ -18,6 +18,7 @@ public static class LandingCultures
         ? [("English", Default)]
         : [("English", Default), ("فارسی", CreatePersian())];
 
+    // Written here, not in resx: each one shows in the other language, whose resources the visitor hasn't downloaded
     public static IReadOnlyDictionary<string, (string Suggestion, string Switch)> Suggestions { get; } = new Dictionary<string, (string, string)>
     {
         ["en-US"] = ("This page is also available in English.", "Read it in English"),
@@ -31,6 +32,7 @@ public static class LandingCultures
         return Supported.Select(s => s.Culture).FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
+    // Only the exact spelling of a non-default culture counts; the server redirects every other form to the canonical URL
     public static bool IsPrefix(string? segment)
     {
         return Find(segment) is { } culture && culture.Name != Default.Name && culture.Name == segment;
@@ -62,6 +64,7 @@ public static class LandingCultures
 
         Get_CalendarField(culture) = new PersianCalendar();
 
+        // The empty 13th name fills the slot 13-month calendars reserve; it must exist even when unused
         string[] monthNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", ""];
 
         culture.DateTimeFormat.AMDesignator = "ق.ظ";
@@ -84,6 +87,7 @@ public static class LandingCultures
 
     public static void Apply(CultureInfo culture)
     {
+        // The defaults are process-wide, so only the browser sets them; on the server they would leak into other requests
         if (OperatingSystem.IsBrowser())
         {
             CultureInfo.DefaultThreadCurrentCulture = culture;

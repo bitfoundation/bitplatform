@@ -12,6 +12,7 @@ public partial class FaqList
 
     protected override void OnParametersSet()
     {
+        // The Replace at the end keeps an answer containing </script> from closing the script element early
         structuredData = new JsonObject
         {
             ["@context"] = "https://schema.org",

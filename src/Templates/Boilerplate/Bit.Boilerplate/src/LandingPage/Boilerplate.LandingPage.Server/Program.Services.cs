@@ -23,6 +23,7 @@ public static partial class Program
             configuration.Bind(settings);
             services.AddSingleton(settings);
 
+            // The client's services, for prerendering; the server registers its own ISiteAddress and direct clients after it
             services.AddLandingPageClientServices(configuration);
             services.AddScoped<ISiteAddress, ConfiguredSiteAddress>();
 
@@ -30,6 +31,7 @@ public static partial class Program
                 .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents();
 
+            // Pages set no antiforgery cookie, so a CDN can cache them
             services.AddSingleton<IAntiforgery, LandingAntiforgery>();
 
             services.AddHttpContextAccessor();

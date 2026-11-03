@@ -11,11 +11,13 @@ public sealed partial class LandingEmailService(IServiceProvider serviceProvider
     {
         var body = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
+            // The email is in the visitor's language, set on the renderer's dispatcher where the template runs
             LandingCultures.Apply(culture);
             var output = await htmlRenderer.RenderComponentAsync<TTemplate>(ParameterView.FromDictionary(parameters));
             return output.ToHtmlString();
         });
 
+        // Without an SMTP server the email goes to the log with its links, so the waitlist can still be tried out
         if (serviceProvider.GetService<IFluentEmail>() is not { } fluentEmail)
         {
             LogEmailNotSent(logger, subject, toEmail, string.Join(' ', parameters.Values.OfType<Uri>()));

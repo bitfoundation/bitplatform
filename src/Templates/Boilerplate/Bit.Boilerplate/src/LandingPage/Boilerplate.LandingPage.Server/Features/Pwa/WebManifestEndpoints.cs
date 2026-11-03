@@ -24,6 +24,7 @@ public static class WebManifestEndpoints
 
         var manifest = new JsonObject
         {
+            // id, start_url and scope are the sample's own path, so each sample installs as an app of its own
             ["id"] = home,
             ["name"] = site.Name,
             ["short_name"] = site.Name,

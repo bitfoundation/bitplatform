@@ -16,6 +16,7 @@ public static class CrmPricing
 {
     public const int YearlySavingPercent = 20;
 
+    // Each plan's monthly prices follow CrmCurrency's order, EUR, USD, GBP, and enterprise has none
     public static CrmPlan[] Plans { get; } =
     [
         new("starter", nameof(CrmStrings.PlanStarter), nameof(CrmStrings.PlanStarterSummary), [15m, 17.5m, 12.5m],

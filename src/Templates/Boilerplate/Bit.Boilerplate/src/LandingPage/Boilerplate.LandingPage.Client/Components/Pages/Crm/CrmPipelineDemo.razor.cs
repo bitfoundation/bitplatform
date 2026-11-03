@@ -79,6 +79,7 @@ public partial class CrmPipelineDemo
 
     private void OnCardKeyDown(KeyboardEventArgs args, Deal deal)
     {
+        // The stages run right to left in Persian, so the arrow keys swap with them
         var forward = IsRtl ? "ArrowLeft" : "ArrowRight";
         var back = IsRtl ? "ArrowRight" : "ArrowLeft";
 
@@ -94,6 +95,7 @@ public partial class CrmPipelineDemo
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // A moved card is a new element in another lane, so focus is put back on it after the render
         if (focusAfterRender is { } id && cards.TryGetValue(id, out var card))
         {
             focusAfterRender = null;

@@ -10,6 +10,7 @@ public static class Program
 
         builder.Configuration.AddLandingPageClientConfigurations(builder.HostEnvironment.Environment);
 
+        // Swaps the culture WebAssembly started in for the customized one in LandingCultures, Persian calendar included
         LandingCultures.Apply(LandingCultures.Find(CultureInfo.CurrentUICulture.Name) ?? LandingCultures.Default);
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

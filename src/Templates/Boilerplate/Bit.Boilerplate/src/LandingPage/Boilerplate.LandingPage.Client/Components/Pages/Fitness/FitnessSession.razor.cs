@@ -52,6 +52,7 @@ public partial class FitnessSession
 
     private int Remaining => total - elapsed;
 
+    // Written into the SVG, which needs a dot for decimals where Persian would use its own separator
     private string LapOffset => (100 - elapsed * 100.0 / total).ToString("0.##", CultureInfo.InvariantCulture);
 
     private string RingOffset => LapOffset;

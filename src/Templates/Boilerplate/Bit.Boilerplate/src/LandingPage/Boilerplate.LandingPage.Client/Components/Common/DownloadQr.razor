@@ -1,6 +1,7 @@
 @inherits LandingComponentBase
 
 <figure class="lp-qr @Class">
+    @* loading before src: Blazor recreates the prerendered img setting attributes in order, and a src set first starts the download *@
     <img loading="lazy" src="@($"{Site.Path.TrimStart('/')}/download.svg")" width="132" height="132" alt="@Localizer[nameof(LandingStrings.QrAlt)]" />
     <figcaption>@Localizer[nameof(LandingStrings.ScanToGetApp)]</figcaption>
 </figure>

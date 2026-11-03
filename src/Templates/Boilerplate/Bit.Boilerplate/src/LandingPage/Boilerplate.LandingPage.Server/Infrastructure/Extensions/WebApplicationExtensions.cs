@@ -103,6 +103,7 @@ public static class WebApplicationExtensions
                     var path = request.Path.Value ?? "/";
                     var segments = path.Split('/', 3);
 
+                    // One URL per page: a culture in another casing, or the default culture's prefix, redirects to the canonical path
                     if (segments.Length > 1 && LandingCultures.Find(segments[1]) is { } culture && culture.Name != segments[1] || segments.Length > 1 && segments[1] == LandingCultures.Default.Name)
                     {
                         var rest = segments.Length > 2 ? $"/{segments[2]}" : "/";
@@ -141,6 +142,7 @@ public static class WebApplicationExtensions
                     }
                     else if (context.Response.StatusCode is StatusCodes.Status200OK && context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) is true)
                     {
+                        // Browsers ask again on every visit, while a CDN may serve the page for ten minutes
                         headers.CacheControl = new() { Public = true, MaxAge = TimeSpan.Zero, SharedMaxAge = TimeSpan.FromMinutes(10) };
                     }
 
@@ -150,6 +152,7 @@ public static class WebApplicationExtensions
                 await next.Invoke();
             });
 
+            // Before UseStaticFiles, which would serve the plain file and leave it to be compressed on every request
             app.UsePrecompressedStaticFiles();
 
             app.UseStaticFiles();

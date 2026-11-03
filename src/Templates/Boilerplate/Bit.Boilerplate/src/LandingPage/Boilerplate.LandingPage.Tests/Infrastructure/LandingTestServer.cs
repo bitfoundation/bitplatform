@@ -48,6 +48,7 @@ public sealed class LandingTestServer : IAsyncDisposable
     {
         var request = new HttpRequestMessage(method, url) { Content = content };
 
+        // Loopback is a trusted proxy, so the rate limits count each test's visitor on its own
         request.Headers.Add("X-Forwarded-For", visitorIp);
 
         return request;

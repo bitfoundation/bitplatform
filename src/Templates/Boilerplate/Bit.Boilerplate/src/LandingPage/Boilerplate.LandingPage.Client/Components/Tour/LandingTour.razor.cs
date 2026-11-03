@@ -4,6 +4,7 @@ namespace Boilerplate.LandingPage.Client.Components.Tour;
 
 public partial class LandingTour : IDisposable
 {
+    // The same file the project file marks with BlazorWebAssemblyLazyLoad
     private static readonly string[] lazyAssemblies = ["Bit.Bonboarding.wasm"];
 
     [AutoInject] private IJSRuntime jsRuntime = default!;

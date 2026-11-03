@@ -4,6 +4,7 @@ namespace Boilerplate.LandingPage.Client.Components.Chat;
 
 public partial class LandingChat
 {
+    // The same files the project file marks with BlazorWebAssemblyLazyLoad
     private static readonly string[] lazyAssemblies = ["Bit.BlazorUI.AI.wasm", "System.Net.WebSockets.Client.wasm", "System.Net.WebSockets.wasm"];
 
     [AutoInject] private IJSRuntime jsRuntime = default!;
@@ -82,6 +83,7 @@ public partial class LandingChat
         {
             await jsRuntime.InvokeVoidAsync("landing.loadAssets", (string[])["_content/Bit.BlazorUI.AI/styles/bit.blazorui.ai.css"], (string[])["_content/Bit.BlazorUI.AI/scripts/bit.blazorui.ai.js"]);
 
+            // Only a non-AOT WebAssembly build marks them lazy; anywhere else they're loaded already
             if (OperatingSystem.IsBrowser() && (AppContext.TryGetSwitch("Boilerplate.IsAot", out var isAot) && isAot) is false)
             {
                 await lazyAssemblyLoader.LoadAssembliesAsync(lazyAssemblies);

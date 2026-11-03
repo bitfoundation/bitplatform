@@ -6,6 +6,7 @@ public sealed partial class AppStoreListingService(HttpClient httpClient, IMemor
 {
     public async Task<Client.Infrastructure.Models.StoreListing?> GetAppStoreListingAsync(string appleAppId, CancellationToken cancellationToken)
     {
+        // Only the samples' own apps, so the endpoint can't be used to look up any app through this server
         if (Client.Infrastructure.LandingSites.All.Any(site => site.AppleAppId == appleAppId) is false)
             return null;
 
@@ -37,6 +38,7 @@ public sealed partial class AppStoreListingService(HttpClient httpClient, IMemor
             catch (Exception exp) when (exp is HttpRequestException or JsonException or KeyNotFoundException or InvalidOperationException or TaskCanceledException)
             {
                 LogLookupFailed(logger, exp, appleAppId);
+                // A failure is kept briefly, so a slow or down App Store isn't asked again on every page view
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
                 return null;
             }

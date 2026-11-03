@@ -38,6 +38,7 @@
     </div>
 
     <div class="lp-container lp-footer-bottom">
+        @* The text adds a period after the name, so the name's own, as in B.V., is trimmed off *@
         <p>@Localizer[nameof(LandingStrings.Copyright), DateTime.UtcNow.Year, Site.Company.LegalName.TrimEnd('.')]</p>
         <p class="lp-footer-address"><bdi>@Site.Company.Address</bdi></p>
         <p class="lp-footer-sample">@Localizer[nameof(LandingStrings.SampleSite)]</p>

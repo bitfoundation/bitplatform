@@ -18,6 +18,7 @@
 <div class="lp-container retail-stores">
     <div id="retail-map" class="retail-stores-map">
         <div class="retail-stores-frame">
+            @* A third-party frame, so it loads only once the page is interactive, and the drawn map stands in until then *@
             @if (mapReady)
             {
                 <iframe @key="selected" loading="lazy" src="@Selected.MapUrl" title="@R[nameof(RetailStrings.StoresMapTitle), R[Selected.NameKey]]"></iframe>

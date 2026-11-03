@@ -17,6 +17,7 @@ public sealed partial class WaitlistService(
 
     public async Task<WaitlistJoinResult> JoinAsync(WaitlistJoinRequest request, Uri siteUrl, CancellationToken cancellationToken)
     {
+        // A bot that filled in the honeypot or sent the form too fast gets a believable success, not a reason to retry
         if (string.IsNullOrEmpty(request.Website) is false || TimeSpan.FromMilliseconds(request.ElapsedMilliseconds) < minimumFillTime)
         {
             LogBotRejected(logger, request.Site);
@@ -27,6 +28,7 @@ public sealed partial class WaitlistService(
 
         var site = LandingSites.Find(request.Site);
 
+        // MailAddress also takes a dotless host like localhost, and addresses longer than SMTP's 254 characters
         if (site is null || MailAddress.TryCreate(request.Email.Trim(), out var address) is false || address.Address.Length > 254 || address.Host.Contains('.') is false)
             throw new WaitlistException(localizer.In(culture, nameof(LandingStrings.WaitlistInvalidEmail)));
 
@@ -48,6 +50,7 @@ public sealed partial class WaitlistService(
 
         var now = timeProvider.GetUtcNow();
 
+        // Joining again resends the confirmation, but at most every ten minutes, so the form can't flood an inbox
         if (entry.ConfirmedOn is null && (entry.ConfirmationSentOn is not { } sentOn || now - sentOn >= confirmationResendInterval))
         {
             await SendConfirmationAsync(entry, site, culture, siteUrl, cancellationToken);

@@ -4,6 +4,7 @@ public sealed record GallerySample(LandingSite Site, IStringLocalizer Texts, str
 {
     public string Key => Site.Key;
 
+    // The keys are these property names, so each <Sample>Strings.resx needs CardIndustry, CardSummary and CardTag1 to 3
     public string CardIndustry => Texts[nameof(CardIndustry)];
 
     public string CardSummary => Texts[nameof(CardSummary)];

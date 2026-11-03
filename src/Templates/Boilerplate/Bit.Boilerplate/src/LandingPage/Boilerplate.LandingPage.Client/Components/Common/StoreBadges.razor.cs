@@ -49,6 +49,7 @@ public partial class StoreBadges
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    // macOS shares the App Store badge with iOS, so it shows only when there's no iOS link
     private List<LandingPlatformLink> Shown() => [.. Site.Platforms
         .Where(l => l.Status is not LandingPlatformStatus.ComingSoon && l.Url is not null && (l.Platform is not LandingPlatform.macOS || Site.Find(LandingPlatform.iOS) is null))
         .OrderBy(l => l.Platform == visitorPlatform ? 0 : 1)
@@ -61,6 +62,7 @@ public partial class StoreBadges
 
         var separator = link.Url!.Contains('?') ? '&' : '?';
 
+        // Google Play hands referrer on to the installed app, and ct is the App Store's campaign token
         return link.Platform is LandingPlatform.Android
             ? $"{link.Url}{separator}referrer={Uri.EscapeDataString($"utm_source=landing&utm_campaign={Campaign}")}"
             : $"{link.Url}{separator}ct={Uri.EscapeDataString(Campaign)}";

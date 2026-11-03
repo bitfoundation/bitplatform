@@ -94,6 +94,7 @@ h1:focus {
     background: color-mix(in oklab, var(--lp-accent) 28%, transparent);
 }
 
+// Letter spacing pulls Persian's joined letters apart, and the script has no capitals to transform
 :lang(fa) :is(h1, h2, h3, h4, .lp-eyebrow, .lp-caps) {
     letter-spacing: 0;
     text-transform: none;
@@ -191,6 +192,7 @@ h1:focus {
 @import 'sites/hotel';
 @import 'sites/restaurant';
 
+// After the sites' imports, so it beats their own mono fonts at the same specificity and Persian stays in Vazirmatn
 :root:lang(fa) {
     --lp-font-mono: var(--lp-stack-body);
 }

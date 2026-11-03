@@ -25,6 +25,7 @@ public partial class LandingHead
 
     protected override void OnParametersSet()
     {
+        // Escaped so a "</" in the data can't close the script element it's written into
         structuredData = StructuredData?.ToJsonString().Replace("</", "<\\/", StringComparison.Ordinal);
         previewImage = Image ?? (Site is null ? "images/og/gallery.png" : $"images/og/{Site.Key}.png");
 

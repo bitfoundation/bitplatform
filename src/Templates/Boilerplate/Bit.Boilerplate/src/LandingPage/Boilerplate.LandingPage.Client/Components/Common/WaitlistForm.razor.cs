@@ -35,6 +35,7 @@ public partial class WaitlistForm
 
     protected override void OnParametersSet()
     {
+        // A pre-order platform already has its store page, so the waitlist offers only the ones coming soon
         offeredPlatforms = [.. Platforms ?? Site.Platforms.Where(p => p.Status is LandingPlatformStatus.ComingSoon).Select(p => p.Platform)];
 
         if (selectedPlatforms.Count is 0)
@@ -49,6 +50,7 @@ public partial class WaitlistForm
     {
         if (firstRender)
         {
+            // The fill time counts from when the form can be used; the server turns away one sent too quickly
             stopwatch.Start();
         }
 

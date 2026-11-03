@@ -34,6 +34,7 @@ public static class AccountingPricing
         new("GB", AccountingCurrency.GBP, 20m)
     ];
 
+    // Each plan's monthly prices follow AccountingCurrency's order: EUR, GBP, CHF, PLN, SEK
     public static AccountingPlan[] Plans { get; } =
     [
         new("free", nameof(AccountingStrings.PlanFree), nameof(AccountingStrings.PlanFreeSummary), [0m, 0m, 0m, 0m, 0m],

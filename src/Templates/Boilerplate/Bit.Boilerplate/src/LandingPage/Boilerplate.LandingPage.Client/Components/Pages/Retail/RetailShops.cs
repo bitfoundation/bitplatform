@@ -31,6 +31,7 @@ public readonly record struct RetailShopStatus(RetailShopState State, TimeOnly T
 
 public static class RetailShops
 {
+    // Indexed by DayOfWeek, which counts from Sunday
     private static RetailDayHours[] Week(RetailDayHours weekday, RetailDayHours saturday, RetailDayHours sunday) => [sunday, weekday, weekday, weekday, weekday, weekday, saturday];
 
     private static RetailDayHours Hours(int open, int openMinute, int close, int closeMinute) => new(new TimeOnly(open, openMinute), new TimeOnly(close, closeMinute));

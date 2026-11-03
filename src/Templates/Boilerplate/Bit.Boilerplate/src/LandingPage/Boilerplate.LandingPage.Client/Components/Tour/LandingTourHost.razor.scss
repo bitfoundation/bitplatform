@@ -1,5 +1,6 @@
 @import '../../Styles/tokens';
 
+// The gallery's own look, so the tour stays the same over every sample's palette
 .lp-tour ::deep .bit-bonboarding-root[data-bonboarding-theme] {
     @include gallery-theme;
     @include stacks;

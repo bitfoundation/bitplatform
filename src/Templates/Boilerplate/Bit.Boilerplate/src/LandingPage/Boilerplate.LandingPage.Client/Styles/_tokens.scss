@@ -33,6 +33,7 @@ $breakpoint-lg: 1280px;
     --lp-fg-muted: #{$fg-muted};
     --lp-line: #{$line};
 
+    // Bit.BlazorUI's own variables follow the sample's palette, so its components match without styles of their own
     --bit-clr-pri: var(--lp-accent);
     --bit-clr-pri-hover: color-mix(in oklab, var(--lp-accent), var(--lp-fg) 12%);
     --bit-clr-pri-active: color-mix(in oklab, var(--lp-accent), var(--lp-fg) 22%);
@@ -90,6 +91,7 @@ $breakpoint-lg: 1280px;
     --lp-stack-display: var(--lp-font-display), system-ui, sans-serif;
 }
 
+// FD Digits turns 0 to 9 into Persian digits and Vazirmatn covers only Arabic script, so Latin text keeps the sample's font
 @mixin stacks-fa {
     --lp-stack-body: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-body), system-ui, sans-serif;
     --lp-stack-display: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-display), system-ui, sans-serif;
@@ -105,6 +107,7 @@ $breakpoint-lg: 1280px;
     @include palette(dark, #8EA8FF, #0C0E14, #111214, #17181B, #1D1F23, #F2F2EF, #A9ADB5, #2C2E33);
 }
 
+// On :root while the page holds the sample's layout class, so the body and its scrollbars take the palette too
 @mixin site($class) {
     :root:has(.#{$class}) {
         @content;

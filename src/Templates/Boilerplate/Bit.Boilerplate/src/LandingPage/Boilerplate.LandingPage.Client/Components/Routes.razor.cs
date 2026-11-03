@@ -11,6 +11,7 @@ public partial class Routes
 
         var (culture, _) = LandingCultures.Split(navigationManager.ToAbsoluteUri(context.Path).AbsolutePath);
 
+        // WebAssembly started in one culture with only its resources, so a link into the other language reloads the page
         if (culture.Name != CultureInfo.CurrentUICulture.Name)
         {
             navigationManager.NavigateTo(context.Path, forceLoad: true);

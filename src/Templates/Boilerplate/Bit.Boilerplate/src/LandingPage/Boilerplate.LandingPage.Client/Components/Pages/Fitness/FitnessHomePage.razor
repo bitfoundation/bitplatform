@@ -66,6 +66,7 @@
             <article class="fit-release @(release == releases[0] ? "is-latest" : null)" aria-labelledby="@($"fit-release-{release.Version.Replace('.', '-')}")">
                 <p class="fit-release-meta">
                     <span class="fit-release-version">@F[nameof(FitnessStrings.NewsVersion), release.Version]</span>
+                    @* datetime takes a Gregorian ISO date, which the Persian culture's own calendar wouldn't give *@
                     <time datetime="@release.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@release.Date.ToString("d MMMM yyyy", CurrentCulture)</time>
                 </p>
                 <h3 id="@($"fit-release-{release.Version.Replace('.', '-')}")">@F[release.Title]</h3>

@@ -62,6 +62,7 @@
 }
 
 .lp-hotel {
+    // Young Serif has a single weight, which the browser mustn't fake a bold of
     font-synthesis: none;
 
     :is(h1, h2, h3, .lp-nav-brand, .lp-footer-brand) {

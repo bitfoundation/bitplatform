@@ -16,6 +16,7 @@ public static partial class Program
             ContentRootPath = AppContext.BaseDirectory
         });
 
+        // The client's settings go in first, so the server's own files and environment override them
         builder.Configuration.Sources.Insert(0, new ChainedConfigurationSource
         {
             Configuration = new ConfigurationBuilder().AddLandingPageClientConfigurations(builder.Environment.EnvironmentName).Build()

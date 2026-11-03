@@ -12,6 +12,7 @@
 
     @if (kind is LandingLegalKind.Imprint)
     {
+        @* bdi and dir="ltr" keep Latin names, numbers and addresses in their own order on a Persian page *@
         <dl class="lp-legal-facts">
             <div><dt>@Localizer[nameof(LandingStrings.LegalImprintCompany)]</dt><dd><bdi>@Site.Company.LegalName</bdi></dd></div>
             <div><dt>@Localizer[nameof(LandingStrings.LegalImprintAddress)]</dt><dd><bdi>@Site.Company.Address</bdi></dd></div>

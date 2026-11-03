@@ -21,6 +21,7 @@
 
     @if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
     {
+        @* A plain link, since <Link> would add a version query and the stylesheet asks for the font without one *@
         <link rel="preload" href="fonts/vazirmatn/vazirmatn-arabic.woff2" as="font" type="font/woff2" crossorigin />
     }
     <Link rel="stylesheet" Href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
@@ -38,9 +39,11 @@
     <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>
     <script>
         (() => {
+            @* Bswup calls Blazor.start itself, so the culture the page was rendered in is added to its options *@
             const start = Blazor.start;
             Blazor.start = options => start({ ...options, webAssembly: { ...options?.webAssembly, applicationCulture: '@CultureInfo.CurrentUICulture.Name' } });
 
+            @* A first install starts the app at once, while an update waits for the tab to be hidden before it reloads *@
             window.bitBswupHandler = (message, data) => {
                 if (message === 'DOWNLOAD_FINISHED' && data?.firstInstall) {
                     data.reload();

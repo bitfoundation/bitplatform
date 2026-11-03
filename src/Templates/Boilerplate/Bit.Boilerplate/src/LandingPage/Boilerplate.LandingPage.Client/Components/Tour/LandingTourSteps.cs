@@ -36,6 +36,7 @@ public static class LandingTourSteps
         Add(tour, "intro", LandingRoutes.Home, null, t[nameof(TourStrings.IntroTitle)], t[nameof(TourStrings.IntroBody), count]);
         Add(tour, "modes", LandingRoutes.Home, ".gallery-filters", t[nameof(TourStrings.ModesTitle)], t[nameof(TourStrings.ModesBody)]);
 
+        // Each sample's steps are added only while the sample exists, so deleting one leaves the tour working
         if (LandingSites.Find("ecommerce") is { } shop)
         {
             Add(tour, "shop-offer", shop.Path, ".lp-announcement", t[nameof(TourStrings.ShopOfferTitle), shop.Name], t[nameof(TourStrings.ShopOfferBody)]);
@@ -96,6 +97,7 @@ public static class LandingTourSteps
         var step = new BonboardingStepDefinition
         {
             Id = id,
+            // Kept in the visitor's language, as a route in the other one would reload the page and end the tour
             Route = LandingCultures.Localize(path, CultureInfo.CurrentUICulture),
             Target = selector is null ? BonboardingStepTarget.None : BonboardingStepTarget.Css(selector),
             Title = title,
@@ -107,6 +109,7 @@ public static class LandingTourSteps
         return step;
     }
 
+    // The spotlight lets clicks through, so the visitor can use the working demo under it
     private static void Try(BonboardingStepDefinition step) => step.Interaction = BonboardingInteractionMode.TargetOnly;
 
     private static void Open(BonboardingStepDefinition step, string toggle)
@@ -120,6 +123,7 @@ public static class LandingTourSteps
         Try(step);
         step.OnShown = context =>
         {
+            // Not awaited, as Bonboarding holds the step's transition until a hook returns
             _ = Run(context, "landing.press", buttons, count, 1100).AsTask();
             return ValueTask.CompletedTask;
         };
@@ -133,6 +137,7 @@ public static class LandingTourSteps
         }
         catch (JSException)
         {
+            // Bonboarding ends the whole tour when a step's hook throws, so a failed script call is let go
         }
     }
 }

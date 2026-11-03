@@ -150,6 +150,7 @@ public partial class CrmPricingPage
         var pattern = R[$"Price{Currency}"].Value;
         var slot = pattern.IndexOf("{0}", StringComparison.Ordinal);
         var amount = CrmPricing.Amount(value, CurrentCulture);
+        // The culture's own separator, as Persian doesn't write decimals with a dot
         var separator = amount.IndexOf(CurrentCulture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
 
         return (pattern[..slot], separator < 0 ? amount : amount[..separator], separator < 0 ? null : amount[separator..], pattern[(slot + 3)..]);

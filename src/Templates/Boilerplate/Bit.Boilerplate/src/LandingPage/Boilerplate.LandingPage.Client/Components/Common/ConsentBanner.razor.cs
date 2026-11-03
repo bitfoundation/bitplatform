@@ -56,6 +56,7 @@ public partial class ConsentBanner : IDisposable
         isVisible = false;
         isChoosing = false;
 
+        // Errors stay on whatever the visitor picks, as the legitimate interest the privacy page states
         await consent.SetAsync(features | BelemetryFeatures.Errors);
     }
 
