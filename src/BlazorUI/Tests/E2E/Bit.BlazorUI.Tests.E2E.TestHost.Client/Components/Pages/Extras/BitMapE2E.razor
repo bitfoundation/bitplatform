@@ -274,6 +274,27 @@
     <span id="dialog-open">@_dialogOpen</span>
 </E2ESection>
 
+@* A map partly out of view in a box that scrolls, as in an app shell's main area. Leaflet focuses the map as it is
+   pressed, which must not scroll the box and take the marker from under the pointer. *@
+<E2ESection Id="scroller" Title="In a scrolling box">
+    <div id="map-scroller" class="map-scroller">
+        <div class="map-scroller-spacer"></div>
+        <div class="map-box-short">
+            <BitMap TMapProvider="BitLeafletMapProvider" Id="map-scrolled" Provider="_scrolledProvider"
+                    Markers="_scrolledMarkers"
+                    OnMarkerClick="_ => _scrolledMarkerClicks++"
+                    OnMarkerDoubleClick="_ => _scrolledMarkerDoubleClicks++"
+                    OnClick="_ => _scrolledMapClicks++"
+                    OnDoubleClick="_ => _scrolledMapDoubleClicks++" />
+        </div>
+        <div class="map-scroller-spacer"></div>
+    </div>
+    <span id="scrolled-marker-clicks">@_scrolledMarkerClicks</span>
+    <span id="scrolled-marker-double-clicks">@_scrolledMarkerDoubleClicks</span>
+    <span id="scrolled-map-clicks">@_scrolledMapClicks</span>
+    <span id="scrolled-map-double-clicks">@_scrolledMapDoubleClicks</span>
+</E2ESection>
+
 <E2ESection Id="failed" Title="Failed & unsupported">
     <button id="btn-show-failed" @onclick="() => _showFailed = true">Show a map that fails</button>
     @if (_showFailed)
@@ -319,6 +340,9 @@
     .map-box { width: 600px; height: 400px; }
     /* A map with its marker list beside it: the list is a sibling of the map, so the box grows with it. */
     .map-box-list { width: 600px; --bit-Map-height: 400px; }
+    .map-scroller { width: 600px; height: 300px; overflow: auto; }
+    .map-scroller-spacer { height: 200px; }
+    .map-box-short { width: 600px; height: 200px; }
     .map-toolbar { position: absolute; top: 8px; right: 8px; }
     .map-badge { padding: 4px 8px; background: white; }
 </style>
@@ -365,6 +389,7 @@
     private readonly BitLeafletMapProvider _lazyProvider = Leaflet();
     private readonly BitLeafletMapProvider _unmountProvider = Leaflet();
     private readonly BitLeafletMapProvider _dialogProvider = Leaflet(48.8606, 2.3376, 14);
+    private readonly BitLeafletMapProvider _scrolledProvider = Leaflet();
 
     private IEnumerable<BitMapMarker> _markers =
     [
@@ -377,6 +402,11 @@
     [
         new() { Id = "louvre", Position = new(48.8606, 2.3376), Alt = "The Louvre" },
         new() { Id = "orsay", Position = new(48.8600, 2.3266), Alt = "Musée d'Orsay" }
+    ];
+
+    private readonly IEnumerable<BitMapMarker> _scrolledMarkers =
+    [
+        new() { Id = "centre", Position = new(51.505, -0.09), Alt = "The centre" }
     ];
 
     private readonly IEnumerable<BitMapMarker> _clusterMarkers =
@@ -468,6 +498,10 @@
 
     private bool _disabled = true;
     private bool _dialogOpen;
+    private int _scrolledMarkerClicks;
+    private int _scrolledMarkerDoubleClicks;
+    private int _scrolledMapClicks;
+    private int _scrolledMapDoubleClicks;
     private bool _showFailed;
     private string? _failedState;
     private string? _failedCalls;

@@ -43,6 +43,26 @@
         } catch { /* ignore */ }
     }
 
+    let leafletKeyboardFocusPatched = false;
+
+    /**
+     * Leaflet 1.9.4 focuses the map as it is pressed (Keyboard._onMouseDown) and then puts back only the window's
+     * scroll. A box the map is partly out of view in - an app shell's main area - scrolls the map into view meanwhile,
+     * which moves a marker from under the pointer, so the release lands on the map and the marker's click is lost.
+     * Focusing without scrolling leaves every scroll where it was. Done before any map is created, so the handler of
+     * each one listens with this function and takes the same one off again.
+     */
+    function patchLeafletKeyboardFocus(L: any) {
+        if (leafletKeyboardFocusPatched) return;
+        leafletKeyboardFocusPatched = true;
+        try {
+            L.Map.Keyboard.prototype._onMouseDown = function (this: any) {
+                if (this._focused) return;
+                this._map._container.focus({ preventScroll: true });
+            };
+        } catch { /* ignore */ }
+    }
+
     // bit-trim: owners BitLeafletMapProvider
     // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
     // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
@@ -63,6 +83,7 @@
             if (!L) throw new Error("Leaflet is not loaded.");
 
             patchLeafletDefaultIcon(L);
+            patchLeafletKeyboardFocus(L);
             const o = options || {};
             const center: [number, number] = [o.center?.lat ?? 51.505, o.center?.lng ?? -0.09];
             const zoom: number = o.zoom ?? 13;

@@ -163,6 +163,50 @@ public class BitMapE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Markers_InABoxThatShowsPartOfTheMap_ArePressedWithoutScrollingTheBox()
+    {
+        await OpenAsync(Route);
+        await ReadyAsync("map-scrolled");
+
+        // Leaflet focuses the map as it is pressed. Were that to scroll the rest of the map into view, the marker would
+        // move from under the pointer, and the release would land on the map.
+        var (scroller, x, y) = await ScrollPartOfTheMapOutOfViewAsync(Page);
+        await Page.Mouse.ClickAsync(x, y);
+        await Expect(Page.Locator("#scrolled-marker-clicks")).ToHaveTextAsync("1");
+        Assert.AreEqual(ScrolledTop, await scroller.EvaluateAsync<double>("e => e.scrollTop"), 1);
+
+        await Page.Mouse.DblClickAsync(x, y);
+        await Expect(Page.Locator("#scrolled-marker-double-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#scrolled-marker-clicks")).ToHaveTextAsync("3");
+        Assert.AreEqual(ScrolledTop, await scroller.EvaluateAsync<double>("e => e.scrollTop"), 1);
+        Assert.AreEqual("0", await Page.Locator("#scrolled-map-clicks").InnerTextAsync());
+        Assert.AreEqual("0", await Page.Locator("#scrolled-map-double-clicks").InnerTextAsync());
+    }
+
+    /// <summary>How far the box at #map-scroller is scrolled: it then shows the top 150 of the map's 200 pixels.</summary>
+    internal const double ScrolledTop = 50;
+
+    /// <summary>
+    /// Scrolls the box at #map-scroller so the bottom of its map is out of view, and returns the box and the middle of
+    /// the marker, which is still in view.
+    /// </summary>
+    internal static async Task<(ILocator Scroller, float X, float Y)> ScrollPartOfTheMapOutOfViewAsync(IPage page)
+    {
+        var scroller = page.Locator("#map-scroller");
+        await scroller.ScrollIntoViewIfNeededAsync();
+        await scroller.EvaluateAsync($"e => e.scrollTop = {ScrolledTop.ToString(CultureInfo.InvariantCulture)}");
+
+        var marker = page.Locator("#map-scrolled-canvas img.leaflet-marker-icon[alt=\"The centre\"]");
+        var box = (await marker.BoundingBoxAsync())!;
+        var map = (await page.Locator("#map-scrolled").BoundingBoxAsync())!;
+        var view = (await scroller.BoundingBoxAsync())!;
+        Assert.IsTrue(map.Y + map.Height > view.Y + view.Height + 40, "The bottom of the map is out of view.");
+        Assert.IsTrue(box.Y + box.Height < view.Y + view.Height, "The marker is in view.");
+
+        return (scroller, box.X + box.Width / 2, box.Y + box.Height / 2);
+    }
+
+    [TestMethod]
     public async Task Markers_Tooltip_ShowsOnHover()
     {
         await OpenAsync(Route);
@@ -1404,5 +1448,29 @@ public class BitMapGeolocationE2ETests : E2ETestBase
         await Expect(Page.Locator("#center")).ToHaveTextAsync("48.8584,2.2945");
         await Expect(Page.Locator("#zoom")).ToHaveTextAsync("12.0");
         await Expect(Page.Locator("#interop-error")).ToHaveTextAsync("none");
+    }
+}
+
+/// <summary>
+/// Drives BitMap at /e2e/map with a finger: a tap on a marker of a map partly out of view in a box that scrolls is the
+/// marker's, as Leaflet focusing the map on the press does not scroll the box.
+/// </summary>
+[TestClass]
+public class BitMapTouchE2ETests : E2ETestBase
+{
+    protected override BrowserNewContextOptions? ContextOptions => new() { HasTouch = true };
+
+    [TestMethod]
+    public async Task Markers_InABoxThatShowsPartOfTheMap_AreTappedWithoutScrollingTheBox()
+    {
+        await OpenAsync("/e2e/map");
+        await Expect(Page.Locator("#map-scrolled-canvas")).ToHaveClassAsync(HasClass("leaflet-container"));
+        await Expect(Page.Locator("#map-scrolled-canvas")).Not.ToHaveAttributeAsync("aria-busy", new Regex(".*"));
+
+        var (scroller, x, y) = await BitMapE2ETests.ScrollPartOfTheMapOutOfViewAsync(Page);
+        await Page.Touchscreen.TapAsync(x, y);
+        await Expect(Page.Locator("#scrolled-marker-clicks")).ToHaveTextAsync("1");
+        Assert.AreEqual(BitMapE2ETests.ScrolledTop, await scroller.EvaluateAsync<double>("e => e.scrollTop"), 1);
+        Assert.AreEqual("0", await Page.Locator("#scrolled-map-clicks").InnerTextAsync());
     }
 }
