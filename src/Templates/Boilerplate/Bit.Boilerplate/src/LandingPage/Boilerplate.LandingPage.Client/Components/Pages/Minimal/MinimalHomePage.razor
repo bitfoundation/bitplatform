@@ -41,3 +41,25 @@
         </ul>
     </div>
 </section>
+
+<section class="minimal-route" aria-labelledby="minimal-route-title">
+    <div class="lp-container">
+        <h2 id="minimal-route-title">@M[nameof(MinimalStrings.RouteTitle)]</h2>
+        <ol class="minimal-route-list">
+            @foreach (var (icon, title, body, tag, isNever) in route)
+            {
+                <li class="@(isNever ? "is-never" : null)">
+                    <span class="minimal-route-head">
+                        <BitIcon IconName="@icon" Class="minimal-route-icon" />
+                        @if (tag is not null)
+                        {
+                            <span class="minimal-route-tag">@M[tag]</span>
+                        }
+                    </span>
+                    <h3>@M[title]</h3>
+                    <p>@M[body]</p>
+                </li>
+            }
+        </ol>
+    </div>
+</section>

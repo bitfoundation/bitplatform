@@ -228,4 +228,37 @@
     <data name="NotFoundBody" xml:space="preserve">
         <value>شاید نشانی اشتباه تایپ شده یا این صفحه هیچ‌وقت این‌جا نبوده. دفترچه از صفحه‌ی اصلی شروع می‌شود.</value>
     </data>
+    <data name="RouteTitle" xml:space="preserve">
+        <value>خط‌هایتان کجا می‌روند</value>
+    </data>
+    <data name="RoutePhoneTitle" xml:space="preserve">
+        <value>گوشی شما</value>
+    </data>
+    <data name="RoutePhoneBody" xml:space="preserve">
+        <value>هر خط همین‌جا نوشته و نگه داشته می‌شود، رمزنگاری‌شده با کلیدی که هیچ‌وقت از گوشی بیرون نمی‌رود.</value>
+    </data>
+    <data name="RouteBackupTitle" xml:space="preserve">
+        <value>پشتیبان</value>
+    </data>
+    <data name="RouteBackupBody" xml:space="preserve">
+        <value>خاموش است تا روشنش کنید. آن‌وقت یک نسخه‌ی رمزنگاری‌شده همه‌ی خط‌ها را به گوشی تازه برمی‌گرداند.</value>
+    </data>
+    <data name="RouteServerTitle" xml:space="preserve">
+        <value>سرور ما</value>
+    </data>
+    <data name="RouteServerBody" xml:space="preserve">
+        <value>همان نسخه را در هلسینکی نگه می‌دارد. ما فقط اندازه و تاریخش را می‌بینیم، نه چیزی از درونش.</value>
+    </data>
+    <data name="RouteNeverTitle" xml:space="preserve">
+        <value>تبلیغ‌کننده‌ها و دلال‌های داده</value>
+    </data>
+    <data name="RouteNeverBody" xml:space="preserve">
+        <value>هیچ چیز نمی‌گیرند. چیزی برای فروختن به آن‌ها نیست.</value>
+    </data>
+    <data name="RouteOptional" xml:space="preserve">
+        <value>اگر بخواهید</value>
+    </data>
+    <data name="RouteNever" xml:space="preserve">
+        <value>هرگز</value>
+    </data>
 </root>

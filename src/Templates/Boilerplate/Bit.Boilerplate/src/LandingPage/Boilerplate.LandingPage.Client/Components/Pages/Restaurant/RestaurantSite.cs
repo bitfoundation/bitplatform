@@ -4,6 +4,8 @@ public static class RestaurantSite
 {
     public const string Path = "/restaurant";
 
+    public const string PreOrderUrl = "https://apps.apple.com/app/bit-adminpanel/id6450611349";
+
     public static DateTimeOffset LaunchDate { get; } = new(2027, 1, 15, 8, 0, 0, TimeSpan.FromHours(1));
 
     public static LandingSite Info { get; } = new()
@@ -17,7 +19,7 @@ public static class RestaurantSite
         Card = typeof(RestaurantCard),
         Platforms =
         [
-            new(LandingPlatform.iOS, LandingPlatformStatus.ComingSoon),
+            new(LandingPlatform.iOS, LandingPlatformStatus.PreOrder, PreOrderUrl),
             new(LandingPlatform.Android, LandingPlatformStatus.ComingSoon),
             new(LandingPlatform.Web, LandingPlatformStatus.ComingSoon)
         ],

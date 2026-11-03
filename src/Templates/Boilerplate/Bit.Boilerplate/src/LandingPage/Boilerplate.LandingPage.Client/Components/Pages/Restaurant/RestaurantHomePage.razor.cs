@@ -19,6 +19,8 @@ public partial class RestaurantHomePage
     private LandingFaq[] faq = [];
     private JsonObject? structuredData;
 
+    private static readonly LandingPlatform[] waitlistPlatforms = [LandingPlatform.iOS, LandingPlatform.Android, LandingPlatform.Web];
+
     private static readonly DateTimeOffset PerkEnds = new(2027, 2, 28, 0, 0, 0, TimeSpan.FromHours(1));
 
     private static readonly DateTimeOffset PaperCardsEnd = new(2027, 6, 30, 0, 0, 0, TimeSpan.FromHours(2));

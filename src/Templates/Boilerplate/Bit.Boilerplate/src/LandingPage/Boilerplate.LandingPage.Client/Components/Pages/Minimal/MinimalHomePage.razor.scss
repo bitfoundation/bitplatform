@@ -128,3 +128,91 @@ h1 {
         }
     }
 }
+
+.minimal-route {
+    padding-block: clamp(56px, 8vw, 112px);
+    border-top: 1px solid var(--lp-line);
+
+    h2 {
+        margin: 0 0 clamp(32px, 4vw, 56px);
+        font-size: clamp(1.25rem, 1.1rem + .6vw, 1.625rem);
+        font-weight: 650;
+        letter-spacing: -.01em;
+    }
+}
+
+.minimal-route-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        padding-inline: clamp(16px, 2.4vw, 32px);
+        border-inline-start: 1px solid var(--lp-line);
+
+        &:first-child {
+            padding-inline-start: 0;
+            border-inline-start: 0;
+        }
+    }
+
+    h3 {
+        margin: 14px 0 8px;
+        font-size: 1.0625rem;
+        font-weight: 700;
+    }
+
+    p {
+        margin: 0;
+        max-width: 30ch;
+        color: var(--lp-fg-muted);
+    }
+
+    @include lt-md {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 32px 0;
+
+        li:nth-child(3) {
+            padding-inline-start: 0;
+            border-inline-start: 0;
+        }
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+
+        li {
+            padding-inline: 0;
+            border-inline-start: 0;
+        }
+    }
+}
+
+.minimal-route-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 26px;
+}
+
+::deep .minimal-route-icon {
+    --bit-Icon-size: 1.25rem;
+}
+
+.minimal-route-tag {
+    padding: 1px 9px;
+    border: 1px solid var(--lp-line);
+    border-radius: 999px;
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+    font-weight: 700;
+
+    .is-never & {
+        border-color: transparent;
+        background: var(--notch-highlight);
+        color: var(--lp-fg);
+    }
+}

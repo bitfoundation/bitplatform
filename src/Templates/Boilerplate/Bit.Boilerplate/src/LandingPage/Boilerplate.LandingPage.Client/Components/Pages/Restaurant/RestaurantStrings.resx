@@ -403,7 +403,7 @@
         <value>When can I get the app?</value>
     </data>
     <data name="Faq1Answer" xml:space="preserve">
-        <value>On {0}, from 8:00, for iPhone, Android and the web.</value>
+        <value>On {0}, from 8:00, for iPhone, Android and the web. On iPhone you can pre-order it now, and it downloads by itself that morning.</value>
     </data>
     <data name="Faq2Question" xml:space="preserve">
         <value>Will it cost anything?</value>
@@ -520,10 +520,10 @@
         <value>Café and kitchen</value>
     </data>
     <data name="CardSummary" xml:space="preserve">
-        <value>A café chain's app before launch: a countdown to opening day, a waitlist with the first coffee on the house, an order builder you can try, and the chat right below the hero.</value>
+        <value>A café chain's app before launch: a countdown to opening day, a pre-order on the App Store, a waitlist with the first coffee on the house, an order builder you can try, and the chat right below the hero.</value>
     </data>
     <data name="CardTag1" xml:space="preserve">
-        <value>Countdown and waitlist</value>
+        <value>Countdown and pre-order</value>
     </data>
     <data name="CardTag2" xml:space="preserve">
         <value>Order builder in the hero</value>

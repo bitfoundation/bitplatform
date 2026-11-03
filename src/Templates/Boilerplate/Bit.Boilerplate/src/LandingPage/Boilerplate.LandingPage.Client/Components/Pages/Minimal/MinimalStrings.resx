@@ -228,4 +228,37 @@
     <data name="NotFoundBody" xml:space="preserve">
         <value>The address may be mistyped, or the page was never here. The journal starts on the home page.</value>
     </data>
+    <data name="RouteTitle" xml:space="preserve">
+        <value>Where your lines go</value>
+    </data>
+    <data name="RoutePhoneTitle" xml:space="preserve">
+        <value>Your phone</value>
+    </data>
+    <data name="RoutePhoneBody" xml:space="preserve">
+        <value>Every line is written and kept here, encrypted with a key that never leaves the phone.</value>
+    </data>
+    <data name="RouteBackupTitle" xml:space="preserve">
+        <value>Backup</value>
+    </data>
+    <data name="RouteBackupBody" xml:space="preserve">
+        <value>Off until you turn it on. Then an encrypted copy brings every line back to a new phone.</value>
+    </data>
+    <data name="RouteServerTitle" xml:space="preserve">
+        <value>Our server</value>
+    </data>
+    <data name="RouteServerBody" xml:space="preserve">
+        <value>Keeps that copy in Helsinki. We can see its size and date, and nothing in it.</value>
+    </data>
+    <data name="RouteNeverTitle" xml:space="preserve">
+        <value>Advertisers and data brokers</value>
+    </data>
+    <data name="RouteNeverBody" xml:space="preserve">
+        <value>Get nothing. There is nothing to sell them.</value>
+    </data>
+    <data name="RouteOptional" xml:space="preserve">
+        <value>If you want</value>
+    </data>
+    <data name="RouteNever" xml:space="preserve">
+        <value>Never</value>
+    </data>
 </root>

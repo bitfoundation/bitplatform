@@ -403,7 +403,7 @@
         <value>کی می‌توانم اپ را بگیرم؟</value>
     </data>
     <data name="Faq1Answer" xml:space="preserve">
-        <value>از {0}، ساعت 8:00 صبح، برای آیفون، اندروید و وب.</value>
+        <value>از {0}، ساعت 8:00 صبح، برای آیفون، اندروید و وب. روی آیفون همین حالا می‌توانید پیش‌سفارشش بدهید و همان صبح خودش دانلود می‌شود.</value>
     </data>
     <data name="Faq2Question" xml:space="preserve">
         <value>هزینه‌ای دارد؟</value>
@@ -520,10 +520,10 @@
         <value>کافه و آشپزخانه</value>
     </data>
     <data name="CardSummary" xml:space="preserve">
-        <value>اپ یک زنجیره‌ی کافه پیش از انتشار: شمارش معکوس تا روز باز شدن، فهرست انتظار با اولین قهوه‌ی مهمان، ساخت سفارشی که می‌شود امتحانش کرد و چت درست زیر hero.</value>
+        <value>اپ یک زنجیره‌ی کافه پیش از انتشار: شمارش معکوس تا روز باز شدن، پیش‌سفارش در App Store، فهرست انتظار با اولین قهوه‌ی مهمان، ساخت سفارشی که می‌شود امتحانش کرد و چت درست زیر hero.</value>
     </data>
     <data name="CardTag1" xml:space="preserve">
-        <value>شمارش معکوس و فهرست انتظار</value>
+        <value>شمارش معکوس و پیش‌سفارش</value>
     </data>
     <data name="CardTag2" xml:space="preserve">
         <value>ساخت سفارش در hero</value>

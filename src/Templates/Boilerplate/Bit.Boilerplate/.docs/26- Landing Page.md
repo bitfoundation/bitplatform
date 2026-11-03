@@ -29,8 +29,7 @@ of them at `/`. Keep the sample closest to your product, make it your home page 
 | Fernhouse | `/ecommerce` | An online shop for plants and pots | Launched | Home, about | Bubble |
 | Northside Market | `/retail` | A grocer with six shops and click and collect | Launched | Home, shops with map and hours, about | Concierge |
 | Alder & Salt | `/hotel` | A hotel that wants direct bookings | Launched | Home, rooms, about | Concierge |
-| Little Copper | `/restaurant` | Cafés whose ordering app isn't out yet | Before launch, with a countdown | Home, about | Inline |
-| Liora | `/period-tracker` | A period tracker in beta | Beta on iPhone, waitlist for Android | Home, about | Inline |
+| Little Copper | `/restaurant` | Cafés whose ordering app isn't out yet | Before launch: a countdown, a pre-order on the App Store and a waitlist | Home, about | Inline |
 | Pulsepath | `/fitness` | A workout app released in stages | iPhone and web, Android coming | Home with what's new, about | Inline |
 | Brightlane | `/crm` | A CRM for small sales teams | Launched | Home, pricing, versus spreadsheets, about | Bubble |
 | Sumwise | `/accounting` | Invoicing and bookkeeping for freelancers | Launched | Home, pricing, about | Concierge |

@@ -11,6 +11,14 @@ public partial class MinimalHomePage
         (nameof(MinimalStrings.Feature3Title), nameof(MinimalStrings.Feature3Body))
     ];
 
+    private static readonly (string Icon, string Title, string Body, string? Tag, bool IsNever)[] route =
+    [
+        (BitIconName.CellPhone, nameof(MinimalStrings.RoutePhoneTitle), nameof(MinimalStrings.RoutePhoneBody), null, false),
+        (BitIconName.Encryption, nameof(MinimalStrings.RouteBackupTitle), nameof(MinimalStrings.RouteBackupBody), nameof(MinimalStrings.RouteOptional), false),
+        (BitIconName.Server, nameof(MinimalStrings.RouteServerTitle), nameof(MinimalStrings.RouteServerBody), null, false),
+        (BitIconName.Blocked2, nameof(MinimalStrings.RouteNeverTitle), nameof(MinimalStrings.RouteNeverBody), nameof(MinimalStrings.RouteNever), true)
+    ];
+
     [AutoInject] private IStringLocalizer<MinimalStrings> M = default!;
 
     private JsonObject? structuredData;

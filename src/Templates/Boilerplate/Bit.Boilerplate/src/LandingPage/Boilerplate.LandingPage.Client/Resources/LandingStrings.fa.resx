@@ -643,7 +643,7 @@
         <value>لندینگ‌پیج‌هایی آماده که مال شما شوند</value>
     </data>
     <data name="GalleryDescription" xml:space="preserve">
-        <value>لندینگ‌پیج‌های نمونه برای ده نوع محصول: فهرست انتظار و پیوند فروشگاه‌ها، گفتگوی هوش مصنوعی، دو زبان، حالت تیره و صفحه‌هایی که موتورهای جستجو می‌خوانند.</value>
+        <value>لندینگ‌پیج‌های نمونه برای نه نوع محصول: فهرست انتظار و پیوند فروشگاه‌ها، گفتگوی هوش مصنوعی، دو زبان، حالت تیره و صفحه‌هایی که موتورهای جستجو می‌خوانند.</value>
     </data>
     <data name="GalleryEyebrow" xml:space="preserve">
         <value>نمونه‌های لندینگ‌پیج</value>
@@ -668,9 +668,6 @@
     </data>
     <data name="GalleryModePreLaunch" xml:space="preserve">
         <value>فهرست انتظار</value>
-    </data>
-    <data name="GalleryModeBeta" xml:space="preserve">
-        <value>بتا</value>
     </data>
     <data name="GalleryModeStaged" xml:space="preserve">
         <value>انتشار مرحله‌ای</value>

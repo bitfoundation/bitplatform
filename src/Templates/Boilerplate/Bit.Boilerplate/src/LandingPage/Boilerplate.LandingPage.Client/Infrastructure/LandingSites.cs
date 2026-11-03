@@ -5,7 +5,6 @@ using Boilerplate.LandingPage.Client.Components.Pages.Fitness;
 using Boilerplate.LandingPage.Client.Components.Pages.Hotel;
 using Boilerplate.LandingPage.Client.Components.Pages.HotelSoftware;
 using Boilerplate.LandingPage.Client.Components.Pages.Minimal;
-using Boilerplate.LandingPage.Client.Components.Pages.PeriodTracker;
 using Boilerplate.LandingPage.Client.Components.Pages.Restaurant;
 using Boilerplate.LandingPage.Client.Components.Pages.Retail;
 
@@ -19,7 +18,6 @@ public static class LandingSites
         RetailSite.Info,
         HotelSite.Info,
         RestaurantSite.Info,
-        PeriodTrackerSite.Info,
         FitnessSite.Info,
         CrmSite.Info,
         AccountingSite.Info,
