@@ -1032,13 +1032,21 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
 .bit-dtp-res {
     @include lt-sm {
         @include responsive-panel-closed;
+        // The panel comes down from the top edge of the screen, so it makes room for the safe area there - the status
+        // bar and the notch of a phone, which an app shell's top bar paints over - the way BitPanel does: the surface
+        // is painted behind that room and still runs to the edge, while the calendar starts below it. The side insets
+        // are left out, since a phone turned on its side, the only screen that has them, is wider than the panel is
+        // shown on.
+        --bit-dtp-sa-top: env(safe-area-inset-top, 0px);
         top: 0;
         left: 0;
         width: 100%;
         overflow: hidden;
         animation-name: unset;
+        padding-top: var(--bit-dtp-sa-top);
         transform: translateY(-100%);
         box-shadow: $box-shadow-sheet;
+        background-color: var(--bit-DatePicker-callout-background, #{$clr-bg-pri});
         transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-dtp-dwp,

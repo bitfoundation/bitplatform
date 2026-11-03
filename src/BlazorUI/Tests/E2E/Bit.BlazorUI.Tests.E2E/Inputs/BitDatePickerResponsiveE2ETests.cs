@@ -2,7 +2,7 @@
 
 /// <summary>
 /// BitDatePicker on a phone (/e2e/date-picker/responsive, a 390x844 touch viewport): the Responsive callout is a
-/// full-width panel slid in at the top, picked from by a tap and dismissed by a swipe up; a picker that is not
+/// full-width panel slid in at the top, below a phone's notch, picked from by a tap and dismissed by a swipe up; a picker that is not
 /// Responsive still opens against its field, with its month picker, its time picker and its extra months folded away
 /// to fit the narrow viewport.
 /// </summary>
@@ -56,6 +56,31 @@ public class BitDatePickerResponsiveE2ETests : BitDatePickersE2ETestBase
         await Expect(Page.Locator("#resp-value")).ToHaveTextAsync("2024-06-20 00:00");
         await Expect(Input("dp-resp")).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(Callout(pid)).ToHaveCSSAsync("opacity", "0");
+    }
+
+    [TestMethod]
+    public async Task Responsive_OnAPhoneWithANotch_ThePanelStartsItsCalendarBelowIt()
+    {
+        if (IsChromium is false) Assert.Inconclusive("The safe areas of a phone are emulated through the Chrome DevTools Protocol, which only Chromium speaks.");
+
+        await OpenAsync(Route);
+        await SetSafeAreaInsetsAsync(top: 47, bottom: 34);
+
+        var pid = await TapOpenAsync("dp-resp");
+        await Expect(Callout(pid)).ToHaveCSSAsync("transform", "matrix(1, 0, 0, 1, 0, 0)");
+
+        // The surface still runs to the top edge of the screen, behind the status bar, painted all the way up.
+        var box = await BoxAsync(Callout(pid));
+        Assert.AreEqual(0, box.Y, 1);
+        Assert.AreNotEqual("rgba(0, 0, 0, 0)", await Callout(pid).EvaluateAsync<string>("el => getComputedStyle(el).backgroundColor"));
+
+        // The month header and the buttons that move between the months start below the notch (and an app shell's
+        // top bar), where they can be read and pressed.
+        var header = await BoxAsync(Callout(pid).Locator(".bit-dtp-pkh").First);
+        Assert.IsTrue(header.Y >= 47, $"The month header sits under the notch ({header.Y}px).");
+
+        var previous = await BoxAsync(Callout(pid).Locator(".bit-dtp-nbt").First);
+        Assert.IsTrue(previous.Y >= 47, $"The month navigation sits under the notch ({previous.Y}px).");
     }
 
     [TestMethod]

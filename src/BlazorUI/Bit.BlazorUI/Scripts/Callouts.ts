@@ -425,10 +425,18 @@
                     // instead: the slide taken back off its box, and for a panel growing upwards from the bottom edge
                     // no lower than its place in a panel as tall as the screen.
                     const box = scrollContainer.getBoundingClientRect().y;
-                    const transform = getComputedStyle(callout).transform;
+                    const calloutStyle = getComputedStyle(callout);
+                    const transform = calloutStyle.transform;
                     const slide = transform && transform !== 'none' ? new DOMMatrixReadOnly(transform).m42 : 0;
                     const top = Math.min(box - slide, rawTop + (box - callout.getBoundingClientRect().y));
-                    scrollContainer.style.maxHeight = cap(Math.max(0, rawBottom - top - footerHeight - 10)) + 'px';
+                    // The list stops short of the bottom of the screen by the gap it has always kept, or by the padding
+                    // at the bottom of the panel where that is the larger: the safe area a panel running down to the
+                    // bottom of a phone's screen makes room for, whose home indicator (or an app shell's bottom bar)
+                    // would cover the last items. A callout that scrolls itself has that padding inside the cap.
+                    const bottomGap = scrollContainer === callout
+                        ? 10
+                        : Math.max(10, parseFloat(calloutStyle.paddingBottom) || 0);
+                    scrollContainer.style.maxHeight = cap(Math.max(0, rawBottom - top - footerHeight - bottomGap)) + 'px';
                 });
 
                 return true;

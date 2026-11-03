@@ -604,12 +604,21 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 .bit-phi-res {
     @include lt-sm {
         @include responsive-panel-closed;
+        // The panel runs from the top edge of the screen to the bottom one, so it makes room for the safe areas there -
+        // the status bar and the notch of a phone, its home indicator, which an app shell's bars paint over - the way
+        // BitPanel does: the surface still runs to both edges, while the header and the list stay clear of what covers
+        // them. The side insets are left out, since a phone turned on its side, the only screen that has them, is wider
+        // than the panel is shown on.
+        --bit-phi-sa-top: env(safe-area-inset-top, 0px);
+        --bit-phi-sa-bottom: env(safe-area-inset-bottom, 0px);
         top: 0;
         right: 0;
         height: 100%;
         overflow: hidden;
         max-height: unset;
         animation-name: unset;
+        padding-top: var(--bit-phi-sa-top);
+        padding-bottom: var(--bit-phi-sa-bottom);
         border-radius: $shp-radius-sheet;
         transform: translateX(100%);
         width: var(--bit-PhoneInput-responsive-width, #{spacing(34)});
@@ -625,10 +634,11 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
             padding-inline-end: calc(#{$siz-ctrl-md} + #{spacing(2.5)});
         }
 
+        // Placed against the edge of the panel, which its padding does not move, so it is moved down by the inset.
         .bit-phi-cls {
             display: flex;
             position: absolute;
-            top: spacing(1.5);
+            top: calc(var(--bit-phi-sa-top) + #{spacing(1.5)});
             inset-inline-end: spacing(1.5);
         }
 
