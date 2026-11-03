@@ -1,6 +1,8 @@
 @import '../../../Styles/tokens';
 
 .gallery-spotlight {
+    min-width: 0;
+
     ::deep .gallery-spotlight-pivot {
         --bit-Pivot-body-gap: 28px;
         --bit-Pivot-gap: 4px;
@@ -182,7 +184,8 @@
             margin-block-end: 0;
             border-color: var(--lp-line);
             border-radius: 999px;
-            padding: 6px 14px 6px 6px;
+            padding-block: 6px;
+            padding-inline: 6px 14px;
 
             &::before {
                 display: none;

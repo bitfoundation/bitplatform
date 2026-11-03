@@ -5,8 +5,8 @@
     {
         <li @key="sample.Key" class="gallery-card gallery-shot gallery-brand-@sample.Key">
             <span class="gallery-shot-frame">
-                <img class="is-light" src="@sample.Shot("light")" width="800" height="500" loading="lazy" decoding="async" alt="" />
-                <img class="is-dark" src="@sample.Shot("dark")" width="800" height="500" loading="lazy" decoding="async" alt="" />
+                <img loading="lazy" decoding="async" class="is-light" src="@sample.Shot("light")" width="800" height="500" alt="" />
+                <img loading="lazy" decoding="async" class="is-dark" src="@sample.Shot("dark")" width="800" height="500" alt="" />
             </span>
             <div class="gallery-card-body">
                 <p class="gallery-card-industry">@sample.CardIndustry</p>

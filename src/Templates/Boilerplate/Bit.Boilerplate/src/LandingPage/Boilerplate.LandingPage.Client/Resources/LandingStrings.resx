@@ -690,9 +690,6 @@
     <data name="GalleryIdea5" xml:space="preserve">
         <value>Spotlight</value>
     </data>
-    <data name="GalleryShotAlt" xml:space="preserve">
-        <value>The home page of {0}</value>
-    </data>
     <data name="GalleryOpenSample" xml:space="preserve">
         <value>Open {0}</value>
     </data>

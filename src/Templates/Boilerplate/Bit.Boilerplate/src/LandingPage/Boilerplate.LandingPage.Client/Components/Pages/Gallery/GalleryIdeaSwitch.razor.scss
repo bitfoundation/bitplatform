@@ -28,7 +28,8 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 5px 14px 5px 5px;
+        padding-block: 5px;
+        padding-inline: 5px 14px;
         border-radius: 999px;
         color: var(--lp-fg);
         font-size: .875rem;
