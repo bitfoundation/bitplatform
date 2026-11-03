@@ -4153,6 +4153,109 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSearchBoxWithImmediateShouldNotCommitTheSameTextAgainOnBlur()
+    {
+        var changedValues = new List<string?>();
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ValueChanged, v => changedValues.Add(v));
+            parameters.Add(p => p.OnChange, v => changes.Add(v));
+        });
+
+        component.Find(".bit-srb-inp").Input("bit");
+
+        // The change event the browser raises as the field loses focus carries the text the input event committed.
+        component.Find(".bit-srb-inp").Change("bit");
+
+        CollectionAssert.AreEqual(new List<string?> { "bit" }, changedValues);
+        CollectionAssert.AreEqual(new List<string?> { "bit" }, changes);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutImmediateShouldReportEveryChangeEvent()
+    {
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, v => changes.Add(v));
+        });
+
+        component.Find(".bit-srb-inp").Change("bit");
+
+        // Without Immediate the change event is the only word of an edit there is, so it is reported whatever it carries.
+        component.Find(".bit-srb-inp").Change("bit");
+
+        CollectionAssert.AreEqual(new List<string?> { "bit", "bit" }, changes);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldNotPutTheClearedTextBackFromADebouncedInputOnceTheFieldWasLeft()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 60_000);
+            parameters.Add(p => p.ValueChanged, v => values.Add(v));
+        });
+
+        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "bit" });
+
+        // The change event raised on blur commits the text the keystroke is still waiting to, and drops the keystroke.
+        component.Find(".bit-srb-inp").Change("bit");
+
+        component.Find(".bit-srb-cbt").Click();
+
+        // Only a dropped keystroke ends before its minute is up, and a kept one would put "bit" back once it is.
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        CollectionAssert.AreEqual(new List<string?> { "bit", null }, values);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldNotPutTheClearedTextBackFromADebouncedInput()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 60_000);
+            parameters.Add(p => p.ValueChanged, v => values.Add(v));
+        });
+
+        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "bit" });
+
+        // The press on the clear button leaves the focus in the field, so no change event comes before the click.
+        component.Find(".bit-srb-cbt").Click();
+
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Nothing was ever committed, so the clearing moved nothing either.
+        Assert.AreEqual(0, values.Count);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxClearButtonShouldLeaveTheFocusInTheField()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "bit");
+        });
+
+        // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
+        // re-render the app between the press and the click.
+        Assert.IsTrue(component.Find(".bit-srb-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
     public void BitSearchBoxShouldRefuseTheTypedTextOfAOneWayBoundValue()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>

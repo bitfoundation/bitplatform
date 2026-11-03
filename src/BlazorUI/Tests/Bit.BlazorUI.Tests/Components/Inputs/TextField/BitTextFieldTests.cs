@@ -1180,6 +1180,24 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
     }
 
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldClearButtonShouldLeaveTheFocusInTheField(bool multiline)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+        });
+
+        // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
+        // re-render the app between the press and the click.
+        Assert.IsTrue(component.Find(".bit-tfl-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
+    }
+
     [TestMethod]
     public void BitTextFieldClearButtonHasADefaultAriaLabel()
     {
