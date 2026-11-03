@@ -711,6 +711,12 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "--bit-MenuButton-min-width",
+            DefaultValue = "min-content",
+            Description = "Smallest width of the button. By default it is the parts that never give up room - the icon, the chevron, the chevron half and the padding and gaps around them - while the label is ellipsized all the way down, so a row too narrow for the button never clips them away. Set it to 0 to let a row shrink the button past them, or to a length to keep more of the label.",
+        },
+        new()
+        {
             Name = "--bit-MenuButton-padding",
             DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-sm",
             Description = "Padding of each half of the button. The chevron half drops the side padding, since it is a square. The Size parameter wins over it.",
