@@ -1,0 +1,355 @@
+@import '../../../Styles/tokens';
+
+.fit-screens {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(20px, 3vw, 40px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include lt-md {
+        grid-auto-flow: column;
+        grid-template-columns: none;
+        grid-auto-columns: 262px;
+        margin-inline: calc(-1 * var(--lp-gutter));
+        padding: 8px var(--lp-gutter) 20px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: var(--lp-gutter);
+        scrollbar-width: thin;
+    }
+}
+
+.fit-screen {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 10px;
+    scroll-snap-align: start;
+    text-align: center;
+
+    h3 {
+        margin-top: 18px;
+        font-size: 1.25rem;
+    }
+
+    > p {
+        max-width: 30ch;
+        margin: 0;
+        color: var(--lp-fg-muted);
+        font-size: .9375rem;
+    }
+
+    &:nth-child(2) {
+        @include gt-md {
+            margin-top: 56px;
+        }
+    }
+}
+
+::deep .fit-mini {
+    --lp-device-width: 262px;
+    --lp-device-screen: var(--fit-screen);
+}
+
+.fit-mini-app {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    padding: 46px 14px 14px;
+    color: var(--lp-fg);
+    font-size: .75rem;
+    line-height: 1.4;
+    text-align: start;
+
+    p {
+        margin: 0;
+    }
+}
+
+.fit-mini-head {
+    display: grid;
+    gap: 0;
+}
+
+.fit-mini-kicker {
+    color: var(--lp-fg-muted);
+    font-size: .625rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+
+    &:lang(fa) {
+        letter-spacing: 0;
+    }
+}
+
+.fit-mini-title {
+    font-family: var(--lp-stack-display);
+    font-size: 1.375rem;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.15;
+
+    &:lang(fa) {
+        letter-spacing: 0;
+    }
+}
+
+.fit-mini-sub {
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+}
+
+.fit-mini-app .fit-mini-note {
+    --bit-Icon-color: var(--fit-accent-text);
+    --bit-Icon-size: .75rem;
+    margin-top: auto;
+    color: var(--lp-fg-muted);
+    font-size: .6875rem;
+}
+
+.fit-mini-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--fit-ring-base);
+    overflow: hidden;
+
+    span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--lp-accent);
+        transition: width .3s var(--lp-ease);
+    }
+}
+
+.fit-habits {
+    display: grid;
+    gap: 2px;
+    --bit-Checkbox-font-size: .8125rem;
+    --bit-Checkbox-font-weight: 600;
+    --bit-Checkbox-description-font-size: .6875rem;
+    --bit-Checkbox-description-color: var(--lp-fg-muted);
+    --bit-Checkbox-box-size: 18px;
+    --bit-Checkbox-radius: 6px;
+    --bit-Checkbox-gap: 10px;
+    --bit-Checkbox-min-height: 36px;
+
+    ::deep .fit-habit {
+        padding: 4px 8px;
+        border-radius: 10px;
+        background: var(--fit-screen-alt);
+    }
+}
+
+.fit-water {
+    --bit-Icon-color: var(--fit-water);
+    --bit-Icon-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: var(--fit-screen-alt);
+
+    p {
+        display: grid;
+        flex: 1;
+        line-height: 1.25;
+    }
+
+    strong {
+        font-size: .8125rem;
+    }
+
+    span {
+        color: var(--lp-fg-muted);
+        font-size: .6875rem;
+    }
+
+    &.is-done strong::after {
+        content: " \2713";
+        color: var(--fit-accent-text);
+    }
+}
+
+.fit-streak-big {
+    --bit-Icon-color: var(--lp-accent);
+    --bit-Icon-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--lp-stack-display);
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.fit-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 5px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--fit-screen-alt);
+}
+
+.fit-calendar-day {
+    color: var(--lp-fg-muted);
+    font-size: .5625rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.fit-calendar-cell {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--fit-ring-base);
+
+    &.is-done {
+        background: var(--lp-accent);
+    }
+
+    &.is-rest {
+        border: 2px dashed var(--fit-lemon-deep);
+        background: var(--fit-lemon-soft);
+    }
+
+    &.is-today {
+        box-shadow: 0 0 0 2px var(--fit-screen-alt), 0 0 0 4px var(--lp-accent);
+    }
+
+    &.is-future {
+        background: transparent;
+        border: 1.5px solid var(--lp-line);
+    }
+
+    &.is-planned {
+        animation: fit-plan .35s var(--lp-ease) both;
+    }
+}
+
+@keyframes fit-plan {
+    from {
+        transform: scale(.4);
+    }
+}
+
+.fit-calendar-key {
+    display: flex;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    color: var(--lp-fg-muted);
+    font-size: .625rem;
+    list-style: none;
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    li::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--lp-accent);
+    }
+
+    .is-rest::before {
+        border: 1.5px dashed var(--fit-lemon-deep);
+        background: var(--fit-lemon-soft);
+    }
+}
+
+::deep .fit-rest-toggle {
+    --bit-Toggle-label-font-size: .8125rem;
+    --bit-Toggle-label-font-weight: 600;
+}
+
+.fit-progress-total {
+    margin-top: 6px;
+    font-family: var(--lp-stack-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+::deep .fit-progress-tabs {
+    --bit-Pivot-font-size: .75rem;
+    --bit-Pivot-item-height: 30px;
+    --bit-Pivot-item-padding-inline: 10px;
+    --bit-Pivot-item-radius: 999px;
+    --bit-Pivot-item-color: var(--lp-fg-muted);
+    --bit-Pivot-item-selected-color: var(--lp-accent-fg);
+    --bit-Pivot-item-selected-background: var(--lp-accent);
+    --bit-Pivot-item-hover-background: var(--fit-screen-alt);
+    --bit-Pivot-indicator-thickness: 0px;
+    --bit-Pivot-gap: 4px;
+    --bit-Pivot-body-gap: 8px;
+    --bit-Pivot-divider-thickness: 0px;
+}
+
+.fit-bars {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 6px;
+    height: 190px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        align-items: end;
+        justify-items: center;
+        gap: 4px;
+        height: 100%;
+    }
+
+    .is-future .fit-bar {
+        height: 4px;
+        background: var(--fit-ring-base);
+    }
+
+    .is-rest .fit-bar {
+        width: 10px;
+        height: 10px;
+        border: 2px dashed var(--fit-lemon-deep);
+        border-radius: 50%;
+        background: var(--fit-lemon-soft);
+    }
+}
+
+.fit-bar {
+    width: 100%;
+    max-width: 22px;
+    min-height: 4px;
+    border-radius: 6px 6px 3px 3px;
+    background: var(--lp-accent);
+}
+
+.fit-bars.is-weeks .fit-bar {
+    background: color-mix(in oklab, var(--lp-accent) 70%, var(--fit-screen));
+}
+
+.fit-bars.is-weeks li:last-child .fit-bar {
+    background: var(--lp-accent);
+}
+
+.fit-bar-label {
+    min-height: 1.2em;
+    color: var(--lp-fg-muted);
+    font-size: .5625rem;
+    font-weight: 600;
+    white-space: nowrap;
+}

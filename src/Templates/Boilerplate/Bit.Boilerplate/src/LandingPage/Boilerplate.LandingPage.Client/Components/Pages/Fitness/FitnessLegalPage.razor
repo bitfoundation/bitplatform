@@ -1,0 +1,14 @@
+@attribute [Route(FitnessSite.Path + "/privacy")]
+@attribute [Route(FitnessSite.Path + "/terms")]
+@attribute [Route(FitnessSite.Path + "/cookies")]
+@attribute [Route(FitnessSite.Path + "/imprint")]
+@attribute [Route(FitnessSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/terms")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + FitnessSite.Path + "/accessibility")]
+@layout FitnessLayout
+@inherits LandingPageBase
+
+<LegalPage Site="FitnessSite.Info" />
