@@ -3081,6 +3081,81 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         Assert.AreEqual("the template", component.Find(".bit-tfl-erm").TextContent.Trim());
+
+        // The plain text is not on screen, so it is not what the live region announces either.
+        Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageTemplateIsAnnouncedAsARejection()
+    {
+        // A template is free to render anything at all, so the region says the value was rejected rather than
+        // staying silent and leaving the field sounding accepted.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent);
+        Assert.AreEqual(component.Find(".bit-tfl-erm").Id, component.Find(".bit-tfl-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageAriaLabelSpeaksForTheTemplate()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "نام کاربری تکراری است");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "i");
+                builder.AddAttribute(1, "class", "warning-icon");
+                builder.CloseElement();
+            }));
+        });
+
+        var label = component.Find($"#{component.Find(".bit-tfl-inp").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("نام کاربری تکراری است", component.Find("[role=status]").TextContent);
+        Assert.AreEqual("نام کاربری تکراری است", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-tfl-dsc"));
+
+        // Once the template goes, the plain text is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find("[role=status]").TextContent);
+        Assert.AreEqual(component.Find(".bit-tfl-erm").Id, component.Find(".bit-tfl-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitTextFieldBlankErrorMessageAriaLabelFallsBackToTheDefault(string label)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual("Invalid input", component.Find("[role=status]").TextContent);
+        Assert.AreEqual(0, component.FindAll("[id$=\"-error-label\"]").Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldInvalidIsOnlyAnnouncedWithAnErrorMessageAriaLabel()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        Assert.AreEqual(string.Empty, component.Find("[role=status]").TextContent);
+        Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("aria-describedby"));
+
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "مقدار نامعتبر"));
+
+        Assert.AreEqual("مقدار نامعتبر", component.Find("[role=status]").TextContent);
+        Assert.AreEqual("مقدار نامعتبر", component.Find($"#{component.Find(".bit-tfl-inp").GetAttribute("aria-describedby")}").TextContent);
     }
 
     [TestMethod]

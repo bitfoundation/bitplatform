@@ -170,14 +170,14 @@ public partial class BitNumberFieldDemo
             Name = "ErrorMessageAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "What a screen reader announces when an ErrorMessageTemplate is shown without an ErrorMessage, in place of the default \"Invalid input\". A template has no text the live region can read out, so this is what keeps the rejection announced in the language of the page.",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the input references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every number field under it, so set it there only as a generic replacement for \"Invalid input\".",
         },
         new()
         {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "A custom template rendered in place of the ErrorMessage, marking the field invalid and referenced by the input through its aria-describedby attribute just the same.",
+            Description = "A custom template rendered in place of the ErrorMessage, marking the field invalid and referenced by the input through its aria-describedby attribute just the same. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
         },
         new()
         {
@@ -264,7 +264,7 @@ public partial class BitNumberFieldDemo
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Marks the field as invalid without a message of its own, for a rejection that is already explained elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field and renders aria-invalid exactly as a failing validation does.",
+            Description = "Marks the field as invalid without a message of its own, for a rejection that is already explained elsewhere (a summary at the top of the form, a message beside a group of fields). It paints the field and renders aria-invalid exactly as a failing validation does, and says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
         },
         new()
         {

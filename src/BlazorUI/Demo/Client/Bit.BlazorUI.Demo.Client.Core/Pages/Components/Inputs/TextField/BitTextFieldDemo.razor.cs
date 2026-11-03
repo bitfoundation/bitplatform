@@ -166,10 +166,17 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "ErrorMessageAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text a screen reader is given for a rejection that has no text of its own: an ErrorMessageTemplate, which is free to render anything at all, or the forced Invalid state. It is announced through the live region the moment the rejection shows up - in place of the default \"Invalid input\" for a template, and only when it is set for the forced state - and the input references it through aria-describedby, so the same reason is read out on every later focus too. A plain ErrorMessage is its own text and never uses it. Give it the reason the template shows, in the language of the page: a template switching to another reason is only announced again when this text switches along with it. Cascaded through BitParams it reaches every text field under it, so set it there only as a generic replacement for \"Invalid input\".",
+        },
+        new()
+        {
             Name = "ErrorMessageTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the field invalid in the same way. Only the plain text is announced by the live region, since a template is free to render anything at all.",
+            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the field invalid in the same way. It replaces the message for a screen reader as well: a template is free to render anything at all, so the live region announces ErrorMessageAriaLabel for it, or a bare \"Invalid input\" when that is not set.",
         },
         new()
         {
@@ -254,7 +261,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Marks the value of the field as invalid, which gives a value rejected by something other than the cascading EditContext - a server, a rule of the app, a validator of its own - the same look and the same aria-invalid attribute that a failing data annotation gives it. A field failing its own validation stays invalid regardless of this parameter.",
+            Description = "Marks the value of the field as invalid, which gives a value rejected by something other than the cascading EditContext - a server, a rule of the app, a validator of its own - the same look and the same aria-invalid attribute that a failing data annotation gives it. A field failing its own validation stays invalid regardless of this parameter. It says nothing more to a screen reader unless ErrorMessageAriaLabel gives it a reason to announce.",
         },
         new()
         {

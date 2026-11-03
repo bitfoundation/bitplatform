@@ -3582,8 +3582,45 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.IsNotNull(component.Find("#custom-error"));
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("bit-inv"));
 
-        // Only the plain text is announced, since a template is free to render anything at all.
-        Assert.AreEqual(string.Empty, component.Find(".bit-srb-elv").TextContent);
+        // A template is free to render anything at all, so the region says the value was rejected rather than
+        // staying silent and leaving the field sounding accepted.
+        Assert.AreEqual("Invalid input", component.Find(".bit-srb-elv").TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, "عبارت جستجو کوتاه است");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class='warning-icon'></i>");
+        });
+
+        var label = component.Find($"#{component.Find(".bit-srb-inp").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("عبارت جستجو کوتاه است", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual("عبارت جستجو کوتاه است", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-srb-ard"));
+
+        // Once the template goes, the plain text is on screen, and it is its own accessible text.
+        component.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual(component.Find(".bit-srb-erm").Id, component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitSearchBoxBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, "<i class='warning-icon'></i>");
+        });
+
+        Assert.AreEqual("Invalid input", component.Find(".bit-srb-elv").TextContent);
+        Assert.AreEqual(component.Find(".bit-srb-erm").Id, component.Find(".bit-srb-inp").GetAttribute("aria-describedby"));
     }
 
     [TestMethod]

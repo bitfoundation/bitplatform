@@ -150,9 +150,14 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public string? EnterKeyHint { get; set; }
 
     /// <summary>
-    /// What a screen reader announces when an error message template is shown without an error message,
-    /// in place of the default "Invalid input".
+    /// What a screen reader is given for a rejection with no text of its own - an error message template, or the
+    /// forced invalid state - in place of the default "Invalid input".
     /// </summary>
+    /// <remarks>
+    /// It reaches every number field the params do, whatever its template says, so set here it is only a generic
+    /// replacement for "Invalid input" in the language of the page, and it makes the forced invalid state of those
+    /// fields announce it too. A reason that fits one field alone belongs on that field.
+    /// </remarks>
     public string? ErrorMessageAriaLabel { get; set; }
 
     /// <summary>

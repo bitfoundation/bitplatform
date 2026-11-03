@@ -163,6 +163,7 @@ public class BitDropdownParamsTests : BunitTestContext
             DynamicItemTextFormat = "Neu: {0}",
             DynamicValueGenerator = generate,
             EmptyText = "Leer",
+            ErrorMessageAriaLabel = "Ungültige Auswahl",
             ExistsSelectedItemFunction = exists,
             FindItemFunction = find,
             HideSelectedItems = true,
@@ -245,6 +246,7 @@ public class BitDropdownParamsTests : BunitTestContext
         Assert.AreEqual("Neu: {0}", instance.DynamicItemTextFormat);
         Assert.AreEqual((Func<BitDropdownItem<string>?, string>)generate, instance.DynamicValueGenerator);
         Assert.AreEqual("Leer", instance.EmptyText);
+        Assert.AreEqual("Ungültige Auswahl", instance.ErrorMessageAriaLabel);
         Assert.AreEqual((Func<ICollection<BitDropdownItem<string>>, string, bool>)exists, instance.ExistsSelectedItemFunction);
         Assert.AreEqual((Func<ICollection<BitDropdownItem<string>>, string, BitDropdownItem<string>?>)find, instance.FindItemFunction);
         Assert.IsTrue(instance.HideSelectedItems);

@@ -828,6 +828,10 @@ public class BitNumberFieldE2ETests : E2ETestBase
         await Expect(Root("nf-error-template")).ToHaveClassAsync(HasClass("bit-inv"));
         await Expect(Status("nf-error-template")).ToHaveTextAsync("Invalid input");
         await Expect(Status("nf-error-template-aria")).ToHaveTextAsync("Rejected by the server.");
+
+        // The label stands in for the template on focus too, rather than only being announced once.
+        var describedBy = await Input("nf-error-template-aria").GetAttributeAsync("aria-describedby");
+        await Expect(Page.Locator($"#{describedBy}")).ToHaveTextAsync("Rejected by the server.");
     }
 
     [TestMethod]

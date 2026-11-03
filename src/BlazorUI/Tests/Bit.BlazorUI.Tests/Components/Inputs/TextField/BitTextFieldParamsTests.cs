@@ -86,6 +86,7 @@ public class BitTextFieldParamsTests : BunitTestContext
             CountStrategy = v => (v ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries).Length,
             Description = "Cascaded description",
             EnterKeyHint = "search",
+            ErrorMessageAriaLabel = "Cascaded error",
             FullWidth = true,
             IconAriaLabel = "Cascaded icon name",
             IconName = "Lock",
@@ -124,6 +125,7 @@ public class BitTextFieldParamsTests : BunitTestContext
         Assert.IsTrue(instance.ClearOnEscape);
         Assert.IsTrue(instance.Trim);
         Assert.AreEqual("Cascaded clear", instance.ClearButtonAriaLabel);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessageAriaLabel);
 
         Assert.IsTrue(root.ClassList.Contains("bit-tfl-wrn"));
         Assert.IsTrue(root.ClassList.Contains("bit-tfl-bse"));

@@ -1839,8 +1839,90 @@ public class BitToggleTests : BunitTestContext
 
         Assert.AreEqual("Templated message", com.Find(".bit-tgl-erm .custom-error").TextContent.Trim());
 
-        // only the plain text is announced, since a template is free to render anything at all
-        Assert.AreEqual("Plain message", com.Find("[role=status]").TextContent.Trim());
+        // the plain text is not on screen, so it is not what the live region announces either
+        Assert.AreEqual("Invalid input", com.Find("[role=status]").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleErrorMessageTemplateShouldBeAnnouncedAsARejection()
+    {
+        // a template is free to render anything at all, so the region says the state was rejected rather than
+        // staying silent and leaving the switch sounding accepted - and a toggle wired for a template has the
+        // region in the markup from the start, before there is anything to say
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Offline mode");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null);
+        });
+
+        Assert.AreEqual(string.Empty, com.Find("[role=status]").TextContent.Trim());
+
+        com.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!"))));
+
+        Assert.AreEqual("Invalid input", com.Find("[role=status]").TextContent.Trim());
+        StringAssert.Contains(com.Find("button").GetAttribute("aria-describedby"), com.Find(".bit-tgl-erm").Id);
+    }
+
+    [TestMethod]
+    public void BitToggleErrorMessageAriaLabelShouldSpeakForTheTemplate()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Offline mode");
+            parameters.Add(p => p.ErrorMessageAriaLabel, "در این طرح در دسترس نیست");
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "i");
+                builder.AddAttribute(1, "class", "warning-icon");
+                builder.CloseElement();
+            }));
+        });
+
+        var label = com.Find($"#{com.Find("button").GetAttribute("aria-describedby")}");
+
+        Assert.AreEqual("در این طرح در دسترس نیست", com.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("در این طرح در دسترس نیست", label.TextContent);
+        Assert.IsTrue(label.ClassList.Contains("bit-tgl-dsc"));
+
+        // once the template goes, the plain text is on screen, and it is its own accessible text
+        com.Render(parameters => parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment?)null));
+
+        Assert.AreEqual("the plain text", com.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual(com.Find(".bit-tgl-erm").Id, com.Find("button").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod, DataRow(""), DataRow("  ")]
+    public void BitToggleBlankErrorMessageAriaLabelShouldFallBackToTheDefault(string label)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Offline mode");
+            parameters.Add(p => p.ErrorMessageAriaLabel, label);
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder => builder.AddContent(0, "!")));
+        });
+
+        Assert.AreEqual("Invalid input", com.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual(com.Find(".bit-tgl-erm").Id, com.Find("button").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitToggleInvalidShouldOnlyBeAnnouncedWithAnErrorMessageAriaLabel()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Offline mode");
+            parameters.Add(p => p.Invalid, true);
+        });
+
+        // the flag on its own has nothing to say, and so no live region to say it in
+        Assert.AreEqual(0, com.FindAll("[role=status]").Count);
+        Assert.IsFalse(com.Find("button").HasAttribute("aria-describedby"));
+
+        com.Render(parameters => parameters.Add(p => p.ErrorMessageAriaLabel, "مقدار نامعتبر"));
+
+        Assert.AreEqual("مقدار نامعتبر", com.Find("[role=status]").TextContent.Trim());
+        Assert.AreEqual("مقدار نامعتبر", com.Find($"#{com.Find("button").GetAttribute("aria-describedby")}").TextContent);
     }
 
     [TestMethod]

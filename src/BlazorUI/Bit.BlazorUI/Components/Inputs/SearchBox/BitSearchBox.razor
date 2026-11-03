@@ -211,6 +211,13 @@
         </div>
     }
 
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template is described by on focus, which the template itself may not have at all. It is
+           visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-srb-ard">@ErrorMessageAriaLabel</span>
+    }
+
     @if (HasDescription)
     {
         @* A div rather than a span: a DescriptionTemplate is free to render block content, which is

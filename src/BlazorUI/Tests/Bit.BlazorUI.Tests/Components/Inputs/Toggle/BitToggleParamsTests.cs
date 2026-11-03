@@ -44,6 +44,7 @@ public class BitToggleParamsTests : BunitTestContext
             Color = BitColor.Warning,
             Description = "Cascaded description",
             ErrorMessage = "Cascaded error",
+            ErrorMessageAriaLabel = "Cascaded error label",
             FullWidth = true,
             Inline = true,
             Invalid = true,
@@ -79,6 +80,7 @@ public class BitToggleParamsTests : BunitTestContext
         Assert.AreEqual("Accept", instance.OnIconName);
         Assert.AreEqual("Cascaded on", instance.OnText);
         Assert.AreEqual("Cascaded text", instance.Text);
+        Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
 
         // ... and the ones the markup shows are checked where they land.
         Assert.IsTrue(root.ClassList.Contains("bit-tgl-wrn"));

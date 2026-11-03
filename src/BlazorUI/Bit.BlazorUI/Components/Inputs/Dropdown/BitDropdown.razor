@@ -388,6 +388,13 @@
         </div>
     }
 
+    @if (HasErrorAriaLabel)
+    {
+        @* The text a template (or the forced state) is described by on focus, which the template itself may
+           not have at all. It is visually hidden: the template is what is seen, this is what is read. *@
+        <span id="@_errorLabelId" class="bit-drp-vhd">@ErrorMessageAriaLabel</span>
+    }
+
     @if (HasDescription)
     {
         @* Named by the combobox through aria-describedby, so it is read as part of the dropdown
@@ -424,11 +431,12 @@
        that changes while the callout may well be closed, depends on. *@
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
         @* The rejection wins over everything else here: the rest say what the dropdown is doing, this
-           says what is wrong with what it holds. Text only, never ErrorMessageTemplate, for the same
-           reason LoadingTemplate is left out below. *@
-        @if (ErrorMessage.HasValue())
+           says what is wrong with what it holds. Text only, never ErrorMessageTemplate itself, for the same
+           reason LoadingTemplate is left out below - a template is announced through ErrorMessageAriaLabel
+           instead, or as a bare "Invalid input". *@
+        @if (ErrorLiveText is not null)
         {
-            @ErrorMessage
+            @ErrorLiveText
         }
         else if (IsLoading)
         {

@@ -277,6 +277,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
             DebounceTime = 7,
             DisableAnimation = true,
             EnterKeyHint = BitEnterKeyHint.Go,
+            ErrorMessageAriaLabel = "Cascaded error",
             FixedCalloutWidth = true,
             FixedIcon = true,
             FocusShortcut = "Control+K",
@@ -342,6 +343,7 @@ public class BitSearchBoxParamsTests : BunitTestContext
         Assert.AreEqual(7, instance.DebounceTime);
         Assert.IsTrue(instance.DisableAnimation);
         Assert.AreEqual(BitEnterKeyHint.Go, instance.EnterKeyHint);
+        Assert.AreEqual("Cascaded error", instance.ErrorMessageAriaLabel);
         Assert.IsTrue(instance.FixedCalloutWidth);
         Assert.IsTrue(instance.FixedIcon);
         Assert.AreEqual("Control+K", instance.FocusShortcut);
