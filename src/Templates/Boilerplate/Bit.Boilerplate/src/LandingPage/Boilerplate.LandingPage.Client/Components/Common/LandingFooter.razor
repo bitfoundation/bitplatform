@@ -39,7 +39,7 @@
 
     <div class="lp-container lp-footer-bottom">
         <p>@Localizer[nameof(LandingStrings.Copyright), DateTime.UtcNow.Year, Site.Company.LegalName.TrimEnd('.')]</p>
-        <p class="lp-footer-address">@Site.Company.Address</p>
+        <p class="lp-footer-address"><bdi>@Site.Company.Address</bdi></p>
         <p class="lp-footer-sample">@Localizer[nameof(LandingStrings.SampleSite)]</p>
     </div>
 </footer>

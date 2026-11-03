@@ -23,8 +23,8 @@
 }
 
 :root:lang(fa) {
-    --lp-stack-body: "Vazirmatn FD Digits", var(--lp-font-body), "Vazirmatn", system-ui, sans-serif;
-    --lp-stack-display: "Vazirmatn FD Digits", var(--lp-font-display), "Vazirmatn", system-ui, sans-serif;
+    --lp-stack-body: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-body), system-ui, sans-serif;
+    --lp-stack-display: "Vazirmatn FD Digits", "Vazirmatn", var(--lp-font-display), system-ui, sans-serif;
 }
 
 *,
@@ -195,3 +195,7 @@ h1:focus {
 @import 'sites/hotel';
 @import 'sites/restaurant';
 @import 'sites/period-tracker';
+
+:root:lang(fa) {
+    --lp-font-mono: var(--lp-stack-body);
+}

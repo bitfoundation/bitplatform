@@ -10,10 +10,3 @@
         display: none;
     }
 }
-
-@media (min-width: $breakpoint-sm) {
-    ::deep .hotel-chat:not(:lang(fa)) {
-        right: 0;
-        bottom: auto;
-    }
-}

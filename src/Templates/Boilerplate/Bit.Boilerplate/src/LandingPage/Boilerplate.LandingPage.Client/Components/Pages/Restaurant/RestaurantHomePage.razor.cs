@@ -52,7 +52,7 @@ public partial class RestaurantHomePage
         ];
 
         var site = RestaurantSite.Info;
-        var url = NavigationManager.ToAbsoluteUri(LocalUrl(site.Path)).ToString();
+        var url = AbsoluteUrl(LocalUrl(site.Path));
 
         structuredData = new JsonObject
         {

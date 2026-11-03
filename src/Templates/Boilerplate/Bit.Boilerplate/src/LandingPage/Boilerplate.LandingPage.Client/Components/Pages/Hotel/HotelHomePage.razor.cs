@@ -63,7 +63,7 @@ public partial class HotelHomePage
         ];
 
         var site = HotelSite.Info;
-        var url = NavigationManager.ToAbsoluteUri(LocalUrl(site.Path)).ToString();
+        var url = AbsoluteUrl(LocalUrl(site.Path));
 
         structuredData = new JsonObject
         {

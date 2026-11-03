@@ -13,11 +13,11 @@
     @if (kind is LandingLegalKind.Imprint)
     {
         <dl class="lp-legal-facts">
-            <div><dt>@Localizer[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@Site.Company.LegalName</dd></div>
-            <div><dt>@Localizer[nameof(LandingStrings.LegalImprintAddress)]</dt><dd>@Site.Company.Address</dd></div>
+            <div><dt>@Localizer[nameof(LandingStrings.LegalImprintCompany)]</dt><dd><bdi>@Site.Company.LegalName</bdi></dd></div>
+            <div><dt>@Localizer[nameof(LandingStrings.LegalImprintAddress)]</dt><dd><bdi>@Site.Company.Address</bdi></dd></div>
             @if (Site.Company.Representative is not null)
             {
-                <div><dt>@Localizer[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd>@Site.Company.Representative</dd></div>
+                <div><dt>@Localizer[nameof(LandingStrings.LegalImprintRepresentative)]</dt><dd><bdi>@Site.Company.Representative</bdi></dd></div>
             }
             @if (Site.Company.RegistrationNumber is not null)
             {

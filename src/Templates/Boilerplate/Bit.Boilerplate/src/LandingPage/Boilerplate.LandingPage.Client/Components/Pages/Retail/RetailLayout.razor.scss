@@ -19,10 +19,3 @@
         display: none;
     }
 }
-
-@media (min-width: $breakpoint-sm) {
-    ::deep .retail-chat:not(:lang(fa)) {
-        right: 0;
-        bottom: auto;
-    }
-}
