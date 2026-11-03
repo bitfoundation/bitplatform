@@ -19,6 +19,8 @@ public static class FitnessSite
         Layout = typeof(FitnessLayout),
         NotFound = typeof(FitnessNotFound),
         Card = typeof(FitnessCard),
+        Logo = typeof(FitnessLogo),
+        Strings = typeof(FitnessStrings),
         AppleAppId = "6450611349",
         WebAppUrl = WebAppUrl,
         StatusUrl = "https://status.example.com/",

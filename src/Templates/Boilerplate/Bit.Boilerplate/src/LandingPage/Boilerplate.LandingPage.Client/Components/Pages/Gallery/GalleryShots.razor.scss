@@ -1,0 +1,84 @@
+@import '../../../Styles/tokens';
+
+.gallery-shots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include lt-md {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include lt-sm {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.gallery-shot {
+    position: relative;
+
+    &:has(a:focus-visible) {
+        outline: 2px solid var(--lp-accent);
+        outline-offset: 3px;
+    }
+
+    &:hover img {
+        transform: scale(1.025);
+    }
+
+    h2 a {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: inherit;
+        text-decoration: none;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+        }
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+
+    .gallery-logo {
+        height: 24px;
+    }
+}
+
+.gallery-shot-frame {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-bottom: 1px solid var(--lp-line);
+    background: var(--brand-surface);
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+        transition: transform .4s var(--lp-ease);
+    }
+
+    .is-dark {
+        display: none;
+    }
+}
+
+:root[bit-theme="dark"] .gallery-shot-frame {
+    .is-light {
+        display: none;
+    }
+
+    .is-dark {
+        display: block;
+    }
+}

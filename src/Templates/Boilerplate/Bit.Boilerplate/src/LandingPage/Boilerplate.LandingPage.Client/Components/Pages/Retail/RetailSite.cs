@@ -19,6 +19,8 @@ public static class RetailSite
         Layout = typeof(RetailLayout),
         NotFound = typeof(RetailNotFound),
         Card = typeof(RetailCard),
+        Logo = typeof(RetailLogo),
+        Strings = typeof(RetailStrings),
         AppleAppId = "6450611349",
         WebAppUrl = "https://adminpanel.bitplatform.dev/",
         Platforms =

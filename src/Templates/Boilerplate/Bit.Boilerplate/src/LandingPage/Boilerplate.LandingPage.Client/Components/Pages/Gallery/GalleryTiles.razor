@@ -1,0 +1,23 @@
+@inherits LandingComponentBase
+
+<ul class="gallery-tiles" role="list">
+    @foreach (var sample in Samples)
+    {
+        <li @key="sample.Key" class="gallery-tile gallery-brand-@sample.Key">
+            <div class="gallery-tile-face">
+                <span class="gallery-logo gallery-tile-mark"><DynamicComponent Type="sample.Site.Logo" /></span>
+                <span class="gallery-logo gallery-tile-logo"><DynamicComponent Type="sample.Site.Logo" /></span>
+                <h2><a href="@sample.Url">@sample.Site.Name</a></h2>
+                <p>@sample.CardIndustry</p>
+                <span class="gallery-tile-mode">@sample.Mode</span>
+            </div>
+            <p class="gallery-tile-summary">@sample.CardSummary</p>
+            <ul class="gallery-tile-tags">
+                @foreach (var tag in sample.Tags)
+                {
+                    <li>@tag</li>
+                }
+            </ul>
+        </li>
+    }
+</ul>

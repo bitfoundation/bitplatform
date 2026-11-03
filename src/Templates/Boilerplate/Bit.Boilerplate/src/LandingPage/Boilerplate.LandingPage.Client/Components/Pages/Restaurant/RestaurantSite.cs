@@ -17,6 +17,8 @@ public static class RestaurantSite
         Layout = typeof(RestaurantLayout),
         NotFound = typeof(RestaurantNotFound),
         Card = typeof(RestaurantCard),
+        Logo = typeof(RestaurantLogo),
+        Strings = typeof(RestaurantStrings),
         Platforms =
         [
             new(LandingPlatform.iOS, LandingPlatformStatus.PreOrder, PreOrderUrl),

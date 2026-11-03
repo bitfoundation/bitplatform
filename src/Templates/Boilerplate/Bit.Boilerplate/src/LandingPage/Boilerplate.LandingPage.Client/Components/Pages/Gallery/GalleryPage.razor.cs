@@ -10,6 +10,11 @@ public partial class GalleryPage
 
     [AutoInject] private LandingTourLauncher tourLauncher = default!;
     [AutoInject] private IStringLocalizer<TourStrings> T = default!;
+    [AutoInject] private IStringLocalizerFactory localizerFactory = default!;
+
+    [SupplyParameterFromQuery(Name = "idea")] public int? Idea { get; set; }
+
+    private int CurrentIdea => Idea is >= 1 and <= 5 ? Idea.Value : 1;
 
     private string? filter = All;
     private BitChoiceGroupItem<string>[] filters = [];
@@ -32,4 +37,11 @@ public partial class GalleryPage
         PreLaunch => LandingSites.All.Where(s => s.IsPreLaunch),
         _ => LandingSites.All
     };
+
+    private GallerySample[] Samples() => [.. Shown().Select(site => new GallerySample(site, localizerFactory.Create(site.Strings), Localizer[site.Mode switch
+    {
+        LandingLaunchMode.Launched => nameof(LandingStrings.GalleryModeLaunched),
+        LandingLaunchMode.Staged => nameof(LandingStrings.GalleryModeStaged),
+        _ => nameof(LandingStrings.GalleryModePreLaunch)
+    }], LocalUrl(site.Path)))];
 }

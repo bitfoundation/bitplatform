@@ -672,6 +672,30 @@
     <data name="GalleryModeStaged" xml:space="preserve">
         <value>انتشار مرحله‌ای</value>
     </data>
+    <data name="GalleryIdeas" xml:space="preserve">
+        <value>ایده‌های چیدمان</value>
+    </data>
+    <data name="GalleryIdea1" xml:space="preserve">
+        <value>کارت‌های سازگار با حالت تیره</value>
+    </data>
+    <data name="GalleryIdea2" xml:space="preserve">
+        <value>تصویر صفحه‌ها</value>
+    </data>
+    <data name="GalleryIdea3" xml:space="preserve">
+        <value>کاشی‌های برند</value>
+    </data>
+    <data name="GalleryIdea4" xml:space="preserve">
+        <value>فهرست</value>
+    </data>
+    <data name="GalleryIdea5" xml:space="preserve">
+        <value>نورافکن</value>
+    </data>
+    <data name="GalleryShotAlt" xml:space="preserve">
+        <value>صفحه‌ی اصلی {0}</value>
+    </data>
+    <data name="GalleryOpenSample" xml:space="preserve">
+        <value>باز کردن {0}</value>
+    </data>
     <data name="GalleryHowTitle" xml:space="preserve">
         <value>یکی را مال خودتان کنید</value>
     </data>

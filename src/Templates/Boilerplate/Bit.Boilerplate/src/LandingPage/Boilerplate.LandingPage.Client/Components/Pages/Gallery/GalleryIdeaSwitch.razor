@@ -1,0 +1,17 @@
+@inherits LandingComponentBase
+
+<nav class="lp-container gallery-ideas" aria-labelledby="gallery-ideas-label">
+    <p id="gallery-ideas-label">@Localizer[nameof(LandingStrings.GalleryIdeas)]</p>
+    <ol>
+        @for (var i = 0; i < ideas.Length; i++)
+        {
+            var number = i + 1;
+            <li>
+                <a href="@($"{LocalUrl(LandingRoutes.Home)}?idea={number}")" aria-current="@(number == Current ? "true" : null)">
+                    <span class="gallery-ideas-number">@number</span>
+                    @Localizer[ideas[i]]
+                </a>
+            </li>
+        }
+    </ol>
+</nav>

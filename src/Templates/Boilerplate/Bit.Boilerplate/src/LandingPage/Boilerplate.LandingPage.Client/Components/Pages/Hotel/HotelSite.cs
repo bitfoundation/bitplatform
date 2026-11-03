@@ -19,6 +19,8 @@ public static class HotelSite
         Layout = typeof(HotelLayout),
         NotFound = typeof(HotelNotFound),
         Card = typeof(HotelCard),
+        Logo = typeof(HotelLogo),
+        Strings = typeof(HotelStrings),
         AppleAppId = "6450611349",
         WebAppUrl = "https://adminpanel.bitplatform.dev/",
         Platforms =

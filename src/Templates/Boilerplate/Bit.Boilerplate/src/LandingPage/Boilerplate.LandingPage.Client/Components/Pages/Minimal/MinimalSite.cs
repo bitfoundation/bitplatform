@@ -13,6 +13,8 @@ public static class MinimalSite
         Layout = typeof(MinimalLayout),
         NotFound = typeof(MinimalNotFound),
         Card = typeof(MinimalCard),
+        Logo = typeof(MinimalLogo),
+        Strings = typeof(MinimalStrings),
         Platforms =
         [
             new(LandingPlatform.iOS, LandingPlatformStatus.ComingSoon),

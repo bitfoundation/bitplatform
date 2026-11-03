@@ -16,6 +16,13 @@ public enum LandingPlatformStatus
     ComingSoon
 }
 
+public enum LandingLaunchMode
+{
+    Launched,
+    Staged,
+    PreLaunch
+}
+
 public sealed record LandingPlatformLink(LandingPlatform Platform, LandingPlatformStatus Status, string? Url = null);
 
 public sealed record LandingCompany
@@ -51,6 +58,10 @@ public sealed record LandingSite
 
     public required Type Card { get; init; }
 
+    public required Type Logo { get; init; }
+
+    public required Type Strings { get; init; }
+
     public LandingPlatformLink[] Platforms { get; init; } = [];
 
     public string? AppleAppId { get; init; }
@@ -62,6 +73,10 @@ public sealed record LandingSite
     public required LandingCompany Company { get; init; }
 
     public bool IsPreLaunch => Platforms.All(p => p.Status is not LandingPlatformStatus.Live);
+
+    public LandingLaunchMode Mode => IsPreLaunch ? LandingLaunchMode.PreLaunch
+        : Platforms.All(p => p.Status is LandingPlatformStatus.Live) ? LandingLaunchMode.Launched
+        : LandingLaunchMode.Staged;
 
     public LandingPlatformLink? Find(LandingPlatform platform) => Platforms.FirstOrDefault(p => p.Platform == platform);
 }

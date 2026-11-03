@@ -17,6 +17,8 @@ public static class CrmSite
         Layout = typeof(CrmLayout),
         NotFound = typeof(CrmNotFound),
         Card = typeof(CrmCard),
+        Logo = typeof(CrmLogo),
+        Strings = typeof(CrmStrings),
         AppleAppId = "6450611349",
         WebAppUrl = "https://adminpanel.bitplatform.dev/",
         StatusUrl = "https://status.example.com/",

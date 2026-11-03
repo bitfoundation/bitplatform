@@ -15,6 +15,8 @@ public static class AccountingSite
         Layout = typeof(AccountingLayout),
         NotFound = typeof(AccountingNotFound),
         Card = typeof(AccountingCard),
+        Logo = typeof(AccountingLogo),
+        Strings = typeof(AccountingStrings),
         AppleAppId = "6450611349",
         WebAppUrl = "https://adminpanel.bitplatform.dev/",
         StatusUrl = "https://status.example.com/",
