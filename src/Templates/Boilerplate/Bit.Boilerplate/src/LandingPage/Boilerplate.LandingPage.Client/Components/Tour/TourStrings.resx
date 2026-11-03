@@ -121,7 +121,7 @@
         <value>Take the tour</value>
     </data>
     <data name="OfferNote" xml:space="preserve">
-        <value>Two minutes through the samples and what comes built into them.</value>
+        <value>Every sample and everything built into it, one step at a time.</value>
     </data>
     <data name="Next" xml:space="preserve">
         <value>Next</value>
@@ -154,10 +154,10 @@
         <value>Tour progress</value>
     </data>
     <data name="IntroTitle" xml:space="preserve">
-        <value>A two-minute tour</value>
+        <value>A tour of everything here</value>
     </data>
     <data name="IntroBody" xml:space="preserve">
-        <value>{0} landing pages for {0} kinds of business, each one ready to become yours. This tour opens a few of them and points out what comes built in.</value>
+        <value>{0} sample sites and what comes built into them, step by step. Press Next as fast as you like, or Esc to leave.</value>
     </data>
     <data name="ModesTitle" xml:space="preserve">
         <value>Launched, or not yet</value>
@@ -165,47 +165,257 @@
     <data name="ModesBody" xml:space="preserve">
         <value>A sample counts as launched once one of its apps is live, and then it links to the stores. Until then, it collects a waitlist.</value>
     </data>
+    <data name="ShopOfferTitle" xml:space="preserve">
+        <value>{0}, a shop that is live</value>
+    </data>
+    <data name="ShopOfferBody" xml:space="preserve">
+        <value>It opens with an announcement bar for its in-app code. Close it and it stays closed.</value>
+    </data>
+    <data name="DemoTitle" xml:space="preserve">
+        <value>Try the app on the page</value>
+    </data>
+    <data name="DemoBody" xml:space="preserve">
+        <value>The hero holds a working product page from the app: pick a pot and a size, and add it to the bag. Every sample has a piece of its app like this one.</value>
+    </data>
+    <data name="StoresTitle" xml:space="preserve">
+        <value>One link for every device</value>
+    </data>
+    <data name="StoresBody" xml:space="preserve">
+        <value>The badges show only the stores the app is in, and mark the visitor's own device. On a computer, the QR code opens the right store on the phone.</value>
+    </data>
     <data name="RatingTitle" xml:space="preserve">
-        <value>{0}, an online shop</value>
+        <value>Ratings from the App Store</value>
     </data>
     <data name="RatingBody" xml:space="preserve">
-        <value>Its App Store listing is read live from Apple and kept on the server for a while: the rating once there are enough of them, the latest version until then. The badges list only the stores the app is in.</value>
+        <value>Its App Store listing is read live from Apple and kept on the server for a while: the rating once there are enough of them, the latest version until then.</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>Answers search engines can read</value>
+    </data>
+    <data name="FaqBody" xml:space="preserve">
+        <value>The questions open one answer at a time, and they are marked up so the answers can show in search results.</value>
     </data>
     <data name="ChatTitle" xml:space="preserve">
         <value>An assistant that knows the business</value>
     </data>
     <data name="ChatBody" xml:space="preserve">
-        <value>It answers from {0}'s own facts, in the visitor's language. Its code downloads only when someone opens it.</value>
+        <value>The tour opened it for you. It answers from {0}'s own facts, in the visitor's language, with a real AI model, and its code downloads only when someone opens it.</value>
     </data>
-    <data name="WaitlistTitle" xml:space="preserve">
+    <data name="CouponTitle" xml:space="preserve">
+        <value>A code to copy</value>
+    </data>
+    <data name="CouponBody" xml:space="preserve">
+        <value>A first-order code with a copy button, next to the store badges and the QR code at the end of the page.</value>
+    </data>
+    <data name="CountdownTitle" xml:space="preserve">
         <value>{0}, before its launch</value>
     </data>
+    <data name="CountdownBody" xml:space="preserve">
+        <value>A countdown to the morning the app opens, in the visitor's language.</value>
+    </data>
+    <data name="PreOrderTitle" xml:space="preserve">
+        <value>Pre-order now, the rest later</value>
+    </data>
+    <data name="PreOrderBody" xml:space="preserve">
+        <value>iPhone users can pre-order on the App Store today, and the app downloads by itself on launch day. Android and the web are coming soon.</value>
+    </data>
+    <data name="OrderTitle" xml:space="preserve">
+        <value>Build an order</value>
+    </data>
+    <data name="OrderBody" xml:space="preserve">
+        <value>Pick a drink, a size and a milk, and the price adds up the way it will in the app.</value>
+    </data>
+    <data name="InlineChatTitle" xml:space="preserve">
+        <value>The chat, right on the page</value>
+    </data>
+    <data name="InlineChatBody" xml:space="preserve">
+        <value>Here the assistant sits under the hero with suggested questions, so visitors can ask without opening anything.</value>
+    </data>
+    <data name="WaitlistTitle" xml:space="preserve">
+        <value>A waitlist that stays clean</value>
+    </data>
     <data name="WaitlistBody" xml:space="preserve">
-        <value>A countdown and a waitlist. Every sign-up is confirmed by email, bots are turned away without a word, and each visitor gets a few tries.</value>
+        <value>Visitors pick the platforms they want. Every sign-up is confirmed by email, bots are turned away without a word, and one email goes out on launch day.</value>
+    </data>
+    <data name="CollectTitle" xml:space="preserve">
+        <value>{0}, click and collect</value>
+    </data>
+    <data name="CollectBody" xml:space="preserve">
+        <value>Pick a shop, a day and an hour, and book a collection slot as in the app.</value>
+    </data>
+    <data name="CardTitle" xml:space="preserve">
+        <value>A store card in the app</value>
+    </data>
+    <data name="CardBody" xml:space="preserve">
+        <value>The Northside Card as members see it: a point for every euro, scanned at the till or added by click and collect.</value>
     </data>
     <data name="PagesTitle" xml:space="preserve">
         <value>More than one page</value>
     </data>
     <data name="PagesBody" xml:space="preserve">
-        <value>Each sample has the pages its business needs, like {0}'s shops with their opening hours. Every page has its own title, description and preview image.</value>
+        <value>Each sample has the pages its business needs, like {0}'s shops on a map with their hours and whether they are open now. Every page has its own title, description and preview image.</value>
+    </data>
+    <data name="ConciergeTitle" xml:space="preserve">
+        <value>The chat as a side tab</value>
+    </data>
+    <data name="ConciergeBody" xml:space="preserve">
+        <value>The same assistant in its third form: a tab at the edge of the page that opens a panel.</value>
+    </data>
+    <data name="SessionTitle" xml:space="preserve">
+        <value>{0}, a session to start</value>
+    </data>
+    <data name="SessionBody" xml:space="preserve">
+        <value>Today's session runs right in the hero: start it, skip a move, and watch the lap close.</value>
     </data>
     <data name="LaunchTitle" xml:space="preserve">
-        <value>{0}, launched one platform at a time</value>
+        <value>Launched one platform at a time</value>
     </data>
     <data name="LaunchBody" xml:space="preserve">
         <value>The App Store for iPhone, a waitlist for Android and an install button for the web, all on one page. Installed, each sample opens as an app of its own.</value>
     </data>
+    <data name="NewsTitle" xml:space="preserve">
+        <value>What's new</value>
+    </data>
+    <data name="NewsBody" xml:space="preserve">
+        <value>Release notes on the page, linked from the badge in the hero, so returning visitors see what changed.</value>
+    </data>
     <data name="LanguagesTitle" xml:space="preserve">
-        <value>Two languages, two themes</value>
+        <value>Two languages, both directions</value>
     </data>
     <data name="LanguagesBody" xml:space="preserve">
-        <value>Every page comes in English and Persian, right to left included, and in light and dark. Switch localization off and the site is English only.</value>
+        <value>Every page comes in English and Persian, right to left included, each at its own address. Switch localization off and the site is English only.</value>
+    </data>
+    <data name="ThemeTitle" xml:space="preserve">
+        <value>Light and dark</value>
+    </data>
+    <data name="ThemeBody" xml:space="preserve">
+        <value>Every sample has a light and a dark look. It follows the device until the visitor picks one, and then it remembers.</value>
     </data>
     <data name="SearchTitle" xml:space="preserve">
         <value>Ready for search engines</value>
     </data>
     <data name="SearchBody" xml:space="preserve">
         <value>Every page is prerendered, so search engines and visitors get its text before any code runs, along with its canonical link, structured data and a place in the sitemap.</value>
+    </data>
+    <data name="BoardTitle" xml:space="preserve">
+        <value>{0}, a pipeline to move</value>
+    </data>
+    <data name="BoardBody" xml:space="preserve">
+        <value>Move a deal with its arrows, or focus it and use the arrow keys, and the forecast follows.</value>
+    </data>
+    <data name="CurrencyTitle" xml:space="preserve">
+        <value>Prices in three currencies</value>
+    </data>
+    <data name="CurrencyBody" xml:space="preserve">
+        <value>Monthly or yearly, in euros, US dollars or pounds, worked out on the page.</value>
+    </data>
+    <data name="SheetsTitle" xml:space="preserve">
+        <value>An honest comparison</value>
+    </data>
+    <data name="SheetsBody" xml:space="preserve">
+        <value>A page that compares the product with what teams use today, here a spreadsheet, including where the spreadsheet is still the better choice.</value>
+    </data>
+    <data name="InvoiceTitle" xml:space="preserve">
+        <value>{0}, an invoice to send</value>
+    </data>
+    <data name="InvoiceBody" xml:space="preserve">
+        <value>Change the hours, the rate or the VAT, and the invoice adds itself up, ready to send.</value>
+    </data>
+    <data name="SavingsTitle" xml:space="preserve">
+        <value>A calculator with the visitor's numbers</value>
+    </data>
+    <data name="SavingsBody" xml:space="preserve">
+        <value>Visitors enter their own numbers and see what a month of admin really costs them.</value>
+    </data>
+    <data name="DesktopTitle" xml:space="preserve">
+        <value>Desktop apps too</value>
+    </data>
+    <data name="DesktopBody" xml:space="preserve">
+        <value>Next to the stores, a sample can offer a Windows download or the Microsoft Store, and a link to its web app.</value>
+    </data>
+    <data name="VatTitle" xml:space="preserve">
+        <value>With or without VAT</value>
+    </data>
+    <data name="VatBody" xml:space="preserve">
+        <value>One switch shows every price with or without VAT.</value>
+    </data>
+    <data name="StayTitle" xml:space="preserve">
+        <value>{0}, a stay to plan</value>
+    </data>
+    <data name="StayBody" xml:space="preserve">
+        <value>Choose dates and a room, and the planner prices the stay the way the app does.</value>
+    </data>
+    <data name="DirectTitle" xml:space="preserve">
+        <value>Why book direct</value>
+    </data>
+    <data name="DirectBody" xml:space="preserve">
+        <value>The hotel's own reasons to book with it rather than through a booking site.</value>
+    </data>
+    <data name="RoomsTitle" xml:space="preserve">
+        <value>Rooms to swipe through</value>
+    </data>
+    <data name="RoomsBody" xml:space="preserve">
+        <value>A rooms page with its rates and a gallery that swipes the right way in both languages.</value>
+    </data>
+    <data name="DeskTitle" xml:space="preserve">
+        <value>{0}, a front desk that works</value>
+    </data>
+    <data name="DeskBody" xml:space="preserve">
+        <value>These previews are not pictures but working pieces of the app, enough to show what it does. Watch two guests get checked in, then mark a room clean yourself.</value>
+    </data>
+    <data name="CalcTitle" xml:space="preserve">
+        <value>A price per room</value>
+    </data>
+    <data name="CalcBody" xml:space="preserve">
+        <value>Enter the number of rooms and see each plan's price for the month.</value>
+    </data>
+    <data name="PressTitle" xml:space="preserve">
+        <value>A press kit</value>
+    </data>
+    <data name="PressBody" xml:space="preserve">
+        <value>Logos and pictures for journalists to download, with the facts and the people to quote.</value>
+    </data>
+    <data name="NotchTitle" xml:space="preserve">
+        <value>{0}, the smallest page</value>
+    </data>
+    <data name="NotchBody" xml:space="preserve">
+        <value>One page with a waitlist and a journal that works: what is left once everything optional is gone.</value>
+    </data>
+    <data name="RouteTitle" xml:space="preserve">
+        <value>Where the data goes</value>
+    </data>
+    <data name="RouteBody" xml:space="preserve">
+        <value>A privacy promise drawn as a route: the phone, an optional backup, the server, and who never gets anything.</value>
+    </data>
+    <data name="PrivacyTitle" xml:space="preserve">
+        <value>Privacy choices</value>
+    </data>
+    <data name="PrivacyBody" xml:space="preserve">
+        <value>Errors are reported from the first moment; speed and usage statistics only with consent, and without cookies. Visitors change their choice here at any time.</value>
+    </data>
+    <data name="LegalTitle" xml:space="preserve">
+        <value>Legal pages, filled in</value>
+    </data>
+    <data name="LegalBody" xml:space="preserve">
+        <value>Privacy, terms, cookies, imprint and accessibility, written for each sample's company. They are samples: have yours checked by a lawyer.</value>
+    </data>
+    <data name="MissingTitle" xml:space="preserve">
+        <value>Even the 404</value>
+    </data>
+    <data name="MissingBody" xml:space="preserve">
+        <value>A missing address gets a real 404 in the sample's own style and language, with a way back.</value>
+    </data>
+    <data name="OfflineTitle" xml:space="preserve">
+        <value>Installs, and opens fast</value>
+    </data>
+    <data name="OfflineBody" xml:space="preserve">
+        <value>Each sample installs as an app of its own, and its files are kept for the next visit, while every page still comes fresh from the server.</value>
+    </data>
+    <data name="LightTitle" xml:space="preserve">
+        <value>Only what's needed, when it's needed</value>
+    </data>
+    <data name="LightBody" xml:space="preserve">
+        <value>Fonts, the chat and this tour download only on the pages and at the moments they are used.</value>
     </data>
     <data name="YoursTitle" xml:space="preserve">
         <value>Make it yours</value>

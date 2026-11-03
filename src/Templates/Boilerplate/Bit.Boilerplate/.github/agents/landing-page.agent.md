@@ -33,7 +33,8 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 - **The tour** of the samples is `Components/Tour/`, started from the gallery's button and rendered next to the router
   in `Components/Routes.razor`, so it survives the move from one sample's layout to another's. `LandingTourSteps.cs`
   lists its steps, each with the page it opens and the CSS class it points at, and `TourStrings.resx` with its
-  `.fa.resx` holds their texts. Bit.Bonboarding runs it and, like the chat, is downloaded only when a visitor starts it;
+  `.fa.resx` holds their texts. A new feature gets a step, and a step that acts on the page (opening the chat, pressing
+  a demo's buttons) does it through the small helpers in `wwwroot/scripts/landing.js`. Bit.Bonboarding runs it and, like the chat, is downloaded only when a visitor starts it;
   nothing outside `LandingTourHost` and `LandingTourSteps` may use Bonboarding's types.
 - **The server** (`src/LandingPage/Boilerplate.LandingPage.Server`): `Features/Waitlist` (join, confirm,
   unsubscribe, and where the list is kept), `Features/Email` (the Razor email templates), `Features/Seo` (sitemap,

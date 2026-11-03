@@ -66,9 +66,11 @@ fits its business:
 
 ## The tour
 
-The gallery offers a two-minute tour that opens a few samples one after another and points at what they show: the
-App Store listing, the chat, the waitlist, the inner pages, a launch one platform at a time, the two languages and
-themes, and what search engines get. It runs on bit Bonboarding, which is downloaded only when a visitor starts it,
+The gallery offers a tour that walks through every sample and points at everything they show: the working pieces of
+each app in the heroes, the launch states, the store links and the App Store listing, the chat in its three forms, the
+waitlist, the inner pages, the two languages and themes, the privacy choices, the legal and not-found pages, and what
+search engines get. Along the way it opens the chat and checks two guests in at Lodgeboard's front desk, and the
+steps over a working preview let the visitor use it. It runs on bit Bonboarding, which is downloaded only when a visitor starts it,
 keeps no progress in the browser and wears the gallery's look on every sample. The steps are in
 [`LandingTourSteps.cs`](/src/LandingPage/Boilerplate.LandingPage.Client/Components/Tour/LandingTourSteps.cs), each with
 the page it opens and the element it points at, and their texts in `TourStrings.resx` and `TourStrings.fa.resx`. A
