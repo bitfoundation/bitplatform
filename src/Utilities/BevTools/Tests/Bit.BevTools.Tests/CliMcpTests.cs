@@ -57,6 +57,7 @@ public class CliMcpTests : BunitContext
             {
                 var list = sessions.RootElement.GetProperty("sessions").EnumerateArray().ToList();
                 Assert.HasCount(2, list);
+                Assert.IsFalse(sessions.RootElement.GetProperty("truncated").GetBoolean());
                 Assert.AreEqual(0, list[0].GetProperty("index").GetInt32());
                 Assert.AreEqual(baseline, list[0].GetProperty("file").GetString());
                 Assert.AreEqual(BevSessionExporter.Format, list[1].GetProperty("format").GetString());
@@ -356,6 +357,27 @@ public class CliMcpTests : BunitContext
 
         using var following = JsonDocument.Parse(tools.GetTimeline(afterEventId: next, limit: 500));
         Assert.AreEqual(next + 1, following.RootElement.GetProperty("events")[0].GetProperty("id").GetInt64(), "nothing skipped");
+    }
+
+    [TestMethod]
+    public void The_list_of_sessions_stops_before_the_export_that_would_take_it_past_its_size_bound()
+    {
+        const string json = """{"format":"bit-bevtools/1"}""";
+        var folder = new string('f', 1000);
+        using var exports = BevMcpExports.Parse(Enumerable.Range(0, 200).Select(i => ($"{folder}/{i}.json", json)).ToList());
+        var tools = new BevMcpTools(exports);
+
+        var answer = tools.ListSessions();
+        Assert.IsLessThanOrEqualTo(64 * 1024, System.Text.Encoding.UTF8.GetByteCount(answer), "within the bound, not one export past it");
+        using var list = JsonDocument.Parse(answer);
+        var root = list.RootElement;
+        var sessions = root.GetProperty("sessions").EnumerateArray().ToList();
+        Assert.IsTrue(sessions.Count is > 0 and < 200, "returned: " + sessions.Count);
+        Assert.AreEqual(sessions.Count, root.GetProperty("returned").GetInt32());
+        Assert.AreEqual(200, root.GetProperty("total").GetInt32());
+        Assert.IsTrue(root.GetProperty("truncated").GetBoolean());
+        StringAssert.StartsWith(root.GetProperty("truncatedBy").GetString(), "size");
+        Assert.AreEqual(sessions.Count - 1, sessions[^1].GetProperty("index").GetInt32(), "in order, nothing skipped");
     }
 
     [TestMethod]

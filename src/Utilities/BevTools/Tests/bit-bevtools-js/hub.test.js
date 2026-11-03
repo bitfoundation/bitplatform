@@ -332,6 +332,28 @@ describe('responsiveness', () => {
         }
     });
 
+    it('stops observing once the runtimes left attached all opted out, and starts again for one that opts in', async () => {
+        installPage();
+        const fake = fakeObservers(['longtask']);
+        try {
+            const hub = await loadHub();
+            const { targetId: tracking } = hub.attach(runtime(1), {});
+            const { targetId: optedOut } = hub.attach(runtime(2), { trackResponsiveness: false });
+            expect(fake.observers).toHaveLength(1);
+            hub.detach(tracking);
+            expect(fake.observers[0].disconnected, 'only an opted-out runtime is left').toBe(true);
+
+            hub.attach(runtime(3), {});
+            expect(fake.observers).toHaveLength(2);
+            expect(fake.observers[1].disconnected).toBe(false);
+            hub.detach(optedOut);
+            expect(fake.observers[1].disconnected, 'a runtime that tracks is still attached').toBe(false);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
+
     it('keeps the newest interactions with BevTools, and an older one\'s late entry without a target is still its own', async () => {
         installPage();
         const fake = fakeObservers(['event']);

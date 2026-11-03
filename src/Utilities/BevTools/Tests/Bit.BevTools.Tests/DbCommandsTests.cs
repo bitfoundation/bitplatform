@@ -124,7 +124,14 @@ public class DbCommandsTests
             var command = Assert.ContainsSingle(session.Logs.Snapshot().Where(l => l.DbCommand is not null)).DbCommand!;
             Assert.IsNull(command.CommandText);
             Assert.IsNotNull(command.ElapsedMs);
-            Assert.DoesNotContain("SELECT", BevSessionExporter.ToJson(session), StringComparison.Ordinal);
+            var exported = BevSessionExporter.ToJson(session);
+            Assert.DoesNotContain("SELECT", exported, StringComparison.Ordinal);
+
+            // The unread commands' group is marked as such, not exported as a command whose SQL is "".
+            using var json = JsonDocument.Parse(exported);
+            var group = Assert.ContainsSingle(json.RootElement.GetProperty("dbCommands").EnumerateArray());
+            Assert.AreEqual(JsonValueKind.Null, group.GetProperty("commandText").ValueKind);
+            Assert.AreEqual(1, group.GetProperty("executions").GetInt32());
         }
     }
 

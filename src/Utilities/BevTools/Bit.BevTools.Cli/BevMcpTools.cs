@@ -41,55 +41,77 @@ internal sealed class BevMcpTools(BevMcpExports exports)
     {
         w.WriteStartObject();
         w.WriteStartArray("sessions");
+        var returned = 0;
+        var full = false;
         foreach (var export in exports.All)
         {
-            var root = export.Root;
-            w.WriteStartObject();
-            w.WriteNumber("index", export.Index);
-            w.WriteString("file", export.File);
-            Copy(w, root, "format");
-            Copy(w, root, "exportedAt");
-            if (export.Object("session") is { } session)
+            // Bounded as a page is: the first export is always listed, and the list stops at the first that does not fit.
+            if (!BevCliFormats.TryWriteWithin(w, ResponseBudget, FooterReserve, always: returned == 0, session => Session(session, export)))
             {
-                foreach (var name in new[] { "platform", "renderMode", "runtime", "valueAccess", "interactive", "capturing", "startedAt", "bevToolsVersion" })
-                {
-                    Copy(w, session, name);
-                }
+                full = true;
+                break;
             }
 
-            var other = new List<string>();
-            w.WriteStartObject("sections");
-            foreach (var section in root.EnumerateObject())
-            {
-                if (section.Name is "format" or "exportedAt" or "session")
-                {
-                    continue;
-                }
+            returned++;
+        }
 
-                if (Count(section.Value) is { } count)
-                {
-                    w.WriteNumber(section.Name, count);
-                }
-                else
-                {
-                    other.Add(section.Name);
-                }
+        w.WriteEndArray();
+        w.WriteNumber("total", exports.All.Count);
+        w.WriteNumber("returned", returned);
+        w.WriteBoolean("truncated", returned < exports.All.Count);
+        if (full)
+        {
+            w.WriteString("truncatedBy", "size: this answer reached its size bound; the exports not listed are still loaded, at the indexes after the last one listed");
+        }
+
+        w.WriteEndObject();
+    });
+
+    private static void Session(Utf8JsonWriter w, BevMcpExport export)
+    {
+        var root = export.Root;
+        w.WriteStartObject();
+        w.WriteNumber("index", export.Index);
+        w.WriteString("file", export.File);
+        Copy(w, root, "format");
+        Copy(w, root, "exportedAt");
+        if (export.Object("session") is { } session)
+        {
+            foreach (var name in new[] { "platform", "renderMode", "runtime", "valueAccess", "interactive", "capturing", "startedAt", "bevToolsVersion" })
+            {
+                Copy(w, session, name);
+            }
+        }
+
+        var other = new List<string>();
+        w.WriteStartObject("sections");
+        foreach (var section in root.EnumerateObject())
+        {
+            if (section.Name is "format" or "exportedAt" or "session")
+            {
+                continue;
             }
 
-            w.WriteEndObject();
-            w.WriteStartArray("otherSections");
-            foreach (var name in other)
+            if (Count(section.Value) is { } count)
             {
-                w.WriteStringValue(name);
+                w.WriteNumber(section.Name, count);
             }
+            else
+            {
+                other.Add(section.Name);
+            }
+        }
 
-            w.WriteEndArray();
-            w.WriteEndObject();
+        w.WriteEndObject();
+        w.WriteStartArray("otherSections");
+        foreach (var name in other)
+        {
+            w.WriteStringValue(name);
         }
 
         w.WriteEndArray();
         w.WriteEndObject();
-    });
+    }
 
     [McpServerTool(Name = "get_findings", Title = "Findings of BevTools' rules", ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Returns the findings BevTools' diagnostic rules recorded in an export, most severe first: rule id, severity, title, evidence (the measured facts the rule saw), suggestion, fingerprint, componentInstanceId (follow it with get_component), relatedEventIds (follow them with get_timeline), first and last seen, dismissed. Values were redacted at capture.")]

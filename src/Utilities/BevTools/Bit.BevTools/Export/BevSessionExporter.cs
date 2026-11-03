@@ -1067,7 +1067,16 @@ public static class BevSessionExporter
             foreach (var c in commands.Take(100))
             {
                 w.WriteStartObject();
-                w.WriteString("commandText", c.CommandText);
+                // The empty key groups the commands whose SQL was not read (value access None): not a command of its own.
+                if (c.CommandText.Length == 0)
+                {
+                    w.WriteNull("commandText");
+                }
+                else
+                {
+                    w.WriteString("commandText", c.CommandText);
+                }
+
                 w.WriteNumber("executions", c.Executions);
                 w.WriteNumber("failed", c.Failed);
                 w.WriteNumber("totalMs", c.TotalMs);

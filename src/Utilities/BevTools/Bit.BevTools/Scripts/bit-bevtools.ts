@@ -63,6 +63,8 @@ interface BevTarget extends BevTargetInfo {
     flushTimer: ReturnType<typeof setTimeout> | null;
     /** Reconnect states that arrived while the circuit was down, delivered in order once it is back. */
     pendingReconnectStates: any[][];
+    /** Whether this runtime wants the page's long frames and interactions: the observers run while any attached one does. */
+    trackResponsiveness: boolean;
 }
 
 interface BevMessageStat {
@@ -2009,6 +2011,7 @@ export function attach(ref: any, options: BevAttachOptions | null) {
         jsToDotNetBatch: [],
         flushTimer: null,
         pendingReconnectStates: [],
+        trackResponsiveness: !options || options.trackResponsiveness !== false,
     };
     targets.set(id, target);
 
@@ -2018,7 +2021,7 @@ export function attach(ref: any, options: BevAttachOptions | null) {
         trafficTimer ??= setInterval(reportTraffic, 2000);
     }
 
-    if (!options || options.trackResponsiveness !== false) observeResponsiveness();
+    if (target.trackResponsiveness) observeResponsiveness();
 
     exposeHook();
     targetsChanged();
@@ -2065,6 +2068,9 @@ export function detach(targetId?: string) {
         resolvingPick = false;
         ownEventPending = false;
         if (ownEventTimer) { clearTimeout(ownEventTimer); ownEventTimer = null; }
+    } else if (!Array.from(targets.values()).some(t => t.trackResponsiveness)) {
+        // The runtimes left all opted out: their reports would be thrown away, so nothing is observed for them.
+        stopObservingResponsiveness();
     }
 
     targetsChanged();
