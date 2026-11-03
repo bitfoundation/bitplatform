@@ -194,6 +194,8 @@ public partial class BitRichTextEditor
     [JSInvokable("ResolveImageUrl")]
     public async Task<string?> _ResolveImageUrl(string fileName, string contentType, string base64)
     {
+        if (IsDisposing) return null;
+
         // Reject oversized payloads from the base64 length before either path runs so neither the
         // inline data-URL fallback nor the upload path can embed/allocate an image past the limit.
         // Every 4 base64 chars decode to 3 bytes minus the trailing '=' padding, so subtract the
@@ -302,6 +304,8 @@ public partial class BitRichTextEditor
     [JSInvokable("OnImagesInserted")]
     public void _OnImagesInserted(int count)
     {
+        if (IsDisposing) return;
+
         var message = count == 1
             ? Loc("image-inserted", "Image inserted.")
             : string.Format(Loc("images-inserted", "{0} images inserted."), count);
@@ -322,6 +326,8 @@ public partial class BitRichTextEditor
     [JSInvokable("OnClientError")]
     public Task _OnClientError(string code, string key, string template, string[]? args)
     {
+        if (IsDisposing) return Task.CompletedTask;
+
         var text = Loc(key, template);
         if (args is { Length: > 0 })
         {

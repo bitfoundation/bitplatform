@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Tests;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Legacy.Tests.MarkdownEditor;
@@ -191,5 +194,57 @@ public class BitMarkdownEditorTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.MarkdownEditor.dispose", 1);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorDisposeShouldKeepItsDotNetReferenceUntilTheScriptIsDisposed()
+    {
+        // The script answers later, the way it does in a browser: until its listeners are off an edit still calls back
+        // through the reference the editor was set up with - which it is handed only when something listens for edits.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.dispose", _ => true);
+
+        var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (string? _) => { });
+        });
+
+        var init = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Legacy.MarkdownEditor.init");
+        var reference = (DotNetObjectReference<BitMarkdownEditorLegacy>)init.Arguments[2]!;
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(editor, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldIgnoreAnEditItsScriptSendsWhileItIsBeingDisposed()
+    {
+        // The input listener stays on until the script's dispose reaches it, so an edit in the meantime still calls
+        // back through the reference - for an editor that is going away.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.dispose", _ => true);
+        var changes = 0;
+
+        var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (string? _) => changes++);
+        });
+
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => editor._OnChange("edited"));
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.AreEqual(0, changes);
     }
 }

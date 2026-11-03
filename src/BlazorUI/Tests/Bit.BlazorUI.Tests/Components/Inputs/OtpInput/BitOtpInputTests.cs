@@ -3539,6 +3539,32 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitOtpInputDisposeShouldKeepItsDotNetReferenceUntilTheListenersAreOff()
+    {
+        // The script answers later, the way it does in a browser: until its listeners are off a paste still calls back
+        // through the reference the inputs were set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.OtpInput.dispose", _ => true);
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+        });
+
+        var reference = (DotNetObjectReference<BitOtpInput>)Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"][0].Arguments[1]!;
+        var otpInput = com.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(otpInput, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
     public async Task BitOtpInputShouldReportAnIncompleteCodeToTheEditContext()
     {
         var com = RenderComponent<BitOtpInputValidationTest>();

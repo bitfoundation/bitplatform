@@ -23,7 +23,8 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     // component is still awaiting its own (a JS call), so this is what a child unregistering from it reads to tell
     // a component that is going away with it from one that stays, and leave its state and its callbacks alone.
     // A [JSInvokable] callback reads it too: its DotNetObjectReference stays alive until the override has awaited
-    // its JS teardown, so a call the script sent in that window would otherwise run on a half-disposed component.
+    // its JS teardown (DisposeAfterAsync), so a call the script sent in that window would otherwise run on a
+    // half-disposed component - which BitJsInvokableDisposalContractTests fails on.
     // IsDisposed stays what the DisposeAsync(bool) overrides guard their own entry with. Only the public
     // DisposeAsync() sets this one, since it is the only caller of DisposeAsync(bool).
     protected bool IsDisposing;

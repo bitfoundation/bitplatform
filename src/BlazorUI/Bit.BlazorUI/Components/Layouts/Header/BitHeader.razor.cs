@@ -765,16 +765,10 @@ public partial class BitHeader : BitComponentBase
 
         if (_dotnetObj is null) return;
 
-        _dotnetObj.Dispose();
+        // The scroll listener still calls back through the reference until it is removed, and it is keyed by the id
+        // it was attached under, which is not the current one anymore when the Id changed after the setup and the
+        // component went away before the next render could move the registration over.
+        await _dotnetObj.DisposeAfterAsync(() => _js.BitHeadersDispose(_attachedId ?? _Id));
         _dotnetObj = null;
-
-        try
-        {
-            // The listener is keyed by the id it was attached under, which is not the current one
-            // anymore when the Id changed after the setup and the component went away before the
-            // next render could move the registration over.
-            await _js.BitHeadersDispose(_attachedId ?? _Id);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 }

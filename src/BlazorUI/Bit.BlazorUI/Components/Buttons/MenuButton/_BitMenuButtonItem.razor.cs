@@ -85,11 +85,12 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
     }
 
     // The callout stack closes a submenu on its own when the page is interacted with outside of it, or
-    // when another callout takes over, so the state it was drawn from has to follow it back down.
+    // when another callout takes over, so the state it was drawn from has to follow it back down. The menu's
+    // callout cleared as the menu goes away closes it that way too, which the disposal is already doing.
     [JSInvokable("CloseCallout")]
     public async Task CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (_isSubmenuOpen is false) return;
+        if (_disposed || _isSubmenuOpen is false) return;
 
         _isSubmenuOpen = false;
         _openedByPointer = false;
@@ -152,7 +153,7 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
 
     private async Task ToggleSubmenuCallout()
     {
-        if (_dotnetObj is null) return;
+        if (_disposed || _dotnetObj is null) return;
 
         try
         {
@@ -293,15 +294,13 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-            _dotnetObj = null;
-
-            try
+            // The submenu's callout still calls back through the reference until it is cleared.
+            await _dotnetObj.DisposeAfterAsync(async () =>
             {
                 await _js.BitCalloutClearCallout(_submenuId);
                 await _js.BitMenuButtonsDisposeSubmenu(MenuButton._Id, _submenuId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            });
+            _dotnetObj = null;
         }
 
         MenuButton.SubmenuClosed(this);

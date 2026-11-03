@@ -1185,6 +1185,8 @@ public partial class BitFileUpload : BitInputBase<string?>
     [JSInvokable("HandleChunkUploadProgress")]
     public async Task __HandleChunkUploadProgress(int index, long loaded)
     {
+        if (IsDisposing) return;
+
         if (GetFileByUploaderIndex(index) is not { } file) return;
         if (file.Status != BitFileUploadStatus.InProgress) return;
 
@@ -2731,13 +2733,8 @@ public partial class BitFileUpload : BitInputBase<string?>
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
-            try
-            {
-                await _js.BitFileUploadClear(UniqueId);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            // An upload in flight still reports its progress through the reference until it is cleared.
+            await _dotnetObj.DisposeAfterAsync(() => _js.BitFileUploadClear(UniqueId));
         }
     }
 }

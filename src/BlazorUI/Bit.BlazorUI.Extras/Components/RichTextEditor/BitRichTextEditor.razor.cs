@@ -455,6 +455,10 @@ public partial class BitRichTextEditor : BitComponentBase
     [JSInvokable("OnContentChanged")]
     public async Task _OnContentChanged(string html, BitRichTextEditorContentFacts facts)
     {
+        // The bridge goes on reporting until the teardown reaches it (a blur flushing a pending notify, for one), by
+        // which time the editor is going away and already untracked from its form, so no callback from JS acts on it.
+        if (IsDisposing) return;
+
         _currentHtml = html;
         _facts = facts;
         if (ShowCount)
@@ -476,6 +480,8 @@ public partial class BitRichTextEditor : BitComponentBase
     [JSInvokable("OnFactsChanged")]
     public void _OnFactsChanged(BitRichTextEditorContentFacts facts)
     {
+        if (IsDisposing) return;
+
         _facts = facts;
         if (ShowCount)
         {
@@ -487,6 +493,8 @@ public partial class BitRichTextEditor : BitComponentBase
     [JSInvokable("OnSelectionChanged")]
     public Task _OnSelectionChanged(BitRichTextEditorSelectionState state)
     {
+        if (IsDisposing) return Task.CompletedTask;
+
         _state = state;
         StateHasChanged();
         return OnSelectionChange.InvokeAsync(state);
@@ -499,19 +507,23 @@ public partial class BitRichTextEditor : BitComponentBase
     [JSInvokable("OnTaskToggled")]
     public void _OnTaskToggled(bool isChecked)
     {
+        if (IsDisposing) return;
+
         Announce(isChecked ? Loc("task-checked", "Task checked") : Loc("task-unchecked", "Task unchecked"));
     }
 
     [JSInvokable("OnFocused")]
-    public Task _OnFocused() => OnFocus.InvokeAsync();
+    public Task _OnFocused() => IsDisposing ? Task.CompletedTask : OnFocus.InvokeAsync();
 
     [JSInvokable("OnBlurred")]
-    public Task _OnBlurred() => OnBlur.InvokeAsync();
+    public Task _OnBlurred() => IsDisposing ? Task.CompletedTask : OnBlur.InvokeAsync();
 
     /// <summary>Reported by the bridge when a formatting command fails; content is unchanged.</summary>
     [JSInvokable("OnCommandError")]
     public Task _OnCommandError(string command, string message)
     {
+        if (IsDisposing) return Task.CompletedTask;
+
         // Keep the raw JS bridge detail (browser internals) out of the user-facing message; log
         // it for diagnostics instead. Use Trace (not Debug) so it is still recorded in Release.
         System.Diagnostics.Trace.TraceError($"BitRichTextEditor command '{command}' failed: {message}");
@@ -949,13 +961,8 @@ public partial class BitRichTextEditor : BitComponentBase
 
         UntrackEditContext();
 
-        _dotnetObj?.Dispose();
-
-        try
-        {
-            await _js.BitRichTextEditorDispose(_editorRef);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        // The editor's listeners still call back through the reference until they are removed.
+        await _dotnetObj.DisposeAfterAsync(() => _js.BitRichTextEditorDispose(_editorRef));
 
         await base.DisposeAsync(disposing);
     }
