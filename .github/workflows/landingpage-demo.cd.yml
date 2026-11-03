@@ -12,6 +12,9 @@ on:
       prerelease_packages:
         type: boolean
         default: false
+  push:
+    branches:
+      - yasmoradi/landing/add-landing-page-project
 
 permissions:
   contents: read
