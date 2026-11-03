@@ -1,3 +1,4 @@
+using Boilerplate.LandingPage.Client.Components.Pages.Accounting;
 using Boilerplate.LandingPage.Client.Components.Pages.Crm;
 using Boilerplate.LandingPage.Client.Components.Pages.Ecommerce;
 
@@ -8,7 +9,8 @@ public static class LandingSites
     public static LandingSite[] All { get; } =
     [
         EcommerceSite.Info,
-        CrmSite.Info
+        CrmSite.Info,
+        AccountingSite.Info
     ];
 
     public static LandingSite? Find(string? key) => All.FirstOrDefault(s => string.Equals(s.Key, key, StringComparison.OrdinalIgnoreCase));

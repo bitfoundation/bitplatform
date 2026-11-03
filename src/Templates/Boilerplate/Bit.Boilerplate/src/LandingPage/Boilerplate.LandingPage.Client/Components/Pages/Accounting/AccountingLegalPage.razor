@@ -1,0 +1,14 @@
+@attribute [Route(AccountingSite.Path + "/privacy")]
+@attribute [Route(AccountingSite.Path + "/terms")]
+@attribute [Route(AccountingSite.Path + "/cookies")]
+@attribute [Route(AccountingSite.Path + "/imprint")]
+@attribute [Route(AccountingSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + AccountingSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + AccountingSite.Path + "/terms")]
+@attribute [Route("/{culture}" + AccountingSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + AccountingSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + AccountingSite.Path + "/accessibility")]
+@layout AccountingLayout
+@inherits LandingPageBase
+
+<LegalPage Site="AccountingSite.Info" />

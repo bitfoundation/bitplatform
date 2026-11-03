@@ -1,0 +1,39 @@
+@include site(lp-accounting) {
+    --acc-figures: var(--lp-font-mono);
+    --acc-paper: #FFFFFF;
+    --acc-paper-ink: #1C2430;
+    --acc-paper-muted: #5E6573;
+    --acc-paper-rule: #E4E0D6;
+    --acc-stamp: #21468A;
+    --acc-ledger: #FBFAF7;
+    --acc-ledger-rule: #ECE9E1;
+    --acc-card-rule: #EEEBE4;
+    --acc-band: #1B3A73;
+    --acc-band-fg: #F4F2EC;
+    --acc-band-muted: #C3CCDD;
+
+    @include type(("Familjen Grotesk", system-ui, sans-serif), ("Familjen Grotesk", system-ui, sans-serif));
+    @include shape(6px, 8px);
+    @include palette(light, #21468A, #FFFFFF, #F7F6F2, #EFEDE6, #FFFFFF, #1C2430, #586070, #DEDBD2);
+}
+
+@include site-dark(lp-accounting) {
+    --acc-paper: #E9E6DE;
+    --acc-paper-ink: #1C2430;
+    --acc-paper-muted: #575E6B;
+    --acc-paper-rule: #CFCAC0;
+    --acc-stamp: #21468A;
+    --acc-ledger: #161A20;
+    --acc-ledger-rule: #20252D;
+    --acc-card-rule: #252A32;
+    --acc-band: #16233D;
+    --acc-band-fg: #ECEAE4;
+    --acc-band-muted: #A8B3C7;
+
+    @include palette(dark, #8FB4F0, #0B1A33, #111418, #171B21, #1C2128, #ECEAE4, #A7ADB8, #2A3039);
+}
+
+:root:lang(fa):has(.lp-accounting) {
+    --lp-font-mono: var(--lp-stack-body);
+    --acc-figures: var(--lp-stack-body);
+}
