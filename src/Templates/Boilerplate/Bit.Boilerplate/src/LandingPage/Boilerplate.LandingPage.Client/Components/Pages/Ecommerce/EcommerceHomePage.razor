@@ -149,7 +149,7 @@
             <div class="ecommerce-coupon">
                 <span>@E[nameof(EcommerceStrings.CouponLabel)]</span>
                 <strong dir="ltr">FERN15</strong>
-                <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" Size="BitSize.Small" IconName="@(couponCopied ? BitIconName.CheckMark : BitIconName.Copy)" OnClick="CopyCoupon">
+                <BitButton Color="BitColor.PrimaryBackground" Size="BitSize.Small" IconName="@(couponCopied ? BitIconName.CheckMark : BitIconName.Copy)" OnClick="CopyCoupon">
                     @(couponCopied ? E[nameof(EcommerceStrings.CouponCopied)] : E[nameof(EcommerceStrings.CouponCopy)])
                 </BitButton>
             </div>
