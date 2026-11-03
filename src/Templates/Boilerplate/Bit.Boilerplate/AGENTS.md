@@ -121,7 +121,11 @@ Before implementing any changes, you **MUST** complete the following:
 -   **Run the landing page**: Run `dotnet watch` in src/LandingPage/Boilerplate.LandingPage.Server.
 <!--#endif-->
 -   **Assume hot reload is working**: `.cs`, `.razor`, `.scss` and `.ts` changes are picked up automatically by the running app, so after an edit do NOT rebuild the project and do NOT reload/refresh the web app. Only rebuild or refresh if you can't see what you were expecting after your change.
+<!--#if (advancedTests == true)-->
 -   **Run tests**: Run `dotnet test` in the src/Tests directory, and in src/LandingPage/Boilerplate.LandingPage.Tests for the landing page.
+<!--#else-->
+-   **Run tests**: Run `dotnet test` in the src/Tests directory.
+<!--#endif-->
 <!--#if (offlineDb == true)-->
 -   **Add new migrations**: Run `bit migration add <MigrationName>` in any folder of the project, with `--offline` for the offline database.
 <!--#else-->

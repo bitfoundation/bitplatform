@@ -86,8 +86,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.LandingPage.Cli
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.LandingPage.Server", "src\LandingPage\Boilerplate.LandingPage.Server\Boilerplate.LandingPage.Server.csproj", "{8B3F6A4D-5E7C-4D9A-9FAB-3C4D5E6F7A83}"
 EndProject
+#if (advancedTests == true)
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.LandingPage.Tests", "src\LandingPage\Boilerplate.LandingPage.Tests\Boilerplate.LandingPage.Tests.csproj", "{9C4A7B5E-6F8D-4EAB-A0BC-4D5E6F7A8B94}"
 EndProject
+#endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workbench", "Workbench", "{5E3393CE-5AFC-49A7-A28C-5191BB58B021}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Boilerplate.Workbench", "src\Workbench\Boilerplate.Workbench.csproj", "{2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07}"
@@ -192,10 +194,12 @@ Global
         {8B3F6A4D-5E7C-4D9A-9FAB-3C4D5E6F7A83}.Debug|Any CPU.Build.0 = Debug|Any CPU
         {8B3F6A4D-5E7C-4D9A-9FAB-3C4D5E6F7A83}.Release|Any CPU.ActiveCfg = Release|Any CPU
         {8B3F6A4D-5E7C-4D9A-9FAB-3C4D5E6F7A83}.Release|Any CPU.Build.0 = Release|Any CPU
+#if (advancedTests == true)
         {9C4A7B5E-6F8D-4EAB-A0BC-4D5E6F7A8B94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
         {9C4A7B5E-6F8D-4EAB-A0BC-4D5E6F7A8B94}.Debug|Any CPU.Build.0 = Debug|Any CPU
         {9C4A7B5E-6F8D-4EAB-A0BC-4D5E6F7A8B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
         {9C4A7B5E-6F8D-4EAB-A0BC-4D5E6F7A8B94}.Release|Any CPU.Build.0 = Release|Any CPU
+#endif
 #if (advancedTests == true)
         {BF36608B-E37B-4556-960A-30869FE092BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
         {BF36608B-E37B-4556-960A-30869FE092BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -228,7 +232,9 @@ Global
         {2D9C5ABB-ED99-4ADB-9296-F3A5F5FD3C07} = {5E3393CE-5AFC-49A7-A28C-5191BB58B021}
         {7A2E5F3C-4D6B-4C8F-8E9A-2B3C4D5E6F72} = {6F1D4E2B-3C5A-4B7E-9D8F-1A2B3C4D5E61}
         {8B3F6A4D-5E7C-4D9A-9FAB-3C4D5E6F7A83} = {6F1D4E2B-3C5A-4B7E-9D8F-1A2B3C4D5E61}
+#if (advancedTests == true)
         {9C4A7B5E-6F8D-4EAB-A0BC-4D5E6F7A8B94} = {6F1D4E2B-3C5A-4B7E-9D8F-1A2B3C4D5E61}
+#endif
 #if (advancedTests == true)
         {BF36608B-E37B-4556-960A-30869FE092BB} = {B38FF18E-11BC-4AF6-8FA3-648B3952DCAF}
 #endif

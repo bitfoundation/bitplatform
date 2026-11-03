@@ -69,11 +69,11 @@ jobs:
         name: tests-artifact
         path: ./src/Tests/TestResults
         retention-days: 14
+#if (advancedTests == true)
 
     - name: Test the landing page
       if: ${{ !cancelled() }}
       run: cd src/LandingPage/Boilerplate.LandingPage.Tests && dotnet test
-#if (advancedTests == true)
 
     - name: Test the Workbench
       id: test-workbench

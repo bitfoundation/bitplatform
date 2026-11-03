@@ -924,6 +924,7 @@
                     "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/WorkbenchTests/**",
+                        "src/LandingPage/Boilerplate.LandingPage.Tests/**",
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Versioning/**",
