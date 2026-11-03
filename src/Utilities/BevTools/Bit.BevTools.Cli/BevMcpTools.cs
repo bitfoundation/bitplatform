@@ -18,6 +18,9 @@ internal sealed class BevMcpTools(BevMcpExports exports)
     // About 16k tokens: room for a useful page, not for an export.
     private const int ResponseBudget = 64 * 1024;
 
+    // What a page writes after its items: returned, truncated, truncatedBy and a footer such as nextAfterEventId.
+    private const int FooterReserve = 512;
+
     private const int TextLimit = 300;
 
     private const int LongTextLimit = 1000;
@@ -390,7 +393,7 @@ internal sealed class BevMcpTools(BevMcpExports exports)
 
         try
         {
-            return BevCliFormats.CheckJson(BevSessionCheck.Check(export.Json, options), options, export.File, indented: false, maxFindings: 100, maxText: LongTextLimit);
+            return BevCliFormats.CheckJson(BevSessionCheck.Check(export.Json, options), options, export.File, indented: false, maxFindings: 100, maxText: LongTextLimit, maxBytes: ResponseBudget);
         }
         catch (FormatException ex)
         {
@@ -406,7 +409,9 @@ internal sealed class BevMcpTools(BevMcpExports exports)
         [Description("Renders a type must gain to count (default 1).")] int? minRenderChange = null,
         [Description("...and by more than this share of its baseline renders (default 0).")] double? renderChangeRatio = null,
         [Description("Render time in ms a type must gain to count (default 5).")] double? minTimeChangeMs = null,
-        [Description("...and by more than this share of its baseline time (default 0.5).")] double? timeChangeRatio = null)
+        [Description("...and by more than this share of its baseline time (default 0.5).")] double? timeChangeRatio = null,
+        [Description("Bytes a type must allocate more per render to count, when both exports measured allocations (default 1024).")] long? minAllocationChangeBytes = null,
+        [Description("...and by more than this share of its baseline bytes per render (default 0.25).")] double? allocationChangeRatio = null)
     {
         var before = exports.Get(baseline, "baseline");
         var after = exports.Get(current, "current");
@@ -419,6 +424,12 @@ internal sealed class BevMcpTools(BevMcpExports exports)
         options.RenderChangeRatio = NonNegative(renderChangeRatio, nameof(renderChangeRatio)) ?? options.RenderChangeRatio;
         options.MinTimeChangeMs = NonNegative(minTimeChangeMs, nameof(minTimeChangeMs)) ?? options.MinTimeChangeMs;
         options.TimeChangeRatio = NonNegative(timeChangeRatio, nameof(timeChangeRatio)) ?? options.TimeChangeRatio;
+        if (minAllocationChangeBytes is { } bytes)
+        {
+            options.MinAllocationChangeBytes = bytes >= 0 ? bytes : throw new McpException("minAllocationChangeBytes takes a non-negative whole number.");
+        }
+
+        options.AllocationChangeRatio = NonNegative(allocationChangeRatio, nameof(allocationChangeRatio)) ?? options.AllocationChangeRatio;
         try
         {
             return BevCliFormats.CompareJson(BevProfileComparison.Compare(before.Json, after.Json, options), options, before.File, after.File, indented: false, maxChanges: 100);
@@ -449,13 +460,15 @@ internal sealed class BevMcpTools(BevMcpExports exports)
                     break;
                 }
 
-                if (w.BytesCommitted + w.BytesPending > ResponseBudget)
+                // Measured before it is written, with room kept for the footer. The page stops at the first item that
+                // does not fit, so paging on from the last one returned skips nothing; the first is always returned,
+                // or one item larger than the bound could never be read.
+                if (!BevCliFormats.TryWriteWithin(w, ResponseBudget, FooterReserve, always: returned == 0, page => item(page, match)))
                 {
                     full = true;
                     break;
                 }
 
-                item(w, match);
                 last = match;
                 returned++;
             }

@@ -168,10 +168,20 @@ internal sealed class BevMcpExports : IDisposable
             return index < _exports.Count ? _exports[index] : throw new McpException($"No export has index {index}. {Loaded()}");
         }
 
-        var matches = _exports.Where(e => string.Equals(e.File, session, StringComparison.OrdinalIgnoreCase)).ToList();
-        if (matches.Count == 0)
+        // The name exactly as given first, so two exports that differ only in case can each be named; then regardless of case.
+        List<BevMcpExport> matches = [];
+        foreach (var comparison in (StringComparison[])[StringComparison.Ordinal, StringComparison.OrdinalIgnoreCase])
         {
-            matches = _exports.Where(e => string.Equals(Path.GetFileName(e.File), session, StringComparison.OrdinalIgnoreCase)).ToList();
+            matches = _exports.Where(e => string.Equals(e.File, session, comparison)).ToList();
+            if (matches.Count == 0)
+            {
+                matches = _exports.Where(e => string.Equals(Path.GetFileName(e.File), session, comparison)).ToList();
+            }
+
+            if (matches.Count > 0)
+            {
+                break;
+            }
         }
 
         return matches.Count switch

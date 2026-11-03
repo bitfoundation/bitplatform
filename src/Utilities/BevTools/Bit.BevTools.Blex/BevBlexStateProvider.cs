@@ -15,7 +15,7 @@ namespace Bit.BevTools;
 /// </summary>
 public sealed class BevBlexStateProvider : IBevStateProvider, IBevStateRestorer, IDisposable
 {
-    private const int MaxStates = 100;
+    private const int DefaultMaxStates = 100;
 
     // The change this thread is reporting, while BevTools handles it: GetSnapshot then answers with its state.
     [ThreadStatic]
@@ -24,16 +24,23 @@ public sealed class BevBlexStateProvider : IBevStateProvider, IBevStateRestorer,
     private readonly BlexManager _manager;
     private readonly IDisposable _subscription;
     private readonly object _lock = new();
-    // The global state after each change BevTools recorded, by its token: what a restore puts back. The newest hundred,
-    // immutable, so nothing else holding the state can change one.
+    // The global state after each change BevTools recorded, by its token: what a restore puts back. The newest ones, as
+    // many as the State panel's history keeps, immutable, so nothing else holding the state can change one.
     private readonly Dictionary<string, JsonElement> _states = [];
     private readonly Queue<string> _order = new();
+    private readonly int _maxStates;
     private int _restores;
     private int _disposed;
 
-    public BevBlexStateProvider(BlexManager manager)
+    /// <param name="manager">The Blex manager whose stores are shown.</param>
+    /// <param name="maxStates">
+    /// How many recorded states are kept for a restore: at least the session's
+    /// <see cref="BitBevToolsOptions.MaxStateChangesPerProvider"/>, so every change the history shows can be restored.
+    /// </param>
+    public BevBlexStateProvider(BlexManager manager, int maxStates = DefaultMaxStates)
     {
         _manager = manager;
+        _maxStates = Math.Max(1, maxStates);
         // Nested actions (an action an action dispatched) are part of the outer one's change.
         _subscription = manager.Subscribe(OnAction, context => !context.IsNested);
         manager.StateRestored += OnRestored;
@@ -76,11 +83,47 @@ public sealed class BevBlexStateProvider : IBevStateProvider, IBevStateRestorer,
 
         if (!kept)
         {
-            throw new InvalidOperationException("The state after that change is no longer kept (the newest " + MaxStates + " are).");
+            throw new InvalidOperationException("The state after that change is no longer kept (the newest " + _maxStates + " are).");
         }
 
         // Through the manager's dispatcher: a store's state belongs to the renderer it is rendered on.
-        await _manager.InvokeAsync(() => _manager.RestoreGlobalState(JsonObject.Create(state)!));
+        await _manager.InvokeAsync(() =>
+        {
+            // Blex reports a store it could not restore through OnError and goes on with the others; seen here, that
+            // fails the restore rather than reading as one. The app's own handler still gets every error.
+            List<BlexError>? failures = null;
+            var handler = _manager.OnError;
+            _manager.OnError = error =>
+            {
+                if (error.Source == "restore")
+                {
+                    (failures ??= []).Add(error);
+                }
+
+                if (handler is not null)
+                {
+                    handler(error);
+                }
+                else
+                {
+                    Console.Error.WriteLine($"[Blex] {error.Source} failed{(error.Detail is null ? "" : $" ({error.Detail})")}: {error.Exception.Message}");
+                }
+            };
+            try
+            {
+                _manager.RestoreGlobalState(JsonObject.Create(state)!);
+            }
+            finally
+            {
+                _manager.OnError = handler;
+            }
+
+            if (failures is not null)
+            {
+                throw new InvalidOperationException("Blex could not restore every store: "
+                    + string.Join("; ", failures.Select(f => (f.Detail ?? "?") + " (" + f.Exception.GetType().Name + ": " + f.Exception.Message + ")")), failures[0].Exception);
+            }
+        });
     }
 
     private void OnAction(BlexActionContext context)
@@ -129,7 +172,7 @@ public sealed class BevBlexStateProvider : IBevStateProvider, IBevStateRestorer,
                 _order.Enqueue(token);
             }
 
-            while (_order.Count > MaxStates)
+            while (_order.Count > _maxStates)
             {
                 _states.Remove(_order.Dequeue());
             }
@@ -165,7 +208,9 @@ public static class BitBevToolsBlex
     public static IServiceCollection AddBevToolsBlex(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddScoped<IBevStateProvider>(sp => new BevBlexStateProvider(sp.GetRequiredService<BlexManager>()));
+        services.AddScoped<IBevStateProvider>(sp => new BevBlexStateProvider(
+            sp.GetRequiredService<BlexManager>(),
+            sp.GetService<BitBevToolsOptions>()?.MaxStateChangesPerProvider ?? 100));
         return services;
     }
 }

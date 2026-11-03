@@ -1050,15 +1050,30 @@ export interface BevInteraction {
     processingEndAgeMs: number;
     /** The element, by tag, id and class: never its text. Null once it left the page. */
     target: string | null;
+    /** The browser's interactionId: the runtime puts together the parts of one interaction that two reports carry. */
+    interactionId: number;
 }
 
 let perfObservers: PerformanceObserver[] = [];
 let pendingFrames: { start: number; duration: number; blocking: number; scripts: BevLongFrame["scripts"] }[] = [];
 const pendingInteractions = new Map<number, { start: number; end: number; processingStart: number; processingEnd: number; longestProcessing: number; name: string; target: string | null }>();
-// Interactions on BevTools' own UI: none of their entries is the application's.
+// Interactions on BevTools' own UI: none of their entries is the application's. The newest are kept by id; an entry of
+// an older one can still arrive once its element left the page, with no target to tell by, so an id no newer than the
+// newest let go counts as BevTools' when it comes without one (an application's interaction since then has a newer id).
 const ownInteractions = new Set<number>();
+let ownInteractionsForgottenUpTo = 0;
+const MAX_OWN_INTERACTIONS = 50;
 let responsivenessTimer: ReturnType<typeof setInterval> | null = null;
 const MAX_PENDING = 100;
+
+function trimOwnInteractions() {
+    // A Set iterates in insertion order, and ids only grow: the oldest go first.
+    for (const id of ownInteractions) {
+        if (ownInteractions.size <= MAX_OWN_INTERACTIONS) break;
+        ownInteractions.delete(id);
+        ownInteractionsForgottenUpTo = Math.max(ownInteractionsForgottenUpTo, id);
+    }
+}
 
 /** Which of the browser's timing entries this browser has: long animation frames and long tasks are Chromium's, Event Timing is not in Safari. */
 export function responsivenessSupport() {
@@ -1097,7 +1112,7 @@ function onEventTimings(entries: PerformanceEntryList) {
         if (!id) continue;
         const element = e.target as Element | null;
         // Interacting with BevTools is not the application's responsiveness.
-        if (ownInteractions.has(id) || inBevTools(element)) {
+        if (ownInteractions.has(id) || inBevTools(element) || (!element && id <= ownInteractionsForgottenUpTo)) {
             ownInteractions.add(id);
             pendingInteractions.delete(id);
             continue;
@@ -1146,24 +1161,26 @@ function stopObservingResponsiveness() {
     pendingFrames = [];
     pendingInteractions.clear();
     ownInteractions.clear();
+    ownInteractionsForgottenUpTo = 0;
     if (responsivenessTimer) { clearInterval(responsivenessTimer); responsivenessTimer = null; }
 }
 
 /** Sends what was observed since the last report, with ages rather than the browser's timestamps. */
 export function flushResponsiveness() {
+    // Bounded on every tick, a quiet one included: a page whose only interactions are with BevTools reports nothing.
+    trimOwnInteractions();
     if (targets.size === 0 || (pendingFrames.length === 0 && pendingInteractions.size === 0)) return;
     const now = performance.now();
     const frames: BevLongFrame[] = pendingFrames.map(f => ({ ageMs: now - f.start, durationMs: f.duration, blockingMs: Math.max(0, f.blocking), scripts: f.scripts }));
-    const interactions: BevInteraction[] = Array.from(pendingInteractions.values()).map(i => ({
+    const interactions: BevInteraction[] = Array.from(pendingInteractions.entries()).map(([interactionId, i]) => ({
         ageMs: now - i.start, name: i.name, durationMs: i.end - i.start,
         inputDelayMs: Math.max(0, i.processingStart - i.start), processingMs: Math.max(0, i.processingEnd - i.processingStart),
         presentationMs: Math.max(0, i.end - i.processingEnd),
         processingStartAgeMs: now - i.processingStart, processingEndAgeMs: now - i.processingEnd, target: i.target,
+        interactionId,
     }));
     pendingFrames = [];
     pendingInteractions.clear();
-    // Ids only grow; the last few are all an interaction still arriving can have.
-    if (ownInteractions.size > 50) ownInteractions.clear();
     broadcast("ReportResponsiveness", frames, interactions);
     notify({ type: "responsiveness" });
 }
@@ -2364,10 +2381,11 @@ export async function fetchPdb(assemblyName: string): Promise<Uint8Array | null>
 // ----- storage, preferences, downloads -----
 
 export function getStorage(kind: string, patterns: string[] | null, previews?: boolean) {
-    const storage = kind === "session" ? window.sessionStorage : window.localStorage;
     const lowered = (patterns || []).map(p => String(p).toLowerCase());
     const result: BevStorageEntry[] = [];
     try {
+        // Inside: the getter itself throws where storage is denied (sandboxed frames, blocked cookies).
+        const storage = kind === "session" ? window.sessionStorage : window.localStorage;
         for (let i = 0; i < storage.length; i++) {
             const key = storage.key(i);
             const value = storage.getItem(key!) || "";
@@ -2409,9 +2427,11 @@ export interface BevAppStorage {
 
 const MAX_STORAGE_ITEMS = 200;
 
-async function settle<T>(work: () => Promise<T>, errors: string[], what: string, timeoutMs = 3000): Promise<T | null> {
+/** Runs one part of the inventory, given up after a timeout; the work sees `cancelled` then, and starts nothing more. */
+async function settle<T>(work: (state: { cancelled: boolean }) => Promise<T>, errors: string[], what: string, timeoutMs = 3000): Promise<T | null> {
+    const state = { cancelled: false };
     try {
-        return await Promise.race([work(), new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timed out")), timeoutMs))]);
+        return await Promise.race([work(state), new Promise<T>((_, reject) => setTimeout(() => { state.cancelled = true; reject(new Error("timed out")); }, timeoutMs))]);
     } catch (err: any) {
         errors.push(what + ": " + clip(String(err && err.message || err), 200));
         return null;
@@ -2426,8 +2446,10 @@ export async function getAppStorage(): Promise<BevAppStorage> {
             const trimmed = part.trim();
             if (!trimmed || cookies.length >= MAX_STORAGE_ITEMS) continue;
             const eq = trimmed.indexOf("=");
-            // The name and the value's length: a cookie is where a session id lives.
-            cookies.push({ name: clip(eq < 0 ? trimmed : trimmed.slice(0, eq), 200), size: eq < 0 ? 0 : trimmed.length - eq - 1 });
+            // The name and the value's length: a cookie is where a session id lives. A name shaped like a credential is
+            // redacted whole, judged before it is cut: a token cut short no longer looks like one.
+            const name = eq < 0 ? trimmed : trimmed.slice(0, eq);
+            cookies.push({ name: looksLikeSecret(name) ? REDACTED : clip(name, 200), size: eq < 0 ? 0 : trimmed.length - eq - 1 });
         }
     } catch (err) {
         errors.push("cookies: " + clip(String(err), 200));
@@ -2440,10 +2462,14 @@ export async function getAppStorage(): Promise<BevAppStorage> {
 
     const cacheStorage: any = (window as any).caches;
     const caches = cacheStorage && typeof cacheStorage.keys === "function"
-        ? await settle(async () => {
+        ? await settle(async state => {
             const names: string[] = (await cacheStorage.keys()).slice(0, MAX_STORAGE_ITEMS);
             const result: { name: string; entries: number }[] = [];
             for (const name of names) {
+                // open() creates a cache it does not find: one deleted since keys(), or after the timeout, is left alone.
+                if (state.cancelled) break;
+                const present = typeof cacheStorage.has === "function" ? await cacheStorage.has(name) : (await cacheStorage.keys()).includes(name);
+                if (!present || state.cancelled) continue;
                 const cache = await cacheStorage.open(name);
                 result.push({ name: clip(String(name), 200), entries: (await cache.keys()).length });
             }

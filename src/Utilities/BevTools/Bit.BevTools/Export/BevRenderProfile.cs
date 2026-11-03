@@ -253,7 +253,7 @@ internal sealed class BevRenderProfile
                     TypeKey(String(t, "type") ?? "?"), Line(String(t, "displayName") ?? String(t, "type")) ?? "?", Int(t, "instances"), Int(t, "renders"),
                     Number(t, "renderMs") ?? 0, Number(t, "maxRenderMs") ?? 0, Number(t, "p95RenderMs"), Int(t, "retainedSamples"))
                 {
-                    AllocatedBytes = Number(t, "allocatedBytes") is { } allocated and >= 0 and < long.MaxValue ? (long)allocated : null,
+                    AllocatedBytes = Bytes(t, "allocatedBytes"),
                 }).ToList(),
             };
         }
@@ -268,10 +268,15 @@ internal sealed class BevRenderProfile
                     // Components created after the baseline write no since-baseline figures: all of theirs count.
                     Renders: since && c.TryGetProperty("rendersSinceBaseline", out _) ? Int(c, "rendersSinceBaseline") : Int(c, "renders"),
                     Ms: since && c.TryGetProperty("renderMsSinceBaseline", out _) ? Number(c, "renderMsSinceBaseline") ?? 0 : Number(c, "totalRenderMs") ?? 0,
-                    Max: Number(c, "maxRenderMs") ?? 0))
+                    Max: Number(c, "maxRenderMs") ?? 0,
+                    Allocated: since && c.TryGetProperty("allocatedBytesSinceBaseline", out _) ? Bytes(c, "allocatedBytesSinceBaseline") : Bytes(c, "allocatedBytes")))
                 .Where(c => c.Renders > 0)
                 .GroupBy(c => c.Type)
-                .Select(g => new BevProfileTypeTotals(g.Key, g.First().Display, g.Count(), g.Sum(c => c.Renders), g.Sum(c => c.Ms), g.Max(c => c.Max), null, 0))
+                .Select(g => new BevProfileTypeTotals(g.Key, g.First().Display, g.Count(), g.Sum(c => c.Renders), g.Sum(c => c.Ms), g.Max(c => c.Max), null, 0)
+                {
+                    // A type's total only when every instance measured it: a sum with gaps would read as fewer bytes.
+                    AllocatedBytes = g.All(c => c.Allocated is not null) ? g.Aggregate(0L, (sum, c) => sum > long.MaxValue - c.Allocated!.Value ? long.MaxValue : sum + c.Allocated.Value) : null,
+                })
                 .ToList();
             return new BevRenderProfile
             {
@@ -302,6 +307,10 @@ internal sealed class BevRenderProfile
 
     private static double? Number(JsonElement parent, string name) =>
         parent.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+    /// <summary>A byte count as the exact Int64 it was written as; null when missing, not a whole number or negative.</summary>
+    private static long? Bytes(JsonElement parent, string name) =>
+        parent.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var bytes) && bytes >= 0 ? bytes : null;
 
     private static int Int(JsonElement parent, string name) =>
         parent.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number) ? number : 0;

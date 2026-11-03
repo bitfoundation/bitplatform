@@ -223,7 +223,7 @@ since the profiler baseline* exports only what happened after the last baseline 
 | Can CI fail a build on what BevTools found? | `bevtools check session.json` (`Bit.BevTools.Cli`), or `BevSessionCheck.Check` in a test |
 | What happened when I clicked, and what did it cause (renders, HTTP, JS, state)? | Timeline (select an event: *caused by* / *caused*) |
 | What changed in my state container and which click did it? | State (history with before/after diffs, details, a filter) |
-| Can I go back to the state before that change? | State → a change → *⟲ restore*, for a provider that implements `IBevStateRestorer` (Development and single-user hosts) |
+| Can I go back to the state before that change? | State → a change → *⟲ restore* puts back the state right *after* that change, so to undo a change restore the one just before it; for a provider that implements `IBevStateRestorer` (Development and single-user hosts) |
 | Which HTTP requests ran, how long, which failed, what triggered them, which component sent them? | Network (*Sent from* in a request's detail and per endpoint) |
 | Which database queries did that click run, and is one of them running once per row? | Logs → *Database* (EF Core's commands by SQL, with times and senders), Diagnostics (*db.per-item*, *db.slow*) |
 | What did the request send and what came back? | Network → a request → *Request body* / *Response body*, with `CaptureHttpBodies` (off by default; text, bounded, redacted) |
@@ -370,7 +370,7 @@ trace, protocol, companion, extension - can show more:
   claim), including in the pair's `ToString`.
 * Never read at all: `IConfiguration` and its providers and sources, `IOptions<T>`/`IOptionsMonitor<T>`/
   `IOptionsSnapshot<T>`, credentials and key material (`NetworkCredential`, `SecureString`, certificates, keys), request
-  and response bodies, DI instance values, WebSocket payloads (only sizes and SignalR message kinds), and browser
+  and response bodies (unless the app turns on `CaptureHttpBodies`), DI instance values, WebSocket payloads (only sizes and SignalR message kinds), and browser
   storage values that look sensitive (redacted in the browser, before they reach .NET).
 
 Circuit ids are truncated; SignalR connection ids in socket URLs are redacted in the browser. Nothing is sent anywhere:
@@ -494,5 +494,5 @@ validation, routing and navigation guards, network with endpoints, senders and W
 search/commands, DI inspection, circuit, runtime, prerendering and retained-component diagnostics, accessibility checks
 of the page, the rules engine, session and trace export, the CI tool, the companion window and the browser extension.
 The demo shows each of them. See [docs/architecture.md](docs/architecture.md) for the design and the list of deliberate
-non-goals (request bodies, SignalR payloads, BevTools writing application state - a provider restores itself through
+non-goals (request bodies by default, SignalR payloads, BevTools writing application state - a provider restores itself through
 `IBevStateRestorer` - editing component state).

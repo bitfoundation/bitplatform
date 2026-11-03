@@ -1395,6 +1395,8 @@ public static class BevSessionExporter
             if (r.InteractionToNextPaintMs is { } inp)
             {
                 w.WriteNumber("interactionToNextPaintMs", Round(inp));
+                // How many interactions it was worked out over: the newest ones, at most BevResponsiveness.InpWindow.
+                w.WriteNumber("interactionToNextPaintOver", Math.Min(r.InteractionCount, BevResponsiveness.InpWindow));
             }
 
             w.WriteNumber("longFrames", r.LongFrameCount);
@@ -1664,7 +1666,8 @@ public static class BevSessionExporter
 
         w.WriteStartObject("memory");
         w.WriteStartArray("samples");
-        var step = Math.Max(1, samples.Length / 120);
+        // Rounded up: at most 120 readings, however many there are.
+        var step = Math.Max(1, (samples.Length + 119) / 120);
         for (var i = 0; i < samples.Length; i += step)
         {
             var s = samples[i];

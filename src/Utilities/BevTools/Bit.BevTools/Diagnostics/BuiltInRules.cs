@@ -55,7 +55,8 @@ internal static class BuiltInRules
 
             var threshold = Opt(context).DbPerItemCount;
             var since = context.Now - TimeSpan.FromMinutes(2);
-            foreach (var group in session.Logs.Snapshot().Where(l => l.DbCommand is { CommandText: not null } && l.At >= since).GroupBy(l => BevDbCommands.Normalize(l.DbCommand!.CommandText!), StringComparer.Ordinal))
+            // Failed executions are errors of their own, and a retry loop is not a query per item.
+            foreach (var group in session.Logs.Snapshot().Where(l => l.DbCommand is { CommandText: not null, Failed: false } && l.At >= since).GroupBy(l => BevDbCommands.Normalize(l.DbCommand!.CommandText!), StringComparer.Ordinal))
             {
                 var executions = group.ToArray();
                 if (executions.Length < threshold || DensestRun(executions, TimeSpan.FromSeconds(2)) is not { } densest || densest.Run.Length < threshold)

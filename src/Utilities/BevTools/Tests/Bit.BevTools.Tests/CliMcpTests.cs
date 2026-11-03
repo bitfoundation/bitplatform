@@ -317,15 +317,57 @@ public class CliMcpTests : BunitContext
                 Assert.IsTrue(tolerant.RootElement.GetProperty("passed").GetBoolean(), "the thresholds are the tool's");
             }
 
+            using (var allocations = await served.CallAsync("compare", new() { ["baseline"] = "0", ["current"] = "1", ["minAllocationChangeBytes"] = 4096L * 1024 * 1024, ["allocationChangeRatio"] = 2.5 }))
+            {
+                var options = allocations.RootElement.GetProperty("options");
+                Assert.AreEqual(4096L * 1024 * 1024, options.GetProperty("minAllocationChangeBytes").GetInt64(), "past what an int holds");
+                Assert.AreEqual(2.5, options.GetProperty("allocationChangeRatio").GetDouble());
+            }
+
             var (unknownError, unknown) = await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "7" });
             Assert.IsTrue(unknownError);
             StringAssert.Contains(unknown, "No export has index 7");
             Assert.IsTrue((await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "1", ["timeChangeRatio"] = -1 })).IsError);
+            Assert.IsTrue((await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "1", ["minAllocationChangeBytes"] = -1 })).IsError);
+            Assert.IsTrue((await served.CallTextAsync("compare", new() { ["baseline"] = "0", ["current"] = "1", ["allocationChangeRatio"] = -0.5 })).IsError);
         }
         finally
         {
             folder.Delete(recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void A_page_stops_before_the_item_that_would_take_it_past_its_size_bound_and_pages_on_from_there()
+    {
+        var events = Enumerable.Range(1, 300).Select(i => new { id = i, kind = "Custom", title = "event " + i, detail = new string('x', 990) }).ToArray();
+        using var exports = BevMcpExports.Parse([("big.json", JsonSerializer.Serialize(new { format = "bit-bevtools/1", timeline = events }))]);
+        var tools = new BevMcpTools(exports);
+
+        var answer = tools.GetTimeline(limit: 500);
+        Assert.IsLessThanOrEqualTo(64 * 1024, System.Text.Encoding.UTF8.GetByteCount(answer), "within the bound, not one item past it");
+        using var page = JsonDocument.Parse(answer);
+        var root = page.RootElement;
+        var returned = root.GetProperty("returned").GetInt32();
+        Assert.IsTrue(returned is > 0 and < 300, "returned: " + returned);
+        StringAssert.StartsWith(root.GetProperty("truncatedBy").GetString(), "size");
+        var next = root.GetProperty("nextAfterEventId").GetInt64();
+        Assert.AreEqual(returned, next);
+
+        using var following = JsonDocument.Parse(tools.GetTimeline(afterEventId: next, limit: 500));
+        Assert.AreEqual(next + 1, following.RootElement.GetProperty("events")[0].GetProperty("id").GetInt64(), "nothing skipped");
+    }
+
+    [TestMethod]
+    public void An_export_is_named_exactly_first_and_regardless_of_case_after()
+    {
+        const string json = """{"format":"bit-bevtools/1"}""";
+        using var exports = BevMcpExports.Parse([("run/a.json", json), ("run/A.json", json)]);
+        Assert.AreEqual(0, exports.Get("a.json").Index);
+        Assert.AreEqual(1, exports.Get("A.json").Index);
+        Assert.AreEqual(1, exports.Get("run/A.json").Index);
+        var ambiguous = Assert.ThrowsExactly<ModelContextProtocol.McpException>(() => exports.Get("A.JSON"));
+        StringAssert.Contains(ambiguous.Message, "Several loaded exports");
     }
 
     [TestMethod]

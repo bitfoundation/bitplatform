@@ -1,7 +1,9 @@
 ﻿using System.Buffers;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Bit.BevTools;
 
@@ -13,7 +15,7 @@ namespace Bit.BevTools;
 /// within the limit, so the app reads exactly what it would have read. Only at <see cref="BevValueAccess.Full"/>, and
 /// in a process that serves many users only in Development.
 /// </summary>
-internal static class BevHttpBodies
+internal static partial class BevHttpBodies
 {
     internal static bool Allowed(BevToolsSession session) =>
         session.Options.CaptureHttpBodies && session.ValueAccess == BevValueAccess.Full && session.AllowsForcedCollection;
@@ -31,22 +33,32 @@ internal static class BevHttpBodies
             return (null, "not text (" + (content.Headers.ContentType?.MediaType ?? "no content type") + ")");
         }
 
-        var max = Math.Max(256, session.Options.MaxHttpBodyBytes);
-        try
+        var max = Math.Max(0, session.Options.MaxHttpBodyBytes);
+        // Byte array content (strings, forms) writes the same bytes as often as asked, and JSON content serializes its
+        // value again. Both are copied into a buffer of BevTools' own, never buffered in the content: the send then goes
+        // out as it would have (a JSON body without a length stays chunked). Anything else is a stream, read once, and an
+        // async sequence is enumerated once.
+        if (content is not (ByteArrayContent or JsonContent))
         {
-            // Byte array content (strings, forms) is read again as often as asked; JSON content is serialized into a
-            // buffer the send then uses, so the value is serialized once. Anything else is a stream, read once.
-            if (content is ByteArrayContent || content.GetType().FullName == "System.Net.Http.Json.JsonContent")
-            {
-                await content.LoadIntoBufferAsync(max);
-                return (Redact(session, await content.ReadAsStringAsync(), content.Headers.ContentType?.MediaType, max), null);
-            }
-
             return (null, "a stream is read once, as it is sent: not read");
         }
-        catch (HttpRequestException ex) when (ex.InnerException is null)
+
+        if (content is JsonContent { Value: { } value } && IsAsyncSequence(value.GetType()))
         {
-            // What LoadIntoBufferAsync throws for content past its limit; a failed copy wraps the exception it hit.
+            return (null, "an async sequence is enumerated once, as it is sent: not read");
+        }
+
+        var copy = new BoundedBuffer(max);
+        try
+        {
+            await content.CopyToAsync(copy);
+            // Decoded as HttpContent decodes a body: by its charset, or its byte order mark, else UTF-8.
+            using var text = new ByteArrayContent(copy.ToArray());
+            text.Headers.ContentType = content.Headers.ContentType;
+            return (Redact(session, await text.ReadAsStringAsync(), content.Headers.ContentType?.MediaType, max), null);
+        }
+        catch (Exception) when (copy.Overflowed)
+        {
             return (null, "larger than " + BevToolsHttpMessageHandler.FormatBytes(max) + ": not read");
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
@@ -77,7 +89,7 @@ internal static class BevHttpBodies
             return (null, "not text (" + (type ?? "no content type") + ")");
         }
 
-        var max = Math.Max(256, session.Options.MaxHttpBodyBytes);
+        var max = Math.Max(0, session.Options.MaxHttpBodyBytes);
         if (content.Headers.ContentLength is not { } length)
         {
             return (null, "no length (chunked): reading it would change how the app reads it, so it is not read");
@@ -118,15 +130,25 @@ internal static class BevHttpBodies
     }
 
     /// <summary>
-    /// JSON with each value under a sensitive name replaced, forms the same by key, everything credential-shaped
-    /// redacted, then cut to the limit.
+    /// JSON with each value under a sensitive name replaced, forms the same by key, XML by element name, everything
+    /// credential-shaped redacted, then cut to the limit.
     /// </summary>
     internal static string Redact(BevToolsSession session, string body, string? mediaType, int max)
     {
         string text;
-        if (mediaType is not null && mediaType.EndsWith("json", StringComparison.OrdinalIgnoreCase) && TryRedactJson(session, body, out var json))
+        if (mediaType is not null && mediaType.EndsWith("json", StringComparison.OrdinalIgnoreCase))
         {
-            text = json;
+            // JSON that does not parse (malformed, or nested past 64 levels) is still redacted by name, pair by pair:
+            // shape redaction alone keeps a short value, and one under a name only the app's patterns know.
+            text = TryRedactJson(session, body, out var json) ? json : JsonPairs().Replace(body, m => session.Redactor.IsSensitiveName(m.Groups["name"].Value)
+                ? m.Groups["key"].Value + "\"" + BevRedactor.RedactedValue + "\""
+                : m.Value);
+        }
+        else if (mediaType is not null && mediaType.EndsWith("xml", StringComparison.OrdinalIgnoreCase))
+        {
+            text = XmlElements().Replace(body, m => session.Redactor.IsSensitiveName(m.Groups["name"].Value)
+                ? m.Groups["open"].Value + BevRedactor.RedactedValue + m.Groups["close"].Value
+                : m.Value);
         }
         else if (string.Equals(mediaType, "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase))
         {
@@ -144,6 +166,73 @@ internal static class BevHttpBodies
 
         text = BevRedactor.RedactText(text);
         return text.Length <= max ? text : text[..max] + "…";
+    }
+
+    // "name": value, for a string, number, literal or the start of a container's name - what a JSON body that does not
+    // parse is redacted by.
+    [GeneratedRegex(@"(?<key>""(?<name>(?:[^""\\\r\n]|\\.)*)""\s*:\s*)(?:""(?:[^""\\]|\\.)*""|[^\s,{}\[\]""]+)", RegexOptions.CultureInvariant)]
+    private static partial Regex JsonPairs();
+
+    // An element with text content only (CDATA included), by its name, prefix and all: <password>…</password>.
+    [GeneratedRegex(@"(?<open><(?<name>[A-Za-z_][\w.:-]*)(?:\s[^<>]*)?>)(?:[^<]|<!\[CDATA\[[\s\S]*?\]\]>)*(?<close></\k<name>\s*>)", RegexOptions.CultureInvariant)]
+    private static partial Regex XmlElements();
+
+    private static bool IsAsyncSequence(Type type) =>
+        type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>));
+
+    /// <summary>What a request body is copied into: at most a limit's bytes, past which the copy fails.</summary>
+    private sealed class BoundedBuffer(int max) : Stream
+    {
+        private readonly MemoryStream _bytes = new();
+
+        public bool Overflowed { get; private set; }
+
+        public byte[] ToArray() => _bytes.ToArray();
+
+        public override bool CanRead => false;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => _bytes.Length;
+
+        public override long Position { get => _bytes.Position; set => throw new NotSupportedException(); }
+
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            if (_bytes.Length + buffer.Length > max)
+            {
+                Overflowed = true;
+                throw new IOException("The body is larger than " + max + " bytes.");
+            }
+
+            _bytes.Write(buffer);
+        }
+
+        public override void Write(byte[] buffer, int offset, int count) => Write(buffer.AsSpan(offset, count));
+
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            Write(buffer.Span);
+            return ValueTask.CompletedTask;
+        }
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            Write(buffer.AsSpan(offset, count));
+            return Task.CompletedTask;
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
     }
 
     private static bool TryRedactJson(BevToolsSession session, string body, out string redacted)

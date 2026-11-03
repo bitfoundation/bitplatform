@@ -171,6 +171,43 @@ describe('the page\'s other storage', () => {
         expect(storage).toMatchObject({ usageBytes: 2048, quotaBytes: 4096, usageDetails: { caches: 1024 }, persisted: false, errors: [] });
     });
 
+    it('redacts a cookie name shaped like a credential, judged before it is cut', async () => {
+        installPage();
+        const hub = await loadHub();
+        document.cookie = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.' + 'c'.repeat(300) + '=1; theme=dark';
+        const storage = await hub.getAppStorage();
+        expect(storage.cookies).toEqual([{ name: '«redacted»', size: 1 }, { name: 'theme', size: 4 }]);
+    });
+
+    it('opens no cache that is gone by the time it is counted, and nothing once the inventory gave up', async () => {
+        installPage();
+        const hub = await loadHub();
+        let names = ['kept', 'deleted'];
+        const opened = [];
+        window.caches = {
+            keys: async () => { const now = names; names = ['kept']; return now; },
+            open: async name => { opened.push(name); return { keys: async () => [{}] }; },
+        };
+        expect((await hub.getAppStorage()).caches).toEqual([{ name: 'kept', entries: 1 }]);
+        expect(opened, 'open() would have created the deleted one again').toEqual(['kept']);
+
+        vi.useFakeTimers();
+        opened.length = 0;
+        window.caches = {
+            keys: async () => ['a', 'b'],
+            // Answers only after the inventory gave up on Cache Storage.
+            has: () => new Promise(resolve => setTimeout(() => resolve(true), 4000)),
+            open: async name => { opened.push(name); return { keys: async () => [] }; },
+        };
+        const pending = hub.getAppStorage();
+        await vi.advanceTimersByTimeAsync(3500);
+        const storage = await pending;
+        expect(storage.caches).toBeNull();
+        expect(storage.errors).toContain('Cache Storage: timed out');
+        await vi.advanceTimersByTimeAsync(10000);
+        expect(opened, 'nothing started after the timeout').toEqual([]);
+    });
+
     it('says what it could not read instead of failing, and has nothing where a browser has no such API', async () => {
         installPage();
         const hub = await loadHub();
@@ -262,6 +299,7 @@ describe('responsiveness', () => {
             expect(click.inputDelayMs).toBeCloseTo(2);
             expect(click.processingMs).toBeCloseTo(208);
             expect(click.presentationMs).toBeCloseTo(50);
+            expect(click.interactionId, 'what the runtime puts its parts back together by').toBe(7);
 
             hub.flushResponsiveness();
             expect(wasm.reported('ReportResponsiveness'), 'nothing new, nothing sent').toHaveLength(1);
@@ -288,6 +326,31 @@ describe('responsiveness', () => {
             const [, frames] = wasm.reported('ReportResponsiveness')[0];
             expect(frames[0].blockingMs, 'a long task blocks for what it took beyond 50 ms').toBe(40);
             expect(frames[0].scripts).toEqual([]);
+            hub.detach();
+        } finally {
+            fake.restore();
+        }
+    });
+
+    it('keeps the newest interactions with BevTools, and an older one\'s late entry without a target is still its own', async () => {
+        installPage();
+        const fake = fakeObservers(['event']);
+        try {
+            const hub = await loadHub();
+            const wasm = runtime(1);
+            hub.attach(wasm, { platform: 'WebAssembly' });
+            const events = fake.observers.find(o => o.options.type === 'event');
+            const now = performance.now();
+            const entry = (interactionId, target) => ({ interactionId, name: 'click', startTime: now - 100, duration: 80, processingStart: now - 99, processingEnd: now - 30, target });
+            // Sixty interactions with the panel and one with the application, reported.
+            events.emit([...Array.from({ length: 60 }, (_, i) => entry(i + 1, element('BUTTON', 'bev-' + i, true))), entry(61, element('BUTTON', 'save'))]);
+            hub.flushResponsiveness();
+            expect(wasm.reported('ReportResponsiveness')[0][2].map(i => i.interactionId)).toEqual([61]);
+
+            // Late entries whose elements left the page: two of the panel's - one still kept, one let go - and the application's.
+            events.emit([entry(30, null), entry(5, null), entry(62, null)]);
+            hub.flushResponsiveness();
+            expect(wasm.reported('ReportResponsiveness')[1][2].map(i => i.interactionId)).toEqual([62]);
             hub.detach();
         } finally {
             fake.restore();

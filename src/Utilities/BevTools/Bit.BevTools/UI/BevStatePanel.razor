@@ -18,7 +18,7 @@
                     Component state is inspected per component in the Components panel.
                 </div>
             }
-            @foreach (var item in _entries.Where(e => _filter.MatchesText(e.Name, e.Description) || _changes.ContainsKey(e)))
+            @foreach (var item in _visible)
             {
                 var name = item.Name;
                 <div class="bev-ev-row @(Ui.SelectedStateProvider == name ? "bev-selected" : "")" @onclick="() => { Ui.SelectedStateProvider = name; _selectedChange = null; Ui.Touch(); }">
@@ -104,11 +104,12 @@
 
 @code {
     private BevStateProviderEntry[] _entries = [];
+    // What the list shows: the providers the filter matches by name, or by one of their changes.
+    private BevStateProviderEntry[] _visible = [];
     private BevStateProviderEntry? _selected;
     private object? _snapshot;
     private BevStateChangeRecord? _selectedChange;
     private BevQueryFilter _filter = BevQueryFilter.Parse(null);
-    // By entry, not by name: nothing makes two providers' names differ (a provider registered twice, two adapters named alike).
     private Dictionary<BevStateProviderEntry, BevStateChangeRecord[]> _changes = [];
 
     private string? Query => Ui.GetQuery("state");
@@ -129,8 +130,10 @@
             }
         }
 
+        _visible = _entries.Where(e => _filter.MatchesText(e.Name, e.Description) || _changes.ContainsKey(e)).ToArray();
         Ui.SelectedStateProvider ??= _entries.FirstOrDefault()?.Name;
-        _selected = _entries.FirstOrDefault(e => e.Name == Ui.SelectedStateProvider);
+        // The detail pane shows what the list shows: a provider the filter hides is not shown beside it.
+        _selected = _visible.FirstOrDefault(e => e.Name == Ui.SelectedStateProvider);
         if (_selectedChange is not null && (_selected is null || !_selected.Changes.Any(change => change.Id == _selectedChange.Id)))
         {
             _selectedChange = null;

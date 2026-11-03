@@ -7,7 +7,7 @@
 /// </summary>
 public interface IBevStateProvider
 {
-    /// <summary>Display name, e.g. "CartState".</summary>
+    /// <summary>Display name, e.g. "CartState". Unique in a session: a second provider of a name already registered is not shown, and an error says so.</summary>
     string Name { get; }
 
     /// <summary>Optional description of where the state lives (singleton service, scoped store, ...).</summary>

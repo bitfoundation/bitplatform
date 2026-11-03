@@ -46,6 +46,8 @@ public class CorrelationTests
 
             Assert.IsNull((await Send(session, null)).TraceId, "a client that propagates nothing sent no trace");
             Assert.IsNull((await Send(session, "00-00000000000000000000000000000000-00f067aa0ba902b7-01")).TraceId, "an all-zero trace id is invalid");
+            Assert.IsNull((await Send(session, "00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-01")).TraceId, "an all-zero span id is invalid");
+            Assert.IsNull((await Send(session, "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-zz")).TraceId, "flags are two hex digits");
             Assert.IsNull((await Send(session, "garbage")).TraceId);
 
             using var json = JsonDocument.Parse(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "http" } }));
@@ -95,6 +97,35 @@ public class CorrelationTests
     }
 
     [TestMethod]
+    public void The_runtime_reports_a_task_nobody_awaited_once_it_is_collected()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            var message = "Fire and forget " + Guid.NewGuid().ToString("N");
+            FaultUnobserved(message);
+
+            // As SessionResolverTests lets an object go: collections until the finalizer has run, a few at most.
+            for (var i = 0; i < 10 && !session.Errors.Snapshot().Any(e => e.Source == "task"); i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            var error = Assert.ContainsSingle(e => e.Source == "task", session.Errors.Snapshot());
+            Assert.AreEqual("A task's exception was never observed (fire-and-forget): " + message, error.Message);
+        }
+    }
+
+    // Not inlined, so nothing in the test's own frame keeps the task alive; completed without its exception being read.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void FaultUnobserved(string message)
+    {
+        var task = Task.Run(() => throw new InvalidOperationException(message));
+        SpinWait.SpinUntil(() => task.IsCompleted);
+    }
+
+    [TestMethod]
     public void A_marker_is_a_timeline_event_from_the_api_the_palette_and_the_protocol()
     {
         var (session, scope) = TestHelpers.CreateSession();
@@ -138,8 +169,19 @@ public class MarkerPanelTests : BunitContext
         panel.FindAll(".bev-toolbar button").First(b => b.TextContent.Contains("Mark", StringComparison.Ordinal)).Click();
         panel.FindAll(".bev-toolbar button").First(b => b.TextContent.Contains("Mark", StringComparison.Ordinal)).Click();
 
-        var titles = Services.GetRequiredService<BevToolsSession>().Timeline.Snapshot().Where(e => e.Category == "marker").Select(e => e.Title).ToArray();
+        var session = Services.GetRequiredService<BevToolsSession>();
+        var titles = session.Timeline.Snapshot().Where(e => e.Category == "marker").Select(e => e.Title).ToArray();
         CollectionAssert.AreEqual(new[] { "⚑ Marker 1", "⚑ Marker 2" }, titles);
         StringAssert.Contains(panel.Markup, "⚑ Marker 2");
+
+        // Paused, no marker and no number used; another tab and back, the numbers go on.
+        session.PauseCapture();
+        panel.FindAll(".bev-toolbar button").First(b => b.TextContent.Contains("Mark", StringComparison.Ordinal)).Click();
+        StringAssert.Contains(panel.Markup, "markers are put down only while capturing");
+        session.ResumeCapture();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Logs", StringComparison.Ordinal)).Click();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Timeline", StringComparison.Ordinal)).Click();
+        panel.FindAll(".bev-toolbar button").First(b => b.TextContent.Contains("Mark", StringComparison.Ordinal)).Click();
+        CollectionAssert.AreEqual(new[] { "⚑ Marker 1", "⚑ Marker 2", "⚑ Marker 3" }, session.Timeline.Snapshot().Where(e => e.Category == "marker").Select(e => e.Title).ToArray());
     }
 }

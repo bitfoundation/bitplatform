@@ -122,7 +122,10 @@
                         <dt>Trace</dt><dd>@if (s.TraceId is { } traceId) { <span class="bev-mono" title="The W3C trace id the request carried to the server (traceparent): what the server's spans and logs are filed under in a tracing backend">@traceId · @s.SpanId</span> <button type="button" class="bev-link" @onclick='() => Host.ShowPanel("logs", "trace:" + traceId)'>logs in it ↗</button> } else { <span class="bev-muted">none sent (no traceparent header: the client propagates no trace)</span> }</dd>
                         <dt>Timeline</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectEvent(s.TimelineEventId)">open event ↗</button></dd>
                     </dl>
-                    <div class="bev-muted" style="margin-top:4px">@(BevHttpBodies.Allowed(Session) ? "Text bodies are captured (CaptureHttpBodies) and redacted." : "Bodies are not captured (CaptureHttpBodies is off).") Sensitive headers and query values are redacted.</div>
+                    <div class="bev-muted" style="margin-top:4px">@(BevHttpBodies.Allowed(Session) ? "Text bodies are captured (CaptureHttpBodies) and redacted."
+                        : !Session.Options.CaptureHttpBodies ? "Bodies are not captured (CaptureHttpBodies is off)."
+                        : Session.ValueAccess != BevValueAccess.Full ? $"Bodies are not captured: CaptureHttpBodies is on, but bodies are read only at value access Full (it is {Session.ValueAccess})."
+                        : "Bodies are not captured: CaptureHttpBodies is on, but in a process that serves many users bodies are read only in Development.") Sensitive headers and query values are redacted.</div>
                 </div>
             </div>
             @if (s.RequestHeaders is { Count: > 0 })

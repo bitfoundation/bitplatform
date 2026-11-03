@@ -28,12 +28,14 @@ public class AllocationTests : BunitContext
 
     private BevToolsSession Session => Services.GetRequiredService<BevToolsSession>();
 
-    private static string Export(params (string Type, int Renders, long? Allocated)[] types) =>
+    private static string Export(params (string Type, int Renders, long? Allocated)[] types) => ExportIn("Server", ".NET 10.0.0", types);
+
+    private static string ExportIn(string renderMode, string runtime, params (string Type, int Renders, long? Allocated)[] types) =>
         JsonSerializer.Serialize(new
         {
             format = "bit-bevtools/1",
             exportedAt = DateTimeOffset.UtcNow,
-            session = new { runtime = ".NET 10.0.0", renderMode = "Server" },
+            session = new { runtime, renderMode },
             profile = new
             {
                 sinceBaseline = true,
@@ -110,6 +112,63 @@ public class AllocationTests : BunitContext
         var markdown = result.ToMarkdown();
         StringAssert.Contains(markdown, "| Allocated per render | Why |");
         StringAssert.Contains(markdown, "| 2 KB → 20 KB | allocated per render +18 KB (+900 %) |");
+    }
+
+    [TestMethod]
+    public void Allocations_are_not_compared_across_render_modes_nor_trusted_across_runtimes()
+    {
+        var baseline = ExportIn("Server", ".NET 10.0.0", ("Grid", 10, 10 * 2048));
+        var otherMode = BevProfileComparison.Compare(baseline, ExportIn("WebAssembly", ".NET 10.0.0", ("Grid", 10, 10 * 20480)));
+        Assert.AreEqual(BevProfileChangeKind.Unchanged, otherMode.Changes.Single().Kind, "a circuit's runtime and the browser's allocate differently");
+        StringAssert.Contains(Assert.ContainsSingle(otherMode.Warnings), "times and allocations are not");
+
+        var otherRuntime = BevProfileComparison.Compare(baseline, ExportIn("Server", ".NET 11.0.0", ("Grid", 10, 10 * 2048)));
+        StringAssert.Contains(Assert.ContainsSingle(otherRuntime.Warnings), "Recorded on different runtimes (.NET 10.0.0 → .NET 11.0.0): render counts are comparable, times and allocations are not.");
+    }
+
+    [TestMethod]
+    public void Byte_counts_are_read_as_the_whole_numbers_they_were_written_as_and_added_up_from_components()
+    {
+        Assert.AreEqual(long.MaxValue - 1, BevRenderProfile.Parse(Export(("Grid", 1, long.MaxValue - 1))).Types.Single().AllocatedBytes, "past what a double holds exactly");
+        Assert.IsNull(BevRenderProfile.Parse(Export(("Grid", 1, -5))).Types.Single().AllocatedBytes);
+
+        // An export without a profile section: the components' figures, since the baseline where one was set.
+        string Components(object[] items, string? baselineAt = null) => JsonSerializer.Serialize(new
+        {
+            format = "bit-bevtools/1",
+            components = baselineAt is null ? (object)new { items } : new { baselineAt, items },
+        });
+
+        var whole = BevRenderProfile.Parse(Components([
+            new { type = "App.Grid", displayName = "Grid", renders = 2, totalRenderMs = 1.0, allocatedBytes = 3000L },
+            new { type = "App.Grid", displayName = "Grid", renders = 3, totalRenderMs = 1.0, allocatedBytes = 5000L },
+        ]));
+        Assert.AreEqual(8000, whole.Types.Single().AllocatedBytes);
+        Assert.IsTrue(whole.FromComponents);
+
+        var since = BevRenderProfile.Parse(Components([
+            new { type = "App.Grid", displayName = "Grid", renders = 4, totalRenderMs = 1.0, allocatedBytes = 9000L, rendersSinceBaseline = 1, renderMsSinceBaseline = 0.5, allocatedBytesSinceBaseline = 700L },
+            new { type = "App.Grid", displayName = "Grid", renders = 2, totalRenderMs = 1.0, allocatedBytes = 300L },
+        ], DateTimeOffset.UtcNow.ToString("O")));
+        Assert.AreEqual(1000, since.Types.Single().AllocatedBytes, "since the baseline, and all of a component's created after it");
+
+        var unmeasured = BevRenderProfile.Parse(Components([
+            new { type = "App.Grid", displayName = "Grid", renders = 2, totalRenderMs = 1.0 },
+        ]));
+        Assert.IsNull(unmeasured.Types.Single().AllocatedBytes, "not measured is not zero");
+    }
+
+    [TestMethod]
+    public void A_render_that_allocated_more_than_a_sample_holds_saturates_rather_than_wrapping()
+    {
+        var sample = new BevRenderSample { Sequence = 1, At = DateTimeOffset.UtcNow, StartTicks = 0, AllocatedBytes = long.MaxValue, Failed = true };
+        Assert.AreEqual(int.MaxValue - 1, sample.AllocatedBytes);
+        Assert.IsTrue(sample.Failed);
+        sample.AllocatedBytes = -3;
+        Assert.AreEqual(0, sample.AllocatedBytes);
+        sample.AllocatedBytes = null;
+        Assert.IsNull(sample.AllocatedBytes);
+        Assert.IsTrue(sample.Failed);
     }
 
     [TestMethod]

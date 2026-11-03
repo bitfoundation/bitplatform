@@ -841,19 +841,25 @@ export class Companion {
         return h("div", null, row, (t.expanded.get(key) || []).map(child => this.valueNode(t, sectionName, rootName, child, depth + 1)));
     }
 
+    /** A batch by its runtime and its number: two runtimes number their batches alike. */
+    private static batchKey(t: TargetModel, batchId: number) {
+        return "batch:" + t.info.id + ":" + batchId;
+    }
+
     private async openBatch(t: TargetModel, batchId: number) {
         const v = this.view();
-        if (v.selected === "batch:" + batchId) {
+        const key = Companion.batchKey(t, batchId);
+        if (v.selected === key) {
             v.selected = null;
             t.batch = null;
             this.renderContent();
             return;
         }
-        v.selected = "batch:" + batchId;
+        v.selected = key;
         t.batch = { batchId, loading: true };
         this.renderContent();
         const answer = await this.source.request(t.info.id, "batch", { batchId });
-        if (v.selected !== "batch:" + batchId) return;
+        if (v.selected !== key) return;
         t.batch = answer && !answer.error ? answer : { batchId, error: answer && answer.error || "No answer." };
         this.renderContent();
     }
@@ -912,7 +918,7 @@ export class Companion {
         // The batches the timeline holds, newest first; a live page answers what each rendered.
         const batches: any[] = (t.events || []).filter((e: any) => e.kind === "RenderBatch" && e.data && typeof e.data.batch === "number").slice(-25).reverse();
         const batchSection = section("Recent render batches", batches.length ? h("table", null, h("tbody", null, batches.map(e => h("tr", {
-            class: v.selected === "batch:" + e.data.batch ? "bc-selected" : "",
+            class: v.selected === Companion.batchKey(t, e.data.batch) ? "bc-selected" : "",
             onclick: this.source.live ? () => this.openBatch(t, e.data.batch) : undefined,
         }, h("td", { class: "bc-mono" }, fmt.time(e.timestamp)), h("td", null, e.title), h("td", { class: "bc-num" }, fmt.ms(e.durationMs))))))
             : h("div", { class: "bc-muted" }, "No render batches in the timeline."), true);

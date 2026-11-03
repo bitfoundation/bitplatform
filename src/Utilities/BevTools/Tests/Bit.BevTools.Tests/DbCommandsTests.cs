@@ -158,6 +158,31 @@ public class DbCommandsTests
         Assert.AreEqual(1234, BevDbCommands.Read(20101, Pairs("1.234"), BevValueAccess.Full).ElapsedMs);
         Assert.IsNull(BevDbCommands.Read(20101, Pairs("n/a"), BevValueAccess.Full).ElapsedMs);
         Assert.AreEqual("SELECT a FROM b WHERE c = @p0", BevDbCommands.Normalize("SELECT a\r\n  FROM b\n\tWHERE c = @p0  "));
+        // A literal's whitespace is its value: two commands that differ only in it are two commands.
+        Assert.AreEqual("SELECT \"a  b\" FROM t WHERE n = 'x  y' AND m = 'it''s  z'", BevDbCommands.Normalize("SELECT  \"a  b\"\n FROM t WHERE n = 'x  y'  AND m = 'it''s  z'"));
+        Assert.AreNotEqual(BevDbCommands.Normalize("WHERE n = 'a  b'"), BevDbCommands.Normalize("WHERE n = 'a b'"));
+    }
+
+    [TestMethod]
+    public void Failed_executions_are_no_query_per_item()
+    {
+        var (session, scope, context, connection) = Create();
+        using (scope)
+        using (connection)
+        using (context)
+        {
+            using (session.UseAmbient())
+            {
+                for (var i = 0; i < 12; i++)
+                {
+                    Assert.ThrowsExactly<SqliteException>(() => context.Database.ExecuteSqlRaw("SELECT * FROM Missing"));
+                }
+            }
+
+            Assert.HasCount(12, session.Logs.Snapshot().Where(l => l.DbCommand is { Failed: true }));
+            session.Diagnostics.Evaluate(force: true);
+            Assert.DoesNotContain(f => f.Diagnostic.RuleId == "db.per-item", session.Diagnostics.Findings, "a retried failure is an error of its own");
+        }
     }
 }
 

@@ -185,21 +185,35 @@ public class StateRestoreTests : BunitContext
     }
 
     [TestMethod]
-    public void Two_providers_of_one_name_both_show_in_the_state_panel()
+    public void A_second_provider_of_a_name_already_shown_is_refused_and_said_to_be()
     {
-        // Nothing makes names differ: a provider registered twice, two adapters named alike.
+        // The panel, the protocol and exports name a provider by its name: two adapters named alike cannot both be told apart.
         var first = new VersionedCounter();
         var second = new VersionedCounter();
         Session.State.Register(first);
-        Session.State.Register(second);
+        Session.State.Register(second).Dispose();
         first.Add(7);
         second.Add(40);
+
+        var entry = Assert.ContainsSingle(Session.State.Entries);
+        Assert.AreSame(first, entry.Provider);
+        Assert.AreEqual("7", Assert.ContainsSingle(entry.Changes).Detail);
+        StringAssert.Contains(Assert.ContainsSingle(e => e.Source == "bevtools", Session.Errors.Snapshot()).Message, "A state provider named 'Counter' is already registered");
+        Assert.AreSame(first, Assert.ContainsSingle(Session.State.Entries).Provider, "disposing the refused registration leaves the first one");
+    }
+
+    [TestMethod]
+    public void The_detail_pane_shows_only_a_provider_the_filter_shows()
+    {
+        var counter = new VersionedCounter();
+        Session.State.Register(counter);
+        counter.Add(7);
         var panel = Render<BevToolsPanel>();
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("State", StringComparison.Ordinal)).Click();
+        StringAssert.Contains(panel.Find(".bev-right").TextContent, "Current snapshot");
 
-        IEnumerable<AngleSharp.Dom.IElement> Counters() => panel.FindAll(".bev-left .bev-ev-row").Where(r => r.QuerySelector(".bev-ev-title")!.TextContent == "Counter");
-        Assert.HasCount(2, Counters());
-        panel.Find("input[aria-label='Filter state providers and changes']").Input("40");
-        Assert.HasCount(1, Counters(), "the one whose change matches");
+        panel.Find("input[aria-label='Filter state providers and changes']").Input("nothing like it");
+        Assert.IsEmpty(panel.FindAll(".bev-left .bev-ev-row"));
+        Assert.DoesNotContain("Current snapshot", panel.Find(".bev-right").TextContent, StringComparison.Ordinal);
     }
 }

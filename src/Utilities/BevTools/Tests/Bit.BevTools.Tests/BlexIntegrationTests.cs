@@ -104,6 +104,56 @@ public class BlexIntegrationTests
     }
 
     [TestMethod]
+    public async Task A_store_blex_could_not_restore_fails_the_restore_and_the_apps_handler_still_hears_of_it()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            var manager = new BlexManager();
+            var heard = new List<BlexError>();
+            manager.OnError = heard.Add;
+            var store = new BevCartStore();
+            manager.Register(store);
+            using var provider = new BevBlexStateProvider(manager);
+            session.State.Register(provider);
+            store.Add(1, "x");
+            var change = Assert.ContainsSingle(session.State.Entries.Single().Changes);
+
+            // A state the store's slice cannot be read back from, under the token of a change BevTools recorded.
+            var states = (System.Collections.IDictionary)typeof(BevBlexStateProvider).GetField("_states", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(provider)!;
+            var broken = manager.CaptureGlobalState();
+            var cart = (System.Text.Json.Nodes.JsonObject)broken["cart"]!;
+            cart[cart.First(p => p.Key.Equals("items", StringComparison.OrdinalIgnoreCase)).Key] = "not a number";
+            states[change.RestoreToken!] = JsonSerializer.SerializeToElement(broken);
+
+            var outcome = await session.State.RestoreAsync(change.Id);
+
+            StringAssert.StartsWith(outcome, "Blex could not restore it: InvalidOperationException: Blex could not restore every store: cart");
+            Assert.Contains(e => e.Source == "restore", heard, "the app's own OnError still gets it");
+            Assert.AreSame(heard, manager.OnError!.Target, "and is put back as it was");
+            Assert.DoesNotContain(e => e.Category == "state-restore", session.Timeline.Snapshot(), "nothing restored is said to be");
+        }
+    }
+
+    [TestMethod]
+    public void Registered_through_dependency_injection_it_keeps_a_state_for_every_change_the_history_keeps()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBlexServices();
+        services.AddBitBlexStore<BevCartStore>();
+        services.AddBitBevToolsServices(o =>
+        {
+            o.Enabled = true;
+            o.MaxStateChangesPerProvider = 150;
+        });
+        services.AddBevToolsBlex();
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var blex = scope.ServiceProvider.GetServices<IBevStateProvider>().OfType<BevBlexStateProvider>().Single();
+        Assert.AreEqual(150, typeof(BevBlexStateProvider).GetField("_maxStates", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(blex));
+    }
+
+    [TestMethod]
     public async Task While_capture_is_paused_no_state_is_kept_for_a_restore()
     {
         var (session, scope) = TestHelpers.CreateSession();

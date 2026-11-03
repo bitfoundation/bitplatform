@@ -27,7 +27,7 @@ option). The output format never changes them.
 | `--fail-on-errors` | Any recorded error fails, whether or not a rule reported it |
 | `--format markdown\|json\|sarif\|github` | What it prints (`markdown`); see [Formats](#formats) |
 | `--output <file>` | Writes the formatted result to a file (replacing it) instead of the console |
-| `--report <file.md>` | Also appends the Markdown to a file, whatever `--format` is |
+| `--report <file.md>` | Also appends the Markdown to a file, whatever `--format` is; not the `--output` file |
 
 | `compare` option | |
 | --- | --- |
@@ -35,7 +35,7 @@ option). The output format never changes them.
 | `--render-change-ratio <r>` | ... and by more than this share of its baseline renders (`0`) |
 | `--min-time-change-ms <ms>` | Render time a type must gain to count (`5`) |
 | `--time-change-ratio <r>` | ... and by more than this share of its baseline time (`0.5`), as times vary between runs |
-| `--min-allocation-change-bytes <n>` | Bytes per render a type must allocate more (or less) to count (`1024`); only when both exports measured allocations |
+| `--min-allocation-change-bytes <n>` | Bytes per render a type must allocate more (or less) to count (`1024`); only when both exports measured allocations, in the same render mode |
 | `--allocation-change-ratio <r>` | ... and by more than this share of its baseline bytes per render (`0.25`) |
 | `--format markdown\|json` | What it prints (`markdown`) |
 | `--output <file>` | Writes the formatted result to a file (replacing it) instead of the console |
@@ -66,7 +66,8 @@ Every format is written from the same result as the Markdown, so they cannot dis
   one run of the `bevtools` driver, a rule per rule id, and a result per finding: `level` from its severity (`error`,
   `warning`, `note`), `message.text` its title and evidence, its fingerprint in
   `partialFingerprints["bevToolsFingerprint/v1"]`, and a `suppressions` entry of kind `external` when it was dismissed
-  in the session. The caveats are the invocation's `toolExecutionNotifications`. A finding is about a recorded session,
+  in the session. The caveats are the invocation's `toolExecutionNotifications`, with an `error` one when recorded
+  errors failed the check (`--fail-on-errors`), which no result stands for. A finding is about a recorded session,
   not a line of source, so results have **no `locations`**: SARIF allows that, and none are made up.
 - **`github`** (`check` only): GitHub Actions workflow commands, one annotation per finding (`::error`, `::warning` or
   `::notice` by severity; dismissed findings are left out), the caveats as notices, then one summary line. Text from the

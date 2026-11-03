@@ -148,8 +148,6 @@ What is left has a reason it is left; nothing on this list is a known defect.
 - Senders across an await in a service: a request a service sends after awaiting something of its own has no component
   on its stack. Naming it needs the component carried with the execution context from where BevTools sees it start
   (a lifecycle method, an event), which the framework exposes for events but not for lifecycle methods.
-- The profiler's batch views in the companion and the extension: they need the retained samples in a protocol answer
-  of their own, asked for by batch.
 - Live access for agents (MCP against a running app): it needs an authenticated transport from outside the page, which
   the page hub deliberately does not offer; agents read exports (`bevtools mcp`), and the companion window and the
   extension read the live page.

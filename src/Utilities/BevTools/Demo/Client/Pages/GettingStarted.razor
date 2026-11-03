@@ -153,7 +153,8 @@ builder.Services.AddBitBevToolsServices(o =&gt;
         At every level, values are redacted where they are captured: by name (<code>password</code>, <code>token</code>,
         <code>authorization</code>, <code>apikey</code>, <code>secret</code>…), by <code>[BevToolsSensitive]</code>, and by
         shape - JSON Web Tokens, bearer tokens, connection strings, private keys, cloud keys. Configuration, options,
-        credentials, request and response bodies and WebSocket payloads are never read, nothing is sent anywhere, and
+        credentials and WebSocket payloads are never read; request and response bodies only when the app turns on
+        <code>CaptureHttpBodies</code> (off by default), and redacted. Nothing is sent anywhere, and
         every export, trace and companion view shows exactly what the panel does. <strong>Runtime</strong> shows the
         level in force; the <a href="dashboard">dashboard</a> has secrets to look for.
     </p>

@@ -1068,7 +1068,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             Installing = Optional(w.Installing),
         }).ToArray();
         storage.Controller = Optional(storage.Controller);
-        storage.UsageDetails = storage.UsageDetails?.Take(20).ToDictionary(p => Text(p.Key, 60), p => p.Value);
+        // Two names can clean to one (cut at the same length, redacted alike): the first of them is kept.
+        storage.UsageDetails = storage.UsageDetails?.Take(20).GroupBy(p => Text(p.Key, 60)).ToDictionary(g => g.Key, g => g.First().Value);
         storage.Errors = (storage.Errors ?? []).Take(20).Select(e => Text(e, 300)).ToArray();
         return storage;
     }

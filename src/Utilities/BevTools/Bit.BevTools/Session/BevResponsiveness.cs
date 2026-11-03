@@ -48,6 +48,9 @@ public sealed class BevInteractionPayload
     public double ProcessingEndAgeMs { get; set; }
 
     public string? Target { get; set; }
+
+    /// <summary>The browser's interactionId: what the parts of one interaction reported apart have in common. 0 from a hub that does not say.</summary>
+    public long InteractionId { get; set; }
 }
 
 /// <summary>Which of the browser's timing entries the page's browser has.</summary>
@@ -74,7 +77,13 @@ public sealed record BevLongFrame(DateTimeOffset At, double DurationMs, double B
     /// </summary>
     public double OwnMs { get; init; }
 
-    /// <summary>At least half the frame was BevTools' own rendering.</summary>
+    /// <summary>
+    /// The panel rendered more often around the frame than BevTools keeps count of: <see cref="OwnMs"/> is then the least
+    /// it spent, and a frame that is not <see cref="IsMostlyBevTools"/> may still be mostly the panel's.
+    /// </summary>
+    public bool OwnMsIsLowerBound { get; init; }
+
+    /// <summary>At least half the frame was BevTools' own rendering. A lower bound that reaches half says so as surely as an exact total.</summary>
     public bool IsMostlyBevTools => OwnMs > 0 && OwnMs >= DurationMs / 2;
 
     public long TimelineEventId { get; internal set; }
@@ -91,6 +100,9 @@ public sealed record BevInteraction(DateTimeOffset At, string Name, double Durat
 
     public string? HandlerTitle { get; init; }
 
+    /// <summary>The browser's interactionId, by which its parts reported apart are put together; 0 when not known.</summary>
+    public long InteractionId { get; init; }
+
     public long TimelineEventId { get; internal set; }
 }
 
@@ -98,6 +110,10 @@ public sealed record BevInteraction(DateTimeOffset At, string Name, double Durat
 public sealed class BevResponsiveness
 {
     private const int Capacity = 200;
+
+    /// <summary>How many of the newest interactions <see cref="InteractionToNextPaintMs"/> is worked out over.</summary>
+    internal const int InpWindow = 10_000;
+
     private readonly RingBuffer<BevLongFrame> _frames = new(Capacity);
     private readonly RingBuffer<BevInteraction> _interactions = new(Capacity);
     private readonly object _lock = new();
@@ -124,7 +140,8 @@ public sealed class BevResponsiveness
 
     /// <summary>
     /// The interaction latency below which 98 % of this session's interactions fell (the slowest one under 50
-    /// interactions): how the Web Vitals define Interaction to Next Paint, over what BevTools saw. Null without any.
+    /// interactions): how the Web Vitals define Interaction to Next Paint, over what BevTools saw - the newest
+    /// <see cref="InpWindow"/> of them, where <see cref="InteractionCount"/> counts them all. Null without any.
     /// </summary>
     public double? InteractionToNextPaintMs
     {
@@ -164,7 +181,7 @@ public sealed class BevResponsiveness
         lock (_lock)
         {
             InteractionCount++;
-            (_durations ??= new(10_000)).Add(interaction.DurationMs);
+            (_durations ??= new(InpWindow)).Add(interaction.DurationMs);
             if (SlowestInteraction is null || interaction.DurationMs > SlowestInteraction.DurationMs)
             {
                 SlowestInteraction = interaction;
@@ -172,6 +189,26 @@ public sealed class BevResponsiveness
         }
 
         _interactions.Add(interaction);
+    }
+
+    /// <summary>The interaction of this browser id among the recent ones; null for 0 or one no longer kept.</summary>
+    internal BevInteraction? Find(long interactionId) =>
+        interactionId > 0 ? _interactions.FindLast(i => i.InteractionId == interactionId) : null;
+
+    /// <summary>Puts the whole of an interaction in place of the part of it reported before: one interaction, counted once.</summary>
+    internal void Replace(BevInteraction earlier, BevInteraction whole)
+    {
+        lock (_lock)
+        {
+            // The same multiset either way when another interaction took exactly as long.
+            _durations?.TryReplaceLast(d => d == earlier.DurationMs, _ => whole.DurationMs);
+            if (SlowestInteraction is null || ReferenceEquals(SlowestInteraction, earlier) || whole.DurationMs > SlowestInteraction.DurationMs)
+            {
+                SlowestInteraction = whole;
+            }
+        }
+
+        _interactions.TryReplaceLast(i => ReferenceEquals(i, earlier), _ => whole);
     }
 
     internal void Clear()
@@ -195,6 +232,12 @@ public sealed class BevResponsiveness
     /// age, and on WebAssembly - where .NET runs on the browser's main thread - the application work that started inside
     /// it: the UI event whose handler ran in an interaction's processing, the events and batches that ran in a frame. On a
     /// circuit the .NET side runs on the server, on another clock, and nothing is matched.
+    /// <para>
+    /// Each entry is dated as its arrival less its age. On a circuit the report's way to the server - the network, and
+    /// the wait for the circuit's dispatcher - is not in that age, so an entry reads that much later than it happened:
+    /// milliseconds, against the minute or two the responsiveness rules look back over. The page and the server share no
+    /// clock to measure it with.
+    /// </para>
     /// </summary>
     internal static void Record(BevToolsSession session, BevLongFramePayload[]? frames, BevInteractionPayload[]? interactions)
     {
@@ -217,7 +260,8 @@ public sealed class BevResponsiveness
             }
 
             var startTicks = nowTicks - Ticks(f.AgeMs);
-            var ownMs = Math.Min(sameThread ? session.RenderTracker.OwnRenderMsWithin(startTicks - Tolerance, startTicks + Ticks(f.DurationMs) + Tolerance) : 0, f.DurationMs);
+            var ownComplete = true;
+            var ownMs = Math.Min(sameThread ? session.RenderTracker.OwnRenderMsWithin(startTicks - Tolerance, startTicks + Ticks(f.DurationMs) + Tolerance, out ownComplete) : 0, f.DurationMs);
             if (ownMs > 0 && ownMs >= f.DurationMs / 2)
             {
                 // Mostly BevTools' own panel: not the application's frame, in the timeline or in the totals.
@@ -232,6 +276,7 @@ public sealed class BevResponsiveness
                 During = during.Take(3).Select(e => e.Title).ToArray(),
                 TriggerEventId = trigger?.Id,
                 OwnMs = ownMs,
+                OwnMsIsLowerBound = !ownComplete,
             };
             frame.TimelineEventId = session.Timeline.Record(new BevToolsEvent
             {
@@ -255,40 +300,78 @@ public sealed class BevResponsiveness
                 continue;
             }
 
+            var interaction = new BevInteraction(now - TimeSpan.FromMilliseconds(i.AgeMs), Clip(i.Name, 40) ?? "event", i.DurationMs, Math.Max(0, i.InputDelayMs), Math.Max(0, i.ProcessingMs), Math.Max(0, i.PresentationMs), Clip(i.Target, 200))
+            {
+                InteractionId = Math.Max(0, i.InteractionId),
+            };
+
+            // The hub puts the entries of one interaction together until it reports, but they can straddle two reports
+            // (a pointerdown reported before its click): the part reported before and this one are one interaction.
+            var earlier = state.Find(interaction.InteractionId);
+            if (earlier is not null)
+            {
+                interaction = Merge(earlier, interaction);
+            }
+
             BevToolsEvent? handler = null;
             if (sameThread)
             {
-                var handlers = StartedWithin(events, nowTicks - Ticks(i.ProcessingStartAgeMs), nowTicks - Ticks(i.ProcessingEndAgeMs), BevToolsEventKind.UiEvent);
+                var processingStart = interaction.At + TimeSpan.FromMilliseconds(interaction.InputDelayMs);
+                var handlers = StartedWithin(events, TicksAt(processingStart), TicksAt(processingStart + TimeSpan.FromMilliseconds(interaction.ProcessingMs)), BevToolsEventKind.UiEvent);
                 // One handler ran in it, or the match says nothing.
                 handler = handlers.Count == 1 ? handlers[0] : null;
+                interaction = interaction with { HandlerEventId = handler?.Id, HandlerTitle = handler?.Title };
             }
 
-            var name = Clip(i.Name, 40) ?? "event";
-            var interaction = new BevInteraction(now - TimeSpan.FromMilliseconds(i.AgeMs), name, i.DurationMs, Math.Max(0, i.InputDelayMs), Math.Max(0, i.ProcessingMs), Math.Max(0, i.PresentationMs), Clip(i.Target, 200))
+            if (interaction.DurationMs >= 50)
             {
-                HandlerEventId = handler?.Id,
-                HandlerTitle = handler?.Title,
-            };
-            if (i.DurationMs >= 50)
-            {
-                interaction.TimelineEventId = session.Timeline.Record(new BevToolsEvent
+                var evt = new BevToolsEvent
                 {
                     Timestamp = interaction.At,
-                    StartTicks = nowTicks - Ticks(i.AgeMs),
+                    StartTicks = TicksAt(interaction.At),
                     Kind = BevToolsEventKind.Browser,
                     Category = "interaction",
-                    Title = name + (interaction.Target is null ? "" : " on " + interaction.Target) + ": next paint after " + BevFmt.Ms(i.DurationMs),
+                    Title = interaction.Name + (interaction.Target is null ? "" : " on " + interaction.Target) + ": next paint after " + BevFmt.Ms(interaction.DurationMs),
                     Detail = Breakdown(interaction),
-                    DurationMs = i.DurationMs,
-                    Severity = i.DurationMs >= session.Options.Diagnostics.SlowInteractionMs ? BevToolsSeverity.Warning : BevToolsSeverity.Info,
+                    DurationMs = interaction.DurationMs,
+                    Severity = interaction.DurationMs >= session.Options.Diagnostics.SlowInteractionMs ? BevToolsSeverity.Warning : BevToolsSeverity.Info,
                     ParentEventId = handler?.Id,
-                });
+                };
+                interaction.TimelineEventId = earlier is { TimelineEventId: > 0 } && session.Timeline.Replace(earlier.TimelineEventId, evt) ? earlier.TimelineEventId : session.Timeline.Record(evt);
             }
 
-            state.Add(interaction);
+            if (earlier is not null)
+            {
+                state.Replace(earlier, interaction);
+            }
+            else
+            {
+                state.Add(interaction);
+            }
         }
 
         session.Touch();
+
+        long TicksAt(DateTimeOffset at) => nowTicks - Ticks((now - at).TotalMilliseconds);
+    }
+
+    /// <summary>
+    /// Two parts of one interaction as the hub puts its entries together: from the first input to the paint after the
+    /// last, the processing spanning both, named after the part whose handlers took longer.
+    /// </summary>
+    private static BevInteraction Merge(BevInteraction a, BevInteraction b)
+    {
+        static DateTimeOffset After(DateTimeOffset at, double ms) => at + TimeSpan.FromMilliseconds(ms);
+        var start = a.At < b.At ? a.At : b.At;
+        var end = After(a.At, a.DurationMs) > After(b.At, b.DurationMs) ? After(a.At, a.DurationMs) : After(b.At, b.DurationMs);
+        var processingStart = After(a.At, a.InputDelayMs) < After(b.At, b.InputDelayMs) ? After(a.At, a.InputDelayMs) : After(b.At, b.InputDelayMs);
+        var processingEnd = After(a.At, a.InputDelayMs + a.ProcessingMs) > After(b.At, b.InputDelayMs + b.ProcessingMs) ? After(a.At, a.InputDelayMs + a.ProcessingMs) : After(b.At, b.InputDelayMs + b.ProcessingMs);
+        var named = b.ProcessingMs > a.ProcessingMs ? b : a;
+        return new BevInteraction(start, named.Name, (end - start).TotalMilliseconds, Math.Max(0, (processingStart - start).TotalMilliseconds),
+            Math.Max(0, (processingEnd - processingStart).TotalMilliseconds), Math.Max(0, (end - processingEnd).TotalMilliseconds), named.Target ?? a.Target ?? b.Target)
+        {
+            InteractionId = a.InteractionId,
+        };
     }
 
     internal static string Breakdown(BevInteraction i) =>
@@ -298,7 +381,11 @@ public sealed class BevResponsiveness
     internal static string Describe(BevLongFrame frame)
     {
         var parts = new List<string>();
-        if (frame.OwnMs > 0)
+        if (frame.OwnMsIsLowerBound)
+        {
+            parts.Add("at least " + BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering (it rendered more often than BevTools keeps count of)");
+        }
+        else if (frame.OwnMs > 0)
         {
             parts.Add(BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering");
         }
@@ -313,7 +400,7 @@ public sealed class BevResponsiveness
             parts.Add(BevFmt.Ms(s.DurationMs) + " " + (string.IsNullOrEmpty(s.Invoker) ? s.Type : s.Invoker) + (string.IsNullOrEmpty(s.Source) ? "" : " (" + s.Source + (string.IsNullOrEmpty(s.Fn) ? "" : " " + s.Fn) + ")"));
         }
 
-        return parts.Count == 0 ? "no script attribution (this browser reports long tasks, not long animation frames)" : string.Join("; ", parts);
+        return parts.Count == 0 ? "no script attribution" : string.Join("; ", parts);
     }
 
     private static BevFrameScript Clean(BevFrameScript s) => new()

@@ -10,6 +10,9 @@ internal sealed class BevLogStore
     // Per LogLevel (Trace … Critical), counted for the whole session: the buffer drops the oldest entries, the counts
     // still say how many warnings there were.
     private readonly int[] _counts = new int[6];
+    // An entry and its count go in together, and a clear takes both away together: a Clear between the two would leave
+    // a count for an entry that is gone, or an entry without its count.
+    private readonly object _lock = new();
     private long _nextId;
 
     public BevLogStore(BevToolsSession session, BitBevToolsOptions options)
@@ -41,10 +44,13 @@ internal sealed class BevLogStore
 
     public void Add(BevLogRecord record)
     {
-        _records.Add(record);
-        if (record.Level is >= LogLevel.Trace and <= LogLevel.Critical)
+        lock (_lock)
         {
-            Interlocked.Increment(ref _counts[(int)record.Level]);
+            _records.Add(record);
+            if (record.Level is >= LogLevel.Trace and <= LogLevel.Critical)
+            {
+                Interlocked.Increment(ref _counts[(int)record.Level]);
+            }
         }
 
         _session.Touch();
@@ -56,10 +62,13 @@ internal sealed class BevLogStore
 
     public void Clear()
     {
-        _records.Clear();
-        for (var i = 0; i < _counts.Length; i++)
+        lock (_lock)
         {
-            Volatile.Write(ref _counts[i], 0);
+            _records.Clear();
+            for (var i = 0; i < _counts.Length; i++)
+            {
+                Volatile.Write(ref _counts[i], 0);
+            }
         }
 
         _session.Touch();

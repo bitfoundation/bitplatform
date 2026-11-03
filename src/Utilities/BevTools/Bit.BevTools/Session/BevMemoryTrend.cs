@@ -54,7 +54,8 @@ internal readonly record struct BevMemoryReading(long HeapBytes, int FullCollect
 }
 
 /// <summary>
-/// The session's memory over time, read once a second while BevTools' panel component is on the page (open or not): the
+/// The session's memory over time, read once a second while BevTools' panel component is on the page (open or not) and
+/// kept while capture is on (paused, nothing is added): the
 /// heap, full collections - each a timeline event, so a slow interaction or a long frame can be read next to the pause
 /// that came with it - the heap after each full collection, and on WebAssembly the linear memory. The last ten minutes.
 /// On a server the heap and its collections are the process's, shared by every circuit, and the panel says so.
@@ -75,8 +76,15 @@ public sealed class BevMemoryTrend
 
     internal void Clear()
     {
-        _samples.Clear();
-        _collections.Clear();
+        lock (_lock)
+        {
+            // A trend that starts over: the next reading is taken whenever it comes, and a collection is told against
+            // readings made after the clear only.
+            _samples.Clear();
+            _collections.Clear();
+            _last = null;
+            _lastAt = default;
+        }
     }
 
     /// <summary>Reads the counters at most once a second; returns whether a sample was taken.</summary>
@@ -93,7 +101,13 @@ public sealed class BevMemoryTrend
         }
 
         var reading = read();
-        _samples.Add(new BevMemorySample(now, reading.HeapBytes, reading.FullCollections, reading.PauseMs) { LinearMemoryBytes = reading.LinearMemoryBytes });
+        // Paused, the trend stays as it was read, like every other buffer; the counters are still followed, so a
+        // collection made while paused is not put down to the first reading after it.
+        if (session.IsCapturing)
+        {
+            _samples.Add(new BevMemorySample(now, reading.HeapBytes, reading.FullCollections, reading.PauseMs) { LinearMemoryBytes = reading.LinearMemoryBytes });
+        }
+
         BevMemoryReading? previous;
         lock (_lock)
         {

@@ -23,7 +23,7 @@ public sealed class BevProfileComparisonOptions
 
     /// <summary>
     /// A type's bytes allocated per render change by this many at least. Default 1024. Compared only when both recordings
-    /// measured allocations; per render, so a type that renders more often is a render regression, not also this one.
+    /// measured allocations, in the same render mode; per render, so a type that renders more often is a render regression, not also this one.
     /// </summary>
     public long MinAllocationChangeBytes { get; set; } = 1024;
 
@@ -212,7 +212,7 @@ public static class BevProfileComparison
         {
             before.TryGetValue(type, out var b);
             after.TryGetValue(type, out var a);
-            var (kind, reason) = Classify(b, a, options);
+            var (kind, reason) = Classify(b, a, options, SameRenderMode(baseline, current));
             changes.Add(new BevProfileTypeChange(
                 type,
                 (a ?? b)!.DisplayName,
@@ -249,7 +249,12 @@ public static class BevProfileComparison
         return new BevProfileComparisonResult(ordered, Warnings(baseline, current), baseline.RecordedAt, current.RecordedAt);
     }
 
-    private static (BevProfileChangeKind Kind, string? Reason) Classify(BevProfileTypeTotals? baseline, BevProfileTypeTotals? current, BevProfileComparisonOptions options)
+    // As Warnings decides it: two render modes run on different runtimes (a circuit's CoreCLR, the browser's Mono), whose
+    // allocations differ for the same code.
+    private static bool SameRenderMode(BevRenderProfile baseline, BevRenderProfile current) =>
+        baseline.RenderMode is not { } before || current.RenderMode is not { } after || before == after;
+
+    private static (BevProfileChangeKind Kind, string? Reason) Classify(BevProfileTypeTotals? baseline, BevProfileTypeTotals? current, BevProfileComparisonOptions options, bool sameRenderMode)
     {
         if (baseline is null)
         {
@@ -272,7 +277,7 @@ public static class BevProfileComparison
         var bytesBefore = baseline.AllocatedBytes is { } ab && baseline.Renders > 0 ? (double)ab / baseline.Renders : (double?)null;
         var bytesAfter = current.AllocatedBytes is { } aa && current.Renders > 0 ? (double)aa / current.Renders : (double?)null;
         var allocationDelta = bytesBefore is { } pb && bytesAfter is { } pa ? pa - pb : 0;
-        var allocationsChanged = bytesBefore is not null && bytesAfter is not null
+        var allocationsChanged = sameRenderMode && bytesBefore is not null && bytesAfter is not null
             && Math.Abs(allocationDelta) >= options.MinAllocationChangeBytes && Math.Abs(allocationDelta) > bytesBefore.Value * options.AllocationChangeRatio;
         var allocations = "allocated per render " + (allocationDelta >= 0 ? "+" : "-") + BevProfileComparisonResult.Bytes(Math.Abs(allocationDelta)) + Percent(allocationDelta, bytesBefore ?? 0);
         var moreAllocations = allocationsChanged && allocationDelta > 0 ? ", " + allocations : "";
@@ -329,7 +334,7 @@ public static class BevProfileComparison
         // A patch release does not change what renders cost; another major or minor version can.
         if (baseline.Runtime is { } runtimeBefore && current.Runtime is { } runtimeAfter && MajorMinor(runtimeBefore) != MajorMinor(runtimeAfter))
         {
-            warnings.Add("Recorded on different runtimes (" + runtimeBefore + " → " + runtimeAfter + "): times are not comparable.");
+            warnings.Add("Recorded on different runtimes (" + runtimeBefore + " → " + runtimeAfter + "): render counts are comparable, times and allocations are not.");
         }
 
         if (baseline.FromComponents || current.FromComponents)

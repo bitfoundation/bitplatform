@@ -78,7 +78,8 @@ public sealed class BevRenderSample
     public long? AllocatedBytes
     {
         get => (_packed & int.MaxValue) is var stored and > 0 ? stored - 1L : null;
-        set => _packed = (_packed & int.MinValue) | (value is { } bytes ? (int)Math.Clamp(bytes + 1, 1, int.MaxValue) : 0);
+        // Clamped before the one is added: long.MaxValue + 1 would wrap to a negative count and read as nothing allocated.
+        set => _packed = (_packed & int.MinValue) | (value is { } bytes ? (int)Math.Clamp(bytes, 0, int.MaxValue - 1) + 1 : 0);
     }
 }
 

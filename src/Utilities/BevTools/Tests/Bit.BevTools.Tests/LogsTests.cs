@@ -54,6 +54,30 @@ public class LogsTests
     }
 
     [TestMethod]
+    public void A_framework_category_is_the_namespace_or_one_below_it_and_names_are_redacted_by_shape()
+    {
+        Assert.IsTrue(BevToolsLoggerProvider.IsFrameworkCategory("Microsoft.JSInterop"));
+        Assert.IsTrue(BevToolsLoggerProvider.IsFrameworkCategory("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost"));
+        Assert.IsFalse(BevToolsLoggerProvider.IsFrameworkCategory("Microsoft.JSInteropExtras.Bridge"), "someone else's namespace");
+        Assert.IsFalse(BevToolsLoggerProvider.IsFrameworkCategory("Microsoft.AspNetCore.ComponentsShop"));
+
+        var (session, scope, factory) = Create();
+        using (scope)
+        {
+            const string token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.c2lnbmF0dXJlLXZhbHVl";
+            using (session.UseAmbient())
+            {
+                factory.CreateLogger("Shop.Session." + token).LogInformation(new EventId(7, "Issued " + token), "Issued");
+            }
+
+            var log = Assert.ContainsSingle(session.Logs.Snapshot());
+            Assert.DoesNotContain("eyJ", log.Category, StringComparison.Ordinal);
+            Assert.DoesNotContain("eyJ", log.EventName!, StringComparison.Ordinal);
+            Assert.DoesNotContain("eyJ", session.Timeline.Find(log.TimelineEventId)!.Detail!, StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
     public void Entries_below_the_minimum_level_are_left_out_and_the_minimum_can_be_lowered()
     {
         var (session, scope, factory) = Create(factoryMinimum: LogLevel.Trace);
@@ -548,6 +572,29 @@ public class LogsPanelTests : BunitContext
 
         await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Categories").Click());
         StringAssert.Contains(panel.Markup, typeof(LoggingRowService).FullName!);
+    }
+
+    [TestMethod]
+    public async Task Leaving_the_entries_for_another_view_drops_the_command_they_were_filtered_by()
+    {
+        var logger = Services.GetRequiredService<ILoggerFactory>().CreateLogger(BevDbCommands.Category);
+        var executed = LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(BevDbCommands.ExecutedEventId), "Executed DbCommand ({elapsed}ms){commandText}");
+        using (Session.UseAmbient())
+        {
+            executed(logger, "4", "SELECT 1", null);
+            Services.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Other").LogInformation("Unrelated");
+        }
+
+        var panel = Render<BevToolsPanel>();
+        await panel.InvokeAsync(() => panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Logs", StringComparison.Ordinal)).Click());
+        await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Database").Click());
+        await panel.InvokeAsync(() => panel.FindAll(".bev-body tbody tr.bev-row").First().QuerySelector("button")!.Click());
+        StringAssert.Contains(panel.Markup, "Show every entry");
+
+        await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Categories").Click());
+        StringAssert.Contains(panel.Markup, "Shop.Other", "every category, not only the command's");
+        await panel.InvokeAsync(() => panel.FindAll(".bev-segmented button").First(b => b.TextContent == "Entries").Click());
+        Assert.DoesNotContain("Show every entry", panel.Markup, StringComparison.Ordinal);
     }
 }
 

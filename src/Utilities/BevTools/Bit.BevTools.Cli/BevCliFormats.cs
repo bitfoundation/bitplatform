@@ -34,10 +34,10 @@ internal static class BevCliFormats
         ?? "unknown";
 
     /// <summary>
-    /// The check as JSON. <paramref name="maxFindings"/> and <paramref name="maxText"/> bound it for an agent's context
-    /// (the MCP server); the CLI writes everything.
+    /// The check as JSON. <paramref name="maxFindings"/>, <paramref name="maxText"/> and <paramref name="maxBytes"/> bound
+    /// it for an agent's context (the MCP server); the CLI writes everything.
     /// </summary>
-    internal static string CheckJson(BevSessionCheckResult result, BevSessionCheckOptions options, string? file, bool indented = true, int maxFindings = int.MaxValue, int maxText = int.MaxValue) =>
+    internal static string CheckJson(BevSessionCheckResult result, BevSessionCheckOptions options, string? file, bool indented = true, int maxFindings = int.MaxValue, int maxText = int.MaxValue, int maxBytes = int.MaxValue) =>
         Write(indented, w =>
         {
             w.WriteStartObject();
@@ -85,17 +85,35 @@ internal static class BevCliFormats
             WriteNullable(w, "failedRequests", result.FailedRequests);
             w.WriteNumber("dismissedFindings", result.DismissedFindings);
             var all = result.Findings.Concat(result.Dismissed).ToList();
+            // What is written after the findings - the caveats and the truncation note - is kept room for.
+            var reserve = 512 + result.Caveats.Sum(c => 2L * Encoding.UTF8.GetByteCount(c) + 8);
+            var written = 0;
+            var full = false;
             w.WriteStartArray("findings");
             foreach (var f in all.Take(maxFindings))
             {
-                WriteFinding(w, f, maxText);
+                if (maxBytes == int.MaxValue)
+                {
+                    WriteFinding(w, f, maxText);
+                }
+                else if (!TryWriteWithin(w, maxBytes, reserve, always: false, item => WriteFinding(item, f, maxText)))
+                {
+                    full = true;
+                    break;
+                }
+
+                written++;
             }
 
             w.WriteEndArray();
-            if (all.Count > maxFindings)
+            if (written < all.Count)
             {
                 w.WriteNumber("findingsTotal", all.Count);
                 w.WriteBoolean("findingsTruncated", true);
+                if (full)
+                {
+                    w.WriteString("truncatedBy", "size: this answer reached its size bound; ignore rules or use get_findings with a filter");
+                }
             }
 
             w.WriteStartArray("caveats");
@@ -146,9 +164,20 @@ internal static class BevCliFormats
             w.WriteStartObject();
             // The tool ran; whether the check passed is in the results and the properties below.
             w.WriteBoolean("executionSuccessful", true);
-            if (result.Caveats.Count > 0)
+            if (result.Caveats.Count > 0 || result.FailedOnErrors)
             {
                 w.WriteStartArray("toolExecutionNotifications");
+                if (result.FailedOnErrors)
+                {
+                    // Recorded errors are no finding, so no result says they failed the check: this does.
+                    w.WriteStartObject();
+                    w.WriteString("level", "error");
+                    w.WriteStartObject("message");
+                    w.WriteString("text", $"{result.Errors} recorded error occurrence{(result.Errors == 1 ? "" : "s")} fail the check (--fail-on-errors).");
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                }
+
                 foreach (var caveat in result.Caveats)
                 {
                     w.WriteStartObject();
@@ -390,6 +419,29 @@ internal static class BevCliFormats
         }
 
         return Encoding.UTF8.GetString(buffer.WrittenSpan);
+    }
+
+    /// <summary>
+    /// Writes one value with <paramref name="write"/> into the compact <paramref name="w"/>, measured first, unless it
+    /// would take the answer past <paramref name="budget"/> bytes with <paramref name="reserve"/> left for what follows;
+    /// <paramref name="always"/> writes it whatever its size. False when it was left out.
+    /// </summary>
+    internal static bool TryWriteWithin(Utf8JsonWriter w, long budget, long reserve, bool always, Action<Utf8JsonWriter> write)
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var item = new Utf8JsonWriter(buffer, CompactJson))
+        {
+            write(item);
+        }
+
+        // The same accounting as the answer's own: what the writer flushed plus what it still holds, and a separator.
+        if (!always && w.BytesCommitted + w.BytesPending + buffer.WrittenCount + 1 + reserve > budget)
+        {
+            return false;
+        }
+
+        w.WriteRawValue(buffer.WrittenSpan, skipInputValidation: true);
+        return true;
     }
 
     private static void WriteFinding(Utf8JsonWriter w, BevCheckedFinding f, int maxText)

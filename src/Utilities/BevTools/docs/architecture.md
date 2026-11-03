@@ -108,8 +108,8 @@ identical to the previous render". The escalation gets its own timeline row.
 ### Pausing capture
 
 `BevToolsSession.IsCapturing` gates every capture path — `Timeline.Record`, the render sample, the HTTP handler, the
-JS interop wrapper, state-change notifications, JS→.NET batches — so a paused session's buffers are exactly what the
-developer was reading. Errors are still collected, failed HTTP requests and JS interop calls included: losing one
+JS interop wrapper, state-change notifications, JS→.NET batches, the memory trend's readings — so a paused session's
+buffers are exactly what the developer was reading. Errors are still collected, failed HTTP requests and JS interop calls included: losing one
 because the timeline was frozen would be worse than an inconsistent row, so they land in the error center with no
 timeline link. A UI event or navigation that starts while paused is never adopted as a trigger, so nothing points at an
 event that is not in the timeline. Renders that happen while paused increment a

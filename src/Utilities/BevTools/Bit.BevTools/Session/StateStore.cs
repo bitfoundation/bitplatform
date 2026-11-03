@@ -88,6 +88,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
         }
 
         var entry = new BevStateProviderEntry(provider, origin, _options.MaxStateChangesPerProvider);
+        string? duplicate = null;
         lock (_lock)
         {
             if (_handlers.ContainsKey(provider))
@@ -95,10 +96,25 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                 return NullDisposable.Instance;
             }
 
-            _entries.Add(entry);
-            Action<BevStateChangeInfo> handler = info => OnChanged(entry, info);
-            _handlers[provider] = handler;
-            provider.Changed += handler;
+            // The State panel, the protocol and exports name a provider by its name: a second one of the same name could
+            // be neither selected nor told apart (an integration registered twice, two adapters named alike).
+            if (_entries.Any(e => string.Equals(e.Name, provider.Name, StringComparison.Ordinal)))
+            {
+                duplicate = provider.Name;
+            }
+            else
+            {
+                _entries.Add(entry);
+                Action<BevStateChangeInfo> handler = info => OnChanged(entry, info);
+                _handlers[provider] = handler;
+                provider.Changed += handler;
+            }
+        }
+
+        if (duplicate is not null)
+        {
+            _session.Errors.Record(null, "bevtools", $"A state provider named '{BevRedactor.RedactText(duplicate)}' is already registered; this one ({TypeNames.Short(provider.GetType())}, {origin}) is not shown. Give it a name of its own.");
+            return NullDisposable.Instance;
         }
 
         try
@@ -225,7 +241,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
                     Changes = changes,
                     Snapshot = pending.Snapshot,
                     TriggerEventId = pending.TriggerEventId,
-                    RestoreToken = entry.Provider is IBevStateRestorer && pending.Info?.RestoreToken is { Length: > 0 and <= 200 } token ? token : null,
+                    RestoreToken = entry.Provider is IBevStateRestorer && pending.Info?.RestoreToken is { Length: > 0 } token ? token : null,
                 };
                 entry.History.Add(record);
 

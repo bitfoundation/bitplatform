@@ -274,7 +274,8 @@
     {
         View.ByCategory = byCategory;
         View.ByCommand = byCommand;
-        if (byCommand)
+        // Only the entries view shows the command it is filtered by; the others would be filtered by one they hide.
+        if (byCategory || byCommand)
         {
             View.Command = null;
         }

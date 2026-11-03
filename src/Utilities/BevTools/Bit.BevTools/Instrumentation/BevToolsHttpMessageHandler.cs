@@ -255,7 +255,9 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
 
             var traceId = header.Substring(3, 32);
             var spanId = header.Substring(36, 16);
-            if (traceId.All(char.IsAsciiHexDigitLower) && spanId.All(char.IsAsciiHexDigitLower) && traceId.Any(c => c != '0'))
+            // W3C: lowercase hex throughout, and neither id all zeros.
+            if (traceId.All(char.IsAsciiHexDigitLower) && spanId.All(char.IsAsciiHexDigitLower) && traceId.Any(c => c != '0') && spanId.Any(c => c != '0')
+                && char.IsAsciiHexDigitLower(header[53]) && char.IsAsciiHexDigitLower(header[54]))
             {
                 record.TraceId = traceId;
                 record.SpanId = spanId;

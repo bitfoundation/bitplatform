@@ -232,6 +232,9 @@ public sealed class BitBevToolsOptions
     /// and never at the cost of the request: a stream is never read, and a response only when its length is known and
     /// within the limit. Only where <see cref="ValueAccess"/> is Full, and in a process that serves many users only in
     /// Development. Bodies are shown in the Network panel and written to exports: they routinely hold personal data.
+    /// A response's body is read before the response is handed on - a handler cannot tell how its caller will read it -
+    /// so a caller that asked for the headers only (<c>HttpCompletionOption.ResponseHeadersRead</c>) gets them once that
+    /// body, of a known length within the limit, has arrived.
     /// </summary>
     public bool CaptureHttpBodies { get; set; }
 

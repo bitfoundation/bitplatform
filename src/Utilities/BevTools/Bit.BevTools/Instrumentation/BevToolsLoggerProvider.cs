@@ -62,7 +62,8 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
     {
         foreach (var prefix in FrameworkPrefixes)
         {
-            if (category.StartsWith(prefix, StringComparison.Ordinal))
+            // The namespace itself or one below it: "Microsoft.JSInteropExtras" is someone else's.
+            if (category.StartsWith(prefix, StringComparison.Ordinal) && (category.Length == prefix.Length || category[prefix.Length] == '.'))
             {
                 return true;
             }
@@ -77,6 +78,11 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
 
     private sealed class CaptureLogger(BevToolsLoggerProvider provider, string category, bool framework) : ILogger
     {
+        // A category is code - the name CreateLogger was given, a type's most of the time - and is kept at every value
+        // access, like a component's type; credential-shaped text in it is redacted all the same. Classified by the
+        // name as given, shown as redacted.
+        private readonly string _shownCategory = BevRedactor.RedactText(category);
+
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => provider._scopes?.Push(state);
 
         public bool IsEnabled(LogLevel logLevel) =>
@@ -138,7 +144,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                         Kind = BevToolsEventKind.Error,
                         Category = "log:" + source,
                         Title = message,
-                        Detail = category,
+                        Detail = _shownCategory,
                         Severity = BevToolsSeverity.Warning,
                     });
                 }
@@ -161,7 +167,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             if (appError)
             {
                 // Errors are collected while capture is paused, like every other error; the entry itself is not.
-                var error = session.Errors.Record(exception, "log", ShortCategory(category) + ": " + record.Text, exceptionType: exception?.GetType().FullName ?? "Log" + logLevel);
+                var error = session.Errors.Record(exception, "log", ShortCategory(_shownCategory) + ": " + record.Text, exceptionType: exception?.GetType().FullName ?? "Log" + logLevel);
                 errorId = error.Id;
                 errorEventId = error.TimelineEventId;
             }
@@ -177,7 +183,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 Kind = BevToolsEventKind.Log,
                 Category = "log",
                 Title = record.ShortCategory + ": " + Shorten(record.Text, 200),
-                Detail = category,
+                Detail = _shownCategory,
                 Severity = logLevel switch
                 {
                     >= LogLevel.Error => BevToolsSeverity.Error,
@@ -189,7 +195,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 {
                     ["logId"] = record.Id,
                     ["level"] = logLevel.ToString(),
-                    ["category"] = category,
+                    ["category"] = _shownCategory,
                     ["eventId"] = eventId.Id,
                 },
             });
@@ -269,9 +275,9 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 Id = session.Logs.NextId(),
                 At = DateTimeOffset.UtcNow,
                 Level = logLevel,
-                Category = category,
+                Category = _shownCategory,
                 EventId = eventId.Id,
-                EventName = eventId.Name,
+                EventName = eventId.Name is { } eventName ? BevRedactor.RedactText(eventName) : null,
                 Message = message is null ? null : Shorten(message, MaxMessageLength),
                 MessageTemplate = template is null ? null : Shorten(template, MaxMessageLength),
                 Properties = properties,

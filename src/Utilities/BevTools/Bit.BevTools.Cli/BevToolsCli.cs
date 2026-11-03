@@ -88,6 +88,13 @@ internal static class BevToolsCli
                 }
             }
 
+            if (options.TryGetValue("--output", out var outputPath) && options.TryGetValue("--report", out var reportPath)
+                && string.Equals(Path.GetFullPath(outputPath[^1]), Path.GetFullPath(reportPath[^1]), OperatingSystem.IsWindows() || OperatingSystem.IsMacOS() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            {
+                // The result would be replaced and the Markdown appended to it: one file, neither readable.
+                throw new UsageException("--output and --report need different files.");
+            }
+
             var (markdown, formatted, failed) = args[0] switch
             {
                 "check" => Check(positional, options),
@@ -191,7 +198,7 @@ internal static class BevToolsCli
 
         if (options.ContainsKey("--min-allocation-change-bytes"))
         {
-            compareOptions.MinAllocationChangeBytes = (long)Number(options, "--min-allocation-change-bytes", integer: true);
+            compareOptions.MinAllocationChangeBytes = WholeNumber(options, "--min-allocation-change-bytes");
         }
 
         if (options.ContainsKey("--allocation-change-ratio"))
@@ -281,6 +288,15 @@ internal static class BevToolsCli
             && (!integer || (value == Math.Floor(value) && value <= int.MaxValue))
             ? value
             : throw new UsageException($"{name} takes a non-negative {(integer ? "whole number" : "number")}, not '{text}'.");
+    }
+
+    // A byte count can pass int.MaxValue, and a double cannot hold every long: read as Int64 itself.
+    private static long WholeNumber(Dictionary<string, List<string>> options, string name)
+    {
+        var text = options[name][^1];
+        return long.TryParse(text, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : throw new UsageException($"{name} takes a non-negative whole number, not '{text}'.");
     }
 
     private static string Read(string path) =>

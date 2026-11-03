@@ -29,11 +29,13 @@
                 }
                 else
                 {
+                    // A browser that reports no frames at all measured nothing: no zero to show.
+                    var framesObserved = r.Support is not { LongAnimationFrame: false, LongTask: false };
                     <div class="bev-stat-grid">
-                        <div class="bev-stat"><div class="bev-stat-value @(r.InteractionToNextPaintMs >= Session.Options.Diagnostics.SlowInteractionMs ? "bev-err" : "")">@(r.InteractionToNextPaintMs is { } inp ? BevFmt.Ms(inp) : "–")</div><div class="bev-stat-label" title="Interaction to Next Paint over the interactions BevTools saw: the slowest, ignoring one in every 50">INP · @r.InteractionCount interactions</div></div>
+                        <div class="bev-stat"><div class="bev-stat-value @(r.InteractionToNextPaintMs >= Session.Options.Diagnostics.SlowInteractionMs ? "bev-err" : "")">@(r.InteractionToNextPaintMs is { } inp ? BevFmt.Ms(inp) : "–")</div><div class="bev-stat-label" title="Interaction to Next Paint over the interactions BevTools saw (the newest @(BevResponsiveness.InpWindow.ToString("N0", System.Globalization.CultureInfo.InvariantCulture))): the slowest, ignoring one in every 50">INP · @r.InteractionCount interactions</div></div>
                         <div class="bev-stat"><div class="bev-stat-value">@(r.SlowestInteraction is { } slowest ? BevFmt.Ms(slowest.DurationMs) : "–")</div><div class="bev-stat-label">slowest@(r.SlowestInteraction is { } s ? ": " + s.Name + (s.Target is null ? "" : " on " + s.Target) : "")</div></div>
-                        <div class="bev-stat"><div class="bev-stat-value">@r.LongFrameCount</div><div class="bev-stat-label">long frames · longest @BevFmt.Ms(r.LongestFrameMs)</div></div>
-                        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(r.TotalBlockingMs)</div><div class="bev-stat-label">blocking time in them</div></div>
+                        <div class="bev-stat"><div class="bev-stat-value">@(framesObserved ? r.LongFrameCount.ToString(System.Globalization.CultureInfo.InvariantCulture) : "–")</div><div class="bev-stat-label">long frames · longest @(framesObserved ? BevFmt.Ms(r.LongestFrameMs) : "–")</div></div>
+                        <div class="bev-stat"><div class="bev-stat-value">@(framesObserved ? BevFmt.Ms(r.TotalBlockingMs) : "–")</div><div class="bev-stat-label">blocking time in them</div></div>
                     </div>
                     @if (r.Support is { } support && (!support.EventTiming || !support.LongAnimationFrame))
                     {

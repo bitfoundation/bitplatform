@@ -148,6 +148,12 @@ internal sealed class RenderTracker
                 var t2 = Stopwatch.GetTimestamp();
                 NoteAllocations(scope, a1);
                 EndRender(record, scope, t1, t2, ex);
+                if (record.IsBevTools)
+                {
+                    // A failed render of the panel's took the frame's time all the same.
+                    NoteOwnRender(t1, t2);
+                }
+
                 _session.Overhead.AddInstrumentation((t1 - t0) + (Stopwatch.GetTimestamp() - t2));
                 throw;
             }
@@ -179,22 +185,34 @@ internal sealed class RenderTracker
     // thread - can be the panel's own work. A fixed array, written only for BevTools' renders, never allocating.
     private readonly (long Start, long End)[] _ownRenders = new (long, long)[256];
     private int _ownRenderNext;
+    // Where the renders let go of to make room end: a window that starts before this has lost some of its own time.
+    private long _ownRendersForgottenUntil;
 
     internal void NoteOwnRender(long start, long end)
     {
         lock (_ownRenders)
         {
+            if (_ownRenders[_ownRenderNext].End > _ownRendersForgottenUntil)
+            {
+                _ownRendersForgottenUntil = _ownRenders[_ownRenderNext].End;
+            }
+
             _ownRenders[_ownRenderNext] = (start, end);
             _ownRenderNext = (_ownRenderNext + 1) % _ownRenders.Length;
         }
     }
 
-    /// <summary>How long BevTools' own components spent rendering between two timestamps, as far as the last 256 of their renders reach.</summary>
-    internal double OwnRenderMsWithin(long from, long to)
+    /// <summary>
+    /// How long BevTools' own components spent rendering between two timestamps, as far as the last 256 of their renders
+    /// reach. <paramref name="complete"/> is false when renders inside the window were let go of: the time is then a lower
+    /// bound - enough to say a frame was mostly BevTools', never enough to say it was not.
+    /// </summary>
+    internal double OwnRenderMsWithin(long from, long to, out bool complete)
     {
         long ticks = 0;
         lock (_ownRenders)
         {
+            complete = _ownRendersForgottenUntil <= from;
             foreach (var (start, end) in _ownRenders)
             {
                 if (end > from && start < to)

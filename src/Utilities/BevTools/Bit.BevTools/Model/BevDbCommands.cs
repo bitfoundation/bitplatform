@@ -73,13 +73,29 @@ public static class BevDbCommands
         return digits.Length is > 0 and <= 12 ? double.Parse(digits.ToString(), CultureInfo.InvariantCulture) : null;
     }
 
-    /// <summary>The SQL with its whitespace collapsed: what makes two executions the same command.</summary>
+    /// <summary>
+    /// The SQL with its layout collapsed: what makes two executions the same command. Whitespace inside a quoted literal
+    /// or identifier is the value's, and kept: 'a  b' is not 'a b'.
+    /// </summary>
     public static string Normalize(string sql)
     {
         var sb = new StringBuilder(sql.Length);
         var space = false;
+        var quote = '\0';
         foreach (var c in sql)
         {
+            if (quote != '\0')
+            {
+                // A doubled quote ('it''s') closes and reopens: the content is kept either way.
+                sb.Append(c);
+                if (c == quote)
+                {
+                    quote = '\0';
+                }
+
+                continue;
+            }
+
             if (char.IsWhiteSpace(c))
             {
                 space = sb.Length > 0;
@@ -90,6 +106,11 @@ public static class BevDbCommands
             {
                 sb.Append(' ');
                 space = false;
+            }
+
+            if (c is '\'' or '"')
+            {
+                quote = c;
             }
 
             sb.Append(c);

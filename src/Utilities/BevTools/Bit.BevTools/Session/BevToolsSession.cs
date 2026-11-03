@@ -499,6 +499,9 @@ public sealed class BevToolsSession : IDisposable
     /// Puts a marker in the timeline ("before the fix", "clicked Save"): a named point to find again among the events,
     /// in exports and in the performance trace. Recorded while capturing only, like every other event.
     /// </summary>
+    /// <summary>How many numbered markers the Timeline's ⚑ Mark put down this session: the next one is this plus one.</summary>
+    internal int MarkerCount { get; set; }
+
     public long AddMarker(string label)
     {
         ArgumentNullException.ThrowIfNull(label);

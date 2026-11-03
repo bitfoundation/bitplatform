@@ -147,6 +147,82 @@ public class CliFormatTests : BunitContext
     }
 
     [TestMethod]
+    public void A_sarif_log_says_when_only_recorded_errors_fail_the_check()
+    {
+        var folder = Directory.CreateTempSubdirectory("bevtools-cli-");
+        try
+        {
+            var export = WriteExport(folder.FullName);
+
+            // No finding fails at --fail-on none; the recorded error does.
+            var (code, output, _) = Run("check", export, "--format", "sarif", "--fail-on", "none", "--fail-on-errors");
+
+            Assert.AreEqual(BevToolsCli.Failed, code);
+            using var document = JsonDocument.Parse(output);
+            var run = Assert.ContainsSingle(document.RootElement.GetProperty("runs").EnumerateArray());
+            var properties = run.GetProperty("properties");
+            Assert.IsFalse(properties.GetProperty("passed").GetBoolean());
+            Assert.IsTrue(properties.GetProperty("failedOnErrors").GetBoolean());
+            Assert.IsFalse(run.GetProperty("results").EnumerateArray().Any(r => r.GetProperty("properties").GetProperty("fails").GetBoolean()), "no result says the check failed");
+            var notification = Assert.ContainsSingle(n => n.GetProperty("level").GetString() == "error",
+                Assert.ContainsSingle(run.GetProperty("invocations").EnumerateArray()).GetProperty("toolExecutionNotifications").EnumerateArray());
+            StringAssert.Contains(notification.GetProperty("message").GetProperty("text").GetString(), "fail the check (--fail-on-errors)");
+
+            var (passingCode, passing, _) = Run("check", export, "--format", "sarif", "--fail-on", "none");
+            Assert.AreEqual(BevToolsCli.Passed, passingCode);
+            using var passed = JsonDocument.Parse(passing);
+            var invocation = Assert.ContainsSingle(passed.RootElement.GetProperty("runs").EnumerateArray()).GetProperty("invocations")[0];
+            Assert.IsFalse(invocation.TryGetProperty("toolExecutionNotifications", out var notifications) && notifications.EnumerateArray().Any(n => n.GetProperty("level").GetString() == "error"),
+                "errors that fail nothing are no error notification");
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void Output_and_report_cannot_be_one_file()
+    {
+        var folder = Directory.CreateTempSubdirectory("bevtools-cli-");
+        try
+        {
+            var export = WriteExport(folder.FullName);
+            var file = Path.Combine(folder.FullName, "out.md");
+
+            var (code, _, error) = Run("check", export, "--output", file, "--report", Path.Combine(folder.FullName, ".", "out.md"));
+
+            Assert.AreEqual(BevToolsCli.Unusable, code);
+            StringAssert.Contains(error, "--output and --report need different files");
+            Assert.IsFalse(File.Exists(file), "refused before anything was written");
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void A_byte_threshold_past_int_max_value_is_taken_whole()
+    {
+        var folder = Directory.CreateTempSubdirectory("bevtools-cli-");
+        try
+        {
+            var export = WriteExport(folder.FullName);
+            var (code, output, _) = Run("compare", export, export, "--format", "json", "--min-allocation-change-bytes", "9223372036854775807");
+            Assert.AreEqual(BevToolsCli.Passed, code);
+            using var document = JsonDocument.Parse(output);
+            Assert.AreEqual(long.MaxValue, document.RootElement.GetProperty("options").GetProperty("minAllocationChangeBytes").GetInt64());
+            Assert.AreEqual(BevToolsCli.Unusable, Run("compare", export, export, "--min-allocation-change-bytes", "-1").Code);
+            Assert.AreEqual(BevToolsCli.Unusable, Run("compare", export, export, "--min-allocation-change-bytes", "1.5").Code);
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void The_github_format_escapes_what_an_export_says_so_no_text_can_start_a_command()
     {
         Assert.AreEqual("100%25 done%0D%0Anext", BevCliFormats.EscapeData("100% done\r\nnext"));

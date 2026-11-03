@@ -116,6 +116,71 @@ public class ResponsivenessTests
     }
 
     [TestMethod]
+    public void An_interaction_two_reports_carried_is_one_interaction()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            session.Platform = "Server";
+            var bridge = new BevJsBridge(session, () => { });
+            // The pointerdown reported before its click was: the same interaction id, the same first input.
+            var down = Interaction(500, 60, 2, 8, name: "pointerdown");
+            down.InteractionId = 7;
+            bridge.ReportResponsiveness([], [down]);
+            var click = Interaction(500, 320, 5, 250, name: "click");
+            click.InteractionId = 7;
+            bridge.ReportResponsiveness([], [click]);
+
+            var r = session.Browser.Responsiveness;
+            Assert.AreEqual(1, r.InteractionCount, "counted once");
+            var whole = Assert.ContainsSingle(r.Interactions);
+            Assert.AreEqual("click", whole.Name, "named after the part whose handlers took longest");
+            Assert.AreEqual(320, whole.DurationMs, 2);
+            Assert.AreEqual(2, whole.InputDelayMs, 2);
+            Assert.AreEqual(253, whole.ProcessingMs, 2);
+            Assert.AreSame(whole, r.SlowestInteraction);
+            Assert.AreEqual(320, r.InteractionToNextPaintMs!.Value, 2);
+            var events = session.Timeline.Snapshot().Where(e => e.Category == "interaction").ToArray();
+            var evt = Assert.ContainsSingle(events, "one event for the interaction, the first part's replaced");
+            Assert.AreEqual(whole.TimelineEventId, evt.Id);
+            StringAssert.StartsWith(evt.Title, "click on <button#save>: next paint after 32");
+
+            // Without an id nothing says two entries are one.
+            bridge.ReportResponsiveness([], [Interaction(300, 40, 1, 10), Interaction(200, 40, 1, 10)]);
+            Assert.AreEqual(3, r.InteractionCount);
+        }
+    }
+
+    [TestMethod]
+    public void A_frame_around_more_panel_renders_than_are_kept_says_its_own_time_is_the_least_it_spent()
+    {
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            session.Platform = "WebAssembly";
+            // 300 renders of 0.5 ms inside the frame - 150 ms of its 260 - of which the newest 256 are kept: 128 ms known.
+            for (var i = 0; i < 300; i++)
+            {
+                session.RenderTracker.NoteOwnRender(TicksAgo(1000 - i * 0.6), TicksAgo(1000 - i * 0.6 - 0.5));
+            }
+
+            new BevJsBridge(session, () => { }).ReportResponsiveness([new BevLongFramePayload { AgeMs = 1010, DurationMs = 260, BlockingMs = 210 }], []);
+
+            var frame = Assert.ContainsSingle(session.Browser.Responsiveness.Frames, "not shown to be the panel's, so recorded");
+            Assert.IsTrue(frame.OwnMsIsLowerBound);
+            Assert.IsFalse(frame.IsMostlyBevTools);
+            StringAssert.StartsWith(BevResponsiveness.Describe(frame), "at least " + BevFmt.Ms(frame.OwnMs) + " of it BevTools' own panel rendering");
+        }
+    }
+
+    [TestMethod]
+    public void A_frame_without_scripts_says_so_and_nothing_about_the_browser()
+    {
+        var frame = new BevLongFrame(DateTimeOffset.UtcNow, 120, 70, []);
+        Assert.AreEqual("no script attribution", BevResponsiveness.Describe(frame));
+    }
+
+    [TestMethod]
     public void Two_handlers_inside_one_interaction_name_neither()
     {
         var (session, scope) = TestHelpers.CreateSession();
@@ -255,5 +320,22 @@ public class ResponsivenessPanelTests : BunitContext
         StringAssert.Contains(text, "the browser's part");
         Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Name.StartsWith("Interaction latency", StringComparison.Ordinal)).Status);
         Assert.AreEqual(BevCapabilityStatus.Partial, session.Capabilities.Single(c => c.Name.StartsWith("Long frames", StringComparison.Ordinal)).Status);
+    }
+
+    [TestMethod]
+    public void A_browser_that_reports_no_frames_shows_no_frame_totals()
+    {
+        var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot
+        {
+            Online = true,
+            Responsiveness = new BevResponsivenessSupport { EventTiming = true },
+        });
+        var panel = Render<BevToolsPanel>();
+        panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Browser", StringComparison.Ordinal)).Click();
+
+        var stats = panel.FindAll(".bev-body .bev-stat").Select(s => s.TextContent).ToList();
+        Assert.Contains(s => s.StartsWith("–long frames · longest –", StringComparison.Ordinal), stats, string.Join(" | ", stats));
+        Assert.Contains(s => s.StartsWith("–blocking time", StringComparison.Ordinal), stats, "not measured, not zero");
     }
 }

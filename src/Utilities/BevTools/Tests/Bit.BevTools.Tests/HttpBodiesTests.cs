@@ -189,6 +189,69 @@ public class HttpBodiesTests
     }
 
     [TestMethod]
+    public async Task Json_content_is_serialized_again_for_the_copy_and_sent_as_it_would_have_been()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.CaptureHttpBodies = true);
+        using (scope)
+        {
+            long? sentLength = -1;
+            var echo = new CapturingHandler(request => sentLength = request.Content?.Headers.ContentLength);
+            using var client = new HttpClient(new BevToolsHttpMessageHandler(session) { InnerHandler = echo }) { BaseAddress = new Uri("https://api.test/") };
+            await client.PostAsJsonAsync("orders", new { sku = "A", count = 2 });
+            Assert.IsNull(sentLength, "not buffered by BevTools: a JSON body without a length is sent as one");
+            StringAssert.Contains(Assert.ContainsSingle(session.Http.Snapshot()).RequestBody, "\"sku\": \"A\"");
+
+            // A sequence is enumerated once, by the send.
+            await client.PostAsJsonAsync("stream", Numbers());
+            StringAssert.StartsWith(session.Http.Snapshot()[^1].RequestBodyNote, "an async sequence is enumerated once");
+        }
+
+        static async IAsyncEnumerable<int> Numbers()
+        {
+            await Task.Yield();
+            yield return 1;
+        }
+    }
+
+    [TestMethod]
+    public async Task Xml_and_json_that_does_not_parse_are_redacted_by_name_and_a_small_limit_is_the_limit()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o =>
+        {
+            o.CaptureHttpBodies = true;
+            o.MaxHttpBodyBytes = 100;
+            o.SensitiveNamePatterns.Add("pin");
+        });
+        using (scope)
+        {
+            var (client, _) = Client(session, () => Json("{}"));
+            await client.PostAsync("soap", new StringContent("<login><user>ada</user><ns:password a=\"1\">x1</ns:password><pin><![CDATA[42]]></pin></login>", Encoding.UTF8, "application/xml"));
+            await client.PostAsync("broken", new StringContent("{\"user\":\"ada\",\"pin\":\"42\",\"token\":\"ab\", oops", Encoding.UTF8, "application/json"));
+            await client.PostAsync("big", new StringContent(new string('x', 150), Encoding.UTF8, "text/plain"));
+
+            var records = session.Http.Snapshot();
+            Assert.AreEqual("<login><user>ada</user><ns:password a=\"1\">«redacted»</ns:password><pin>«redacted»</pin></login>", records[0].RequestBody);
+            Assert.AreEqual("{\"user\":\"ada\",\"pin\":\"«redacted»\",\"token\":\"«redacted»\", oops", records[1].RequestBody, "by name, however short the value");
+            StringAssert.StartsWith(records[2].RequestBodyNote, "larger than 100 B", "the limit set, not a floor under it");
+        }
+    }
+
+    /// <summary>Notes the request as the transport gets it, and answers with nothing.</summary>
+    private sealed class CapturingHandler(Action<HttpRequestMessage> seen) : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            seen(request);
+            if (request.Content is not null)
+            {
+                await request.Content.ReadAsStringAsync(cancellationToken);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
+        }
+    }
+
+    [TestMethod]
     public async Task Grpc_server_sent_events_and_graphql_are_told_apart()
     {
         var (session, scope) = TestHelpers.CreateSession(o => o.CaptureHttpBodies = true);
