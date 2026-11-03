@@ -1,0 +1,78 @@
+@inherits LandingComponentBase
+
+<div class="slot-demo">
+    <div class="slot-demo-top">
+        <RetailLogo />
+        <p class="slot-demo-title">@R[nameof(RetailStrings.DemoTitle)]</p>
+    </div>
+    <p class="slot-demo-basket">
+        <BitIcon IconName="@BitIconName.ShoppingCart" />
+        <span>@R[nameof(RetailStrings.DemoBasket), 23.ToString(CurrentCulture), Money(64.80m)]</span>
+    </p>
+
+    @if (booked)
+    {
+        <div class="slot-demo-booked" role="status">
+            <p class="slot-demo-booked-title"><BitIcon IconName="@BitIconName.CompletedSolid" /> @R[nameof(RetailStrings.DemoBooked)]</p>
+            <p class="slot-demo-booked-when">@Summary</p>
+            <p>@($"Northside Market {R[SelectedShop.NameKey]}")</p>
+            <div class="slot-demo-code">
+                <span>@R[nameof(RetailStrings.DemoCode)]</span>
+                <strong dir="ltr">@Code.ToString(CurrentCulture)</strong>
+            </div>
+            <ol class="slot-demo-steps">
+                <li class="is-done">@R[nameof(RetailStrings.DemoStepBooked)]</li>
+                <li>@R[nameof(RetailStrings.DemoStepPick), Time((slot ?? FirstSlot) - 2)]</li>
+                <li>@R[nameof(RetailStrings.DemoStepReady), Time(slot ?? FirstSlot)]</li>
+            </ol>
+            <p class="slot-demo-note">@R[nameof(RetailStrings.DemoTextYou)]</p>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" FullWidth OnClick="() => booked = false" Class="slot-demo-change">@R[nameof(RetailStrings.DemoChange)]</BitButton>
+        </div>
+    }
+    else
+    {
+        <div class="slot-demo-shop">
+            <BitDropdown Items="shopItems"
+                         Value="shop"
+                         ValueChanged="(string? value) => SelectShop(value)"
+                         Label="@R[nameof(RetailStrings.DemoShop)]" />
+            <p class="slot-demo-address"><BitIcon IconName="@BitIconName.MapPin" /> <span dir="ltr">@SelectedShop.Address</span></p>
+        </div>
+
+        <BitChoiceGroup Label="@R[nameof(RetailStrings.DemoDay)]"
+                        Items="dayItems"
+                        Value="day"
+                        ValueChanged="(int value) => SelectDay(value)"
+                        Horizontal
+                        NoCircle
+                        Classes="@(new() { Container = "slot-demo-days" })">
+            <ItemTemplate Context="item">
+                <span class="slot-demo-chip @(item.Value == day ? "is-selected" : null) @(item.IsDisabled ? "is-off" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="@R[nameof(RetailStrings.DemoTime)]"
+                        Items="slotItems"
+                        @bind-Value="slot"
+                        Horizontal
+                        NoCircle
+                        Classes="@(new() { Container = "slot-demo-grid" })">
+            <ItemTemplate Context="item">
+                <span class="slot-demo-slot @(item.Value == slot ? "is-selected" : null) @(item.IsDisabled ? "is-off" : null)">
+                    <span>@item.Text</span>
+                    @if (IsFull(item.Value))
+                    {
+                        <small>@R[nameof(RetailStrings.DemoFull)]</small>
+                    }
+                </span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+
+        <div class="slot-demo-summary" aria-live="polite">
+            <p class="slot-demo-when">@Summary</p>
+            <p><BitIcon IconName="@BitIconName.Tag" /> @R[nameof(RetailStrings.DemoFree)]</p>
+        </div>
+
+        <BitButton FullWidth IconName="@BitIconName.Calendar" OnClick="Book" Disabled="slot is null">@R[nameof(RetailStrings.DemoBook)]</BitButton>
+    }
+</div>

@@ -1,0 +1,58 @@
+@include site(lp-period-tracker) {
+    --mark: #7A2E67;
+    --plum: #7A2E67;
+    --plum-deep: #4E1A42;
+    --plum-soft: #F4E8F1;
+    --rose: #D9546F;
+    --rose-strong: #B83A57;
+    --rose-light: #EFA3B2;
+    --rose-soft: #FBE4E9;
+    --peach: #F4A97F;
+    --peach-soft: #FDEBDD;
+    --peach-text: #9A4A1E;
+    --orbit: #E9D3DE;
+
+    @include type("Instrument Serif", "Instrument Sans");
+    @include shape(24px, 12px);
+    @include palette(light, #7A2E67, #FFFFFF, #FFFBF9, #FBF0EE, #FFFFFF, #2A1426, #6B5266, #EEDDE3);
+}
+
+@include site-dark(lp-period-tracker) {
+    --mark: #F6B48F;
+    --plum: #E7B8DA;
+    --plum-deep: #F3D6EA;
+    --plum-soft: #3A2036;
+    --rose: #F07D96;
+    --rose-strong: #FF9DB1;
+    --rose-light: #A9566A;
+    --rose-soft: #4A2236;
+    --peach: #F6B48F;
+    --peach-soft: #3E2530;
+    --peach-text: #F6B48F;
+    --orbit: #3F2A3B;
+
+    @include palette(dark, #F6B48F, #2A1426, #1A0E18, #221320, #2B1828, #F8EDF3, #CDB3C5, #432A3E);
+}
+
+.lp-period-tracker {
+    font-synthesis: none;
+
+    :is(h1, h2, h3, .lp-nav-brand, .lp-footer-brand) {
+        font-weight: 400;
+        letter-spacing: -.01em;
+
+        &:lang(fa) {
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+    }
+
+    :is(h1, h2) em {
+        font-style: italic;
+        color: var(--lp-accent);
+
+        &:lang(fa) {
+            font-style: normal;
+        }
+    }
+}

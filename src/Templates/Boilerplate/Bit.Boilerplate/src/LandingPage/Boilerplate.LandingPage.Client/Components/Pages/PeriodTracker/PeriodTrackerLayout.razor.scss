@@ -1,0 +1,7 @@
+@import '../../../Styles/tokens';
+
+::deep .tracker-nav-cta {
+    @include lt-sm {
+        display: none;
+    }
+}

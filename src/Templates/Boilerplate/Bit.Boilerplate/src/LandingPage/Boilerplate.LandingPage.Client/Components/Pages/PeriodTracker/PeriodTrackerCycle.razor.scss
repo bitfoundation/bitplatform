@@ -1,0 +1,303 @@
+.cycle-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    height: 100%;
+    padding: 40px 14px 12px;
+    overflow: hidden;
+    background: var(--lp-surface);
+    font-size: .8125rem;
+}
+
+.cycle-demo-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cycle-demo-brand {
+    flex: 1;
+    font-family: var(--lp-stack-display);
+    font-size: 1.375rem;
+    font-style: italic;
+    line-height: 1;
+}
+
+.cycle-demo-local {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--plum-soft);
+    color: var(--plum);
+    font-size: .6875rem;
+    --bit-Icon-color: currentColor;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cycle-ring {
+    position: relative;
+    flex: none;
+    width: 212px;
+    max-width: 100%;
+    aspect-ratio: 1;
+    margin-inline: auto;
+}
+
+.cycle-ring-track {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+
+    circle {
+        fill: none;
+        stroke: var(--lp-line);
+        stroke-width: .6;
+    }
+}
+
+.cycle-ring-window {
+    fill: none;
+    stroke: var(--peach-soft);
+    stroke-width: 9.5;
+    stroke-linecap: round;
+}
+
+.cycle-days {
+    position: absolute;
+    inset: 0;
+}
+
+.cycle-day {
+    --r: 94px;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    margin: -9px;
+    padding: 0;
+    border: 1.5px solid color-mix(in oklab, var(--lp-line), var(--lp-fg) 30%);
+    border-radius: 50%;
+    background: var(--lp-surface);
+    transform: rotate(calc(var(--i) * 12deg)) translateY(calc(var(--r) * -1)) rotate(calc(var(--i) * -12deg));
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, scale .15s var(--lp-ease);
+
+    &:hover {
+        border-color: var(--lp-fg);
+    }
+
+    &.is-window {
+        border-style: dashed;
+        border-color: var(--rose);
+        background: transparent;
+    }
+
+    &.is-spotting {
+        border-color: var(--rose);
+        background: radial-gradient(circle, var(--rose) 0 3px, var(--lp-surface) 3.5px);
+    }
+
+    &.is-light {
+        border-color: var(--rose);
+        background: var(--rose-light);
+    }
+
+    &.is-medium {
+        border-color: var(--rose);
+        background: var(--rose);
+    }
+
+    &.is-heavy {
+        border-color: var(--rose-strong);
+        background: var(--rose-strong);
+    }
+
+    &.has-notes::after {
+        content: "";
+        position: absolute;
+        inset-block-end: -3px;
+        inset-inline-end: -3px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--plum);
+        box-shadow: 0 0 0 1.5px var(--lp-surface);
+    }
+
+    &.is-today {
+        box-shadow: 0 0 0 2px var(--lp-surface), 0 0 0 3.5px var(--plum);
+    }
+
+    &.is-selected {
+        z-index: 1;
+        outline: 2px solid var(--lp-accent);
+        outline-offset: 2px;
+        scale: 1.15;
+    }
+
+    &:focus-visible {
+        z-index: 2;
+        outline: 3px solid var(--lp-fg);
+        outline-offset: 2px;
+    }
+
+    &.is-future {
+        border-color: transparent;
+        background: radial-gradient(circle, color-mix(in oklab, var(--lp-line), var(--lp-fg) 25%) 0 2.5px, transparent 3px);
+        cursor: default;
+
+        &.is-window {
+            border-color: var(--rose);
+            background: transparent;
+        }
+    }
+}
+
+.cycle-center {
+    position: absolute;
+    inset: 46px;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 2px;
+    text-align: center;
+}
+
+.cycle-center-label {
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+    font-weight: 600;
+}
+
+.cycle-center-day {
+    font-family: var(--lp-stack-display);
+    font-size: 3.125rem;
+    line-height: .95;
+    font-variant-numeric: tabular-nums;
+}
+
+.cycle-center-status {
+    max-width: 116px;
+    color: var(--rose-strong);
+    font-size: .75rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.cycle-forecast {
+    display: grid;
+    justify-items: center;
+    gap: 1px;
+    text-align: center;
+}
+
+.cycle-forecast-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.cycle-key {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border: 1.5px dashed var(--rose);
+    border-radius: 50%;
+    background: var(--peach-soft);
+}
+
+.cycle-forecast-average {
+    color: var(--lp-fg-muted);
+    font-size: .75rem;
+}
+
+.cycle-log {
+    display: grid;
+    gap: 7px;
+    padding-top: 7px;
+    border-top: 1px solid var(--lp-line);
+
+    --bit-ChoiceGroup-padding: 0;
+    --bit-ChoiceGroup-gap: 5px;
+    --bit-ChoiceGroup-label-font-size: .8125rem;
+    --bit-ChoiceGroup-label-font-weight: 600;
+}
+
+.cycle-log-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+
+    p {
+        font-weight: 700;
+        text-align: center;
+    }
+}
+
+.cycle-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.cycle-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border: 1px solid var(--lp-line);
+    border-radius: 999px;
+    background: var(--lp-surface);
+    font-size: .75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color .15s, color .15s, border-color .15s;
+
+    &.is-selected {
+        border-color: var(--lp-accent);
+        background: var(--lp-accent);
+        color: var(--lp-accent-fg);
+    }
+}
+
+.cycle-symptoms {
+    display: grid;
+    gap: 6px;
+
+    --bit-ToggleButton-outline-color: var(--lp-fg);
+    --bit-ToggleButton-outline-border-color: var(--lp-line);
+    --bit-ToggleButton-outline-background: var(--lp-surface);
+    --bit-ToggleButton-outline-hover-color: var(--lp-fg);
+    --bit-ToggleButton-outline-hover-border-color: var(--lp-fg-muted);
+    --bit-ToggleButton-outline-hover-background: var(--lp-bg-alt);
+    --bit-ToggleButton-outline-active-color: var(--lp-fg);
+    --bit-ToggleButton-outline-active-border-color: var(--lp-fg);
+    --bit-ToggleButton-outline-active-background: var(--lp-bg-alt);
+    --bit-ToggleButton-checked-color: var(--lp-accent-fg);
+    --bit-ToggleButton-checked-background: var(--lp-accent);
+    --bit-ToggleButton-checked-border-color: var(--lp-accent);
+    --bit-ToggleButton-checked-hover-color: var(--lp-accent-fg);
+    --bit-ToggleButton-checked-hover-background: var(--bit-clr-pri-hover);
+    --bit-ToggleButton-checked-hover-border-color: var(--bit-clr-pri-hover);
+    --bit-ToggleButton-checked-active-color: var(--lp-accent-fg);
+    --bit-ToggleButton-checked-active-background: var(--bit-clr-pri-active);
+    --bit-ToggleButton-checked-active-border-color: var(--bit-clr-pri-active);
+    --bit-ToggleButton-radius: 999px;
+    --bit-ToggleButton-font-size: .75rem;
+    --bit-ToggleButton-font-weight: 600;
+    --bit-ToggleButton-padding: 3px 8px;
+    --bit-ToggleButton-min-height: 26px;
+    --bit-ToggleButton-min-width: 0;
+}
+
+.cycle-symptoms-label {
+    font-size: .8125rem;
+    font-weight: 600;
+}

@@ -1,0 +1,78 @@
+.hotel-map {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.hotel-map-sea {
+    fill: color-mix(in oklab, var(--hotel-sea), var(--lp-bg) 45%);
+}
+
+.hotel-map-land {
+    fill: color-mix(in oklab, var(--hotel-grass), var(--lp-bg) 55%);
+}
+
+.hotel-map-sand {
+    fill: var(--hotel-sand);
+}
+
+.hotel-map-ferry {
+    fill: none;
+    stroke: var(--lp-fg);
+    stroke-width: 2;
+    stroke-dasharray: 6 6;
+    stroke-linecap: round;
+}
+
+.hotel-map-tower {
+    fill: var(--lp-surface);
+    stroke: var(--lp-fg);
+    stroke-width: .8;
+}
+
+.hotel-map-red {
+    fill: none;
+    stroke: var(--hotel-red);
+    stroke-width: 2.2;
+}
+
+.hotel-map-dot {
+    fill: var(--lp-fg);
+}
+
+.hotel-map-pin {
+    fill: var(--lp-accent);
+}
+
+.hotel-map-pin-dot {
+    fill: var(--lp-accent-fg);
+}
+
+.hotel-map-label {
+    fill: var(--lp-fg);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.hotel-map-strong {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.hotel-map-note {
+    fill: var(--lp-fg-muted);
+    font-size: 12px;
+}
+
+.hotel-map-island {
+    fill: var(--lp-fg);
+    font-family: var(--lp-stack-display);
+    font-size: 30px;
+    opacity: .75;
+}
+
+.hotel-map-north {
+    fill: var(--lp-fg);
+    font-size: 12px;
+    font-weight: 700;
+}

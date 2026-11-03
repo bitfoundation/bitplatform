@@ -1,0 +1,28 @@
+@import '../../../Styles/tokens';
+
+.lp-retail {
+    --lp-chat-bubble-bg: var(--retail-ink);
+    --lp-chat-bubble-fg: var(--retail-ink-fg);
+}
+
+.retail-wordmark {
+    font-weight: 800;
+    letter-spacing: -.01em;
+
+    &:lang(fa) {
+        letter-spacing: 0;
+    }
+}
+
+::deep .retail-nav-cta {
+    @include lt-sm {
+        display: none;
+    }
+}
+
+@media (min-width: $breakpoint-sm) {
+    ::deep .retail-chat:not(:lang(fa)) {
+        right: 0;
+        bottom: auto;
+    }
+}

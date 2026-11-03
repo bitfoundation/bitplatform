@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Little Copper: order ahead at our three Copenhagen cafés</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>The Little Copper app opens on 15 January 2027: order your coffee on the way and skip the queue, collect stamps without a paper card, and book a table for brunch. Join the waitlist and your first coffee is on us.</value>
+    </data>
+    <data name="NavApp" xml:space="preserve">
+        <value>The app</value>
+    </data>
+    <data name="NavWaitlist" xml:space="preserve">
+        <value>Waitlist</value>
+    </data>
+    <data name="NavCafes" xml:space="preserve">
+        <value>Cafés</value>
+    </data>
+    <data name="NavJoin" xml:space="preserve">
+        <value>Join the waitlist</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>Coffee, bread and lunch in Nørrebro, Vesterbro and Christianshavn since 2016.</value>
+    </data>
+    <data name="FooterCafes" xml:space="preserve">
+        <value>Our cafés</value>
+    </data>
+    <data name="CafeNorrebro" xml:space="preserve">
+        <value>Nørrebro</value>
+    </data>
+    <data name="CafeVesterbro" xml:space="preserve">
+        <value>Vesterbro</value>
+    </data>
+    <data name="CafeChristianshavn" xml:space="preserve">
+        <value>Christianshavn</value>
+    </data>
+    <data name="CafeNorrebroNote" xml:space="preserve">
+        <value>The first one, since 2016, with the copper machine</value>
+    </data>
+    <data name="CafeVesterbroNote" xml:space="preserve">
+        <value>The biggest, with brunch at weekends</value>
+    </data>
+    <data name="CafeChristianshavnNote" xml:space="preserve">
+        <value>The smallest, by the canal</value>
+    </data>
+    <data name="Money" xml:space="preserve">
+        <value>{0} kr.</value>
+    </data>
+    <data name="TimeRange" xml:space="preserve">
+        <value>{0}–{1}</value>
+    </data>
+    <data name="HeroEyebrow" xml:space="preserve">
+        <value>The app opens on {0}</value>
+    </data>
+    <data name="HeroTitleStart" xml:space="preserve">
+        <value>Your coffee,</value>
+    </data>
+    <data name="HeroTitleEm" xml:space="preserve">
+        <value>ready</value>
+    </data>
+    <data name="HeroTitleEnd" xml:space="preserve">
+        <value>when you walk in.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Order on your way to Nørrebro, Vesterbro or Christianshavn, and your cup is waiting on the copper counter when you arrive. No queue, no paper stamp card, and a table for brunch when you want one.</value>
+    </data>
+    <data name="CountdownTitle" xml:space="preserve">
+        <value>Until the app opens</value>
+    </data>
+    <data name="CountdownLabel" xml:space="preserve">
+        <value>Time left until the app opens on {0}</value>
+    </data>
+    <data name="CountdownDays" xml:space="preserve">
+        <value>days</value>
+    </data>
+    <data name="CountdownHours" xml:space="preserve">
+        <value>hours</value>
+    </data>
+    <data name="CountdownMinutes" xml:space="preserve">
+        <value>min</value>
+    </data>
+    <data name="CountdownSeconds" xml:space="preserve">
+        <value>sec</value>
+    </data>
+    <data name="HeroCta" xml:space="preserve">
+        <value>Join the waitlist</value>
+    </data>
+    <data name="HeroPerk" xml:space="preserve">
+        <value>Your first coffee in the app is on us</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>A preview of ordering in the app. Try it.</value>
+    </data>
+    <data name="DemoTitle" xml:space="preserve">
+        <value>Order ahead</value>
+    </data>
+    <data name="DemoStampCount" xml:space="preserve">
+        <value>{0}/10 stamps</value>
+    </data>
+    <data name="DemoDrink" xml:space="preserve">
+        <value>Drink</value>
+    </data>
+    <data name="DrinkFlatWhite" xml:space="preserve">
+        <value>Flat white</value>
+    </data>
+    <data name="DrinkCortado" xml:space="preserve">
+        <value>Cortado</value>
+    </data>
+    <data name="DrinkLatte" xml:space="preserve">
+        <value>Latte</value>
+    </data>
+    <data name="DrinkFilter" xml:space="preserve">
+        <value>Filter</value>
+    </data>
+    <data name="DrinkChai" xml:space="preserve">
+        <value>Chai latte</value>
+    </data>
+    <data name="DemoSize" xml:space="preserve">
+        <value>Size</value>
+    </data>
+    <data name="SizeSmall" xml:space="preserve">
+        <value>Small</value>
+    </data>
+    <data name="SizeRegular" xml:space="preserve">
+        <value>Regular</value>
+    </data>
+    <data name="DemoMilk" xml:space="preserve">
+        <value>Milk</value>
+    </data>
+    <data name="MilkWhole" xml:space="preserve">
+        <value>Whole</value>
+    </data>
+    <data name="MilkOat" xml:space="preserve">
+        <value>Oat</value>
+    </data>
+    <data name="MilkNone" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="DemoShot" xml:space="preserve">
+        <value>Extra shot (+{0})</value>
+    </data>
+    <data name="DemoShotShort" xml:space="preserve">
+        <value>extra shot</value>
+    </data>
+    <data name="DemoCafe" xml:space="preserve">
+        <value>Pick up at</value>
+    </data>
+    <data name="DemoReadyAt" xml:space="preserve">
+        <value>Ready at {0}</value>
+    </data>
+    <data name="DemoReadyIn" xml:space="preserve">
+        <value>in about {0} minutes</value>
+    </data>
+    <data name="DemoReadyTomorrow" xml:space="preserve">
+        <value>Ready tomorrow at {0}</value>
+    </data>
+    <data name="DemoAtOpening" xml:space="preserve">
+        <value>first thing, when the café opens</value>
+    </data>
+    <data name="DemoClosedNow" xml:space="preserve">
+        <value>the café has closed for today</value>
+    </data>
+    <data name="DemoReadyLabelTomorrow" xml:space="preserve">
+        <value>Waiting on the copper counter tomorrow at</value>
+    </data>
+    <data name="DemoPlace" xml:space="preserve">
+        <value>Order for pickup</value>
+    </data>
+    <data name="DemoReadyLabel" xml:space="preserve">
+        <value>Waiting on the copper counter at</value>
+    </data>
+    <data name="DemoReadyWhere" xml:space="preserve">
+        <value>Little Copper {0}, order {1}</value>
+    </data>
+    <data name="DemoStampsNow" xml:space="preserve">
+        <value>{0} of 10 stamps. The tenth coffee is on us.</value>
+    </data>
+    <data name="DemoAgain" xml:space="preserve">
+        <value>Order another</value>
+    </data>
+    <data name="AskTitle" xml:space="preserve">
+        <value>Questions before January?</value>
+    </data>
+    <data name="AskBody" xml:space="preserve">
+        <value>Ask about the app, the cafés or the waitlist perk. An AI assistant answers from what's on this page.</value>
+    </data>
+    <data name="AskPlaceholder" xml:space="preserve">
+        <value>Ask about the app or the cafés</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>When does the app come out?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>How does the stamp card work?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>Which café opens first on Sunday?</value>
+    </data>
+    <data name="AppKicker" xml:space="preserve">
+        <value>Coming in the app</value>
+    </data>
+    <data name="AppTitle" xml:space="preserve">
+        <value>Everything you do at the counter, before you get there</value>
+    </data>
+    <data name="AppLede" xml:space="preserve">
+        <value>We built the app with the people who queue at 8:15 every morning. It does four things, and it does them quickly.</value>
+    </data>
+    <data name="MenuHead" xml:space="preserve">
+        <value>On the app's menu</value>
+    </data>
+    <data name="FeatureAtLaunch" xml:space="preserve">
+        <value>From day one</value>
+    </data>
+    <data name="FeatureSpring" xml:space="preserve">
+        <value>Spring 2027</value>
+    </data>
+    <data name="Feature1Title" xml:space="preserve">
+        <value>Order ahead</value>
+    </data>
+    <data name="Feature1Body" xml:space="preserve">
+        <value>Choose your drink and your café on the way. We start making it as you get close, and it waits on the copper counter with your name on the cup.</value>
+    </data>
+    <data name="Feature2Title" xml:space="preserve">
+        <value>Stamp card</value>
+    </data>
+    <data name="Feature2Body" xml:space="preserve">
+        <value>Every coffee earns a stamp, at the counter or in the app, and the tenth is on us. Bring your paper card and we'll move its stamps over.</value>
+    </data>
+    <data name="Feature3Title" xml:space="preserve">
+        <value>Your usual, in two taps</value>
+    </data>
+    <data name="Feature3Body" xml:space="preserve">
+        <value>Save the order you have every morning and send it from your home screen with two taps.</value>
+    </data>
+    <data name="Feature4Title" xml:space="preserve">
+        <value>Table booking</value>
+    </data>
+    <data name="Feature4Body" xml:space="preserve">
+        <value>Book a table for weekend brunch in Vesterbro, served on Saturdays and Sundays from 9:00 to 14:00.</value>
+    </data>
+    <data name="TicketKicker" xml:space="preserve">
+        <value>For everyone on the waitlist</value>
+    </data>
+    <data name="TicketTitle" xml:space="preserve">
+        <value>Your first coffee is on us</value>
+    </data>
+    <data name="TicketBody" xml:space="preserve">
+        <value>Any drink, any size, any milk, in any of our three cafés.</value>
+    </data>
+    <data name="TicketSmall" xml:space="preserve">
+        <value>It appears in your app on {0} and is valid until {1}.</value>
+    </data>
+    <data name="WaitlistTitle" xml:space="preserve">
+        <value>First in the queue, without the queue</value>
+    </data>
+    <data name="WaitlistBody" xml:space="preserve">
+        <value>Leave your email and we'll write once, on {0}, when the app is out. Tell us which phone you'll use it on.</value>
+    </data>
+    <data name="CafesKicker" xml:space="preserve">
+        <value>Three cafés</value>
+    </data>
+    <data name="CafesTitle" xml:space="preserve">
+        <value>Open every day, from early</value>
+    </data>
+    <data name="CafesCta" xml:space="preserve">
+        <value>About us and the cafés</value>
+    </data>
+    <data name="HoursWeekdays" xml:space="preserve">
+        <value>Monday to Friday</value>
+    </data>
+    <data name="HoursWeekends" xml:space="preserve">
+        <value>Saturday and Sunday</value>
+    </data>
+    <data name="HoursCaption" xml:space="preserve">
+        <value>Opening hours of {0}</value>
+    </data>
+    <data name="HoursHolidays" xml:space="preserve">
+        <value>On public holidays the cafés keep their weekend hours. All three are closed on 24, 25 and 31 December and on 1 January.</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>Questions</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>Before the app opens</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>When can I get the app?</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>On {0}, from 8:00, for iPhone, Android and the web.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>Will it cost anything?</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>No. The app is free, and so is the first coffee for everyone on the waitlist. Prices in the app are the same as at the counter.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>What happens to my paper stamp card?</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>Bring it to any of our cafés from {0} and we'll move its stamps into the app. Paper cards keep working until {1}.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>Can I order for a group?</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>Yes, up to eight drinks in one order. For something bigger, like an office breakfast, email us a day ahead.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>What do you do with my email?</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>We send one email on launch day, and product news only if you ticked the box. Every email has a link to leave the list.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>About Little Copper</value>
+    </data>
+    <data name="AboutHeadingStart" xml:space="preserve">
+        <value>Three cafés, and a machine called</value>
+    </data>
+    <data name="AboutHeadingEm" xml:space="preserve">
+        <value>Little Copper</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>How a copper lever espresso machine from 1961 gave three Copenhagen cafés their name, the people behind them, and their opening hours.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Ida Mørch and Omar Haddad opened the first café on Elmegade in Nørrebro in 2016, around a copper lever machine from 1961 that Ida's grandfather had kept in his garage.</value>
+    </data>
+    <data name="MachineAlt" xml:space="preserve">
+        <value>The copper lever espresso machine from 1961 on the counter in Nørrebro</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>From one counter to three</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>The machine needed six months of repairs and still wants a gentle hand. It pulls about 400 coffees on a busy Saturday, and every new barista learns on it first.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>Vesterbro followed in 2019, with a kitchen for brunch, and Christianshavn in 2022, small enough to know every regular by name. The queues grew with them, and that's why we're building the app.</value>
+    </data>
+    <data name="AboutCafesTitle" xml:space="preserve">
+        <value>Our three cafés</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>The people behind the counter</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>Ida Mørch</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>Co-founder, roasts the coffee</value>
+    </data>
+    <data name="Team1Note" xml:space="preserve">
+        <value>Roasts twice a week in a shed in Valby, and still repairs the machine herself.</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>Omar Haddad</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>Co-founder, runs the cafés</value>
+    </data>
+    <data name="Team2Note" xml:space="preserve">
+        <value>Opens Nørrebro at seven most mornings and knows the regulars' orders before they do.</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>Nanami Sato</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>Head barista</value>
+    </data>
+    <data name="Team3Note" xml:space="preserve">
+        <value>Trains every new barista on the 1961 machine.</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>Lukas Berg</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>Builds the app</value>
+    </data>
+    <data name="Team4Note" xml:space="preserve">
+        <value>Timed the morning queue for a month before writing a line of code.</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>Say hej</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>A question about the app, breakfast for your office, or a scarf you left behind? Write or call, Monday to Friday from 9:00 to 16:00.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>The company</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>This cup is empty</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>We couldn't find that page. The cafés are open, though, and the coffee is hot.</value>
+    </data>
+    <data name="NotFoundCafes" xml:space="preserve">
+        <value>Find a café</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Café and kitchen</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>A café chain's app before launch: a countdown to opening day, a waitlist with the first coffee on the house, an order builder you can try, and the chat right below the hero.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Countdown and waitlist</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>Order builder in the hero</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Inline chat</value>
+    </data>
+    <data name="ListSeparator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="CardDate" xml:space="preserve">
+        <value>App opens {0}</value>
+    </data>
+</root>

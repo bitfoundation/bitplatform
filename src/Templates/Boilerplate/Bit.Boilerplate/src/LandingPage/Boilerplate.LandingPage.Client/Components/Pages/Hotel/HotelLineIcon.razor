@@ -1,0 +1,26 @@
+<svg class="hotel-line-icon" viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+    @switch (Kind)
+    {
+        case "ferry":
+            <path d="M6 30h52l-6 10H14Z" />
+            <path d="M16 30V20h28l6 10M24 20v-6h12v6M22 25h4M30 25h4M38 25h4" />
+            <path d="M4 44q5-3 10 0t10 0t10 0t10 0t10 0t10 0" />
+            break;
+        case "key":
+            <rect x="20" y="4" width="24" height="40" rx="5" />
+            <path d="M28 8h8M32 38v.5" />
+            <circle cx="32" cy="20" r="5" />
+            <path d="M32 25v8M32 29h3" />
+            break;
+        case "bell":
+            <path d="M14 36h36M18 36a14 14 0 0 1 28 0M32 22v-4M28 18h8" />
+            <path d="M10 42h44" />
+            <path d="M50 8h8v8h-4l-4 3v-3Z" />
+            break;
+        default:
+            <circle cx="32" cy="24" r="18" />
+            <path d="M32 6v4M32 38v4M14 24h4M46 24h4" />
+            <path d="M38 16l-4 10l-8 6l4-10Z" />
+            break;
+    }
+</svg>

@@ -2,8 +2,12 @@ using Boilerplate.LandingPage.Client.Components.Pages.Accounting;
 using Boilerplate.LandingPage.Client.Components.Pages.Crm;
 using Boilerplate.LandingPage.Client.Components.Pages.Ecommerce;
 using Boilerplate.LandingPage.Client.Components.Pages.Fitness;
+using Boilerplate.LandingPage.Client.Components.Pages.Hotel;
 using Boilerplate.LandingPage.Client.Components.Pages.HotelSoftware;
 using Boilerplate.LandingPage.Client.Components.Pages.Minimal;
+using Boilerplate.LandingPage.Client.Components.Pages.PeriodTracker;
+using Boilerplate.LandingPage.Client.Components.Pages.Restaurant;
+using Boilerplate.LandingPage.Client.Components.Pages.Retail;
 
 namespace Boilerplate.LandingPage.Client.Infrastructure;
 
@@ -12,6 +16,10 @@ public static class LandingSites
     public static LandingSite[] All { get; } =
     [
         EcommerceSite.Info,
+        RetailSite.Info,
+        HotelSite.Info,
+        RestaurantSite.Info,
+        PeriodTrackerSite.Info,
         FitnessSite.Info,
         CrmSite.Info,
         AccountingSite.Info,

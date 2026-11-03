@@ -1,0 +1,42 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-retail">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="RetailSite.Info" Links="links" ShowSignIn Class="retail-nav">
+        <Brand><RetailLogo /><span class="retail-wordmark">Northside Market</span></Brand>
+        <Actions>
+            <BitButton Href="@Link("#download")" Size="BitSize.Small" Class="retail-nav-cta">@R[nameof(RetailStrings.NavGetApp)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="RetailSite.Info" Tagline="@R[nameof(RetailStrings.FooterTagline)]">
+        <Brand><RetailLogo /><span class="retail-wordmark">Northside Market</span></Brand>
+        <Intro>
+            <StoreBadges Site="RetailSite.Info" ShowComingSoon="false" Campaign="footer" />
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@R[nameof(RetailStrings.FooterShop)]</h2>
+                <a href="@Link("#offers")">@R[nameof(RetailStrings.FooterOffers)]</a>
+                <a href="@Link("#collect")">@R[nameof(RetailStrings.FooterCollect)]</a>
+                <a href="@Link("#card")">@R[nameof(RetailStrings.FooterCard)]</a>
+                <a href="@LandingCultures.Localize($"{RetailSite.Path}/stores", CultureInfo.CurrentUICulture)">@R[nameof(RetailStrings.FooterStores)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <LandingChat Site="RetailSite.Info"
+                 Variant="LandingChatVariant.Concierge"
+                 Suggestions="suggestions"
+                 Label="@R[nameof(RetailStrings.ChatLabel)]"
+                 HandoffUrl="@($"mailto:{RetailSite.Info.Company.Email}")"
+                 Class="retail-chat" />
+
+    <ConsentBanner SitePath="@RetailSite.Path" />
+    <LanguageSuggestion />
+</div>

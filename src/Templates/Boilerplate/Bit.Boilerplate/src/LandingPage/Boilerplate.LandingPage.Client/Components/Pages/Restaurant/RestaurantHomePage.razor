@@ -1,0 +1,132 @@
+@attribute [Route(RestaurantSite.Path)]
+@attribute [Route("/{culture}" + RestaurantSite.Path)]
+@layout RestaurantLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@C[nameof(RestaurantStrings.HomeTitle)]"
+             Description="@C[nameof(RestaurantStrings.HomeDescription)]"
+             Path="@RestaurantSite.Path"
+             Site="RestaurantSite.Info"
+             Image="images/restaurant/og.png"
+             StructuredData="structuredData" />
+
+<section class="restaurant-hero" aria-labelledby="restaurant-hero-title">
+    <div class="lp-container restaurant-hero-grid">
+        <div class="restaurant-hero-text">
+            <p class="restaurant-pill"><BitIcon IconName="@BitIconName.Calendar" /> @C[nameof(RestaurantStrings.HeroEyebrow), LaunchDay]</p>
+            <h1 id="restaurant-hero-title">@C[nameof(RestaurantStrings.HeroTitleStart)] <em>@C[nameof(RestaurantStrings.HeroTitleEm)]</em> @C[nameof(RestaurantStrings.HeroTitleEnd)]</h1>
+            <p class="lp-lede">@C[nameof(RestaurantStrings.HeroLede)]</p>
+            <div class="restaurant-launch">
+                <p class="restaurant-launch-label">@C[nameof(RestaurantStrings.CountdownTitle)]</p>
+                <Countdown Target="RestaurantSite.LaunchDate" Units="units" Label="@C[nameof(RestaurantStrings.CountdownLabel), LaunchDay]" Class="restaurant-countdown" />
+            </div>
+            <div class="restaurant-hero-cta">
+                <BitButton Href="@Link("#waitlist")" IconName="@BitIconName.Ringer">@C[nameof(RestaurantStrings.HeroCta)]</BitButton>
+                <p class="restaurant-hero-perk"><BitIcon IconName="@BitIconName.Coffee" /> @C[nameof(RestaurantStrings.HeroPerk)]</p>
+            </div>
+            <StoreBadges Site="RestaurantSite.Info" Campaign="hero" Class="restaurant-soon" />
+        </div>
+        <div class="restaurant-hero-visual">
+            <div class="restaurant-hero-disc" aria-hidden="true"></div>
+            <RestaurantCup Class="restaurant-hero-cup" />
+            <DeviceFrame Kind="LandingDeviceKind.Phone" Class="restaurant-phone">
+                <RestaurantOrder />
+            </DeviceFrame>
+            <div class="restaurant-counter" aria-hidden="true"></div>
+            <p class="restaurant-hero-caption">@C[nameof(RestaurantStrings.DemoCaption)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="restaurant-ask" aria-labelledby="restaurant-ask-title">
+    <div class="lp-container restaurant-ask-grid">
+        <div class="restaurant-ask-text">
+            <h2 id="restaurant-ask-title">@C[nameof(RestaurantStrings.AskTitle)]</h2>
+            <p>@C[nameof(RestaurantStrings.AskBody)]</p>
+        </div>
+        <LandingChat Site="RestaurantSite.Info"
+                     Variant="LandingChatVariant.Inline"
+                     Suggestions="suggestions"
+                     Placeholder="@C[nameof(RestaurantStrings.AskPlaceholder)]"
+                     Class="restaurant-chat" />
+    </div>
+</section>
+
+<section id="app" class="lp-section restaurant-app" aria-labelledby="restaurant-app-title">
+    <div class="lp-container restaurant-app-grid">
+        <header class="restaurant-head">
+            <p class="restaurant-kicker">@C[nameof(RestaurantStrings.AppKicker)]</p>
+            <h2 id="restaurant-app-title">@C[nameof(RestaurantStrings.AppTitle)]</h2>
+            <p class="lp-lede">@C[nameof(RestaurantStrings.AppLede)]</p>
+        </header>
+        <div class="restaurant-menu">
+            <p class="restaurant-menu-head">@C[nameof(RestaurantStrings.MenuHead)]</p>
+            <ul>
+                @foreach (var (title, when, body) in features)
+                {
+                    <li>
+                        <div class="restaurant-menu-line">
+                            <h3>@C[title]</h3>
+                            <span class="restaurant-menu-dots" aria-hidden="true"></span>
+                            <span class="restaurant-menu-when">@C[when]</span>
+                        </div>
+                        <p>@C[body]</p>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="waitlist" class="lp-section restaurant-waitlist" aria-labelledby="restaurant-waitlist-title">
+    <div class="lp-container restaurant-waitlist-grid">
+        <div class="restaurant-ticket">
+            <p class="restaurant-ticket-kicker">@C[nameof(RestaurantStrings.TicketKicker)]</p>
+            <p class="restaurant-ticket-title">@C[nameof(RestaurantStrings.TicketTitle)]</p>
+            <p class="restaurant-ticket-body">@C[nameof(RestaurantStrings.TicketBody)]</p>
+            <p class="restaurant-ticket-small">@C[nameof(RestaurantStrings.TicketSmall), LaunchDay, Day(PerkEnds)]</p>
+            <span class="restaurant-ticket-stamp" aria-hidden="true"><RestaurantLogo /></span>
+        </div>
+        <div class="restaurant-waitlist-form">
+            <h2 id="restaurant-waitlist-title">@C[nameof(RestaurantStrings.WaitlistTitle)]</h2>
+            <p class="lp-lede">@C[nameof(RestaurantStrings.WaitlistBody), LaunchDay]</p>
+            <WaitlistForm Site="RestaurantSite.Info" ShowName Class="restaurant-form" />
+        </div>
+    </div>
+</section>
+
+<section id="cafes" class="lp-section restaurant-cafes" aria-labelledby="restaurant-cafes-title">
+    <div class="lp-container">
+        <header class="restaurant-head restaurant-head-row">
+            <div>
+                <p class="restaurant-kicker">@C[nameof(RestaurantStrings.CafesKicker)]</p>
+                <h2 id="restaurant-cafes-title">@C[nameof(RestaurantStrings.CafesTitle)]</h2>
+            </div>
+            <BitButton Href="@($"{LocalUrl($"{RestaurantSite.Path}/about")}#cafes")" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground">@C[nameof(RestaurantStrings.CafesCta)]</BitButton>
+        </header>
+        <ul class="restaurant-cafe-list">
+            @foreach (var cafe in RestaurantCafes.All)
+            {
+                <li>
+                    <h3>@C[cafe.NameKey]</h3>
+                    <p class="restaurant-cafe-address"><span dir="ltr">@cafe.Address</span></p>
+                    <dl>
+                        <div><dt>@C[nameof(RestaurantStrings.HoursWeekdays)]</dt><dd>@Range(cafe.WeekdayOpen, cafe.WeekdayClose)</dd></div>
+                        <div><dt>@C[nameof(RestaurantStrings.HoursWeekends)]</dt><dd>@Range(cafe.WeekendOpen, cafe.WeekendClose)</dd></div>
+                    </dl>
+                    <p class="restaurant-cafe-note">@C[cafe.NoteKey]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section id="faq" class="lp-section restaurant-faq" aria-labelledby="restaurant-faq-title">
+    <div class="lp-container restaurant-faq-grid">
+        <header class="restaurant-head">
+            <p class="restaurant-kicker">@C[nameof(RestaurantStrings.FaqKicker)]</p>
+            <h2 id="restaurant-faq-title">@C[nameof(RestaurantStrings.FaqTitle)]</h2>
+        </header>
+        <FaqList Items="faq" />
+    </div>
+</section>

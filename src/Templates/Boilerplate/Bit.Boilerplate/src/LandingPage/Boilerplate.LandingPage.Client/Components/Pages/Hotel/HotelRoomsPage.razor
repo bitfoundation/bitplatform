@@ -1,0 +1,99 @@
+@attribute [Route(HotelSite.Path + "/rooms")]
+@attribute [Route("/{culture}" + HotelSite.Path + "/rooms")]
+@layout HotelLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{H[nameof(HotelStrings.RoomsPageTitle)]} | Alder & Salt")"
+             Description="@H[nameof(HotelStrings.RoomsPageDescription)]"
+             Path="@($"{HotelSite.Path}/rooms")"
+             Site="HotelSite.Info"
+             Image="images/hotel/og.png" />
+
+<section class="lp-container hotel-rooms-hero">
+    <p class="hotel-place">@H[nameof(HotelStrings.RoomsPageTitle)]</p>
+    <h1>@H[nameof(HotelStrings.RoomsPageHeading)]</h1>
+    <p class="lp-lede">@H[nameof(HotelStrings.RoomsPageLede)]</p>
+</section>
+
+<div class="lp-container hotel-room-list">
+    @foreach (var room in HotelRooms.All)
+    {
+        <article id="@($"room-{room.Key.ToLowerInvariant()}")" class="hotel-room" aria-labelledby="@($"room-{room.Key.ToLowerInvariant()}-title")">
+            <div class="hotel-room-picture">
+                <HotelScene Kind="room.Scene" Label="@H[nameof(HotelStrings.RoomSceneAlt), H[room.NameKey]]" />
+            </div>
+            <div class="hotel-room-text">
+                <p class="hotel-room-count">@H[nameof(HotelStrings.RoomCount), room.Count.ToString(CurrentCulture)]</p>
+                <h2 id="@($"room-{room.Key.ToLowerInvariant()}-title")">@H[room.NameKey]</h2>
+                <p class="hotel-room-body">@H[room.BodyKey]</p>
+                <dl class="hotel-room-facts">
+                    <div><dt>@H[nameof(HotelStrings.RoomFactSize)]</dt><dd>@H[nameof(HotelStrings.RoomSize), room.Size.ToString(CurrentCulture)]</dd></div>
+                    <div><dt>@H[nameof(HotelStrings.RoomFactBed)]</dt><dd>@H[room.BedKey]</dd></div>
+                    <div><dt>@H[nameof(HotelStrings.RoomFactView)]</dt><dd>@H[room.ViewKey]</dd></div>
+                    <div><dt>@H[nameof(HotelStrings.RoomFactSleeps)]</dt><dd>@room.Sleeps.ToString(CurrentCulture)</dd></div>
+                </dl>
+                <p class="hotel-room-rate">@H[nameof(HotelStrings.RoomRate), Money(room.Rate)]</p>
+                <BitButton Href="@LocalUrl(HotelSite.Path)" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Calendar">@H[nameof(HotelStrings.RoomBook)]</BitButton>
+            </div>
+        </article>
+    }
+</div>
+
+<section class="lp-section hotel-rates" aria-labelledby="hotel-rates-title">
+    <div class="lp-container hotel-rates-grid">
+        <div class="hotel-rates-text">
+            <h2 id="hotel-rates-title">@H[nameof(HotelStrings.RatesTitle)]</h2>
+            <p>@H[nameof(HotelStrings.RatesLede)]</p>
+        </div>
+        <div>
+            <table class="hotel-rates-table">
+                <caption class="lp-visually-hidden">@H[nameof(HotelStrings.RatesTitle)]</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">@H[nameof(HotelStrings.RatesRoom)]</th>
+                        <th scope="col">@H[nameof(HotelStrings.RatesWinter)]</th>
+                        <th scope="col">@H[nameof(HotelStrings.RatesMid)]</th>
+                        <th scope="col">@H[nameof(HotelStrings.RatesSummer)]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var room in HotelRooms.All)
+                    {
+                        <tr>
+                            <th scope="row">@H[room.NameKey]</th>
+                            <td>@Money(room.Rate)</td>
+                            <td>@Money(room.Rate + HotelRooms.MidSeason)</td>
+                            <td>@Money(room.Rate + HotelRooms.HighSeason)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section hotel-gallery" aria-labelledby="hotel-gallery-title">
+    <div class="lp-container">
+        <header class="hotel-gallery-head">
+            <h2 id="hotel-gallery-title">@H[nameof(HotelStrings.GalleryTitle)]</h2>
+            <p>@H[nameof(HotelStrings.GalleryLede)]</p>
+        </header>
+        <BitCarousel AriaLabel="@H[nameof(HotelStrings.GalleryTitle)]"
+                     GoLeftAriaLabel="@(IsRtl ? H[nameof(HotelStrings.GalleryPrevious)] : H[nameof(HotelStrings.GalleryNext)])"
+                     GoRightAriaLabel="@(IsRtl ? H[nameof(HotelStrings.GalleryNext)] : H[nameof(HotelStrings.GalleryPrevious)])"
+                     DotsAriaLabel="@H[nameof(HotelStrings.GalleryDots)]"
+                     DotAriaLabel="@H[nameof(HotelStrings.GalleryDot)]"
+                     InfiniteScrolling
+                     Class="hotel-carousel">
+            @foreach (var (scene, caption) in gallery)
+            {
+                <BitCarouselItem>
+                    <figure class="hotel-slide">
+                        <HotelScene Kind="scene" Label="@H[caption]" Class="hotel-slide-scene" />
+                        <figcaption>@H[caption]</figcaption>
+                    </figure>
+                </BitCarouselItem>
+            }
+        </BitCarousel>
+    </div>
+</section>

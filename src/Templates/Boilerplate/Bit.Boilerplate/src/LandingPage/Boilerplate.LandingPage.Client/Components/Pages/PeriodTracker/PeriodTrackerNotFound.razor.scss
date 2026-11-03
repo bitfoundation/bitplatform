@@ -1,0 +1,44 @@
+.tracker-404 {
+    circle {
+        &.is-past {
+            fill: var(--lp-surface);
+            stroke: color-mix(in oklab, var(--lp-line), var(--lp-fg) 30%);
+            stroke-width: 1.5;
+        }
+
+        &.is-period {
+            fill: var(--rose);
+        }
+
+        &.is-window {
+            fill: var(--peach-soft);
+            stroke: var(--rose);
+            stroke-width: 1.5;
+            stroke-dasharray: 3 3;
+        }
+    }
+}
+
+.tracker-404-gap {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: tracker-404-turn 12s linear infinite;
+}
+
+.tracker-404-text {
+    fill: var(--plum);
+    font-family: var(--lp-stack-display);
+    font-size: 64px;
+    font-style: italic;
+
+    &:lang(fa) {
+        font-style: normal;
+        font-weight: 700;
+    }
+}
+
+@keyframes tracker-404-turn {
+    to {
+        transform: rotate(360deg);
+    }
+}
