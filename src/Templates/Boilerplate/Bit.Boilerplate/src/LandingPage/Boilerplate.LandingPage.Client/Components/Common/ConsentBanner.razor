@@ -8,7 +8,7 @@
             @Localizer[nameof(LandingStrings.ConsentBody)]
             @if (SitePath is not null)
             {
-                <a href="@LocalUrl($"{SitePath}/privacy")">@Localizer[nameof(LandingStrings.Privacy)]</a>
+                @(" ")<a href="@LocalUrl($"{SitePath}/privacy")">@Localizer[nameof(LandingStrings.Privacy)]</a>
             }
         </p>
 

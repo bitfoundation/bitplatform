@@ -44,6 +44,8 @@ $breakpoint-lg: 1280px;
     --bit-clr-pri-light-active: color-mix(in oklab, var(--lp-accent-soft), var(--lp-accent) 18%);
     --bit-clr-pri-text: var(--lp-accent-fg);
     --bit-clr-pri-focus: color-mix(in oklab, var(--lp-accent) 45%, transparent);
+    --bit-clr-pri-dis: color-mix(in oklab, var(--lp-accent) 14%, var(--lp-bg));
+    --bit-clr-pri-dis-text: color-mix(in oklab, var(--lp-fg-muted), var(--lp-bg) 25%);
 
     --bit-clr-bg-pri: var(--lp-bg);
     --bit-clr-bg-pri-hover: color-mix(in oklab, var(--lp-bg), var(--lp-fg) 5%);
@@ -58,6 +60,9 @@ $breakpoint-lg: 1280px;
     --bit-clr-fg-pri: var(--lp-fg);
     --bit-clr-fg-sec: var(--lp-fg-muted);
     --bit-clr-fg-ter: color-mix(in oklab, var(--lp-fg-muted), var(--lp-bg) 20%);
+    --bit-clr-fg-dis: color-mix(in oklab, var(--lp-fg-muted), var(--lp-bg) 35%);
+    --bit-clr-bg-dis: var(--lp-bg-alt);
+    --bit-clr-brd-dis: var(--lp-line);
 
     --bit-clr-brd-pri: color-mix(in oklab, var(--lp-line), var(--lp-fg) 35%);
     --bit-clr-brd-pri-hover: color-mix(in oklab, var(--lp-line), var(--lp-fg) 55%);
@@ -68,7 +73,7 @@ $breakpoint-lg: 1280px;
 @mixin type($display, $body) {
     --lp-font-display: #{$display};
     --lp-font-body: #{$body};
-    --bit-tpg-font-family: var(--lp-font-body);
+    --bit-tpg-font-family: var(--lp-stack-body);
 }
 
 @mixin shape($radius, $control-radius) {

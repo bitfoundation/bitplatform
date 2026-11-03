@@ -1,9 +1,6 @@
 @inherits LandingComponentBase
 
-<LandingHead Title="@($"{Title} | {Site.Name}")" Description="@Title" Path="@($"{Site.Path}/waitlist/{(isConfirm ? "confirm" : "unsubscribe")}")" Site="Site" />
-<HeadContent>
-    <meta name="robots" content="noindex" />
-</HeadContent>
+<LandingHead Title="@($"{Title} | {Site.Name}")" Description="@Title" Path="@($"{Site.Path}/waitlist/{(isConfirm ? "confirm" : "unsubscribe")}")" Site="Site" NoIndex />
 
 <section class="lp-container lp-token">
     <div class="lp-token-card">

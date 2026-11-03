@@ -14,5 +14,7 @@ public partial class LandingFooter
 
     [Parameter] public RenderFragment? Columns { get; set; }
 
+    [Parameter] public bool ShowAbout { get; set; } = true;
+
     [Parameter] public string? Class { get; set; }
 }

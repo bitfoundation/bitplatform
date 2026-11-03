@@ -4,6 +4,10 @@
 
 <HeadContent>
     <meta name="description" content="@Description" />
+    @if (NoIndex)
+    {
+        <meta name="robots" content="noindex" />
+    }
     <link rel="canonical" href="@Absolute(CurrentCulture)" />
     @if (LandingCultures.InvariantGlobalization is false)
     {

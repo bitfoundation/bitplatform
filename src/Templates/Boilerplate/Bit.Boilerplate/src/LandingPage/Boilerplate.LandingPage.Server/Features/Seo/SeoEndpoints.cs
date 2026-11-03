@@ -13,7 +13,7 @@ public static class SeoEndpoints
     public static string[] Pages => field ??= [.. typeof(Client.Program).Assembly.ExportedTypes
         .SelectMany(type => type.GetCustomAttributes<RouteAttribute>())
         .Select(route => route.Template)
-        .Where(template => template.Contains('{') is false && template is not LandingRoutes.NotFound)
+        .Where(template => template.Contains('{') is false && template is not LandingRoutes.NotFound && template.Contains("/waitlist/") is false)
         .Distinct()
         .Order(StringComparer.Ordinal)];
 

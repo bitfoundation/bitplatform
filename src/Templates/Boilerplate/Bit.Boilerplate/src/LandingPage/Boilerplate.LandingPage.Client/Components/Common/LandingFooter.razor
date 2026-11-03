@@ -15,7 +15,10 @@
 
         <div class="lp-footer-col">
             <h2>@Localizer[nameof(LandingStrings.FooterCompany)]</h2>
-            <a href="@LocalUrl($"{Site.Path}/about")">@Localizer[nameof(LandingStrings.About)]</a>
+            @if (ShowAbout)
+            {
+                <a href="@LocalUrl($"{Site.Path}/about")">@Localizer[nameof(LandingStrings.About)]</a>
+            }
             <a href="mailto:@Site.Company.Email">@Localizer[nameof(LandingStrings.Contact)]</a>
             @if (Site.StatusUrl is not null)
             {

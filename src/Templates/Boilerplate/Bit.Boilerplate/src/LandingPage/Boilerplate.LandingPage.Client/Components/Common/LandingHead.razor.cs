@@ -18,6 +18,8 @@ public partial class LandingHead
 
     [Parameter] public JsonNode? StructuredData { get; set; }
 
+    [Parameter] public bool NoIndex { get; set; }
+
     private string? structuredData;
 
     protected override void OnParametersSet()

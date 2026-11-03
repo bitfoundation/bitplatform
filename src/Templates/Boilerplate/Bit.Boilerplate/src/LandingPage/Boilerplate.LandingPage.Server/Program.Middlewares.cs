@@ -34,8 +34,6 @@ public static partial class Program
                 RequestCultureProviders = [new LandingUrlCultureProvider()]
             });
 
-            app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-
             app.UseLandingStaticFiles();
 
             app.UseRouting();

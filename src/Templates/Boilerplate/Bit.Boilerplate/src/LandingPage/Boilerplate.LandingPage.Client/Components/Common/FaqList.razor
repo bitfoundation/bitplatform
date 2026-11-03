@@ -1,8 +1,6 @@
 @inherits LandingComponentBase
 
-<HeadContent>
-    <script type="application/ld+json">@((MarkupString)structuredData)</script>
-</HeadContent>
+<script type="application/ld+json">@((MarkupString)structuredData)</script>
 
 <div class="lp-faq @Class">
     @foreach (var item in Items)
