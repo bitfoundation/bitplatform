@@ -1,0 +1,20 @@
+@include site(lp-minimal) {
+    --notch-mark: #FFD43B;
+    --lp-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+    @include type((ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif), (ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif));
+    @include shape(14px, 10px);
+    @include palette(light, #141414, #FFFFFF, #FFFFFF, #F4F4F1, #FFFFFF, #141414, #56564F, #E3E3DD);
+
+    &:lang(fa) {
+        --lp-font-display: "Vazirmatn", system-ui, sans-serif;
+        --lp-font-body: "Vazirmatn", system-ui, sans-serif;
+        --lp-font-mono: var(--lp-stack-body);
+    }
+}
+
+@include site-dark(lp-minimal) {
+    --notch-mark: #E9C53A;
+
+    @include palette(dark, #F2F2EC, #141414, #121211, #191917, #1D1D1A, #F2F2EC, #A6A69D, #2D2D29);
+}

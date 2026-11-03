@@ -1,0 +1,20 @@
+@inherits LandingComponentBase
+
+<a class="gallery-card minimal-card" href="@LocalUrl(MinimalSite.Path)">
+    <div class="minimal-card-preview" aria-hidden="true">
+        <span class="minimal-card-brand"><MinimalLogo /> Notch</span>
+        <p class="minimal-card-line">@M[nameof(MinimalStrings.DemoPast1)]</p>
+        <span class="minimal-card-marks"><span></span><span></span><span></span><span></span></span>
+    </div>
+    <div class="gallery-card-body">
+        <p class="gallery-card-industry">@M[nameof(MinimalStrings.CardIndustry)]</p>
+        <h2>Notch</h2>
+        <p>@M[nameof(MinimalStrings.CardSummary)]</p>
+        <ul class="gallery-card-tags">
+            <li class="is-mode">@L[nameof(LandingStrings.GalleryModePreLaunch)]</li>
+            <li>@M[nameof(MinimalStrings.CardTag1)]</li>
+            <li>@M[nameof(MinimalStrings.CardTag2)]</li>
+            <li>@M[nameof(MinimalStrings.CardTag3)]</li>
+        </ul>
+    </div>
+</a>

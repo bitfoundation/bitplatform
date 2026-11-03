@@ -1,0 +1,28 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-minimal">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="MinimalSite.Info">
+        <Brand><MinimalLogo /><span>Notch</span></Brand>
+        <Actions>
+            <BitButton Href="@Link("#join")" Size="BitSize.Small" Variant="BitVariant.Outline">@M[nameof(MinimalStrings.NavJoin)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="MinimalSite.Info" Tagline="@M[nameof(MinimalStrings.FooterTagline)]" ShowAbout="false">
+        <Brand><MinimalLogo /><span>Notch</span></Brand>
+    </LandingFooter>
+
+    <LandingChat Site="MinimalSite.Info"
+                 Variant="LandingChatVariant.Bubble"
+                 Suggestions="suggestions"
+                 HandoffUrl="@($"mailto:{MinimalSite.Info.Company.Email}")" />
+
+    <ConsentBanner SitePath="@MinimalSite.Path" />
+    <LanguageSuggestion />
+</div>

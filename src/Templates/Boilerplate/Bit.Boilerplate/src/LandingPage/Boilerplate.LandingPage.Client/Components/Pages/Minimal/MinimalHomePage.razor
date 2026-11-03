@@ -1,0 +1,44 @@
+@attribute [Route(MinimalSite.Path)]
+@attribute [Route("/{culture}" + MinimalSite.Path)]
+@layout MinimalLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@M[nameof(MinimalStrings.HomeTitle)]"
+             Description="@M[nameof(MinimalStrings.HomeDescription)]"
+             Path="@MinimalSite.Path"
+             Site="MinimalSite.Info"
+             Image="images/minimal/og.png"
+             StructuredData="structuredData" />
+
+<section class="minimal-hero" aria-labelledby="minimal-hero-title">
+    <div class="lp-container minimal-hero-grid">
+        <div class="minimal-hero-text">
+            <p class="minimal-kicker">@M[nameof(MinimalStrings.HeroKicker)]</p>
+            <h1 id="minimal-hero-title">@M[nameof(MinimalStrings.HeroTitle)]</h1>
+            <p class="lp-lede">@M[nameof(MinimalStrings.HeroLede)]</p>
+            <WaitlistForm Site="MinimalSite.Info" Id="join" ShowUpdates="false" SubmitText="@M[nameof(MinimalStrings.JoinSubmit)]" Class="minimal-join" />
+            <p class="minimal-join-note">@M[nameof(MinimalStrings.JoinNote)]</p>
+        </div>
+        <figure class="minimal-hero-visual">
+            <DeviceFrame Kind="LandingDeviceKind.Phone" Class="minimal-phone">
+                <MinimalJournalDemo />
+            </DeviceFrame>
+            <figcaption class="lp-visually-hidden">@M[nameof(MinimalStrings.DemoLabel)]</figcaption>
+        </figure>
+    </div>
+</section>
+
+<section class="minimal-rules" aria-labelledby="minimal-rules-title">
+    <div class="lp-container">
+        <h2 id="minimal-rules-title">@M[nameof(MinimalStrings.FeaturesTitle)]</h2>
+        <ul class="minimal-rule-list">
+            @foreach (var (title, body) in features)
+            {
+                <li>
+                    <h3><span>@M[title]</span></h3>
+                    <p>@M[body]</p>
+                </li>
+            }
+        </ul>
+    </div>
+</section>

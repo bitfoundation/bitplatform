@@ -1,0 +1,55 @@
+@inherits LandingComponentBase
+
+<div class="notch-app">
+    <div class="notch-app-head">
+        <p class="notch-app-date">@today.ToString("dddd d MMMM", CurrentCulture)</p>
+        <MinimalLogo />
+    </div>
+
+    @if (saved is null)
+    {
+        <BitTextField @bind-Value="line"
+                      Label="@M[nameof(MinimalStrings.DemoFieldLabel)]"
+                      Placeholder="@M[nameof(MinimalStrings.DemoPlaceholder)]"
+                      Multiline
+                      Rows="3"
+                      MaxLength="MaxLength"
+                      Immediate
+                      ShowCount
+                      Class="notch-app-field">
+            <CountTemplate>@M[nameof(MinimalStrings.DemoLeft), MaxLength - context]</CountTemplate>
+        </BitTextField>
+        <BitButton OnClick="Save" Disabled="string.IsNullOrWhiteSpace(line)" FullWidth>@M[nameof(MinimalStrings.DemoSave)]</BitButton>
+    }
+    else
+    {
+        <div class="notch-app-saved">
+            <p class="notch-app-line">@saved</p>
+            <p class="notch-app-note" role="status">@M[nameof(MinimalStrings.DemoSaved)]</p>
+        </div>
+    }
+
+    <div class="notch-app-week">
+        <p class="notch-app-label">
+            <span>@M[nameof(MinimalStrings.DemoWeek)]</span>
+            <span>@M[nameof(MinimalStrings.DemoWeekCount), WeekCount]</span>
+        </p>
+        <ol class="notch-app-days" aria-hidden="true">
+            @foreach (var (date, written) in week)
+            {
+                <li class="@(written ? "is-written" : null) @(date == today ? "is-today" : null)">
+                    <span class="notch-app-mark"></span>
+                    <span>@CurrentCulture.DateTimeFormat.GetShortestDayName(date.DayOfWeek)</span>
+                </li>
+            }
+        </ol>
+    </div>
+
+    <div class="notch-app-past">
+        <p class="notch-app-label"><span>@M[nameof(MinimalStrings.DemoThisDay)]</span></p>
+        <ul>
+            <li><span class="notch-app-year">@today.AddYears(-1).ToString("yyyy", CurrentCulture)</span> @M[nameof(MinimalStrings.DemoPast1)]</li>
+            <li><span class="notch-app-year">@today.AddYears(-2).ToString("yyyy", CurrentCulture)</span> @M[nameof(MinimalStrings.DemoPast2)]</li>
+        </ul>
+    </div>
+</div>

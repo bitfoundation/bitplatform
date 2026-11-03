@@ -1,4 +1,5 @@
 using Boilerplate.LandingPage.Client.Components.Pages.Ecommerce;
+using Boilerplate.LandingPage.Client.Components.Pages.Minimal;
 
 namespace Boilerplate.LandingPage.Client.Infrastructure;
 
@@ -6,7 +7,8 @@ public static class LandingSites
 {
     public static LandingSite[] All { get; } =
     [
-        EcommerceSite.Info
+        EcommerceSite.Info,
+        MinimalSite.Info
     ];
 
     public static LandingSite? Find(string? key) => All.FirstOrDefault(s => string.Equals(s.Key, key, StringComparison.OrdinalIgnoreCase));

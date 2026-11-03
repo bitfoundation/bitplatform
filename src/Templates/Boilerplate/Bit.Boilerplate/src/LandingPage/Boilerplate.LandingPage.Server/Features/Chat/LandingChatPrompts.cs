@@ -33,6 +33,13 @@ public static partial class LandingChatPrompts
             - The greenhouse at Legmeerdijk 313, Aalsmeer, is open on Saturdays from 10:00 to 16:00.
             - Contact: hello@fernhouse.example, +31 20 555 0142. A person answers within a working day.
             """,
+        "minimal" => """
+            - Notch is a journal app with one rule: one line a day, 140 characters at most. There are no questions to answer and no streak to protect.
+            - It is not out yet: it comes to iPhone and Android in spring 2027. Visitors can join the waitlist on the page, and Notch writes them once, when it is ready, and nothing else.
+            - On any day, the app shows the lines written on the same date in earlier years.
+            - Lines are encrypted on the phone before they leave it. There is no feed, no likes and no followers, and the lines can be exported as plain text at any time.
+            - Notch is made by Notch Journal Oy, Tallberginkatu 1 C, 00180 Helsinki, Finland. Contact: hello@notch.example.
+            """,
         _ => "No facts have been written for this site yet."
     };
 }

@@ -1,0 +1,17 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@MinimalSite.Path" Title="@M[nameof(MinimalStrings.NotFoundTitle)]" Body="@M[nameof(MinimalStrings.NotFoundBody)]">
+    <Art>
+        <svg viewBox="0 0 260 160" role="presentation">
+            <path d="M24 144 H236" stroke="var(--lp-line)" stroke-width="3" stroke-linecap="round" />
+            <g stroke="var(--lp-fg)" stroke-width="7" stroke-linecap="round">
+                <path d="M62 24 V112" />
+                <path d="M94 24 V112" />
+                <path d="M126 24 V112" />
+                <path d="M158 24 V112" />
+            </g>
+            <path d="M44 98 L176 38" stroke="var(--lp-fg-muted)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 9" />
+            <path d="M178 136 L236 118" stroke="var(--notch-mark)" stroke-width="9" stroke-linecap="round" />
+        </svg>
+    </Art>
+</NotFoundPanel>

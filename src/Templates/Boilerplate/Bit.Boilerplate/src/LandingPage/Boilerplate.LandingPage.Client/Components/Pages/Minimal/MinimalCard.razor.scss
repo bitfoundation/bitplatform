@@ -1,0 +1,51 @@
+.minimal-card-preview {
+    --lp-fg: #141414;
+    --lp-bg: #FFFFFF;
+    --notch-mark: #FFD43B;
+
+    position: relative;
+    display: grid;
+    align-content: center;
+    aspect-ratio: 16 / 10;
+    padding: 28px 26px;
+    background: #FFFFFF;
+    color: #141414;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.minimal-card-brand {
+    position: absolute;
+    top: 16px;
+    inset-inline-start: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.minimal-card-line {
+    max-width: 22ch;
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+}
+
+.minimal-card-marks {
+    position: absolute;
+    bottom: 18px;
+    inset-inline-end: 22px;
+    display: inline-flex;
+    gap: 6px;
+    padding: 4px 6px;
+    background: linear-gradient(-24deg, transparent 42%, #FFD43B 42% 60%, transparent 60%);
+
+    span {
+        width: 3px;
+        height: 22px;
+        border-radius: 2px;
+        background: #141414;
+    }
+}

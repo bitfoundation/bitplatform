@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Notch: دفترچه‌ی روزی یک خط</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>هر روز یک خط بنویسید، حداکثر 140 حرف، و سالتان را در یک دقیقه بخوانید. بهار 1406 برای آیفون و اندروید می‌آید. به فهرست انتظار بپیوندید.</value>
+    </data>
+    <data name="NavJoin" xml:space="preserve">
+        <value>عضویت در فهرست انتظار</value>
+    </data>
+    <data name="HeroKicker" xml:space="preserve">
+        <value>بهار 1406، روی آیفون و اندروید</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>روزی یک خط. سالی که در یک دقیقه خوانده می‌شود.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Notch دفترچه‌ای است با یک قانون: هر روز فقط یک خط، حداکثر 140 حرف. نه سؤالی که باید جوابش را بدهید، نه رکوردی که باید حفظش کنید. فقط همان خط، و روزی که مال آن است.</value>
+    </data>
+    <data name="JoinSubmit" xml:space="preserve">
+        <value>جایم را نگه دارید</value>
+    </data>
+    <data name="JoinNote" xml:space="preserve">
+        <value>وقتی Notch آماده شد، یک بار برایتان می‌نویسیم. همین.</value>
+    </data>
+    <data name="DemoLabel" xml:space="preserve">
+        <value>پیش‌نمایش اپ Notch: خط امروز، این هفته و همین روز در سال‌های پیش</value>
+    </data>
+    <data name="DemoFieldLabel" xml:space="preserve">
+        <value>خط امروز</value>
+    </data>
+    <data name="DemoPlaceholder" xml:space="preserve">
+        <value>امروز را با چه چیزی به یاد می‌آورید؟</value>
+    </data>
+    <data name="DemoLeft" xml:space="preserve">
+        <value>{0} حرف مانده</value>
+    </data>
+    <data name="DemoSave" xml:space="preserve">
+        <value>ثبتش کن</value>
+    </data>
+    <data name="DemoSaved" xml:space="preserve">
+        <value>ثبت شد. خط فردا از نیمه‌شب باز می‌شود.</value>
+    </data>
+    <data name="DemoWeek" xml:space="preserve">
+        <value>این هفته</value>
+    </data>
+    <data name="DemoWeekCount" xml:space="preserve">
+        <value>{0} روز از 7</value>
+    </data>
+    <data name="DemoThisDay" xml:space="preserve">
+        <value>در همین روز</value>
+    </data>
+    <data name="DemoPast1" xml:space="preserve">
+        <value>اولین یخ‌بندان روی دوچرخه. از امروز دستکش‌ها توی کیف می‌مانند.</value>
+    </data>
+    <data name="DemoPast2" xml:space="preserve">
+        <value>میا یک صفحه‌ی کامل را بلند خواند و یک بار هم مکث نکرد.</value>
+    </data>
+    <data name="FeaturesTitle" xml:space="preserve">
+        <value>سه قانون؛ اپ همین است</value>
+    </data>
+    <data name="Feature1Title" xml:space="preserve">
+        <value>هر روز، یک خط</value>
+    </data>
+    <data name="Feature1Body" xml:space="preserve">
+        <value>حداکثر 140 حرف. آن‌قدر کوتاه که در صف قهوه نوشته شود و آن‌قدر بلند که روز را با آن به یاد بیاورید.</value>
+    </data>
+    <data name="Feature2Title" xml:space="preserve">
+        <value>همین روز، سال‌ها بعد</value>
+    </data>
+    <data name="Feature2Body" xml:space="preserve">
+        <value>امروز را که باز کنید، خطی را که پارسال و پیرارسال در همین روز نوشته‌اید می‌بینید. روزی یک خط این‌جاست که ارزشش را نشان می‌دهد.</value>
+    </data>
+    <data name="Feature3Title" xml:space="preserve">
+        <value>فقط خودتان می‌خوانید</value>
+    </data>
+    <data name="Feature3Body" xml:space="preserve">
+        <value>خط‌ها پیش از آن‌که از گوشی‌تان بیرون بروند رمزنگاری می‌شوند. نه فیدی، نه لایکی، نه دنبال‌کننده‌ای؛ و هر وقت بخواهید، خروجی متنی ساده.</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>روزی یک خط، برای همیشه.</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>Notch کی منتشر می‌شود؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>چه کسی خط‌هایم را می‌خواند؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>می‌توانم بیشتر از یک خط بنویسم؟</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>اپ مصرفی، پیش از انتشار</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>کوچک‌ترین صفحه‌ای که هنوز کارش را می‌کند: یک وعده‌ی روشن، سه ویژگی و فهرست انتظار.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>تک‌صفحه</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>فونت‌های سیستم</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>گفت‌وگوی حبابی</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>روی این صفحه چیزی نوشته نشده</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>شاید نشانی اشتباه تایپ شده یا این صفحه هیچ‌وقت این‌جا نبوده. دفترچه از صفحه‌ی اصلی شروع می‌شود.</value>
+    </data>
+</root>
