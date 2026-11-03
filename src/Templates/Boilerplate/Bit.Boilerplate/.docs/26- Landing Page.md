@@ -1,0 +1,128 @@
+# Stage 26: Landing Page
+
+Besides the app, the project ships its **landing page**: the public site people find in search results, open from an
+ad or a shared link, and read before they install the app or sign up. It is a site of its own, next to the app, in
+two projects:
+
+- [`src/LandingPage/Boilerplate.LandingPage.Server`](/src/LandingPage/Boilerplate.LandingPage.Server/) hosts it,
+  prerenders every page, and serves the waitlist, the chat, the emails, the sitemap and the store links.
+- [`src/LandingPage/Boilerplate.LandingPage.Client`](/src/LandingPage/Boilerplate.LandingPage.Client/) is its Blazor
+  WebAssembly part: the pages, the shared parts, the styles and the texts.
+
+It references none of the app's projects, so it builds, runs and deploys on its own, and a change to the app never
+breaks it. It comes with **sample landing pages for several kinds of business**, each under its own path
+(`/ecommerce`, `/ecommerce/about` and so on) and each with its own pages, look, texts and chat, plus a gallery of all
+of them at `/`. Keep the sample closest to your product, make it your home page and delete the others.
+
+## Run it
+
+- `bit new` and `bit setup` build it and open it in the browser right after the Workbench.
+- Run `dotnet watch` in `src/LandingPage/Boilerplate.LandingPage.Server`, or start the `landingpage` resource from the
+  Aspire dashboard, where it waits for a start rather than starting with the app.
+- It needs no database and no keys: without an AI key the chat streams a sample answer, and without an SMTP server
+  the waitlist emails are written to the log (under Aspire they land in Mailpit).
+
+## What every sample can use
+
+The samples share their building blocks, in
+[`Components/Common`](/src/LandingPage/Boilerplate.LandingPage.Client/Components/Common/), and each one picks what
+fits its business:
+
+- **Before launch, a waitlist**: the visitor leaves an email address, confirms it from an email, and can leave with
+  the unsubscribe link every email carries. A hidden field and a minimum fill time keep bots out, and the server
+  limits how often one visitor can try.
+- **After launch, the stores**: the official App Store, Google Play and Microsoft Store badges, ordered for the
+  visitor's own device; a QR code for desktop visitors; one link, `/<sample>/download`, that sends each phone to its
+  own store with the campaign it came from; and the App Store rating, read from Apple and shown once there are enough
+  ratings for it to mean something.
+- **A chat** that answers visitors' questions about the product, in three looks: a bubble, a panel inside the page,
+  and a concierge. It is built on Bit.BlazorUI.AI and talks to the server over a WebSocket; neither is downloaded
+  until a visitor opens it.
+- **Search engines and link previews**: every page has its own title, description, canonical link, language
+  alternates, preview image and structured data (the organization, the app, the FAQ), and the server writes
+  `sitemap.xml`, `robots.txt` and `llms.txt` from the pages' routes.
+- **Two languages and both directions**: English at `/...` and Persian at `/fa-IR/...`, each with its own fonts, and a
+  suggestion to switch when the browser prefers the other one.
+- **Light and dark**, following the visitor's system until they choose.
+- Legal pages (privacy, terms, cookies, imprint and accessibility), a not-found page of each sample's own, an
+  announcement bar, a countdown, an FAQ, share buttons and a consent banner. It installs and works as a PWA as well.
+
+## How it's built
+
+- **Prerendered on every visit.** The server renders each page to HTML, so a crawler, a link preview and a visitor on
+  a slow phone all see it at once, then WebAssembly takes over. bit Bswup runs it as a PWA in `AlwaysPrerender` mode:
+  each visit still gets the server's fresh page, and the app's files come from the device's cache.
+- **Small to download.** Trimmed and minified with Bit.Minifier, the chat lazy-loaded, only the visitor's language's
+  data downloaded, fonts self-hosted as small subsets, static files precompressed with Brotli, and responses compressed
+  with Brotli and Gzip (and Zstandard on .NET 11).
+- **Cacheable.** The pages set no cookies, the antiforgery check included, so a CDN can cache them; static files are
+  cached for a week when their URL carries a version, and pages for ten minutes.
+- **Light on the server.** The waitlist and the chat have rate limits of their own, the rating is looked up only for
+  the samples' own apps and cached for hours, and the chat checks where its connection comes from, keeps
+  conversations short and answers only from the facts it is given about the product.
+- **Its own conventions.** Text goes into resx keys, in each sample's own file (`<Sample>Strings.resx` and
+  `<Sample>Strings.fa.resx`) or in `LandingStrings.resx` for what the samples share; components inherit
+  `LandingComponentBase`. The app's own conventions that name its types and files don't apply here.
+- **Analytics only with consent.** bit Belemetry sends page views, interactions and errors to Azure Monitor, only after
+  the visitor agrees, and without cookies.
+
+## Make it yours
+
+Your AI agent knows the landing page through its `landing-page` skill
+([`.github/agents/landing-page.agent.md`](/.github/agents/landing-page.agent.md)): ask it to make a sample your home
+page, to change its texts, look or pages, or to launch it. In short:
+
+- **Make a sample your home page**: give it an empty `Path` in its `<Sample>Site.cs`, give its home page the
+  gallery's routes, and delete the gallery and the other samples.
+- **Brand it**: the sample's palette, fonts and shapes are in `Styles/sites/_<sample>.scss`, and the **rebrand** skill
+  re-skins it together with the app.
+- **Launch**: set each platform in `<Sample>Site.cs` from `ComingSoon` or `PreOrder` to `Live` with its store link.
+  The page then shows the store badges instead of the waitlist.
+- **Keep the waitlist somewhere**: it lives in memory until you implement `IWaitlistStore` in
+  [`WaitlistStore.cs`](/src/LandingPage/Boilerplate.LandingPage.Server/Features/Waitlist/WaitlistStore.cs) over your
+  API, your database or your mailing list service, so every restart empties it.
+- **Teach the chat**: it answers from each sample's facts in
+  [`LandingChatPrompts.cs`](/src/LandingPage/Boilerplate.LandingPage.Server/Features/Chat/LandingChatPrompts.cs).
+- **Replace the fictional parts**: the samples' companies, people, ratings and quotes are made up. Before you
+  launch, the sample you keep needs your real company details, legal texts, reviews and links.
+
+## Settings
+
+| Setting | What it does |
+| --- | --- |
+| `Site:Url` | The public address. Canonical links, the sitemap, shared links and the QR codes are built from it; without it, from the request. |
+| `Site:AllowIndexing` | Whether search engines may index the site. On only in `appsettings.Production.json`. |
+| `Site:GoogleSiteVerification`, `Site:BingSiteVerification` | The search consoles' verification codes. |
+| `Email:DefaultFromEmail`, `Email:DefaultFromName` | The sender of the waitlist emails. |
+| `ConnectionStrings:smtp` | The SMTP server, in the same format as the app's server. Without it, emails are logged. |
+| `AI:OpenAI:ChatModel`, `AI:OpenAI:ChatApiKey`, `AI:OpenAI:ChatEndpoint` | The chat's model, the same settings and user secrets as the app's server. |
+| `WebAppRender:BlazorMode`, `WebAppRender:PrerenderEnabled` | WebAssembly with prerendering. Blazor Server and Auto are for development only. |
+| `Belemetry:AzureMonitorConnectionString` | In the client's `appsettings.json`: where analytics go, after consent. |
+
+The server's settings are in
+[`appsettings.json`](/src/LandingPage/Boilerplate.LandingPage.Server/appsettings.json), and a deployment reads them
+from the `LANDINGPAGE_SETTINGS` secret, one `Section__Key=value` line each
+([Stage 16](/.docs/16-%20CI-CD%20Pipeline%20and%20Environments.md)).
+
+## Languages
+
+English and Persian ship, and the project's `InvariantGlobalization` switch (`src/Directory.Build.props`) leaves only
+English. To add a language, add it to
+[`LandingCultures.cs`](/src/LandingPage/Boilerplate.LandingPage.Client/Infrastructure/LandingCultures.cs), add
+`src/LandingPage` to `ResxPaths` in `Bit.ResxTranslator.json`, and run `bit translate`
+([Stage 5](/.docs/05-%20Localization%20and%20Multi-language%20Support.md)).
+
+## Deploy it
+
+It is a service of its own in the Docker Compose project, `landingpage`, built and deployed by the same CD as the app.
+Give it a hostname of its own, often the bare domain with the app on a subdomain such as `app.`, pointed at
+`http://landingpage:8080` through the Cloudflare Tunnel, and set the `LANDING_PAGE_ADDRESS` variable so each
+deployment checks that it answers. The **deploy** skill walks through it.
+
+---
+
+### AI Wiki
+
+Ask your own question [here](https://bitplatform.dev/ask)
+
+---

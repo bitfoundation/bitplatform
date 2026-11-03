@@ -55,7 +55,7 @@ public partial class SiteOptions
 {
     public Uri? Url { get; set; }
 
-    public bool AllowIndexing { get; set; } = true;
+    public bool AllowIndexing { get; set; }
 
     public string? GoogleSiteVerification { get; set; }
 

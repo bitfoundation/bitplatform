@@ -21,6 +21,8 @@ commands themselves are in `AGENTS.md` section 4.
   instead of sleeping.
 <!--#endif-->
 - Ready means a page answers, not that a process started: load the home page once before the first step.
+- The landing page (`src/LandingPage`) is a site of its own that the app's run doesn't start; `AGENTS.md` section 4
+  says how to run it.
 
 ## 2. Edit while it runs
 

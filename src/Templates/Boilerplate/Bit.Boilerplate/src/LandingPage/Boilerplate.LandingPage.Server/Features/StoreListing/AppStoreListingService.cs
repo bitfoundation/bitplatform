@@ -6,7 +6,7 @@ public sealed partial class AppStoreListingService(HttpClient httpClient, IMemor
 {
     public async Task<Client.Infrastructure.Models.StoreListing?> GetAppStoreListingAsync(string appleAppId, CancellationToken cancellationToken)
     {
-        if (appleAppId.All(char.IsAsciiDigit) is false)
+        if (Client.Infrastructure.LandingSites.All.Any(site => site.AppleAppId == appleAppId) is false)
             return null;
 
         return await memoryCache.GetOrCreateAsync($"app-store:{appleAppId}", async entry =>
