@@ -4482,8 +4482,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
-        _dotnetObj?.Dispose();
-        _dotnetObj = null;
         OnValueChanged -= HandleOnValueChanged;
 
         try
@@ -4493,5 +4491,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await _js.BitSwipesDispose(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Disposed only once the callout and the swipe listeners are gone: until then a pointer event still
+            // reaches OnStart, OnMove or OnEnd through this reference.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+        }
     }
 }

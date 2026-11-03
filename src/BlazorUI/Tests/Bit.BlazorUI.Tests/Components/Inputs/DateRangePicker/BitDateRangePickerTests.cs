@@ -5429,6 +5429,33 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitDateRangePickerDisposeShouldKeepItsDotNetReferenceUntilTheSwipeIsRemoved()
+    {
+        // The script answers later, the way it does in a browser: until the swipe listeners are gone a pointer event
+        // on the callout still calls back through the reference the swipe was set up with.
+        var swipesDispose = Context.JSInterop.SetupVoid("BitBlazorUI.Swipes.dispose", _ => true);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Swipes.setup");
+        var reference = (DotNetObjectReference<BitDateRangePicker>)setup.Arguments[5]!;
+        var picker = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, swipesDispose.Invocations);
+        Assert.AreSame(picker, reference.Value);
+
+        swipesDispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
     public void BitDateRangePickerShouldKeepAnEndTimeSetBeforeTheEndDayIsPicked()
     {
         BitDateRangePickerValue? value = null;
