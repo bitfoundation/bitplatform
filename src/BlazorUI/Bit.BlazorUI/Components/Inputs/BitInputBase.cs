@@ -39,6 +39,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     // What PublishValueAsync last arrived at, which is what a value bound one way - and so never written - moved from.
     private TValue? _publishedValue;
 
+    // How many commits are still waiting on the ValueChanged and OnChange of the app, and the value the last one of them
+    // to finish reported: a value is only ever left unreported once every commit has settled on it, since the handlers
+    // of an app can finish in another order than the commits started (see SetCurrentValueAsStringAsync).
+    private int _runningCommits;
+    private TValue? _settledValue;
+
     // The parameters of this class are taken out of the ParameterView below before it reaches
     // BitComponentBase, so the set that BitComponentBase tracks never sees them, and the one the source
     // generator writes only ever holds the parameters that the component itself declares. A cascade filling
@@ -422,16 +428,18 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     }
 
 
-    protected Task SetCurrentValueAsStringAsync(string? value, bool bypass = false) => SetCurrentValueAsStringAsync(value, bypass, reportSameValue: true);
+    protected Task SetCurrentValueAsStringAsync(string? value, bool bypass = false) => SetCurrentValueAsStringAsync(value, bypass, reportSettledValue: true);
 
     /// <param name="value">The text to commit.</param>
     /// <param name="bypass">Whether the parsed value is only written into the Value, with nobody told.</param>
-    /// <param name="reportSameValue">
-    /// Whether text that parses to the value already held is still reported. A change event is the browser's word that
-    /// the user finished an edit, so it is reported whatever it carries - unless the input events of an Immediate input
-    /// reported that edit already as it was typed, and the change event raised on blur only carries the same text again.
+    /// <param name="reportSettledValue">
+    /// Whether text that parses to a value every commit has already settled on is still reported. A change event is the
+    /// browser's word that the user finished an edit, so it is reported whatever it carries - unless the input events of
+    /// an Immediate input reported that edit already as it was typed, and the change event raised on blur only carries
+    /// the same text again. A value the handlers of the app have not all finished with yet, or that the last of them to
+    /// finish was told something else about, is reported either way, so the app always ends on the value the input holds.
     /// </param>
-    private protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass, bool reportSameValue)
+    protected async Task SetCurrentValueAsStringAsync(string? value, bool bypass, bool reportSettledValue)
     {
         if (Disabled) return;
 
@@ -445,7 +453,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             // not reject Nullable<T> based on the type itself).
             _parsingFailed = false;
 
-            CurrentValue = default;
+            // Awaited rather than handed to CurrentValue, which cannot wait on the commit: what the app's ValueChanged
+            // or OnChange throws reaches the caller as it does for any other value, and the caller goes on once they ran.
+            if (EqualityComparer<TValue>.Default.Equals(default, Value) is false)
+            {
+                await SetCurrentValueAsync(default);
+            }
         }
         else if (TryParseValueFromString(value, out var parsedValue, out var parsingErrorMessage))
         {
@@ -455,7 +468,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
             {
                 Value = parsedValue;
             }
-            else if (reportSameValue || EqualityComparer<TValue>.Default.Equals(parsedValue, Value) is false)
+            else if (reportSettledValue || IsSettledOn(parsedValue) is false)
             {
                 await SetCurrentValueAsync(parsedValue);
             }
@@ -494,11 +507,32 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
         Value = value;
 
-        await ValueChanged.InvokeAsync(value);
+        _runningCommits++;
+        try
+        {
+            await ValueChanged.InvokeAsync(value);
 
-        NotifyFieldChanged();
+            NotifyFieldChanged();
 
-        await OnChange.InvokeAsync(value);
+            await OnChange.InvokeAsync(value);
+
+            _settledValue = value;
+        }
+        finally
+        {
+            _runningCommits--;
+        }
+    }
+
+    // Whether every commit has settled on the value: none of them is still running, and the value held and the one the
+    // last of them to finish reported are both this one - equal and reading the same, since 1.5m and 1.50m are equal
+    // and yet a binding keeps the scale it is handed.
+    private bool IsSettledOn(TValue? value)
+    {
+        return _runningCommits == 0 && IsSameValue(value, Value) && IsSameValue(value, _settledValue);
+
+        static bool IsSameValue(TValue? x, TValue? y)
+            => EqualityComparer<TValue>.Default.Equals(x, y) && string.Equals(x?.ToString(), y?.ToString(), StringComparison.Ordinal);
     }
 
     protected bool InvalidValueBinding()

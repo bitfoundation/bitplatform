@@ -514,6 +514,111 @@ public class BitPhoneInputTests : BunitTestContext
         CollectionAssert.AreEqual(new List<string?> { "+14155550123" }, changes);
     }
 
+    [TestMethod]
+    public void BitPhoneInputWithoutImmediateShouldReportEveryChangeEvent()
+    {
+        var changes = new List<string?>();
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.OnChange, v => changes.Add(v));
+        });
+
+        component.Find("input.bit-phi-inp").Change("4155550123");
+
+        // Without Immediate the change event is the only word of an edit there is, so it is reported whatever it carries.
+        component.Find("input.bit-phi-inp").Change("4155550123");
+
+        CollectionAssert.AreEqual(new List<string?> { "+14155550123", "+14155550123" }, changes);
+    }
+
+    [TestMethod]
+    public async Task BitPhoneInputShouldNotPutTheClearedNumberBackFromADebouncedInputOnceTheFieldWasLeft()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 60_000);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.ValueChanged, v => values.Add(v));
+        });
+
+        var typing = component.Find("input.bit-phi-inp").InputAsync(new ChangeEventArgs { Value = "4155550123" });
+
+        // The change event raised on blur commits the number the keystroke is still waiting to, and drops the keystroke.
+        component.Find("input.bit-phi-inp").Change("4155550123");
+
+        await component.Instance.ClearAsync();
+
+        // Only a dropped keystroke ends before its minute is up, and a kept one would put the number back once it is.
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        CollectionAssert.AreEqual(new List<string?> { "+14155550123", null }, values);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitPhoneInputShouldNotPutTheClearedNumberBackFromADebouncedInput()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 60_000);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.ValueChanged, v => values.Add(v));
+        });
+
+        component.Find("input.bit-phi-inp").Change("415");
+
+        var typing = component.Find("input.bit-phi-inp").InputAsync(new ChangeEventArgs { Value = "4155550123" });
+
+        await component.Instance.ClearAsync();
+
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        CollectionAssert.AreEqual(new List<string?> { "+1415", null }, values);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitPhoneInputSetNumberShouldNotBeOverwrittenByADebouncedInput()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 60_000);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+        });
+
+        var typing = component.Find("input.bit-phi-inp").InputAsync(new ChangeEventArgs { Value = "4155550123" });
+
+        await component.Instance.SetNumberAsync("2025550123");
+
+        await typing.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreEqual("+12025550123", component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputClearButtonShouldLeaveTheFocusInTheField()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultCountry, BitCountries.UnitedStates);
+            parameters.Add(p => p.DefaultValue, "+14155550123");
+        });
+
+        // Taking the focus on the press would blur the field, and the commit of the change event raised for it can
+        // re-render the app between the press and the click.
+        Assert.IsTrue(component.Find(".bit-phi-cbt").Attributes.Any(a => a.Name.Equals("blazor:onmousedown:preventDefault", StringComparison.OrdinalIgnoreCase)));
+    }
+
     [TestMethod,
         DataRow("4", "(4"),
         DataRow("415", "(415"),

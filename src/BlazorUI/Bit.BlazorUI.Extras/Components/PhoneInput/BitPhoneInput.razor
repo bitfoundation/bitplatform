@@ -162,7 +162,10 @@
         @if (ShowClear)
         {
             var clearDisabled = Disabled || ReadOnly;
+            @* The press leaves the focus in the input, where the click puts it back anyway: taking it away first
+               would blur the field and commit its number with a re-render that can swallow the very click. *@
             <button @onclick="HandleOnClearButtonClick"
+                    @onmousedown:preventDefault="true"
                     @onfocusin="HandleOnFocusIn"
                     @onfocusout="HandleOnFocusOut"
                     type="button"

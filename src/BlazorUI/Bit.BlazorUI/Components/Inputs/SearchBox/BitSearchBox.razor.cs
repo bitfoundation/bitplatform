@@ -1363,6 +1363,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task SetValueSuppressingSearch(string? value)
     {
+        // The value replaces whatever was typed, so an input event still waiting out its debounce or throttle carries
+        // text that is thrown away here, and landing after it would put that text straight back: a cleared term would
+        // reappear, and a picked suggestion would turn back into the few letters typed for it.
+        ResetInputRateLimiter();
+
         _suppressSearch = true;
         try
         {

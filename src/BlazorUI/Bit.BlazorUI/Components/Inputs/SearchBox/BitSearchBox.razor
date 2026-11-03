@@ -133,8 +133,11 @@
             {
                 @* Normally kept out of the tab order because escape already clears the field, which is
                    the faster way to do it from the keyboard. NoClearOnEscape takes that away, so the
-                   button becomes the only way left and has to be reachable. *@
+                   button becomes the only way left and has to be reachable.
+                   The press leaves the focus in the input, where the click puts it back anyway: taking it away
+                   first would blur the field and commit its text with a re-render that can swallow the very click. *@
                 <button @onclick="HandleOnClearButtonClick"
+                        @onmousedown:preventDefault="true"
                         type="button"
                         tabindex="@(NoClearOnEscape ? null : "-1")"
                         title="@ClearButtonAriaLabel"

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -8,8 +9,9 @@ namespace Bit.BlazorUI.Tests.Components.Inputs;
 
 /// <summary>
 /// Pins the members every text input inherits from BitTextInputBase, through BitTextField: the change event commits
-/// the value, the input event does so only under Immediate - after which the change event commits nothing it already
-/// did - a debounce defers that commit to the handler that carries the wait, a throttle lets the first keystroke of a burst through at once, and a field that cannot be edited takes
+/// the value, the input event does so only under Immediate - after which the change event reports nothing every commit
+/// has already settled on - a debounce defers that commit to the handler that carries the wait and the change event
+/// drops it, a throttle lets the first keystroke of a burst through at once, and a field that cannot be edited takes
 /// neither event.
 /// </summary>
 [TestClass]
@@ -95,6 +97,125 @@ public class BitTextInputBaseTests : BunitTestContext
 
         CollectionAssert.AreEqual(new[] { "typed ", "typed" }, changes);
         Assert.AreEqual("typed", component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task ImmediateShouldStillReportTheChangeEventWhileTheAppIsBusyWithTheValue()
+    {
+        var changes = new List<string?>();
+        var heldBack = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.OnChange, async (string? v) =>
+            {
+                changes.Add(v);
+
+                if (changes.Count == 1)
+                {
+                    await heldBack.Task;
+                }
+            });
+        });
+
+        var input = component.Find("input");
+
+        var typing = input.InputAsync(new ChangeEventArgs { Value = "typed" });
+
+        // The app has not finished with the value the keystroke reported, so whatever it ends up doing with it, the
+        // change event raised on blur reports the text once more for the app to end on.
+        await input.ChangeAsync(new ChangeEventArgs { Value = "typed" });
+
+        heldBack.SetResult();
+
+        await typing;
+
+        CollectionAssert.AreEqual(new[] { "typed", "typed" }, changes);
+    }
+
+    [TestMethod]
+    public async Task ImmediateShouldStillReportTheChangeEventWhenAnOlderValueWasTheLastOneTheAppFinishedWith()
+    {
+        var finished = new List<string?>();
+        var heldBack = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.OnChange, async (string? v) =>
+            {
+                if (v == "ab")
+                {
+                    await heldBack.Task;
+                }
+
+                finished.Add(v);
+            });
+        });
+
+        var input = component.Find("input");
+
+        var first = input.InputAsync(new ChangeEventArgs { Value = "ab" });
+
+        await input.InputAsync(new ChangeEventArgs { Value = "abc" });
+
+        heldBack.SetResult();
+
+        await first;
+
+        // The handlers finished in another order than the keystrokes were typed, and the app was left on "ab": the
+        // change event raised on blur reports "abc" again so the app ends on the text the field holds.
+        await input.ChangeAsync(new ChangeEventArgs { Value = "abc" });
+
+        CollectionAssert.AreEqual(new[] { "abc", "ab", "abc" }, finished);
+    }
+
+    [TestMethod]
+    public async Task TheChangeEventShouldDropAnInputEventStillWaitingOutItsDebounce()
+    {
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 10);
+            parameters.Add(p => p.ValueChanged, (string? v) => values.Add(v));
+        });
+
+        var input = component.Find("input");
+
+        // Both events are raised in one turn of the renderer's dispatcher, where the wait of the keystroke resumes, so
+        // its 10 ms cannot run out before the change event arrives, however slow the machine.
+        Task typing = Task.CompletedTask;
+        Task leaving = Task.CompletedTask;
+        await component.InvokeAsync(() =>
+        {
+            typing = input.InputAsync(new ChangeEventArgs { Value = "typed" });
+            leaving = input.ChangeAsync(new ChangeEventArgs { Value = "typed" });
+        });
+
+        await leaving;
+        await typing;
+
+        // The change event committed the text the keystroke was waiting to, so the keystroke had nothing left to commit.
+        CollectionAssert.AreEqual(new[] { "typed" }, values);
+    }
+
+    [TestMethod]
+    public async Task ClearingTheTextShouldWaitOnTheChangeHandlersOfTheApp()
+    {
+        Action<string?> refuse = _ => throw new InvalidOperationException("refused");
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "kept");
+            parameters.Add(p => p.OnChange, refuse);
+        });
+
+        // An empty text commits the empty value the way any other text is committed, so what the OnChange of the app
+        // throws reaches the event rather than a task nobody waits on.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => component.Find("input").ChangeAsync(new ChangeEventArgs { Value = "" }));
     }
 
     [TestMethod]

@@ -633,24 +633,43 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// </summary>
     public Task SetNumberAsync(string? number) => InvokeAsync(async () =>
     {
+        // The number replaces whatever was typed, so an input event still waiting out its debounce or throttle
+        // carries text that is thrown away here, and landing after it would put that text straight back.
+        ResetInputRateLimiter();
+
         await SetNumber(number);
 
         StateHasChanged();
     });
 
-    private async Task SetNumber(string? number)
+    // Commits a number the way typing it does: the change event and the input events of Immediate come through here
+    // as well (see HandleOnStringValueChangeAsync). reportSettledValue is what SetCurrentValueAsStringAsync takes.
+    private async Task SetNumber(string? number, bool reportSettledValue = true)
     {
         if (Disabled || ReadOnly) return;
 
+        // Parse what the user typed so a full number entered with an international prefix
+        // ('+' or its "00" equivalent) selects the matching country and keeps only the local
+        // digits in the number input. Without such a prefix ParseFullNumber returns the current
+        // country unchanged and the whole input as the local number.
+        // The text is normalized first, because a value that only ever travels on the change event
+        // (a paste followed by a blur, with Immediate off) has not been through the input handler.
         var (country, local) = ParseFullNumber(NormalizeTyped(number), keepCountry: NoDropdown);
 
+        // Only switch the country when parsing actually resolved a different one. AssignCountry
+        // returns false for a one-way controlled Country (set without CountryChanged); in that
+        // case the selection can't change, so OnCountryChange must not fire (see HandleOnCountrySelect).
         if (country is not null && country.Iso2 != Country?.Iso2)
         {
-            // The local part was cut off the dialing code of the parsed country, so it is only kept once that
-            // country is actually adopted: a one-way controlled Country would otherwise keep its own country
-            // under a number parsed for another one (see HandleOnStringValueChangeAsync).
+            // 'local' is the local part stripped of the parsed country's dialing code, so it is
+            // only valid once that country is actually adopted. Defer the number assignment until
+            // the country switch succeeds; otherwise a one-way controlled Country would keep the
+            // old country while Number held a local part parsed for a different one, leaving the
+            // country and the local part out of sync (and recomposing into a wrong full value).
             if (await AssignCountry(country))
             {
+                // The pattern can be one the newly adopted country brings with it, so the number is
+                // formatted after the switch rather than before it.
                 await AssignNumber(FormatNumber(local));
 
                 await OnCountryChange.InvokeAsync(country);
@@ -661,7 +680,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             await AssignNumber(FormatNumber(local));
         }
 
-        await UpdateValueFromParts();
+        await UpdateValueFromParts(reportSettledValue);
     }
 
 
@@ -1155,7 +1174,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // The country is adopted before the number is laid out, because the pattern the number is
             // laid out over can be the one the newly adopted country brings with it: formatting first
             // would show the new number under the pattern of the country it is replacing
-            // (see HandleOnStringValueChangeAsync).
+            // (see SetNumber).
             if (country is not null)
             {
                 await AssignCountry(country);
@@ -1901,6 +1920,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // would have a consumer react to a number that is still there (see HandleOnCountrySelect).
         if (await AssignNumber(null) is false) return;
 
+        // An input event still waiting out its debounce or throttle carries the number being thrown away, and
+        // landing after the clearing it would put that number straight back.
+        ResetInputRateLimiter();
+
         await UpdateValueFromParts();
 
         // Emptying the field moves nothing and says nothing on its own, so the one interaction that throws
@@ -1930,41 +1953,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (Disabled || ReadOnly) return;
 
-        // Parse what the user typed so a full number entered with an international prefix
-        // ('+' or its "00" equivalent) selects the matching country and keeps only the local
-        // digits in the number input. Without such a prefix ParseFullNumber returns the current
-        // country unchanged and the whole input as the local number.
-        // The text is normalized first, because a value that only ever travels on the change event
-        // (a paste followed by a blur, with Immediate off) has not been through the input handler.
-        var (country, number) = ParseFullNumber(NormalizeTyped(e.Value?.ToString()), keepCountry: NoDropdown);
+        // Readied as the base class readies its own commit: the change event drops the input events still waiting
+        // out their debounce or throttle, and under Immediate it does not report a number the input events already did.
+        var reportSettledValue = PrepareStringValueCommit();
 
-        // Only switch the country when parsing actually resolved a different one. AssignCountry
-        // returns false for a one-way controlled Country (set without CountryChanged); in that
-        // case the selection can't change, so OnCountryChange must not fire (see HandleOnCountrySelect).
-        if (country is not null && country.Iso2 != Country?.Iso2)
-        {
-            // 'number' is the local part stripped of the parsed country's dialing code, so it is
-            // only valid once that country is actually adopted. Defer the number assignment until
-            // the country switch succeeds; otherwise a one-way controlled Country would keep the
-            // old country while Number held a local part parsed for a different one, leaving the
-            // country and the local part out of sync (and recomposing into a wrong full value).
-            if (await AssignCountry(country))
-            {
-                // The pattern can be one the newly adopted country brings with it, so the number is
-                // formatted after the switch rather than before it.
-                await AssignNumber(FormatNumber(number));
-
-                await OnCountryChange.InvokeAsync(country);
-            }
-        }
-        else
-        {
-            await AssignNumber(FormatNumber(number));
-        }
-
-        // Under Immediate the input events have reported the number as it was typed, so the change event
-        // raised on blur reports it only when it moves the value (see BitTextInputBase).
-        await UpdateValueFromParts(reportSameValue: Immediate is false);
+        await SetNumber(e.Value?.ToString(), reportSettledValue);
     }
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
@@ -2006,7 +1999,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     // Recomposes the full Value from the current Number and Country and pushes it out through
     // the normal value pipeline so ValueChanged/OnChange and validation fire as expected.
-    private async Task UpdateValueFromParts(bool reportSameValue = true)
+    private async Task UpdateValueFromParts(bool reportSettledValue = true)
     {
         var composed = ComposeFullNumber(Country, Number, KeepNationalPrefix);
 
@@ -2014,7 +2007,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _lastNumber = Number;
         _lastCountryIso = Country?.Iso2;
 
-        await SetCurrentValueAsStringAsync(composed, bypass: false, reportSameValue);
+        await SetCurrentValueAsStringAsync(composed, bypass: false, reportSettledValue);
     }
 
     private async Task FocusDropdown()
