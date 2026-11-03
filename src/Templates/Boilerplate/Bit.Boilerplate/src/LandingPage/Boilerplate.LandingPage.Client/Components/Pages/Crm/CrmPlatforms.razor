@@ -1,0 +1,48 @@
+@inherits LandingComponentBase
+
+<ul class="crm-platforms">
+    @foreach (var (platform, icon, detail) in rows)
+    {
+        var link = CrmSite.Info.Find(platform);
+        @if (link?.Url is { } url)
+        {
+            <li class="@(platform == visitorPlatform ? "is-yours" : null)">
+                <BitIcon IconName="@icon" Class="crm-platform-icon" />
+                <div class="crm-platform-text">
+                    <p class="crm-platform-name">
+                        @L[$"Platform{platform}"]
+                        @if (platform == visitorPlatform)
+                        {
+                            <span>@L[nameof(LandingStrings.YourDevice)]</span>
+                        }
+                    </p>
+                    <p class="crm-platform-detail">@R[detail]</p>
+                </div>
+                <div class="crm-platform-action">
+                    @switch (platform)
+                    {
+                        case LandingPlatform.iOS:
+                            <a href="@url" rel="noopener" target="_blank">
+                                <img src="images/badges/app-store.svg" width="120" height="40" alt="@L[nameof(LandingStrings.BadgeAppStore)]" />
+                            </a>
+                            break;
+                        case LandingPlatform.Android:
+                            <a href="@url" rel="noopener" target="_blank">
+                                <img src="@($"images/badges/google-play-{(CurrentCulture.TwoLetterISOLanguageName is "fa" ? "fa" : "en")}.webp")" width="135" height="40" alt="@L[nameof(LandingStrings.BadgeGooglePlay)]" />
+                            </a>
+                            break;
+                        case LandingPlatform.macOS:
+                            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@url" Target="_blank" IconName="@BitIconName.Download">@L[nameof(LandingStrings.DownloadForMac)]</BitButton>
+                            break;
+                        case LandingPlatform.Windows:
+                            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@url" IconName="@BitIconName.Download">@L[nameof(LandingStrings.DownloadForWindows)]</BitButton>
+                            break;
+                        default:
+                            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@url" IconName="@BitIconName.Globe">@L[nameof(LandingStrings.OpenWebApp)]</BitButton>
+                            break;
+                    }
+                </div>
+            </li>
+        }
+    }
+</ul>

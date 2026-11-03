@@ -1,0 +1,319 @@
+@import '../../../Styles/tokens';
+
+.crm-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lp-fg-muted);
+    font-family: var(--crm-figures);
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+
+    &::before {
+        content: "";
+        width: 18px;
+        height: 2px;
+        background: var(--lp-accent);
+    }
+
+    &:lang(fa) {
+        font-size: .8125rem;
+        letter-spacing: 0;
+    }
+}
+
+.crm-figure {
+    font-family: var(--crm-figures);
+    font-feature-settings: "tnum";
+}
+
+.crm-about-hero {
+    display: grid;
+    justify-items: start;
+    gap: 18px;
+    padding-block: clamp(48px, 7vw, 96px) 36px;
+
+    > * {
+        max-width: 880px;
+    }
+
+    h1 {
+        font-size: clamp(2.6rem, 1.8rem + 3.4vw, 4.75rem);
+        font-weight: 700;
+        letter-spacing: -.04em;
+        line-height: 1;
+
+        &:lang(fa) {
+            font-size: clamp(2.1rem, 1.6rem + 2.4vw, 3.5rem);
+            line-height: 1.3;
+        }
+    }
+}
+
+.crm-about-facts {
+    padding-bottom: 24px;
+
+    dl {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin: 0;
+        border-block: 1.5px solid var(--lp-fg);
+
+        @include lt-md {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    div {
+        display: flex;
+        flex-direction: column-reverse;
+        justify-content: flex-end;
+        gap: 4px;
+        padding: 22px 20px;
+        border-inline-start: 1px solid var(--lp-line);
+
+        &:first-child {
+            border-inline-start: 0;
+            padding-inline-start: 0;
+        }
+    }
+
+    dt {
+        color: var(--lp-fg-muted);
+        font-size: .875rem;
+    }
+
+    dd {
+        margin: 0;
+        font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+        font-weight: 500;
+        letter-spacing: -.02em;
+        line-height: 1.1;
+    }
+
+    @include lt-md {
+        div:nth-child(3) {
+            border-inline-start: 0;
+            padding-inline-start: 0;
+        }
+
+        div:nth-child(n + 3) {
+            border-top: 1px solid var(--lp-line);
+        }
+    }
+}
+
+.crm-story-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr);
+    gap: 24px clamp(32px, 6vw, 88px);
+
+    h2 {
+        font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: -.025em;
+    }
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.crm-story-side {
+    display: grid;
+    align-content: start;
+    gap: 28px;
+}
+
+.crm-milestones {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-inline-start: 1.5px solid var(--lp-fg);
+    list-style: none;
+
+    li {
+        position: relative;
+        display: grid;
+        gap: 2px;
+        padding-block: 10px;
+        padding-inline-start: 20px;
+        color: var(--lp-fg-muted);
+        font-size: .9375rem;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 18px;
+            inset-inline-start: -5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--lp-bg);
+            box-shadow: 0 0 0 1.5px var(--lp-fg);
+        }
+
+        &:last-child::before {
+            background: var(--lp-accent);
+            box-shadow: 0 0 0 1.5px var(--lp-accent);
+        }
+    }
+
+    .crm-figure {
+        color: var(--lp-fg);
+        font-size: .875rem;
+        font-weight: 600;
+    }
+}
+
+.crm-story-text {
+    display: grid;
+    gap: 18px;
+    max-width: 64ch;
+
+    p {
+        color: var(--lp-fg-muted);
+        font-size: 1.0625rem;
+        line-height: 1.7;
+    }
+
+    p:first-child {
+        color: var(--lp-fg);
+        font-size: 1.25rem;
+        line-height: 1.55;
+    }
+}
+
+.crm-team {
+    background: var(--lp-bg-alt);
+
+    h2 {
+        margin-bottom: 32px;
+        font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: -.025em;
+    }
+
+    ul {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        border-top: 1.5px solid var(--lp-fg);
+        list-style: none;
+
+        @include lt-md {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    li {
+        display: grid;
+        align-content: start;
+        gap: 2px;
+        padding-block: 22px 24px;
+        padding-inline-end: 20px;
+        border-bottom: 1px solid var(--lp-line);
+
+        span {
+            color: var(--lp-fg-muted);
+            font-size: .9375rem;
+        }
+    }
+}
+
+.crm-team-avatar {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background: var(--crm-avatar);
+    color: var(--crm-avatar-fg) !important;
+    font-size: 1.125rem !important;
+    font-weight: 700;
+}
+
+.crm-team-place {
+    font-family: var(--crm-figures);
+    font-size: .75rem !important;
+}
+
+.crm-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 48px;
+    padding-block: clamp(56px, 7vw, 96px);
+
+    @include lt-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.crm-contact-text {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+
+    h2 {
+        font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: -.025em;
+    }
+
+    p {
+        color: var(--lp-fg-muted);
+    }
+}
+
+.crm-contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.crm-contact-hours {
+    font-size: .875rem;
+}
+
+.crm-company {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 28px;
+    border: 1px solid var(--lp-line);
+    border-radius: var(--lp-radius);
+    background: var(--lp-surface);
+
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 650;
+    }
+
+    dl {
+        display: grid;
+        margin: 4px 0 0;
+        border-top: 1px solid var(--lp-line);
+    }
+
+    div {
+        display: grid;
+        grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+        gap: 12px;
+        padding-block: 10px;
+        border-bottom: 1px solid var(--lp-line);
+        font-size: .9375rem;
+    }
+
+    dt {
+        color: var(--lp-fg-muted);
+    }
+
+    dd {
+        margin: 0;
+    }
+}
