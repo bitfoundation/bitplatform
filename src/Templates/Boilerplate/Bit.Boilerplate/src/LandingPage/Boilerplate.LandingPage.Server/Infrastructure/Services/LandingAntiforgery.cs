@@ -1,8 +1,9 @@
+// [mirror] cache-friendly antiforgery - keep in sync with:
+// - src/Server/Boilerplate.Server.Shared/Infrastructure/Services/SharedResponseCacheCompatibleAntiforgery.cs
 using Microsoft.AspNetCore.Antiforgery;
 
 namespace Boilerplate.LandingPage.Server.Infrastructure.Services;
 
-// [mirror] src/Server/Boilerplate.Server.Shared/Infrastructure/Services/SharedResponseCacheCompatibleAntiforgery.cs
 public sealed class LandingAntiforgery(IServiceProvider serviceProvider) : IAntiforgery
 {
     private readonly IAntiforgery original = (IAntiforgery)ActivatorUtilities.CreateInstance(serviceProvider, typeof(IAntiforgery).Assembly.GetType("Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery", throwOnError: true)!);

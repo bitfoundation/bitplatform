@@ -47,7 +47,8 @@ public static class LandingEmailServiceCollectionExtensions
         if (configuration.GetConnectionString("smtp") is not { Length: > 0 } connectionString)
             return services;
 
-        // [mirror] src/Server/Boilerplate.Server.Api/Program.Services.cs GetSmtpSettings
+        // [mirror] smtp connection string parsing - keep in sync with:
+        // - src/Server/Boilerplate.Server.Api/Program.Services.cs (GetSmtpSettings)
         var values = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(part => part.Split('=', 2))
             .Where(pair => pair.Length is 2)

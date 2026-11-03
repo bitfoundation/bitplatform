@@ -1,4 +1,3 @@
-// [mirror] src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js
 self.addEventListener('fetch', () => { });
 
 self.addEventListener('install', e => e.waitUntil(

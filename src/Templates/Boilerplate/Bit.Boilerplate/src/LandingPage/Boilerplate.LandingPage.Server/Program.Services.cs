@@ -34,7 +34,8 @@ public static partial class Program
             services.AddHttpContextAccessor();
             services.TryAddSingleton(TimeProvider.System);
 
-            // [mirror] src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs AddResponseCompression
+            // [mirror] response compression options - keep in sync with:
+            // - src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationBuilderExtensions.cs
             services.AddResponseCompression(opts =>
             {
                 opts.EnableForHttps = true;

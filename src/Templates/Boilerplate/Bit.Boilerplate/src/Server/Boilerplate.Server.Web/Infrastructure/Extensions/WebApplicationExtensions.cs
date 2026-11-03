@@ -82,6 +82,8 @@ public static partial class WebApplicationExtensions
             return app;
         }
 
+        // [mirror] precompressed static files - keep in sync with:
+        // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationExtensions.cs (UsePrecompressedStaticFiles)
         /// <summary>
         /// Serves the .br file the publish wrote next to a static file to a browser that accepts Brotli, the way
         /// UseBlazorFrameworkFiles does for _framework, instead of leaving UseResponseCompression to compress it again.

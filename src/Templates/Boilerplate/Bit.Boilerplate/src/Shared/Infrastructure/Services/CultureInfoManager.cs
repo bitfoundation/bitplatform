@@ -91,6 +91,8 @@ public partial class CultureInfoManager
         return new RegionInfo(cultureInfo.LCID).TwoLetterISORegionName;
     }
 
+    // [mirror] the fa-IR culture customization - keep in sync with:
+    // - src/LandingPage/Boilerplate.LandingPage.Client/Infrastructure/LandingCultures.cs (CreatePersian)
     /// <summary>
     /// This is an example to demonstrate the way you can customize application culture
     /// </summary>

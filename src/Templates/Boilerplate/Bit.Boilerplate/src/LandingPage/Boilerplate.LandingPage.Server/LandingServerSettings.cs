@@ -14,7 +14,8 @@ public partial class LandingServerSettings
     public AIOptions AI { get; set; } = new();
 }
 
-// [mirror] src/Server/Boilerplate.Server.Web/ServerWebSettings.cs WebAppRenderOptions
+// [mirror] WebAppRenderOptions - keep in sync with:
+// - src/Server/Boilerplate.Server.Web/ServerWebSettings.cs
 public partial class WebAppRenderOptions
 {
     public bool PrerenderEnabled { get; set; } = true;

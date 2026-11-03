@@ -1,4 +1,3 @@
-// [mirror] src/Client/Boilerplate.Client.Web/wwwroot/service-worker.published.js
 // bit version: 11.0.0-pre-16
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 

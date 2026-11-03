@@ -54,7 +54,8 @@ public static class LandingCultures
         return path == "/" ? $"/{culture.Name}" : $"/{culture.Name}{path}";
     }
 
-    // [mirror] src/Shared/Infrastructure/Services/CultureInfoManager.cs CustomizeCultureInfoForFaCulture
+    // [mirror] the fa-IR culture customization - keep in sync with:
+    // - src/Shared/Infrastructure/Services/CultureInfoManager.cs (CustomizeCultureInfoForFaCulture)
     private static CultureInfo CreatePersian()
     {
         var culture = OperatingSystem.IsBrowser() ? CultureInfo.CreateSpecificCulture("fa-IR") : new CultureInfo("fa-IR");

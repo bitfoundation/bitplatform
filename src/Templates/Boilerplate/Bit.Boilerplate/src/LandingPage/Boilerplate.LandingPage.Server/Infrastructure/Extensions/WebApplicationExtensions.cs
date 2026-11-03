@@ -9,7 +9,8 @@ public static class WebApplicationExtensions
 {
     extension(WebApplication app)
     {
-        // [mirror] src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs UseAppForwardedHeaders
+        // [mirror] forwarded headers setup - keep in sync with:
+        // - src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs (UseAppForwardedHeaders)
         public WebApplication UseLandingForwardedHeaders()
         {
             var section = app.Configuration.GetSection("ForwardedHeaders");
@@ -38,7 +39,8 @@ public static class WebApplicationExtensions
             return app;
         }
 
-        // [mirror] src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs UseSecurityHeaders
+        // [mirror] the security baseline these headers set - keep in sync with:
+        // - src/Server/Boilerplate.Server.Shared/Infrastructure/Extensions/WebApplicationExtensions.cs (UseSecurityHeaders)
         public WebApplication UseLandingSecurityHeaders()
         {
             var csp = string.Join(' ',
@@ -120,7 +122,8 @@ public static class WebApplicationExtensions
         {
             var env = app.Environment;
 
-            // [mirror] src/Server/Boilerplate.Server.Web/Program.Middlewares.cs static files caching
+            // [mirror] static file cache headers - keep in sync with:
+            // - src/Server/Boilerplate.Server.Web/Program.Middlewares.cs
             app.Use(async (context, next) =>
             {
                 context.Response.OnStarting(() =>
@@ -153,7 +156,8 @@ public static class WebApplicationExtensions
             return app;
         }
 
-        // [mirror] src/Server/Boilerplate.Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs UsePrecompressedStaticFiles
+        // [mirror] precompressed static files - keep in sync with:
+        // - src/Server/Boilerplate.Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs (UsePrecompressedStaticFiles)
         public WebApplication UsePrecompressedStaticFiles()
         {
             var contentTypes = new FileExtensionContentTypeProvider();
