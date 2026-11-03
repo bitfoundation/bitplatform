@@ -121,7 +121,7 @@
         <value>شروع تور</value>
     </data>
     <data name="OfferNote" xml:space="preserve">
-        <value>همه‌ی نمونه‌ها و هر چیزی که از اول در آن‌هاست، قدم به قدم.</value>
+        <value>نمونه‌ها و چیزهایی که از اول در آن‌هاست، قدم به قدم.</value>
     </data>
     <data name="Next" xml:space="preserve">
         <value>بعدی</value>
@@ -154,7 +154,7 @@
         <value>پیشرفت تور</value>
     </data>
     <data name="IntroTitle" xml:space="preserve">
-        <value>گشتی در همه‌ی امکانات</value>
+        <value>گشتی در نمونه‌ها</value>
     </data>
     <data name="IntroBody" xml:space="preserve">
         <value>{0} سایت نمونه و هر چیزی که از اول در آن‌هاست، قدم به قدم. هر قدر خواستید تند «بعدی» را بزنید، یا با Esc بیرون بروید.</value>
@@ -207,59 +207,17 @@
     <data name="ChatBody" xml:space="preserve">
         <value>تور آن را برایتان باز کرد. از روی اطلاعات خود {0}، به زبان بازدیدکننده و با یک مدل هوش مصنوعی واقعی جواب می‌دهد، و کدش فقط وقتی دانلود می‌شود که کسی بازش کند.</value>
     </data>
-    <data name="CouponTitle" xml:space="preserve">
-        <value>کدی برای کپی</value>
-    </data>
-    <data name="CouponBody" xml:space="preserve">
-        <value>کد تخفیف اولین سفارش با دکمه‌ی کپی، کنار نشان فروشگاه‌ها و QR در انتهای صفحه.</value>
-    </data>
     <data name="AboutTitle" xml:space="preserve">
         <value>صفحه‌ی درباره‌ی ما</value>
     </data>
     <data name="AboutBody" xml:space="preserve">
         <value>هر نمونه صفحه‌ی درباره‌ی ما دارد، با داستانش، تیمش و راه تماس.</value>
     </data>
-    <data name="CountdownTitle" xml:space="preserve">
-        <value>{0}، پیش از انتشار</value>
-    </data>
-    <data name="CountdownBody" xml:space="preserve">
-        <value>شمارش معکوس تا صبحی که اپ باز می‌شود، به زبان بازدیدکننده.</value>
-    </data>
-    <data name="PreOrderTitle" xml:space="preserve">
-        <value>حالا پیش‌سفارش، بقیه بعداً</value>
-    </data>
-    <data name="PreOrderBody" xml:space="preserve">
-        <value>کاربران آیفون همین امروز در App Store پیش‌سفارش می‌دهند و اپ روز انتشار خودش دانلود می‌شود. اندروید و وب به‌زودی می‌آیند.</value>
-    </data>
-    <data name="OrderTitle" xml:space="preserve">
-        <value>یک سفارش بسازید</value>
-    </data>
-    <data name="OrderBody" xml:space="preserve">
-        <value>نوشیدنی، اندازه و شیر را انتخاب کنید؛ قیمت همان‌طور که در اپ خواهد بود حساب می‌شود.</value>
-    </data>
-    <data name="InlineChatTitle" xml:space="preserve">
-        <value>چت، همین‌جا روی صفحه</value>
-    </data>
-    <data name="InlineChatBody" xml:space="preserve">
-        <value>این‌جا دستیار زیر hero نشسته و سؤال‌های پیشنهادی دارد، پس بازدیدکننده بدون باز کردن چیزی می‌پرسد.</value>
-    </data>
     <data name="WaitlistTitle" xml:space="preserve">
         <value>فهرست انتظاری که تمیز می‌ماند</value>
     </data>
     <data name="WaitlistBody" xml:space="preserve">
         <value>بازدیدکننده پلتفرم‌هایی را که می‌خواهد انتخاب می‌کند. هر ثبت‌نام با ایمیل تأیید می‌شود و ربات‌ها بی‌سروصدا کنار گذاشته می‌شوند. بعد از عضویت دکمه‌های اشتراک‌گذاری می‌آیند و هر ایمیل پیوندی برای خروج از فهرست دارد.</value>
-    </data>
-    <data name="CollectTitle" xml:space="preserve">
-        <value>{0}، خرید و تحویل حضوری</value>
-    </data>
-    <data name="CollectBody" xml:space="preserve">
-        <value>فروشگاه، روز و ساعت را انتخاب کنید و مثل خود اپ نوبت تحویل بگیرید.</value>
-    </data>
-    <data name="CardTitle" xml:space="preserve">
-        <value>کارت فروشگاه داخل اپ</value>
-    </data>
-    <data name="CardBody" xml:space="preserve">
-        <value>کارت Northside همان‌طور که اعضا می‌بینند: یک امتیاز برای هر یورو، با اسکن کنار صندوق یا خودکار با تحویل حضوری.</value>
     </data>
     <data name="PagesTitle" xml:space="preserve">
         <value>بیش از یک صفحه</value>
@@ -271,25 +229,7 @@
         <value>چت به شکل زبانه‌ی کناری</value>
     </data>
     <data name="ConciergeBody" xml:space="preserve">
-        <value>همان دستیار در شکل سومش: زبانه‌ای در لبه‌ی صفحه که همین پنل را باز می‌کند. تور آن را برایتان باز کرد.</value>
-    </data>
-    <data name="SessionTitle" xml:space="preserve">
-        <value>{0}، جلسه‌ای برای شروع</value>
-    </data>
-    <data name="SessionBody" xml:space="preserve">
-        <value>جلسه‌ی امروز همین‌جا در hero اجرا می‌شود: شروعش کنید، یک حرکت را رد کنید و ببینید دور چطور بسته می‌شود.</value>
-    </data>
-    <data name="LaunchTitle" xml:space="preserve">
-        <value>انتشار پلتفرم به پلتفرم</value>
-    </data>
-    <data name="LaunchBody" xml:space="preserve">
-        <value>App Store برای iPhone، فهرست انتظار برای Android و دکمه‌ی نصب برای وب، همه در یک صفحه. هر نمونه بعد از نصب مثل یک اپ جداگانه باز می‌شود.</value>
-    </data>
-    <data name="NewsTitle" xml:space="preserve">
-        <value>تازه‌ها</value>
-    </data>
-    <data name="NewsBody" xml:space="preserve">
-        <value>یادداشت‌های انتشار روی صفحه، با پیوندی از نشان hero، تا بازدیدکننده‌ای که برگشته ببیند چه عوض شده.</value>
+        <value>همان دستیار، این بار به شکل زبانه‌ای در لبه‌ی صفحه که همین پنل را باز می‌کند. تور آن را برایتان باز کرد.</value>
     </data>
     <data name="LanguagesTitle" xml:space="preserve">
         <value>دو زبان، هر دو جهت</value>
@@ -309,29 +249,11 @@
     <data name="SearchBody" xml:space="preserve">
         <value>همه‌ی صفحه‌ها prerender می‌شوند، پس موتورهای جست‌وجو و بازدیدکننده‌ها متن صفحه را پیش از اجرای هر کدی می‌گیرند، همراه با پیوند canonical، داده‌ی ساخت‌یافته و جایی در sitemap.</value>
     </data>
-    <data name="BoardTitle" xml:space="preserve">
-        <value>{0}، پایپ‌لاینی برای جابه‌جایی</value>
-    </data>
-    <data name="BoardBody" xml:space="preserve">
-        <value>یک معامله را با فلش‌هایش جابه‌جا کنید، یا رویش بروید و از کلیدهای جهت استفاده کنید؛ پیش‌بینی هم دنبالش می‌آید.</value>
-    </data>
     <data name="SourcesTitle" xml:space="preserve">
         <value>عدد با منبعش</value>
     </data>
     <data name="SourcesBody" xml:space="preserve">
         <value>درست زیر عددها، صفحه می‌گوید هر کدام از کجا آمده: یک نظرسنجی از مشتری‌ها، یک ناظر بیرونی.</value>
-    </data>
-    <data name="CurrencyTitle" xml:space="preserve">
-        <value>قیمت به سه ارز</value>
-    </data>
-    <data name="CurrencyBody" xml:space="preserve">
-        <value>ماهانه یا سالانه، به یورو، دلار آمریکا یا پوند، که همین‌جا حساب می‌شود.</value>
-    </data>
-    <data name="SheetsTitle" xml:space="preserve">
-        <value>یک مقایسه‌ی منصفانه</value>
-    </data>
-    <data name="SheetsBody" xml:space="preserve">
-        <value>صفحه‌ای که محصول را با چیزی که تیم‌ها امروز استفاده می‌کنند مقایسه می‌کند، این‌جا با spreadsheet، حتی جاهایی که spreadsheet هنوز انتخاب بهتری است.</value>
     </data>
     <data name="InvoiceTitle" xml:space="preserve">
         <value>{0}، فاکتوری برای فرستادن</value>
@@ -339,41 +261,11 @@
     <data name="InvoiceBody" xml:space="preserve">
         <value>ساعت، نرخ یا مالیات را عوض کنید تا فاکتور خودش جمع بخورد و آماده‌ی فرستادن شود.</value>
     </data>
-    <data name="SavingsTitle" xml:space="preserve">
-        <value>ماشین‌حسابی با عددهای بازدیدکننده</value>
-    </data>
-    <data name="SavingsBody" xml:space="preserve">
-        <value>بازدیدکننده عددهای خودش را وارد می‌کند و می‌بیند یک ماه کار اداری واقعاً چقدر برایش تمام می‌شود.</value>
-    </data>
-    <data name="DesktopTitle" xml:space="preserve">
-        <value>اپ دسکتاپ هم</value>
-    </data>
-    <data name="DesktopBody" xml:space="preserve">
-        <value>کنار فروشگاه‌ها، یک نمونه می‌تواند دانلود ویندوز یا Microsoft Store و پیوند اپ وب را هم داشته باشد.</value>
-    </data>
     <data name="VatTitle" xml:space="preserve">
-        <value>با یا بدون مالیات</value>
+        <value>با یا بدون مالیات، به ارز بازدیدکننده</value>
     </data>
     <data name="VatBody" xml:space="preserve">
-        <value>یک کلید همه‌ی قیمت‌ها را با یا بدون مالیات بر ارزش افزوده نشان می‌دهد.</value>
-    </data>
-    <data name="StayTitle" xml:space="preserve">
-        <value>{0}، اقامتی برای برنامه‌ریزی</value>
-    </data>
-    <data name="StayBody" xml:space="preserve">
-        <value>تاریخ و اتاق را انتخاب کنید تا برنامه‌ریز قیمت اقامت را مثل خود اپ حساب کند.</value>
-    </data>
-    <data name="DirectTitle" xml:space="preserve">
-        <value>چرا مستقیم رزرو کنیم</value>
-    </data>
-    <data name="DirectBody" xml:space="preserve">
-        <value>دلیل‌های خود هتل برای این‌که مستقیم رزرو کنید، نه از سایت‌های رزرو.</value>
-    </data>
-    <data name="RoomsTitle" xml:space="preserve">
-        <value>اتاق‌هایی برای ورق زدن</value>
-    </data>
-    <data name="RoomsBody" xml:space="preserve">
-        <value>صفحه‌ی اتاق‌ها با نرخ‌هایش و گالری‌ای که در هر دو زبان در جهت درست ورق می‌خورد.</value>
+        <value>قیمت‌ها به ارز کشور بازدیدکننده نشان داده می‌شوند که از زبان مرورگرش حدس زده می‌شود و راحت عوض می‌شود، و یک کلید آن‌ها را با یا بدون مالیات بر ارزش افزوده‌ی همان کشور نشان می‌دهد.</value>
     </data>
     <data name="DeskTitle" xml:space="preserve">
         <value>{0}، میز پذیرشی که کار می‌کند</value>
@@ -392,12 +284,6 @@
     </data>
     <data name="PressBody" xml:space="preserve">
         <value>لوگو و تصویر برای دانلود خبرنگارها، همراه با اطلاعات و آدم‌هایی که می‌شود از آن‌ها نقل کرد.</value>
-    </data>
-    <data name="NotchTitle" xml:space="preserve">
-        <value>{0}، کوچک‌ترین صفحه</value>
-    </data>
-    <data name="NotchBody" xml:space="preserve">
-        <value>یک صفحه با فهرست انتظار و دفترچه‌ای که کار می‌کند: آن‌چه وقتی همه‌ی چیزهای اختیاری بروند می‌ماند.</value>
     </data>
     <data name="RouteTitle" xml:space="preserve">
         <value>داده کجا می‌رود</value>

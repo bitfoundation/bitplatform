@@ -45,32 +45,22 @@ public static class LandingTourSteps
             Add(tour, "shop-press", shop.Path, ".ecommerce-press", t[nameof(TourStrings.ProofTitle)], t[nameof(TourStrings.ProofBody)]);
             Add(tour, "shop-faq", shop.Path, ".lp-faq", t[nameof(TourStrings.FaqTitle)], t[nameof(TourStrings.FaqBody)]);
             Open(Add(tour, "shop-chat", shop.Path, ".lp-chat-card", t[nameof(TourStrings.ChatTitle)], t[nameof(TourStrings.ChatBody), shop.Name]), ".lp-chat-bubble");
-            Add(tour, "shop-coupon", shop.Path, ".ecommerce-coupon", t[nameof(TourStrings.CouponTitle)], t[nameof(TourStrings.CouponBody)]);
             Add(tour, "shop-about", $"{shop.Path}/about", ".ecommerce-team", t[nameof(TourStrings.AboutTitle)], t[nameof(TourStrings.AboutBody)]);
         }
 
         if (LandingSites.Find("restaurant") is { } cafe)
         {
-            Add(tour, "cafe-countdown", cafe.Path, ".lp-countdown", t[nameof(TourStrings.CountdownTitle), cafe.Name], t[nameof(TourStrings.CountdownBody)]);
-            Add(tour, "cafe-preorder", cafe.Path, ".restaurant-soon", t[nameof(TourStrings.PreOrderTitle)], t[nameof(TourStrings.PreOrderBody)]);
-            Try(Add(tour, "cafe-order", cafe.Path, ".order-demo", t[nameof(TourStrings.OrderTitle)], t[nameof(TourStrings.OrderBody)]));
-            Add(tour, "cafe-ask", cafe.Path, ".lp-chat-inline", t[nameof(TourStrings.InlineChatTitle)], t[nameof(TourStrings.InlineChatBody)]);
             Add(tour, "cafe-waitlist", cafe.Path, ".lp-waitlist", t[nameof(TourStrings.WaitlistTitle)], t[nameof(TourStrings.WaitlistBody)]);
         }
 
         if (LandingSites.Find("retail") is { } grocer)
         {
-            Try(Add(tour, "grocer-collect", grocer.Path, ".slot-demo", t[nameof(TourStrings.CollectTitle), grocer.Name], t[nameof(TourStrings.CollectBody)]));
-            Add(tour, "grocer-card", grocer.Path, ".loyalty", t[nameof(TourStrings.CardTitle)], t[nameof(TourStrings.CardBody)]);
             Add(tour, "grocer-shops", $"{grocer.Path}/stores", ".retail-store", t[nameof(TourStrings.PagesTitle)], t[nameof(TourStrings.PagesBody), grocer.Name]);
             Open(Add(tour, "grocer-concierge", $"{grocer.Path}/stores", ".lp-chat-panel-body", t[nameof(TourStrings.ConciergeTitle)], t[nameof(TourStrings.ConciergeBody)]), ".lp-chat-concierge-tab", ".bit-pnl:has(.lp-chat-panel-body) .bit-pnl-cls");
         }
 
         if (LandingSites.Find("fitness") is { } workout)
         {
-            Try(Add(tour, "fit-session", workout.Path, ".fit-stage", t[nameof(TourStrings.SessionTitle), workout.Name], t[nameof(TourStrings.SessionBody)]));
-            Add(tour, "fit-launch", workout.Path, ".fit-devices .is-android", t[nameof(TourStrings.LaunchTitle)], t[nameof(TourStrings.LaunchBody)]);
-            Add(tour, "fit-news", workout.Path, ".fit-news", t[nameof(TourStrings.NewsTitle)], t[nameof(TourStrings.NewsBody)]);
             Add(tour, "fit-languages", workout.Path, ".lp-nav .lp-lang", t[nameof(TourStrings.LanguagesTitle)], t[nameof(TourStrings.LanguagesBody)]);
             Add(tour, "fit-theme", workout.Path, ".lp-nav .lp-theme-toggle", t[nameof(TourStrings.ThemeTitle)], t[nameof(TourStrings.ThemeBody)]);
             Add(tour, "fit-search", workout.Path, null, t[nameof(TourStrings.SearchTitle)], t[nameof(TourStrings.SearchBody)]);
@@ -78,25 +68,13 @@ public static class LandingTourSteps
 
         if (LandingSites.Find("crm") is { } crm)
         {
-            Try(Add(tour, "crm-board", crm.Path, ".crm-board", t[nameof(TourStrings.BoardTitle), crm.Name], t[nameof(TourStrings.BoardBody)]));
             Add(tour, "crm-stats", crm.Path, ".crm-stats", t[nameof(TourStrings.SourcesTitle)], t[nameof(TourStrings.SourcesBody)]);
-            Try(Add(tour, "crm-currency", $"{crm.Path}/pricing", ".crm-plans", t[nameof(TourStrings.CurrencyTitle)], t[nameof(TourStrings.CurrencyBody)]));
-            Add(tour, "crm-sheets", $"{crm.Path}/vs-spreadsheets", ".crm-sheets-table", t[nameof(TourStrings.SheetsTitle)], t[nameof(TourStrings.SheetsBody)]);
         }
 
         if (LandingSites.Find("accounting") is { } books)
         {
             Try(Add(tour, "acc-invoice", books.Path, ".acc-desk", t[nameof(TourStrings.InvoiceTitle), books.Name], t[nameof(TourStrings.InvoiceBody)]));
-            Try(Add(tour, "acc-savings", books.Path, ".acc-savings", t[nameof(TourStrings.SavingsTitle)], t[nameof(TourStrings.SavingsBody)]));
-            Add(tour, "acc-desktop", books.Path, ".acc-hero .lp-badges", t[nameof(TourStrings.DesktopTitle)], t[nameof(TourStrings.DesktopBody)]);
             Try(Add(tour, "acc-vat", $"{books.Path}/pricing", ".acc-plans", t[nameof(TourStrings.VatTitle)], t[nameof(TourStrings.VatBody)]));
-        }
-
-        if (LandingSites.Find("hotel") is { } hotel)
-        {
-            Try(Add(tour, "hotel-stay", hotel.Path, ".stay-demo", t[nameof(TourStrings.StayTitle), hotel.Name], t[nameof(TourStrings.StayBody)]));
-            Add(tour, "hotel-direct", hotel.Path, ".hotel-direct", t[nameof(TourStrings.DirectTitle)], t[nameof(TourStrings.DirectBody)]);
-            Try(Add(tour, "hotel-rooms", $"{hotel.Path}/rooms", ".hotel-gallery", t[nameof(TourStrings.RoomsTitle)], t[nameof(TourStrings.RoomsBody)]));
         }
 
         if (LandingSites.Find("hotel-software") is { } lodge)
@@ -108,7 +86,6 @@ public static class LandingTourSteps
 
         if (LandingSites.Find("minimal") is { } notch)
         {
-            Try(Add(tour, "notch-page", notch.Path, ".notch-app", t[nameof(TourStrings.NotchTitle), notch.Name], t[nameof(TourStrings.NotchBody)]));
             Add(tour, "notch-route", notch.Path, ".minimal-route", t[nameof(TourStrings.RouteTitle)], t[nameof(TourStrings.RouteBody)]);
             Add(tour, "notch-privacy", notch.Path, ".lp-footer-link-button", t[nameof(TourStrings.PrivacyTitle)], t[nameof(TourStrings.PrivacyBody)]);
             Add(tour, "notch-legal", $"{notch.Path}/privacy", ".lp-legal-header", t[nameof(TourStrings.LegalTitle)], t[nameof(TourStrings.LegalBody)]);
@@ -142,10 +119,10 @@ public static class LandingTourSteps
 
     private static void Open(BonboardingStepDefinition step, string toggle, string? close = null)
     {
-        step.OnBeforeShow = context => Scripts(context).InvokeVoidAsync("landing.setExpanded", toggle, true);
+        step.OnBeforeShow = context => Run(context, "landing.setExpanded", toggle, true);
         step.OnBeforeLeave = context => close is null
-            ? Scripts(context).InvokeVoidAsync("landing.setExpanded", toggle, false)
-            : Scripts(context).InvokeVoidAsync("landing.press", close, 1, 0);
+            ? Run(context, "landing.setExpanded", toggle, false)
+            : Run(context, "landing.press", close, 1, 0);
     }
 
     private static void Press(BonboardingStepDefinition step, string buttons, int count)
@@ -153,10 +130,19 @@ public static class LandingTourSteps
         Try(step);
         step.OnShown = context =>
         {
-            _ = Scripts(context).InvokeVoidAsync("landing.press", buttons, count, 1100).AsTask();
+            _ = Run(context, "landing.press", buttons, count, 1100).AsTask();
             return ValueTask.CompletedTask;
         };
     }
 
-    private static IJSRuntime Scripts(BonboardingStepContext context) => context.Services.GetRequiredService<IJSRuntime>();
+    private static async ValueTask Run(BonboardingStepContext context, string identifier, params object?[] args)
+    {
+        try
+        {
+            await context.Services.GetRequiredService<IJSRuntime>().InvokeVoidAsync(identifier, args);
+        }
+        catch (JSException)
+        {
+        }
+    }
 }
