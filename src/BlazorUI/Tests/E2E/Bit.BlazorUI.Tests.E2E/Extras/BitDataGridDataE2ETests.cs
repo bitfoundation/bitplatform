@@ -5,7 +5,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// <summary>
 /// BitDataGrid's data modes on /e2e/data-grid/data: row virtualization of a 5,000-row list (a bounded DOM, the full
 /// scroll height, the rows of any scroll position with their absolute aria-rowindex), column virtualization of 40
-/// columns following a sideways scroll, OnRead with paging (the request's window, sorts, filters and search, the
+/// columns following a sideways scroll (and keeping its window while hidden), OnRead with paging (the request's window, sorts, filters and search, the
 /// Loading state and aria-busy, a superseded request cancelled), OnRead with virtualization (windows fetched as the
 /// viewport scrolls, the result's aggregates in the footer), OnLoadMore infinite scrolling (batches appended near the
 /// end, the skeleton row while one loads, the end message after a short batch, none asked for while the grid is
@@ -27,6 +27,47 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
             return Number.isNaN(id) ? [0, 0] : [id, parseInt(row.getAttribute('aria-rowindex'))];
         }
         """);
+
+    // Wraps the script's initInfiniteScroll as the bundle defines it, marking each grid whose infinite-scroll watcher is
+    // attached (data-e2e-watched): what a grid does not ask for is only worth asserting once it has a watcher to ask.
+    private const string InfiniteWatcherSpy = """
+        (() => {
+            const ns = window.BitBlazorUI || (window.BitBlazorUI = {});
+            let dataGrid;
+            Object.defineProperty(ns, 'DataGrid', {
+                configurable: true,
+                enumerable: true,
+                get: () => dataGrid,
+                set: value => {
+                    const init = value.initInfiniteScroll;
+                    value.initInfiniteScroll = (viewport, ...args) => {
+                        const watcher = init(viewport, ...args);
+                        viewport.closest('.bit-dtg')?.setAttribute('data-e2e-watched', '');
+                        return watcher;
+                    };
+                    dataGrid = value;
+                }
+            });
+        })();
+        """;
+
+    // Waits for a shown infinite grid to fill its viewport - for its rows to reach past the 200px below the viewport's
+    // bottom within which the next batch is asked for - and checks it then stops, at most a batch short of reaching past.
+    private async Task ExpectFilledAsync(string id, int batch)
+    {
+        await Expect(Viewport(id)).ToBeVisibleAsync();
+        var fill = await Viewport(id).EvaluateAsync<int>("""
+            vp => {
+                const header = vp.querySelector(':scope > .bit-dtg-table > .bit-dtg-header').offsetHeight;
+                const row = vp.querySelector(':scope > .bit-dtg-table > .bit-dtg-body > .bit-dtg-row').offsetHeight;
+                return Math.ceil((vp.clientHeight + 200 - header) / row);
+            }
+            """);
+        await UntilAsync(async () => await DataRows(id).CountAsync() >= fill, $"The grid did not load the {fill} rows that fill its viewport.");
+        await Page.WaitForTimeoutAsync(500);
+        var rows = await DataRows(id).CountAsync();
+        Assert.IsTrue(rows < fill + batch, $"The grid loaded {rows} rows, more than a batch past the {fill} that fill its viewport.");
+    }
 
     [TestMethod]
     public async Task Virtualize_ATallList_RendersOnlyTheRowsInView()
@@ -92,6 +133,28 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         // The frozen column stays rendered and the row cells follow their headers.
         await Expect(HeaderRow(id).Locator("> [aria-colindex='1']")).ToHaveTextAsync("Id");
         await Expect(Cell(id, 0, 41)).ToHaveTextAsync("140");
+        Assert.IsTrue(await renderedHeaders.CountAsync() < 20);
+    }
+
+    [TestMethod]
+    public async Task VirtualizeColumns_AHiddenGrid_KeepsRenderingOnlyItsWindow()
+    {
+        await OpenAsync(Url);
+
+        const string id = "grid-virtual-columns";
+        var renderedHeaders = HeaderRow(id).Locator("> [role=columnheader]:not([aria-hidden=true])");
+        await UntilAsync(async () => await renderedHeaders.CountAsync() < 20, "The columns out of view were rendered.");
+
+        // Its viewport measures 0 wide while an ancestor hides it, which must not read as one too narrow to window: that
+        // would render all 41 columns into a grid nobody can see.
+        await Page.Locator("#btn-toggle-columns").ClickAsync();
+        await Expect(Viewport(id)).ToBeHiddenAsync();
+        await Page.WaitForTimeoutAsync(500);
+        var hidden = await renderedHeaders.CountAsync();
+        Assert.IsTrue(hidden < 20, $"The hidden grid rendered {hidden} of its 41 columns.");
+
+        await Page.Locator("#btn-toggle-columns").ClickAsync();
+        await Expect(HeaderRow(id).Locator("> [aria-colindex='3']")).ToHaveTextAsync("C02");
         Assert.IsTrue(await renderedHeaders.CountAsync() < 20);
     }
 
@@ -234,6 +297,8 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
         await Expect(DataRows(id)).ToHaveCountAsync(55);
         await Expect(Text("infinite-last")).ToHaveTextAsync("skip 40, take 20, got 15");
         await Expect(Page.Locator($"#{id} .bit-dtg-infinite-end")).ToHaveTextAsync("- End of results -");
+        // The watcher's sentinel is marked too, so it stops asking .NET at all rather than asking for nothing.
+        await Expect(Page.Locator($"#{id} .bit-dtg-infinite-sentinel")).ToHaveAttributeAsync("data-bit-dtg-end", "true");
 
         // A short batch was the last one: scrolling on asks for nothing more.
         await Viewport(id).EvaluateAsync("el => el.scrollTop = el.scrollHeight");
@@ -245,23 +310,49 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
     [TestMethod]
     public async Task Infinite_AHiddenGrid_LoadsNothingPastItsFirstBatchUntilItIsShown()
     {
+        await Page.AddInitScriptAsync(InfiniteWatcherSpy);
         await OpenAsync(Url);
 
         const string id = "grid-infinite-hidden";
         await Expect(Text("hidden-batches")).ToHaveTextAsync("1");
-        // Its viewport measures 0 while an ancestor hides it, which must not read as scrolled to the end: batches that
-        // come at once would otherwise have run through all 55 rows by now.
+        // Its viewport measures 0 while an ancestor hides it, which must not read as scrolled to the end: once its watcher
+        // is attached, batches that come at once would otherwise run through all 55 rows well within the wait.
+        await Expect(Page.Locator($"#{id}")).ToHaveAttributeAsync("data-e2e-watched", "");
         await Page.WaitForTimeoutAsync(500);
         await Expect(Text("hidden-batches")).ToHaveTextAsync("1");
         await Expect(DataRows(id)).ToHaveCountAsync(3);
 
-        // Shown, it loads until its viewport is filled, and stops there.
-        await Page.Locator("#btn-show-hidden").ClickAsync();
-        await UntilAsync(async () => await DataRows(id).CountAsync() > 8, "The grid loaded no more once shown.");
-        await Page.WaitForTimeoutAsync(500);
-        var rows = await DataRows(id).CountAsync();
-        Assert.IsTrue(rows < 55, $"The grid loaded {rows} of 55 rows once shown, far past what fills its viewport.");
+        await Page.Locator("#btn-toggle-hidden").ClickAsync();
+        await ExpectFilledAsync(id, batch: 3);
         await Expect(Page.Locator($"#{id} .bit-dtg-infinite-end")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Infinite_AGridHiddenWhileABatchLoads_LoadsNoMoreUntilItIsShownAgain()
+    {
+        await OpenAsync(Url);
+
+        const string id = "grid-infinite-hidden";
+        await Expect(DataRows(id)).ToHaveCountAsync(3);
+
+        // Shown with its next batch held, it asks for that batch, and is hidden again while the batch is still loading.
+        await Page.Locator("#btn-hold-hidden").ClickAsync();
+        await Page.Locator("#btn-toggle-hidden").ClickAsync();
+        await Expect(Text("hidden-held")).ToHaveTextAsync("yes");
+        await Page.Locator("#btn-toggle-hidden").ClickAsync();
+        await Expect(Viewport(id)).ToBeHiddenAsync();
+        await Page.Locator("#btn-release-hidden").ClickAsync();
+        await Expect(DataRows(id)).ToHaveCountAsync(6);
+
+        // What follows the batch landing finds the grid hidden: it asks for no more, where batches that come at once would
+        // otherwise run through all 55 rows well within the wait.
+        await Page.WaitForTimeoutAsync(500);
+        await Expect(Text("hidden-batches")).ToHaveTextAsync("2");
+        await Expect(DataRows(id)).ToHaveCountAsync(6);
+
+        // Shown again, it picks up where it stopped.
+        await Page.Locator("#btn-toggle-hidden").ClickAsync();
+        await ExpectFilledAsync(id, batch: 3);
     }
 
     [TestMethod]
