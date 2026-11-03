@@ -140,6 +140,31 @@ public class PageTests
     }
 
     [TestMethod]
+    public async Task EveryChatToggle_Should_SayWhetherItIsOpen()
+    {
+        List<string> failures = [];
+        var toggles = 0;
+
+        foreach (var site in LandingSites.All)
+        {
+            var html = await client.GetStringAsync(site.Path.Length is 0 ? LandingRoutes.Home : site.Path);
+
+            foreach (Match toggle in Regex.Matches(html, "<button[^>]*class=\"lp-chat-(bubble|concierge-tab)[^>]*>"))
+            {
+                toggles++;
+
+                if (toggle.Value.Contains("aria-expanded=\"false\"", StringComparison.Ordinal) is false)
+                {
+                    failures.Add($"{site.Key}: {toggle.Value}");
+                }
+            }
+        }
+
+        Assert.AreNotEqual(0, toggles, "No sample has a chat bubble or side tab to check.");
+        Assert.IsEmpty(failures, $"A screen reader can't tell these chats are closed: {string.Join(Environment.NewLine, failures)}");
+    }
+
+    [TestMethod]
     public async Task OutsideProduction_Should_TellSearchEnginesNotToIndex()
     {
         using var response = await client.GetAsync(LandingSites.All[0].Path);

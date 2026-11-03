@@ -45,7 +45,7 @@
         break;
 
     case LandingChatVariant.Concierge:
-        <button type="button" class="lp-chat-concierge-tab @Class" aria-haspopup="dialog" aria-expanded="@isOpen" @onclick="Open">
+        <button type="button" class="lp-chat-concierge-tab @Class" aria-haspopup="dialog" aria-expanded="@(isOpen ? "true" : "false")" @onclick="Open">
             <BitIcon IconName="@BitIconName.ChatBot" />
             <span>@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</span>
         </button>
@@ -103,7 +103,7 @@
                     }
                 </section>
             }
-            <button type="button" class="lp-chat-bubble" aria-haspopup="dialog" aria-expanded="@isOpen" @onclick="Toggle" title="@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])">
+            <button type="button" class="lp-chat-bubble" aria-haspopup="dialog" aria-expanded="@(isOpen ? "true" : "false")" @onclick="Toggle" title="@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])">
                 <BitIcon IconName="@(isOpen ? BitIconName.Cancel : BitIconName.ChatBot)" />
                 <span class="lp-chat-bubble-label">@(Label ?? Localizer[nameof(LandingStrings.ChatOpen)])</span>
             </button>
