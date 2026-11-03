@@ -31,12 +31,14 @@ public class BitPdfRangeSourceTests
     }
 
     [TestMethod]
-    [DataRow(0, 4, null)]
-    [DataRow(-1, 4, null)]
-    [DataRow(4, 0, null)]
-    [DataRow(4, -1, null)]
-    [DataRow(3, 4, null)]
-    [DataRow(4, 4, -1L)]
+    [DataRow(0, 4096, null)]
+    [DataRow(-1, 4096, null)]
+    [DataRow(4096, 0, null)]
+    [DataRow(4096, -1, null)]
+    [DataRow(4096, 1, null)]
+    [DataRow(4096, 4095, null)]
+    [DataRow(4095, 4096, null)]
+    [DataRow(4096, 4096, -1L)]
     public void RangeOptionsShouldBeValidatedAtSourceConstruction(int cache, int chunk, long? fallback)
         => Assert.Throws<ArgumentOutOfRangeException>(() => BitPdfSource.FromBytes([1]).WithRangeLoading(
             new() { CacheSize = cache, ChunkSize = chunk, MaxFallbackSize = fallback }));
@@ -69,8 +71,8 @@ public class BitPdfRangeSourceTests
     {
         using var handler = new RangeHandler(200);
         using var http = new HttpClient(handler);
-        var definition = BitPdfSource.FromUrl("https://pdf.test/document").WithHeaders(new Dictionary<string, string> { ["Authorization"] = "Bearer test" })
-            .WithRangeLoading(new() { CacheSize = 32, ChunkSize = 8 });
+        var definition = RangeAccess.DefinitionForTransportTest(32, 8)
+            .WithHeaders(new Dictionary<string, string> { ["Authorization"] = "Bearer test" });
         await using var source = await RangeAccess.Open(http, definition);
         await source.Ensure(80, 8);
         Assert.AreEqual(2, handler.Authorization.Count);
@@ -235,6 +237,40 @@ public class BitPdfRangeSourceTests
         Assert.IsTrue(source.Int("PeakBytes") <= 32);
     }
 
+    [TestMethod]
+    public void MinimumPublicChunkShouldBeAccepted()
+    {
+        var source = BitPdfSource.FromUrl("https://pdf.test/document")
+            .WithRangeLoading(new() { CacheSize = 4096, ChunkSize = 4096 });
+        Assert.IsNotNull(source);
+    }
+
+    [TestMethod]
+    public async Task DependencyMergingShouldIncludeAlignedBlockCapacity()
+    {
+        using var handler = new RangeHandler(20);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 8, 4);
+        await source.EnsureRanges((1, 3), (4, 5));
+        Assert.AreEqual("bytes=4-11", handler.Requests[1]);
+        Assert.IsTrue(source.Int("PeakBytes") <= 8);
+    }
+
+    [TestMethod]
+    public async Task DownloadReadMustValidateTheOriginalSegmentEvenAtEndOfFile()
+    {
+        using var handler = new RangeHandler(20);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 32, 8);
+        using var stream = source.OpenRead();
+        stream.Position = 20;
+        Assert.Throws<ArgumentException>(() => stream.Read(new byte[4], 2, 3));
+        Assert.Throws<ArgumentOutOfRangeException>(() => stream.Read(new byte[4], 0, -1));
+        Assert.Throws<ArgumentNullException>(() => stream.Read(null!, 0, 0));
+        Assert.AreEqual(0, stream.Read(new byte[4], 0, 4));
+        Assert.AreEqual(20L, stream.Position);
+    }
+
     internal sealed class RangeHandler(int length) : HttpMessageHandler
     {
         internal RangeHandler(byte[] bytes) : this(bytes.Length) { Bytes = bytes; }
@@ -244,6 +280,7 @@ public class BitPdfRangeSourceTests
         internal readonly List<string?> Validators = [];
         internal readonly List<string?> Authorization = [];
         internal string? Problem;
+        internal int FailuresRemaining, Failures;
         internal CountingBody? LastBody;
         internal TaskCompletionSource? Pause;
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -252,6 +289,11 @@ public class BitPdfRangeSourceTests
             Validators.Add(request.Headers.TryGetValues("If-Range", out var values) ? values.Single() : null);
             Authorization.Add(request.Headers.Authorization?.ToString());
             if (Pause is { } pause) await pause.Task.WaitAsync(cancellationToken);
+            if (FailuresRemaining > 0 && Interlocked.Decrement(ref FailuresRemaining) >= 0)
+            {
+                Interlocked.Increment(ref Failures);
+                throw new HttpRequestException("Temporary PDF range failure.");
+            }
             var requested = request.Headers.Range!.Ranges.Single();
             int from = (int)requested.From!.Value, to = (int)Math.Min(Bytes.Length - 1, requested.To!.Value);
             if (Problem == "200") { from = 0; to = Bytes.Length - 1; }
@@ -288,7 +330,16 @@ public class BitPdfRangeSourceTests
             catch (TargetInvocationException ex) when (ex.InnerException is not null) { ExceptionDispatchInfo.Capture(ex.InnerException).Throw(); throw; }
         }
         internal static Task<RangeAccess> Open(HttpClient http, int cache, int chunk)
-            => Open(http, BitPdfSource.FromUrl("https://pdf.test/document").WithRangeLoading(new() { CacheSize = cache, ChunkSize = chunk }));
+            => Open(http, DefinitionForTransportTest(cache, chunk));
+        internal static BitPdfSource DefinitionForTransportTest(int cache, int chunk)
+        {
+            var definition = BitPdfSource.FromUrl("https://pdf.test/document").WithRangeLoading();
+            // Exercise internal block/cache algorithms with byte-sized fixtures.
+            // Public construction independently enforces the 4 KiB minimum above.
+            typeof(BitPdfSource).GetProperty("RangeLoading", Flags)!.SetValue(definition,
+                new BitPdfRangeLoadingOptions { CacheSize = cache, ChunkSize = chunk });
+            return definition;
+        }
         internal static async Task<RangeAccess> Open(HttpClient http, BitPdfSource definition)
         {
             var task = (Task)SourceType.GetMethod("OpenAsync", Flags)!.Invoke(null, [http, definition, CancellationToken.None])!;
@@ -335,6 +386,8 @@ public class BitPdfRangeSourceTests
             throw new InvalidOperationException("PDF operation did not make progress.");
         }
         internal Task Ensure(int offset, int length, CancellationToken token = default) => (Task)Invoke("EnsureAsync", offset, length, token)!;
+        internal Task EnsureRanges(params (int Offset, int Length)[] ranges) => (Task)Invoke("EnsureRangesAsync", ranges, CancellationToken.None)!;
+        internal Stream OpenRead() => (Stream)Invoke("OpenReadStream")!;
         internal Task<byte[]> ReadAll() => (Task<byte[]>)Invoke("ReadAllAsync", CancellationToken.None)!;
         internal IDisposable Operation() => (IDisposable)Invoke("BeginOperation")!;
         internal BitPdfBaseStream Cursor(int start, int length) => (BitPdfBaseStream)Invoke("CreateStream", start, (int?)length)!;

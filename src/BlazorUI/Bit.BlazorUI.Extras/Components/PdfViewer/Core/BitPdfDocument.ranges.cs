@@ -144,6 +144,9 @@ public sealed partial class BitPdfDocument
 
     private static int PartialNodeCount(BitPdfDict node)
     {
+        // The PDF /Count contract permits skipping subtrees during random access.
+        // Recounting every leaf would load the entire skipped page tree. Buffered
+        // loading remains available for recovering files with incorrect counts.
         if (BitPdfPrimitives.IsName(node.Get("Type"), "Page")) return 1;
         if (node.Get("Count") is double count && double.IsFinite(count) && count >= 0
             && count <= 1_000_000 && count == Math.Floor(count)) return (int)count;
@@ -190,17 +193,22 @@ public sealed partial class BitPdfDocument
     {
         var page = Pages[index];
         var pending = new List<(int Offset, int Length)>();
-        var todo = new Stack<object?>();
-        todo.Push(page.Dict.GetRaw("Contents")); todo.Push(page.Resources);
-        todo.Push(page.Dict.GetRaw("Annots")); todo.Push(page.Dict.GetRaw("Group"));
+        var todo = new Stack<(object? Value, BitPdfDict? Resources)>();
+        todo.Push((page.Dict.GetRaw("Contents"), page.Resources)); todo.Push((page.Resources, page.Resources));
+        todo.Push((page.Dict.GetRaw("Annots"), page.Resources)); todo.Push((page.Dict.GetRaw("Group"), page.Resources));
         var visitedRefs = new HashSet<BitPdfRef>();
         var visitedObjects = new HashSet<object>(ReferenceEqualityComparer.Instance);
         int examined = 0;
-        while (todo.TryPop(out var value))
+        try { QueueUsedXObjects(page.GetContentBytes(), page.Resources); }
+        catch (BitPdfMissingDataException missing) { pending.Add((missing.Offset, missing.Length)); }
+        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { }
+        while (todo.TryPop(out var next))
         {
             if (++examined > 65536) throw new BitPdfByteSourceIOException("The PDF page dependency graph exceeds the safety limit.");
             try
             {
+                var value = next.Value;
+                var resources = next.Resources;
                 if (value is BitPdfRef reference)
                 {
                     if (!visitedRefs.Add(reference)) continue;
@@ -209,22 +217,44 @@ public sealed partial class BitPdfDocument
                 if (value is null || !visitedObjects.Add(value)) continue;
                 if (value is BitPdfBaseStream stream)
                 {
-                    if (!source.IsDataAvailable(stream.Start, stream.Length)) pending.Add((stream.Start, stream.Length));
+                    bool available = source.IsDataAvailable(stream.Start, stream.Length);
+                    if (!available) pending.Add((stream.Start, stream.Length));
+                    if (available && BitPdfPrimitives.IsName(stream.Dict?.GetRaw("Subtype"), "Form"))
+                    {
+                        resources = stream.Dict!.Get("Resources") as BitPdfDict ?? resources;
+                        try { QueueUsedXObjects(BitPdfStreamDecoder.Decode(stream), resources); }
+                        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { }
+                    }
                     value = stream.Dict;
                 }
                 if (value is BitPdfDict dictionary)
                 {
                     // Destination links must not pull another page's complete resource graph.
                     if (BitPdfPrimitives.IsName(dictionary.GetRaw("Type"), "Page")) continue;
+                    // XObject dictionaries may include large, unused images/forms.
+                    // Queue only Do operands from the page and referenced forms;
+                    // other resources remain available to the renderer on demand.
                     foreach (var pair in dictionary.RawEntries)
-                        if (pair.Key is not ("Parent" or "P" or "Prev" or "Next" or "FS" or "EF" or "AF" or "Metadata")) todo.Push(pair.Value);
+                        if (pair.Key is not ("XObject" or "Parent" or "P" or "Prev" or "Next" or "FS" or "EF" or "AF" or "Metadata"))
+                            todo.Push((pair.Value, resources));
                 }
                 else if (value is List<object?> array)
-                    foreach (var item in array) todo.Push(item);
+                    foreach (var item in array) todo.Push((item, resources));
             }
             catch (BitPdfMissingDataException missing) { pending.Add((missing.Offset, missing.Length)); }
         }
         return pending;
+
+        void QueueUsedXObjects(byte[] content, BitPdfDict? resources)
+        {
+            BitPdfDict? objects = null;
+            foreach (var op in new BitPdfContentParser(content).Parse())
+            {
+                if (op.Code != BitPdfOpCode.XObject || op.Operands.Count == 0 || op.Operands[0] is not BitPdfName name) continue;
+                objects ??= resources?.Get("XObject") as BitPdfDict;
+                todo.Push((objects?.GetRaw(name.Value), resources));
+            }
+        }
     }
 
     internal PartialAttempt BeginPartialAttempt() => new(this);

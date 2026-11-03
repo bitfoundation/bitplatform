@@ -83,7 +83,9 @@ public sealed class BitPdfSource
     /// If-Range and authentication headers. HTTP compression is unsupported.
     /// Validated linearization page/shared-object hints guide bounded prefetching;
     /// unusable hints use ordinary Range reads. Distant page-tree metadata reads
-    /// may combine nearby chunks to reduce network round trips.
+    /// may combine nearby chunks to reduce network round trips. Navigation relies
+    /// on correct page-tree Count values; use buffered loading for malformed page
+    /// trees that require a complete traversal to recover their page order.
     /// Unsupported delivery falls back to buffered loading before publication,
     /// subject to MaxFallbackSize. Later failures never silently replace the document.</remarks>
     /// <exception cref="ArgumentOutOfRangeException">The chunk/cache size or fallback cap is invalid.</exception>

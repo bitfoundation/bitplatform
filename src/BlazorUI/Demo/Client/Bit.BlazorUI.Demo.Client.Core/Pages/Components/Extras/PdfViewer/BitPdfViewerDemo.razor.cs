@@ -138,7 +138,7 @@ public partial class BitPdfViewerDemo
             Name = "OnDocumentLoaded",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "The callback for when the requested page is ready and loading has cleared. Range details can remain deferred; use LoadDocumentDetailsAsync to await them.",
+            Description = "The callback for when the document opens and loading has cleared. A page that cannot render reports OnError separately. Range details can remain deferred; use LoadDocumentDetailsAsync to await them.",
         },
         new()
         {
@@ -957,7 +957,7 @@ public partial class BitPdfViewerDemo
                     Name = "FromStreamFactory",
                     Type = "static BitPdfSource FromStreamFactory(Func<CancellationToken, Task<Stream>> streamFactory, string? fileName = null)",
                     DefaultValue = "",
-                    Description = "Opens a fresh owned readable, seekable stream per load, without buffering the full PDF. Captures its initial position as the origin; the remaining stable length must fit Int32. Password retries reuse the stream. Cancellation is signalled on replacement/disposal. For files/server blobs; HTTP Range remains a later contribution.",
+                    Description = "Opens a fresh owned readable, seekable stream per load, without buffering the full PDF. Captures its initial position as the origin; the remaining stable length must fit Int32. Password retries reuse the stream. Cancellation is signalled on replacement/disposal. For files/server blobs; For HTTP Range loading, use FromUrl with WithRangeLoading.",
                 },
                 new()
                 {

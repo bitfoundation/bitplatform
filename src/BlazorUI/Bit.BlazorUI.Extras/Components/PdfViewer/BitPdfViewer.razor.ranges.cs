@@ -11,6 +11,7 @@ public partial class BitPdfViewer
     private bool _rangeAttachmentsLoaded;
     private bool _rangeDetailsLoaded;
     private Task? _rangeBackgroundTask;
+    private readonly Dictionary<(int Page, bool Thumbnail), (int Epoch, long RetryAfter)> _rangeReadFailures = [];
     private readonly SemaphoreSlim _detailsGate = new(1, 1);
     private BitPdfMetadata? _rangeMetadata;
     private IReadOnlyList<string> _rangeLabels = [];
@@ -18,6 +19,7 @@ public partial class BitPdfViewer
     private IReadOnlyList<BitPdfStructElement> _rangeStructure = [];
     private double _rangeEstimateWidth = 612, _rangeEstimateHeight = 792;
     private bool HasDeferredAttachments => _rangeSource is not null && !_rangeAttachmentsLoaded;
+    private bool HasDeferredEssentials => _rangeSource is not null && !_rangeEssentialsLoaded;
     private bool IsNonBuffered => _streamSource is not null || _rangeSource is not null;
 
     private sealed record RangeAttempt<T>(T? Value, List<(int Offset, int Length)>? Missing);
@@ -270,7 +272,10 @@ public partial class BitPdfViewer
             _renderEpoch++;
             _renderQueue.Clear(); _renderQueued.Clear(); _thumbQueue.Clear(); _thumbQueued.Clear();
             _canvasOps.Clear(); _canvasDirty.Clear(); _fontStore = null; _fontFaceStyle = string.Empty;
-            _pageText = null; _documentTitle = null;
+            _canvasPaintSignal?.TrySetResult(); _canvasPaintSignal = null;
+            _searchGeneration++; _pageText = null; _pageSearch = null;
+            _searchTotal = 0; _searchIndex = -1; _matchCounts = null; _matchPage = 0; _matchOrdinal = 0;
+            _documentTitle = null;
             _outline = []; _attachments = []; _layers = [];
             _rangeSource = null; ResetRangeDetails();
             _errorMessage = message; _status = string.Format(ActiveTexts.ErrorFormat, message);
@@ -288,7 +293,7 @@ public partial class BitPdfViewer
         _rangeAttachmentsLoaded = false; _rangeDetailsLoaded = false;
         _rangeMetadata = null; _rangeLabels = []; _rangeForms = []; _rangeStructure = [];
         _rangeEssentialsLoaded = false; _rangeAttachmentsLoading = false;
-        _rangeBackgroundTask = null;
+        _rangeBackgroundTask = null; _rangeReadFailures.Clear();
     }
 
     private async Task RetireRangeSourceAsync()
@@ -317,11 +322,15 @@ public partial class BitPdfViewer
         var slots = thumbnail ? _thumbs : _pages;
         if (source is null || document is null || IsDisposed || (uint)index >= (uint)slots.Count || slots[index] is not null) return false;
         int version = _loadVersion, epoch = _renderEpoch, rotation = Rotation;
+        var key = (index, thumbnail);
+        if (_rangeReadFailures.TryGetValue(key, out var failure) && failure.Epoch == epoch
+            && Environment.TickCount64 < failure.RetryAfter) return false;
         var coalescing = TextCoalescing; var mode = RenderMode;
         bool rendered = false;
         try
         {
-            var result = await RunRangeWorkAsync(document, d =>
+            var token = _streamLoadCancellation?.Token ?? default;
+            var result = await RetryRangeReadAsync(source, version, () => RunRangeWorkAsync(document, d =>
             {
                 var store = (_fontStore ?? new BitPdfFontStore()).Fork();
                 var page = d.Pages[index];
@@ -330,7 +339,7 @@ public partial class BitPdfViewer
                 // Only a completed render publishes its document-wide font registrations.
                 _fontStore = store;
                 return (Build: built, Width: page.Width, Height: page.Height);
-            }, pageIndex: index);
+            }, pageIndex: index), token, epoch, retry: _rangePublished);
             if (IsDisposed || version != _loadVersion || epoch != _renderEpoch || index >= slots.Count || slots[index] is not null) return false;
             double width = rotation % 180 == 90 ? result.Height : result.Width;
             double height = rotation % 180 == 90 ? result.Width : result.Height;
@@ -342,6 +351,7 @@ public partial class BitPdfViewer
                 _spyPending = true; _fitPageIndex = -1;
             }
             slots[index] = CommitPage(index, result.Build);
+            _rangeReadFailures.Remove(key);
             rendered = true;
             return true;
         }
@@ -353,6 +363,15 @@ public partial class BitPdfViewer
         catch (Exception) when (IsDisposed || version != _loadVersion || epoch != _renderEpoch) { return false; }
         catch (OperationCanceledException) { return false; }
         catch (BitPdfByteSourceIOException) when (throwOnFailure && !_rangePublished) { throw; }
+        catch (BitPdfByteSourceIOException ex) when (ex is not BitPdfRangeBudgetException)
+        {
+            // A later viewport request can recover after an outage. A short
+            // cooldown bounds scroll-driven retries; report once until success.
+            bool report = !_rangeReadFailures.TryGetValue(key, out var previous) || previous.Epoch != epoch;
+            _rangeReadFailures[key] = (epoch, Environment.TickCount64 + 2000);
+            if (report) await OnError.InvokeAsync(ex.Message);
+            return false;
+        }
         catch (Exception ex)
         {
             (thumbnail ? _failedThumbs : _failedPages).Add(index);
@@ -391,6 +410,29 @@ public partial class BitPdfViewer
 
     private bool _rangeEssentialsLoaded;
     private bool _rangeAttachmentsLoading;
+    // Retry ordinary transport failures a bounded number of times, outside all
+    // engine/details gates. Version and working-set failures cannot be repaired
+    // by repeating a request. HttpClient timeouts also surface immediately.
+    // Report only the final failure at the UI boundary.
+    private async Task<T> RetryRangeReadAsync<T>(BitPdfHttpRangeByteSource source, int version,
+        Func<Task<T>> read, CancellationToken token, int? epoch = null, bool retry = true)
+    {
+        using var operation = source.BeginOperation();
+        using var retryBudget = BitPdfBudget.BeginRetryScope();
+        for (int attempt = 0; ; attempt++)
+        {
+            CheckRangeOperation(source, version, token);
+            if (epoch is int expected && expected != _renderEpoch) throw new OperationCanceledException(token);
+            try { return await read(); }
+            catch (BitPdfByteSourceIOException ex) when (retry && attempt < 2
+                && ex is not BitPdfRangeVersionException and not BitPdfRangeBudgetException
+                && ex.InnerException is not OperationCanceledException)
+            {
+                await Task.Delay(200 * (attempt + 1), token);
+            }
+        }
+    }
+
     private async Task LoadRangeBackgroundAsync()
     {
         var source = _rangeSource;
@@ -399,15 +441,19 @@ public partial class BitPdfViewer
         if (source is null) return;
         try
         {
-            await _detailsGate.WaitAsync(token);
-            try
+            await RetryRangeReadAsync(source, version, async () =>
             {
-                CheckRangeOperation(source, version, token);
-                if (!_rangeEssentialsLoaded) await LoadRangeEssentialsCoreAsync(source, version, token);
-                if (_showAttachments) await LoadRangeAttachmentsCoreAsync(source, version, token);
-            }
-            finally { _detailsGate.Release(); }
-            await CloseEmptyRangeAttachmentsAsync(version);
+                await _detailsGate.WaitAsync(token);
+                try
+                {
+                    CheckRangeOperation(source, version, token);
+                    if (!_rangeEssentialsLoaded) await LoadRangeEssentialsCoreAsync(source, version, token);
+                    if (_showAttachments) await LoadRangeAttachmentsCoreAsync(source, version, token);
+                }
+                finally { _detailsGate.Release(); }
+                return true;
+            }, token);
+            await CloseEmptyRangeSidebarAsync(version);
         }
         catch (Exception) when (IsDisposed || version != _loadVersion || token.IsCancellationRequested) { }
         catch (BitPdfRangeVersionException ex) { await FailRangeVersionAsync(source, version, ex.Message); }
@@ -469,15 +515,17 @@ public partial class BitPdfViewer
             await _detailsGate.WaitAsync(token);
             try { CheckRangeOperation(source, version, token); await LoadRangeAttachmentsCoreAsync(source, version, token); }
             finally { _detailsGate.Release(); }
-            await CloseEmptyRangeAttachmentsAsync(version);
+            await CloseEmptyRangeSidebarAsync(version);
         }
         catch (Exception) when (IsDisposed || version != _loadVersion || token.IsCancellationRequested) { }
         catch (BitPdfRangeVersionException ex) { await FailRangeVersionAsync(source, version, ex.Message); }
         catch (Exception ex) { await OnError.InvokeAsync(ex.Message); }
     }
 
-    private Task CloseEmptyRangeAttachmentsAsync(int version)
-        => !IsDisposed && version == _loadVersion && _rangeAttachmentsLoaded && _attachments.Count == 0 && _showAttachments
+    private Task CloseEmptyRangeSidebarAsync(int version)
+        => !IsDisposed && version == _loadVersion
+            && ((_rangeAttachmentsLoaded && _attachments.Count == 0 && _showAttachments)
+                || (_rangeEssentialsLoaded && ((!HasOutline && _showOutline) || (!HasLayers && _showLayers))))
             ? ShowSidebar(BitPdfSidebar.None) : Task.CompletedTask;
 
     /// <summary>Loads all still-deferred document information: metadata/XMP,
@@ -504,9 +552,19 @@ public partial class BitPdfViewer
                 if (source is null)
                 {
                     var prepared = _streamPreparation;
-                    var details = await RunDocumentWorkAsync(d => (Forms: d.FormFields, Structure: d.StructureTree), token);
+                    var forms = await RunDocumentWorkAsync(d =>
+                    {
+                        try { return d.FormFields; }
+                        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { return (IReadOnlyList<BitPdfFormField>)[]; }
+                    }, token);
                     if (IsDisposed || version != _loadVersion) throw new OperationCanceledException(token);
-                    if (prepared is not null) _streamPreparation = prepared with { FormFields = details.Forms, StructureTree = details.Structure };
+                    var structure = await RunDocumentWorkAsync(d =>
+                    {
+                        try { return d.StructureTree; }
+                        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex)) { return (IReadOnlyList<BitPdfStructElement>)[]; }
+                    }, token);
+                    if (IsDisposed || version != _loadVersion) throw new OperationCanceledException(token);
+                    if (prepared is not null) _streamPreparation = prepared with { FormFields = forms, StructureTree = structure };
                 }
                 else
                 {
@@ -530,7 +588,7 @@ public partial class BitPdfViewer
             await FailRangeVersionAsync(source, version, ex.Message);
             throw;
         }
-        await CloseEmptyRangeAttachmentsAsync(version);
+        await CloseEmptyRangeSidebarAsync(version);
     }
 
     private async Task LoadDetailsForPropertiesAsync()

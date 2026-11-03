@@ -46,11 +46,45 @@ public class BitPdfRangeEngineTests
                 await source.Run(actual, d => JsonSerializer.Serialize(new BitPdfCanvasRenderer(d.Pages[page], d.XRef).Render())));
         }
         Assert.AreEqual(expected.Metadata.Title, await source.Run(actual, d => d.Metadata.Title));
-        Assert.AreEqual(expected.Outline.Count, await source.Run(actual, d => d.Outline.Count));
+        AssertOutline(expected.Outline, await source.Run(actual, d => d.Outline));
         CollectionAssert.AreEqual(expected.PageLabels.ToArray(), await source.Run(actual, d => d.PageLabels.ToArray()));
         Assert.AreEqual(expected.Attachments.Count, await source.Run(actual, d => d.Attachments.Count));
         Assert.AreEqual(expected.FormFields.Count, await source.Run(actual, d => d.FormFields.Count));
         Assert.IsTrue(source.Int("PeakBytes") <= 16 * 1024 * 1024);
+    }
+
+    private static void AssertOutline(IReadOnlyList<BitPdfOutlineItem> expected, IReadOnlyList<BitPdfOutlineItem> actual)
+    {
+        Assert.AreEqual(expected.Count, actual.Count);
+        for (int i = 0; i < expected.Count; i++)
+        {
+            Assert.AreEqual(expected[i].Title, actual[i].Title);
+            Assert.AreEqual(expected[i].PageNumber, actual[i].PageNumber, expected[i].Title);
+            Assert.AreEqual(JsonSerializer.Serialize(expected[i].Destination), JsonSerializer.Serialize(actual[i].Destination));
+            AssertOutline(expected[i].Children, actual[i].Children);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(31, 64)]
+    [DataRow(900, 4096)]
+    public async Task MetadataLookaheadShouldUseAbsoluteXrefOffsetsOnce(int prefix, int chunk)
+    {
+        byte[] original = BitPdfRangeViewerTests.SpacedPages();
+        byte[] bytes = Enumerable.Repeat((byte)' ', prefix).Concat(original).ToArray();
+        using var handler = new RangeHandler(bytes);
+        using var http = new HttpClient(handler);
+        await using var source = await RangeAccess.Open(http, 1024 * 1024, 4096);
+        var document = await source.Load();
+        var method = typeof(BitPdfXRef).GetMethod("MetadataRange", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        foreach (int number in new[] { 5, 7 })
+        {
+            int offset = prefix + Encoding.ASCII.GetString(original).IndexOf($"{number} 0 obj\n", StringComparison.Ordinal);
+            var range = ((int Offset, int Length)?)method.Invoke(document.XRef, [new BitPdfRef(number, 0), chunk]);
+            Assert.IsNotNull(range);
+            Assert.AreEqual(offset / chunk * chunk, range.Value.Offset);
+            Assert.AreEqual(Math.Min(chunk, bytes.Length - range.Value.Offset), range.Value.Length);
+        }
     }
 
     [TestMethod]

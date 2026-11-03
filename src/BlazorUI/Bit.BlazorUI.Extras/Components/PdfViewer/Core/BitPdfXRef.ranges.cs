@@ -103,7 +103,7 @@ public sealed partial class BitPdfXRef
                         sharedOffset = stream.Dict.Get("S") is double number && number == Math.Floor(number)
                             && number >= 0 && number <= int.MaxValue ? (int)number : -1;
                     primary = false;
-                    byte[] decoded = BitPdfStreamDecoder.Decode(stream);
+                    byte[] decoded = BitPdfStreamDecoder.Decode(stream, (int)(4 * 1024 * 1024 - data.Length));
                     if (decoded.Length > 4 * 1024 * 1024 - data.Length) throw new BitPdfFormatException("Linearization hints exceed the optional hint budget.");
                     data.Write(decoded);
                 }
@@ -126,7 +126,7 @@ public sealed partial class BitPdfXRef
             if (!_entries.TryGetValue(entry.Field2, out entry)) return null;
         }
         if (entry.Type != EntryType.Uncompressed) return null;
-        long offset = (long)entry.Field2 + _startOffset;
+        long offset = entry.Field2;
         if (offset < 0 || offset >= _source.Length) return null;
         int start = (int)offset / chunkSize * chunkSize;
         return (start, Math.Min(chunkSize, _source.Length - start));

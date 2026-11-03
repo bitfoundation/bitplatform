@@ -26,6 +26,18 @@ public static class BitPdfStreamDecoder
 
     /// <summary>Decodes a PDF stream window from any supported byte source.</summary>
     public static byte[] Decode(BitPdfBaseStream stream, bool inline = false)
+        => DecodeCore(stream, inline, MaxDecodedLength, limitAllFilters: false);
+
+    // Optional linearization hints have a much smaller budget than page content.
+    // Bound each filter while decoding, before it can allocate the global limit.
+    internal static byte[] Decode(BitPdfBaseStream stream, int maxDecodedLength, bool inline = false)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(maxDecodedLength);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(maxDecodedLength, MaxDecodedLength);
+        return DecodeCore(stream, inline, maxDecodedLength, limitAllFilters: true);
+    }
+
+    private static byte[] DecodeCore(BitPdfBaseStream stream, bool inline, int maxDecodedLength, bool limitAllFilters)
     {
         BitPdfDict dict = stream.Dict ?? throw new BitPdfFormatException("Stream has no dictionary.");
 
@@ -36,6 +48,7 @@ public static class BitPdfStreamDecoder
         var filters = ResolveNames(filterObj, dict.XRef);
         if (filters.Count == 0)
         {
+            if (limitAllFilters) CheckDecodedLength(data.Length, maxDecodedLength);
             return data;
         }
 
@@ -43,30 +56,36 @@ public static class BitPdfStreamDecoder
         var parmsList = ResolveParms(parmsObj, filters.Count, dict.XRef);
         for (int i = 0; i < filters.Count; i++)
         {
-            data = ApplyFilter(filters[i], data, parmsList[i]);
+            data = ApplyFilter(filters[i], data, parmsList[i], maxDecodedLength, limitAllFilters);
+            if (limitAllFilters) CheckDecodedLength(data.Length, maxDecodedLength);
         }
         return data;
     }
 
-    private static byte[] ApplyFilter(string name, byte[] data, BitPdfDict? parms)
+    private static void CheckDecodedLength(long length, int limit)
+    {
+        if (length > limit) throw new BitPdfFormatException("Decoded stream too large.");
+    }
+
+    private static byte[] ApplyFilter(string name, byte[] data, BitPdfDict? parms, int maxDecodedLength, bool limitAllFilters)
     {
         switch (name)
         {
             case "FlateDecode":
             case "Fl":
-                return ApplyPredictorIfAny(Inflate(data), parms);
+                return ApplyPredictorIfAny(Inflate(data, maxDecodedLength), parms);
             case "LZWDecode":
             case "LZW":
-                return ApplyPredictorIfAny(BitPdfLzwDecode.Decode(data, EarlyChange(parms)), parms);
+                return ApplyPredictorIfAny(BitPdfLzwDecode.Decode(data, EarlyChange(parms), maxDecodedLength), parms);
             case "ASCIIHexDecode":
             case "AHx":
-                return AsciiHexDecode(data);
+                return AsciiHexDecode(data, limitAllFilters ? maxDecodedLength : int.MaxValue);
             case "ASCII85Decode":
             case "A85":
-                return Ascii85Decode(data);
+                return Ascii85Decode(data, limitAllFilters ? maxDecodedLength : int.MaxValue);
             case "RunLengthDecode":
             case "RL":
-                return RunLengthDecode(data);
+                return RunLengthDecode(data, maxDecodedLength, limitAllFilters);
             // The Crypt filter is not a data transform: decryption (or the decision
             // to skip it for /Name /Identity) happens in the xref layer, so by the
             // time the bytes reach here they are already plaintext. (1.7)
@@ -104,26 +123,26 @@ public static class BitPdfStreamDecoder
 
     private static int EarlyChange(BitPdfDict? parms) => ToInt(parms?.Get("EarlyChange"), 1);
 
-    private static byte[] Inflate(byte[] data)
+    private static byte[] Inflate(byte[] data, int maxDecodedLength)
     {
         // PDF FlateDecode is zlib-wrapped deflate (RFC 1950). Read incrementally
         // and keep whatever inflated before any error: a truncated stream, or a
         // bad trailing Adler-32 checksum, must not throw away the whole page.
-        byte[] zlib = InflateIncremental(data, raw: false, skipHeader: 0);
+        byte[] zlib = InflateIncremental(data, raw: false, skipHeader: 0, maxDecodedLength);
         if (zlib.Length > 0)
         {
             return zlib;
         }
         // Non-zlib producers: raw deflate, then raw deflate past a 2-byte header.
-        byte[] rawStream = InflateIncremental(data, raw: true, skipHeader: 0);
+        byte[] rawStream = InflateIncremental(data, raw: true, skipHeader: 0, maxDecodedLength);
         if (rawStream.Length > 0)
         {
             return rawStream;
         }
-        return InflateIncremental(data, raw: true, skipHeader: 2);
+        return InflateIncremental(data, raw: true, skipHeader: 2, maxDecodedLength);
     }
 
-    private static byte[] InflateIncremental(byte[] data, bool raw, int skipHeader)
+    private static byte[] InflateIncremental(byte[] data, bool raw, int skipHeader, int maxDecodedLength)
     {
         using var output = new MemoryStream();
         bool tooLarge = false;
@@ -137,11 +156,11 @@ public static class BitPdfStreamDecoder
             using Stream decompressor = raw
                 ? new DeflateStream(input, CompressionMode.Decompress)
                 : new ZLibStream(input, CompressionMode.Decompress);
-            var buffer = new byte[8192];
+            var buffer = new byte[Math.Min(8192, maxDecodedLength + 1)];
             int read;
             while ((read = decompressor.Read(buffer, 0, buffer.Length)) > 0)
             {
-                if (read > MaxDecodedLength - output.Length)
+                if (read > maxDecodedLength - output.Length)
                 {
                     tooLarge = true;
                     break;
@@ -160,9 +179,9 @@ public static class BitPdfStreamDecoder
         return output.ToArray();
     }
 
-    private static byte[] AsciiHexDecode(byte[] data)
+    private static byte[] AsciiHexDecode(byte[] data, int maxDecodedLength)
     {
-        var output = new List<byte>(data.Length / 2);
+        var output = new List<byte>(Math.Min(data.Length / 2, maxDecodedLength));
         int hi = -1;
         foreach (byte b in data)
         {
@@ -187,20 +206,22 @@ public static class BitPdfStreamDecoder
             }
             else
             {
+                CheckDecodedLength((long)output.Count + 1, maxDecodedLength);
                 output.Add((byte)((hi << 4) | v));
                 hi = -1;
             }
         }
         if (hi >= 0)
         {
+            CheckDecodedLength((long)output.Count + 1, maxDecodedLength);
             output.Add((byte)(hi << 4));
         }
         return output.ToArray();
     }
 
-    private static byte[] Ascii85Decode(byte[] data)
+    private static byte[] Ascii85Decode(byte[] data, int maxDecodedLength)
     {
-        var output = new List<byte>(data.Length);
+        var output = new List<byte>(Math.Min(data.Length, maxDecodedLength));
         var group = new int[5];
         int count = 0;
 
@@ -217,6 +238,7 @@ public static class BitPdfStreamDecoder
             }
             if (c == 'z' && count == 0)
             {
+                CheckDecodedLength((long)output.Count + 4, maxDecodedLength);
                 output.Add(0);
                 output.Add(0);
                 output.Add(0);
@@ -230,6 +252,7 @@ public static class BitPdfStreamDecoder
             group[count++] = c - '!';
             if (count == 5)
             {
+                CheckDecodedLength((long)output.Count + 4, maxDecodedLength);
                 long value = 0;
                 for (int i = 0; i < 5; i++)
                 {
@@ -245,6 +268,7 @@ public static class BitPdfStreamDecoder
 
         if (count > 0)
         {
+            CheckDecodedLength((long)output.Count + count - 1, maxDecodedLength);
             for (int i = count; i < 5; i++)
             {
                 group[i] = 84; // pad with 'u'
@@ -263,9 +287,9 @@ public static class BitPdfStreamDecoder
         return output.ToArray();
     }
 
-    private static byte[] RunLengthDecode(byte[] data)
+    private static byte[] RunLengthDecode(byte[] data, int maxDecodedLength, bool limitAllFilters)
     {
-        var output = new List<byte>(data.Length * 2);
+        var output = new List<byte>((int)Math.Min((long)data.Length * 2, maxDecodedLength));
         int i = 0;
         while (i < data.Length)
         {
@@ -277,6 +301,7 @@ public static class BitPdfStreamDecoder
             if (length < 128)
             {
                 int count = length + 1;
+                if (limitAllFilters) CheckDecodedLength((long)output.Count + Math.Min(count, data.Length - i), maxDecodedLength);
                 for (int j = 0; j < count && i < data.Length; j++)
                 {
                     output.Add(data[i++]);
@@ -285,7 +310,7 @@ public static class BitPdfStreamDecoder
             else
             {
                 int count = 257 - length;
-                if (count > MaxDecodedLength - output.Count)
+                if (count > maxDecodedLength - output.Count)
                 {
                     throw new BitPdfFormatException("Decoded stream too large.");
                 }

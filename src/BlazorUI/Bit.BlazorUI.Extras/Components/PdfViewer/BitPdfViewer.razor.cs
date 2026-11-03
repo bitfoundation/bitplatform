@@ -454,7 +454,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// <summary>
     /// The callback for when a document has finished loading.
     /// </summary>
-    /// <remarks>In Range mode the initial page is ready, but optional details can remain
+    /// <remarks>Loading has cleared and the document is open. A page that cannot render
+    /// reports <see cref="OnError"/> separately. In Range mode optional details can remain
     /// deferred. Await <see cref="LoadDocumentDetailsAsync"/> when those are required.</remarks>
     [Parameter] public EventCallback OnDocumentLoaded { get; set; }
 
@@ -1245,9 +1246,9 @@ public partial class BitPdfViewer : BitComponentBase
         }
         AnnouncePage();
 
-        // Only now is the load over in every respect: the loading state is cleared and
-        // the requested page is in place, so a handler acting on the viewer - its pages,
-        // its toolbar, its current page - sees the loaded document, never the loading one.
+        // The loading state is cleared and the initial render was attempted. A page
+        // that could not build reports OnError separately; the opened document and
+        // its toolbar remain available to the host.
         // Owed only by the load that published its document and has not been superseded
         // (by a newer Source, possibly one the GoToPage above awaited long enough for).
         if (IsDisposed || _loadedVersion != version || _loadVersion != version) return;
@@ -1738,9 +1739,9 @@ public partial class BitPdfViewer : BitComponentBase
     public async Task ShowSidebar(BitPdfSidebar sidebar)
     {
         // A panel with nothing to show closes the sidebar rather than opening empty.
-        if ((sidebar == BitPdfSidebar.Bookmarks && HasOutline is false)
+        if ((sidebar == BitPdfSidebar.Bookmarks && HasOutline is false && !HasDeferredEssentials)
             || (sidebar == BitPdfSidebar.Attachments && HasAttachments is false && !HasDeferredAttachments)
-            || (sidebar == BitPdfSidebar.Layers && HasLayers is false))
+            || (sidebar == BitPdfSidebar.Layers && HasLayers is false && !HasDeferredEssentials))
         {
             sidebar = BitPdfSidebar.None;
         }

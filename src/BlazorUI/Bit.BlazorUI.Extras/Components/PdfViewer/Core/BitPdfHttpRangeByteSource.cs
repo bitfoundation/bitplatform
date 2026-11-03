@@ -380,7 +380,9 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         foreach (var range in ordered)
         {
             if (merged.Count > 0 && range.Offset <= (long)merged[^1].Offset + merged[^1].Length
-                && Math.Max((long)range.Offset + range.Length, (long)merged[^1].Offset + merged[^1].Length) - merged[^1].Offset <= Math.Min(_options.CacheSize, 1024 * 1024))
+                && Math.Min(Length, (Math.Max((long)range.Offset + range.Length, (long)merged[^1].Offset + merged[^1].Length)
+                    + _options.ChunkSize - 1) / _options.ChunkSize * _options.ChunkSize)
+                    - StartOf(merged[^1].Offset) <= Math.Min(_options.CacheSize, 1024 * 1024))
             {
                 var last = merged[^1];
                 merged[^1] = (last.Offset, (int)(Math.Max((long)range.Offset + range.Length, (long)last.Offset + last.Length) - last.Offset));
@@ -542,7 +544,12 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
         public override long Length => source.Length;
         public override long Position { get => _position; set { if (value < 0 || value > Length) throw new ArgumentOutOfRangeException(nameof(value)); _position = (int)value; } }
         public override int Read(byte[] buffer, int offset, int count)
-        { count = Math.Min(count, source.Length - _position); source.ReadExactly(_position, buffer.AsSpan(offset, count)); _position += count; return count; }
+        {
+            ArgumentNullException.ThrowIfNull(buffer);
+            var destination = buffer.AsSpan(offset, count);
+            count = Math.Min(count, source.Length - _position);
+            source.ReadExactly(_position, destination[..count]); _position += count; return count;
+        }
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             using var operation = source.BeginOperation();

@@ -607,7 +607,7 @@ public sealed class BitPdfFont
             defaultWidth = ToDouble(cidFont.Get("DW"), 1000);
             if (cidFont.Get("W") is List<object?> w)
             {
-                ReadCidWidths(w, cidWidths, xref);
+                ReadCidWidths(w, cidWidths, xref, descendants[0] is BitPdfRef reference ? reference : fontDict);
             }
         }
 
@@ -637,11 +637,11 @@ public sealed class BitPdfFont
         return font;
     }
 
-    private static void ReadCidWidths(List<object?> w, Dictionary<int, double> cidWidths, IBitPdfXRef xref)
+    private static void ReadCidWidths(List<object?> w, Dictionary<int, double> cidWidths, IBitPdfXRef xref, object identity)
     {
         // Two forms: "c [w1 w2 ...]" and "cFirst cLast w". Array elements (and the
         // inner width list) may be indirect references, so resolve each.
-        var expanded = BitPdfBudget.ForRetry(MaxCidWidthEntries, w, "cid-widths");
+        var expanded = BitPdfBudget.ForRetry(MaxCidWidthEntries, identity, "cid-widths");
         int i = 0;
         while (i < w.Count)
         {

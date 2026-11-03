@@ -444,7 +444,7 @@
                     navigation. The layout and dependencies of each file still determine how many ranges are needed.
                     <br /><br />
                     <b>CacheSize</b> defaults to 16 MiB of raw bytes, including pinned windows and in-flight buffers.
-                    <b>ChunkSize</b> defaults to 64 KiB. Decoded resources and explicit caller-owned copies are separate.
+                    <b>ChunkSize</b> is at least 4 KiB and defaults to 64 KiB. Decoded resources and explicit caller-owned copies are separate.
                     <b>MaxFallbackSize</b> defaults to null (unlimited); zero disables buffered fallback. Its declared
                     and actual byte limits apply before publication. A first full response is reused for fallback.
                     <br /><br />
@@ -460,7 +460,7 @@
                     the source's headers. After publication, a failed range reports an error; a version change
                     discards the document and raises <b>OnError</b>. Assign a new source to reload it.
                     <br /><br />
-                    <b>OnDocumentLoaded</b> means the requested page is ready and loading has cleared. The title is
+                    <b>OnDocumentLoaded</b> means the document is open and loading has cleared. A page that cannot render reports <b>OnError</b> separately. The title is
                     available then; bookmarks, layers and page labels load in the background after the first page.
                     Metadata/XMP, forms and tagged structure load through <b>LoadDocumentDetailsAsync()</b>;
                     attachments scan when their panel opens or details are requested. Deferred viewer properties

@@ -419,13 +419,14 @@ public class BitPdfRangeViewerTests : BunitTestContext
     private static BitPdfSource Definition() => BitPdfSource.FromUrl("https://pdf.test/document")
         .WithRangeLoading(new() { CacheSize = 128 * 1024, ChunkSize = 4096 });
 
-    internal static byte[] SpacedPages(bool attachment = false, bool namedTitle = false)
+    internal static byte[] SpacedPages(bool attachment = false, bool namedTitle = false, bool essentials = false)
     {
         var text = new StringBuilder("%PDF-1.7\n");
-        int size = attachment ? 14 : 11;
+        int size = essentials ? 24 : attachment ? 14 : 11;
         var offsets = new int[size];
         void Obj(int n, string value) { offsets[n] = text.Length; text.Append($"{n} 0 obj\n{value}\nendobj\n"); }
-        Obj(1, attachment ? "<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles 13 0 R >> >>" : "<< /Type /Catalog /Pages 2 0 R >>");
+        Obj(1, essentials ? "<< /Type /Catalog /Pages 2 0 R /Outlines 20 0 R /OCProperties << /OCGs [22 0 R] >> /PageLabels 23 0 R >>"
+            : attachment ? "<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles 13 0 R >> >>" : "<< /Type /Catalog /Pages 2 0 R >>");
         Obj(2, "<< /Type /Pages /Count 3 /Kids [3 0 R 5 0 R 7 0 R] >>");
         Obj(9, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
         Obj(10, namedTitle ? "<< /Title /NamedTitle >>" : "<< /Title (Range title) >>");
@@ -438,6 +439,13 @@ public class BitPdfRangeViewerTests : BunitTestContext
         {
             if (attachment && i == 1) Obj(11, "<< /Type /EmbeddedFile /Length 200000 >>\nstream\n" + new string('a', 200000) + "\nendstream");
             if (i > 0) text.Append($"{50 + i} 0 obj\n<< /Length 300000 >>\nstream\n").Append(' ', 300000).Append("\nendstream\nendobj\n");
+            if (essentials && i == 1)
+            {
+                Obj(20, "<< /Type /Outlines /First 21 0 R >>");
+                Obj(21, "<< /Title (Second page) /Dest [5 0 R /Fit] >>");
+                Obj(22, "<< /Type /OCG /Name (Range layer) >>");
+                Obj(23, "<< /Nums [0 << /S /D >>] >>");
+            }
             int page = 3 + i * 2;
             Obj(page, $"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {612 + i * 10} {792 + i * 10}] /Resources << /Font << /F1 9 0 R >> >> /Contents {page + 1} 0 R {(attachment && i == 0 ? "/Annots [<< /Type /Annot /Subtype /FileAttachment /Rect [10 10 20 20] /FS 12 0 R >>]" : "")} >>");
             string ops = $"BT /F1 18 Tf 50 700 Td (Range page {i + 1}) Tj ET";
