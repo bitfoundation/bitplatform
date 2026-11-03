@@ -1187,6 +1187,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        // An outer callout cleared as it goes away along with the picker dismisses this one too, which is no close
+        // to report or to revert the range for: the picker is going with it.
+        if (IsDisposing) return;
         if (Standalone) return;
         if (Disabled) return;
 
@@ -1214,6 +1217,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [JSInvokable("OnClose")]
     public async Task _OnClose()
     {
+        // A swipe that ends while the picker is being disposed still asks for a close, of a callout going away with it.
+        if (IsDisposing) return;
+
         await CloseCallout();
         await InvokeAsync(StateHasChanged);
     }
@@ -4484,19 +4490,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         _cancellationTokenSource?.Dispose();
         OnValueChanged -= HandleOnValueChanged;
 
-        try
+        // Disposed only once the callout and the swipe listeners are gone: until then a pointer event still reaches
+        // OnStart, OnMove, OnEnd or OnClose through the reference.
+        await _dotnetObj.DisposeAfterAsync(async () =>
         {
             await _js.BitCalendarsDispose(_calloutId);
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitSwipesDispose(_calloutId);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        finally
-        {
-            // Disposed only once the callout and the swipe listeners are gone: until then a pointer event still
-            // reaches OnStart, OnMove or OnEnd through this reference.
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-        }
+        });
+        _dotnetObj = null;
     }
 }

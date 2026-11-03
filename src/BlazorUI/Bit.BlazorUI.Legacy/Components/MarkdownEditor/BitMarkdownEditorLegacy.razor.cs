@@ -74,6 +74,9 @@ public partial class BitMarkdownEditorLegacy : BitComponentBase
     [JSInvokable("OnChange")]
     public async Task _OnChange(string? value)
     {
+        // The input listener goes on reporting until the teardown has removed it, and the editor is going away by then.
+        if (IsDisposing) return;
+
         await AssignValue(value);
         await OnChange.InvokeAsync(value);
     }
@@ -120,17 +123,8 @@ public partial class BitMarkdownEditorLegacy : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        try
-        {
-            await _js.BitMarkdownEditorDispose(_Id);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        finally
-        {
-            // Released last: the editor's input listener still calls back through it until it is removed.
-            _dotnetObj?.Dispose();
-        }
-
+        // The editor's input listener still calls back through the reference until it is removed.
+        await _dotnetObj.DisposeAfterAsync(() => _js.BitMarkdownEditorDispose(_Id));
 
         await base.DisposeAsync(disposing);
     }

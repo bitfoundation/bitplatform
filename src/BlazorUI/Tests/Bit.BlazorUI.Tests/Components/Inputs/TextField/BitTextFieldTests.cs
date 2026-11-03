@@ -4967,6 +4967,32 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitTextFieldShouldIgnoreAGhostTextAcceptedWhileItIsBeingDisposed()
+    {
+        // A Tab that accepts the ghost text in the round trip of the disposal arrives through the reference that is
+        // alive until the script lets go of the field - for a field that is going away.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.TextField.dispose", _ => true);
+        var accepted = 0;
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.GhostText, "suggestion");
+            parameters.Add(p => p.OnGhostTextAccepted, (string? _) => accepted++);
+        });
+
+        var textField = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => textField._NotifyGhostTextAccepted("suggestion"));
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.AreEqual(0, accepted);
+    }
+
+    [TestMethod]
     public async Task BitTextFieldDisposeShouldDropAnInputStillWaitingOutItsDebounce()
     {
         var changes = 0;

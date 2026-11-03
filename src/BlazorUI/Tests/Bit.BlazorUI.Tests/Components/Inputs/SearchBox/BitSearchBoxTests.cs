@@ -4306,6 +4306,40 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSearchBoxShouldIgnoreACloseItsCalloutSendsWhileItIsBeingDisposed()
+    {
+        // An outer callout cleared as it goes away along with the search box dismisses the suggestions too, through
+        // the reference that is alive until the teardown returns - which is no toggle of them to report.
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.Callouts.clear", _ => true);
+        var toggles = new List<bool>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.OnSuggestItemsToggle, (bool open) => toggles.Add(open));
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() => CollectionAssert.Contains(toggles, true));
+
+        var searchBox = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => searchBox._CloseCalloutBeforeAnotherCalloutIsOpened());
+
+        clear.SetVoidResult();
+        await disposal;
+
+        CollectionAssert.DoesNotContain(toggles, false);
+    }
+
+    [TestMethod]
     public async Task BitSearchBoxWithoutAFocusShortcutShouldNotUnregisterOneOnDispose()
     {
         var component = RenderComponent<BitSearchBox>();

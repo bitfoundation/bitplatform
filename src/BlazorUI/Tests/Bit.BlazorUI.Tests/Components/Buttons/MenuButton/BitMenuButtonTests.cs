@@ -2062,6 +2062,36 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMenuButtonShouldIgnoreACloseItsCalloutSendsWhileItIsBeingDisposed()
+    {
+        // The callout cleared as the menu goes away, or an outer one cleared along with it, dismisses the menu through
+        // the reference that is alive until the teardown returns - which is no dismissal to report.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.MenuButtons.dispose", _ => true);
+        var isOpen = false;
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        Assert.IsTrue(isOpen);
+
+        var menuButton = com.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await com.InvokeAsync(() => menuButton.CloseCalloutBeforeAnotherCalloutIsOpened());
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.IsTrue(isOpen);
+    }
+
+    [TestMethod]
     public async Task BitMenuButtonDisposeShouldKeepTheDotNetReferenceOfAnOpenSubmenuUntilItsScriptIsDisposed()
     {
         // The script answers later, the way it does in a browser: until the submenu's callout is cleared a click
@@ -2091,6 +2121,37 @@ public class BitMenuButtonTests : BunitTestContext
         await disposal;
 
         Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonSubmenuShouldIgnoreACloseItsCalloutSendsWhileItIsBeingDisposed()
+    {
+        // Clearing the menu's callout as the menu goes away closes the submenu opened from it as well, through the
+        // reference that is alive until the submenu's own teardown returns. That teardown is already taking the
+        // submenu down, so the close must not do it a second time.
+        var disposeSubmenu = Context.JSInterop.SetupVoid("BitBlazorUI.MenuButtons.disposeSubmenu", _ => true);
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitMenuButtonItem>
+            {
+                new() { Text = "More", Key = "more", ChildItems = [new() { Text = "Child", Key = "child" }] }
+            });
+        });
+
+        com.FindAll(".bit-mnb-itm").First(e => e.TextContent.Contains("More")).Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var submenu = ((DotNetObjectReference<_BitMenuButtonItem<BitMenuButtonItem>>)toggle.Arguments[0]!).Value;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await com.InvokeAsync(() => submenu.CloseCalloutBeforeAnotherCalloutIsOpened());
+
+        disposeSubmenu.SetVoidResult();
+        await disposal;
+
+        Assert.HasCount(1, disposeSubmenu.Invocations);
     }
 
     [TestMethod]

@@ -613,19 +613,10 @@ public partial class BitSticky : BitComponentBase
 
         if (_dotnetObj is null) return;
 
-        try
-        {
-            // The script is keyed by the id it was attached under, which is not the current one
-            // anymore when the Id changed after the setup and the component went away before the
-            // next render could move the registration over.
-            await _js.BitStickiesDispose(_attachedId ?? _Id);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        finally
-        {
-            // Released last: the script still reports the stuck state through it until it is disposed.
-            _dotnetObj.Dispose();
-            _dotnetObj = null;
-        }
+        // The script still reports the stuck state through the reference until it is disposed, and it is keyed by the
+        // id it was attached under, which is not the current one anymore when the Id changed after the setup and the
+        // component went away before the next render could move the registration over.
+        await _dotnetObj.DisposeAfterAsync(() => _js.BitStickiesDispose(_attachedId ?? _Id));
+        _dotnetObj = null;
     }
 }

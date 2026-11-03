@@ -5456,6 +5456,37 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitDateRangePickerShouldIgnoreTheClosesItsScriptSendsWhileItIsBeingDisposed()
+    {
+        // An outer callout cleared as it goes away along with the picker dismisses the picker's own too, and a swipe
+        // that ends in the meantime still asks for a close. Both arrive through the reference that is alive until the
+        // teardown returns, and neither is a close to report: the picker is going away.
+        var swipesDispose = Context.JSInterop.SetupVoid("BitBlazorUI.Swipes.dispose", _ => true);
+        var closed = 0;
+        var isOpen = true;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var picker = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => picker._CloseCalloutBeforeAnotherCalloutIsOpened());
+        await component.InvokeAsync(() => picker._OnClose());
+
+        swipesDispose.SetVoidResult();
+        await disposal;
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, closed);
+    }
+
+    [TestMethod]
     public void BitDateRangePickerShouldKeepAnEndTimeSetBeforeTheEndDayIsPicked()
     {
         BitDateRangePickerValue? value = null;

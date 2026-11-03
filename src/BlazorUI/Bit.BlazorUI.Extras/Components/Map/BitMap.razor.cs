@@ -60,14 +60,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     // call, leaving the JS side either double-initialized or unable to find its map id.
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
 
-    // Set at the top of DisposeAsync. IsDisposed only flips once the base class has finished
-    // tearing down, so everything that can resume after an await - the visibility wait, the
-    // asset load, the init interop - would otherwise see a live component while teardown is
+    // True once teardown has begun, whether or not the base class has finished it. IsDisposed only
+    // flips once the base class has finished tearing down, so everything that can resume after an
+    // await - the visibility wait, the asset load, the init interop - and every callback the script
+    // sends before the teardown reaches it would otherwise see a live component while teardown is
     // already disposing the gate underneath it.
-    private bool _disposing;
-
-    // True once teardown has begun, whether or not the base class has finished it.
-    private bool Gone => IsDisposed || _disposing;
+    private bool Gone => IsDisposing || IsDisposed;
 
     // Snapshot of imperatively-added state. We replay it after a destructive provider swap when
     // ReplayStateOnProviderSwap is true. Plain dictionaries - all access is serialised by
@@ -1397,9 +1395,13 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
 
 
+    // The script goes on reporting until the teardown has detached it, so every callback below returns
+    // once the teardown has begun: what it reports on is a map that is going away.
     [JSInvokable("OnClick")]
     public async Task _OnClick(JsonElement e)
     {
+        if (Gone) return;
+
         // A click on the map is a click outside the popup - the usual way to dismiss one. The
         // popup itself never reaches here: it is a sibling of the canvas, not a part of it.
         if (_openPopupMarker is not null) await ClosePopup();
@@ -1408,14 +1410,18 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     }
 
     [JSInvokable("OnDoubleClick")]
-    public Task _OnDoubleClick(JsonElement e) => InvokeUserCallback(OnDoubleClick, ReadLatLng, e, nameof(OnDoubleClick));
+    public Task _OnDoubleClick(JsonElement e) =>
+        Gone ? Task.CompletedTask : InvokeUserCallback(OnDoubleClick, ReadLatLng, e, nameof(OnDoubleClick));
 
     [JSInvokable("OnContextMenu")]
-    public Task _OnContextMenu(JsonElement e) => InvokeUserCallback(OnContextMenu, ReadLatLng, e, nameof(OnContextMenu));
+    public Task _OnContextMenu(JsonElement e) =>
+        Gone ? Task.CompletedTask : InvokeUserCallback(OnContextMenu, ReadLatLng, e, nameof(OnContextMenu));
 
     [JSInvokable("OnViewChanged")]
     public async Task _OnViewChanged(JsonElement e)
     {
+        if (Gone) return;
+
         BitMapViewState view;
         try { view = ParseViewState(e); }
         catch (Exception ex)
@@ -1471,6 +1477,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnMarkerClick")]
     public async Task _OnMarkerClick(string markerId)
     {
+        if (Gone) return;
+
         // A cluster bubble is drawn as a marker, so it arrives here - but it is not one of the
         // caller's markers and must not be reported as one.
         if (IsClusterBubble(markerId))
@@ -1489,6 +1497,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnMarkerDoubleClick")]
     public async Task _OnMarkerDoubleClick(string markerId)
     {
+        if (Gone) return;
+
         // The built-in providers keep a bubble's double-click to themselves - the click of the pair
         // that expands it has been reported already - so this only guards against a provider that
         // does not.
@@ -1548,6 +1558,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnMarkerDragEnd")]
     public async Task _OnMarkerDragEnd(string markerId, JsonElement position)
     {
+        if (Gone) return;
         if (OnMarkerDragEnd.HasDelegate is false && _markerState.Count == 0) return;
 
         // Keep the snapshot fresh so a replay after a provider swap drops the marker at its
@@ -1580,7 +1591,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnVectorClick")]
     public async Task _OnVectorClick(string layerId, string kind, JsonElement position)
     {
-        if (OnVectorClick.HasDelegate is false) return;
+        if (Gone || OnVectorClick.HasDelegate is false) return;
         try
         {
             await OnVectorClick.InvokeAsync(new BitMapVectorClickArgs { LayerId = layerId, Kind = kind, Position = ReadLatLng(position) });
@@ -1594,7 +1605,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnGeoJsonFeatureClick")]
     public async Task _OnGeoJsonFeatureClick(string layerId, JsonElement properties)
     {
-        if (OnGeoJsonFeatureClick.HasDelegate is false) return;
+        if (Gone || OnGeoJsonFeatureClick.HasDelegate is false) return;
         try
         {
             await OnGeoJsonFeatureClick.InvokeAsync(new BitMapGeoJsonFeatureClickArgs { LayerId = layerId, Properties = properties });
@@ -1608,7 +1619,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnFullscreenChanged")]
     public async Task _OnFullscreenChanged(bool isFullscreen)
     {
-        if (_isFullscreen == isFullscreen) return;
+        if (Gone || _isFullscreen == isFullscreen) return;
         _isFullscreen = isFullscreen;
         await InvokeAsync(StateHasChanged);
 
@@ -1620,6 +1631,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnRenderContextLost")]
     public async Task _OnRenderContextLost()
     {
+        if (Gone) return;
+
         // The map is still "initialized" from the component's point of view - the instance and
         // its state are intact, only the GPU surface is gone - so IsReady stays true and the
         // consumer decides whether to tear down or wait for a restore.
@@ -1637,6 +1650,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     [JSInvokable("OnRenderContextRestored")]
     public async Task _OnRenderContextRestored()
     {
+        if (Gone) return;
+
         if (_initialized) await SetLoadState(BitMapLoadState.Ready);
         try
         {
@@ -2789,10 +2804,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        // Flag teardown before the first await: IsDisposed is only set once the base class has
-        // run, so without this every continuation resuming below still sees a live component.
-        _disposing = true;
-
         // Acquire the lifecycle gate so we don't race with an in-flight provider swap.
         try { await _lifecycleGate.WaitAsync(); }
         catch (ObjectDisposedException) { /* already gone */ }
@@ -2803,46 +2814,47 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             _announcementCts?.Dispose();
             _announcementCts = null;
 
-            try
+            // Released only once the chrome, the clustering layer and the provider are gone: until
+            // then their listeners still call back through it.
+            await _dotnetObj.DisposeAfterAsync(async () =>
             {
-                // A map disposed while still below the fold is still being watched by the
-                // visibility observer that would have started it. Stop that first: nothing else
-                // holds a reference to it, so nothing else would ever take it down.
-                if (LazyLoad) await _js.BitMapChromeCancelWaitForVisible(_canvasId);
-                // Detach the chrome next: its observers and listeners are ours, and the
-                // provider's dispose is free to remove the container out from under them.
-                await _js.BitMapChromeDetach(_Id);
-                // The clustering layer keeps the whole marker set alive; drop it with the map.
-                // Discard rather than disable: disabling hands the full unclustered set back to
-                // the provider, and the provider is being destroyed on the next line.
-                await _js.BitMapClusterDiscard(_Id);
-            }
-            catch (JSDisconnectedException) { }
-            catch (JSException) { }
-            catch (ObjectDisposedException) { }
-            catch (InvalidOperationException) { /* runtime unavailable during prerender teardown */ }
-
-            try
-            {
-                if (_initialized && _activeProvider is not null)
+                try
                 {
-                    await _js.BitMapDispose(_activeProvider.JsObjectName, _Id);
+                    // A map disposed while still below the fold is still being watched by the
+                    // visibility observer that would have started it. Stop that first: nothing else
+                    // holds a reference to it, so nothing else would ever take it down.
+                    if (LazyLoad) await _js.BitMapChromeCancelWaitForVisible(_canvasId);
+                    // Detach the chrome next: its observers and listeners are ours, and the
+                    // provider's dispose is free to remove the container out from under them.
+                    await _js.BitMapChromeDetach(_Id);
+                    // The clustering layer keeps the whole marker set alive; drop it with the map.
+                    // Discard rather than disable: disabling hands the full unclustered set back to
+                    // the provider, and the provider is being destroyed on the next line.
+                    await _js.BitMapClusterDiscard(_Id);
                 }
-            }
-            catch (JSDisconnectedException) { }
-            catch (JSException) { /* a misbehaving provider's dispose must not crash teardown */ }
-            catch (ObjectDisposedException) { }
+                catch (JSDisconnectedException) { }
+                catch (JSException) { }
+                catch (ObjectDisposedException) { }
+                catch (InvalidOperationException) { /* runtime unavailable during prerender teardown */ }
+
+                try
+                {
+                    if (_initialized && _activeProvider is not null)
+                    {
+                        await _js.BitMapDispose(_activeProvider.JsObjectName, _Id);
+                    }
+                }
+                catch (JSDisconnectedException) { }
+                catch (JSException) { /* a misbehaving provider's dispose must not crash teardown */ }
+                catch (ObjectDisposedException) { }
+            });
+            _dotnetObj = null;
 
             _initialized = false;
             _activeProvider = null;
         }
         finally
         {
-            // Released only once the chrome, the clustering layer and the provider are gone: until
-            // then their listeners still call back through it.
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-
             // Release before disposing so anything already waiting on the gate observes an
             // ObjectDisposedException from WaitAsync rather than deadlocking - OnProviderSet
             // catches exactly that and bails out.

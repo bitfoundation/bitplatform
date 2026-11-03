@@ -328,6 +328,37 @@ public class BitMarkdownEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMarkdownEditorShouldIgnoreWhatItsScriptSendsWhileItIsBeingDisposed()
+    {
+        // The listeners stay on until the script's dispose reaches them, so a shortcut pressed in the meantime still
+        // calls back through the reference. Going full-screen then would take a scroll lock after the disposal has
+        // let go of the editor's, and nothing would ever release it.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.MarkdownEditor.dispose", _ => true);
+        var submitted = 0;
+        var fullScreen = false;
+
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Bind(p => p.FullScreen, fullScreen, v => fullScreen = v);
+            parameters.Add(p => p.OnSubmit, EventCallback.Factory.Create<string?>(this, _ => submitted++));
+        });
+
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => editor._OnShortcut("fullscreen"));
+        await component.InvokeAsync(() => editor._OnSubmit("text"));
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.IsFalse(fullScreen);
+        Assert.AreEqual(0, submitted);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+    }
+
+    [TestMethod]
     public void BitMarkdownEditorShouldRenderTextAreaAttributes()
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>

@@ -222,4 +222,29 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldIgnoreAnEditItsScriptSendsWhileItIsBeingDisposed()
+    {
+        // The input listener stays on until the script's dispose reaches it, so an edit in the meantime still calls
+        // back through the reference - for an editor that is going away.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.dispose", _ => true);
+        var changes = 0;
+
+        var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (string? _) => changes++);
+        });
+
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => editor._OnChange("edited"));
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.AreEqual(0, changes);
+    }
 }

@@ -1164,19 +1164,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         CancelLoad();
 
-        try
-        {
-            await _js.BitInfiniteScrollingDispose(UniqueId);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (OperationCanceledException) { } // the renderer is being torn down along with the component
-        catch (ObjectDisposedException) { } // the JS runtime of a WebAssembly host may go first
-        finally
-        {
-            // Released last: the observer still asks for the next page through it until it is disconnected.
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-        }
+        // The observer still asks for the next page through the reference until it is disconnected.
+        await _dotnetObj.DisposeAfterAsync(() => _js.BitInfiniteScrollingDispose(UniqueId));
+        _dotnetObj = null;
 
         await base.DisposeAsync(disposing);
     }

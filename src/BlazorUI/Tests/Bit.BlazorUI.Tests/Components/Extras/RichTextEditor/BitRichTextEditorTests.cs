@@ -2058,6 +2058,41 @@ public class BitRichTextEditorTests : BunitTestContext
         Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
+    [TestMethod]
+    public async Task BitRichTextEditorShouldIgnoreWhatItsBridgeSendsWhileItIsBeingDisposed()
+    {
+        SetupJsInterop();
+
+        // A blur in the round trip of the disposal flushes the pending notify and then reports itself, both through
+        // the reference that is alive until the bridge is disposed - for an editor that is going away and has already
+        // let go of its form.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.dispose", _ => true);
+        string? changed = null;
+        string? bound = null;
+        var blurred = false;
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<string?>(this, v => changed = v));
+            parameters.Add(p => p.ValueChanged, EventCallback.Factory.Create<string?>(this, v => bound = v));
+            parameters.Add(p => p.OnBlur, EventCallback.Factory.Create(this, () => blurred = true));
+        });
+
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        await component.InvokeAsync(() => editor._OnContentChanged("<p>typed</p>", new BitRichTextEditorContentFacts(true, false, 5, 1)));
+        await component.InvokeAsync(() => editor._OnBlurred());
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.IsNull(changed);
+        Assert.IsNull(bound);
+        Assert.IsFalse(blurred);
+    }
+
 
     // ---------------------------------------------------------------- options plumbing
 

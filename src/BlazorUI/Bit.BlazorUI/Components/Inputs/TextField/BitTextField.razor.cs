@@ -684,7 +684,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     [JSInvokable("OnGhostTextAccepted")]
     public async Task _NotifyGhostTextAccepted(string? acceptedText)
     {
-        if (Disabled || ReadOnly) return;
+        if (IsDisposing || Disabled || ReadOnly) return;
 
         await OnGhostTextAccepted.InvokeAsync(acceptedText);
     }
@@ -1551,18 +1551,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         await base.DisposeAsync(disposing);
 
-        try
-        {
-            if (_jsSetup)
-            {
-                await _js.BitTextFieldDispose(_Id);
-            }
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        finally
-        {
-            // Released last: the ghost text still calls back through it until the script lets go of the field.
-            _dotnetObj?.Dispose();
-        }
+        // The ghost text still calls back through the reference until the script lets go of the field.
+        await _dotnetObj.DisposeAfterAsync(() => _jsSetup ? _js.BitTextFieldDispose(_Id) : ValueTask.CompletedTask);
     }
 }

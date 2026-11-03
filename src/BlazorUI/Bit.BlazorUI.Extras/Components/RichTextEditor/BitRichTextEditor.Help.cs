@@ -53,6 +53,8 @@ public partial class BitRichTextEditor
     [JSInvokable("OnHelpRequested")]
     public async Task _OnHelpRequested()
     {
+        if (IsDisposing) return;
+
         if (_showHelp is false) await ToggleHelp();
         StateHasChanged();
     }
