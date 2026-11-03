@@ -17,9 +17,9 @@ Paths below are relative to `src/LandingPage/Boilerplate.LandingPage.Client/` un
 
 - **A sample** is one folder, `Components/Pages/<Sample>/`: its `<Sample>Site.cs` (name, path, accent color, the
   platforms with their store links and launch state, the web app's address, the company the legal pages name), its
-  layout, pages, not-found page, gallery card, logo, and its texts in `<Sample>Strings.resx` with
-  `<Sample>Strings.fa.resx`. Its look is `Styles/sites/_<sample>.scss`, imported from `Styles/landing.scss`. Its
-  link preview is `wwwroot/images/og/<sample>.png` (1200 by 630), which `LandingHead` uses unless a page passes its
+  layout, pages, not-found page, logo, and its texts in `<Sample>Strings.resx` with `<Sample>Strings.fa.resx`, whose
+  `Card*` texts fill its gallery tile. Its look is `Styles/sites/_<sample>.scss`, imported from `Styles/landing.scss`,
+  and its tile's colors are copied into `$gallery-brands` in `Styles/_gallery.scss`. Its link preview is `wwwroot/images/og/<sample>.png` (1200 by 630), which `LandingHead` uses unless a page passes its
   own, and it has a web app manifest of its own at `/<sample>/manifest.webmanifest`.
 - **The samples' list** is `Infrastructure/LandingSites.cs`. The gallery, the smart download links and the not-found
   handling read it, and the sitemap finds the pages from their routes.

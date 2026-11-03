@@ -16,8 +16,6 @@
     </div>
 </section>
 
-<GalleryIdeaSwitch Current="CurrentIdea" />
-
 <section class="lp-container gallery-samples" aria-label="@Localizer[nameof(LandingStrings.GalleryEyebrow)]">
     <BitChoiceGroup Items="filters" @bind-Value="filter" Horizontal NoCircle AriaLabel="@Localizer[nameof(LandingStrings.GalleryEyebrow)]" Class="gallery-filters">
         <ItemTemplate Context="item">
@@ -25,29 +23,7 @@
         </ItemTemplate>
     </BitChoiceGroup>
 
-    @switch (CurrentIdea)
-    {
-        case 2:
-            <GalleryShots Samples="Samples()" />
-            break;
-        case 3:
-            <GalleryTiles Samples="Samples()" />
-            break;
-        case 4:
-            <GalleryIndex Samples="Samples()" />
-            break;
-        case 5:
-            <GallerySpotlight Samples="Samples()" />
-            break;
-        default:
-            <div class="gallery-grid">
-                @foreach (var site in Shown())
-                {
-                    <DynamicComponent @key="site.Key" Type="site.Card" />
-                }
-            </div>
-            break;
-    }
+    <GalleryTiles Samples="Samples()" />
 </section>
 
 <section class="lp-container gallery-how" aria-labelledby="gallery-how-title">

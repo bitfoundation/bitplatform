@@ -16,7 +16,6 @@ public static class CrmSite
         AccentColor = "#C8371D",
         Layout = typeof(CrmLayout),
         NotFound = typeof(CrmNotFound),
-        Card = typeof(CrmCard),
         Logo = typeof(CrmLogo),
         Strings = typeof(CrmStrings),
         AppleAppId = "6450611349",

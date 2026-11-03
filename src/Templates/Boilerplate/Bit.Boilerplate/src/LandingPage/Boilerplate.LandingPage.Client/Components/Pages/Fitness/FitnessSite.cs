@@ -18,7 +18,6 @@ public static class FitnessSite
         AccentColor = "#C81E5B",
         Layout = typeof(FitnessLayout),
         NotFound = typeof(FitnessNotFound),
-        Card = typeof(FitnessCard),
         Logo = typeof(FitnessLogo),
         Strings = typeof(FitnessStrings),
         AppleAppId = "6450611349",

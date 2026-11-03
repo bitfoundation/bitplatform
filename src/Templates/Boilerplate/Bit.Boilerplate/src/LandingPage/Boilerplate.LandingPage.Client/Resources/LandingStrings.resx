@@ -660,9 +660,6 @@
     <data name="GalleryFilterPreLaunch" xml:space="preserve">
         <value>Before launch</value>
     </data>
-    <data name="GalleryOpen" xml:space="preserve">
-        <value>Open the sample</value>
-    </data>
     <data name="GalleryModeLaunched" xml:space="preserve">
         <value>Launched</value>
     </data>
@@ -671,27 +668,6 @@
     </data>
     <data name="GalleryModeStaged" xml:space="preserve">
         <value>Staged launch</value>
-    </data>
-    <data name="GalleryIdeas" xml:space="preserve">
-        <value>Layout ideas</value>
-    </data>
-    <data name="GalleryIdea1" xml:space="preserve">
-        <value>Dark-aware cards</value>
-    </data>
-    <data name="GalleryIdea2" xml:space="preserve">
-        <value>Screenshots</value>
-    </data>
-    <data name="GalleryIdea3" xml:space="preserve">
-        <value>Brand tiles</value>
-    </data>
-    <data name="GalleryIdea4" xml:space="preserve">
-        <value>Index</value>
-    </data>
-    <data name="GalleryIdea5" xml:space="preserve">
-        <value>Spotlight</value>
-    </data>
-    <data name="GalleryOpenSample" xml:space="preserve">
-        <value>Open {0}</value>
     </data>
     <data name="GalleryHowTitle" xml:space="preserve">
         <value>Make one of them yours</value>

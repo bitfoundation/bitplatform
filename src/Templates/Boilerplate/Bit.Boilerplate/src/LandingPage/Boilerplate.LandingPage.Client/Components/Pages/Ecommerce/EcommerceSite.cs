@@ -12,7 +12,6 @@ public static class EcommerceSite
         AccentColor = "#1E6B47",
         Layout = typeof(EcommerceLayout),
         NotFound = typeof(EcommerceNotFound),
-        Card = typeof(EcommerceCard),
         Logo = typeof(EcommerceLogo),
         Strings = typeof(EcommerceStrings),
         AppleAppId = "6450611349",

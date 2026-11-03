@@ -4,8 +4,7 @@
 self.assetsInclude = [];
 self.assetsExclude = [
     /_content\/Bit\.BlazorUI\.Extras\/flags/,
-    /images\/og\//,
-    /images\/gallery\//
+    /images\/og\//
 ];
 self.externalAssets = [
     {

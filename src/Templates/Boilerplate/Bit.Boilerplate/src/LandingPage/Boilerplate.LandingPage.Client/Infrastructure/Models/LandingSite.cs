@@ -56,8 +56,6 @@ public sealed record LandingSite
 
     public required Type NotFound { get; init; }
 
-    public required Type Card { get; init; }
-
     public required Type Logo { get; init; }
 
     public required Type Strings { get; init; }

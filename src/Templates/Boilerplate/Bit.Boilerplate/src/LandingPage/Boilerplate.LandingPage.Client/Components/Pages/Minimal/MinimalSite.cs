@@ -12,7 +12,6 @@ public static class MinimalSite
         AccentColor = "#141414",
         Layout = typeof(MinimalLayout),
         NotFound = typeof(MinimalNotFound),
-        Card = typeof(MinimalCard),
         Logo = typeof(MinimalLogo),
         Strings = typeof(MinimalStrings),
         Platforms =

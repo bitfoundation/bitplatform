@@ -15,13 +15,4 @@ public sealed record GallerySample(LandingSite Site, IStringLocalizer Texts, str
     public string CardTag3 => Texts[nameof(CardTag3)];
 
     public string[] Tags => [CardTag1, CardTag2, CardTag3];
-
-    public string ModeClass => Site.Mode switch
-    {
-        LandingLaunchMode.Launched => "is-launched",
-        LandingLaunchMode.Staged => "is-staged",
-        _ => "is-pre-launch"
-    };
-
-    public string Shot(string scheme) => $"images/gallery/{Site.Key}-{scheme}{(CultureInfo.CurrentUICulture.Name == LandingCultures.Default.Name ? null : $"-{CultureInfo.CurrentUICulture.TwoLetterISOLanguageName}")}.jpg";
 }

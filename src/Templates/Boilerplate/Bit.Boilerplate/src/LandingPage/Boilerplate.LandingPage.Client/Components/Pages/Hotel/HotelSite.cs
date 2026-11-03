@@ -18,7 +18,6 @@ public static class HotelSite
         AccentColor = "#1F5E66",
         Layout = typeof(HotelLayout),
         NotFound = typeof(HotelNotFound),
-        Card = typeof(HotelCard),
         Logo = typeof(HotelLogo),
         Strings = typeof(HotelStrings),
         AppleAppId = "6450611349",

@@ -14,7 +14,6 @@ public static class AccountingSite
         AccentColor = "#21468A",
         Layout = typeof(AccountingLayout),
         NotFound = typeof(AccountingNotFound),
-        Card = typeof(AccountingCard),
         Logo = typeof(AccountingLogo),
         Strings = typeof(AccountingStrings),
         AppleAppId = "6450611349",

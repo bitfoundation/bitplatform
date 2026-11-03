@@ -18,7 +18,6 @@ public static class RetailSite
         AccentColor = "#C8331C",
         Layout = typeof(RetailLayout),
         NotFound = typeof(RetailNotFound),
-        Card = typeof(RetailCard),
         Logo = typeof(RetailLogo),
         Strings = typeof(RetailStrings),
         AppleAppId = "6450611349",

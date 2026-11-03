@@ -16,7 +16,6 @@ public static class RestaurantSite
         AccentColor = "#1F44B8",
         Layout = typeof(RestaurantLayout),
         NotFound = typeof(RestaurantNotFound),
-        Card = typeof(RestaurantCard),
         Logo = typeof(RestaurantLogo),
         Strings = typeof(RestaurantStrings),
         Platforms =
