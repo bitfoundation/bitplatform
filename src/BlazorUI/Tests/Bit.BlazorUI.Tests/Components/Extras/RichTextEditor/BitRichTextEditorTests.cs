@@ -2032,6 +2032,32 @@ public class BitRichTextEditorTests : BunitTestContext
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.dispose");
     }
 
+    [TestMethod]
+    public async Task BitRichTextEditorDisposeShouldKeepItsDotNetReferenceUntilTheScriptIsDisposed()
+    {
+        SetupJsInterop();
+
+        // The script answers later, the way it does in a browser: until its listeners are off an edit still calls back
+        // through the reference the editor was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.dispose", _ => true);
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        var initialize = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.RichTextEditor.initialize");
+        var reference = (DotNetObjectReference<BitRichTextEditor>)initialize.Arguments[1]!;
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(editor, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
 
     // ---------------------------------------------------------------- options plumbing
 

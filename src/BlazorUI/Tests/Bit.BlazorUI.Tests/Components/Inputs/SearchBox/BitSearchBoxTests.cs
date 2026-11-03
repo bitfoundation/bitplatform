@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -4267,6 +4268,41 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(inputId, unregistrations[0].Arguments[0]);
         Assert.AreEqual(1, clears.Count);
         Assert.AreEqual(calloutId, clears[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxDisposeShouldKeepItsDotNetReferenceUntilTheCalloutIsCleared()
+    {
+        // The script answers later, the way it does in a browser: until the callout is cleared a click outside of it
+        // still calls back through the reference it was opened with.
+        var clear = Context.JSInterop.SetupVoid("BitBlazorUI.Callouts.clear", _ => true);
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        component.WaitForAssertion(() => Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle")));
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var reference = (DotNetObjectReference<BitSearchBox>)toggle.Arguments[0]!;
+        var searchBox = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, clear.Invocations);
+        Assert.AreSame(searchBox, reference.Value);
+
+        clear.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

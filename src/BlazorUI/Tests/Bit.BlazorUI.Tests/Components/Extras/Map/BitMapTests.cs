@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bit.BlazorUI;
 using Bunit;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.Map;
@@ -781,6 +782,31 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(1, identifiers.Count(i => i == CHROME_DETACH));
         Assert.IsTrue(identifiers.LastIndexOf(CHROME_DETACH) < identifiers.LastIndexOf(DISPOSE),
             "The chrome must be detached before the provider disposes the map");
+    }
+
+    [TestMethod]
+    public async Task BitMapDisposeShouldKeepItsDotNetReferenceUntilTheProviderIsDisposed()
+    {
+        // The script answers later, the way it does in a browser: until the provider is disposed its listeners still
+        // call back through the reference the map was set up with.
+        SetupSuccessfulMount();
+        var dispose = Context.JSInterop.SetupVoid(DISPOSE, _ => true);
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var init = Context.JSInterop.Invocations.Single(i => i.Identifier == INIT);
+        var reference = (DotNetObjectReference<BitMap<BitLeafletMapProvider>>)init.Arguments[3]!;
+        var map = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        component.WaitForAssertion(() => Assert.HasCount(1, dispose.Invocations));
+        Assert.AreSame(map, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

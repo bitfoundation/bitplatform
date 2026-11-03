@@ -652,9 +652,6 @@ public partial class BitFooter : BitComponentBase
 
         if (_dotnetObj is null) return;
 
-        _dotnetObj.Dispose();
-        _dotnetObj = null;
-
         try
         {
             // The listener is keyed by the id it was attached under, which is not the current one
@@ -663,5 +660,11 @@ public partial class BitFooter : BitComponentBase
             await _js.BitFootersDispose(_attachedId ?? _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Released last: the scroll listener still calls back through it until it is removed.
+            _dotnetObj.Dispose();
+            _dotnetObj = null;
+        }
     }
 }

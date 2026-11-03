@@ -1551,14 +1551,18 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         await base.DisposeAsync(disposing);
 
-        _dotnetObj?.Dispose();
-
-        if (_jsSetup is false) return;
-
         try
         {
-            await _js.BitTextFieldDispose(_Id);
+            if (_jsSetup)
+            {
+                await _js.BitTextFieldDispose(_Id);
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Released last: the ghost text still calls back through it until the script lets go of the field.
+            _dotnetObj?.Dispose();
+        }
     }
 }

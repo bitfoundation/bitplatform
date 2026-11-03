@@ -152,7 +152,7 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
 
     private async Task ToggleSubmenuCallout()
     {
-        if (_dotnetObj is null) return;
+        if (_disposed || _dotnetObj is null) return;
 
         try
         {
@@ -293,15 +293,18 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-            _dotnetObj = null;
-
             try
             {
                 await _js.BitCalloutClearCallout(_submenuId);
                 await _js.BitMenuButtonsDisposeSubmenu(MenuButton._Id, _submenuId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            finally
+            {
+                // Released last: the submenu's callout still calls back through it until it is cleared.
+                _dotnetObj.Dispose();
+                _dotnetObj = null;
+            }
         }
 
         MenuButton.SubmenuClosed(this);

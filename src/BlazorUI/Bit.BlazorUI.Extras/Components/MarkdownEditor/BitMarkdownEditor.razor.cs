@@ -1615,8 +1615,6 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         _debounceCts?.Dispose();
         _debounceCts = null;
 
-        _dotnetObj?.Dispose();
-
         try
         {
             if (_scrollLocked)
@@ -1634,6 +1632,11 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
             await _js.BitMarkdownEditorDispose(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Released last: the editor's listeners still call back through it until they are removed.
+            _dotnetObj?.Dispose();
+        }
 
         await base.DisposeAsync(disposing);
     }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -4936,6 +4937,33 @@ public class BitTextFieldTests : BunitTestContext
 
         // A plain field set nothing up, so it has nothing to tear down and pays no round trip for it.
         Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.TextField.dispose"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitTextFieldDisposeShouldKeepItsDotNetReferenceUntilTheScriptLetsGoOfTheField()
+    {
+        // The script answers later, the way it does in a browser: until it lets go of the field accepting the ghost
+        // text still calls back through the reference the ghost text was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.TextField.dispose", _ => true);
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.GhostText, "suggestion");
+        });
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.TextField.setupGhostText"].Single();
+        var reference = (DotNetObjectReference<BitTextField>)setup.Arguments[2]!;
+        var textField = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(textField, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

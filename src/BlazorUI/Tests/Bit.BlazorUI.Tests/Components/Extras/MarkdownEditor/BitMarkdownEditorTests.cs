@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.MarkdownEditor;
@@ -299,6 +301,30 @@ public class BitMarkdownEditorTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         Context.JSInterop.VerifyInvoke("BitBlazorUI.MarkdownEditor.dispose");
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorDisposeShouldKeepItsDotNetReferenceUntilTheScriptIsDisposed()
+    {
+        // The script answers later, the way it does in a browser: until its listeners are off an edit still calls back
+        // through the reference the editor was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.MarkdownEditor.dispose", _ => true);
+
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        var init = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.MarkdownEditor.init");
+        var reference = (DotNetObjectReference<BitMarkdownEditor>)init.Arguments[3]!;
+        var editor = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(editor, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

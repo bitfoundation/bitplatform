@@ -949,13 +949,16 @@ public partial class BitRichTextEditor : BitComponentBase
 
         UntrackEditContext();
 
-        _dotnetObj?.Dispose();
-
         try
         {
             await _js.BitRichTextEditorDispose(_editorRef);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Released last: the editor's listeners still call back through it until they are removed.
+            _dotnetObj?.Dispose();
+        }
 
         await base.DisposeAsync(disposing);
     }

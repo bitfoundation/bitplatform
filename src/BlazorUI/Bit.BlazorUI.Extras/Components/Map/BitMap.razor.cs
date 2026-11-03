@@ -2803,9 +2803,6 @@ public partial class BitMap<TMapProvider> : BitComponentBase
             _announcementCts?.Dispose();
             _announcementCts = null;
 
-            _dotnetObj?.Dispose();
-            _dotnetObj = null;
-
             try
             {
                 // A map disposed while still below the fold is still being watched by the
@@ -2841,6 +2838,11 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         }
         finally
         {
+            // Released only once the chrome, the clustering layer and the provider are gone: until
+            // then their listeners still call back through it.
+            _dotnetObj?.Dispose();
+            _dotnetObj = null;
+
             // Release before disposing so anything already waiting on the gate observes an
             // ObjectDisposedException from WaitAsync rather than deadlocking - OnProviderSet
             // catches exactly that and bails out.

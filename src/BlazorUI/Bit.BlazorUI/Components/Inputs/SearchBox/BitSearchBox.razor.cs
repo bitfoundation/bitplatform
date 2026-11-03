@@ -2115,13 +2115,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
             try
             {
                 await _js.BitCalloutClearCallout(_calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            finally
+            {
+                // Released last: the callout still calls back through it until it is cleared.
+                _dotnetObj.Dispose();
+            }
         }
     }
 }

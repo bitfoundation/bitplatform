@@ -1559,13 +1559,16 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
             try
             {
                 await _js.BitOtpInputDispose(UniqueId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            finally
+            {
+                // Released last: the script's listeners still call back through it until they are removed.
+                _dotnetObj.Dispose();
+            }
         }
     }
 }

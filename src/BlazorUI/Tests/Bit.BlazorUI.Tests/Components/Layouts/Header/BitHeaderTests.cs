@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Header;
@@ -1000,6 +1002,34 @@ public class BitHeaderTests : BunitTestContext
                               .ToArray();
 
         CollectionAssert.AreEqual(new object[] { "header-disposed" }, disposes);
+    }
+
+    [TestMethod]
+    public async Task BitHeaderDisposeShouldKeepItsDotNetReferenceUntilTheScrollListenerIsOff()
+    {
+        // The script answers later, the way it does in a browser: until the listener is off a scroll still calls back
+        // through the reference the header was set up with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Headers.dispose", _ => true);
+
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
+        var reference = (DotNetObjectReference<BitHeader>)setup.Arguments[1]!;
+        var header = component.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(header, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

@@ -613,9 +613,6 @@ public partial class BitSticky : BitComponentBase
 
         if (_dotnetObj is null) return;
 
-        _dotnetObj.Dispose();
-        _dotnetObj = null;
-
         try
         {
             // The script is keyed by the id it was attached under, which is not the current one
@@ -624,5 +621,11 @@ public partial class BitSticky : BitComponentBase
             await _js.BitStickiesDispose(_attachedId ?? _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Released last: the script still reports the stuck state through it until it is disposed.
+            _dotnetObj.Dispose();
+            _dotnetObj = null;
+        }
     }
 }

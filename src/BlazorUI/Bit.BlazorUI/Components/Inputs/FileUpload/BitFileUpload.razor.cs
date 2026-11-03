@@ -2731,13 +2731,16 @@ public partial class BitFileUpload : BitInputBase<string?>
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
             try
             {
                 await _js.BitFileUploadClear(UniqueId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            finally
+            {
+                // Released last: an upload in flight still reports its progress through it until it is cleared.
+                _dotnetObj.Dispose();
+            }
         }
     }
 }

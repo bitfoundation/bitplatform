@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -1939,6 +1940,34 @@ public class BitButtonTests : BunitTestContext
         await Context.DisposeComponentsAsync();
 
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Draggables.disable"));
+    }
+
+    [TestMethod]
+    public async Task BitButtonDisposeShouldKeepItsDotNetReferenceUntilTheDragScriptLetsGo()
+    {
+        // The script answers later, the way it does in a browser: until it lets go of the button a drag still calls
+        // back through the reference the script was handed.
+        var disable = Context.JSInterop.SetupVoid("BitBlazorUI.Draggables.disable", _ => true);
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Float, true);
+            parameters.Add(p => p.Draggable, true);
+        });
+
+        var enable = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Draggables.enable");
+        var reference = (DotNetObjectReference<BitButton>)enable.Arguments[1]!;
+        var button = com.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, disable.Invocations);
+        Assert.AreSame(button, reference.Value);
+
+        disable.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

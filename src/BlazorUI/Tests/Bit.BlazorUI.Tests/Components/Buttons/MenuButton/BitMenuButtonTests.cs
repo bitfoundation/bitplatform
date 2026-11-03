@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -2028,6 +2030,67 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.clear"));
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.MenuButtons.dispose"));
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonDisposeShouldKeepItsDotNetReferenceUntilItsScriptIsDisposed()
+    {
+        // The script answers later, the way it does in a browser: until the callout is cleared a click outside of it
+        // still calls back through the reference it was opened with.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.MenuButtons.dispose", _ => true);
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var reference = (DotNetObjectReference<BitMenuButton<BitMenuButtonItem>>)toggle.Arguments[0]!;
+        var menuButton = com.Instance;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, dispose.Invocations);
+        Assert.AreSame(menuButton, reference.Value);
+
+        dispose.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonDisposeShouldKeepTheDotNetReferenceOfAnOpenSubmenuUntilItsScriptIsDisposed()
+    {
+        // The script answers later, the way it does in a browser: until the submenu's callout is cleared a click
+        // outside of it still calls back through the reference it was opened with.
+        var disposeSubmenu = Context.JSInterop.SetupVoid("BitBlazorUI.MenuButtons.disposeSubmenu", _ => true);
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitMenuButtonItem>
+            {
+                new() { Text = "More", Key = "more", ChildItems = [new() { Text = "Child", Key = "child" }] }
+            });
+        });
+
+        com.FindAll(".bit-mnb-itm").First(e => e.TextContent.Contains("More")).Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var reference = (DotNetObjectReference<_BitMenuButtonItem<BitMenuButtonItem>>)toggle.Arguments[0]!;
+        var submenu = reference.Value;
+
+        var disposal = Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, disposeSubmenu.Invocations);
+        Assert.AreSame(submenu, reference.Value);
+
+        disposeSubmenu.SetVoidResult();
+        await disposal;
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = reference.Value);
     }
 
     [TestMethod]

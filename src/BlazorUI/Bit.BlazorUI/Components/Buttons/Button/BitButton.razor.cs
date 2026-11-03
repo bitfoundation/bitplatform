@@ -750,13 +750,16 @@ public partial class BitButton : BitComponentBase
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
             try
             {
                 await _js.BitDraggablesDisable(_Id);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            finally
+            {
+                // Released last: a drag still calls back through it until the script lets go of the button.
+                _dotnetObj.Dispose();
+            }
         }
     }
 }

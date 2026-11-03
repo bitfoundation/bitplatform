@@ -120,13 +120,16 @@ public partial class BitMarkdownEditorLegacy : BitComponentBase
     {
         if (IsDisposed || disposing is false) return;
 
-        _dotnetObj?.Dispose();
-
         try
         {
             await _js.BitMarkdownEditorDispose(_Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        finally
+        {
+            // Released last: the editor's input listener still calls back through it until it is removed.
+            _dotnetObj?.Dispose();
+        }
 
 
         await base.DisposeAsync(disposing);
