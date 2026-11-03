@@ -888,6 +888,37 @@ public class BitMenuButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    [DataRow("mnb-narrow-icononly")]
+    [DataRow("mnb-narrow-split")]
+    [DataRow("mnb-narrow-text")]
+    public async Task Layout_InAFlexRowTooNarrowForIt_KeepsItsButtonInsideTheRoot(string id)
+    {
+        await OpenAsync(ItemsApi);
+        await Root(id).ScrollIntoViewIfNeededAsync();
+
+        // The root clips what lies outside it, so every part of the button has to end inside it.
+        var root = await Root(id).BoxAsync();
+        var parts = Root(id).Locator(".bit-mnb-opb, .bit-mnb-chb, .bit-mnb-ico, .bit-mnb-chv");
+        var count = await parts.CountAsync();
+        Assert.IsTrue(count > 0, "The button has parts to measure.");
+        for (var i = 0; i < count; i++)
+        {
+            var part = await parts.Nth(i).BoxAsync();
+            Assert.IsTrue(part.X + part.Width <= root.X + root.Width + 0.5,
+                          $"Part {i} ends at {part.X + part.Width}, past the root that ends at {root.X + root.Width}.");
+        }
+
+        // And a tap at the far end of each half reaches that half.
+        foreach (var half in new[] { Opb(id), Chb(id) })
+        {
+            if (await half.CountAsync() == 0) continue;
+
+            Assert.IsTrue(await half.EvaluateAsync<bool>("el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.right - 2, r.top + r.height / 2)); }"),
+                          $"A tap at the far end of {await half.GetAttributeAsync("id")} reaches it.");
+        }
+    }
+
+    [TestMethod]
     [DataRow("Primary", "bit-mnb-bpg", "var(--bit-clr-bg-pri)")]
     [DataRow("Secondary", "bit-mnb-bsg", "var(--bit-clr-bg-sec)")]
     [DataRow("Tertiary", "bit-mnb-btg", "var(--bit-clr-bg-ter)")]

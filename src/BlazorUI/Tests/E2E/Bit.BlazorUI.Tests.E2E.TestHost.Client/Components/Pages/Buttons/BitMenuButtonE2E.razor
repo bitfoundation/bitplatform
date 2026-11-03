@@ -167,6 +167,19 @@
     <div id="fw-container" style="width: 420px;">
         <BitMenuButton Id="mnb-fullwidth" FullWidth Text="Full width" Items="@(L("fullwidth"))" />
     </div>
+    @* Each menu button shares a flex row too narrow for it with a title that gives up its room, the way a card header does. *@
+    <div style="display: flex; width: 100px;">
+        <span style="min-width: 0; overflow: hidden; white-space: nowrap;">A title far longer than the row it shares</span>
+        <BitMenuButton Id="mnb-narrow-icononly" IconOnly Variant="BitVariant.Text" Size="BitSize.Small" AriaLabel="More" IconName="@BitIconName.More" Items="@(L("narrow-icononly"))" />
+    </div>
+    <div style="display: flex; width: 100px;">
+        <span style="min-width: 0; overflow: hidden; white-space: nowrap;">A title far longer than the row it shares</span>
+        <BitMenuButton Id="mnb-narrow-split" Split Text="Save" Items="@(L("narrow-split"))" />
+    </div>
+    <div style="display: flex; width: 100px;">
+        <span style="min-width: 0; overflow: hidden; white-space: nowrap;">A title far longer than the row it shares</span>
+        <BitMenuButton Id="mnb-narrow-text" Text="Options" IconName="@BitIconName.Add" Items="@(L("narrow-text"))" />
+    </div>
     <BitMenuButton Id="mnb-chevron" Split Text="Chevron" Items="@(L("chevron"))" ChevronDownIconName="@BitIconName.ChevronDownMed" ChevronDownAriaLabel="Show the save options" ChevronDownTitle="More save options" />
     <BitMenuButton Id="mnb-icons-custom" Text="Custom marks" Items="_customMarks" CloseOnItemClick="false"
                    CheckIconName="@BitIconName.CheckboxComposite" RadioIconName="@BitIconName.RadioBtnOn" SubmenuIconName="@BitIconName.ChevronRightMed" />

@@ -126,7 +126,13 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
 
 .bit-mnb {
     display: flex;
+    // Clip, not hide: the halves are cut to the rounded corners the same way, but no scroll container is made, so
+    // as an item of a flex row or a grid the root keeps the automatic minimum of its content, the way a button does.
+    // A scroll container's is zero, which let a row too narrow for it shrink the root under its own button - the
+    // part left outside was clipped away, and a tap there reached nothing. A menu button meant to give up room in a
+    // row, its label ellipsized, is given min-width: 0.
     overflow: hidden;
+    overflow: clip;
     width: fit-content;
     position: relative;
     outline: transparent;
@@ -173,6 +179,20 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
         &:has(:focus-visible) {
             @include focus-ring(var(--bit-mnb-dis-clr));
         }
+    }
+}
+
+// An engine without overflow: clip (Safari before 16) is left with the scroll container overflow: hidden makes,
+// so there the root is kept from shrinking in a flex row instead. A full-width one is left to shrink with the row,
+// whose width it takes. Both weigh a single class, as the root's own rule does, so a class an app hands the root
+// still wins over them.
+@supports not (overflow: clip) {
+    .bit-mnb {
+        flex-shrink: 0;
+    }
+
+    .bit-mnb-flw {
+        flex-shrink: 1;
     }
 }
 
