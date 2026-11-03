@@ -189,6 +189,12 @@
     <data name="RatingBody" xml:space="preserve">
         <value>Its App Store listing is read live from Apple and kept on the server for a while: the rating once there are enough of them, the latest version until then.</value>
     </data>
+    <data name="ProofTitle" xml:space="preserve">
+        <value>Press and reviews</value>
+    </data>
+    <data name="ProofBody" xml:space="preserve">
+        <value>The press that wrote about it, and further down what customers say. In the samples they are made up: swap in real ones before launch.</value>
+    </data>
     <data name="FaqTitle" xml:space="preserve">
         <value>Answers search engines can read</value>
     </data>
@@ -206,6 +212,12 @@
     </data>
     <data name="CouponBody" xml:space="preserve">
         <value>A first-order code with a copy button, next to the store badges and the QR code at the end of the page.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>An about page</value>
+    </data>
+    <data name="AboutBody" xml:space="preserve">
+        <value>Each sample has an about page with its story, its team and how to reach it.</value>
     </data>
     <data name="CountdownTitle" xml:space="preserve">
         <value>{0}, before its launch</value>
@@ -235,7 +247,7 @@
         <value>A waitlist that stays clean</value>
     </data>
     <data name="WaitlistBody" xml:space="preserve">
-        <value>Visitors pick the platforms they want. Every sign-up is confirmed by email, bots are turned away without a word, and one email goes out on launch day.</value>
+        <value>Visitors pick the platforms they want. Every sign-up is confirmed by email and bots are turned away without a word. Joining ends on share buttons, and every email has a link to leave the list.</value>
     </data>
     <data name="CollectTitle" xml:space="preserve">
         <value>{0}, click and collect</value>
@@ -259,7 +271,7 @@
         <value>The chat as a side tab</value>
     </data>
     <data name="ConciergeBody" xml:space="preserve">
-        <value>The same assistant in its third form: a tab at the edge of the page that opens a panel.</value>
+        <value>The same assistant in its third form: a tab at the edge of the page that opens this panel. The tour opened it for you.</value>
     </data>
     <data name="SessionTitle" xml:space="preserve">
         <value>{0}, a session to start</value>
@@ -283,7 +295,7 @@
         <value>Two languages, both directions</value>
     </data>
     <data name="LanguagesBody" xml:space="preserve">
-        <value>Every page comes in English and Persian, right to left included, each at its own address. Switch localization off and the site is English only.</value>
+        <value>Every page comes in English and Persian, right to left included, each at its own address, and a visitor whose browser prefers the other language is offered it once. Switch localization off and the site is English only.</value>
     </data>
     <data name="ThemeTitle" xml:space="preserve">
         <value>Light and dark</value>
@@ -302,6 +314,12 @@
     </data>
     <data name="BoardBody" xml:space="preserve">
         <value>Move a deal with its arrows, or focus it and use the arrow keys, and the forecast follows.</value>
+    </data>
+    <data name="SourcesTitle" xml:space="preserve">
+        <value>Figures with their source</value>
+    </data>
+    <data name="SourcesBody" xml:space="preserve">
+        <value>Right under the numbers, the page says where each one comes from: a survey of customers, an outside monitor.</value>
     </data>
     <data name="CurrencyTitle" xml:space="preserve">
         <value>Prices in three currencies</value>

@@ -189,6 +189,12 @@
     <data name="RatingBody" xml:space="preserve">
         <value>اطلاعات صفحه‌ی App Store آن مستقیم از اپل خوانده و مدتی روی سرور نگه داشته می‌شود: امتیاز، وقتی امتیازها به اندازه‌ی کافی برسند، و تا آن موقع آخرین نسخه.</value>
     </data>
+    <data name="ProofTitle" xml:space="preserve">
+        <value>رسانه‌ها و نظرها</value>
+    </data>
+    <data name="ProofBody" xml:space="preserve">
+        <value>رسانه‌هایی که درباره‌اش نوشته‌اند و پایین‌تر حرف مشتری‌ها. در نمونه‌ها همه ساختگی‌اند: پیش از انتشار با واقعی‌ها عوضشان کنید.</value>
+    </data>
     <data name="FaqTitle" xml:space="preserve">
         <value>جواب‌هایی که موتورهای جست‌وجو می‌خوانند</value>
     </data>
@@ -206,6 +212,12 @@
     </data>
     <data name="CouponBody" xml:space="preserve">
         <value>کد تخفیف اولین سفارش با دکمه‌ی کپی، کنار نشان فروشگاه‌ها و QR در انتهای صفحه.</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>صفحه‌ی درباره‌ی ما</value>
+    </data>
+    <data name="AboutBody" xml:space="preserve">
+        <value>هر نمونه صفحه‌ی درباره‌ی ما دارد، با داستانش، تیمش و راه تماس.</value>
     </data>
     <data name="CountdownTitle" xml:space="preserve">
         <value>{0}، پیش از انتشار</value>
@@ -235,7 +247,7 @@
         <value>فهرست انتظاری که تمیز می‌ماند</value>
     </data>
     <data name="WaitlistBody" xml:space="preserve">
-        <value>بازدیدکننده پلتفرم‌هایی را که می‌خواهد انتخاب می‌کند. هر ثبت‌نام با ایمیل تأیید می‌شود، ربات‌ها بی‌سروصدا کنار گذاشته می‌شوند و روز انتشار یک ایمیل فرستاده می‌شود.</value>
+        <value>بازدیدکننده پلتفرم‌هایی را که می‌خواهد انتخاب می‌کند. هر ثبت‌نام با ایمیل تأیید می‌شود و ربات‌ها بی‌سروصدا کنار گذاشته می‌شوند. بعد از عضویت دکمه‌های اشتراک‌گذاری می‌آیند و هر ایمیل پیوندی برای خروج از فهرست دارد.</value>
     </data>
     <data name="CollectTitle" xml:space="preserve">
         <value>{0}، خرید و تحویل حضوری</value>
@@ -259,7 +271,7 @@
         <value>چت به شکل زبانه‌ی کناری</value>
     </data>
     <data name="ConciergeBody" xml:space="preserve">
-        <value>همان دستیار در شکل سومش: زبانه‌ای در لبه‌ی صفحه که یک پنل باز می‌کند.</value>
+        <value>همان دستیار در شکل سومش: زبانه‌ای در لبه‌ی صفحه که همین پنل را باز می‌کند. تور آن را برایتان باز کرد.</value>
     </data>
     <data name="SessionTitle" xml:space="preserve">
         <value>{0}، جلسه‌ای برای شروع</value>
@@ -283,7 +295,7 @@
         <value>دو زبان، هر دو جهت</value>
     </data>
     <data name="LanguagesBody" xml:space="preserve">
-        <value>هر صفحه به انگلیسی و فارسی هست، با راست‌به‌چپ کامل و هر کدام با نشانی خودش. با خاموش کردن localization، سایت فقط انگلیسی می‌شود.</value>
+        <value>هر صفحه به انگلیسی و فارسی هست، با راست‌به‌چپ کامل و هر کدام با نشانی خودش، و به بازدیدکننده‌ای که مرورگرش زبان دیگر را ترجیح می‌دهد یک بار پیشنهاد می‌شود. با خاموش کردن localization، سایت فقط انگلیسی می‌شود.</value>
     </data>
     <data name="ThemeTitle" xml:space="preserve">
         <value>روشن و تیره</value>
@@ -302,6 +314,12 @@
     </data>
     <data name="BoardBody" xml:space="preserve">
         <value>یک معامله را با فلش‌هایش جابه‌جا کنید، یا رویش بروید و از کلیدهای جهت استفاده کنید؛ پیش‌بینی هم دنبالش می‌آید.</value>
+    </data>
+    <data name="SourcesTitle" xml:space="preserve">
+        <value>عدد با منبعش</value>
+    </data>
+    <data name="SourcesBody" xml:space="preserve">
+        <value>درست زیر عددها، صفحه می‌گوید هر کدام از کجا آمده: یک نظرسنجی از مشتری‌ها، یک ناظر بیرونی.</value>
     </data>
     <data name="CurrencyTitle" xml:space="preserve">
         <value>قیمت به سه ارز</value>

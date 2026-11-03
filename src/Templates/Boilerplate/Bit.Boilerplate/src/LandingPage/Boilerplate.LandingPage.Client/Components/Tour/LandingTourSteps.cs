@@ -13,7 +13,7 @@ public static class LandingTourSteps
         {
             Id = Id,
             Persist = false,
-            Progress = BonboardingProgressStyle.Dots,
+            Progress = BonboardingProgressStyle.Text,
             WaitTimeout = TimeSpan.FromSeconds(3),
             WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Center,
             Labels = new()
@@ -42,9 +42,11 @@ public static class LandingTourSteps
             Try(Add(tour, "shop-demo", shop.Path, ".shop-demo", t[nameof(TourStrings.DemoTitle)], t[nameof(TourStrings.DemoBody)]));
             Add(tour, "shop-stores", shop.Path, ".ecommerce-hero .lp-badges", t[nameof(TourStrings.StoresTitle)], t[nameof(TourStrings.StoresBody)]);
             Add(tour, "shop-rating", shop.Path, ".lp-rating", t[nameof(TourStrings.RatingTitle)], t[nameof(TourStrings.RatingBody)]);
+            Add(tour, "shop-press", shop.Path, ".ecommerce-press", t[nameof(TourStrings.ProofTitle)], t[nameof(TourStrings.ProofBody)]);
             Add(tour, "shop-faq", shop.Path, ".lp-faq", t[nameof(TourStrings.FaqTitle)], t[nameof(TourStrings.FaqBody)]);
             Open(Add(tour, "shop-chat", shop.Path, ".lp-chat-card", t[nameof(TourStrings.ChatTitle)], t[nameof(TourStrings.ChatBody), shop.Name]), ".lp-chat-bubble");
             Add(tour, "shop-coupon", shop.Path, ".ecommerce-coupon", t[nameof(TourStrings.CouponTitle)], t[nameof(TourStrings.CouponBody)]);
+            Add(tour, "shop-about", $"{shop.Path}/about", ".ecommerce-team", t[nameof(TourStrings.AboutTitle)], t[nameof(TourStrings.AboutBody)]);
         }
 
         if (LandingSites.Find("restaurant") is { } cafe)
@@ -61,7 +63,7 @@ public static class LandingTourSteps
             Try(Add(tour, "grocer-collect", grocer.Path, ".slot-demo", t[nameof(TourStrings.CollectTitle), grocer.Name], t[nameof(TourStrings.CollectBody)]));
             Add(tour, "grocer-card", grocer.Path, ".loyalty", t[nameof(TourStrings.CardTitle)], t[nameof(TourStrings.CardBody)]);
             Add(tour, "grocer-shops", $"{grocer.Path}/stores", ".retail-store", t[nameof(TourStrings.PagesTitle)], t[nameof(TourStrings.PagesBody), grocer.Name]);
-            Add(tour, "grocer-concierge", $"{grocer.Path}/stores", ".lp-chat-concierge-tab", t[nameof(TourStrings.ConciergeTitle)], t[nameof(TourStrings.ConciergeBody)]);
+            Open(Add(tour, "grocer-concierge", $"{grocer.Path}/stores", ".lp-chat-panel-body", t[nameof(TourStrings.ConciergeTitle)], t[nameof(TourStrings.ConciergeBody)]), ".lp-chat-concierge-tab", ".bit-pnl:has(.lp-chat-panel-body) .bit-pnl-cls");
         }
 
         if (LandingSites.Find("fitness") is { } workout)
@@ -77,6 +79,7 @@ public static class LandingTourSteps
         if (LandingSites.Find("crm") is { } crm)
         {
             Try(Add(tour, "crm-board", crm.Path, ".crm-board", t[nameof(TourStrings.BoardTitle), crm.Name], t[nameof(TourStrings.BoardBody)]));
+            Add(tour, "crm-stats", crm.Path, ".crm-stats", t[nameof(TourStrings.SourcesTitle)], t[nameof(TourStrings.SourcesBody)]);
             Try(Add(tour, "crm-currency", $"{crm.Path}/pricing", ".crm-plans", t[nameof(TourStrings.CurrencyTitle)], t[nameof(TourStrings.CurrencyBody)]));
             Add(tour, "crm-sheets", $"{crm.Path}/vs-spreadsheets", ".crm-sheets-table", t[nameof(TourStrings.SheetsTitle)], t[nameof(TourStrings.SheetsBody)]);
         }
@@ -137,10 +140,12 @@ public static class LandingTourSteps
 
     private static void Try(BonboardingStepDefinition step) => step.Interaction = BonboardingInteractionMode.TargetOnly;
 
-    private static void Open(BonboardingStepDefinition step, string toggle)
+    private static void Open(BonboardingStepDefinition step, string toggle, string? close = null)
     {
         step.OnBeforeShow = context => Scripts(context).InvokeVoidAsync("landing.setExpanded", toggle, true);
-        step.OnBeforeLeave = context => Scripts(context).InvokeVoidAsync("landing.setExpanded", toggle, false);
+        step.OnBeforeLeave = context => close is null
+            ? Scripts(context).InvokeVoidAsync("landing.setExpanded", toggle, false)
+            : Scripts(context).InvokeVoidAsync("landing.press", close, 1, 0);
     }
 
     private static void Press(BonboardingStepDefinition step, string buttons, int count)
