@@ -50,7 +50,7 @@ public partial class FitnessHomePage
     protected override void OnParametersSet()
     {
         var site = FitnessSite.Info;
-        var url = NavigationManager.ToAbsoluteUri(LocalUrl(site.Path)).ToString();
+        var url = AbsoluteUrl(LocalUrl(site.Path));
 
         structuredData = new JsonObject
         {

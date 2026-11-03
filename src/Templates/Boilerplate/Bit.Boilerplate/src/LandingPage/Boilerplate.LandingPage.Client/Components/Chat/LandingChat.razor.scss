@@ -20,6 +20,7 @@
     border-radius: 999px;
     background: var(--lp-chat-bubble-bg, var(--lp-fg));
     color: var(--lp-chat-bubble-fg, var(--lp-bg));
+    --bit-Icon-color: currentColor;
     box-shadow: 0 12px 32px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
     font-size: .9375rem;
     font-weight: 600;
@@ -113,17 +114,17 @@
 .lp-chat-concierge-tab {
     position: fixed;
     z-index: 700;
-    inset-inline-end: 0;
     top: 50%;
+    right: 0;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 14px 10px;
     border: 0;
-    border-start-start-radius: 12px;
-    border-end-start-radius: 12px;
+    border-radius: 12px 0 0 12px;
     background: var(--lp-chat-bubble-bg, var(--lp-fg));
     color: var(--lp-chat-bubble-fg, var(--lp-bg));
+    --bit-Icon-color: currentColor;
     font-size: .875rem;
     font-weight: 600;
     writing-mode: vertical-rl;
@@ -131,17 +132,26 @@
     transform: translateY(-50%);
     box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--lp-fg) 60%, transparent);
 
-    &:lang(fa) {
-        writing-mode: horizontal-tb;
-        padding: 12px 14px;
+    &:dir(rtl) {
+        right: auto;
+        left: 0;
+        transform: translateY(-50%) rotate(180deg);
     }
 
     @include lt-sm {
         top: auto;
+        right: max(16px, env(safe-area-inset-right, 0px));
         bottom: max(20px, env(safe-area-inset-bottom, 0px));
-        writing-mode: horizontal-tb;
         padding: 12px 14px;
+        border-radius: 999px;
+        writing-mode: horizontal-tb;
         transform: none;
+
+        &:dir(rtl) {
+            right: auto;
+            left: max(16px, env(safe-area-inset-left, 0px));
+            transform: none;
+        }
     }
 }
 

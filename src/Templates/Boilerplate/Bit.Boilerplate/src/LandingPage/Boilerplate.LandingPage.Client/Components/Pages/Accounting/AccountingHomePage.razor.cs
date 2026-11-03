@@ -53,7 +53,7 @@ public partial class AccountingHomePage
     protected override void OnParametersSet()
     {
         var site = AccountingSite.Info;
-        var url = NavigationManager.ToAbsoluteUri(LocalUrl(site.Path)).ToString();
+        var url = AbsoluteUrl(LocalUrl(site.Path));
 
         structuredData = new JsonObject
         {

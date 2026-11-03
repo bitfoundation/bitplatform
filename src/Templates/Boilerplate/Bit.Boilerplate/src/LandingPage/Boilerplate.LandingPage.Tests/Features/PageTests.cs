@@ -29,6 +29,7 @@ public class PageTests
     public async Task EveryPageInTheSitemap_Should_BePrerenderedWithItsOwnHead()
     {
         List<string> failures = [];
+        HashSet<string> previews = [];
 
         foreach (var url in await SitemapUrls())
         {
@@ -52,6 +53,14 @@ public class PageTests
 
             if (Regex.Count(html, "class=\"lp-site ") is not 1)
                 failures.Add($"{url} renders {Regex.Count(html, "class=\"lp-site ")} layouts");
+
+            if (Regex.Match(html, "<meta property=\"og:image\" content=\"([^\"]+)\"") is { Success: true } preview && previews.Add(preview.Groups[1].Value))
+            {
+                using var image = await client.GetAsync(preview.Groups[1].Value);
+
+                if (image.StatusCode is not HttpStatusCode.OK || image.Content.Headers.ContentType?.MediaType is not "image/png")
+                    failures.Add($"{url} has a preview image that doesn't load: {preview.Groups[1].Value}");
+            }
 
             foreach (Match script in Regex.Matches(html, "<script type=\"application/ld\\+json\">(.*?)</script>", RegexOptions.Singleline))
             {
@@ -81,6 +90,26 @@ public class PageTests
                 var path = LandingCultures.Localize(site.Path.Length is 0 ? LandingRoutes.Home : site.Path, culture).TrimEnd('/');
 
                 Assert.Contains(path, paths, $"{path} isn't in the sitemap");
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task EverySample_Should_BeInstallableAsItself()
+    {
+        foreach (var site in LandingSites.All)
+        {
+            foreach (var (_, culture) in LandingCultures.Supported)
+            {
+                var home = LandingCultures.Localize(site.Path.Length is 0 ? LandingRoutes.Home : site.Path, culture);
+                var link = Regex.Match(await client.GetStringAsync(home), "<link rel=\"manifest\" href=\"([^\"]+)\"");
+
+                Assert.IsTrue(link.Success, $"{home} links no manifest");
+
+                using var manifest = JsonDocument.Parse(await client.GetStringAsync(link.Groups[1].Value));
+
+                Assert.AreEqual(site.Name, manifest.RootElement.GetProperty("name").GetString(), home);
+                Assert.AreEqual(home, manifest.RootElement.GetProperty("start_url").GetString(), home);
             }
         }
     }

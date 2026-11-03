@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Localization;
+using Boilerplate.LandingPage.Server.Features.Pwa;
 using Boilerplate.LandingPage.Server.Features.Seo;
 using Boilerplate.LandingPage.Server.Features.Chat;
 using Boilerplate.LandingPage.Server.Features.Waitlist;
@@ -47,6 +48,7 @@ public static partial class Program
             app.MapGet("/alive", () => Results.Ok()).ExcludeFromDescription();
 
             app.MapLandingSeo();
+            app.MapLandingWebManifests();
             app.MapLandingDownloads();
             app.MapLandingWaitlist();
             app.MapLandingChat();

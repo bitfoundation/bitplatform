@@ -31,7 +31,13 @@
                         }
                     </div>
                 }
-                <p class="lp-chat-inline-notice">@(hasFailed ? Localizer[nameof(LandingStrings.ChatFailed)] : Localizer[nameof(LandingStrings.ChatAiNotice)])</p>
+                <p class="lp-chat-inline-notice">
+                    @(hasFailed ? Localizer[nameof(LandingStrings.ChatFailed)] : Localizer[nameof(LandingStrings.ChatAiNotice)])
+                    @if (HandoffUrl is not null)
+                    {
+                        @(" ")<a class="lp-chat-handoff" href="@HandoffUrl">@Localizer[nameof(LandingStrings.ChatHandoff)]</a>
+                    }
+                </p>
             }
         </div>
         break;

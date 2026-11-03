@@ -61,7 +61,7 @@ public partial class HotelSoftwareHomePage
     protected override void OnParametersSet()
     {
         var site = HotelSoftwareSite.Info;
-        var url = NavigationManager.ToAbsoluteUri(LocalUrl(site.Path)).ToString();
+        var url = AbsoluteUrl(LocalUrl(site.Path));
 
         structuredData = new JsonObject
         {

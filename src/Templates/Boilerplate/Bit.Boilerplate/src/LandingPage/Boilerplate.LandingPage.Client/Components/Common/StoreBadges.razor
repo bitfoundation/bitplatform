@@ -1,13 +1,13 @@
 @inherits LandingComponentBase
 
 <div class="lp-badges @Class">
-    @foreach (var link in ordered.Where(l => l.Status is not LandingPlatformStatus.ComingSoon && l.Url is not null))
+    @foreach (var link in shown)
     {
         <div class="lp-badge @(link.Platform == visitorPlatform ? "lp-badge-yours" : null)">
             @switch (link.Platform)
             {
                 case LandingPlatform.iOS:
-                case LandingPlatform.macOS when Site.Find(LandingPlatform.iOS) is null:
+                case LandingPlatform.macOS:
                     <a href="@Track(link)" rel="noopener" target="_blank">
                         <img src="images/badges/app-store.svg" width="120" height="40" alt="@Localizer[nameof(LandingStrings.BadgeAppStore)]" />
                     </a>

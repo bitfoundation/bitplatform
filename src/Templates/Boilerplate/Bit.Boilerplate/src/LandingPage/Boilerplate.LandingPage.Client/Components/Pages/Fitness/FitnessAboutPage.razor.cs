@@ -49,12 +49,12 @@ public partial class FitnessAboutPage
         {
             ["@context"] = "https://schema.org",
             ["@type"] = "AboutPage",
-            ["url"] = NavigationManager.ToAbsoluteUri(LocalUrl($"{site.Path}/about")).ToString(),
+            ["url"] = AbsoluteUrl(LocalUrl($"{site.Path}/about")),
             ["mainEntity"] = new JsonObject
             {
                 ["@type"] = "Organization",
                 ["name"] = site.Company.LegalName,
-                ["url"] = NavigationManager.ToAbsoluteUri(LocalUrl(site.Path)).ToString(),
+                ["url"] = AbsoluteUrl(LocalUrl(site.Path)),
                 ["email"] = site.Company.Email,
                 ["telephone"] = site.Company.Phone,
                 ["address"] = site.Company.Address,

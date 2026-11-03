@@ -15,11 +15,11 @@ public partial class StoreBadges
     [Parameter] public string? Class { get; set; }
 
     private LandingPlatform? visitorPlatform;
-    private IReadOnlyList<LandingPlatformLink> ordered = [];
+    private IReadOnlyList<LandingPlatformLink> shown = [];
 
     protected override void OnParametersSet()
     {
-        ordered = Order();
+        shown = Shown();
 
         base.OnParametersSet();
     }
@@ -41,7 +41,7 @@ public partial class StoreBadges
 
             if (visitorPlatform is not null)
             {
-                ordered = Order();
+                shown = Shown();
                 StateHasChanged();
             }
         }
@@ -49,7 +49,10 @@ public partial class StoreBadges
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private List<LandingPlatformLink> Order() => [.. Site.Platforms.OrderBy(l => l.Platform == visitorPlatform ? 0 : 1).ThenBy(l => l.Platform)];
+    private List<LandingPlatformLink> Shown() => [.. Site.Platforms
+        .Where(l => l.Status is not LandingPlatformStatus.ComingSoon && l.Url is not null && (l.Platform is not LandingPlatform.macOS || Site.Find(LandingPlatform.iOS) is null))
+        .OrderBy(l => l.Platform == visitorPlatform ? 0 : 1)
+        .ThenBy(l => l.Platform)];
 
     private string Track(LandingPlatformLink link)
     {

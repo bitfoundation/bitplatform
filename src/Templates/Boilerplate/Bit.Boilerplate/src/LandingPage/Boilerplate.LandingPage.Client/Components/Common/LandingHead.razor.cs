@@ -21,10 +21,12 @@ public partial class LandingHead
     [Parameter] public bool NoIndex { get; set; }
 
     private string? structuredData;
+    private string? previewImage;
 
     protected override void OnParametersSet()
     {
         structuredData = StructuredData?.ToJsonString().Replace("</", "<\\/", StringComparison.Ordinal);
+        previewImage = Image ?? (Site is null ? "images/og/gallery.png" : $"images/og/{Site.Key}.png");
 
         base.OnParametersSet();
     }
