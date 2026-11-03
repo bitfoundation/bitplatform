@@ -1,0 +1,900 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="NavGetApp" xml:space="preserve">
+        <value>دریافت اپ</value>
+    </data>
+    <data name="NavScreens" xml:space="preserve">
+        <value>صفحه‌ها</value>
+    </data>
+    <data name="NavWhatsNew" xml:space="preserve">
+        <value>تازه‌ها</value>
+    </data>
+    <data name="NavDevices" xml:space="preserve">
+        <value>دستگاه‌ها</value>
+    </data>
+    <data name="NavFaq" xml:space="preserve">
+        <value>پرسش‌ها</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>تمرین‌های ده‌دقیقه‌ای و عادت‌های کوچک دورشان، برای آدم‌هایی که تقویمشان پر است. ساخت کپنهاگ.</value>
+    </data>
+    <data name="FooterNext" xml:space="preserve">
+        <value>در راه</value>
+    </data>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Pulsepath: تمرین‌های ده‌دقیقه‌ای و عادت‌هایی که ماندگارشان می‌کنند</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>مربی تمرین و عادت برای آدم‌های پرمشغله. تمرین‌های ده‌دقیقه‌ای که دور روزتان چیده می‌شوند و زنجیره‌ای که روز استراحت دارد. الان روی iPhone و وب، و اندروید طبق برنامه در دی 1405.</value>
+    </data>
+    <data name="HeroNewTag" xml:space="preserve">
+        <value>تازه در 2.4</value>
+    </data>
+    <data name="HeroNewText" xml:space="preserve">
+        <value>روزهای استراحتی که زنجیره را نگه می‌دارند</value>
+    </data>
+    <data name="HeroTitleStart" xml:space="preserve">
+        <value>ده دقیقه،</value>
+    </data>
+    <data name="HeroTitleMark" xml:space="preserve">
+        <value>بیشتر روزها.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Pulsepath یک تمرین کوتاه را لای کارهای روزتان جا می‌دهد و عادت‌های کوچکی را که نگهش می‌دارند پیگیری می‌کند: آب، کمی پیاده‌روی، خواب به‌موقع. روزی جا ماندید؟ زنجیره‌تان منتظر می‌ماند.</value>
+    </data>
+    <data name="HeroTry" xml:space="preserve">
+        <value>تمرین امروز را روی همین گوشی امتحان کنید: شروعش کنید، از یک حرکت رد شوید و ببینید دور پیست چطور کامل می‌شود.</value>
+    </data>
+    <data name="HeroGetTitle" xml:space="preserve">
+        <value>Pulsepath را بگیرید</value>
+    </data>
+    <data name="HeroGetNote" xml:space="preserve">
+        <value>برای iPhone با iOS 16 یا جدیدتر. نسخه‌ی وب در هر مرورگر به‌روزی اجرا می‌شود.</value>
+    </data>
+    <data name="HeroAndroid" xml:space="preserve">
+        <value>نسخه‌ی اندروید در حال آزمایش است و انتشارش برای دی 1405 برنامه‌ریزی شده.</value>
+    </data>
+    <data name="HeroAndroidLink" xml:space="preserve">
+        <value>عضویت در فهرست انتظار اندروید</value>
+    </data>
+    <data name="HeroPrice" xml:space="preserve">
+        <value>رایگان برای 3 تمرین در هفته. اشتراک Plus با همه‌ی تمرین‌ها ماهی {0} یا سالی {1} است و 14 روز اولش رایگان.</value>
+    </data>
+    <data name="SessionToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="SessionStreakDays" xml:space="preserve">
+        <value>روز پشت سر هم</value>
+    </data>
+    <data name="SessionWeek" xml:space="preserve">
+        <value>این هفته</value>
+    </data>
+    <data name="SessionName" xml:space="preserve">
+        <value>تمرین قدرتی میان کار</value>
+    </data>
+    <data name="SessionMeta" xml:space="preserve">
+        <value>10 دقیقه، 6 حرکت، بدون وسیله</value>
+    </data>
+    <data name="SessionRingDone" xml:space="preserve">
+        <value>تمام</value>
+    </data>
+    <data name="SessionRingLeft" xml:space="preserve">
+        <value>مانده</value>
+    </data>
+    <data name="SessionRingPaused" xml:space="preserve">
+        <value>مکث</value>
+    </data>
+    <data name="SessionRingReady" xml:space="preserve">
+        <value>هر وقت آماده بودید</value>
+    </data>
+    <data name="SessionDoneTitle" xml:space="preserve">
+        <value>ده دقیقه، تمام.</value>
+    </data>
+    <data name="SessionDoneBody" xml:space="preserve">
+        <value>{0} روز پشت سر هم. فردا همین ساعت؟</value>
+    </data>
+    <data name="SessionDoneAgain" xml:space="preserve">
+        <value>امروز قبلاً حساب شده. زنجیره‌تان روی {0} روز می‌ماند.</value>
+    </data>
+    <data name="SessionAgain" xml:space="preserve">
+        <value>دوباره از اول</value>
+    </data>
+    <data name="SessionNow" xml:space="preserve">
+        <value>الان</value>
+    </data>
+    <data name="SessionFirst" xml:space="preserve">
+        <value>اول</value>
+    </data>
+    <data name="SessionNext" xml:space="preserve">
+        <value>بعدی:</value>
+    </data>
+    <data name="SessionLastMove" xml:space="preserve">
+        <value>حرکت آخر. چیزی نمانده.</value>
+    </data>
+    <data name="SessionPause" xml:space="preserve">
+        <value>مکث</value>
+    </data>
+    <data name="SessionResume" xml:space="preserve">
+        <value>ادامه</value>
+    </data>
+    <data name="SessionStart" xml:space="preserve">
+        <value>شروع تمرین</value>
+    </data>
+    <data name="SessionSkip" xml:space="preserve">
+        <value>حرکت بعد</value>
+    </data>
+    <data name="SessionAnnounceMove" xml:space="preserve">
+        <value>{0}، {1}</value>
+    </data>
+    <data name="SessionAnnouncePaused" xml:space="preserve">
+        <value>مکث شد</value>
+    </data>
+    <data name="Move1" xml:space="preserve">
+        <value>اسکات با صندلی</value>
+    </data>
+    <data name="Move1Cue" xml:space="preserve">
+        <value>آن‌قدر عقب بنشینید که صندلی را لمس کنید، بعد صاف بایستید.</value>
+    </data>
+    <data name="Move2" xml:space="preserve">
+        <value>شنای دیوار</value>
+    </data>
+    <data name="Move2Cue" xml:space="preserve">
+        <value>دست‌ها هم‌قد شانه، بدن در یک خط.</value>
+    </data>
+    <data name="Move3" xml:space="preserve">
+        <value>پلانک روی ساعد</value>
+    </data>
+    <data name="Move3Cue" xml:space="preserve">
+        <value>زانو روی زمین هم قبول است. نفستان را نگه ندارید.</value>
+    </data>
+    <data name="Move4" xml:space="preserve">
+        <value>لانج به عقب</value>
+    </data>
+    <data name="Move4Cue" xml:space="preserve">
+        <value>یک قدم عقب، آرام پایین، هر بار پا را عوض کنید.</value>
+    </data>
+    <data name="Move5" xml:space="preserve">
+        <value>ضربه به شانه</value>
+    </data>
+    <data name="Move5Cue" xml:space="preserve">
+        <value>در حالت پلانک بالا، بی‌آن‌که بدن تکان بخورد به هر شانه بزنید.</value>
+    </data>
+    <data name="Move6" xml:space="preserve">
+        <value>کشش سینه در چارچوب در</value>
+    </data>
+    <data name="Move6Cue" xml:space="preserve">
+        <value>ساعدها روی چارچوب، آن‌قدر جلو بروید که کشش را حس کنید.</value>
+    </data>
+    <data name="DayRest" xml:space="preserve">
+        <value>روز استراحت</value>
+    </data>
+    <data name="DayDone" xml:space="preserve">
+        <value>تمرین انجام شد</value>
+    </data>
+    <data name="DayToday" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="DayUpcoming" xml:space="preserve">
+        <value>در پیش</value>
+    </data>
+    <data name="InstallStandalone" xml:space="preserve">
+        <value>الان از اپ نصب‌شده استفاده می‌کنید.</value>
+    </data>
+    <data name="InstallDone" xml:space="preserve">
+        <value>نصب شد. Pulsepath حالا کنار بقیه‌ی اپ‌هایتان است.</value>
+    </data>
+    <data name="InstallPromptHint" xml:space="preserve">
+        <value>مرورگرتان می‌تواند با یک کلیک نصبش کند.</value>
+    </data>
+    <data name="InstallDismissed" xml:space="preserve">
+        <value>اشکالی ندارد. بعداً هم از منوی مرورگر می‌شود نصبش کرد.</value>
+    </data>
+    <data name="InstallHowTitle" xml:space="preserve">
+        <value>روش نصب</value>
+    </data>
+    <data name="InstallIphone" xml:space="preserve">
+        <value>iPhone و iPad</value>
+    </data>
+    <data name="InstallIphoneSteps" xml:space="preserve">
+        <value>در Safari دکمه‌ی Share و بعد Add to Home Screen را بزنید. روی iPhone اپ App Store کار بیشتری می‌کند: قدم‌هایتان را از Apple Health می‌خواند.</value>
+    </data>
+    <data name="InstallAndroid" xml:space="preserve">
+        <value>اندروید</value>
+    </data>
+    <data name="InstallAndroidSteps" xml:space="preserve">
+        <value>در Chrome منو (سه نقطه) را باز کنید و Install app یا Add to Home screen را بزنید. تا وقتی اپ اندروید منتشر شود، راه استفاده از Pulsepath روی اندروید همین است.</value>
+    </data>
+    <data name="InstallComputer" xml:space="preserve">
+        <value>Windows، Linux و ChromeOS</value>
+    </data>
+    <data name="InstallComputerSteps" xml:space="preserve">
+        <value>در Chrome یا Edge روی نماد نصب در انتهای نوار نشانی کلیک کنید، یا گزینه‌ی Install را در منوی مرورگر پیدا کنید.</value>
+    </data>
+    <data name="InstallMac" xml:space="preserve">
+        <value>Mac</value>
+    </data>
+    <data name="InstallMacSteps" xml:space="preserve">
+        <value>در Safari از منوی File گزینه‌ی Add to Dock را بزنید. در Chrome یا Edge از نماد نصب در نوار نشانی استفاده کنید.</value>
+    </data>
+    <data name="InstallFallback" xml:space="preserve">
+        <value>مرورگرتان گزینه‌ی نصب ندارد؟ Pulsepath را به نشانک‌ها اضافه کنید؛ در زبانه‌ی مرورگر هم همان‌طور کار می‌کند.</value>
+    </data>
+    <data name="ScreensKicker" xml:space="preserve">
+        <value>خود اپ</value>
+    </data>
+    <data name="ScreensTitle" xml:space="preserve">
+        <value>سه صفحه، بیشتر کار را انجام می‌دهند</value>
+    </data>
+    <data name="ScreensLede" xml:space="preserve">
+        <value>Pulsepath عمداً کوچک مانده. این‌ها صفحه‌های واقعی اپ‌اند و کار می‌کنند: عادتی را تیک بزنید، روز استراحت بگذارید، نما را عوض کنید.</value>
+    </data>
+    <data name="ScreenTodayTitle" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="ScreenTodayProgress" xml:space="preserve">
+        <value>{0} از {1} انجام شد</value>
+    </data>
+    <data name="ScreenWater" xml:space="preserve">
+        <value>آب</value>
+    </data>
+    <data name="ScreenWaterCount" xml:space="preserve">
+        <value>{0} از {1} لیوان</value>
+    </data>
+    <data name="ScreenWaterAdd" xml:space="preserve">
+        <value>یک لیوان آب اضافه کن</value>
+    </data>
+    <data name="ScreenTodayReminder" xml:space="preserve">
+        <value>یادآوری بعدی: کشش، ساعت 22:30</value>
+    </data>
+    <data name="ScreenTodayCaption" xml:space="preserve">
+        <value>امروز</value>
+    </data>
+    <data name="ScreenTodayBody" xml:space="preserve">
+        <value>تمرین روزانه و چند عادت کوچک دورش، در یک فهرست. در طول روز تیکشان را بزنید.</value>
+    </data>
+    <data name="ScreenStreakKicker" xml:space="preserve">
+        <value>زنجیره‌ی شما</value>
+    </data>
+    <data name="ScreenStreakTitle" xml:space="preserve">
+        <value>زنجیره</value>
+    </data>
+    <data name="ScreenStreakDays" xml:space="preserve">
+        <value>{0} روز</value>
+    </data>
+    <data name="ScreenStreakLongest" xml:space="preserve">
+        <value>طولانی‌ترین تا امروز: {0} روز</value>
+    </data>
+    <data name="ScreenStreakSummary" xml:space="preserve">
+        <value>تقویم چهار هفته‌ی اخیر: هر روز یک تمرین، جز یک روز استراحت در هفته.</value>
+    </data>
+    <data name="ScreenStreakToggle" xml:space="preserve">
+        <value>فردا استراحت</value>
+    </data>
+    <data name="ScreenStreakPlanned" xml:space="preserve">
+        <value>فردا روز استراحت است. زنجیره‌تان منتظر می‌ماند.</value>
+    </data>
+    <data name="ScreenStreakHint" xml:space="preserve">
+        <value>دو روز استراحت در هفته زنجیره را زنده نگه می‌دارد. خودتان برنامه‌اش را بریزید، یا اگر روزی جا ماند Pulsepath یکی را خرج می‌کند.</value>
+    </data>
+    <data name="ScreenStreakCaption" xml:space="preserve">
+        <value>زنجیره</value>
+    </data>
+    <data name="ScreenStreakBody" xml:space="preserve">
+        <value>روزهای استراحت جزو برنامه‌اند. جا ماندن یک سه‌شنبه، یک ماه تلاش را پاک نمی‌کند.</value>
+    </data>
+    <data name="ScreenProgressKicker" xml:space="preserve">
+        <value>دقیقه، نه کالری</value>
+    </data>
+    <data name="ScreenProgressTitle" xml:space="preserve">
+        <value>پیشرفت</value>
+    </data>
+    <data name="ScreenProgressWeek" xml:space="preserve">
+        <value>7 روز اخیر</value>
+    </data>
+    <data name="ScreenProgressWeeks" xml:space="preserve">
+        <value>8 هفته</value>
+    </data>
+    <data name="ScreenProgressMinutes" xml:space="preserve">
+        <value>{0} دقیقه</value>
+    </data>
+    <data name="ScreenProgressGoal" xml:space="preserve">
+        <value>هدف شما: هفته‌ای {0} دقیقه</value>
+    </data>
+    <data name="ScreenProgressAverage" xml:space="preserve">
+        <value>هفته‌ای {0} دقیقه</value>
+    </data>
+    <data name="ScreenProgressTrend" xml:space="preserve">
+        <value>میانگین 8 هفته‌ی اخیر</value>
+    </data>
+    <data name="ScreenProgressNote" xml:space="preserve">
+        <value>Pulsepath دقیقه‌هایی را می‌شمارد که سر تمرین آمدید. از وزنتان چیزی نمی‌پرسد، مگر خودتان بخواهید.</value>
+    </data>
+    <data name="ScreenProgressCaption" xml:space="preserve">
+        <value>پیشرفت</value>
+    </data>
+    <data name="ScreenProgressBody" xml:space="preserve">
+        <value>ببینید هفته‌ها چطور روی هم جمع می‌شوند. تمرین‌های کوتاه به ساعت‌هایی تبدیل می‌شوند که می‌شود دیدشان.</value>
+    </data>
+    <data name="HabitSession" xml:space="preserve">
+        <value>تمرین ده‌دقیقه‌ای</value>
+    </data>
+    <data name="HabitSessionDetail" xml:space="preserve">
+        <value>انجام شد، ساعت 07:40</value>
+    </data>
+    <data name="HabitWalk" xml:space="preserve">
+        <value>پیاده‌روی بعد از ناهار</value>
+    </data>
+    <data name="HabitWalkDetail" xml:space="preserve">
+        <value>15 دقیقه</value>
+    </data>
+    <data name="HabitStretch" xml:space="preserve">
+        <value>کشش پیش از خواب</value>
+    </data>
+    <data name="HabitStretchDetail" xml:space="preserve">
+        <value>4 دقیقه، با راهنما</value>
+    </data>
+    <data name="HabitSleep" xml:space="preserve">
+        <value>خاموشی تا 23:30</value>
+    </data>
+    <data name="HabitSleepDetail" xml:space="preserve">
+        <value>یادآوری ساعت 23:00</value>
+    </data>
+    <data name="NewsKicker" xml:space="preserve">
+        <value>یادداشت‌های انتشار</value>
+    </data>
+    <data name="NewsTitle" xml:space="preserve">
+        <value>تازه‌ها</value>
+    </data>
+    <data name="NewsLede" xml:space="preserve">
+        <value>هر سه چهار هفته یک به‌روزرسانی منتشر می‌کنیم. این دو تای آخر است، به زبان ساده.</value>
+    </data>
+    <data name="NewsVersion" xml:space="preserve">
+        <value>نسخه‌ی {0}</value>
+    </data>
+    <data name="NewsKindNew" xml:space="preserve">
+        <value>تازه</value>
+    </data>
+    <data name="NewsKindBetter" xml:space="preserve">
+        <value>بهتر</value>
+    </data>
+    <data name="NewsKindFixed" xml:space="preserve">
+        <value>رفع شد</value>
+    </data>
+    <data name="News24Title" xml:space="preserve">
+        <value>روزهای استراحتی که زنجیره را نگه می‌دارند</value>
+    </data>
+    <data name="News24Note1" xml:space="preserve">
+        <value>تا دو روز استراحت در هفته برنامه بریزید، یا بگذارید اگر روزی جا ماند Pulsepath یکی را خرج کند. زنجیره منتظر می‌ماند.</value>
+    </data>
+    <data name="News24Note2" xml:space="preserve">
+        <value>وقت کم دارید؟ حالا هر تمرین یک نسخه‌ی پنج‌دقیقه‌ای هم دارد.</value>
+    </data>
+    <data name="News24Note3" xml:space="preserve">
+        <value>در سه ثانیه‌ی آخر هر حرکت صدای تیک آرامی می‌آید تا لازم نباشد به صفحه نگاه کنید.</value>
+    </data>
+    <data name="News24Note4" xml:space="preserve">
+        <value>تماس تلفنی دیگر تایمر را برای همیشه متوقف نمی‌کند. تمرین از همان‌جایی ادامه پیدا می‌کند که رها کرده بودید.</value>
+    </data>
+    <data name="News23Title" xml:space="preserve">
+        <value>عادت‌هایی که همراه تمرین می‌آیند</value>
+    </data>
+    <data name="News23Note1" xml:space="preserve">
+        <value>چسباندن عادت: عادتی را به تمرین بچسبانید، مثلاً یک لیوان آب درست بعد از آن.</value>
+    </data>
+    <data name="News23Note2" xml:space="preserve">
+        <value>مرور هفتگی در شب آخر هفته‌تان: دقیقه‌ها، عادت‌هایی که حفظ شد و یک پیشنهاد برای هفته‌ی پیش رو.</value>
+    </data>
+    <data name="News23Note3" xml:space="preserve">
+        <value>متن‌ها در بزرگ‌ترین اندازه‌های دسترس‌پذیری هم خوانا می‌مانند.</value>
+    </data>
+    <data name="News23Note4" xml:space="preserve">
+        <value>زنجیره دیگر با سفر به منطقه‌ی زمانی دیگر یک روز کم نمی‌آورد.</value>
+    </data>
+    <data name="DevicesKicker" xml:space="preserve">
+        <value>دریافت</value>
+    </data>
+    <data name="DevicesTitle" xml:space="preserve">
+        <value>روی همه‌ی دستگاه‌هایتان</value>
+    </data>
+    <data name="DevicesLede" xml:space="preserve">
+        <value>یک حساب، یک زنجیره. تمرین را پشت میز روی وب شروع کنید و بعد روی گوشی عادت‌ها را تیک بزنید.</value>
+    </data>
+    <data name="DeviceIphone" xml:space="preserve">
+        <value>iPhone</value>
+    </data>
+    <data name="DeviceIphoneBody" xml:space="preserve">
+        <value>اپ کامل: همه‌ی تمرین‌ها، عادت‌ها، یادآورها و قدم‌هایتان از Apple Health. iOS 16 یا جدیدتر.</value>
+    </data>
+    <data name="DeviceWeb" xml:space="preserve">
+        <value>نسخه‌ی وب</value>
+    </data>
+    <data name="DeviceWebBody" xml:space="preserve">
+        <value>همه‌ی تمرین‌ها و عادت‌ها در مرورگر، هماهنگ با گوشی. نصبش کنید تا مثل یک اپ باز شود.</value>
+    </data>
+    <data name="DeviceAndroid" xml:space="preserve">
+        <value>اندروید</value>
+    </data>
+    <data name="DeviceAndroidStatus" xml:space="preserve">
+        <value>به‌زودی · دی 1405</value>
+    </data>
+    <data name="DeviceAndroidBody" xml:space="preserve">
+        <value>اپ اندروید در آزمایش بسته است. ایمیلتان را بگذارید تا فقط یک بار، روز انتشار، برایتان بنویسیم. تا آن موقع نسخه‌ی وب در Chrome اندروید کار می‌کند.</value>
+    </data>
+    <data name="DeviceAndroidSubmit" xml:space="preserve">
+        <value>عضویت در فهرست انتظار اندروید</value>
+    </data>
+    <data name="DeviceWatch" xml:space="preserve">
+        <value>Apple Watch</value>
+    </data>
+    <data name="DeviceWatchStatus" xml:space="preserve">
+        <value>بعداً</value>
+    </data>
+    <data name="DeviceWatchBody" xml:space="preserve">
+        <value>تایمر را از روی مچتان دنبال کنید. بعد از اندروید سراغش می‌رویم و وقتی به مرحله‌ی آزمایش رسید، تاریخش را می‌گوییم.</value>
+    </data>
+    <data name="NextKicker" xml:space="preserve">
+        <value>نقشه‌ی راه</value>
+    </data>
+    <data name="NextTitle" xml:space="preserve">
+        <value>در راه</value>
+    </data>
+    <data name="NextLede" xml:space="preserve">
+        <value>هر جا مطمئنیم تاریخ می‌دهیم و هر جا نیستیم، صاف می‌گوییم.</value>
+    </data>
+    <data name="NextStateTesting" xml:space="preserve">
+        <value>در حال آزمایش</value>
+    </data>
+    <data name="NextStateBuilding" xml:space="preserve">
+        <value>در حال ساخت</value>
+    </data>
+    <data name="NextStateExploring" xml:space="preserve">
+        <value>در حال بررسی</value>
+    </data>
+    <data name="Next1Title" xml:space="preserve">
+        <value>اپ اندروید</value>
+    </data>
+    <data name="Next1When" xml:space="preserve">
+        <value>طبق برنامه: دی 1405</value>
+    </data>
+    <data name="Next1Body" xml:space="preserve">
+        <value>الان 400 نفر در حال آزمایشش هستند. اگر تاریخ عقب افتاد، اول اعضای فهرست انتظار باخبر می‌شوند.</value>
+    </data>
+    <data name="Next2Title" xml:space="preserve">
+        <value>Apple Watch</value>
+    </data>
+    <data name="Next2When" xml:space="preserve">
+        <value>هنوز تاریخی ندارد</value>
+    </data>
+    <data name="Next2Body" xml:space="preserve">
+        <value>تمرین را شروع کنید و تایمر را روی مچ ببینید. وقتی به آزمایش رسید، تاریخ می‌دهیم.</value>
+    </data>
+    <data name="Next3Title" xml:space="preserve">
+        <value>تمرین با یک دوست</value>
+    </data>
+    <data name="Next3When" xml:space="preserve">
+        <value>شاید، در 2027</value>
+    </data>
+    <data name="Next3Body" xml:space="preserve">
+        <value>زنجیره‌ی مشترک برای دو نفر. فقط اگر آزمایش‌کننده‌ها همچنان بخواهند، می‌سازیمش.</value>
+    </data>
+    <data name="VoicesKicker" xml:space="preserve">
+        <value>از زبان کاربران</value>
+    </data>
+    <data name="VoicesTitle" xml:space="preserve">
+        <value>تقویم‌های پر، زنجیره‌های پابرجا</value>
+    </data>
+    <data name="VoicesNote" xml:space="preserve">
+        <value>امتیاز و نسخه‌ی بالا مستقیم از صفحه‌ی App Store می‌آید.</value>
+    </data>
+    <data name="Voice1Quote" xml:space="preserve">
+        <value>بین رساندن بچه‌ها به مدرسه و اولین تماس کاری انجامش می‌دهم. از ده دقیقه می‌شود دفاع کرد. از یک ساعت، هرگز.</value>
+    </data>
+    <data name="Voice1Name" xml:space="preserve">
+        <value>ماتئوس کاروالیو</value>
+    </data>
+    <data name="Voice1Who" xml:space="preserve">
+        <value>پدر دو بچه، براگا</value>
+    </data>
+    <data name="Voice2Quote" xml:space="preserve">
+        <value>شیفت شب هر زنجیره‌ای را که شروع کرده بودم خراب می‌کرد. این یکی به خاطر روزهای استراحت هنوز ادامه دارد.</value>
+    </data>
+    <data name="Voice2Name" xml:space="preserve">
+        <value>آدائزه نووسو</value>
+    </data>
+    <data name="Voice2Who" xml:space="preserve">
+        <value>پرستار مراقبت‌های ویژه، منچستر</value>
+    </data>
+    <data name="Voice3Quote" xml:space="preserve">
+        <value>زانوهایم با لانج میانه‌ای ندارند. یک بار «آسان‌تر» را زدم و دیگر یادش ماند.</value>
+    </data>
+    <data name="Voice3Name" xml:space="preserve">
+        <value>هانا کوبایاشی</value>
+    </data>
+    <data name="Voice3Who" xml:space="preserve">
+        <value>مترجم، اوساکا</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>پرسش‌ها</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>چیزهایی که پیش از شروع می‌پرسند</value>
+    </data>
+    <data name="Faq1Q" xml:space="preserve">
+        <value>وسیله‌ای لازم دارم؟</value>
+    </data>
+    <data name="Faq1A" xml:space="preserve">
+        <value>نه. برای همه‌ی تمرین‌ها یک صندلی و یک دیوار کافی است. اگر کش ورزشی دارید، چند تمرین از آن استفاده می‌کنند و پیش از شروع همین را می‌گویند.</value>
+    </data>
+    <data name="Faq2Q" xml:space="preserve">
+        <value>اگر روزی جا بمانم، زنجیره‌ام چه می‌شود؟</value>
+    </data>
+    <data name="Faq2A" xml:space="preserve">
+        <value>تا دو بار در هفته، هیچ. هر هفته دو روز استراحت دارید: یا خودتان برنامه‌شان را می‌ریزید، یا اگر روزی جا ماندید Pulsepath یکی را خرج می‌کند. زنجیره فقط با سومین روز جاافتاده در همان هفته از نو شروع می‌شود.</value>
+    </data>
+    <data name="Faq3Q" xml:space="preserve">
+        <value>اپ اندروید کی می‌آید؟</value>
+    </data>
+    <data name="Faq3A" xml:space="preserve">
+        <value>برنامه‌مان انتشار در دی 1405 است. الان با 400 نفر در آزمایش بسته است. در فهرست انتظار اندروید عضو شوید تا روز انتشار یک ایمیل برایتان بفرستیم. تا آن موقع نسخه‌ی وب در Chrome اندروید کار می‌کند و می‌توانید روی صفحه‌ی اصلی گوشی نصبش کنید.</value>
+    </data>
+    <data name="Faq4Q" xml:space="preserve">
+        <value>هزینه‌اش چقدر است؟</value>
+    </data>
+    <data name="Faq4A" xml:space="preserve">
+        <value>Pulsepath برای 3 تمرین در هفته رایگان است و همه‌ی پیگیری عادت‌ها را هم دارد. اشتراک Plus با همه‌ی تمرین‌ها، برنامه‌ریزی روز استراحت و مرور هفتگی، ماهی {0} یا سالی {1} است. 14 روز اول Plus رایگان است و اگر پیش از روز چهاردهم لغوش کنید، چیزی نمی‌پردازید. بیرون از منطقه‌ی یورو، App Store قیمت را به پول کشور شما تعیین می‌کند.</value>
+    </data>
+    <data name="Faq5Q" xml:space="preserve">
+        <value>نسخه‌ی وب با اپ iPhone فرقی دارد؟</value>
+    </data>
+    <data name="Faq5A" xml:space="preserve">
+        <value>تمرین‌ها، عادت‌ها و زنجیره همان است و از طریق حسابتان هماهنگ می‌شود. نسخه‌ی وب نمی‌تواند قدم‌ها را از Apple Health بخواند، برای همین عادت قدم‌ها فقط روی iPhone است. یادآورها به شکل اعلان مرورگر می‌رسند.</value>
+    </data>
+    <data name="Faq6Q" xml:space="preserve">
+        <value>با داده‌های سلامتم چه می‌کنید؟</value>
+    </data>
+    <data name="Faq6A" xml:space="preserve">
+        <value>تمرین‌ها و عادت‌هایتان در اتحادیه‌ی اروپا، در فرانکفورت، نگه‌داری می‌شوند و هرگز فروخته یا با تبلیغ‌کننده‌ها به اشتراک گذاشته نمی‌شوند. در Pulsepath تبلیغی نیست. قدم‌های Apple Health روی iPhone شما می‌ماند و فقط جمع روزانه‌اش در صفحه‌ی امروز دیده می‌شود. هر وقت خواستید می‌توانید همه‌چیز را از تنظیمات بیرون بگیرید یا پاک کنید.</value>
+    </data>
+    <data name="Faq7Q" xml:space="preserve">
+        <value>با آسیب‌دیدگی هم می‌شود از آن استفاده کرد؟</value>
+    </data>
+    <data name="Faq7A" xml:space="preserve">
+        <value>هر حرکت یک نسخه‌ی آسان‌تر دارد و می‌توانید زانو، کمر یا شانه را علامت بزنید تا تمرین‌ها با آن‌ها مدارا کنند. Pulsepath توصیه‌ی پزشکی نیست: اگر در حال بهبود از آسیبی هستید، اول با پزشک یا فیزیوتراپ مشورت کنید.</value>
+    </data>
+    <data name="AskTitle" xml:space="preserve">
+        <value>درباره‌ی Pulsepath بپرسید</value>
+    </data>
+    <data name="AskBody" xml:space="preserve">
+        <value>دستیار از روی اطلاعات همین سایت جواب می‌دهد. توصیه‌ی پزشکی نمی‌دهد و هر جا جوابی نداشته باشد، همین را می‌گوید.</value>
+    </data>
+    <data name="AskPlaceholder" xml:space="preserve">
+        <value>مثلاً: با شیفت شب هم می‌شود تمرین کرد؟</value>
+    </data>
+    <data name="AskMail" xml:space="preserve">
+        <value>ترجیح می‌دهید به یک آدم بنویسید؟</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>اندروید کی می‌آید؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>Plus چقدر است؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>با زانوی ضعیف هم می‌شود؟</value>
+    </data>
+    <data name="ChatSuggestion4" xml:space="preserve">
+        <value>چه کسانی پشت Pulsepath هستند؟</value>
+    </data>
+    <data name="MoneyEUR" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>وقت این صفحه تمام شده</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>شاید پیوند قدیمی است یا اشتباه تایپ شده. زنجیره‌تان سر جایش است و تمرین امروز یک ضربه با شما فاصله دارد.</value>
+    </data>
+    <data name="NotFoundTimer" xml:space="preserve">
+        <value>وقت تمام</value>
+    </data>
+    <data name="NotFoundNews" xml:space="preserve">
+        <value>تازه‌ها را ببینید</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>مربی تمرین و عادت</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>iPhone منتشرشده، اندروید با فهرست انتظار و نسخه‌ی وب قابل نصب، با یک تایمر ده‌دقیقه‌ای واقعی در صفحه‌ی اول.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>فهرست انتظار اندروید</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>نصب روی همین دستگاه</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>یادداشت‌های انتشار</value>
+    </data>
+    <data name="AboutPageTitle" xml:space="preserve">
+        <value>درباره‌ی Pulsepath</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>Pulsepath تیمی 14 نفره در کپنهاگ است که یک فیزیوتراپ و یک برنامه‌نویس در 2023 راهش انداختند. چرا ده دقیقه، چرا روز استراحت، و چرا اول iPhone.</value>
+    </data>
+    <data name="AboutKicker" xml:space="preserve">
+        <value>درباره‌ی ما</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>ده دقیقه هم حساب است.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>Pulsepath در یک کلینیک فیزیوتراپی در کپنهاگ شروع شد؛ با بیمارانی که دقیقاً می‌دانستند چه باید بکنند و هیچ‌وقت یک ساعت وقت برایش نداشتند.</value>
+    </data>
+    <data name="AboutStoryTitle" xml:space="preserve">
+        <value>از کجا شروع شد</value>
+    </data>
+    <data name="AboutStory1" xml:space="preserve">
+        <value>فریا هولم نُه سال در نوربرو فیزیوتراپ بود. بیمارانش با یک برگه تمرین می‌رفتند و یک ماه بعد برمی‌گشتند، در حالی که فقط دو بار انجامشان داده بودند. آن‌هایی که بهتر می‌شدند یک وجه مشترک داشتند: بیشتر روزها، کمی تمرین می‌کردند.</value>
+    </data>
+    <data name="AboutStory2" xml:space="preserve">
+        <value>در 2023 شروع کرد پشت کارت‌های نوبت، تمرین‌های ده‌دقیقه‌ای بنویسد و کوفی منسا، یکی از بیمارانش با شانه‌ای آسیب‌دیده و سابقه‌ی ساخت اپ‌های بانکی، پیشنهاد داد آن‌ها را روی گوشی ببرد. نسخه‌ی اول 40 تمرین داشت و یک تایمر.</value>
+    </data>
+    <data name="AboutStory3" xml:space="preserve">
+        <value>اینس ناوارو یک سال بعد به تیم آمد، پس از آن‌که پژوهش کرده بود چرا آدم‌ها تمرین را رها می‌کنند. جوابش زنجیره‌ای بود که با یک سه‌شنبه‌ی بد همه‌چیز را صفر می‌کند؛ برای همین Pulsepath به جایش روز استراحت دارد.</value>
+    </data>
+    <data name="AboutNumbersTitle" xml:space="preserve">
+        <value>Pulsepath به زبان عدد</value>
+    </data>
+    <data name="AboutNumber1Value" xml:space="preserve">
+        <value>2٫4 میلیون</value>
+    </data>
+    <data name="AboutNumber1Label" xml:space="preserve">
+        <value>تمرین کامل‌شده از اسفند 1403</value>
+    </data>
+    <data name="AboutNumber2Value" xml:space="preserve">
+        <value>61٪</value>
+    </data>
+    <data name="AboutNumber2Label" xml:space="preserve">
+        <value>از کسانی که شروع می‌کنند، هشت هفته بعد هنوز تمرین می‌کنند</value>
+    </data>
+    <data name="AboutNumber3Value" xml:space="preserve">
+        <value>14</value>
+    </data>
+    <data name="AboutNumber3Label" xml:space="preserve">
+        <value>نفر در تیم، به‌اضافه‌ی 3 فیزیوتراپ که همه‌ی تمرین‌ها را بازبینی می‌کنند</value>
+    </data>
+    <data name="AboutNumber4Value" xml:space="preserve">
+        <value>0</value>
+    </data>
+    <data name="AboutNumber4Label" xml:space="preserve">
+        <value>تبلیغ، نه حالا و نه بعداً. هزینه‌ها را Plus می‌دهد.</value>
+    </data>
+    <data name="AboutPrinciplesTitle" xml:space="preserve">
+        <value>اصولی که پایشان می‌ایستیم</value>
+    </data>
+    <data name="Principle1Title" xml:space="preserve">
+        <value>کوتاه، بهتر از بی‌نقص</value>
+    </data>
+    <data name="Principle1Body" xml:space="preserve">
+        <value>تمرینی که انجامش می‌دهید از تمرینی که فقط برنامه‌اش را می‌ریزید بیشتر می‌ارزد. هر تمرین برای روزهای سخت یک نسخه‌ی پنج‌دقیقه‌ای دارد.</value>
+    </data>
+    <data name="Principle2Title" xml:space="preserve">
+        <value>استراحت جزو برنامه است</value>
+    </data>
+    <data name="Principle2Body" xml:space="preserve">
+        <value>هفته‌ای دو روز استراحت، بدون ضربدر قرمز. یک روز جا ماندن، یک ماه را پاک نمی‌کند.</value>
+    </data>
+    <data name="Principle3Title" xml:space="preserve">
+        <value>نه تبلیغ، نه فروش داده</value>
+    </data>
+    <data name="Principle3Body" xml:space="preserve">
+        <value>هزینه‌ی Pulsepath را Plus می‌دهد. داده‌هایتان در اتحادیه‌ی اروپا نگه‌داری می‌شود، هرگز فروخته نمی‌شود و هر وقت بخواهید می‌توانید با خودتان ببریدش.</value>
+    </data>
+    <data name="Principle4Title" xml:space="preserve">
+        <value>فیزیوتراپ‌ها همه‌ی حرکت‌ها را بررسی می‌کنند</value>
+    </data>
+    <data name="Principle4Body" xml:space="preserve">
+        <value>سه فیزیوتراپ پیش از انتشار هر تمرین آن را بازبینی می‌کنند و هر حرکت یک نسخه‌ی آسان‌تر دارد.</value>
+    </data>
+    <data name="AboutLaunchTitle" xml:space="preserve">
+        <value>چرا اول iPhone</value>
+    </data>
+    <data name="AboutLaunchBody" xml:space="preserve">
+        <value>تیم کوچکی هستیم و ترجیح می‌دهیم یک اپ خوب منتشر کنیم تا دو اپ نیمه‌کاره. نسخه‌ی وب بعد آمد، چون مردم می‌خواستند پشت میزشان تمرین کنند. اندروید چیزی است که بیشتر از همه درباره‌اش می‌پرسند، و نزدیک است.</value>
+    </data>
+    <data name="Launch1When" xml:space="preserve">
+        <value>اسفند 1403</value>
+    </data>
+    <data name="Launch1What" xml:space="preserve">
+        <value>اپ iPhone روی App Store، با 40 تمرین</value>
+    </data>
+    <data name="Launch2When" xml:space="preserve">
+        <value>خرداد 1405</value>
+    </data>
+    <data name="Launch2What" xml:space="preserve">
+        <value>نسخه‌ی وب، برای کسانی که پشت میز تمرین می‌کنند</value>
+    </data>
+    <data name="Launch3When" xml:space="preserve">
+        <value>مهر 1405</value>
+    </data>
+    <data name="Launch3What" xml:space="preserve">
+        <value>اندروید در آزمایش بسته با 400 نفر</value>
+    </data>
+    <data name="Launch4When" xml:space="preserve">
+        <value>دی 1405، طبق برنامه</value>
+    </data>
+    <data name="Launch4What" xml:space="preserve">
+        <value>اندروید روی Google Play</value>
+    </data>
+    <data name="Launch5When" xml:space="preserve">
+        <value>بعداً</value>
+    </data>
+    <data name="Launch5What" xml:space="preserve">
+        <value>Apple Watch. تا به آزمایش نرسد، تاریخی نمی‌دهیم.</value>
+    </data>
+    <data name="AboutTeamTitle" xml:space="preserve">
+        <value>آدم‌های پشت Pulsepath</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>فریا هولم</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیرعامل</value>
+    </data>
+    <data name="Team1Bio" xml:space="preserve">
+        <value>نُه سال فیزیوتراپ بوده. هنوز پیش‌نویس اول هر تمرین تازه را خودش می‌نویسد.</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>کوفی منسا</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>هم‌بنیان‌گذار و مدیر فنی</value>
+    </data>
+    <data name="Team2Bio" xml:space="preserve">
+        <value>در آکرا و کپنهاگ اپ بانکی ساخته. مسئول تایمر است و می‌گوید از آنچه به نظر می‌رسد سخت‌تر است.</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>اینس ناوارو</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>سرپرست مربیگری</value>
+    </data>
+    <data name="Team3Bio" xml:space="preserve">
+        <value>پژوهشگر رفتار. روزهای استراحت را بعد از بررسی 3000 زنجیره‌ی گسسته طراحی کرد.</value>
+    </data>
+    <data name="AboutContactTitle" xml:space="preserve">
+        <value>با ما حرف بزنید</value>
+    </data>
+    <data name="AboutContactBody" xml:space="preserve">
+        <value>به هر ایمیلی ظرف دو روز کاری، و معمولاً زودتر، یک آدم جواب می‌دهد.</value>
+    </data>
+    <data name="AboutContactGeneral" xml:space="preserve">
+        <value>پرسش و بازخورد</value>
+    </data>
+    <data name="AboutContactPress" xml:space="preserve">
+        <value>رسانه‌ها</value>
+    </data>
+    <data name="AboutContactAddress" xml:space="preserve">
+        <value>دفتر</value>
+    </data>
+    <data name="AboutAddress" xml:space="preserve">
+        <value>Vesterbrogade 41، 1620 کپنهاگ، دانمارک</value>
+    </data>
+</root>

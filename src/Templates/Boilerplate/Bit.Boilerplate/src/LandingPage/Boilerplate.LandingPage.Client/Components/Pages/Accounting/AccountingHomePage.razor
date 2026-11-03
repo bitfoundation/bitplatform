@@ -1,0 +1,155 @@
+@attribute [Route(AccountingSite.Path)]
+@attribute [Route("/{culture}" + AccountingSite.Path)]
+@layout AccountingLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@A[nameof(AccountingStrings.HomeTitle)]"
+             Description="@A[nameof(AccountingStrings.HomeDescription)]"
+             Path="@AccountingSite.Path"
+             Site="AccountingSite.Info"
+             StructuredData="structuredData" />
+
+<section class="acc-hero" aria-labelledby="acc-hero-title">
+    <div class="lp-container acc-hero-grid">
+        <div class="acc-hero-text">
+            <p class="acc-eyebrow">@A[nameof(AccountingStrings.HeroEyebrow)]</p>
+            <h1 id="acc-hero-title">@A[nameof(AccountingStrings.HeroTitle)]</h1>
+            <p class="lp-lede">@A[nameof(AccountingStrings.HeroLede)]</p>
+            <div class="acc-hero-actions">
+                <BitButton Href="@AccountingSite.SignUpUrl">@A[nameof(AccountingStrings.HeroStart)]</BitButton>
+                <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@Page("/pricing")">@A[nameof(AccountingStrings.HeroPricing)]</BitButton>
+            </div>
+            <p class="acc-hero-fine">@A[nameof(AccountingStrings.HeroFine)]</p>
+            <StoreBadges Site="AccountingSite.Info" Campaign="hero" Class="acc-hero-badges" />
+        </div>
+        <div class="acc-hero-visual">
+            <AccountingInvoiceDemo />
+            <p class="acc-hero-caption">@A[nameof(AccountingStrings.DemoCaption)]</p>
+        </div>
+    </div>
+</section>
+
+<section id="month" class="lp-section acc-month" aria-labelledby="acc-month-title">
+    <div class="lp-container">
+        <header class="acc-head">
+            <p class="acc-eyebrow">@A[nameof(AccountingStrings.MonthEyebrow)]</p>
+            <h2 id="acc-month-title" class="lp-title">@A[nameof(AccountingStrings.MonthTitle)]</h2>
+            <p class="lp-lede">@A[nameof(AccountingStrings.MonthLede)]</p>
+        </header>
+        <ol class="acc-month-strip">
+            @foreach (var (when, title, body) in month)
+            {
+                <li>
+                    <p class="acc-month-when">@A[when]</p>
+                    <h3>@A[title]</h3>
+                    <p>@A[body]</p>
+                </li>
+            }
+        </ol>
+    </div>
+</section>
+
+<section id="savings" class="lp-section acc-savings-section" aria-labelledby="acc-savings-title">
+    <div class="lp-container">
+        <header class="acc-head">
+            <p class="acc-eyebrow">@A[nameof(AccountingStrings.SavingsEyebrow)]</p>
+            <h2 id="acc-savings-title" class="lp-title">@A[nameof(AccountingStrings.SavingsTitle)]</h2>
+        </header>
+        <AccountingSavings />
+    </div>
+</section>
+
+<section class="lp-section acc-receipt-section" aria-labelledby="acc-receipt-title">
+    <div class="lp-container acc-receipt-grid">
+        <header class="acc-head acc-head-sticky">
+            <p class="acc-eyebrow">@A[nameof(AccountingStrings.FeaturesEyebrow)]</p>
+            <h2 id="acc-receipt-title" class="lp-title">@A[nameof(AccountingStrings.FeaturesTitle)]</h2>
+            <p class="lp-lede">@A[nameof(AccountingStrings.FeaturesLede)]</p>
+        </header>
+        <div class="acc-receipt">
+            <p class="acc-receipt-head"><AccountingLogo /> <span>Sumwise</span> <span class="acc-num">@A[nameof(AccountingStrings.ReceiptHead)]</span></p>
+            <ul>
+                @foreach (var (icon, title, body, tag) in features)
+                {
+                    <li>
+                        <BitIcon IconName="@icon" Class="acc-receipt-icon" />
+                        <div>
+                            <h3>@A[title]</h3>
+                            <p>@A[body]</p>
+                        </div>
+                        <span class="acc-receipt-tag acc-num">@A[tag]</span>
+                    </li>
+                }
+            </ul>
+            <p class="acc-receipt-total"><span>@A[nameof(AccountingStrings.ReceiptTotal)]</span> <span class="acc-num">@A[nameof(AccountingStrings.ReceiptTotalValue)]</span></p>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section acc-voices" aria-labelledby="acc-voices-title">
+    <div class="lp-container">
+        <header class="acc-head">
+            <p class="acc-eyebrow">@A[nameof(AccountingStrings.VoicesEyebrow)]</p>
+            <h2 id="acc-voices-title" class="lp-title">@A[nameof(AccountingStrings.VoicesTitle)]</h2>
+        </header>
+        <div class="acc-voice-grid">
+            @foreach (var (trade, quote, name) in voices)
+            {
+                <figure>
+                    <p class="acc-voice-trade">@A[trade]</p>
+                    <blockquote>@A[quote]</blockquote>
+                    <figcaption>@A[name]</figcaption>
+                </figure>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="security" class="lp-section acc-security" aria-labelledby="acc-security-title">
+    <div class="lp-container acc-security-grid">
+        <div class="acc-head">
+            <p class="acc-eyebrow">@A[nameof(AccountingStrings.SecurityEyebrow)]</p>
+            <h2 id="acc-security-title" class="lp-title">@A[nameof(AccountingStrings.SecurityTitle)]</h2>
+            <p class="lp-lede">@A[nameof(AccountingStrings.SecurityLede)]</p>
+            <div class="acc-residency" aria-hidden="true">
+                <span class="acc-residency-pin"></span>
+                <span class="acc-num">@A[nameof(AccountingStrings.SecurityResidency)]</span>
+            </div>
+        </div>
+        <div>
+            <dl class="acc-security-list">
+                @foreach (var (icon, title, body) in security)
+                {
+                    <div>
+                        <dt><BitIcon IconName="@icon" Class="acc-security-icon" /> @A[title]</dt>
+                        <dd>@A[body]</dd>
+                    </div>
+                }
+            </dl>
+            <p class="acc-sample-note">@A[nameof(AccountingStrings.SecuritySample)]</p>
+        </div>
+    </div>
+</section>
+
+<section class="acc-plans-band" aria-labelledby="acc-plans-title">
+    <div class="lp-container acc-plans-grid">
+        <div>
+            <h2 id="acc-plans-title">@A[nameof(AccountingStrings.PlansTeaserTitle)]</h2>
+            <p>@A[nameof(AccountingStrings.PlansTeaserBody)]</p>
+            <div class="acc-hero-actions">
+                <BitButton Href="@Page("/pricing")" Class="acc-plans-cta">@A[nameof(AccountingStrings.PlansTeaserCta)]</BitButton>
+                <BitButton Variant="BitVariant.Text" Href="@AccountingSite.SignUpUrl" Class="acc-plans-start">@A[nameof(AccountingStrings.HeroStart)]</BitButton>
+            </div>
+        </div>
+        <ul class="acc-plans-mini">
+            @foreach (var (name, price, note) in teaser)
+            {
+                <li>
+                    <span class="acc-plans-name">@A[name]</span>
+                    <span class="acc-num">@A[price]</span>
+                    <span>@A[note]</span>
+                </li>
+            }
+        </ul>
+    </div>
+</section>

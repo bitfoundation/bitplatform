@@ -1,0 +1,61 @@
+// [mirror] each sample's light accent and bg-alt, and its dark accent, accent-fg and surface - keep in sync with Styles/sites/_<sample>.scss
+$gallery-brands: (
+    ecommerce #1E6B47 #EEF2EA #74D3A0 #06190F #15241C,
+    retail #C8331C #F2EFE9 #FF6B52 #1A0905 #202226,
+    hotel #1F5E66 #EDF1EF #8CCBC9 #0B1C1F #172A31,
+    restaurant #1F44B8 #F1F4FB #E0915A #1A0E07 #2A201B,
+    fitness #C81E5B #F2EEF4 #FF9DBF #1A0A12 #211B2A,
+    crm #C8371D #EEF1F5 #FF7A5C #1A0A05 #141F37,
+    accounting #21468A #EFEDE6 #8FB4F0 #0B1A33 #1C2128,
+    hotel-software #2F3439 #E9E6DF #E0B54A #1A1D20 #202328,
+    minimal #141414 #F4F4F1 #F2F2EC #141414 #1D1D1A
+);
+
+@each $key, $accent, $surface, $dark-accent, $dark-accent-fg, $dark-surface in $gallery-brands {
+    .gallery-brand-#{$key} {
+        --brand: #{$accent};
+        --brand-fg: #FFFFFF;
+        --brand-surface: #{$surface};
+    }
+
+    :root[bit-theme="dark"] .gallery-brand-#{$key} {
+        --brand: #{$dark-accent};
+        --brand-fg: #{$dark-accent-fg};
+        --brand-surface: #{$dark-surface};
+    }
+}
+
+// Each sample's logo reads variables of its own, so this sets them all to the tile's brand colors
+.gallery-logo {
+    --logo: var(--brand);
+    --logo-fg: var(--brand-fg);
+    --lp-accent: var(--logo);
+    --lp-accent-fg: var(--logo-fg);
+    --lp-fg: var(--logo);
+    --lp-bg: var(--logo-fg);
+    --hotel-logo: var(--logo);
+    --hotel-logo-fg: var(--logo-fg);
+    --fit-mark: var(--logo);
+    --fit-mark-dot: #F6E35A;
+    --hs-mark: var(--logo);
+    --hs-mark-detail: #E0B54A;
+    --notch-mark: #FFD43B;
+    --retail-sign: var(--logo);
+
+    display: inline-flex;
+    flex: none;
+    justify-content: center;
+    aspect-ratio: 1;
+
+    svg {
+        width: auto;
+        height: 100%;
+    }
+}
+
+:root[bit-theme="dark"] .gallery-logo {
+    --fit-mark-dot: #EBD850;
+    --hs-mark-detail: var(--logo-fg);
+    --notch-mark: #E9C53A;
+    --retail-sign: color-mix(in oklab, var(--logo), #000000 32%);
+}

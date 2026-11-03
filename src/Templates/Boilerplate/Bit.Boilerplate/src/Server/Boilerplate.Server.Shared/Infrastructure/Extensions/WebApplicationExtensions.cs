@@ -80,6 +80,8 @@ public static class WebApplicationExtensions
             return app;
         }
 
+        // [mirror] forwarded headers setup - keep in sync with:
+        // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationExtensions.cs (UseLandingForwardedHeaders)
         public WebApplication UseAppForwardedHeaders()
         {
             var configuration = app.Configuration;
@@ -161,6 +163,7 @@ public static class WebApplicationExtensions
         // - src/Client/Boilerplate.Client.Web/wwwroot/_headers (Cloudflare Pages)
         // - src/Client/Boilerplate.Client.Web/wwwroot/staticwebapp.config.json (Azure Static Web Apps)
         // - src/Client/Boilerplate.Client.Maui/Platforms/Android/AppWebChromeClient.cs (Permissions-Policy only)
+        // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationExtensions.cs (UseLandingSecurityHeaders, with the landing page's own Content-Security-Policy)
         // The first two serve the published wwwroot without ever running this middleware, so they repeat every header below.
         // The third grants and denies is the same decision Permissions-Policy makes here.
         public WebApplication UseSecurityHeaders()

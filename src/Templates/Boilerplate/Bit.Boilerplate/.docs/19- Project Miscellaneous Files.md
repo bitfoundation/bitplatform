@@ -308,7 +308,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 {
     "DefaultLanguage": "en",
     "SupportedLanguages": [ "nl", "fa", "sv", "hi", "zh", "es", "fr", "ar", "de" ],
-    "ResxPaths": [ "/src/**/*.resx" ],
+    "ResxPaths": [ "/src/Shared/**/*.resx", "/src/Server/**/*.resx", "/src/Client/**/*.resx", "/src/Workbench/**/*.resx" ],
     "OpenAI": {
         "Model": "gpt-4.1-mini",
         "Endpoint": "https://models.inference.ai.azure.com",

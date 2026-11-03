@@ -1,0 +1,99 @@
+@attribute [Route(HotelSoftwareSite.Path + "/pricing")]
+@attribute [Route("/{culture}" + HotelSoftwareSite.Path + "/pricing")]
+@layout HotelSoftwareLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@H[nameof(HotelSoftwareStrings.PricingPageTitle)]"
+             Description="@H[nameof(HotelSoftwareStrings.PricingDescription)]"
+             Path="@($"{HotelSoftwareSite.Path}/pricing")"
+             Site="HotelSoftwareSite.Info" />
+
+<section class="lp-container hs-pricing-hero" aria-labelledby="hs-pricing-title">
+    <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.NavPricing)]</p>
+    <h1 id="hs-pricing-title">@H[nameof(HotelSoftwareStrings.PricingTitle)]</h1>
+    <p class="lp-lede">@H[nameof(HotelSoftwareStrings.PricingLede)]</p>
+</section>
+
+<section class="lp-container hs-calc" aria-labelledby="hs-calc-title">
+    <div class="hs-calc-inputs">
+        <h2 id="hs-calc-title">@H[nameof(HotelSoftwareStrings.CalcTitle)]</h2>
+        <BitSlider @bind-Value="rooms"
+                   Label="@H[nameof(HotelSoftwareStrings.CalcRooms)]"
+                   Min="1"
+                   Max="200"
+                   Step="1"
+                   GetValueText="RoomsText"
+                   AriaValueText="RoomsText"
+                   Class="hs-calc-slider" />
+        <BitChoiceGroup Label="@H[nameof(HotelSoftwareStrings.CalcPlan)]" Items="planItems" @bind-Value="planKey" Horizontal NoCircle Class="hs-calc-plans">
+            <ItemTemplate Context="item">
+                <span class="hs-calc-plan @(item.Value == planKey ? "is-selected" : null)">@item.Text</span>
+            </ItemTemplate>
+        </BitChoiceGroup>
+    </div>
+    <div class="hs-calc-result" role="status">
+        <p class="hs-calc-label">@H[nameof(HotelSoftwareStrings.CalcMonthly)]</p>
+        <p class="hs-calc-total">@Money(Monthly)</p>
+        <p class="hs-calc-math">
+            @if (MinimumApplies)
+            {
+                @H[nameof(HotelSoftwareStrings.CalcMinimum), Money(Plan.Minimum), H[Plan.Name]]
+            }
+            else
+            {
+                @H[nameof(HotelSoftwareStrings.CalcMath), Rooms.ToString(CurrentCulture), Money(Plan.PerRoom), Money(ByRooms)]
+            }
+        </p>
+        <p class="hs-calc-yearly">@H[nameof(HotelSoftwareStrings.CalcYearly), Money(Yearly), YearlySavingPercent.ToString(CurrentCulture)]</p>
+        <BitButton Href="@HotelSoftwareSite.TrialUrl" Class="hs-on-board">@H[nameof(HotelSoftwareStrings.HeroTrial)]</BitButton>
+        <p class="hs-calc-note">@H[nameof(HotelSoftwareStrings.CalcNote)]</p>
+    </div>
+</section>
+
+<section class="lp-section hs-plans" aria-labelledby="hs-plans-title">
+    <div class="lp-container">
+        <header class="hs-head">
+            <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.PlansEyebrow)]</p>
+            <h2 id="hs-plans-title">@H[nameof(HotelSoftwareStrings.PlansTitle)]</h2>
+        </header>
+        <div class="hs-plan-grid">
+            @foreach (var plan in plans)
+            {
+                <article class="hs-plan @(plan.Key == planKey ? "is-current" : null)" aria-labelledby="@($"hs-plan-{plan.Key}")">
+                    <h3 id="@($"hs-plan-{plan.Key}")">@H[plan.Name]</h3>
+                    <p class="hs-plan-summary">@H[plan.Summary]</p>
+                    <p class="hs-plan-price"><span>@Money(plan.PerRoom)</span> @H[nameof(HotelSoftwareStrings.PerRoomMonth)]</p>
+                    <p class="hs-plan-min">@H[nameof(HotelSoftwareStrings.PlanMinimum), Money(plan.Minimum)]</p>
+                    <ul>
+                        @foreach (var feature in plan.Features)
+                        {
+                            <li><BitIcon IconName="@BitIconName.CheckMark" Class="hs-check" /> <span>@H[feature]</span></li>
+                        }
+                    </ul>
+                </article>
+            }
+            <article class="hs-plan is-enterprise" aria-labelledby="hs-plan-enterprise">
+                <h3 id="hs-plan-enterprise">@H[nameof(HotelSoftwareStrings.PlanEnterprise)]</h3>
+                <p class="hs-plan-summary">@H[nameof(HotelSoftwareStrings.PlanEnterpriseSummary)]</p>
+                <p class="hs-plan-price"><span>@H[nameof(HotelSoftwareStrings.PlanEnterprisePrice)]</span></p>
+                <ul>
+                    @foreach (var point in enterprisePoints)
+                    {
+                        <li><BitIcon IconName="@BitIconName.CheckMark" Class="hs-check" /> <span>@H[point]</span></li>
+                    }
+                </ul>
+                <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" FullWidth IconName="@BitIconName.Mail" Href="@($"mailto:{HotelSoftwareSite.SalesEmail}?subject=Lodgeboard%20Enterprise")" Class="hs-plan-cta">@H[nameof(HotelSoftwareStrings.TalkToUs)]</BitButton>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section hs-pricing-faq" aria-labelledby="hs-faq-title">
+    <div class="lp-container hs-faq-grid">
+        <header class="hs-head">
+            <p class="hs-kicker">@H[nameof(HotelSoftwareStrings.PricingFaqEyebrow)]</p>
+            <h2 id="hs-faq-title">@H[nameof(HotelSoftwareStrings.PricingFaqTitle)]</h2>
+        </header>
+        <FaqList Items="faq" />
+    </div>
+</section>

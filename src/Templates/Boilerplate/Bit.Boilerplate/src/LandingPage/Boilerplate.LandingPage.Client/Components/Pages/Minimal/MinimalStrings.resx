@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Notch: a journal of one line a day</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>Write one line every day, 140 characters at most, and read your whole year in a minute. Coming to iPhone and Android in spring 2027. Join the waitlist.</value>
+    </data>
+    <data name="NavJoin" xml:space="preserve">
+        <value>Join the waitlist</value>
+    </data>
+    <data name="HeroKicker" xml:space="preserve">
+        <value>Spring 2027, on iPhone and Android</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>One line a day. A year you can read in a minute.</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>Notch is a journal with one rule: a single line each day, 140 characters at most. No questions to answer, no streak to protect. Just the line, and the date it belongs to.</value>
+    </data>
+    <data name="JoinSubmit" xml:space="preserve">
+        <value>Save me a spot</value>
+    </data>
+    <data name="JoinNote" xml:space="preserve">
+        <value>We write once, when Notch is ready. That's all.</value>
+    </data>
+    <data name="DemoLabel" xml:space="preserve">
+        <value>A preview of the Notch app: today's line, this week, and the same day in earlier years</value>
+    </data>
+    <data name="DemoFieldLabel" xml:space="preserve">
+        <value>Today's line</value>
+    </data>
+    <data name="DemoPlaceholder" xml:space="preserve">
+        <value>What will you remember today by?</value>
+    </data>
+    <data name="DemoLeft" xml:space="preserve">
+        <value>{0} left</value>
+    </data>
+    <data name="DemoSave" xml:space="preserve">
+        <value>Notch it</value>
+    </data>
+    <data name="DemoSaved" xml:space="preserve">
+        <value>Saved. Tomorrow's line opens at midnight.</value>
+    </data>
+    <data name="DemoWeek" xml:space="preserve">
+        <value>This week</value>
+    </data>
+    <data name="DemoWeekCount" xml:space="preserve">
+        <value>{0} of 7 days</value>
+    </data>
+    <data name="DemoThisDay" xml:space="preserve">
+        <value>On this day</value>
+    </data>
+    <data name="DemoPast1" xml:space="preserve">
+        <value>First frost on the bike. Gloves stay in the bag from now on.</value>
+    </data>
+    <data name="DemoPast2" xml:space="preserve">
+        <value>Mia read a whole page out loud without stopping once.</value>
+    </data>
+    <data name="FeaturesTitle" xml:space="preserve">
+        <value>Three rules, and that is the app</value>
+    </data>
+    <data name="Feature1Title" xml:space="preserve">
+        <value>One line, every day</value>
+    </data>
+    <data name="Feature1Body" xml:space="preserve">
+        <value>140 characters at most. Short enough to write in the queue for coffee, long enough to remember the day by.</value>
+    </data>
+    <data name="Feature2Title" xml:space="preserve">
+        <value>The same day, years apart</value>
+    </data>
+    <data name="Feature2Body" xml:space="preserve">
+        <value>Open today and read what you wrote on this date last year, and the year before. This is where a line a day starts to pay off.</value>
+    </data>
+    <data name="Feature3Title" xml:space="preserve">
+        <value>Only you can read it</value>
+    </data>
+    <data name="Feature3Body" xml:space="preserve">
+        <value>Lines are encrypted on your phone before they leave it. No feed, no likes, no followers, and a plain text export whenever you want one.</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>One line a day, kept for good.</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>When does Notch come out?</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>Who can read my lines?</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>Can I write more than one line?</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>Consumer app, before launch</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>The smallest landing page that still does the job: one clear promise, three features and a waitlist.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>Single page</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>System fonts</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>Bubble chat</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>Nothing was written on this page</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>The address may be mistyped, or the page was never here. The journal starts on the home page.</value>
+    </data>
+    <data name="RouteTitle" xml:space="preserve">
+        <value>Where your lines go</value>
+    </data>
+    <data name="RoutePhoneTitle" xml:space="preserve">
+        <value>Your phone</value>
+    </data>
+    <data name="RoutePhoneBody" xml:space="preserve">
+        <value>Every line is written and kept here, encrypted with a key that never leaves the phone.</value>
+    </data>
+    <data name="RouteBackupTitle" xml:space="preserve">
+        <value>Backup</value>
+    </data>
+    <data name="RouteBackupBody" xml:space="preserve">
+        <value>Off until you turn it on. Then an encrypted copy brings every line back to a new phone.</value>
+    </data>
+    <data name="RouteServerTitle" xml:space="preserve">
+        <value>Our server</value>
+    </data>
+    <data name="RouteServerBody" xml:space="preserve">
+        <value>Keeps that copy in Helsinki. We can see its size and date, and nothing in it.</value>
+    </data>
+    <data name="RouteNeverTitle" xml:space="preserve">
+        <value>Advertisers and data brokers</value>
+    </data>
+    <data name="RouteNeverBody" xml:space="preserve">
+        <value>Get nothing. There is nothing to sell them.</value>
+    </data>
+    <data name="RouteOptional" xml:space="preserve">
+        <value>If you want</value>
+    </data>
+    <data name="RouteNever" xml:space="preserve">
+        <value>Never</value>
+    </data>
+</root>

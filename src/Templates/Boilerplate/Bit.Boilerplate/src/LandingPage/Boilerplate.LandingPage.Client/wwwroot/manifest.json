@@ -1,0 +1,20 @@
+{
+    "dir": "ltr",
+    "lang": "en",
+    "scope": "/",
+    "start_url": "/",
+    "id": "boilerplateLandingPage",
+    "display": "standalone",
+    "name": "Boilerplate",
+    "short_name": "Boilerplate",
+    "description": "Boilerplate",
+    "theme_color": "#FFFFFF",
+    "background_color": "#FFFFFF",
+    "icons": [
+        {
+            "sizes": "512x512",
+            "type": "image/png",
+            "src": "images/icons/bit-icon-512.png"
+        }
+    ]
+}

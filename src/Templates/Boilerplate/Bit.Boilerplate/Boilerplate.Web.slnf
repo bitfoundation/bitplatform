@@ -4,6 +4,11 @@
     "projects": [
       "src\\Client\\Boilerplate.Client.Core\\Boilerplate.Client.Core.csproj",
       "src\\Client\\Boilerplate.Client.Web\\Boilerplate.Client.Web.csproj",
+      "src\\LandingPage\\Boilerplate.LandingPage.Client\\Boilerplate.LandingPage.Client.csproj",
+      "src\\LandingPage\\Boilerplate.LandingPage.Server\\Boilerplate.LandingPage.Server.csproj",
+//#if (advancedTests == true)
+      "src\\LandingPage\\Boilerplate.LandingPage.Tests\\Boilerplate.LandingPage.Tests.csproj",
+//#endif
 //#if (IsInsideProjectTemplate == true)
       "src\\Internal\\Boilerplate.Tests.E2E\\Boilerplate.Tests.E2E.csproj",
 //#endif

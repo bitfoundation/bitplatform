@@ -1,0 +1,51 @@
+@inherits LandingComponentBase
+
+<header class="lp-nav @Class">
+    <div class="lp-container lp-nav-bar">
+        <a class="lp-nav-brand" href="@LocalUrl(Site.Path)">@Brand</a>
+
+        <nav class="lp-nav-links" aria-label="@Site.Name">
+            @foreach (var link in Links)
+            {
+                <a href="@link.Href">@link.Label</a>
+            }
+        </nav>
+
+        <div class="lp-nav-actions">
+            <LanguageSwitch Class="lp-nav-tool" />
+            <ThemeToggle Class="lp-nav-tool" />
+            @if (Site.WebAppUrl is not null && ShowSignIn)
+            {
+                <a class="lp-nav-signin" href="@Site.WebAppUrl">@Localizer[nameof(LandingStrings.SignIn)]</a>
+            }
+            @Actions
+            <BitButton Class="lp-nav-menu"
+                       Variant="BitVariant.Text"
+                       Color="BitColor.PrimaryForeground"
+                       IconName="@BitIconName.GlobalNavButton"
+                       Title="@Localizer[nameof(LandingStrings.Menu)]"
+                       OnClick="() => isMenuOpen = true" />
+        </div>
+    </div>
+</header>
+
+<BitPanel @bind-IsOpen="isMenuOpen" Placement="@(IsRtl ? BitPlacement.Left : BitPlacement.Right)" Styles="@(new() { Root = "--bit-Panel-size: min(360px, 88vw)" })" ShowCloseButton CloseButtonTitle="@Localizer[nameof(LandingStrings.CloseMenu)]">
+    <nav class="lp-nav-panel-links" aria-label="@Site.Name">
+        @foreach (var link in Links)
+        {
+            <a href="@link.Href" @onclick="() => isMenuOpen = false">@link.Label</a>
+        }
+        @if (Site.WebAppUrl is not null && ShowSignIn)
+        {
+            <a href="@Site.WebAppUrl">@Localizer[nameof(LandingStrings.SignIn)]</a>
+        }
+    </nav>
+    <div class="lp-nav-panel-tools">
+        <LanguageSwitch />
+        <ThemeToggle />
+    </div>
+    @if (Actions is not null)
+    {
+        <div class="lp-nav-panel-actions" @onclick="() => isMenuOpen = false">@Actions</div>
+    }
+</BitPanel>

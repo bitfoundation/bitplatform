@@ -1,0 +1,42 @@
+@inherits LayoutComponentBase
+
+<div class="lp-site lp-hotel">
+    <a class="lp-skip" href="#main">@L[nameof(LandingStrings.SkipToContent)]</a>
+
+    <LandingNav Site="HotelSite.Info" Links="links" ShowSignIn Class="hotel-nav">
+        <Brand><HotelLogo /><span>Alder &amp; Salt</span></Brand>
+        <Actions>
+            <BitButton Href="@Link("#download")" Size="BitSize.Small" Class="hotel-nav-cta">@H[nameof(HotelStrings.NavBook)]</BitButton>
+        </Actions>
+    </LandingNav>
+
+    <main id="main">
+        @Body
+    </main>
+
+    <LandingFooter Site="HotelSite.Info" Tagline="@H[nameof(HotelStrings.FooterTagline)]">
+        <Brand><HotelLogo /><span>Alder &amp; Salt</span></Brand>
+        <Intro>
+            <StoreBadges Site="HotelSite.Info" ShowComingSoon="false" Campaign="footer" />
+        </Intro>
+        <Columns>
+            <div class="lp-footer-col">
+                <h2>@H[nameof(HotelStrings.FooterStay)]</h2>
+                <a href="@LandingCultures.Localize($"{HotelSite.Path}/rooms", CultureInfo.CurrentUICulture)">@H[nameof(HotelStrings.FooterRooms)]</a>
+                <a href="@Link("#direct")">@H[nameof(HotelStrings.FooterDirect)]</a>
+                <a href="@($"{LandingCultures.Localize($"{HotelSite.Path}/about", CultureInfo.CurrentUICulture)}#getting-here")">@H[nameof(HotelStrings.FooterGettingHere)]</a>
+                <a href="@HotelSite.Info.WebAppUrl">@H[nameof(HotelStrings.FooterVouchers)]</a>
+            </div>
+        </Columns>
+    </LandingFooter>
+
+    <LandingChat Site="HotelSite.Info"
+                 Variant="LandingChatVariant.Concierge"
+                 Suggestions="suggestions"
+                 Label="@H[nameof(HotelStrings.ChatLabel)]"
+                 HandoffUrl="@($"mailto:{HotelSite.Info.Company.Email}")"
+                 Class="hotel-chat" />
+
+    <ConsentBanner SitePath="@HotelSite.Path" />
+    <LanguageSuggestion />
+</div>

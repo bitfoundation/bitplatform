@@ -165,6 +165,11 @@ jobs:
         path: ./TestPostgreSQL/src/WorkbenchTests/TestResults
         retention-days: 14
 
+    - name: Run landing page tests (InvariantGlobalization)
+      if: ${{ !cancelled() }}
+      working-directory: TestPostgreSQL/src/LandingPage/TestPostgreSQL.LandingPage.Tests
+      run: dotnet test -p:InvariantGlobalization=true
+
 
   test_boilerplate_mysql:
     name: create project with bit new with mysql and test it
@@ -344,6 +349,11 @@ jobs:
         name: sqlserver-tests-workbench
         path: ./TestSqlServer/src/WorkbenchTests/TestResults
         retention-days: 14
+
+    - name: Run landing page tests
+      if: ${{ !cancelled() }}
+      working-directory: TestSqlServer/src/LandingPage/TestSqlServer.LandingPage.Tests
+      run: dotnet test
 
     # This job deliberately has no InvariantGlobalization run: Microsoft.Data.SqlClient throws
     # "Globalization Invariant Mode is not supported." out of SqlConnection.Open, so the whole assembly aborts in

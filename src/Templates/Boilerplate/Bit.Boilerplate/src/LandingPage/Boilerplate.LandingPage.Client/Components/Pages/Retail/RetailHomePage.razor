@@ -1,0 +1,195 @@
+@attribute [Route(RetailSite.Path)]
+@attribute [Route("/{culture}" + RetailSite.Path)]
+@layout RetailLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@R[nameof(RetailStrings.HomeTitle)]"
+             Description="@R[nameof(RetailStrings.HomeDescription)]"
+             Path="@RetailSite.Path"
+             Site="RetailSite.Info"
+             StructuredData="structuredData" />
+
+<section class="retail-hero" aria-labelledby="retail-hero-title">
+    <div class="retail-hero-sign" aria-hidden="true"></div>
+    <div class="retail-hero-text">
+        <p class="retail-hero-tag">@R[nameof(RetailStrings.HeroEyebrow)]</p>
+        <h1 id="retail-hero-title">@R[nameof(RetailStrings.HeroTitle)]</h1>
+        <p class="retail-hero-lede">@R[nameof(RetailStrings.HeroLede)]</p>
+    </div>
+    <div class="retail-hero-visual">
+        <DeviceFrame Kind="LandingDeviceKind.Phone" Class="retail-phone">
+            <RetailSlotPicker />
+        </DeviceFrame>
+        <p class="retail-hero-caption">@R[nameof(RetailStrings.DemoCaption)]</p>
+    </div>
+    <div class="retail-hero-foot">
+        <div class="retail-hero-download">
+            <StoreBadges Site="RetailSite.Info" Campaign="hero" />
+            <DownloadQr Site="RetailSite.Info" />
+        </div>
+        <ul class="retail-hero-facts">
+            <li><BitIcon IconName="@BitIconName.Clock" /> @R[nameof(RetailStrings.HeroFactSlots)]</li>
+            <li><BitIcon IconName="@BitIconName.Tag" /> @R[nameof(RetailStrings.HeroFactFree)]</li>
+            <li>
+                <a href="@($"{LocalUrl(RetailSite.Path)}#reviews")" class="retail-hero-rating">
+                    <BitIcon IconName="@BitIconName.FavoriteStarFill" />
+                    @R[nameof(RetailStrings.HeroFactRating), RetailSite.GoogleRating.ToString("0.0", CurrentCulture), RetailSite.GoogleReviewCount.ToString("N0", CurrentCulture)]
+                </a>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section id="offers" class="lp-section retail-offers" aria-labelledby="retail-offers-title">
+    <div class="lp-container">
+        <header class="retail-head retail-head-split">
+            <div>
+                <p class="retail-kicker">@R[nameof(RetailStrings.OffersKicker)]</p>
+                <h2 id="retail-offers-title" class="lp-title">@R[nameof(RetailStrings.OffersTitle)]</h2>
+            </div>
+            <p class="lp-lede">@R[nameof(RetailStrings.OffersLede)]</p>
+        </header>
+        <ul class="retail-shelf">
+            @foreach (var offer in offers)
+            {
+                <li class="retail-label is-@offer.Kind.ToString().ToLowerInvariant()">
+                    <span class="retail-label-flag">@R[$"OfferKind{offer.Kind}"]</span>
+                    <p class="retail-label-name">@R[offer.Name]</p>
+                    <p class="retail-label-pack">@R[offer.Pack]</p>
+                    <p class="retail-label-price">@Money(offer.Price)</p>
+                    <div class="retail-label-foot">
+                        <svg class="retail-label-code" viewBox="0 0 40 18" aria-hidden="true" focusable="false">
+                            <path d="M1 0v18M4 0v18M6 0v18M10 0v18M13 0v18M14 0v18M18 0v18M21 0v18M24 0v18M25 0v18M29 0v18M32 0v18M35 0v18M38 0v18" />
+                        </svg>
+                        <p>
+                            @if (offer.Was is { } was)
+                            {
+                                <span class="retail-label-was">@R[nameof(RetailStrings.OfferWas), Money(was)]</span>
+                            }
+                            <span>@R[offer.UnitKey, R[nameof(RetailStrings.Money), offer.UnitPrice.ToString("0.00", CurrentCulture)]]</span>
+                        </p>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section id="collect" class="lp-section retail-collect" aria-labelledby="retail-collect-title">
+    <div class="lp-container retail-collect-grid">
+        <div class="retail-head">
+            <p class="retail-kicker">@R[nameof(RetailStrings.CollectKicker)]</p>
+            <h2 id="retail-collect-title" class="lp-title">@R[nameof(RetailStrings.CollectTitle)]</h2>
+            <p class="lp-lede">@R[nameof(RetailStrings.CollectLede)]</p>
+            <ul class="retail-rules">
+                <li><strong>@R[nameof(RetailStrings.TimeRange), Time(10, 0), Time(21, 0)]</strong> @R[nameof(RetailStrings.CollectRule1)]</li>
+                <li><strong>@R[nameof(RetailStrings.CollectRule2Key)]</strong> @R[nameof(RetailStrings.CollectRule2)]</li>
+                <li><strong>@R[nameof(RetailStrings.CollectRule3Key)]</strong> @R[nameof(RetailStrings.CollectRule3)]</li>
+                <li><strong>@Money(40)</strong> @R[nameof(RetailStrings.CollectRule4)]</li>
+            </ul>
+        </div>
+        <div class="retail-ticket">
+            <p class="retail-ticket-head">
+                <span>@R[nameof(RetailStrings.TicketTitle)]</span>
+                <span dir="ltr">#4821</span>
+            </p>
+            <BitTimeline Items="timeline" LinePlacement="BitPlacement.Start" Color="BitColor.Primary" Classes="@(new() { PrimaryText = "retail-timeline-time", SecondaryText = "retail-timeline-text" })" Class="retail-timeline" />
+        </div>
+    </div>
+</section>
+
+<section id="card" class="lp-section retail-card-section" aria-labelledby="retail-card-title">
+    <div class="lp-container">
+        <header class="retail-head retail-head-narrow">
+            <p class="retail-kicker">@R[nameof(RetailStrings.CardKicker)]</p>
+            <h2 id="retail-card-title" class="lp-title">@R[nameof(RetailStrings.CardTitle)]</h2>
+            <p class="lp-lede">@R[nameof(RetailStrings.CardLede)]</p>
+        </header>
+        <RetailLoyalty />
+    </div>
+</section>
+
+<section class="lp-section retail-shops" aria-labelledby="retail-shops-title">
+    <div class="lp-container retail-shops-grid">
+        <div class="retail-shops-map">
+            <RetailNorthMap Label="@R[nameof(RetailStrings.MapAlt)]" />
+        </div>
+        <div class="retail-shops-list">
+            <p class="retail-kicker">@R[nameof(RetailStrings.ShopsKicker)]</p>
+            <h2 id="retail-shops-title" class="lp-title">@R[nameof(RetailStrings.ShopsTitle)]</h2>
+            <ul>
+                @foreach (var shop in RetailShops.All)
+                {
+                    <li>
+                        <span class="retail-shops-name">@R[shop.NameKey]</span>
+                        <RetailOpenState Shop="shop" Now="now" />
+                    </li>
+                }
+            </ul>
+            <BitButton Href="@LocalUrl($"{RetailSite.Path}/stores")" IconName="@BitIconName.MapPin" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground">@R[nameof(RetailStrings.ShopsCta)]</BitButton>
+        </div>
+    </div>
+</section>
+
+<section id="reviews" class="lp-section retail-reviews" aria-labelledby="retail-reviews-title">
+    <div class="lp-container retail-reviews-grid">
+        <div class="retail-score">
+            <p class="retail-kicker">@R[nameof(RetailStrings.ReviewsKicker)]</p>
+            <h2 id="retail-reviews-title" class="lp-title">@R[nameof(RetailStrings.ReviewsTitle)]</h2>
+            <div class="retail-score-card">
+                <p class="retail-score-value">@RetailSite.GoogleRating.ToString("0.0", CurrentCulture)</p>
+                <div>
+                    <BitRating Value="RetailSite.GoogleRating" Max="5" Precision="0.1" ReadOnly AriaLabel="@R[nameof(RetailStrings.ReviewsStarsAlt), RetailSite.GoogleRating.ToString("0.0", CurrentCulture)]" Class="retail-stars" />
+                    <p>@R[nameof(RetailStrings.ReviewsCount), RetailSite.GoogleReviewCount.ToString("N0", CurrentCulture)]</p>
+                </div>
+                <ul class="retail-score-bars">
+                    @foreach (var (stars, percent) in distribution)
+                    {
+                        <li>
+                            <span>@stars.ToString(CurrentCulture)</span>
+                            <BitProgress Percent="percent" Thickness="8" Rounded AriaLabel="@R[nameof(RetailStrings.ReviewsBarAlt), stars.ToString(CurrentCulture), percent.ToString(CurrentCulture)]" Class="retail-score-bar" />
+                            <span>@($"{percent.ToString(CurrentCulture)}%")</span>
+                        </li>
+                    }
+                </ul>
+                <BitButton Href="@RetailSite.GoogleReviewsUrl" Target="_blank" Variant="BitVariant.Text" Color="BitColor.PrimaryForeground" IconName="@BitIconName.OpenInNewWindow" IconPlacement="BitPlacement.End" Class="retail-score-link">@R[nameof(RetailStrings.ReviewsLink)]</BitButton>
+            </div>
+        </div>
+        <ul class="retail-review-list">
+            @foreach (var (name, shop, when, text, stars) in reviews)
+            {
+                <li>
+                    <div class="retail-review-head">
+                        <span class="retail-review-avatar" aria-hidden="true">@R[name].ToString()[..1]</span>
+                        <p><strong>@R[name]</strong><br /><span>@R[shop] · @R[when]</span></p>
+                    </div>
+                    <BitRating Value="stars" Max="5" ReadOnly Size="BitSize.Small" AriaLabel="@R[nameof(RetailStrings.ReviewsStarsAlt), stars.ToString(CurrentCulture)]" Class="retail-stars" />
+                    <blockquote>@R[text]</blockquote>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section id="faq" class="lp-section retail-faq" aria-labelledby="retail-faq-title">
+    <div class="lp-container retail-faq-grid">
+        <header class="retail-head">
+            <p class="retail-kicker">@R[nameof(RetailStrings.FaqKicker)]</p>
+            <h2 id="retail-faq-title" class="lp-title">@R[nameof(RetailStrings.FaqTitle)]</h2>
+        </header>
+        <FaqList Items="faq" />
+    </div>
+</section>
+
+<section id="download" class="retail-download" aria-labelledby="retail-download-title">
+    <div class="lp-container retail-download-grid">
+        <div>
+            <h2 id="retail-download-title">@R[nameof(RetailStrings.DownloadTitle)]</h2>
+            <p>@R[nameof(RetailStrings.DownloadBody)]</p>
+        </div>
+        <div class="retail-download-actions">
+            <StoreBadges Site="RetailSite.Info" Campaign="download" />
+            <DownloadQr Site="RetailSite.Info" />
+        </div>
+    </div>
+</section>

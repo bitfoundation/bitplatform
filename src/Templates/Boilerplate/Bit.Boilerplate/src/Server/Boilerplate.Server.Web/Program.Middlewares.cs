@@ -75,6 +75,8 @@ public static partial class Program
                 app.UseDirectoryBrowser();
             }
 
+            // [mirror] static file cache headers - keep in sync with:
+            // - src/LandingPage/Boilerplate.LandingPage.Server/Infrastructure/Extensions/WebApplicationExtensions.cs (UseLandingStaticFiles)
             app.Use(async (context, next) =>
             {
                 context.Response.OnStarting(async () =>

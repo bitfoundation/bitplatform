@@ -1,0 +1,768 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="metadata">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string" />
+                            <xsd:attribute name="type" type="xsd:string" />
+                            <xsd:attribute name="mimetype" type="xsd:string" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="assembly">
+                        <xsd:complexType>
+                            <xsd:attribute name="alias" type="xsd:string" />
+                            <xsd:attribute name="name" type="xsd:string" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                            <xsd:attribute ref="xml:space" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="HomeTitle" xml:space="preserve">
+        <value>Alder &amp; Salt: هتلی با 32 اتاق میان تپه‌های شنی آمروم</value>
+    </data>
+    <data name="HomeDescription" xml:space="preserve">
+        <value>مستقیم از Alder &amp; Salt رزرو کنید، هتلی کوچک در شمال آرام جزیره‌ی آمروم: کمترین قیمت برای تاریخ‌های شما، صبحانه‌ی رایگان، پذیرش روی کشتی و کلید اتاق روی گوشی.</value>
+    </data>
+    <data name="NavRooms" xml:space="preserve">
+        <value>اتاق‌ها</value>
+    </data>
+    <data name="NavDirect" xml:space="preserve">
+        <value>رزرو مستقیم</value>
+    </data>
+    <data name="NavApp" xml:space="preserve">
+        <value>اپ</value>
+    </data>
+    <data name="NavReviews" xml:space="preserve">
+        <value>نظرها</value>
+    </data>
+    <data name="NavBook" xml:space="preserve">
+        <value>رزرو اتاق</value>
+    </data>
+    <data name="FooterTagline" xml:space="preserve">
+        <value>هتلی با 32 اتاق میان تپه‌های شنی نورددورف، در جزیره‌ی آمروم در دریای شمال.</value>
+    </data>
+    <data name="FooterStay" xml:space="preserve">
+        <value>اقامت شما</value>
+    </data>
+    <data name="FooterRooms" xml:space="preserve">
+        <value>اتاق‌ها و قیمت‌ها</value>
+    </data>
+    <data name="FooterDirect" xml:space="preserve">
+        <value>رزرو مستقیم</value>
+    </data>
+    <data name="FooterGettingHere" xml:space="preserve">
+        <value>راه رسیدن</value>
+    </data>
+    <data name="FooterVouchers" xml:space="preserve">
+        <value>کارت هدیه</value>
+    </data>
+    <data name="ChatLabel" xml:space="preserve">
+        <value>از پذیرش بپرسید</value>
+    </data>
+    <data name="ChatSuggestion1" xml:space="preserve">
+        <value>پذیرش از چه ساعتی است؟</value>
+    </data>
+    <data name="ChatSuggestion2" xml:space="preserve">
+        <value>می‌توانم سگم را بیاورم؟</value>
+    </data>
+    <data name="ChatSuggestion3" xml:space="preserve">
+        <value>چطور به آمروم برسم؟</value>
+    </data>
+    <data name="Money" xml:space="preserve">
+        <value>{0} یورو</value>
+    </data>
+    <data name="HeroPlace" xml:space="preserve">
+        <value>نورددورف، آمروم، کنار دریای شمال</value>
+    </data>
+    <data name="HeroTitle" xml:space="preserve">
+        <value>سی‌ودو اتاق در آرام‌ترین گوشه‌ی آمروم</value>
+    </data>
+    <data name="HeroSceneAlt" xml:space="preserve">
+        <value>خانه‌ی کاه‌پوش هتل میان تپه‌های شنی، با دریا و فانوس دریایی در پس‌زمینه</value>
+    </data>
+    <data name="HeroLede" xml:space="preserve">
+        <value>هتلی میان تپه‌های شنی، پشت یکی از پهن‌ترین ساحل‌های دریای شمال. در اپ ما با کمترین قیمت رزرو کنید، روی کشتی پذیرش بگیرید و بگذارید گوشی‌تان در اتاق را باز کند.</value>
+    </data>
+    <data name="HeroPromise" xml:space="preserve">
+        <value>تضمین بهترین قیمت: مستقیم رزرو کنید تا کمترین قیمت را برای تاریخ‌هایتان بپردازید، با صبحانه برای دو نفر.</value>
+    </data>
+    <data name="DemoCaption" xml:space="preserve">
+        <value>برنامه‌ریز اقامت از داخل اپ. تاریخ‌هایتان را امتحان کنید.</value>
+    </data>
+    <data name="DemoBadge" xml:space="preserve">
+        <value>قیمت مستقیم</value>
+    </data>
+    <data name="DemoTitle" xml:space="preserve">
+        <value>اقامتتان را برنامه‌ریزی کنید</value>
+    </data>
+    <data name="DemoDates" xml:space="preserve">
+        <value>تاریخ‌های شما</value>
+    </data>
+    <data name="DemoDatesPlaceholder" xml:space="preserve">
+        <value>ورود و خروج</value>
+    </data>
+    <data name="DemoDateFormat" xml:space="preserve">
+        <value>d MMMM</value>
+    </data>
+    <data name="DemoRangeFormat" xml:space="preserve">
+        <value>{0} تا {1}</value>
+    </data>
+    <data name="DemoCalendar" xml:space="preserve">
+        <value>تاریخ‌هایتان را انتخاب کنید</value>
+    </data>
+    <data name="DemoPrevMonth" xml:space="preserve">
+        <value>ماه قبل</value>
+    </data>
+    <data name="DemoNextMonth" xml:space="preserve">
+        <value>ماه بعد</value>
+    </data>
+    <data name="DemoChangeMonth" xml:space="preserve">
+        <value>{0}، تغییر ماه</value>
+    </data>
+    <data name="DemoSelectedDates" xml:space="preserve">
+        <value>تاریخ‌های شما: {0}</value>
+    </data>
+    <data name="DemoRoom" xml:space="preserve">
+        <value>اتاق</value>
+    </data>
+    <data name="DemoFrom" xml:space="preserve">
+        <value>از {0}</value>
+    </data>
+    <data name="DemoNights" xml:space="preserve">
+        <value>{0} شب، {1}</value>
+    </data>
+    <data name="DemoOneNight" xml:space="preserve">
+        <value>یک شب، {0}</value>
+    </data>
+    <data name="DemoPerNight" xml:space="preserve">
+        <value>شبی {0}، با صبحانه برای دو نفر</value>
+    </data>
+    <data name="DemoPickDates" xml:space="preserve">
+        <value>تاریخ ورود و خروجتان را انتخاب کنید.</value>
+    </data>
+    <data name="DemoPerk1" xml:space="preserve">
+        <value>صبحانه برای دو نفر، هر روز صبح</value>
+    </data>
+    <data name="DemoPerk2" xml:space="preserve">
+        <value>تحویل دیرهنگام اتاق تا ساعت 13:00</value>
+    </data>
+    <data name="DemoPerk3" xml:space="preserve">
+        <value>لغو رایگان تا 3 روز مانده به ورود</value>
+    </data>
+    <data name="DemoCheck" xml:space="preserve">
+        <value>بررسی اتاق خالی</value>
+    </data>
+    <data name="DemoAvailable" xml:space="preserve">
+        <value>{0}: {1} اتاق برای تاریخ‌های شما خالی است. یکی را 15 دقیقه نگه می‌داریم تا رزرو را در اپ تمام کنید.</value>
+    </data>
+    <data name="RoomDuneName" xml:space="preserve">
+        <value>اتاق تپه‌ها</value>
+    </data>
+    <data name="RoomSeaName" xml:space="preserve">
+        <value>اتاق دریا</value>
+    </data>
+    <data name="RoomLoftName" xml:space="preserve">
+        <value>لافت فانوس</value>
+    </data>
+    <data name="RoomSuiteName" xml:space="preserve">
+        <value>سوئیت نمک</value>
+    </data>
+    <data name="RoomDuneBody" xml:space="preserve">
+        <value>آرام‌ترین اتاق‌های ما، رو به تپه‌ها. یک نشیمن کنار پنجره برای کتاب خواندن، تختی از چوب توسکا و صدای باد در علف‌های ساحلی.</value>
+    </data>
+    <data name="RoomSeaBody" xml:space="preserve">
+        <value>بالکنی رو به غرب، از روی تپه‌ها تا دریا، با فانوس دریایی در انتهای ساحل. بهترین جای جزیره برای تماشای غروب.</value>
+    </data>
+    <data name="RoomLoftBody" xml:space="preserve">
+        <value>دو طبقه زیر سقف کاه‌پوش: یک کاناپه و تخت دونفره در پایین، یک طبقه‌ی خواب با دو تخت یک‌نفره در بالا و یک پنجره‌ی سقفی برای دیدن ستاره‌ها. برای خانواده‌ها و دوستان.</value>
+    </data>
+    <data name="RoomSuiteBody" xml:space="preserve">
+        <value>دو سوئیت گوشه‌ای ما: وان حمام کنار پنجره، سونای اختصاصی و دریا از دو طرف.</value>
+    </data>
+    <data name="RoomDuneBed" xml:space="preserve">
+        <value>تخت دونفره‌ی بزرگ</value>
+    </data>
+    <data name="RoomSeaBed" xml:space="preserve">
+        <value>تخت دونفره‌ی خیلی بزرگ</value>
+    </data>
+    <data name="RoomLoftBed" xml:space="preserve">
+        <value>یک تخت دونفره و دو تخت یک‌نفره</value>
+    </data>
+    <data name="RoomSuiteBed" xml:space="preserve">
+        <value>تخت دونفره‌ی خیلی بزرگ</value>
+    </data>
+    <data name="RoomDuneView" xml:space="preserve">
+        <value>منظره‌ی تپه‌ها</value>
+    </data>
+    <data name="RoomSeaView" xml:space="preserve">
+        <value>منظره‌ی دریا و بالکن</value>
+    </data>
+    <data name="RoomLoftView" xml:space="preserve">
+        <value>پنجره‌ی سقفی و منظره‌ی تپه‌ها</value>
+    </data>
+    <data name="RoomSuiteView" xml:space="preserve">
+        <value>منظره‌ی دریا از دو طرف</value>
+    </data>
+    <data name="RoomSize" xml:space="preserve">
+        <value>{0} متر مربع</value>
+    </data>
+    <data name="RoomCount" xml:space="preserve">
+        <value>{0} اتاق از این نوع</value>
+    </data>
+    <data name="RoomFactSize" xml:space="preserve">
+        <value>متراژ</value>
+    </data>
+    <data name="RoomFactBed" xml:space="preserve">
+        <value>تخت</value>
+    </data>
+    <data name="RoomFactView" xml:space="preserve">
+        <value>منظره</value>
+    </data>
+    <data name="RoomFactSleeps" xml:space="preserve">
+        <value>ظرفیت</value>
+    </data>
+    <data name="RoomRate" xml:space="preserve">
+        <value>از شبی {0}، با صبحانه برای دو نفر</value>
+    </data>
+    <data name="RoomBook" xml:space="preserve">
+        <value>بررسی تاریخ‌هایتان</value>
+    </data>
+    <data name="RoomSceneAlt" xml:space="preserve">
+        <value>طرحی از {0}</value>
+    </data>
+    <data name="DirectKicker" xml:space="preserve">
+        <value>رزرو مستقیم</value>
+    </data>
+    <data name="DirectTitle" xml:space="preserve">
+        <value>از خود ما رزرو کنید، نه از سایت‌های رزرو</value>
+    </data>
+    <data name="DirectLede" xml:space="preserve">
+        <value>سایت‌های رزرو تا یک‌پنجم قیمت هر اتاق را برای خودشان برمی‌دارند. وقتی از ما رزرو می‌کنید، همین پول خرج اقامت خودتان می‌شود.</value>
+    </data>
+    <data name="DirectColUs" xml:space="preserve">
+        <value>رزرو مستقیم</value>
+    </data>
+    <data name="DirectColThem" xml:space="preserve">
+        <value>سایت‌های رزرو</value>
+    </data>
+    <data name="DirectRow1" xml:space="preserve">
+        <value>قیمت</value>
+    </data>
+    <data name="DirectRow1Us" xml:space="preserve">
+        <value>کمترین قیمت برای تاریخ‌های شما</value>
+    </data>
+    <data name="DirectRow1Them" xml:space="preserve">
+        <value>معمولاً بیشتر</value>
+    </data>
+    <data name="DirectRow2" xml:space="preserve">
+        <value>صبحانه برای دو نفر</value>
+    </data>
+    <data name="DirectRow2Us" xml:space="preserve">
+        <value>رایگان</value>
+    </data>
+    <data name="DirectRow2Them" xml:space="preserve">
+        <value>نفری 24 یورو</value>
+    </data>
+    <data name="DirectRow3" xml:space="preserve">
+        <value>تحویل اتاق</value>
+    </data>
+    <data name="DirectRow3Us" xml:space="preserve">
+        <value>13:00</value>
+    </data>
+    <data name="DirectRow3Them" xml:space="preserve">
+        <value>11:00</value>
+    </data>
+    <data name="DirectRow4" xml:space="preserve">
+        <value>لغو رایگان</value>
+    </data>
+    <data name="DirectRow4Us" xml:space="preserve">
+        <value>تا 3 روز مانده به ورود</value>
+    </data>
+    <data name="DirectRow4Them" xml:space="preserve">
+        <value>بسته به سایت</value>
+    </data>
+    <data name="DirectRow5" xml:space="preserve">
+        <value>اتاق شما</value>
+    </data>
+    <data name="DirectRow5Us" xml:space="preserve">
+        <value>در اپ انتخابش می‌کنید</value>
+    </data>
+    <data name="DirectRow5Them" xml:space="preserve">
+        <value>هنگام ورود تعیین می‌شود</value>
+    </data>
+    <data name="DirectRow6" xml:space="preserve">
+        <value>هنگام ورود</value>
+    </data>
+    <data name="DirectRow6Us" xml:space="preserve">
+        <value>یک بطری آب سنجد دریایی آمروم</value>
+    </data>
+    <data name="DirectRow6Them" xml:space="preserve">
+        <value>چیز اضافه‌ای نیست</value>
+    </data>
+    <data name="PromiseTitle" xml:space="preserve">
+        <value>تضمین بهترین قیمت</value>
+    </data>
+    <data name="PromiseBody" xml:space="preserve">
+        <value>تا 24 ساعت بعد از رزرو، همان اتاق را برای همان تاریخ‌ها ارزان‌تر پیدا کردید؟ لینکش را برایمان بفرستید. همان قیمت را حساب می‌کنیم و 10 درصد دیگر هم کم می‌کنیم.</value>
+    </data>
+    <data name="RoomsKicker" xml:space="preserve">
+        <value>اتاق‌ها</value>
+    </data>
+    <data name="RoomsTitle" xml:space="preserve">
+        <value>چهار نوع اتاق، همه رو به تپه‌ها یا دریا</value>
+    </data>
+    <data name="RoomsCta" xml:space="preserve">
+        <value>اتاق‌ها و قیمت‌ها</value>
+    </data>
+    <data name="AppKicker" xml:space="preserve">
+        <value>اپ</value>
+    </data>
+    <data name="AppTitle" xml:space="preserve">
+        <value>اقامت شما، از کشتی تا آخرین صبحانه</value>
+    </data>
+    <data name="App1Title" xml:space="preserve">
+        <value>پذیرش روی کشتی</value>
+    </data>
+    <data name="App1Body" xml:space="preserve">
+        <value>فرم را در راه پر کنید. وقتی کشتی در ویتدون پهلو می‌گیرد، شماره‌ی اتاق روی گوشی‌تان است و راننده‌ی ما در اسکله منتظر است.</value>
+    </data>
+    <data name="App2Title" xml:space="preserve">
+        <value>گوشی‌تان کلید است</value>
+    </data>
+    <data name="App2Body" xml:space="preserve">
+        <value>اپ در اتاق، سونا و انبار دوچرخه‌ها را باز می‌کند. بدون آنتن هم کار می‌کند و همسفرتان هم می‌تواند کلید داشته باشد.</value>
+    </data>
+    <data name="App3Title" xml:space="preserve">
+        <value>پذیرش، با یک پیام</value>
+    </data>
+    <data name="App3Body" xml:space="preserve">
+        <value>میز شام، کشتی دیرتر، حوله‌ی بیشتر: از ساعت 7:00 تا 23:00 در اپ برایمان بنویسید تا یک انسان جواب بدهد.</value>
+    </data>
+    <data name="App4Title" xml:space="preserve">
+        <value>جزیره، از زبان کسانی که این‌جا زندگی می‌کنند</value>
+    </data>
+    <data name="App4Body" xml:space="preserve">
+        <value>راهنمای ما برای آمروم: ساعت جزر و مد برای پیاده‌روی همراه راهنما روی پهنه‌ی گلی تا فور، ساعت بازدید فانوس دریایی، نانوایی نبل و جایی که فوک‌ها هستند.</value>
+    </data>
+    <data name="StoriesKicker" xml:space="preserve">
+        <value>مهمان‌ها</value>
+    </data>
+    <data name="StoriesTitle" xml:space="preserve">
+        <value>آنچه مهمان‌ها بعد از رفتن برایمان نوشتند</value>
+    </data>
+    <data name="Story1Quote" xml:space="preserve">
+        <value>برای سه شب آمدیم و شش شب ماندیم. بالکن اتاق دریا رو به غروب است، نان صبحانه هنوز گرم است و هیچ‌کس هیچ‌وقت عجله‌مان نینداخت.</value>
+    </data>
+    <data name="Story1Name" xml:space="preserve">
+        <value>لنا و تام</value>
+    </data>
+    <data name="Story1Detail" xml:space="preserve">
+        <value>هامبورگ، اتاق دریا در سپتامبر</value>
+    </data>
+    <data name="Story2Quote" xml:space="preserve">
+        <value>با دو بچه و یک سگ، لافت فانوس بی‌نقص بود: بچه‌ها بالا خوابیدند، کاناپه و پنجره‌ی سقفی مال ما بود. ساعت جزر و مد برای پیاده‌روی روی پهنه‌ی گلی هم در اپ بود.</value>
+    </data>
+    <data name="Story2Name" xml:space="preserve">
+        <value>آیلین ک.</value>
+    </data>
+    <data name="Story2Detail" xml:space="preserve">
+        <value>کلن، لافت فانوس در ژوئیه</value>
+    </data>
+    <data name="Story3Quote" xml:space="preserve">
+        <value>روی کشتی پذیرش گرفتم و مستقیم به اتاقم رفتم. سونا میان تپه‌ها هنگام غروب، بهترین ساعت سال من است.</value>
+    </data>
+    <data name="Story3Name" xml:space="preserve">
+        <value>میکل س.</value>
+    </data>
+    <data name="Story3Detail" xml:space="preserve">
+        <value>کپنهاگ، اتاق تپه‌ها در فوریه</value>
+    </data>
+    <data name="ReviewsKicker" xml:space="preserve">
+        <value>نظرها</value>
+    </data>
+    <data name="ReviewsTitle" xml:space="preserve">
+        <value>امتیاز کسانی که این‌جا ماندند</value>
+    </data>
+    <data name="TripLabel" xml:space="preserve">
+        <value>عالی در Tripadvisor</value>
+    </data>
+    <data name="TripCount" xml:space="preserve">
+        <value>{0} نظر</value>
+    </data>
+    <data name="TripStarsAlt" xml:space="preserve">
+        <value>امتیاز {0} از 5 در Tripadvisor</value>
+    </data>
+    <data name="TripLink" xml:space="preserve">
+        <value>خواندن نظرها در Tripadvisor</value>
+    </data>
+    <data name="TripLocation" xml:space="preserve">
+        <value>موقعیت</value>
+    </data>
+    <data name="TripRooms" xml:space="preserve">
+        <value>اتاق‌ها</value>
+    </data>
+    <data name="TripService" xml:space="preserve">
+        <value>خدمات</value>
+    </data>
+    <data name="TripValue" xml:space="preserve">
+        <value>ارزش در برابر قیمت</value>
+    </data>
+    <data name="TripCleanliness" xml:space="preserve">
+        <value>تمیزی</value>
+    </data>
+    <data name="TripSleep" xml:space="preserve">
+        <value>کیفیت خواب</value>
+    </data>
+    <data name="AwardsTitle" xml:space="preserve">
+        <value>جایزه‌ها</value>
+    </data>
+    <data name="Award1" xml:space="preserve">
+        <value>هتل کوچک سال، سواحل دریای شمال</value>
+    </data>
+    <data name="Award1By" xml:space="preserve">
+        <value>Coast &amp; Quiet Guide</value>
+    </data>
+    <data name="Award2" xml:space="preserve">
+        <value>صبحانه‌ی سال</value>
+    </data>
+    <data name="Award2By" xml:space="preserve">
+        <value>Nordic Table Awards</value>
+    </data>
+    <data name="Award3" xml:space="preserve">
+        <value>یکی از دوازده هتل جزیره‌ای که باید شناخت</value>
+    </data>
+    <data name="Award3By" xml:space="preserve">
+        <value>Slow Stay List</value>
+    </data>
+    <data name="AwardsNote" xml:space="preserve">
+        <value>جایزه‌های نمونه. با جایزه‌های خودتان جایگزینشان کنید.</value>
+    </data>
+    <data name="FaqKicker" xml:space="preserve">
+        <value>پرسش‌ها</value>
+    </data>
+    <data name="FaqTitle" xml:space="preserve">
+        <value>پیش از سفر</value>
+    </data>
+    <data name="Faq1Question" xml:space="preserve">
+        <value>چطور به آمروم برسم؟</value>
+    </data>
+    <data name="Faq1Answer" xml:space="preserve">
+        <value>با کشتی از داگبول به ویتدون بیایید، حدود 90 دقیقه. ماشین ما به استقبال همه‌ی کشتی‌ها می‌آید و در 15 دقیقه شما را به نورددورف می‌رساند، پس می‌توانید ماشینتان را در داگبول بگذارید.</value>
+    </data>
+    <data name="Faq2Question" xml:space="preserve">
+        <value>پذیرش و تحویل اتاق چه ساعتی است؟</value>
+    </data>
+    <data name="Faq2Answer" xml:space="preserve">
+        <value>اتاق‌ها از ساعت 15:00 آماده‌اند و تحویل اتاق ساعت 11:00 است. اگر مستقیم رزرو کنید، تا ساعت 13:00 می‌توانید بمانید. با پذیرش آنلاین، اپ همان لحظه که اتاقتان آماده شد خبرتان می‌کند.</value>
+    </data>
+    <data name="Faq3Question" xml:space="preserve">
+        <value>می‌توانم سگم را بیاورم؟</value>
+    </data>
+    <data name="Faq3Answer" xml:space="preserve">
+        <value>بله، در اتاق‌های تپه‌ها و لافت‌های فانوس، شبی 15 یورو. سگ‌ها با قلاده در مسیرهای میان تپه‌ها و ساحل شمال فانوس دریایی خوش‌آمدند.</value>
+    </data>
+    <data name="Faq4Question" xml:space="preserve">
+        <value>صبحانه رایگان است؟</value>
+    </data>
+    <data name="Faq4Answer" xml:space="preserve">
+        <value>وقتی مستقیم رزرو کنید، همیشه. اگر جای دیگری رزرو کرده باشید، نفری 24 یورو هزینه دارد. صبحانه از ساعت 7:30 تا 10:30 در Salt Kitchen سرو می‌شود.</value>
+    </data>
+    <data name="Faq5Question" xml:space="preserve">
+        <value>تضمین بهترین قیمت چطور کار می‌کند؟</value>
+    </data>
+    <data name="Faq5Answer" xml:space="preserve">
+        <value>اگر تا 24 ساعت بعد از رزرو، همان اتاق را برای همان تاریخ‌ها ارزان‌تر پیدا کردید، لینکش را برایمان بفرستید. همان قیمت را حساب می‌کنیم و 10 درصد دیگر هم کم می‌کنیم.</value>
+    </data>
+    <data name="DownloadTitle" xml:space="preserve">
+        <value>در اپ مستقیم رزرو کنید</value>
+    </data>
+    <data name="DownloadBody" xml:space="preserve">
+        <value>کمترین قیمت برای تاریخ‌هایتان، صبحانه‌ی رایگان و کلید اتاق روی گوشی، پیش از آن‌که کشتی پهلو بگیرد.</value>
+    </data>
+    <data name="RoomsPageTitle" xml:space="preserve">
+        <value>اتاق‌ها و قیمت‌ها</value>
+    </data>
+    <data name="RoomsPageHeading" xml:space="preserve">
+        <value>چهار نوع اتاق، روی هم سی‌ودو اتاق</value>
+    </data>
+    <data name="RoomsPageDescription" xml:space="preserve">
+        <value>اتاق‌های تپه‌ها، اتاق‌های دریا، لافت‌های فانوس و سوئیت‌های نمک در Alder &amp; Salt آمروم، با متراژ، تخت، منظره و قیمت هر فصل.</value>
+    </data>
+    <data name="RoomsPageLede" xml:space="preserve">
+        <value>هر اتاق تختی از چوب توسکا، ملافه‌ی کتان و پنجره‌ای رو به تپه‌ها یا دریا دارد. وقتی مستقیم رزرو کنید، صبحانه برای دو نفر در قیمت حساب شده است.</value>
+    </data>
+    <data name="RatesTitle" xml:space="preserve">
+        <value>قیمت هر شب</value>
+    </data>
+    <data name="RatesLede" xml:space="preserve">
+        <value>وقتی مستقیم رزرو کنید، صبحانه برای دو نفر در قیمت است. قیمت‌ها در آوریل، مه، سپتامبر و اکتبر شبی 30 یورو و از ژوئن تا اوت شبی 60 یورو بیشتر می‌شوند.</value>
+    </data>
+    <data name="RatesRoom" xml:space="preserve">
+        <value>اتاق</value>
+    </data>
+    <data name="RatesWinter" xml:space="preserve">
+        <value>نوامبر تا مارس</value>
+    </data>
+    <data name="RatesMid" xml:space="preserve">
+        <value>آوریل، مه، سپتامبر، اکتبر</value>
+    </data>
+    <data name="RatesSummer" xml:space="preserve">
+        <value>ژوئن تا اوت</value>
+    </data>
+    <data name="GalleryTitle" xml:space="preserve">
+        <value>دور و بر خانه</value>
+    </data>
+    <data name="GalleryLede" xml:space="preserve">
+        <value>صبحانه در Salt Kitchen، سونا میان تپه‌ها و ساحل در انتهای راه چوبی.</value>
+    </data>
+    <data name="GalleryDining" xml:space="preserve">
+        <value>Salt Kitchen، جایی که صبحانه از ساعت 7:30 تا 10:30 سرو می‌شود</value>
+    </data>
+    <data name="GallerySauna" xml:space="preserve">
+        <value>سونا میان تپه‌ها، باز از ساعت 16:00 تا 22:00</value>
+    </data>
+    <data name="GalleryBeach" xml:space="preserve">
+        <value>ساحل کنیپ‌زاند، در انتهای راه چوبی ما</value>
+    </data>
+    <data name="GalleryPrevious" xml:space="preserve">
+        <value>تصویر قبلی</value>
+    </data>
+    <data name="GalleryNext" xml:space="preserve">
+        <value>تصویر بعدی</value>
+    </data>
+    <data name="GalleryDots" xml:space="preserve">
+        <value>انتخاب تصویر</value>
+    </data>
+    <data name="GalleryDot" xml:space="preserve">
+        <value>تصویر</value>
+    </data>
+    <data name="AboutTitle" xml:space="preserve">
+        <value>درباره‌ی Alder &amp; Salt</value>
+    </data>
+    <data name="AboutHeading" xml:space="preserve">
+        <value>مهمان‌خانه‌ای قدیمی، از نو ساخته‌شده با چوب توسکا</value>
+    </data>
+    <data name="AboutDescription" xml:space="preserve">
+        <value>داستان Alder &amp; Salt، هتلی 32 اتاقه در مهمان‌خانه‌ای بازسازی‌شده از سال 1934 در نورددورف آمروم، آدم‌هایش و راه رسیدن به آن.</value>
+    </data>
+    <data name="AboutLede" xml:space="preserve">
+        <value>فریا نیلسن در آمروم بزرگ شده و یوناس برودرسن دوازده سال در کپنهاگ آشپزی کرده است. آن‌ها سال 2019 خانه‌ی قدیمی Haus Seeblick را در نورددورف خریدند و اتاق به اتاق، با چوب توسکا از نو ساختند.</value>
+    </data>
+    <data name="StoryTitle" xml:space="preserve">
+        <value>چرا توسکا و چرا نمک</value>
+    </data>
+    <data name="StoryBody1" xml:space="preserve">
+        <value>توسکا درخت تنها جنگل جزیره است، پشت تپه‌های نورددورف. نرم و گرم است و با گذشت سال‌ها طلایی می‌شود؛ برای همین همه‌ی تخت‌ها، درها و میزها را از آن ساختیم.</value>
+    </data>
+    <data name="StoryBody2" xml:space="preserve">
+        <value>نمک همه‌چیز دیگر است: باد، دریایی که از سه طرف دورمان را گرفته و نانی که یوناس هر صبح با نمک دریای وادن می‌پزد. سقف کاه‌پوش و در ورودی سال 1934 را نگه داشتیم و یک سونا میان تپه‌ها اضافه کردیم.</value>
+    </data>
+    <data name="TeamTitle" xml:space="preserve">
+        <value>کسانی که از شما پذیرایی می‌کنند</value>
+    </data>
+    <data name="Team1Name" xml:space="preserve">
+        <value>فریا نیلسن</value>
+    </data>
+    <data name="Team1Role" xml:space="preserve">
+        <value>مالک و میزبان</value>
+    </data>
+    <data name="Team2Name" xml:space="preserve">
+        <value>یوناس برودرسن</value>
+    </data>
+    <data name="Team2Role" xml:space="preserve">
+        <value>مالک و سرآشپز</value>
+    </data>
+    <data name="Team3Name" xml:space="preserve">
+        <value>مالین اندرسون</value>
+    </data>
+    <data name="Team3Role" xml:space="preserve">
+        <value>پذیرش و اپ</value>
+    </data>
+    <data name="Team4Name" xml:space="preserve">
+        <value>کوفی منسا</value>
+    </data>
+    <data name="Team4Role" xml:space="preserve">
+        <value>نظافت اتاق‌ها و سونا</value>
+    </data>
+    <data name="GettingTitle" xml:space="preserve">
+        <value>راه رسیدن</value>
+    </data>
+    <data name="GettingBody" xml:space="preserve">
+        <value>آمروم یکی از جزیره‌های فریزی شمالی است، نزدیک مرز دانمارک. ماشین را در خشکی بگذارید: جزیره کوچک است و ماشین ما به استقبال همه‌ی کشتی‌ها می‌آید.</value>
+    </data>
+    <data name="Journey1Time" xml:space="preserve">
+        <value>حدود 3 ساعت</value>
+    </data>
+    <data name="Journey1" xml:space="preserve">
+        <value>با قطار از هامبورگ تا ایستگاه اسکله‌ی داگبول</value>
+    </data>
+    <data name="Journey2Time" xml:space="preserve">
+        <value>حدود 90 دقیقه</value>
+    </data>
+    <data name="Journey2" xml:space="preserve">
+        <value>با کشتی از داگبول تا ویتدون، در جنوب آمروم</value>
+    </data>
+    <data name="Journey3Time" xml:space="preserve">
+        <value>15 دقیقه</value>
+    </data>
+    <data name="Journey3" xml:space="preserve">
+        <value>با ماشین ما از اسکله تا نورددورف و اتاق شما</value>
+    </data>
+    <data name="MapAlt" xml:space="preserve">
+        <value>نقشه‌ی آمروم، با Alder &amp; Salt در نورددورف و مسیر کشتی از داگبول به ویتدون</value>
+    </data>
+    <data name="MapNorddorf" xml:space="preserve">
+        <value>نورددورف</value>
+    </data>
+    <data name="MapNebel" xml:space="preserve">
+        <value>نبل</value>
+    </data>
+    <data name="MapWittdun" xml:space="preserve">
+        <value>ویتدون</value>
+    </data>
+    <data name="MapDagebull" xml:space="preserve">
+        <value>داگبول</value>
+    </data>
+    <data name="MapFohr" xml:space="preserve">
+        <value>فور</value>
+    </data>
+    <data name="MapAmrum" xml:space="preserve">
+        <value>آمروم</value>
+    </data>
+    <data name="MapFerry" xml:space="preserve">
+        <value>کشتی، حدود 90 دقیقه</value>
+    </data>
+    <data name="ContactTitle" xml:space="preserve">
+        <value>برایمان بنویسید یا تماس بگیرید</value>
+    </data>
+    <data name="ContactBody" xml:space="preserve">
+        <value>پذیرش از ساعت 7:00 تا 23:00 باز است و به تلفن، ایمیل و پیام‌های داخل اپ جواب می‌دهد.</value>
+    </data>
+    <data name="CompanyTitle" xml:space="preserve">
+        <value>مشخصات شرکت</value>
+    </data>
+    <data name="NotFoundTitle" xml:space="preserve">
+        <value>این صفحه را جزر با خودش برده</value>
+    </data>
+    <data name="NotFoundBody" xml:space="preserve">
+        <value>شاید نشانی اشتباه تایپ شده یا صفحه جابه‌جا شده. ساحل هنوز سر جایش است.</value>
+    </data>
+    <data name="NotFoundRooms" xml:space="preserve">
+        <value>دیدن اتاق‌ها</value>
+    </data>
+    <data name="CardIndustry" xml:space="preserve">
+        <value>هتل بوتیک</value>
+    </data>
+    <data name="CardSummary" xml:space="preserve">
+        <value>اپ یک هتل 32 اتاقه که روی آیفون، اندروید و وب منتشر شده: برنامه‌ریز اقامت که می‌شود با تاریخ واقعی امتحانش کرد، دلیل‌های رزرو مستقیم، گالری اتاق‌ها با تصویرسازی و نظرهایی به سبک Tripadvisor.</value>
+    </data>
+    <data name="CardTag1" xml:space="preserve">
+        <value>برنامه‌ریز اقامت در hero</value>
+    </data>
+    <data name="CardTag2" xml:space="preserve">
+        <value>مزیت‌های رزرو مستقیم</value>
+    </data>
+    <data name="CardTag3" xml:space="preserve">
+        <value>چت کناری</value>
+    </data>
+</root>

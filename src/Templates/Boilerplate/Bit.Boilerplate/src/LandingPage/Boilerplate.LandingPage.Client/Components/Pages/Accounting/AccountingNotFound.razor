@@ -1,0 +1,24 @@
+@inherits LandingComponentBase
+
+<NotFoundPanel HomePath="@AccountingSite.Path" Title="@A[nameof(AccountingStrings.NotFoundTitle)]" Body="@A[nameof(AccountingStrings.NotFoundBody)]">
+    <Art>
+        <svg viewBox="0 0 320 260" role="presentation">
+            <g transform="translate(40 26) rotate(-4 120 110)">
+                <rect x="0" y="0" width="230" height="200" rx="3" fill="var(--acc-paper)" stroke="var(--lp-line)" />
+                <path d="M18 34h120M18 50h80" stroke="var(--acc-paper-muted)" stroke-width="3" stroke-linecap="round" opacity=".5" />
+                <path d="M18 82h194M18 110h194M18 138h194" stroke="var(--acc-paper-rule)" stroke-width="1.5" />
+                <path d="M18 96h70M150 96h62M18 124h96M150 124h62" stroke="var(--acc-paper-muted)" stroke-width="3" stroke-linecap="round" opacity=".35" />
+                <path d="M128 166h84M128 172h84" stroke="var(--acc-paper-ink)" stroke-width="1.5" />
+                <text x="212" y="157" text-anchor="end" font-size="20" font-weight="600" fill="var(--acc-paper-ink)" style="font-family: var(--acc-figures)">404</text>
+            </g>
+            <g transform="translate(206 120) rotate(-14)">
+                <rect x="-62" y="-26" width="124" height="52" rx="6" fill="none" stroke="var(--acc-stamp)" stroke-width="3" />
+                <rect x="-56" y="-20" width="112" height="40" rx="4" fill="none" stroke="var(--acc-stamp)" stroke-width="1.5" />
+                <text x="0" y="7" text-anchor="middle" font-size="15" font-weight="600" fill="var(--acc-stamp)" style="font-family: var(--acc-figures)">@A[nameof(AccountingStrings.NotFoundStamp)]</text>
+            </g>
+        </svg>
+    </Art>
+    <Actions>
+        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" Href="@LocalUrl($"{AccountingSite.Path}/pricing")">@A[nameof(AccountingStrings.HeroPricing)]</BitButton>
+    </Actions>
+</NotFoundPanel>

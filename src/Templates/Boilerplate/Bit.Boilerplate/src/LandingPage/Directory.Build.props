@@ -1,0 +1,18 @@
+<Project>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+    <PropertyGroup Condition=" '$(InvariantGlobalization)' == 'true' ">
+        <PredefinedCulturesOnly>false</PredefinedCulturesOnly>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Using Remove="Boilerplate.Shared" />
+        <Using Remove="Boilerplate.Shared.Resources" />
+        <Using Remove="Boilerplate.Shared.Infrastructure.Dtos" />
+        <Using Remove="Boilerplate.Shared.Infrastructure.Services" />
+        <Using Remove="Boilerplate.Shared.Infrastructure.Exceptions" />
+        <Using Remove="Boilerplate.Shared.Infrastructure.Attributes" />
+        <Using Remove="Boilerplate.Shared.Infrastructure.Services.Contracts" />
+        <Using Remove="Microsoft.Extensions.Caching.Memory" />
+    </ItemGroup>
+</Project>

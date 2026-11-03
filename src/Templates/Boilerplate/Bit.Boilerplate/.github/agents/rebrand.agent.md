@@ -27,8 +27,9 @@ Paths that don't start with `src/` are relative to `src/Client/Boilerplate.Clien
 - **Scope**: by default, everything the user sees, while everything that works keeps working - theme tokens, SCSS,
   fonts, images and logos, plus the markup of the Home page, the header and its user area, the nav bar, the nav panel
   and the not-found page wherever the reference's look needs it: a hero on Home, the reference's navigation features,
-  one new menu item that shows them (section 5). Follow a request that widens or narrows that, and still verify
-  everything a change touches: a new font moves line heights, a new radius can clip a focus ring.
+  one new menu item that shows them (section 5), and the landing page (`src/LandingPage`). Follow a request that
+  widens or narrows that, and still verify everything a change touches: a new font moves line heights, a new radius
+  can clip a focus ring.
 - **Unchanged unless the request says otherwise**: what existing pages, menu items and actions do, the routes,
   validation, every existing user-visible string, and the markup of the identity flows under
   `Components/Pages/Identity/`, which you restyle through tokens and scoped SCSS only. New text goes through
@@ -257,6 +258,7 @@ Some pixels come from the browser or a third party, not from bit, and no token r
 | Not-found page | `Components/Pages/NotFoundPage.razor` and the illustration it shows | Make it look like the reference's own not-found page, or one in its spirit when the reference shows none |
 | Before the stylesheet loads | the loaders and the update progress bar of the host pages, and `Components/Common/LoadingComponent.razor` | `[mirror]`; their literal colors and fonts are the first thing users see |
 | App icons and splash | the favicons, PWA icons, the MAUI app icon and splash | Only from an official asset; the native ones need a rebuild |
+| The landing page | `src/LandingPage/Boilerplate.LandingPage.Client/Styles/` and the sample's folder under its `Components/Pages/` | The sample that is the product's home page takes the brand: its palette in both schemes through the `site` and `site-dark` mixins of `Styles/sites/_<sample>.scss`, the fonts, radius, focus ring, logo and preview image. While the gallery of samples is still the home page, the gallery and its layout take the brand instead, and the samples keep their own looks. Check it in both schemes, both languages and at phone width, and measure its contrast as section 7 does |
 | Emails | the identity email templates of `src/Server/Boilerplate.Server.Api` | Email clients can't read CSS variables: literal brand colors and a web-safe font stack. In scope for a real brand change, not for a look-alike demo |
 
 <!--#if (module == "Admin")-->
@@ -381,6 +383,8 @@ pass.
   opens the re-skinned not-found page.
 - Nothing of the old look remains, or every leftover is a listed follow-up.
 - The native chrome color equals the page background in both schemes.
+- The landing page's home sample, or the gallery while it is the home page, wears the brand in both schemes and both
+  directions, with its contrast measured.
 - The RTL culture, the culture with the longest strings, and the phone and tablet widths hold up.
 <!--#if (module == "Admin")-->
 - The Dashboard's charts carry the brand's palette in both schemes, measured as section 5 says.

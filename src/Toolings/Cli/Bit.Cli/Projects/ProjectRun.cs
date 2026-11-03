@@ -57,15 +57,20 @@ public static class ProjectRun
         }
     }
 
-    public static async Task KeepRunningAsync(CliServices cli, RunningProject? project, RunningProject? workbench, CancellationToken cancellationToken)
+    public static async Task KeepRunningAsync(CliServices cli, RunningProject? project, RunningProject? workbench, RunningProject? landingPage, CancellationToken cancellationToken)
     {
-        List<RunningProject> running = [.. new[] { workbench, project }.OfType<RunningProject>()];
+        List<RunningProject> running = [.. new[] { workbench, landingPage, project }.OfType<RunningProject>()];
 
         if (running.Count == 0)
             return;
 
-        var urls = new[] { (Url: workbench?.AppUrl, Label: "The Workbench"), (Url: project?.DashboardUrl, Label: "Aspire dashboard"), (Url: project?.AppUrl, Label: "The app") }.Where(u => u.Url is not null).ToList();
-        string Names(IReadOnlyList<RunningProject> list) => list.Count > 1 ? "the project and the Workbench" : list[0] == workbench ? "the Workbench" : "the project";
+        var urls = new[] { (Url: workbench?.AppUrl, Label: "The Workbench"), (Url: landingPage?.AppUrl, Label: "The landing page"), (Url: project?.DashboardUrl, Label: "Aspire dashboard"), (Url: project?.AppUrl, Label: "The app") }.Where(u => u.Url is not null).ToList();
+        string Name(RunningProject one) => one == workbench ? "the Workbench" : one == landingPage ? "the landing page" : "the project";
+        string Names(IReadOnlyList<RunningProject> list)
+        {
+            string[] names = [.. list.OrderBy(r => r == project ? 0 : r == workbench ? 1 : 2).Select(Name)];
+            return names.Length > 1 ? $"{string.Join(", ", names[..^1])} and {names[^1]}" : names[0];
+        }
 
         cli.Console.Out.WriteLine();
 
@@ -102,8 +107,9 @@ public static class ProjectRun
                 break;
 
             var exited = left.First(r => r.Exited == first);
+            var name = Name(exited);
             left.Remove(exited);
-            cli.Console.Out.MarkupLine($"  [yellow]{(exited == workbench ? "The Workbench" : "The project")} stopped.[/]");
+            cli.Console.Out.MarkupLine($"  [yellow]{char.ToUpperInvariant(name[0])}{name[1..]} stopped.[/]");
             await exited.StopAsync(false);
 
             if (left.Count == 0)
@@ -117,7 +123,7 @@ public static class ProjectRun
         await Task.WhenAll(left.Select(r => r.StopAsync(true)));
     }
 
-    public static Task StopAsync(RunningProject? project, RunningProject? workbench) => Task.WhenAll(new[] { project, workbench }.OfType<RunningProject>().Select(r => r.StopAsync(true)));
+    public static Task StopAsync(RunningProject? project, RunningProject? workbench, RunningProject? landingPage) => Task.WhenAll(new[] { project, workbench, landingPage }.OfType<RunningProject>().Select(r => r.StopAsync(true)));
 
     public static void OpenInBrowser(CliServices cli, string url)
     {

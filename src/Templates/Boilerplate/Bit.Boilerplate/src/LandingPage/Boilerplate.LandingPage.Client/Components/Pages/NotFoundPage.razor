@@ -1,0 +1,23 @@
+@attribute [Route(LandingRoutes.NotFound)]
+@* EmptyLayout instead of the default SiteLayout, so the only layout is the one the LayoutView below picks *@
+@layout EmptyLayout
+@inherits LandingComponentBase
+
+<LayoutView Layout="@(site?.Layout ?? typeof(SiteLayout))">
+    @if (site is not null)
+    {
+        <DynamicComponent Type="site.NotFound" />
+    }
+    else
+    {
+        <PageTitle>@Localizer[nameof(LandingStrings.NotFoundTitle)]</PageTitle>
+        <HeadContent>
+            <meta name="robots" content="noindex" />
+        </HeadContent>
+        <section class="lp-container lp-section not-found">
+            <h1 class="lp-title">@Localizer[nameof(LandingStrings.NotFoundTitle)]</h1>
+            <p class="lp-lede">@Localizer[nameof(LandingStrings.NotFoundBody)]</p>
+            <BitButton Href="@LocalUrl(LandingRoutes.Home)">@Localizer[nameof(LandingStrings.BackToHome)]</BitButton>
+        </section>
+    }
+</LayoutView>

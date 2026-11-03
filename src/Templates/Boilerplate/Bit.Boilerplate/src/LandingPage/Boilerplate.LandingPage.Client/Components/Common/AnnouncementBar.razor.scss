@@ -1,0 +1,23 @@
+.lp-announcement {
+    background: var(--lp-announcement-bg, var(--lp-fg));
+    color: var(--lp-announcement-fg, var(--lp-bg));
+    font-size: .875rem;
+}
+
+.lp-announcement-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+
+    p {
+        flex: 1;
+        text-align: center;
+    }
+
+    ::deep a {
+        color: inherit;
+        font-weight: 600;
+    }
+}

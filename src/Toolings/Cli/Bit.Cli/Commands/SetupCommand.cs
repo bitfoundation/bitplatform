@@ -123,9 +123,9 @@ public static class SetupCommand
                     await AdministratorNeeds.EndAsync(cli);
                 }
             }
-            catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null)
+            catch (OperationCanceledException) when (projectSteps.Running is not null || projectSteps.Workbench is not null || projectSteps.LandingPage is not null)
             {
-                await ProjectRun.StopAsync(projectSteps.Running, projectSteps.Workbench);
+                await ProjectRun.StopAsync(projectSteps.Running, projectSteps.Workbench, projectSteps.LandingPage);
                 throw;
             }
 
@@ -139,7 +139,7 @@ public static class SetupCommand
                 cli.Console.Out.MarkupLine($"    {Markup.Escape(followUp.FollowUp!)}");
             }
 
-            await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, cancellationToken);
+            await ProjectRun.KeepRunningAsync(cli, projectSteps.Running, projectSteps.Workbench, projectSteps.LandingPage, cancellationToken);
 
             return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
         });

@@ -1,0 +1,12 @@
+{
+    "profiles": {
+        "Boilerplate.LandingPage.Server": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "applicationUrl": "http://localhost:7030",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

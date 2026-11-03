@@ -1,0 +1,108 @@
+@inherits LandingComponentBase
+
+<ul class="fit-screens">
+    <li class="fit-screen">
+        <DeviceFrame Kind="LandingDeviceKind.Phone" Class="fit-mini">
+            <div class="fit-mini-app">
+                <div class="fit-mini-head">
+                    <p class="fit-mini-kicker">@weekday</p>
+                    <p class="fit-mini-title">@F[nameof(FitnessStrings.ScreenTodayTitle)]</p>
+                </div>
+                <p class="fit-mini-sub">@F[nameof(FitnessStrings.ScreenTodayProgress), HabitsDone, habits.Length + 1]</p>
+                <div class="fit-mini-bar" aria-hidden="true"><span style="width: @(HabitsDone * 100 / (habits.Length + 1))%"></span></div>
+                <div class="fit-habits">
+                    @foreach (var habit in habits)
+                    {
+                        <BitCheckbox @bind-Value="habit.Done" Label="@F[habit.Name]" Description="@F[habit.Detail]" FullWidth Class="fit-habit" />
+                    }
+                    <div class="fit-water @(water >= WaterGoal ? "is-done" : null)">
+                        <BitIcon IconName="@BitIconName.Drop" />
+                        <p>
+                            <strong>@F[nameof(FitnessStrings.ScreenWater)]</strong>
+                            <span>@F[nameof(FitnessStrings.ScreenWaterCount), water, WaterGoal]</span>
+                        </p>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.PrimaryForeground" IconName="@BitIconName.Add" Disabled="@(water >= WaterGoal)" OnClick="AddGlass" AriaLabel="@F[nameof(FitnessStrings.ScreenWaterAdd)]" />
+                    </div>
+                </div>
+                <p class="fit-mini-note"><BitIcon IconName="@BitIconName.Ringer" /> @F[nameof(FitnessStrings.ScreenTodayReminder)]</p>
+            </div>
+        </DeviceFrame>
+        <h3>@F[nameof(FitnessStrings.ScreenTodayCaption)]</h3>
+        <p>@F[nameof(FitnessStrings.ScreenTodayBody)]</p>
+    </li>
+
+    <li class="fit-screen">
+        <DeviceFrame Kind="LandingDeviceKind.Phone" Class="fit-mini">
+            <div class="fit-mini-app">
+                <div class="fit-mini-head">
+                    <p class="fit-mini-kicker">@F[nameof(FitnessStrings.ScreenStreakKicker)]</p>
+                    <p class="fit-mini-title">@F[nameof(FitnessStrings.ScreenStreakTitle)]</p>
+                </div>
+                <p class="fit-streak-big"><BitIcon IconName="@BitIconName.FlameSolid" /> @F[nameof(FitnessStrings.ScreenStreakDays), 42]</p>
+                <p class="fit-mini-sub">@F[nameof(FitnessStrings.ScreenStreakLongest), 58]</p>
+                <div class="fit-calendar" role="img" aria-label="@F[nameof(FitnessStrings.ScreenStreakSummary)]">
+                    @foreach (var initial in initials)
+                    {
+                        <span class="fit-calendar-day">@initial</span>
+                    }
+                    @foreach (var cell in calendar)
+                    {
+                        <span class="fit-calendar-cell @(cell.IsTomorrow && restTomorrow ? "is-rest is-planned" : cell.State)"></span>
+                    }
+                </div>
+                <ul class="fit-calendar-key" aria-hidden="true">
+                    <li class="is-done">@F[nameof(FitnessStrings.DayDone)]</li>
+                    <li class="is-rest">@F[nameof(FitnessStrings.DayRest)]</li>
+                </ul>
+                <BitToggle @bind-Value="restTomorrow" Label="@F[nameof(FitnessStrings.ScreenStreakToggle)]" Class="fit-rest-toggle" />
+                <p class="fit-mini-note" role="status">@(restTomorrow ? F[nameof(FitnessStrings.ScreenStreakPlanned)] : F[nameof(FitnessStrings.ScreenStreakHint)])</p>
+            </div>
+        </DeviceFrame>
+        <h3>@F[nameof(FitnessStrings.ScreenStreakCaption)]</h3>
+        <p>@F[nameof(FitnessStrings.ScreenStreakBody)]</p>
+    </li>
+
+    <li class="fit-screen">
+        <DeviceFrame Kind="LandingDeviceKind.Phone" Class="fit-mini">
+            <div class="fit-mini-app">
+                <div class="fit-mini-head">
+                    <p class="fit-mini-kicker">@F[nameof(FitnessStrings.ScreenProgressKicker)]</p>
+                    <p class="fit-mini-title">@F[nameof(FitnessStrings.ScreenProgressTitle)]</p>
+                </div>
+                <BitPivot HeaderType="BitPivotHeaderType.Tab" Class="fit-progress-tabs">
+                    <BitPivotItem Key="week" HeaderText="@F[nameof(FitnessStrings.ScreenProgressWeek)]">
+                        <p class="fit-progress-total">@F[nameof(FitnessStrings.ScreenProgressMinutes), WeekTotal]</p>
+                        <p class="fit-mini-sub">@F[nameof(FitnessStrings.ScreenProgressGoal), 50]</p>
+                        <ol class="fit-bars">
+                            @foreach (var bar in weekBars)
+                            {
+                                <li class="@(bar.IsFuture ? "is-future" : bar.IsRest ? "is-rest" : null)">
+                                    <span class="fit-bar" style="height: @(bar.Minutes * 100 / 16)%" aria-hidden="true"></span>
+                                    <span class="fit-bar-label" aria-hidden="true">@bar.Label</span>
+                                    <span class="lp-visually-hidden">@bar.Name: @(bar.IsFuture ? F[nameof(FitnessStrings.DayUpcoming)] : bar.IsRest ? F[nameof(FitnessStrings.DayRest)] : F[nameof(FitnessStrings.ScreenProgressMinutes), bar.Minutes])</span>
+                                </li>
+                            }
+                        </ol>
+                    </BitPivotItem>
+                    <BitPivotItem Key="weeks" HeaderText="@F[nameof(FitnessStrings.ScreenProgressWeeks)]">
+                        <p class="fit-progress-total">@F[nameof(FitnessStrings.ScreenProgressAverage), WeeksAverage]</p>
+                        <p class="fit-mini-sub">@F[nameof(FitnessStrings.ScreenProgressTrend)]</p>
+                        <ol class="fit-bars is-weeks">
+                            @foreach (var bar in weeksBars)
+                            {
+                                <li>
+                                    <span class="fit-bar" style="height: @(bar.Minutes * 100 / 70)%" aria-hidden="true"></span>
+                                    <span class="fit-bar-label" aria-hidden="true">@bar.Label</span>
+                                    <span class="lp-visually-hidden">@bar.Name: @F[nameof(FitnessStrings.ScreenProgressMinutes), bar.Minutes]</span>
+                                </li>
+                            }
+                        </ol>
+                    </BitPivotItem>
+                </BitPivot>
+                <p class="fit-mini-note">@F[nameof(FitnessStrings.ScreenProgressNote)]</p>
+            </div>
+        </DeviceFrame>
+        <h3>@F[nameof(FitnessStrings.ScreenProgressCaption)]</h3>
+        <p>@F[nameof(FitnessStrings.ScreenProgressBody)]</p>
+    </li>
+</ul>

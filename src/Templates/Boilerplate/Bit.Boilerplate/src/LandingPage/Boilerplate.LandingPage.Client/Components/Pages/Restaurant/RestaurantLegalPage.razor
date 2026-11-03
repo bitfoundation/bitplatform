@@ -1,0 +1,14 @@
+@attribute [Route(RestaurantSite.Path + "/privacy")]
+@attribute [Route(RestaurantSite.Path + "/terms")]
+@attribute [Route(RestaurantSite.Path + "/cookies")]
+@attribute [Route(RestaurantSite.Path + "/imprint")]
+@attribute [Route(RestaurantSite.Path + "/accessibility")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/privacy")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/terms")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/cookies")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/imprint")]
+@attribute [Route("/{culture}" + RestaurantSite.Path + "/accessibility")]
+@layout RestaurantLayout
+@inherits LandingPageBase
+
+<LegalPage Site="RestaurantSite.Info" />

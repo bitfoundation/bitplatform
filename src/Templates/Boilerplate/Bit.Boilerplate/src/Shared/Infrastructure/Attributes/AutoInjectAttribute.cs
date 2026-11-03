@@ -1,3 +1,5 @@
+// [mirror] AutoInject attribute - keep in sync with:
+// - src/LandingPage/Boilerplate.LandingPage.Client/Infrastructure/AutoInjectAttribute.cs
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>

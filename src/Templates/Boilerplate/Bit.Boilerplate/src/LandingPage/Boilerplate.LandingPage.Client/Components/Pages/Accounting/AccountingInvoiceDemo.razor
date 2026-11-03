@@ -1,0 +1,106 @@
+@inherits LandingComponentBase
+
+<div class="acc-desk">
+    <div class="acc-paper" aria-hidden="true">
+        <div class="acc-paper-head">
+            <div class="acc-paper-from">
+                <strong>Lena Hofer</strong>
+                <span>@A[nameof(AccountingStrings.DemoFromTrade)]</span>
+            </div>
+            <div class="acc-paper-no">
+                <span>@A[nameof(AccountingStrings.DemoInvoice)]</span>
+                <b class="acc-num">2026-041</b>
+            </div>
+        </div>
+        <dl class="acc-paper-meta">
+            <div><dt>@A[nameof(AccountingStrings.DemoBilledTo)]</dt><dd>Studio Vireo GmbH<br />@A[nameof(AccountingStrings.DemoClientCity)]</dd></div>
+            <div><dt>@A[nameof(AccountingStrings.DemoIssued)]</dt><dd>@Date(issuedOn)</dd></div>
+            <div><dt>@A[nameof(AccountingStrings.DemoDue)]</dt><dd>@Date(DueOn)</dd></div>
+        </dl>
+        <div class="acc-paper-lines">
+            <p class="acc-paper-row is-head">
+                <span>@A[nameof(AccountingStrings.DemoDescription)]</span>
+                <span>@A[nameof(AccountingStrings.DemoHours)]</span>
+                <span>@A[nameof(AccountingStrings.DemoRateShort)]</span>
+                <span>@A[nameof(AccountingStrings.DemoAmount)]</span>
+            </p>
+            <p class="acc-paper-row">
+                <span>@A[nameof(AccountingStrings.DemoItem)]</span>
+                <span class="acc-num">@hours.ToString("0.#", CurrentCulture)</span>
+                <span class="acc-num">@Money(rate)</span>
+                <span class="acc-num">@Money(Subtotal)</span>
+            </p>
+        </div>
+        <dl class="acc-paper-totals">
+            <div><dt>@A[nameof(AccountingStrings.DemoSubtotal)]</dt><dd class="acc-num">@Money(Subtotal)</dd></div>
+            @if (chargeVat)
+            {
+                <div><dt>@A[nameof(AccountingStrings.DemoVatLine)]</dt><dd class="acc-num">@Money(Vat)</dd></div>
+            }
+            else
+            {
+                <div class="is-note"><dt>@A[nameof(AccountingStrings.DemoVatExempt)]</dt><dd class="acc-num">@Money(0)</dd></div>
+            }
+            <div class="is-total"><dt>@A[nameof(AccountingStrings.DemoTotal)]</dt><dd class="acc-num">@Money(Total)</dd></div>
+        </dl>
+        <p class="acc-paper-foot"><span dir="ltr">IBAN AT48 3200 0000 0123 4567</span> · @A[nameof(AccountingStrings.DemoPayWithin)]</p>
+        @if (isSent)
+        {
+            <p class="acc-stamp">
+                <span>@A[nameof(AccountingStrings.DemoStamp)]</span>
+                <small>@issuedOn.ToString("d MMM yyyy", CurrentCulture)</small>
+            </p>
+        }
+    </div>
+
+    <DeviceFrame Kind="LandingDeviceKind.Phone" Class="acc-phone">
+        <div class="acc-app">
+            <div class="acc-app-top">
+                <span><BitIcon IconName="@(IsRtl ? BitIconName.ChevronRight : BitIconName.ChevronLeft)" /> @A[nameof(AccountingStrings.DemoInvoices)]</span>
+                <b class="acc-num">2026-041</b>
+            </div>
+
+            @if (isSent is false)
+            {
+                <p class="acc-app-title">@A[nameof(AccountingStrings.DemoNewInvoice)]</p>
+                <div class="acc-client">
+                    <span class="acc-client-mark" aria-hidden="true">SV</span>
+                    <span><strong>Studio Vireo GmbH</strong><br />@A[nameof(AccountingStrings.DemoClientCity)]</span>
+                </div>
+                <p class="acc-item">@A[nameof(AccountingStrings.DemoItem)]</p>
+                <div class="acc-fields">
+                    <BitNumberField @bind-Value="hours" Label="@A[nameof(AccountingStrings.DemoHours)]" Min="0.5" Max="200" Step="0.5" Mode="BitSpinButtonMode.Spread" NormalizeDigits IncrementAriaLabel="@A[nameof(AccountingStrings.DemoHoursUp)]" DecrementAriaLabel="@A[nameof(AccountingStrings.DemoHoursDown)]" Class="acc-field" />
+                    <BitNumberField @bind-Value="rate" Label="@A[nameof(AccountingStrings.DemoRate)]" Min="5" Max="500" Step="5" Mode="BitSpinButtonMode.Spread" NormalizeDigits IncrementAriaLabel="@A[nameof(AccountingStrings.DemoRateUp)]" DecrementAriaLabel="@A[nameof(AccountingStrings.DemoRateDown)]" Class="acc-field" />
+                </div>
+                <BitToggle @bind-Value="chargeVat" Label="@A[nameof(AccountingStrings.DemoAddVat)]" Class="acc-vat" />
+                <dl class="acc-sum">
+                    <div><dt>@A[nameof(AccountingStrings.DemoSubtotal)]</dt><dd class="acc-num">@Money(Subtotal)</dd></div>
+                    <div>
+                        <dt>@(chargeVat ? A[nameof(AccountingStrings.DemoVatLine)] : A[nameof(AccountingStrings.DemoVatExemptShort)])</dt>
+                        <dd class="acc-num">@Money(Vat)</dd>
+                    </div>
+                    <div class="is-total"><dt>@A[nameof(AccountingStrings.DemoTotal)]</dt><dd class="acc-num">@Money(Total)</dd></div>
+                </dl>
+                <p class="acc-includes"><BitIcon IconName="@BitIconName.QRCode" /> @A[nameof(AccountingStrings.DemoIncludes)]</p>
+                <BitButton FullWidth IconName="@BitIconName.Send" OnClick="Send">@A[nameof(AccountingStrings.DemoSend)]</BitButton>
+            }
+            else
+            {
+                <div class="acc-sent" role="status">
+                    <span class="acc-sent-check" aria-hidden="true"><BitIcon IconName="@BitIconName.CheckMark" /></span>
+                    <p class="acc-app-title">@A[nameof(AccountingStrings.DemoSentTitle)]</p>
+                    <p>@A[nameof(AccountingStrings.DemoSentTo)] <span dir="ltr">accounts@studio-vireo.example</span></p>
+                    <p class="acc-sent-total acc-num">@Money(Total)</p>
+                    <p>@A[nameof(AccountingStrings.DemoSentDue), Date(DueOn)]</p>
+                    <ol class="acc-steps">
+                        <li class="is-done">@A[nameof(AccountingStrings.DemoStepSent)]</li>
+                        <li>@A[nameof(AccountingStrings.DemoStepOpened)]</li>
+                        <li>@A[nameof(AccountingStrings.DemoStepPaid)]</li>
+                    </ol>
+                    <p class="acc-sent-note">@A[nameof(AccountingStrings.DemoSentNote)]</p>
+                </div>
+                <BitButton FullWidth Variant="BitVariant.Outline" IconName="@BitIconName.Add" OnClick="Reset">@A[nameof(AccountingStrings.DemoAnother)]</BitButton>
+            }
+        </div>
+    </DeviceFrame>
+</div>

@@ -683,6 +683,16 @@
             },
             "replaces": "6030"
         },
+        "landingPagePortGenerated": {
+            "type": "generated",
+            "generator": "port",
+            "parameters": {
+                "low": 7000,
+                "high": 7300,
+                "fallback": 7030
+            },
+            "replaces": "7030"
+        },
         "apiServerUrl": {
             "displayName": "Server url",
             "type": "parameter",
@@ -739,6 +749,32 @@
             },
             "replaces": "use-your-web-app-url-here.com"
         },
+        "landingPageUrl": {
+            "displayName": "landing page url",
+            "type": "parameter",
+            "datatype": "string",
+            "defaultValue": "use-your-landing-page-url-here.com",
+            "description": "The landing page url. You can change its value later if needed."
+        },
+        "normalizedLandingPageUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "landingPageUrl",
+                "steps": [
+                    {
+                        "regex": "^(https|http):\/\/",
+                        "replacement": ""
+                    },
+                    {
+                        "regex": "\/+$",
+                        "replacement": ""
+                    }
+                ]
+            },
+            "replaces": "use-your-landing-page-url-here.com"
+        },
         "advancedTests": {
             "displayName": "Include advanced automated tests?",
             "type": "parameter",
@@ -775,6 +811,7 @@
                     "copyOnly": [
                         "**/*.svg",
                         "**/*.png",
+                        "**/*.webp",
                         "**/*.woff2",
                         "**/*.sh"
                     ],
@@ -887,6 +924,7 @@
                     "condition": "(advancedTests != true)",
                     "exclude": [
                         "src/WorkbenchTests/**",
+                        "src/LandingPage/Boilerplate.LandingPage.Tests/**",
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Versioning/**",

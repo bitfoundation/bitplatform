@@ -1,0 +1,46 @@
+@inherits LandingComponentBase
+
+<footer class="lp-footer @Class">
+    <div class="lp-container lp-footer-grid">
+        <div class="lp-footer-intro">
+            <a class="lp-footer-brand" href="@LocalUrl(Site.Path)">@Brand</a>
+            @if (Tagline is not null)
+            {
+                <p class="lp-footer-tagline">@Tagline</p>
+            }
+            @Intro
+        </div>
+
+        @Columns
+
+        <div class="lp-footer-col">
+            <h2>@Localizer[nameof(LandingStrings.FooterCompany)]</h2>
+            @if (ShowAbout)
+            {
+                <a href="@LocalUrl($"{Site.Path}/about")">@Localizer[nameof(LandingStrings.About)]</a>
+            }
+            <a href="mailto:@Site.Company.Email">@Localizer[nameof(LandingStrings.Contact)]</a>
+            @if (Site.StatusUrl is not null)
+            {
+                <a href="@Site.StatusUrl" rel="noopener" target="_blank">@Localizer[nameof(LandingStrings.ServiceStatus)]</a>
+            }
+        </div>
+
+        <div class="lp-footer-col">
+            <h2>@Localizer[nameof(LandingStrings.FooterLegal)]</h2>
+            <a href="@LocalUrl($"{Site.Path}/privacy")">@Localizer[nameof(LandingStrings.Privacy)]</a>
+            <a href="@LocalUrl($"{Site.Path}/terms")">@Localizer[nameof(LandingStrings.Terms)]</a>
+            <a href="@LocalUrl($"{Site.Path}/cookies")">@Localizer[nameof(LandingStrings.Cookies)]</a>
+            <a href="@LocalUrl($"{Site.Path}/imprint")">@Localizer[nameof(LandingStrings.Imprint)]</a>
+            <a href="@LocalUrl($"{Site.Path}/accessibility")">@Localizer[nameof(LandingStrings.AccessibilityStatement)]</a>
+            <button type="button" class="lp-footer-link-button" @onclick="consentPrompt.Open">@Localizer[nameof(LandingStrings.PrivacySettings)]</button>
+        </div>
+    </div>
+
+    <div class="lp-container lp-footer-bottom">
+        @* The text adds a period after the name, so the name's own, as in B.V., is trimmed off *@
+        <p>@Localizer[nameof(LandingStrings.Copyright), DateTime.UtcNow.Year, Site.Company.LegalName.TrimEnd('.')]</p>
+        <p class="lp-footer-address"><bdi>@Site.Company.Address</bdi></p>
+        <p class="lp-footer-sample">@Localizer[nameof(LandingStrings.SampleSite)]</p>
+    </div>
+</footer>

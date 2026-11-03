@@ -1,0 +1,123 @@
+@import '../../Styles/tokens';
+
+.lp-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding-top: env(safe-area-inset-top, 0px);
+    background: color-mix(in oklab, var(--lp-bg) 86%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, var(--lp-line) 70%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+}
+
+.lp-nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: var(--lp-nav-height);
+}
+
+.lp-nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--lp-fg);
+    text-decoration: none;
+    font-family: var(--lp-stack-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.lp-nav-links {
+    display: flex;
+    gap: 22px;
+    margin-inline-start: 8px;
+
+    a {
+        color: var(--lp-fg-muted);
+        font-size: .9375rem;
+        text-decoration: none;
+        transition: color .15s;
+
+        &:hover {
+            color: var(--lp-fg);
+        }
+    }
+
+    @include lt-md {
+        display: none;
+    }
+}
+
+.lp-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-inline-start: auto;
+}
+
+.lp-nav-signin {
+    padding: 8px 12px;
+    color: var(--lp-fg);
+    font-size: .9375rem;
+    font-weight: 500;
+    text-decoration: none;
+
+    @include lt-md {
+        display: none;
+    }
+}
+
+::deep .lp-nav-tool {
+    @include lt-sm {
+        display: none;
+    }
+}
+
+::deep .lp-lang {
+    padding: 8px 10px;
+    border-radius: var(--lp-radius-control);
+    color: var(--lp-fg-muted);
+    font-size: .875rem;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--lp-fg);
+        background: var(--lp-bg-alt);
+    }
+}
+
+::deep .lp-nav-menu {
+    display: none;
+
+    @include lt-md {
+        display: inline-flex;
+    }
+}
+
+.lp-nav-panel-links {
+    display: grid;
+    gap: 4px;
+    padding-block: 8px 20px;
+
+    a {
+        padding: 12px 4px;
+        border-bottom: 1px solid var(--lp-line);
+        color: var(--lp-fg);
+        font-size: 1.0625rem;
+        text-decoration: none;
+    }
+}
+
+.lp-nav-panel-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-block: 8px 20px;
+}
+
+.lp-nav-panel-actions {
+    display: grid;
+    gap: 10px;
+}

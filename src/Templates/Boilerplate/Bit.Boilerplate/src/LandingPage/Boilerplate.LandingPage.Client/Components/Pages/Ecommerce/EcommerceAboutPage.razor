@@ -1,0 +1,60 @@
+@attribute [Route(EcommerceSite.Path + "/about")]
+@attribute [Route("/{culture}" + EcommerceSite.Path + "/about")]
+@layout EcommerceLayout
+@inherits LandingPageBase
+
+<LandingHead Title="@($"{E[nameof(EcommerceStrings.AboutTitle)]} | Fernhouse")"
+             Description="@E[nameof(EcommerceStrings.AboutDescription)]"
+             Path="@($"{EcommerceSite.Path}/about")"
+             Site="EcommerceSite.Info" />
+
+<section class="lp-container ecommerce-about-hero">
+    <p class="lp-eyebrow">@L[nameof(LandingStrings.About)]</p>
+    <h1>@E[nameof(EcommerceStrings.AboutTitle)]</h1>
+    <p class="lp-lede">@E[nameof(EcommerceStrings.AboutLede)]</p>
+</section>
+
+<section class="lp-container ecommerce-story" aria-labelledby="ecommerce-story-title">
+    <EcommercePlant PotColor="var(--lp-clay)" Label="@E[nameof(EcommerceStrings.DemoProduct)]" Class="ecommerce-story-plant" />
+    <div>
+        <h2 id="ecommerce-story-title">@E[nameof(EcommerceStrings.StoryTitle)]</h2>
+        <p>@E[nameof(EcommerceStrings.StoryBody1)]</p>
+        <p>@E[nameof(EcommerceStrings.StoryBody2)]</p>
+    </div>
+</section>
+
+<section class="lp-section ecommerce-team" aria-labelledby="ecommerce-team-title">
+    <div class="lp-container">
+        <h2 id="ecommerce-team-title">@E[nameof(EcommerceStrings.TeamTitle)]</h2>
+        <ul>
+            @foreach (var (name, role) in team)
+            {
+                <li>
+                    <span class="ecommerce-team-avatar" aria-hidden="true">@Initials(E[name])</span>
+                    <strong>@E[name]</strong>
+                    <span>@E[role]</span>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<section class="lp-container ecommerce-contact" aria-labelledby="ecommerce-contact-title">
+    <div>
+        <h2 id="ecommerce-contact-title">@E[nameof(EcommerceStrings.ContactTitle)]</h2>
+        <p>@E[nameof(EcommerceStrings.ContactBody)]</p>
+        <div class="ecommerce-contact-links">
+            <BitButton Href="@($"mailto:{EcommerceSite.Info.Company.Email}")" IconName="@BitIconName.Mail">@EcommerceSite.Info.Company.Email</BitButton>
+            <BitButton Variant="BitVariant.Outline" Href="@($"tel:{EcommerceSite.Info.Company.Phone!.Replace(" ", string.Empty)}")" IconName="@BitIconName.Phone"><span dir="ltr">@EcommerceSite.Info.Company.Phone</span></BitButton>
+        </div>
+    </div>
+    <div class="ecommerce-visit">
+        <h3>@E[nameof(EcommerceStrings.VisitTitle)]</h3>
+        <p>@E[nameof(EcommerceStrings.VisitBody)]</p>
+        <dl>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintCompany)]</dt><dd>@EcommerceSite.Info.Company.LegalName</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintAddress)]</dt><dd>@EcommerceSite.Info.Company.Address</dd></div>
+            <div><dt>@L[nameof(LandingStrings.LegalImprintRegistration)]</dt><dd dir="ltr">@EcommerceSite.Info.Company.RegistrationNumber</dd></div>
+        </dl>
+    </div>
+</section>
